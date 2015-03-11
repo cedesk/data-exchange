@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0"
             prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="ru.skoltech.cedl.dataexchange.Controller"
-        >
+            fx:controller="ru.skoltech.cedl.dataexchange.Controller">
     <children>
         <SplitPane dividerPositions="0.25" layoutX="69.0" layoutY="85.0" prefHeight="515.0" prefWidth="800.0"
                    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
@@ -46,11 +46,6 @@
                 </AnchorPane>
             </items>
         </SplitPane>
-        <Label layoutX="14.0" layoutY="14.0" text="CEDESK">
-            <font>
-                <Font name="Arial Rounded MT Bold" size="24.0"/>
-            </font>
-        </Label>
         <Label layoutX="132.0" layoutY="20.0" text="Design Study: SkoltechSat">
             <font>
                 <Font size="14.0"/>
@@ -66,13 +61,18 @@
                 <Font size="14.0"/>
             </font>
         </Label>
-        <ToolBar layoutY="47.0" prefHeight="37.0" prefWidth="317.0">
+        <ToolBar layoutX="128.0" layoutY="48.0" prefHeight="37.0" prefWidth="317.0">
             <items>
-                <Button mnemonicParsing="false" text="Open"/>
-                <Button layoutX="10.0" layoutY="13.0" mnemonicParsing="false" text="Save"/>
+                <Button mnemonicParsing="false" text="Open" onAction="#loadTree"/>
+                <Button layoutX="10.0" layoutY="13.0" mnemonicParsing="false" text="Save" onAction="#saveTree"/>
                 <Button layoutX="105.0" layoutY="13.0" mnemonicParsing="false" text="Checkout"/>
                 <Button layoutX="60.0" layoutY="13.0" mnemonicParsing="false" text="Commit"/>
             </items>
         </ToolBar>
+        <ImageView fitHeight="85.0" fitWidth="129.0">
+            <image>
+                <Image url="@../../../../Logo0.png"/>
+            </image>
+        </ImageView>
     </children>
 </AnchorPane>
