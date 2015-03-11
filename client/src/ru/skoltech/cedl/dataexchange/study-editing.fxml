@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0"
+            prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.skoltech.cedl.dataexchange.Controller"
+        >
+    <children>
+        <SplitPane dividerPositions="0.25" layoutX="69.0" layoutY="85.0" prefHeight="515.0" prefWidth="800.0"
+                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                   AnchorPane.topAnchor="85.0">
+            <items>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="598.0">
+                    <children>
+                        <TreeView fx:id="structureTree" layoutY="75.0" prefHeight="598.0" prefWidth="197.0"
+                                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                  AnchorPane.topAnchor="0.0"/>
+                    </children>
+                </AnchorPane>
+                <AnchorPane>
+                    <children>
+                        <SplitPane dividerPositions="0.75" layoutX="110.0" layoutY="174.0" orientation="VERTICAL"
+                                   prefHeight="598.0" prefWidth="557.0" AnchorPane.bottomAnchor="0.0"
+                                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <items>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                    <children>
+                                        <TableView fx:id="nodePropertyTable" layoutX="97.0" layoutY="58.0"
+                                                   prefHeight="444.0" prefWidth="593.0" AnchorPane.bottomAnchor="0.0"
+                                                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                   AnchorPane.topAnchor="0.0">
+                                            <columns>
+                                                <TableColumn prefWidth="75.0" text="C1"/>
+                                                <TableColumn prefWidth="75.0" text="C2"/>
+                                            </columns>
+                                        </TableView>
+                                    </children>
+                                </AnchorPane>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0"/>
+                            </items>
+                        </SplitPane>
+                    </children>
+                </AnchorPane>
+            </items>
+        </SplitPane>
+        <Label layoutX="14.0" layoutY="14.0" text="CEDESK">
+            <font>
+                <Font name="Arial Rounded MT Bold" size="24.0"/>
+            </font>
+        </Label>
+        <Label layoutX="132.0" layoutY="20.0" text="Design Study: SkoltechSat">
+            <font>
+                <Font size="14.0"/>
+            </font>
+        </Label>
+        <Label layoutX="350.0" layoutY="20.0" text="User: Dominik">
+            <font>
+                <Font size="14.0"/>
+            </font>
+        </Label>
+        <Label layoutX="496.0" layoutY="20.0" text="Role: Team Leader">
+            <font>
+                <Font size="14.0"/>
+            </font>
+        </Label>
+        <ToolBar layoutY="47.0" prefHeight="37.0" prefWidth="317.0">
+            <items>
+                <Button mnemonicParsing="false" text="Open"/>
+                <Button layoutX="10.0" layoutY="13.0" mnemonicParsing="false" text="Save"/>
+                <Button layoutX="105.0" layoutY="13.0" mnemonicParsing="false" text="Checkout"/>
+                <Button layoutX="60.0" layoutY="13.0" mnemonicParsing="false" text="Commit"/>
+            </items>
+        </ToolBar>
+    </children>
+</AnchorPane>
