@@ -12,12 +12,10 @@ import java.util.List;
  */
 public class SubSystemModel extends ModelNode {
 
-    private List<ElementModel> elements = new LinkedList<>();
+    private List<ElementModel> elements;
 
     public SubSystemModel(String name) {
         super(name);
-        super.image =
-                new ImageView(new Image(getClass().getResourceAsStream("../../../../../../subsystem.png")));
         elements = new LinkedList<>();
     }
 

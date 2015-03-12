@@ -16,7 +16,6 @@ public class SystemModel extends ModelNode {
 
     public SystemModel(String name) {
         super(name);
-        super.image = new ImageView(new Image(getClass().getResourceAsStream("../../../../../../spacecraft.png")));
         subSystems = new LinkedList<>();
     }
 
