@@ -5,14 +5,35 @@ package ru.skoltech.cedl.dataexchange.structure.model;
  */
 public class DummySystemBuilder {
 
-    public static System getSystemModel() {
-        System system = new System("Spacecraft");
-        system.add(new SubSystem("Power"));
-        system.add(new SubSystem("AOCS"));
-        system.add(new SubSystem("Thermal"));
-        system.add(new SubSystem("Orbit"));
-        system.add(new SubSystem("Payload"));
-        system.add(new SubSystem("Communication"));
+    private static int elementCnt = 1;
+
+    private static int instrumentCnt = 1;
+
+    public static SystemModel getSystemModel() {
+        SystemModel system = new SystemModel("Spacecraft");
+        system.addSubsystem(getSubystem("Power"));
+        system.addSubsystem(getSubystem("AOCS"));
+        system.addSubsystem(getSubystem("Thermal"));
+        system.addSubsystem(getSubystem("Orbit"));
+        system.addSubsystem(getSubystem("Payload"));
+        system.addSubsystem(getSubystem("Communication"));
         return system;
+    }
+
+    private static SubSystemModel getSubystem(String name) {
+        SubSystemModel subSystem = new SubSystemModel(name);
+        subSystem.addElement(getElement("element " + elementCnt++));
+        return subSystem;
+    }
+
+    private static ElementModel getElement(String name) {
+        ElementModel element = new ElementModel(name);
+        element.addInstrument(getInstrument("instrument " + elementCnt + "/" + instrumentCnt++));
+        return element;
+    }
+
+    private static InstrumentModel getInstrument(String name) {
+        InstrumentModel instrument = new InstrumentModel(name);
+        return instrument;
     }
 }

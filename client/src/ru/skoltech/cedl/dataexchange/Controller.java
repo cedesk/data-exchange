@@ -6,11 +6,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.structure.model.System;
-
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.view.ViewMapper;
 
 public class Controller {
 
@@ -22,23 +19,9 @@ public class Controller {
 
 
     public void loadTree(ActionEvent actionEvent) {
-        System system = DummySystemBuilder.getSystemModel();
+        SystemModel system = DummySystemBuilder.getSystemModel();
 
-        TreeItem<String> rootNode =
-                new TreeItem<>(system.getName(), system.getImage());
-        rootNode.setExpanded(true);
-        int cnt = 1;
-        for(Iterator<SubSystem> iter = system.iterator(); iter.hasNext();){
-            ModelNode modelNode = iter.next();
-            TreeItem<String> childNode = new TreeItem<>(
-                    modelNode.getName(),
-                    modelNode.getImage()
-            );
-            childNode.setExpanded(true);
-            childNode.getChildren().add(new TreeItem<>("instrument" + (cnt++)));
-
-            rootNode.getChildren().add(childNode);
-        }
+        TreeItem<String> rootNode = ViewMapper.asItemTree(system);
 
         structureTree.setRoot(rootNode);
     }
