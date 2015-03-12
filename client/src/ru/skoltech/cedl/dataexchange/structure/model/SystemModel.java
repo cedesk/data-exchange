@@ -10,25 +10,21 @@ import java.util.List;
 /**
  * Created by D.Knoll on 11.03.2015.
  */
-public class System extends ModelNode {
+public class SystemModel extends ModelNode {
 
-    private List<SubSystem> subSystems;
+    private List<SubSystemModel> subSystems;
 
-    public System(String name) {
+    public SystemModel(String name) {
         super(name);
         super.image = new ImageView(new Image(getClass().getResourceAsStream("../../../../../../spacecraft.png")));
         subSystems = new LinkedList<>();
     }
 
-    public boolean add(SubSystem subSystem) {
+    public boolean addSubsystem(SubSystemModel subSystem) {
         return subSystems.add(subSystem);
     }
 
-    public int size() {
-        return subSystems.size();
-    }
-
-    public Iterator<SubSystem> iterator() {
+    public Iterator<SubSystemModel> iterator() {
         return subSystems.iterator();
     }
 
