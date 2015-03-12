@@ -16,8 +16,6 @@ public class ElementModel extends ModelNode {
 
     public ElementModel(String name) {
         super(name);
-        super.image =
-                new ImageView(new Image(getClass().getResourceAsStream("../../../../../../element.png")));
         instruments = new LinkedList<>();
     }
 
