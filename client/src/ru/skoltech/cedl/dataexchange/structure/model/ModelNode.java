@@ -34,4 +34,9 @@ public abstract class ModelNode {
     public List<ParameterModel> getParameters() {
         return parameters;
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
