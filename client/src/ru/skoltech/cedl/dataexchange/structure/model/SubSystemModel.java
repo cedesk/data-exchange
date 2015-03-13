@@ -14,9 +14,21 @@ public class SubSystemModel extends ModelNode {
 
     private List<ElementModel> elements;
 
+    public SubSystemModel() {
+        super();
+    }
+
     public SubSystemModel(String name) {
         super(name);
         elements = new LinkedList<>();
+    }
+
+    public List<ElementModel> getElements() {
+        return elements;
+    }
+
+    public void setElements(List<ElementModel> elements) {
+        this.elements = elements;
     }
 
     public boolean addElement(ElementModel element) {
