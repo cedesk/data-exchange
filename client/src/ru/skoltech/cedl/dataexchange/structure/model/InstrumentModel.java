@@ -5,6 +5,9 @@ package ru.skoltech.cedl.dataexchange.structure.model;
  */
 public class InstrumentModel extends ModelNode {
 
+    public InstrumentModel() {
+    }
+
     public InstrumentModel(String name) {
         super(name);
     }

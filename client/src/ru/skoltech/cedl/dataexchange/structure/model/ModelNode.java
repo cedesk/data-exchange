@@ -14,6 +14,9 @@ public abstract class ModelNode {
 
     private List<ParameterModel> parameters;
 
+    public ModelNode() {
+    }
+
     public ModelNode(String name) {
         this.name = name;
         this.parameters = new LinkedList<>();
@@ -25,6 +28,10 @@ public abstract class ModelNode {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setParameters(List<ParameterModel> parameters) {
+        this.parameters = parameters;
     }
 
     public void addParameter(ParameterModel parameter) {

@@ -6,13 +6,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
+import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
 
-import java.util.List;
+import java.io.File;
 
 public class Controller {
 
@@ -25,13 +28,15 @@ public class Controller {
     @FXML
     private TableView<ParameterModel> parameterTable;
 
+    private SystemModel system;
+
     public void setParameterTable(TableView<ParameterModel> parameterTable) {
         this.parameterTable = parameterTable;
     }
 
     public void loadTree(ActionEvent actionEvent) {
         openButton.setDisable(true);
-        SystemModel system = DummySystemBuilder.getSystemModel(2);
+        system = DummySystemBuilder.getSystemModel(3);
 
         ViewNode rootNode = ViewTreeFactory.getViewTree(system);
         structureTree.setRoot(rootNode);
@@ -51,5 +56,12 @@ public class Controller {
     }
 
     public void saveTree(ActionEvent actionEvent) {
+        File outputFile = new File("cedesk-SkoltechSat.xml");
+
+        StudyModel study = new StudyModel();
+        study.setSystemModel(system);
+        study.setFile(outputFile);
+
+        FileStorage.save(study);
     }
 }

@@ -14,9 +14,21 @@ public class ElementModel extends ModelNode {
 
     private List<InstrumentModel> instruments;
 
+    public ElementModel() {
+        super();
+    }
+
     public ElementModel(String name) {
         super(name);
         instruments = new LinkedList<>();
+    }
+
+    public List<InstrumentModel> getInstruments() {
+        return instruments;
+    }
+
+    public void setInstruments(List<InstrumentModel> instruments) {
+        this.instruments = instruments;
     }
 
     public boolean addInstrument(InstrumentModel instrument) {

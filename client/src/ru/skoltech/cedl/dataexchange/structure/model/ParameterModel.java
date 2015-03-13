@@ -1,8 +1,11 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import javax.xml.bind.annotation.XmlType;
+
 /**
  * Created by D.Knoll on 12.03.2015.
  */
+@XmlType(propOrder = {"name", "value", "type", "isShared", "description"})
 public class ParameterModel {
 
     private String name;
@@ -14,6 +17,9 @@ public class ParameterModel {
     private Boolean isShared;
 
     private String description;
+
+    public ParameterModel() {
+    }
 
     public ParameterModel(String name) {
         this.name = name;
