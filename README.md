@@ -1,29 +1,12 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Concurrent Engineering Data Exchange Skoltech is a software made for our our Concurrent Engineering Design Lab.
 
-### What is this repository for? ###
+## Quick summary ##
+* Current State: Development
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+## Architecture ##
 
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+* 3 Tier client server application: rich client, server application, database
+* Rich Client based on JavaFX
+* Server application and database are now mimicked by an off-the-shelf file versioning system, eg. Subversion
