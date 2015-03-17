@@ -15,12 +15,12 @@ import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 
 public class Controller {
+
+    final static private String INPUT_FILE_NAME = "cedesk-SkoltechSat.xml";
 
     @FXML
     public Button openButton;
@@ -32,36 +32,30 @@ public class Controller {
     private TableView<ParameterModel> parameterTable;
 
     private SystemModel system;
-    final static private String INPUT_FILE_NAME = "cedesk-SkoltechSat.xml";
 
-    public void loadTree(ActionEvent actionEvent) throws IOException {
-        // openButton.setDisable(true);
+    public void newTree(ActionEvent actionEvent) {
+        system = DummySystemBuilder.getSystemModel(3);
+        ViewNode rootNode = ViewTreeFactory.getViewTree(system);
+        structureTree.setRoot(rootNode);
+    }
+
+    public void loadTree(ActionEvent actionEvent) {
         // This if is just a dummy replacement of the final functionality. By the end of
         // the day if there is not local repository, we will need to check out the server
         // one. TODO: Fix the dummy study generation when the versioning part is done.
-        BufferedReader br = new BufferedReader(new FileReader(INPUT_FILE_NAME));
-        if (br.readLine() == null) {
-            System.out.println("No errors, and file empty");
-            system = DummySystemBuilder.getSystemModel(3);
-        } else {
-            system = FileStorage.open(INPUT_FILE_NAME);
+        try {
+            if (Utils.fileExistsAndIsNotEmpty(INPUT_FILE_NAME)) {
+                system = FileStorage.open(INPUT_FILE_NAME);
+            } else {
+                system = DummySystemBuilder.getSystemModel(4);
+            }
+
+            ViewNode rootNode = ViewTreeFactory.getViewTree(system);
+            structureTree.setRoot(rootNode);
+        } catch (IOException ex) {
+            // TODO: message for user on GUI
+            System.err.println("Error loading file!");
         }
-
-        ViewNode rootNode = ViewTreeFactory.getViewTree(system);
-        structureTree.setRoot(rootNode);
-        structureTree.getSelectionModel().selectedItemProperty()
-                .addListener(new ChangeListener<TreeItem<ModelNode>>() {
-                    @Override
-                    public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable, TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
-                        Controller.this.displayParameters(newValue.getValue());
-                    }
-                });
-    }
-
-    private void displayParameters(ModelNode modelNode) {
-        ObservableList<ParameterModel> data =
-                FXCollections.observableArrayList(modelNode.getParameters());
-        parameterTable.setItems(data);
     }
 
     public void saveTree(ActionEvent actionEvent) {
@@ -71,13 +65,21 @@ public class Controller {
         study.setSystemModel(system);
         study.setFile(outputFile);
 
-        FileStorage.save(study);
+        try {
+            FileStorage.save(study);
+        } catch (IOException e) {
+            // TODO: message for user on GUI
+            System.err.println("Error saving file!");
+        }
     }
 
-    public void newTree(ActionEvent actionEvent) {
-        system = DummySystemBuilder.getSystemModel(3);
-        ViewNode rootNode = ViewTreeFactory.getViewTree(system);
-        structureTree.setRoot(rootNode);
+    private void displayParameters(ModelNode modelNode) {
+        ObservableList<ParameterModel> data =
+                FXCollections.observableArrayList(modelNode.getParameters());
+        parameterTable.setItems(data);
+    }
+
+    public void setStageAndSetupListeners() {
         structureTree.getSelectionModel().selectedItemProperty()
                 .addListener(new ChangeListener<TreeItem<ModelNode>>() {
                     @Override
