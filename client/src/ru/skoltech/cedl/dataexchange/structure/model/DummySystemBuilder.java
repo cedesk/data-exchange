@@ -13,8 +13,8 @@ public class DummySystemBuilder {
 
     public static SystemModel getSystemModel(int level) {
         SystemModel system = new SystemModel("Spacecraft");
-        system.addParameter(new ParameterModel("parameter " + parameterCnt++));
-        system.addParameter(new ParameterModel("parameter " + parameterCnt++));
+        system.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
+        system.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
 
         if (level < 2) return system;
         system.addSubsystem(getSubystem("Power", level - 1));
@@ -26,10 +26,14 @@ public class DummySystemBuilder {
         return system;
     }
 
+    private static double getRandomDouble() {
+        return Math.round(Math.random() * 1000) / 10;
+    }
+
     private static SubSystemModel getSubystem(String name, int level) {
         SubSystemModel subSystem = new SubSystemModel(name);
-        subSystem.addParameter(new ParameterModel("parameter " + parameterCnt++));
-        subSystem.addParameter(new ParameterModel("parameter " + parameterCnt++));
+        subSystem.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
+        subSystem.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
 
         if (level < 2) return subSystem;
         subSystem.addElement(getElement("element " + elementCnt++, level - 1));
@@ -38,18 +42,18 @@ public class DummySystemBuilder {
 
     private static ElementModel getElement(String name, int level) {
         ElementModel element = new ElementModel(name);
-        element.addParameter(new ParameterModel("parameter " + parameterCnt++));
-        element.addParameter(new ParameterModel("parameter " + parameterCnt++));
+        element.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
+        element.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
 
-        if(level<2) return element;
+        if (level < 2) return element;
         element.addInstrument(getInstrument("instrument " + elementCnt + "/" + instrumentCnt++));
         return element;
     }
 
     private static InstrumentModel getInstrument(String name) {
         InstrumentModel instrument = new InstrumentModel(name);
-        instrument.addParameter(new ParameterModel("parameter " + parameterCnt++));
-        instrument.addParameter(new ParameterModel("parameter " + parameterCnt++));
+        instrument.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
+        instrument.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
         return instrument;
     }
 }
