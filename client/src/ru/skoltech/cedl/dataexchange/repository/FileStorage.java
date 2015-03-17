@@ -6,6 +6,9 @@ import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
@@ -40,5 +43,31 @@ public class FileStorage {
                 }
             }
         }
+    }
+
+    public static SystemModel open(String fileName) {
+        FileInputStream inp = null;
+        try {
+            inp = new FileInputStream(fileName);
+            JAXBContext ct = JAXBContext.newInstance(SystemModel.class);
+
+            Unmarshaller u = ct.createUnmarshaller();
+            SystemModel sysMod = (SystemModel)u.unmarshal(inp);
+            return sysMod;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        } finally {
+            if (inp != null) {
+                try {
+
+                   inp.close();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        }
+        return null;
     }
 }

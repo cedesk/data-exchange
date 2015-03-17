@@ -15,7 +15,9 @@ public class ViewTreeFactory {
         for (Iterator<SubSystemModel> iter = system.iterator(); iter.hasNext(); ) {
             SubSystemModel subSystem = iter.next();
             ViewNode childNode = getViewTree(subSystem);
-            node.getChildren().add(childNode);
+            if (childNode != null) {
+                node.getChildren().add(childNode);
+            }
         }
         return node;
     }
@@ -26,7 +28,9 @@ public class ViewTreeFactory {
         for (Iterator<ElementModel> iter = subSystem.iterator(); iter.hasNext(); ) {
             ElementModel element = iter.next();
             ViewNode childNode = getViewTree(element);
-            node.getChildren().add(childNode);
+            if (childNode != null) {
+                node.getChildren().add(childNode);
+            }
         }
         return node;
     }
@@ -34,6 +38,10 @@ public class ViewTreeFactory {
     private static ViewNode getViewTree(ElementModel elementModel) {
         ViewNode node = new ViewNode(elementModel);
         node.setExpanded(true);
+        if (elementModel.getInstruments() == null ||
+                !(elementModel.getInstruments().isEmpty())) {
+            return node;
+        }
         for (Iterator<InstrumentModel> iter = elementModel.iterator(); iter.hasNext(); ) {
             InstrumentModel instrument = iter.next();
             ViewNode subNode = new ViewNode(instrument);

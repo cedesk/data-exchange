@@ -15,7 +15,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
 
-import java.io.File;
+import java.io.*;
 
 public class Controller {
 
@@ -34,9 +34,18 @@ public class Controller {
         this.parameterTable = parameterTable;
     }
 
-    public void loadTree(ActionEvent actionEvent) {
-        openButton.setDisable(true);
-        system = DummySystemBuilder.getSystemModel(3);
+    public void loadTree(ActionEvent actionEvent) throws IOException {
+       // openButton.setDisable(true);
+        // This if is just a dummy replacement of the final functionality. By the end of
+        // the day if there is not local repository, we will need to check out the server
+        // one. TODO: Fix the dummy study generation when the versioning part is done.
+        BufferedReader br = new BufferedReader(new FileReader("cedesk-SkoltechSat.xml"));
+        if (br.readLine() == null) {
+            System.out.println("No errors, and file empty");
+            system = DummySystemBuilder.getSystemModel(3);
+        } else {
+            system = FileStorage.open("cedesk-SkoltechSat.xml");
+        }
 
         ViewNode rootNode = ViewTreeFactory.getViewTree(system);
         structureTree.setRoot(rootNode);
