@@ -11,7 +11,7 @@ import java.util.List;
 @XmlRootElement
 public class SystemModel extends ModelNode {
 
-    private List<SubSystemModel> subSystems;
+    private List<SubSystemModel> subSystems = new LinkedList<>();
 
     public SystemModel() {
         super();
@@ -19,7 +19,6 @@ public class SystemModel extends ModelNode {
 
     public SystemModel(String name) {
         super(name);
-        subSystems = new LinkedList<>();
     }
 
     public List<SubSystemModel> getSubSystems() {

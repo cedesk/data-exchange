@@ -1,8 +1,5 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,7 +9,7 @@ import java.util.List;
  */
 public class ElementModel extends ModelNode {
 
-    private List<InstrumentModel> instruments;
+    private List<InstrumentModel> instruments = new LinkedList<>();
 
     public ElementModel() {
         super();
@@ -20,7 +17,6 @@ public class ElementModel extends ModelNode {
 
     public ElementModel(String name) {
         super(name);
-        instruments = new LinkedList<>();
     }
 
     public List<InstrumentModel> getInstruments() {

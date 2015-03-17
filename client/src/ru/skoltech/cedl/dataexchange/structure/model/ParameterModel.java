@@ -12,9 +12,9 @@ public class ParameterModel {
 
     private Double value;
 
-    private ParameterType type;
+    private ParameterType type = ParameterType.DefaultValue;
 
-    private Boolean isShared;
+    private Boolean isShared = false;
 
     private String description;
 
@@ -23,8 +23,6 @@ public class ParameterModel {
 
     public ParameterModel(String name) {
         this.name = name;
-        this.type = ParameterType.DefaultValue;
-        this.isShared = false;
     }
 
     public ParameterModel(String name, Double value, ParameterType type, Boolean isShared, String description) {

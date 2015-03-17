@@ -12,14 +12,14 @@ public abstract class ModelNode {
 
     private String name;
 
-    private List<ParameterModel> parameters;
+    private List<ParameterModel> parameters = new LinkedList<>();
 
     public ModelNode() {
     }
 
     public ModelNode(String name) {
         this.name = name;
-        this.parameters = new LinkedList<>();
+
     }
 
     public String getName() {
