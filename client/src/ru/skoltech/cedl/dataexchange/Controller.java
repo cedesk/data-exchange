@@ -15,7 +15,10 @@ import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class Controller {
 
@@ -29,22 +32,19 @@ public class Controller {
     private TableView<ParameterModel> parameterTable;
 
     private SystemModel system;
-
-    public void setParameterTable(TableView<ParameterModel> parameterTable) {
-        this.parameterTable = parameterTable;
-    }
+    final static private String INPUT_FILE_NAME = "cedesk-SkoltechSat.xml";
 
     public void loadTree(ActionEvent actionEvent) throws IOException {
-       // openButton.setDisable(true);
+        // openButton.setDisable(true);
         // This if is just a dummy replacement of the final functionality. By the end of
         // the day if there is not local repository, we will need to check out the server
         // one. TODO: Fix the dummy study generation when the versioning part is done.
-        BufferedReader br = new BufferedReader(new FileReader("cedesk-SkoltechSat.xml"));
+        BufferedReader br = new BufferedReader(new FileReader(INPUT_FILE_NAME));
         if (br.readLine() == null) {
             System.out.println("No errors, and file empty");
             system = DummySystemBuilder.getSystemModel(3);
         } else {
-            system = FileStorage.open("cedesk-SkoltechSat.xml");
+            system = FileStorage.open(INPUT_FILE_NAME);
         }
 
         ViewNode rootNode = ViewTreeFactory.getViewTree(system);
@@ -65,12 +65,25 @@ public class Controller {
     }
 
     public void saveTree(ActionEvent actionEvent) {
-        File outputFile = new File("cedesk-SkoltechSat.xml");
+        File outputFile = new File(INPUT_FILE_NAME);
 
         StudyModel study = new StudyModel();
         study.setSystemModel(system);
         study.setFile(outputFile);
 
         FileStorage.save(study);
+    }
+
+    public void newTree(ActionEvent actionEvent) {
+        system = DummySystemBuilder.getSystemModel(3);
+        ViewNode rootNode = ViewTreeFactory.getViewTree(system);
+        structureTree.setRoot(rootNode);
+        structureTree.getSelectionModel().selectedItemProperty()
+                .addListener(new ChangeListener<TreeItem<ModelNode>>() {
+                    @Override
+                    public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable, TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
+                        Controller.this.displayParameters(newValue.getValue());
+                    }
+                });
     }
 }
