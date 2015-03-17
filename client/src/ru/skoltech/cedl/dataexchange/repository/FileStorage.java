@@ -7,22 +7,19 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Created by D.Knoll on 13.03.2015.
  */
 public class FileStorage {
 
-    public static void save(StudyModel study) {
+    public static void save(StudyModel study) throws IOException {
 
-        FileOutputStream fos = null;
-
-        try {
-            fos = new FileOutputStream(study.getFile());
+        try (FileOutputStream fos = new FileOutputStream(study.getFile())) {
 
             JAXBContext jc = JAXBContext.newInstance(SystemModel.class);
 
@@ -31,43 +28,20 @@ public class FileStorage {
             m.marshal(study.getSystemModel(), fos);
 
 
-        } catch (JAXBException | FileNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            if (fos != null) {
-                try {
-
-                    fos.close();
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
+        } catch (JAXBException e) {
+            throw new IOException("Error wrtiting system model to XML file.", e);
         }
     }
 
-    public static SystemModel open(String fileName) {
-        FileInputStream inp = null;
-        try {
-            inp = new FileInputStream(fileName);
+    public static SystemModel open(String fileName) throws IOException {
+        try (FileInputStream inp = new FileInputStream(fileName)) {
             JAXBContext ct = JAXBContext.newInstance(SystemModel.class);
 
             Unmarshaller u = ct.createUnmarshaller();
-            SystemModel sysMod = (SystemModel)u.unmarshal(inp);
+            SystemModel sysMod = (SystemModel) u.unmarshal(inp);
             return sysMod;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (JAXBException e) {
-            e.printStackTrace();
-        } finally {
-            if (inp != null) {
-                try {
-
-                   inp.close();
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
+            throw new IOException("Error reading system model from XML file.", e);
         }
-        return null;
     }
 }
