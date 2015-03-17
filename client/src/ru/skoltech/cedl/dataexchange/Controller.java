@@ -6,12 +6,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
+import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
 
@@ -20,10 +25,7 @@ import java.io.IOException;
 
 public class Controller {
 
-    final static private String INPUT_FILE_NAME = "cedesk-SkoltechSat.xml";
-
-    @FXML
-    public Button openButton;
+    final static private String REPOSITORY_URL = "file:///C:/Users/d.knoll/SIRG/CedeskRepo";
 
     @FXML
     private TreeView<ModelNode> structureTree;
@@ -33,19 +35,20 @@ public class Controller {
 
     private SystemModel system;
 
-    public void newTree(ActionEvent actionEvent) {
+    public void newModel(ActionEvent actionEvent) {
         system = DummySystemBuilder.getSystemModel(3);
         ViewNode rootNode = ViewTreeFactory.getViewTree(system);
         structureTree.setRoot(rootNode);
     }
 
-    public void loadTree(ActionEvent actionEvent) {
+    public void loadModel(ActionEvent actionEvent) {
         // This if is just a dummy replacement of the final functionality. By the end of
         // the day if there is not local repository, we will need to check out the server
         // one. TODO: Fix the dummy study generation when the versioning part is done.
         try {
-            if (Utils.fileExistsAndIsNotEmpty(INPUT_FILE_NAME)) {
-                system = FileStorage.open(INPUT_FILE_NAME);
+            File dataFile = StorageUtils.getDataFile();
+            if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
+                system = FileStorage.load(dataFile);
             } else {
                 system = DummySystemBuilder.getSystemModel(4);
             }
@@ -58,18 +61,23 @@ public class Controller {
         }
     }
 
-    public void saveTree(ActionEvent actionEvent) {
-        File outputFile = new File(INPUT_FILE_NAME);
-
-        StudyModel study = new StudyModel();
-        study.setSystemModel(system);
-        study.setFile(outputFile);
-
+    public void saveModel(ActionEvent actionEvent) {
         try {
-            FileStorage.save(study);
+            FileStorage.store(system, StorageUtils.getDataFile());
         } catch (IOException e) {
             // TODO: message for user on GUI
             System.err.println("Error saving file!");
+        }
+    }
+
+    public void checkoutModel(ActionEvent actionEvent) {
+        RepositoryStorage repositoryStorage = null;
+        try {
+            repositoryStorage = new RepositoryStorage(REPOSITORY_URL, StorageUtils.getDataFileName());
+            repositoryStorage.checkoutFile();
+        } catch (SVNException e) {
+            // TODO: message for user on GUI
+            System.err.println("Error connecting to the repository: " + e.getMessage());
         }
     }
 
@@ -88,4 +96,5 @@ public class Controller {
                     }
                 });
     }
+
 }
