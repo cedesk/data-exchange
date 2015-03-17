@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class SubSystemModel extends ModelNode {
 
-    private List<ElementModel> elements;
+    private List<ElementModel> elements = new LinkedList<>();
 
     public SubSystemModel() {
         super();
@@ -20,7 +20,6 @@ public class SubSystemModel extends ModelNode {
 
     public SubSystemModel(String name) {
         super(name);
-        elements = new LinkedList<>();
     }
 
     public List<ElementModel> getElements() {
