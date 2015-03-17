@@ -24,7 +24,8 @@ public class Utils {
             } catch (IOException e) {
                 return false;
             }
+            return true;
         }
-        return true;
+        return false;
     }
 }
