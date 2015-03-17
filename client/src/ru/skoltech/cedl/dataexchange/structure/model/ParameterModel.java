@@ -21,8 +21,9 @@ public class ParameterModel {
     public ParameterModel() {
     }
 
-    public ParameterModel(String name) {
+    public ParameterModel(String name, Double value) {
         this.name = name;
+        this.value = value;
     }
 
     public ParameterModel(String name, Double value, ParameterType type, Boolean isShared, String description) {
