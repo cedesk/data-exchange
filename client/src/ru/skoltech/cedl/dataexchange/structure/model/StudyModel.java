@@ -7,16 +7,22 @@ import java.io.File;
  */
 public class StudyModel {
 
-    private File file;
+    private String repositoryPath;
 
     private SystemModel systemModel;
 
-    public File getFile() {
-        return file;
+    private boolean loaded = false;
+
+    private boolean dirty = false;
+
+    private boolean checkedOut = false;
+
+    public String getRepositoryPath() {
+        return repositoryPath;
     }
 
-    public void setFile(File file) {
-        this.file = file;
+    public void setRepositoryPath(String repositoryPath) {
+        this.repositoryPath = repositoryPath;
     }
 
     public SystemModel getSystemModel() {
@@ -25,5 +31,29 @@ public class StudyModel {
 
     public void setSystemModel(SystemModel systemModel) {
         this.systemModel = systemModel;
+    }
+
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
+    }
+
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+    public boolean isCheckedOut() {
+        return checkedOut;
+    }
+
+    public void setCheckedOut(boolean checkedOut) {
+        this.checkedOut = checkedOut;
     }
 }

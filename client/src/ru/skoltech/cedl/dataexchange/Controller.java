@@ -9,14 +9,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.stage.DirectoryChooser;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
-import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
 
@@ -25,18 +23,19 @@ import java.io.IOException;
 
 public class Controller {
 
-    final static private String REPOSITORY_URL = "file:///C:/Users/d.knoll/SIRG/CedeskRepo";
-
     @FXML
     private TreeView<ModelNode> structureTree;
 
     @FXML
     private TableView<ParameterModel> parameterTable;
 
-    private SystemModel system;
+    private final StudyModel studyModel = new StudyModel();
 
     public void newModel(ActionEvent actionEvent) {
-        system = DummySystemBuilder.getSystemModel(3);
+        SystemModel system = DummySystemBuilder.getSystemModel(3);
+        studyModel.setSystemModel(system);
+        studyModel.setLoaded(true);
+
         ViewNode rootNode = ViewTreeFactory.getViewTree(system);
         structureTree.setRoot(rootNode);
     }
@@ -47,11 +46,14 @@ public class Controller {
         // one. TODO: Fix the dummy study generation when the versioning part is done.
         try {
             File dataFile = StorageUtils.getDataFile();
+            SystemModel system;
             if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
                 system = FileStorage.load(dataFile);
             } else {
                 system = DummySystemBuilder.getSystemModel(4);
             }
+            studyModel.setSystemModel(system);
+            studyModel.setLoaded(true);
 
             ViewNode rootNode = ViewTreeFactory.getViewTree(system);
             structureTree.setRoot(rootNode);
@@ -63,7 +65,8 @@ public class Controller {
 
     public void saveModel(ActionEvent actionEvent) {
         try {
-            FileStorage.store(system, StorageUtils.getDataFile());
+            FileStorage.store(studyModel.getSystemModel(), StorageUtils.getDataFile());
+            studyModel.setDirty(false);
         } catch (IOException e) {
             // TODO: message for user on GUI
             System.err.println("Error saving file!");
@@ -73,12 +76,51 @@ public class Controller {
     public void checkoutModel(ActionEvent actionEvent) {
         RepositoryStorage repositoryStorage = null;
         try {
-            repositoryStorage = new RepositoryStorage(REPOSITORY_URL, StorageUtils.getDataFileName());
+            String repositoryUrl = ApplicationSettings.getLastUsedRepository();
+            if (repositoryUrl == null || repositoryUrl.isEmpty()) {
+                // TODO: message for user on GUI
+                boolean success = selectRepository();
+                if (success) {
+                    repositoryUrl = studyModel.getRepositoryPath();
+                } else {
+                    // TODO: message for user on GUI
+                    return;
+                }
+            }
+            final String dataFileName = StorageUtils.getDataFileName();
+            repositoryStorage = new RepositoryStorage(repositoryUrl, dataFileName);
             repositoryStorage.checkoutFile();
+            System.out.println("Successfully checked out.");
+            studyModel.setCheckedOut(true);
+            ApplicationSettings.setLastUsedRepository(repositoryStorage.getUrl());
         } catch (SVNException e) {
             // TODO: message for user on GUI
             System.err.println("Error connecting to the repository: " + e.getMessage());
         }
+    }
+
+    private boolean selectRepository() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Select Repository path");
+
+        boolean validRepositoryPath = false;
+        do {
+            File path = directoryChooser.showDialog(null);
+            if (path == null) { // user canceled directory selection
+                // TODO: messate for user on GUI
+                System.err.println("User declined choosing a repository");
+                return false;
+            }
+
+            String url = RepositoryStorage.makeUrlFromPath(path);
+            validRepositoryPath = RepositoryStorage.checkRepository(url);
+            if (validRepositoryPath) {
+                studyModel.setRepositoryPath(url);
+            } else {
+                System.err.println("Error selected invalid path.");
+            }
+        } while (!validRepositoryPath);
+        return true;
     }
 
     private void displayParameters(ModelNode modelNode) {
