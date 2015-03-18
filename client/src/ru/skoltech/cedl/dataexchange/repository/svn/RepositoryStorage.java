@@ -25,8 +25,8 @@ public class RepositoryStorage {
 
     private String url;
     private String filePath;
-    private final String name = "anonymous";
-    private final String password = "anonymous";
+    private static final String DEFAULT_NAME = "anonymous";
+    private static final String DEFAULT_PASSWORD = "anonymous";
 
     private SVNRepository repository;
 
@@ -41,8 +41,16 @@ public class RepositoryStorage {
         this.filePath = filePath;
 
         repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
-        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(name, password);
+        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(DEFAULT_NAME, DEFAULT_PASSWORD);
         repository.setAuthenticationManager(authManager);
+    }
+
+    public static String makeUrlFromPath(File path) {
+        return "file:///" + path.toString();
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     public boolean isRemoteRepositoryNewer() {
@@ -101,5 +109,22 @@ public class RepositoryStorage {
          * For using over file:///
          */
         FSRepositoryFactory.setup();
+    }
+
+    public static boolean checkRepository(String url) {
+        SVNRepository repository = null;
+        try {
+            repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
+            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(DEFAULT_NAME, DEFAULT_PASSWORD);
+            repository.setAuthenticationManager(authManager);
+
+            SVNNodeKind nodeKind = repository.checkPath(StorageUtils.getDataFileName(), -1);
+            if (nodeKind == SVNNodeKind.FILE) {
+                return true;
+            }
+        } catch (SVNException e) {
+            //ignore
+        }
+        return false;
     }
 }
