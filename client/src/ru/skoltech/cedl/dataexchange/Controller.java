@@ -1,11 +1,13 @@
 package ru.skoltech.cedl.dataexchange;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -24,8 +26,17 @@ import java.io.IOException;
 public class Controller {
 
     @FXML
+    public Button newButton;
+    @FXML
+    public Button openButton;
+    @FXML
+    public Button saveButton;
+    @FXML
+    public Button checkoutButton;
+    @FXML
+    public Button commitButton;
+    @FXML
     private TreeView<ModelNode> structureTree;
-
     @FXML
     private TableView<ParameterModel> parameterTable;
 
@@ -34,7 +45,6 @@ public class Controller {
     public void newModel(ActionEvent actionEvent) {
         SystemModel system = DummySystemBuilder.getSystemModel(3);
         studyModel.setSystemModel(system);
-        studyModel.setLoaded(true);
 
         ViewNode rootNode = ViewTreeFactory.getViewTree(system);
         structureTree.setRoot(rootNode);
@@ -53,7 +63,6 @@ public class Controller {
                 system = DummySystemBuilder.getSystemModel(4);
             }
             studyModel.setSystemModel(system);
-            studyModel.setLoaded(true);
 
             ViewNode rootNode = ViewTreeFactory.getViewTree(system);
             structureTree.setRoot(rootNode);
@@ -107,7 +116,7 @@ public class Controller {
         do {
             File path = directoryChooser.showDialog(null);
             if (path == null) { // user canceled directory selection
-                // TODO: messate for user on GUI
+                // TODO: message for user on GUI
                 System.err.println("User declined choosing a repository");
                 return false;
             }
@@ -137,6 +146,9 @@ public class Controller {
                         Controller.this.displayParameters(newValue.getValue());
                     }
                 });
+        newButton.disableProperty().bind(studyModel.checkedOutProperty());
+        saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty()));
+        commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty()));
     }
 
 }
