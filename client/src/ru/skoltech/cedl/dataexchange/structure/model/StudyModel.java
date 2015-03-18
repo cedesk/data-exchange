@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import java.io.File;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -11,11 +12,11 @@ public class StudyModel {
 
     private SystemModel systemModel;
 
-    private boolean loaded = false;
+    private BooleanProperty loaded = new SimpleBooleanProperty(false);
 
-    private boolean dirty = false;
+    private BooleanProperty dirty = new SimpleBooleanProperty(false);
 
-    private boolean checkedOut = false;
+    private BooleanProperty checkedOut = new SimpleBooleanProperty(false);
 
     public String getRepositoryPath() {
         return repositoryPath;
@@ -31,29 +32,55 @@ public class StudyModel {
 
     public void setSystemModel(SystemModel systemModel) {
         this.systemModel = systemModel;
+        setDirty(true);
+        setLoaded(true);
     }
 
-    public boolean isLoaded() {
+    public boolean getLoaded() {
+        return loaded.get();
+    }
+
+    public BooleanProperty loadedProperty() {
         return loaded;
     }
 
-    public void setLoaded(boolean loaded) {
-        this.loaded = loaded;
+    public boolean getDirty() {
+        return dirty.get();
     }
 
-    public boolean isDirty() {
+    public BooleanProperty dirtyProperty() {
         return dirty;
     }
 
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
+    public boolean getCheckedOut() {
+        return checkedOut.get();
     }
 
-    public boolean isCheckedOut() {
+    public BooleanProperty checkedOutProperty() {
         return checkedOut;
     }
 
+    public boolean isLoaded() {
+        return loaded.get();
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded.setValue(loaded);
+    }
+
+    public boolean isDirty() {
+        return dirty.get();
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty.setValue(dirty);
+    }
+
+    public boolean isCheckedOut() {
+        return checkedOut.get();
+    }
+
     public void setCheckedOut(boolean checkedOut) {
-        this.checkedOut = checkedOut;
+        this.checkedOut.setValue(checkedOut);
     }
 }
