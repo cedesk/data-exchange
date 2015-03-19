@@ -5,11 +5,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
+import javafx.scene.control.TableColumn.CellEditEvent;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.util.converter.DoubleStringConverter;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
@@ -84,8 +85,27 @@ public class Controller {
                 .addListener(new ChangeListener<TreeItem<ModelNode>>() {
                     @Override
                     public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable, TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
-                        Controller.this.displayParameters(newValue.getValue());
+                        if (newValue != null) {
+                            Controller.this.displayParameters(newValue.getValue());
+                        }
                     }
                 });
+
+        parameterTable.setEditable(true);
+
+        TableColumn<ParameterModel, Double> valueColumn =
+                (TableColumn<ParameterModel, Double>) parameterTable.getColumns().get(1);
+        valueColumn.setCellFactory(
+                TextFieldTableCell.<ParameterModel, Double>forTableColumn(
+                        new DoubleStringConverter()
+                )
+        );
+        valueColumn.setOnEditCommit(new EventHandler<CellEditEvent<ParameterModel, Double>>() {
+            @Override
+            public void handle(CellEditEvent<ParameterModel, Double> event) {
+                event.getTableView().getItems().get(
+                        event.getTablePosition().getRow()).setValue(event.getNewValue());
+            }
+        });
     }
 }
