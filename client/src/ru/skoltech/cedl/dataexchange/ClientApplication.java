@@ -5,6 +5,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import ru.skoltech.cedl.dataexchange.controller.MainController;
+import ru.skoltech.cedl.dataexchange.view.Views;
 
 public class ClientApplication extends Application {
 
@@ -15,7 +17,7 @@ public class ClientApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(MainController.class.getResource("application-frame.fxml"));
+        loader.setLocation(Views.applicationView);
         Parent root = loader.load();
         MainController mainController = loader.getController();
 
