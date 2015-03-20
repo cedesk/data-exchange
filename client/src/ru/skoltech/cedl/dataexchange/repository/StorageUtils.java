@@ -12,10 +12,11 @@ public class StorageUtils {
 
     private static final String MODEL_FILE = "cedesk-system-model.xml";
 
+    private static final String REVISION_FILE = "revision.txt";
+
     private static final String DATA_DIR = "CEDESK";
 
     private static final String CO_DIR = ".co";
-
     private static final String USER_HOME = System.getProperty("user.home");
 
     private static File getDataDir() {
@@ -37,6 +38,18 @@ public class StorageUtils {
         File checkedoutDir = new File(getDataDir(), CO_DIR);
         makeDirectory(checkedoutDir);
         File dataFile = new File(checkedoutDir, MODEL_FILE);
+        if (!dataFile.exists()) {
+            System.err.println("Warning: Data file does not exist!");
+        } else if (!dataFile.canRead() || !dataFile.canWrite()) {
+            System.err.println("Warning: Data file is not usable!");
+        }
+        return dataFile;
+    }
+
+    public static File getCheckedoutRivisionFile() {
+        File checkedoutDir = new File(getDataDir(), CO_DIR);
+        makeDirectory(checkedoutDir);
+        File dataFile = new File(checkedoutDir, REVISION_FILE);
         if (!dataFile.exists()) {
             System.err.println("Warning: Data file does not exist!");
         } else if (!dataFile.canRead() || !dataFile.canWrite()) {

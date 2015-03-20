@@ -12,10 +12,8 @@ import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.Scanner;
 
 /**
  * Created by D.Knoll on 17.03.2015.
@@ -24,10 +22,11 @@ public class RepositoryStorage {
 
     private static final String DEFAULT_NAME = "anonymous";
     private static final String DEFAULT_PASSWORD = "anonymous";
+    private static final long INVALID_REVISION = -1L;
 
     private String url;
     private String filePath;
-    private long checkedoutRevision;
+    private long checkedoutRevision = -1L;
     private SVNRepository repository;
 
     static {
@@ -82,16 +81,58 @@ public class RepositoryStorage {
         return url;
     }
 
+    public long getCheckedoutRevision() {
+        if(checkedoutRevision == INVALID_REVISION) {
+            long revisionfromFile = readCheckedoutRevision();
+            if(revisionfromFile != INVALID_REVISION) {
+                checkedoutRevision = revisionfromFile;
+            }
+        }
+        return checkedoutRevision;
+    }
+
+    private void setCheckedoutRevision(long checkedoutRevision) {
+        this.checkedoutRevision = checkedoutRevision;
+        writeCheckedoutRevision(checkedoutRevision);
+    }
+
+    private long readCheckedoutRevision() {
+        long revision = INVALID_REVISION;
+        try(FileReader fr = new FileReader(StorageUtils.getCheckedoutRivisionFile())) {
+            Scanner scanner = new Scanner(fr);
+            scanner.useDelimiter(":");
+            revision = scanner.nextLong();
+            String md5 = scanner.next();
+        } catch (IOException e) {
+            System.err.println("Error reading the revision file.");
+        }
+        return revision;
+    }
+
+    private void writeCheckedoutRevision(long revision) {
+        try(FileWriter fw = new FileWriter(StorageUtils.getCheckedoutRivisionFile())) {
+            PrintWriter pw = new PrintWriter(fw);
+            String md5 = "md5";
+            pw.printf("%d:%s", revision, md5);
+        } catch (IOException e) {
+            System.err.println("Error writing the revision file.");
+        }
+    }
+
     public boolean isRemoteRepositoryNewer() {
         try {
-            return checkedoutRevision < repository.getLatestRevision();
+            return getCheckedoutRevision() < repository.getLatestRevision();
         } catch (SVNException e) {
             System.err.println("Error checking repository revision.");
         }
         return false;
     }
 
-    public void checkoutFile() {
+    public boolean checkoutFile() {
+        if(!isRemoteRepositoryNewer()) {
+            return false;
+        }
+
         File checkoutFile = StorageUtils.getCheckedoutDataFile();
         OutputStream baos = null;
         try {
@@ -100,26 +141,28 @@ public class RepositoryStorage {
             System.err
                     .println("error writing working copy: '"
                             + checkoutFile.toString() + "'\n\t" + ioe.getMessage());
-            return;
+            return false;
         }
 
         try {
             SVNNodeKind nodeKind = repository.checkPath(filePath, -1);
             if (nodeKind == SVNNodeKind.NONE) {
                 System.err.println("Error finding file in repository. '" + repository.getFullPath("") + "', '" + filePath + "'");
-                return;
+                return false;
             }
 
             SVNProperties fileProperties = new SVNProperties();
             repository.getFile(filePath, -1, fileProperties, baos);
 
-            checkedoutRevision = repository.getLatestRevision();
+            setCheckedoutRevision(repository.getLatestRevision());
 
         } catch (SVNException svne) {
             System.err
                     .println("error accessing SVN repository '"
                             + url + "', '" + filePath + "': " + svne.getMessage());
+            return false;
         }
+        return true;
     }
 
 

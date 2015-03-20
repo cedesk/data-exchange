@@ -99,11 +99,15 @@ public class MainController {
             }
             final String dataFileName = StorageUtils.getDataFileName();
             repositoryStorage = new RepositoryStorage(repositoryUrl, dataFileName);
-            repositoryStorage.checkoutFile();
-            statusbarProperty.setValue("Successfully checked out.");
-            System.out.println("Successfully checked out.");
-            studyModel.setCheckedOut(true);
-            ApplicationSettings.setLastUsedRepository(repositoryStorage.getUrl());
+            if(repositoryStorage.checkoutFile()) {
+                statusbarProperty.setValue("Successfully checked out.");
+                System.out.println("Successfully checked out.");
+                studyModel.setCheckedOut(true);
+                ApplicationSettings.setLastUsedRepository(repositoryStorage.getUrl());
+            } else {
+                statusbarProperty.setValue("Nothing to check out.");
+                System.out.println("Nothing to check out.");
+            }
         } catch (SVNException e) {
             statusbarProperty.setValue("Error connecting to the repository: " + e.getMessage());
             System.err.println("Error connecting to the repository: " + e.getMessage());
