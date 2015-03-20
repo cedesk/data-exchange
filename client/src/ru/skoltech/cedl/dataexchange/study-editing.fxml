@@ -1,98 +1,174 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.*?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0"
             prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.Controller">
     <children>
-        <SplitPane dividerPositions="0.25" layoutX="69.0" layoutY="85.0" prefHeight="515.0" prefWidth="800.0"
-                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                   AnchorPane.topAnchor="85.0">
-            <items>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="598.0">
+        <BorderPane prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <center>
+                <SplitPane dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0" BorderPane.alignment="CENTER">
+                    <items>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="598.0">
+                            <children>
+                                <TreeView fx:id="structureTree" layoutY="75.0" prefHeight="598.0" prefWidth="197.0"
+                                          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                            </children>
+                        </AnchorPane>
+                        <AnchorPane>
+                            <children>
+                                <SplitPane dividerPositions="0.75" layoutX="110.0" layoutY="174.0"
+                                           orientation="VERTICAL" prefHeight="598.0" prefWidth="557.0"
+                                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                           AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <items>
+                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                            <children>
+                                                <TableView fx:id="parameterTable" layoutX="97.0" layoutY="58.0"
+                                                           prefHeight="444.0" prefWidth="593.0"
+                                                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                                           AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <columns>
+                                                        <TableColumn text="Name">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="name"/>
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                        <TableColumn text="Value">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="value"/>
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                        <TableColumn text="Type">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="type"/>
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                        <TableColumn text="Description">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="description"/>
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                    </columns>
+                                                </TableView>
+                                            </children>
+                                        </AnchorPane>
+                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0"
+                                                    prefWidth="160.0"/>
+                                    </items>
+                                </SplitPane>
+                            </children>
+                        </AnchorPane>
+                    </items>
+                </SplitPane>
+            </center>
+            <top>
+                <HBox prefHeight="48.0" prefWidth="800.0" BorderPane.alignment="CENTER">
                     <children>
-                        <TreeView fx:id="structureTree" layoutY="75.0" prefHeight="598.0" prefWidth="197.0"
-                                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                                  AnchorPane.topAnchor="0.0"/>
-                    </children>
-                </AnchorPane>
-                <AnchorPane>
-                    <children>
-                        <SplitPane dividerPositions="0.75" layoutX="110.0" layoutY="174.0" orientation="VERTICAL"
-                                   prefHeight="598.0" prefWidth="557.0" AnchorPane.bottomAnchor="0.0"
-                                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                            <items>
-                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                        <ImageView fitHeight="85.0" fitWidth="129.0">
+                            <image>
+                                <Image url="@../../../../Logo0.png"/>
+                            </image>
+                        </ImageView>
+                        <VBox>
+                            <children>
+                                <HBox>
                                     <children>
-                                        <TableView fx:id="parameterTable" layoutX="97.0" layoutY="58.0"
-                                                   prefHeight="444.0" prefWidth="593.0" AnchorPane.bottomAnchor="0.0"
-                                                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                                                   AnchorPane.topAnchor="0.0">
-                                            <columns>
-                                                <TableColumn text="Name">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="name"/>
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                                <TableColumn text="Value">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="value"/>
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                                <TableColumn text="Type">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="type"/>
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                                <TableColumn text="Description">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="description"/>
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                            </columns>
-                                        </TableView>
+                                        <Label text="Design Study:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                            <HBox.margin>
+                                                <Insets right="4.0"/>
+                                            </HBox.margin>
+                                        </Label>
+                                        <Label fx:id="StudyNameLabel" layoutX="10.0" layoutY="10.0" text="SkoltechSat">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                            <HBox.margin>
+                                                <Insets/>
+                                            </HBox.margin>
+                                        </Label>
+                                        <Label text="User:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                            <HBox.margin>
+                                                <Insets left="20.0" right="4.0"/>
+                                            </HBox.margin>
+                                        </Label>
+                                        <Label fx:id="userNameLabel" text="Dominik">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                            <HBox.margin>
+                                                <Insets/>
+                                            </HBox.margin>
+                                        </Label>
+                                        <Label layoutX="97.0" layoutY="10.0" text="Role:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                            <HBox.margin>
+                                                <Insets left="20.0" right="4.0"/>
+                                            </HBox.margin>
+                                        </Label>
+                                        <Label fx:id="userRoleLabel" layoutX="211.0" layoutY="10.0" text="Team Leader">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                            <HBox.margin>
+                                                <Insets/>
+                                            </HBox.margin>
+                                        </Label>
                                     </children>
-                                </AnchorPane>
-                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0"/>
-                            </items>
-                        </SplitPane>
+                                    <VBox.margin>
+                                        <Insets top="10.0"/>
+                                    </VBox.margin>
+                                </HBox>
+                                <ToolBar>
+                                    <items>
+                                        <Button fx:id="newButton" mnemonicParsing="false" onAction="#newModel"
+                                                text="New"/>
+                                        <Button fx:id="openButton" mnemonicParsing="false" onAction="#loadModel"
+                                                text="Open"/>
+                                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="false"
+                                                onAction="#saveModel" text="Save"/>
+                                        <Button fx:id="checkoutButton" layoutX="105.0" layoutY="13.0"
+                                                mnemonicParsing="false" onAction="#checkoutModel" text="Checkout"/>
+                                        <Button fx:id="commitButton" layoutX="60.0" layoutY="13.0"
+                                                mnemonicParsing="false" text="Commit"/>
+                                    </items>
+                                    <VBox.margin>
+                                        <Insets top="10.0"/>
+                                    </VBox.margin>
+                                </ToolBar>
+                            </children>
+                            <padding>
+                                <Insets left="10.0"/>
+                            </padding>
+                        </VBox>
+                    </children>
+                </HBox>
+            </top>
+            <bottom>
+                <AnchorPane prefHeight="20.0" BorderPane.alignment="CENTER">
+                    <children>
+                        <Label fx:id="statusbarLabel" prefHeight="20.0" prefWidth="800.0" text="Statusbar"
+                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                               AnchorPane.topAnchor="0.0"/>
                     </children>
                 </AnchorPane>
-            </items>
-        </SplitPane>
-        <Label layoutX="132.0" layoutY="20.0" text="Design Study: SkoltechSat">
-            <font>
-                <Font size="14.0"/>
-            </font>
-        </Label>
-        <Label layoutX="350.0" layoutY="20.0" text="User: Dominik">
-            <font>
-                <Font size="14.0"/>
-            </font>
-        </Label>
-        <Label layoutX="496.0" layoutY="20.0" text="Role: Team Leader">
-            <font>
-                <Font size="14.0"/>
-            </font>
-        </Label>
-        <ToolBar layoutX="128.0" layoutY="48.0" prefHeight="37.0" prefWidth="317.0">
-            <items>
-                <Button fx:id="newButton" mnemonicParsing="false" text="New" onAction="#newModel"/>
-                <Button fx:id="openButton" mnemonicParsing="false" text="Open" onAction="#loadModel"/>
-                <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" text="Save" onAction="#saveModel"/>
-                <Button fx:id="checkoutButton" layoutX="105.0" layoutY="13.0" mnemonicParsing="false" text="Checkout" onAction="#checkoutModel"/>
-                <Button fx:id="commitButton" layoutX="60.0" layoutY="13.0" mnemonicParsing="false" text="Commit"/>
-            </items>
-        </ToolBar>
-        <ImageView fitHeight="85.0" fitWidth="129.0">
-            <image>
-                <Image url="@../../../../Logo0.png"/>
-            </image>
-        </ImageView>
+            </bottom>
+        </BorderPane>
     </children>
 </AnchorPane>

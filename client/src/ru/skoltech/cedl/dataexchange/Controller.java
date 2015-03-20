@@ -1,6 +1,8 @@
 package ru.skoltech.cedl.dataexchange;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -8,16 +10,14 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-import javafx.stage.DirectoryChooser;
-import org.tmatesoft.svn.core.SVNException;
 import javafx.scene.control.*;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.DirectoryChooser;
+import javafx.util.StringConverter;
 import javafx.util.converter.DoubleStringConverter;
+import javafx.util.converter.FormatStringConverter;
+import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
@@ -41,14 +41,18 @@ public class Controller {
     @FXML
     public Button commitButton;
     @FXML
+    public Label statusbarLabel;
+    @FXML
     private TreeView<ModelNode> structureTree;
     @FXML
     private TableView<ParameterModel> parameterTable;
 
+    private StringProperty statusbarProperty = new SimpleStringProperty();
+
     private final StudyModel studyModel = new StudyModel();
 
     public void newModel(ActionEvent actionEvent) {
-        SystemModel system = DummySystemBuilder.getSystemModel(3);
+        SystemModel system = DummySystemBuilder.getSystemModel(4);
         studyModel.setSystemModel(system);
 
         ViewNode rootNode = ViewTreeFactory.getViewTree(system);
@@ -56,23 +60,21 @@ public class Controller {
     }
 
     public void loadModel(ActionEvent actionEvent) {
-        // This if is just a dummy replacement of the final functionality. By the end of
-        // the day if there is not local repository, we will need to check out the server
-        // one. TODO: Fix the dummy study generation when the versioning part is done.
         try {
             File dataFile = StorageUtils.getDataFile();
             SystemModel system;
             if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
                 system = FileStorage.load(dataFile);
-            } else {
-                system = DummySystemBuilder.getSystemModel(4);
-            }
-            studyModel.setSystemModel(system);
+                studyModel.setSystemModel(system);
 
-            ViewNode rootNode = ViewTreeFactory.getViewTree(system);
-            structureTree.setRoot(rootNode);
+                ViewNode rootNode = ViewTreeFactory.getViewTree(system);
+                structureTree.setRoot(rootNode);
+            } else {
+                statusbarProperty.setValue("No model available!");
+                System.err.println("No model available!");
+            }
         } catch (IOException ex) {
-            // TODO: message for user on GUI
+            statusbarProperty.setValue("Error loading file!");
             System.err.println("Error loading file!");
         }
     }
@@ -82,7 +84,7 @@ public class Controller {
             FileStorage.store(studyModel.getSystemModel(), StorageUtils.getDataFile());
             studyModel.setDirty(false);
         } catch (IOException e) {
-            // TODO: message for user on GUI
+            statusbarProperty.setValue("Error saving file !");
             System.err.println("Error saving file!");
         }
     }
@@ -92,23 +94,26 @@ public class Controller {
         try {
             String repositoryUrl = ApplicationSettings.getLastUsedRepository();
             if (repositoryUrl == null || repositoryUrl.isEmpty()) {
-                // TODO: message for user on GUI
+                statusbarProperty.setValue("No repository selected.");
+                System.out.println("No repository selected.");
                 boolean success = selectRepository();
                 if (success) {
                     repositoryUrl = studyModel.getRepositoryPath();
                 } else {
-                    // TODO: message for user on GUI
+                    statusbarProperty.setValue("Successfully selected repository.");
+                    System.out.println("Successfully selected repository.");
                     return;
                 }
             }
             final String dataFileName = StorageUtils.getDataFileName();
             repositoryStorage = new RepositoryStorage(repositoryUrl, dataFileName);
             repositoryStorage.checkoutFile();
+            statusbarProperty.setValue("Successfully checked out.");
             System.out.println("Successfully checked out.");
             studyModel.setCheckedOut(true);
             ApplicationSettings.setLastUsedRepository(repositoryStorage.getUrl());
         } catch (SVNException e) {
-            // TODO: message for user on GUI
+            statusbarProperty.setValue("Error connecting to the repository: " + e.getMessage());
             System.err.println("Error connecting to the repository: " + e.getMessage());
         }
     }
@@ -121,7 +126,7 @@ public class Controller {
         do {
             File path = directoryChooser.showDialog(null);
             if (path == null) { // user canceled directory selection
-                // TODO: message for user on GUI
+                statusbarProperty.setValue("User declined choosing a repository");
                 System.err.println("User declined choosing a repository");
                 return false;
             }
@@ -131,6 +136,7 @@ public class Controller {
             if (validRepositoryPath) {
                 studyModel.setRepositoryPath(url);
             } else {
+                statusbarProperty.setValue("Error selected invalid path.");
                 System.err.println("Error selected invalid path.");
             }
         } while (!validRepositoryPath);
@@ -156,10 +162,12 @@ public class Controller {
         newButton.disableProperty().bind(studyModel.checkedOutProperty());
         saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty()));
         commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty()));
+        statusbarLabel.textProperty().bind(statusbarProperty);
 
-        parameterTable.setEditable(true);
+        parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
 
         TableColumn<ParameterModel, Double> valueColumn =
+                // FIX: index may not correspond to FXML
                 (TableColumn<ParameterModel, Double>) parameterTable.getColumns().get(1);
         valueColumn.setCellFactory(
                 TextFieldTableCell.<ParameterModel, Double>forTableColumn(
@@ -169,10 +177,25 @@ public class Controller {
         valueColumn.setOnEditCommit(new EventHandler<CellEditEvent<ParameterModel, Double>>() {
             @Override
             public void handle(CellEditEvent<ParameterModel, Double> event) {
-                event.getTableView().getItems().get(
-                        event.getTablePosition().getRow()).setValue(event.getNewValue());
+                ParameterModel parameterModel = event.getTableView().getItems().get(
+                        event.getTablePosition().getRow());
+                parameterModel.setValue(event.getNewValue());
             }
         });
+
+        TableColumn<ParameterModel, String> descriptionColumn =
+                // FIX: index may not correspond to FXML
+                (TableColumn<ParameterModel, String>) parameterTable.getColumns().get(3);
+        descriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        descriptionColumn.setOnEditCommit(new EventHandler<CellEditEvent<ParameterModel, String>>() {
+            @Override
+            public void handle(CellEditEvent<ParameterModel, String> event) {
+                ParameterModel parameterModel = event.getTableView().getItems().get(
+                        event.getTablePosition().getRow());
+                parameterModel.setDescription(event.getNewValue());
+            }
+        });
+
     }
 
 }
