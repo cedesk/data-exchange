@@ -8,7 +8,7 @@
 <?import javafx.scene.text.*?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0"
             prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="ru.skoltech.cedl.dataexchange.MainController">
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
         <BorderPane fx:id="layout" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                     AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -19,7 +19,7 @@
                     <children>
                         <ImageView fitHeight="85.0" fitWidth="129.0">
                             <image>
-                                <Image url="@../../../../Logo0.png"/>
+                                <Image url="@../../../../../Logo0.png"/>
                             </image>
                         </ImageView>
                         <VBox>

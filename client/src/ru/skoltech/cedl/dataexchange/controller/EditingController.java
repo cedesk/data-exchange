@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

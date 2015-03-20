@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
@@ -12,12 +12,14 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
 import org.tmatesoft.svn.core.SVNException;
+import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.StudyModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
 import java.io.IOException;
@@ -146,7 +148,7 @@ public class MainController {
         // EDITING PANE
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(MainController.class.getResource("study-editing.fxml"));
+            loader.setLocation(Views.editingPane);
             Parent editingPane = loader.load();
             layout.setCenter(editingPane);
             editingController = loader.getController();
