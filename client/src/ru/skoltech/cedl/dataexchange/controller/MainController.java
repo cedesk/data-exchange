@@ -7,8 +7,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
 import org.tmatesoft.svn.core.SVNException;
@@ -23,6 +22,7 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 public class MainController {
 
@@ -85,8 +85,12 @@ public class MainController {
         RepositoryStorage repositoryStorage = null;
         try {
             String repositoryUrl = ApplicationSettings.getLastUsedRepository();
-            if (repositoryUrl == null || repositoryUrl.isEmpty()) {
-                statusbarProperty.setValue("No repository selected.");
+            if (!RepositoryStorage.checkRepository(repositoryUrl)) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Invalid Repository");
+                alert.setHeaderText(null);
+                alert.setContentText("There is no repository set yet. You will need to specify one!");
+                alert.showAndWait();
                 System.out.println("No repository selected.");
                 boolean success = selectRepository();
                 if (success) {
@@ -99,7 +103,7 @@ public class MainController {
             }
             final String dataFileName = StorageUtils.getDataFileName();
             repositoryStorage = new RepositoryStorage(repositoryUrl, dataFileName);
-            if(repositoryStorage.checkoutFile()) {
+            if (repositoryStorage.checkoutFile()) {
                 statusbarProperty.setValue("Successfully checked out.");
                 System.out.println("Successfully checked out.");
                 studyModel.setCheckedOut(true);
@@ -115,28 +119,72 @@ public class MainController {
     }
 
     private boolean selectRepository() {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Select Repository path");
 
-        boolean validRepositoryPath = false;
-        do {
-            File path = directoryChooser.showDialog(null);
-            if (path == null) { // user canceled directory selection
-                statusbarProperty.setValue("User declined choosing a repository");
-                System.err.println("User declined choosing a repository");
-                return false;
-            }
+        Alert repositoryTypeDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        repositoryTypeDialog.setTitle("Repository type selection");
+        repositoryTypeDialog.setHeaderText("Please choose which type of repository you want to use.");
+        repositoryTypeDialog.setContentText(null);
 
-            String url = RepositoryStorage.makeUrlFromPath(path);
-            validRepositoryPath = RepositoryStorage.checkRepository(url);
-            if (validRepositoryPath) {
-                studyModel.setRepositoryPath(url);
-            } else {
-                statusbarProperty.setValue("Error selected invalid path.");
-                System.err.println("Error selected invalid path.");
-            }
-        } while (!validRepositoryPath);
-        return true;
+        ButtonType remoteRepo = new ButtonType("Remote");
+        ButtonType localRepo = new ButtonType("Local");
+        ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        repositoryTypeDialog.getButtonTypes().setAll(remoteRepo, localRepo, cancel);
+
+        Optional<ButtonType> selection = repositoryTypeDialog.showAndWait();
+        if (selection.get() == remoteRepo) { // REMOTE
+            TextInputDialog dialog = new TextInputDialog("URL");
+            dialog.setTitle("Repository URL");
+            dialog.setHeaderText("Please insert the URL for the repository. It shall start with 'http' or 'https'.");
+            dialog.setContentText("URL:");
+
+            boolean validRepositoryPath = false;
+            do {
+                Optional<String> result = dialog.showAndWait();
+                if (!result.isPresent()) {
+                    return false;
+                }
+                String url = result.get();
+                validRepositoryPath = RepositoryStorage.checkRepository(url);
+                if (validRepositoryPath) {
+                    studyModel.setRepositoryPath(url);
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Invalid Repository");
+                    alert.setContentText("The selected path does not contain a valid repository!");
+                    alert.showAndWait();
+                    System.err.println("Error selected invalid path.");
+                }
+            } while (!validRepositoryPath);
+            return true;
+        } else if (selection.get() == localRepo) { // LOCAL
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("Select Repository path");
+
+            boolean validRepositoryPath = false;
+            do {
+                File path = directoryChooser.showDialog(null);
+                if (path == null) { // user canceled directory selection
+                    statusbarProperty.setValue("User declined choosing a repository");
+                    System.err.println("User declined choosing a repository");
+                    return false;
+                }
+
+                String url = RepositoryStorage.makeUrlFromPath(path);
+                validRepositoryPath = RepositoryStorage.checkRepository(url);
+                if (validRepositoryPath) {
+                    studyModel.setRepositoryPath(url);
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Invalid Repository");
+                    alert.setContentText("The selected path does not contain a valid repository!");
+                    alert.showAndWait();
+                    System.err.println("Error selected invalid path.");
+                }
+            } while (!validRepositoryPath);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
