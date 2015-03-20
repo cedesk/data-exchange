@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
@@ -18,10 +19,13 @@ import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 /**
  * Created by D.Knoll on 20.03.2015.
  */
-public class EditingController {
+public class EditingController implements Initializable {
 
     public TableColumn parameterNameColumn;
     public TableColumn parameterValueColumn;
@@ -33,14 +37,12 @@ public class EditingController {
     @FXML
     private TableView<ParameterModel> parameterTable;
 
-
-    public void setup() {
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
         // STRUCTURE TREE VIEW
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
 
         // NODE PARAMETER TABLE
-        parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
-
         parameterValueColumn.setCellFactory(
                 TextFieldTableCell.<ParameterModel, Double>forTableColumn(
                         new DoubleStringConverter()
@@ -71,6 +73,7 @@ public class EditingController {
         ObservableList<ParameterModel> data =
                 FXCollections.observableArrayList(modelNode.getParameters());
         parameterTable.setItems(data);
+        parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
     }
 
     public void updateView(SystemModel system) {
