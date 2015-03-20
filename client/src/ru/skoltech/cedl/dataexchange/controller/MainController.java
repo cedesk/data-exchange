@@ -6,6 +6,7 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -22,9 +23,11 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
-public class MainController {
+public class MainController implements Initializable {
 
     @FXML
     public Button newButton;
@@ -127,8 +130,7 @@ public class MainController {
 
         ButtonType remoteRepo = new ButtonType("Remote");
         ButtonType localRepo = new ButtonType("Local");
-        ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        repositoryTypeDialog.getButtonTypes().setAll(remoteRepo, localRepo, cancel);
+        repositoryTypeDialog.getButtonTypes().setAll(remoteRepo, localRepo, ButtonType.CANCEL);
 
         Optional<ButtonType> selection = repositoryTypeDialog.showAndWait();
         if (selection.get() == remoteRepo) { // REMOTE
@@ -187,8 +189,8 @@ public class MainController {
         }
     }
 
-
-    public void setup() {
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
         // TOOLBAR BUTTONS
         newButton.disableProperty().bind(studyModel.checkedOutProperty());
         saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty()));
@@ -204,10 +206,8 @@ public class MainController {
             Parent editingPane = loader.load();
             layout.setCenter(editingPane);
             editingController = loader.getController();
-            editingController.setup();
         } catch (IOException ioe) {
             System.err.println("SEVERE ERROR: not able to load editing view pane.");
         }
     }
-
 }

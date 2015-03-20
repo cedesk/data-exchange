@@ -16,16 +16,12 @@ public class ClientApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(Views.applicationView);
-        Parent root = loader.load();
-        MainController mainController = loader.getController();
+        Parent root = FXMLLoader.load(Views.applicationView);
 
         primaryStage.setTitle("Concurrent Engineering Data Exchange Skoltech");
         primaryStage.setScene(new Scene(root, 800, 600));
         primaryStage.show();
 
-        mainController.setup();
     }
 
 }
