@@ -7,7 +7,6 @@ import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
-import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
@@ -63,6 +62,17 @@ public class RepositoryStorage {
     }
 
     public void checkoutFile() {
+        File checkoutFile = StorageUtils.getCheckedoutDataFile();
+        OutputStream baos = null;
+        try {
+            baos = new FileOutputStream(checkoutFile);
+        } catch (FileNotFoundException ioe) {
+            System.err
+                    .println("error writing working copy: '"
+                            + checkoutFile.toString() + "'\n\t" + ioe.getMessage());
+            return;
+        }
+
         try {
             SVNNodeKind nodeKind = repository.checkPath(filePath, -1);
             if (nodeKind == SVNNodeKind.NONE) {
@@ -71,12 +81,7 @@ public class RepositoryStorage {
             }
 
             SVNProperties fileProperties = new SVNProperties();
-            File checkoutFile = StorageUtils.getDataFile();
-            StorageUtils.makeDirectory(checkoutFile.getParentFile());
-            OutputStream baos = new FileOutputStream(checkoutFile);
-
             repository.getFile(filePath, -1, fileProperties, baos);
-
 
             checkedoutRevision = repository.getLatestRevision();
 
@@ -84,10 +89,6 @@ public class RepositoryStorage {
             System.err
                     .println("error accessing SVN repository '"
                             + url + "', '" + filePath + "': " + svne.getMessage());
-        } catch (FileNotFoundException ioe) {
-            System.err
-                    .println("error writing working copy: '"
-                            + StorageUtils.getDataFile().toString() + "'\n\t" + ioe.getMessage());
         }
     }
 
@@ -100,11 +101,6 @@ public class RepositoryStorage {
          * For using over http:// and https://
          */
         DAVRepositoryFactory.setup();
-        /*
-         * For using over svn:// and svn+xxx://
-         */
-        SVNRepositoryFactoryImpl.setup();
-
         /*
          * For using over file:///
          */
