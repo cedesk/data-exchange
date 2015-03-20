@@ -22,18 +22,52 @@ import java.io.OutputStream;
  */
 public class RepositoryStorage {
 
-    private String url;
-    private String filePath;
     private static final String DEFAULT_NAME = "anonymous";
     private static final String DEFAULT_PASSWORD = "anonymous";
 
+    private String url;
+    private String filePath;
+    private long checkedoutRevision;
     private SVNRepository repository;
 
     static {
         setupLibrary();
     }
 
-    private long checkedoutRevision;
+    public static String makeUrlFromPath(File path) {
+        return "file:///" + path.toString();
+    }
+
+    public static boolean checkRepository(String url) {
+        SVNRepository repository = null;
+        try {
+            repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
+            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(DEFAULT_NAME, DEFAULT_PASSWORD);
+            repository.setAuthenticationManager(authManager);
+
+            SVNNodeKind nodeKind = repository.checkPath(StorageUtils.getDataFileName(), -1);
+            if (nodeKind == SVNNodeKind.FILE) {
+                return true;
+            }
+        } catch (SVNException e) {
+            //ignore
+        }
+        return false;
+    }
+
+    /*
+     * Initializes the library to work with a repository via different protocols.
+     */
+    private static void setupLibrary() {
+        /*
+         * For using over http:// and https://
+         */
+        DAVRepositoryFactory.setup();
+        /*
+         * For using over file:///
+         */
+        FSRepositoryFactory.setup();
+    }
 
     public RepositoryStorage(String url, String filePath) throws SVNException {
         this.url = url;
@@ -42,10 +76,6 @@ public class RepositoryStorage {
         repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
         ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(DEFAULT_NAME, DEFAULT_PASSWORD);
         repository.setAuthenticationManager(authManager);
-    }
-
-    public static String makeUrlFromPath(File path) {
-        return "file:///" + path.toString();
     }
 
     public String getUrl() {
@@ -92,35 +122,5 @@ public class RepositoryStorage {
         }
     }
 
-    /*
-     * Initializes the library to work with a repository via
-     * different protocols.
-     */
-    private static void setupLibrary() {
-        /*
-         * For using over http:// and https://
-         */
-        DAVRepositoryFactory.setup();
-        /*
-         * For using over file:///
-         */
-        FSRepositoryFactory.setup();
-    }
 
-    public static boolean checkRepository(String url) {
-        SVNRepository repository = null;
-        try {
-            repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
-            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(DEFAULT_NAME, DEFAULT_PASSWORD);
-            repository.setAuthenticationManager(authManager);
-
-            SVNNodeKind nodeKind = repository.checkPath(StorageUtils.getDataFileName(), -1);
-            if (nodeKind == SVNNodeKind.FILE) {
-                return true;
-            }
-        } catch (SVNException e) {
-            //ignore
-        }
-        return false;
-    }
 }
