@@ -3,32 +3,26 @@ package ru.skoltech.cedl.dataexchange;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.TableColumn.CellEditEvent;
-import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
-import javafx.util.StringConverter;
-import javafx.util.converter.DoubleStringConverter;
-import javafx.util.converter.FormatStringConverter;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
-import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.model.StudyModel;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.File;
 import java.io.IOException;
 
-public class Controller {
+public class MainController {
 
     @FXML
     public Button newButton;
@@ -43,20 +37,18 @@ public class Controller {
     @FXML
     public Label statusbarLabel;
     @FXML
-    private TreeView<ModelNode> structureTree;
-    @FXML
-    private TableView<ParameterModel> parameterTable;
+    public BorderPane layout;
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
     private final StudyModel studyModel = new StudyModel();
 
+    private EditingController editingController;
+
     public void newModel(ActionEvent actionEvent) {
         SystemModel system = DummySystemBuilder.getSystemModel(4);
         studyModel.setSystemModel(system);
-
-        ViewNode rootNode = ViewTreeFactory.getViewTree(system);
-        structureTree.setRoot(rootNode);
+        editingController.updateView(system);
     }
 
     public void loadModel(ActionEvent actionEvent) {
@@ -66,9 +58,7 @@ public class Controller {
             if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
                 system = FileStorage.load(dataFile);
                 studyModel.setSystemModel(system);
-
-                ViewNode rootNode = ViewTreeFactory.getViewTree(system);
-                structureTree.setRoot(rootNode);
+                editingController.updateView(system);
             } else {
                 statusbarProperty.setValue("No model available!");
                 System.err.println("No model available!");
@@ -143,59 +133,27 @@ public class Controller {
         return true;
     }
 
-    private void displayParameters(ModelNode modelNode) {
-        ObservableList<ParameterModel> data =
-                FXCollections.observableArrayList(modelNode.getParameters());
-        parameterTable.setItems(data);
-    }
 
-    public void setStageAndSetupListeners() {
-        structureTree.getSelectionModel().selectedItemProperty()
-                .addListener(new ChangeListener<TreeItem<ModelNode>>() {
-                    @Override
-                    public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable, TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
-                        if (newValue != null) {
-                            Controller.this.displayParameters(newValue.getValue());
-                        }
-                    }
-                });
+    public void setup() {
+        // TOOLBAR BUTTONS
         newButton.disableProperty().bind(studyModel.checkedOutProperty());
         saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty()));
         commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty()));
+
+        // STATUSBAR
         statusbarLabel.textProperty().bind(statusbarProperty);
 
-        parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
-
-        TableColumn<ParameterModel, Double> valueColumn =
-                // FIX: index may not correspond to FXML
-                (TableColumn<ParameterModel, Double>) parameterTable.getColumns().get(1);
-        valueColumn.setCellFactory(
-                TextFieldTableCell.<ParameterModel, Double>forTableColumn(
-                        new DoubleStringConverter()
-                )
-        );
-        valueColumn.setOnEditCommit(new EventHandler<CellEditEvent<ParameterModel, Double>>() {
-            @Override
-            public void handle(CellEditEvent<ParameterModel, Double> event) {
-                ParameterModel parameterModel = event.getTableView().getItems().get(
-                        event.getTablePosition().getRow());
-                parameterModel.setValue(event.getNewValue());
-            }
-        });
-
-        TableColumn<ParameterModel, String> descriptionColumn =
-                // FIX: index may not correspond to FXML
-                (TableColumn<ParameterModel, String>) parameterTable.getColumns().get(3);
-        descriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        descriptionColumn.setOnEditCommit(new EventHandler<CellEditEvent<ParameterModel, String>>() {
-            @Override
-            public void handle(CellEditEvent<ParameterModel, String> event) {
-                ParameterModel parameterModel = event.getTableView().getItems().get(
-                        event.getTablePosition().getRow());
-                parameterModel.setDescription(event.getNewValue());
-            }
-        });
-
+        // EDITING PANE
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(MainController.class.getResource("study-editing.fxml"));
+            Parent editingPane = loader.load();
+            layout.setCenter(editingPane);
+            editingController = loader.getController();
+            editingController.setup();
+        } catch (IOException ioe) {
+            System.err.println("SEVERE ERROR: not able to load editing view pane.");
+        }
     }
 
 }
