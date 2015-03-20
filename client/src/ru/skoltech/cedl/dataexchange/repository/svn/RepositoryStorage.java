@@ -1,9 +1,6 @@
 package ru.skoltech.cedl.dataexchange.repository.svn;
 
-import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.SVNNodeKind;
-import org.tmatesoft.svn.core.SVNProperties;
-import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.*;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
@@ -38,6 +35,9 @@ public class RepositoryStorage {
     }
 
     public static boolean checkRepository(String url) {
+        if (url == null || url.isEmpty()) {
+            return false;
+        }
         SVNRepository repository = null;
         try {
             repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
@@ -48,8 +48,10 @@ public class RepositoryStorage {
             if (nodeKind == SVNNodeKind.FILE) {
                 return true;
             }
+        } catch (SVNAuthenticationException ae) {
+            System.err.println("SVN Authentication Error.");
         } catch (SVNException e) {
-            //ignore
+            System.err.println("SVNException: " + e.getMessage());
         }
         return false;
     }
@@ -82,9 +84,9 @@ public class RepositoryStorage {
     }
 
     public long getCheckedoutRevision() {
-        if(checkedoutRevision == INVALID_REVISION) {
+        if (checkedoutRevision == INVALID_REVISION) {
             long revisionfromFile = readCheckedoutRevision();
-            if(revisionfromFile != INVALID_REVISION) {
+            if (revisionfromFile != INVALID_REVISION) {
                 checkedoutRevision = revisionfromFile;
             }
         }
@@ -98,7 +100,7 @@ public class RepositoryStorage {
 
     private long readCheckedoutRevision() {
         long revision = INVALID_REVISION;
-        try(FileReader fr = new FileReader(StorageUtils.getCheckedoutRivisionFile())) {
+        try (FileReader fr = new FileReader(StorageUtils.getCheckedoutRivisionFile())) {
             Scanner scanner = new Scanner(fr);
             scanner.useDelimiter(":");
             revision = scanner.nextLong();
@@ -110,7 +112,7 @@ public class RepositoryStorage {
     }
 
     private void writeCheckedoutRevision(long revision) {
-        try(FileWriter fw = new FileWriter(StorageUtils.getCheckedoutRivisionFile())) {
+        try (FileWriter fw = new FileWriter(StorageUtils.getCheckedoutRivisionFile())) {
             PrintWriter pw = new PrintWriter(fw);
             String md5 = "md5";
             pw.printf("%d:%s", revision, md5);
@@ -129,7 +131,7 @@ public class RepositoryStorage {
     }
 
     public boolean checkoutFile() {
-        if(!isRemoteRepositoryNewer()) {
+        if (!isRemoteRepositoryNewer()) {
             return false;
         }
 
