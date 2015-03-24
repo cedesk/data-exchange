@@ -16,6 +16,7 @@ import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
+import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
 import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.StudyModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -88,7 +89,7 @@ public class MainController implements Initializable {
         RepositoryStorage repositoryStorage = null;
         try {
             String repositoryUrl = ApplicationSettings.getLastUsedRepository();
-            if (!RepositoryStorage.checkRepository(repositoryUrl)) {
+            if (!RepositoryUtils.checkRepository(repositoryUrl)) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Invalid Repository");
                 alert.setHeaderText(null);
@@ -98,14 +99,14 @@ public class MainController implements Initializable {
                 boolean success = selectRepository();
                 if (success) {
                     repositoryUrl = studyModel.getRepositoryPath();
-                } else {
                     statusbarProperty.setValue("Successfully selected repository.");
                     System.out.println("Successfully selected repository.");
+                } else {
                     return;
                 }
             }
-            final String dataFileName = StorageUtils.getDataFileName();
-            repositoryStorage = new RepositoryStorage(repositoryUrl, dataFileName);
+            File workingCopyDirectory = StorageUtils.getWorkingCopyDirectory();
+            repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory);
             if (repositoryStorage.checkoutFile()) {
                 statusbarProperty.setValue("Successfully checked out.");
                 System.out.println("Successfully checked out.");
@@ -146,7 +147,7 @@ public class MainController implements Initializable {
                     return false;
                 }
                 String url = result.get();
-                validRepositoryPath = RepositoryStorage.checkRepository(url);
+                validRepositoryPath = RepositoryUtils.checkRepository(url);
                 if (validRepositoryPath) {
                     studyModel.setRepositoryPath(url);
                 } else {
@@ -171,8 +172,8 @@ public class MainController implements Initializable {
                     return false;
                 }
 
-                String url = RepositoryStorage.makeUrlFromPath(path);
-                validRepositoryPath = RepositoryStorage.checkRepository(url);
+                String url = RepositoryUtils.makeUrlFromPath(path);
+                validRepositoryPath = RepositoryUtils.checkRepository(url);
                 if (validRepositoryPath) {
                     studyModel.setRepositoryPath(url);
                 } else {
