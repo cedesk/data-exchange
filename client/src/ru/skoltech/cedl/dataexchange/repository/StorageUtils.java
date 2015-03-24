@@ -46,6 +46,17 @@ public class StorageUtils {
         return dataFile;
     }
 
+    public static File getWorkingCopyDirectory() {
+        File dataDir = new File(getDataDir(), CO_DIR);
+        makeDirectory(dataDir);
+        if (!dataDir.exists()) {
+            System.err.println("Warning: Data file does not exist!");
+        } else if (!dataDir.canRead() || !dataDir.canWrite()) {
+            System.err.println("Warning: Data file is not usable!");
+        }
+        return dataDir;
+    }
+
     public static File getCheckedoutRivisionFile() {
         File checkedoutDir = new File(getDataDir(), CO_DIR);
         makeDirectory(checkedoutDir);
