@@ -1,59 +1,29 @@
 package ru.skoltech.cedl.dataexchange.repository.svn;
 
-import org.tmatesoft.svn.core.*;
+import org.tmatesoft.svn.core.SVNDepth;
+import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
-import org.tmatesoft.svn.core.io.SVNRepository;
-import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
-import org.tmatesoft.svn.core.wc.SVNWCUtil;
+import org.tmatesoft.svn.core.wc.*;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 
-import java.io.*;
-import java.util.Scanner;
+import java.io.File;
+import java.util.Date;
 
 /**
  * Created by D.Knoll on 17.03.2015.
  */
 public class RepositoryStorage {
 
-    private static final String DEFAULT_NAME = "anonymous";
-    private static final String DEFAULT_PASSWORD = "anonymous";
-    private static final long INVALID_REVISION = -1L;
+    private SVNURL svnUrl;
+    private File filePath;
 
-    private String url;
-    private String filePath;
-    private long checkedoutRevision = -1L;
-    private SVNRepository repository;
+    private SVNClientManager svnClientManager;
 
     static {
         setupLibrary();
-    }
-
-    public static String makeUrlFromPath(File path) {
-        return "file:///" + path.toString();
-    }
-
-    public static boolean checkRepository(String url) {
-        if (url == null || url.isEmpty()) {
-            return false;
-        }
-        SVNRepository repository = null;
-        try {
-            repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
-            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(DEFAULT_NAME, DEFAULT_PASSWORD);
-            repository.setAuthenticationManager(authManager);
-
-            SVNNodeKind nodeKind = repository.checkPath(StorageUtils.getDataFileName(), -1);
-            if (nodeKind == SVNNodeKind.FILE) {
-                return true;
-            }
-        } catch (SVNAuthenticationException ae) {
-            System.err.println("SVN Authentication Error.");
-        } catch (SVNException e) {
-            System.err.println("SVNException: " + e.getMessage());
-        }
-        return false;
     }
 
     /*
@@ -70,102 +40,52 @@ public class RepositoryStorage {
         FSRepositoryFactory.setup();
     }
 
-    public RepositoryStorage(String url, String filePath) throws SVNException {
-        this.url = url;
+    public RepositoryStorage(String url, File filePath) throws SVNException {
+        this.svnUrl = SVNURL.parseURIEncoded(url);
         this.filePath = filePath;
 
-        repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
-        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(DEFAULT_NAME, DEFAULT_PASSWORD);
-        repository.setAuthenticationManager(authManager);
+        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(RepositoryUtils.DEFAULT_NAME, RepositoryUtils.DEFAULT_PASSWORD);
+        svnClientManager = SVNClientManager.newInstance();
+        svnClientManager.setAuthenticationManager(authManager);
     }
 
     public String getUrl() {
-        return url;
+        return svnUrl.toString();
     }
-
-    public long getCheckedoutRevision() {
-        if (checkedoutRevision == INVALID_REVISION) {
-            long revisionfromFile = readCheckedoutRevision();
-            if (revisionfromFile != INVALID_REVISION) {
-                checkedoutRevision = revisionfromFile;
-            }
-        }
-        return checkedoutRevision;
-    }
-
-    private void setCheckedoutRevision(long checkedoutRevision) {
-        this.checkedoutRevision = checkedoutRevision;
-        writeCheckedoutRevision(checkedoutRevision);
-    }
-
-    private long readCheckedoutRevision() {
-        long revision = INVALID_REVISION;
-        try (FileReader fr = new FileReader(StorageUtils.getCheckedoutRivisionFile())) {
-            Scanner scanner = new Scanner(fr);
-            scanner.useDelimiter(":");
-            revision = scanner.nextLong();
-            String md5 = scanner.next();
-        } catch (IOException e) {
-            System.err.println("Error reading the revision file.");
-        }
-        return revision;
-    }
-
-    private void writeCheckedoutRevision(long revision) {
-        try (FileWriter fw = new FileWriter(StorageUtils.getCheckedoutRivisionFile())) {
-            PrintWriter pw = new PrintWriter(fw);
-            String md5 = "md5";
-            pw.printf("%d:%s", revision, md5);
-        } catch (IOException e) {
-            System.err.println("Error writing the revision file.");
-        }
-    }
-
+/*
     public boolean isRemoteRepositoryNewer() {
+
+        File file = StorageUtils.getCheckedoutDataFile();
+        boolean remote = true;
+        boolean collectParentExternals = false;
         try {
-            return getCheckedoutRevision() < repository.getLatestRevision();
+            svnClientManager.getLookClient();
+            SVNStatus svnStatus = svnClientManager.getStatusClient().doStatus(file, remote, collectParentExternals);
+            SVNRevision committedRevision = svnStatus.getCommittedRevision();
+            SVNRevision revision = svnStatus.getRevision();
+            return committedRevision.getNumber() > revision.getNumber();
         } catch (SVNException e) {
             System.err.println("Error checking repository revision.");
         }
         return false;
     }
-
+*/
     public boolean checkoutFile() {
-        if (!isRemoteRepositoryNewer()) {
-            return false;
-        }
-
-        File checkoutFile = StorageUtils.getCheckedoutDataFile();
-        OutputStream baos = null;
-        try {
-            baos = new FileOutputStream(checkoutFile);
-        } catch (FileNotFoundException ioe) {
-            System.err
-                    .println("error writing working copy: '"
-                            + checkoutFile.toString() + "'\n\t" + ioe.getMessage());
-            return false;
-        }
 
         try {
-            SVNNodeKind nodeKind = repository.checkPath(filePath, -1);
-            if (nodeKind == SVNNodeKind.NONE) {
-                System.err.println("Error finding file in repository. '" + repository.getFullPath("") + "', '" + filePath + "'");
-                return false;
-            }
-
-            SVNProperties fileProperties = new SVNProperties();
-            repository.getFile(filePath, -1, fileProperties, baos);
-
-            setCheckedoutRevision(repository.getLatestRevision());
-
+            SVNUpdateClient updateClient = svnClientManager.getUpdateClient();
+            updateClient.setIgnoreExternals(false);
+            SVNRevision revision = SVNRevision.HEAD;
+            SVNDepth depth = SVNDepth.INFINITY;
+            boolean allowUnversionedObstructions = false;
+            long rev = updateClient.doCheckout(svnUrl, filePath, revision, revision, depth, allowUnversionedObstructions);
+            return true;
         } catch (SVNException svne) {
             System.err
                     .println("error accessing SVN repository '"
-                            + url + "', '" + filePath + "': " + svne.getMessage());
+                            + svnUrl.toString() + "', '" + filePath.toString() + "': " + svne.getMessage());
             return false;
         }
-        return true;
     }
-
 
 }
