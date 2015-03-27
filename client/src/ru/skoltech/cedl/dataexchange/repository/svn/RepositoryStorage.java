@@ -1,16 +1,12 @@
 package ru.skoltech.cedl.dataexchange.repository.svn;
 
-import org.tmatesoft.svn.core.SVNDepth;
-import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.*;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.wc.*;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 
 import java.io.File;
-import java.util.Date;
 
 /**
  * Created by D.Knoll on 17.03.2015.
@@ -18,7 +14,7 @@ import java.util.Date;
 public class RepositoryStorage {
 
     private SVNURL svnUrl;
-    private File filePath;
+    private File wcPath;
 
     private SVNClientManager svnClientManager;
 
@@ -40,9 +36,9 @@ public class RepositoryStorage {
         FSRepositoryFactory.setup();
     }
 
-    public RepositoryStorage(String url, File filePath) throws SVNException {
+    public RepositoryStorage(String url, File wcPath) throws SVNException {
         this.svnUrl = SVNURL.parseURIEncoded(url);
-        this.filePath = filePath;
+        this.wcPath = wcPath;
 
         ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(RepositoryUtils.DEFAULT_NAME, RepositoryUtils.DEFAULT_PASSWORD);
         svnClientManager = SVNClientManager.newInstance();
@@ -52,39 +48,78 @@ public class RepositoryStorage {
     public String getUrl() {
         return svnUrl.toString();
     }
-/*
-    public boolean isRemoteRepositoryNewer() {
 
-        File file = StorageUtils.getCheckedoutDataFile();
-        boolean remote = true;
-        boolean collectParentExternals = false;
-        try {
-            svnClientManager.getLookClient();
-            SVNStatus svnStatus = svnClientManager.getStatusClient().doStatus(file, remote, collectParentExternals);
-            SVNRevision committedRevision = svnStatus.getCommittedRevision();
-            SVNRevision revision = svnStatus.getRevision();
-            return committedRevision.getNumber() > revision.getNumber();
-        } catch (SVNException e) {
-            System.err.println("Error checking repository revision.");
+    /*
+        public boolean isRemoteRepositoryNewer() {
+
+            File file = StorageUtils.getCheckedoutDataFile();
+            boolean remote = true;
+            boolean collectParentExternals = false;
+            try {
+                svnClientManager.getLookClient();
+                SVNStatus svnStatus = svnClientManager.getStatusClient().doStatus(file, remote, collectParentExternals);
+                SVNRevision committedRevision = svnStatus.getCommittedRevision();
+                SVNRevision revision = svnStatus.getRevision();
+                return committedRevision.getNumber() > revision.getNumber();
+            } catch (SVNException e) {
+                System.err.println("Error checking repository revision.");
+            }
+            return false;
         }
-        return false;
-    }
-*/
+    */
     public boolean checkoutFile() {
 
+        SVNUpdateClient updateClient = svnClientManager.getUpdateClient();
+        updateClient.setIgnoreExternals(false);
         try {
-            SVNUpdateClient updateClient = svnClientManager.getUpdateClient();
-            updateClient.setIgnoreExternals(false);
-            SVNRevision revision = SVNRevision.HEAD;
-            SVNDepth depth = SVNDepth.INFINITY;
-            boolean allowUnversionedObstructions = false;
-            long rev = updateClient.doCheckout(svnUrl, filePath, revision, revision, depth, allowUnversionedObstructions);
+            long rev = updateClient.doCheckout(svnUrl, wcPath, SVNRevision.HEAD, SVNRevision.HEAD, SVNDepth.INFINITY, false);
             return true;
         } catch (SVNException svne) {
             System.err
                     .println("error accessing SVN repository '"
-                            + svnUrl.toString() + "', '" + filePath.toString() + "': " + svne.getMessage());
+                            + svnUrl.toString() + "', '" + wcPath.toString() + "': " + svne.getMessage());
             return false;
+        }
+    }
+
+    public void updateFile() {
+
+        SVNUpdateClient updateClient = svnClientManager.getUpdateClient();
+        updateClient.setIgnoreExternals(false);
+        try {
+            long rev = updateClient.doUpdate(wcPath, SVNRevision.HEAD, SVNDepth.INFINITY, false, false);
+        } catch (SVNException svne) {
+            System.err
+                    .println("error updating working copy from SVN repository '"
+                            + svnUrl.toString() + "', '" + wcPath.toString() + "': " + svne.getMessage());
+        }
+    }
+
+    public void commitFile(String commitMessage, String author) {
+        SVNProperties revisionProperties = new SVNProperties();
+        revisionProperties.put(SVNProperty.LAST_AUTHOR, author);
+        SVNDepth depth = SVNDepth.INFINITY;
+
+        try {
+            SVNCommitInfo svnCommitInfo = svnClientManager.getCommitClient().doCommit(new File[]{wcPath}, false,
+                    commitMessage, revisionProperties, null, false, true, depth);
+            System.out.println(svnCommitInfo.getNewRevision());
+        } catch (SVNException svne) {
+            System.err
+                    .println("error committing to SVN repository '"
+                            + svnUrl.toString() + "', '" + wcPath.toString() + "': " + svne.getMessage());
+        }
+    }
+
+    public void showStatus() {
+        try {
+            SVNStatus dataFileStatus = svnClientManager.getStatusClient().doStatus(wcPath, false, false);
+            // TODO: implement handling of status
+            // (new StatusHandler(false)).handleStatus(dataFileStatus);
+        } catch (SVNException svne) {
+            System.err
+                    .println("error checking status with SVN repository '"
+                            + svnUrl.toString() + "', '" + wcPath.toString() + "': " + svne.getMessage());
         }
     }
 

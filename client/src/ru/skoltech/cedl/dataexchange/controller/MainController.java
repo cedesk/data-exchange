@@ -51,6 +51,9 @@ public class MainController implements Initializable {
 
     private EditingController editingController;
 
+    private static final String defaultAuthor = "default_author";
+    private static final String commitMessage = "";
+
     public void newModel(ActionEvent actionEvent) {
         SystemModel system = DummySystemBuilder.getSystemModel(4);
         studyModel.setSystemModel(system);
@@ -96,7 +99,7 @@ public class MainController implements Initializable {
                 alert.setContentText("There is no repository set yet. You will need to specify one!");
                 alert.showAndWait();
                 System.out.println("No repository selected.");
-                boolean success = selectRepository();
+                boolean success = selectRepository(studyModel);
                 if (success) {
                     repositoryUrl = studyModel.getRepositoryPath();
                     statusbarProperty.setValue("Successfully selected repository.");
@@ -122,7 +125,7 @@ public class MainController implements Initializable {
         }
     }
 
-    private boolean selectRepository() {
+    private boolean selectRepository(StudyModel sModel) {
 
         Alert repositoryTypeDialog = new Alert(Alert.AlertType.CONFIRMATION);
         repositoryTypeDialog.setTitle("Repository type selection");
@@ -149,7 +152,7 @@ public class MainController implements Initializable {
                 String url = result.get();
                 validRepositoryPath = RepositoryUtils.checkRepository(url);
                 if (validRepositoryPath) {
-                    studyModel.setRepositoryPath(url);
+                    sModel.setRepositoryPath(url);
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Invalid Repository");
@@ -175,7 +178,7 @@ public class MainController implements Initializable {
                 String url = RepositoryUtils.makeUrlFromPath(path);
                 validRepositoryPath = RepositoryUtils.checkRepository(url);
                 if (validRepositoryPath) {
-                    studyModel.setRepositoryPath(url);
+                    sModel.setRepositoryPath(url);
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Invalid Repository");
@@ -190,12 +193,24 @@ public class MainController implements Initializable {
         }
     }
 
+    public void commitModel(ActionEvent actionEvent) {
+        File workingCopyDirectory = StorageUtils.getWorkingCopyDirectory();
+        String repositoryUrl = ApplicationSettings.getLastUsedRepository();
+        try {
+            RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory);
+            repositoryStorage.commitFile(commitMessage, defaultAuthor);
+        } catch (SVNException e) {
+            System.err.println("Error committing to repository.");
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // TOOLBAR BUTTONS
         newButton.disableProperty().bind(studyModel.checkedOutProperty());
         saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty()));
-        commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty()));
+        //commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty()));
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(statusbarProperty);
