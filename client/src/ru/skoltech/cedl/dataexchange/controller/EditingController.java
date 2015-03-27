@@ -6,7 +6,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.converter.DoubleStringConverter;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
@@ -20,6 +23,11 @@ import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
  */
 public class EditingController {
 
+    public TableColumn parameterNameColumn;
+    public TableColumn parameterValueColumn;
+    public TableColumn parameterTypeColumn;
+    public TableColumn parameterSharedColumn;
+    public TableColumn parameterDescriptionColumn;
     @FXML
     private TreeView<ModelNode> structureTree;
     @FXML
@@ -32,15 +40,13 @@ public class EditingController {
 
         // NODE PARAMETER TABLE
         parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
-        TableColumn<ParameterModel, Double> valueColumn =
-                // FIX: index may not correspond to FXML
-                (TableColumn<ParameterModel, Double>) parameterTable.getColumns().get(1);
-        valueColumn.setCellFactory(
+
+        parameterValueColumn.setCellFactory(
                 TextFieldTableCell.<ParameterModel, Double>forTableColumn(
                         new DoubleStringConverter()
                 )
         );
-        valueColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ParameterModel, Double>>() {
+        parameterValueColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ParameterModel, Double>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<ParameterModel, Double> event) {
                 ParameterModel parameterModel = event.getTableView().getItems().get(
@@ -49,11 +55,8 @@ public class EditingController {
             }
         });
 
-        TableColumn<ParameterModel, String> descriptionColumn =
-                // FIX: index may not correspond to FXML
-                (TableColumn<ParameterModel, String>) parameterTable.getColumns().get(3);
-        descriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        descriptionColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ParameterModel, String>>() {
+        parameterDescriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        parameterDescriptionColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ParameterModel, String>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<ParameterModel, String> event) {
                 ParameterModel parameterModel = event.getTableView().getItems().get(
