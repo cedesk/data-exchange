@@ -76,11 +76,12 @@ public class ParameterModel {
 
     @Override
     public boolean equals(Object obj) {
-        ParameterModel paramObj = (ParameterModel)obj;
-        if (paramObj != null) {
-            return name == paramObj.getName() &&
-                    value == paramObj.getValue() &&
-                    type == paramObj.getType();
+        if (obj instanceof ParameterModel) {
+            ParameterModel paramObj = (ParameterModel) obj;
+            return name.equals(paramObj.getName()) &&
+                    value.equals(paramObj.getValue()) &&
+                    type.equals(paramObj.getType()) &&
+                    isShared.equals(paramObj.getIsShared());
         } else {
             return super.equals(obj);
         }
