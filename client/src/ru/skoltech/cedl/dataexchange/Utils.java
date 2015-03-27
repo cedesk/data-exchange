@@ -1,9 +1,9 @@
 package ru.skoltech.cedl.dataexchange;
 
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by D.Knoll on 12.03.2015.
@@ -14,16 +14,15 @@ public class Utils {
         return Utils.class.getClassLoader().getResourceAsStream(fileName);
     }
 
-    public static <T> Set<T> symmetricDiffTwoLists(List<T> l1,
+    public static <T extends Comparable<T>> Set<T> symmetricDiffTwoLists(List<T> l1,
                                                    List<T> l2) {
-        Set<T> s1 = new HashSet<>(l1);
-        Set<T> s2 = new HashSet<>(l2);
-
-        Set<T> symDiff = new HashSet<>(s1);
-        symDiff.addAll(s2);
-        Set<T> tmpSet = new HashSet<>(s1);
-        tmpSet.retainAll(s2);
-        symDiff.removeAll(tmpSet);
+        Set<T> symDiff = new TreeSet<T>(Comparator.<T >naturalOrder());
+        symDiff.addAll(l1);
+        symDiff.addAll(l2);
+        Set<T> intersection = new TreeSet<>(Comparator.<T>naturalOrder());
+        intersection.addAll(l1);
+        intersection.retainAll(l2);
+        symDiff.removeAll(intersection);
         return symDiff;
     }
 }
