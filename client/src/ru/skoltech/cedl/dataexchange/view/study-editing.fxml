@@ -28,22 +28,27 @@
                                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                     <columns>
-                                        <TableColumn text="Name">
+                                        <TableColumn text="Name" fx:id="parameterNameColumn">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="name"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn text="Value">
+                                        <TableColumn text="Value" fx:id="parameterValueColumn">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="value"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn text="Type">
+                                        <TableColumn text="Type" fx:id="parameterTypeColumn">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="type"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn text="Description">
+                                        <TableColumn text="Shared" fx:id="parameterSharedColumn">
+                                            <cellValueFactory>
+                                                <PropertyValueFactory property="shared"/>
+                                            </cellValueFactory>
+                                        </TableColumn>
+                                        <TableColumn text="Description" fx:id="parameterDescriptionColumn">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="description"/>
                                             </cellValueFactory>
