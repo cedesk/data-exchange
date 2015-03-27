@@ -16,6 +16,7 @@ import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
+import ru.skoltech.cedl.dataexchange.structure.model.DiffModel;
 import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.StudyModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -36,6 +37,8 @@ public class MainController {
     public Button checkoutButton;
     @FXML
     public Button commitButton;
+    @FXML
+    public Button diffButton;
     @FXML
     public Label statusbarLabel;
     @FXML
@@ -158,4 +161,10 @@ public class MainController {
         }
     }
 
+    public void diffModels(ActionEvent actionEvent) {
+        SystemModel m1 = DummySystemBuilder.getSystemModel(3);
+        SystemModel m2 = DummySystemBuilder.getSystemModel(3);
+        DiffModel diff = new DiffModel(m1, m2);
+        // TODO: Change the controller and show the diff table
+    }
 }

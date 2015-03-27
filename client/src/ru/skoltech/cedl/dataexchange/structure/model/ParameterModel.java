@@ -73,4 +73,16 @@ public class ParameterModel {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        ParameterModel paramObj = (ParameterModel)obj;
+        if (paramObj != null) {
+            return name == paramObj.getName() &&
+                    value == paramObj.getValue() &&
+                    type == paramObj.getType();
+        } else {
+            return super.equals(obj);
+        }
+    }
 }
