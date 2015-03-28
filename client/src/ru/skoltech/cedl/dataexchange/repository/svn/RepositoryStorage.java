@@ -4,6 +4,8 @@ import org.tmatesoft.svn.core.*;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
+import org.tmatesoft.svn.core.io.SVNRepository;
+import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.*;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 
@@ -51,24 +53,52 @@ public class RepositoryStorage {
         return svnUrl.toString();
     }
 
-    /*
-        public boolean isRemoteRepositoryNewer() {
 
-            File file = StorageUtils.getCheckedoutDataFile();
-            boolean remote = true;
-            boolean collectParentExternals = false;
-            try {
-                svnClientManager.getLookClient();
-                SVNStatus svnStatus = svnClientManager.getStatusClient().doStatus(file, remote, collectParentExternals);
-                SVNRevision committedRevision = svnStatus.getCommittedRevision();
-                SVNRevision revision = svnStatus.getRevision();
-                return committedRevision.getNumber() > revision.getNumber();
-            } catch (SVNException e) {
-                System.err.println("Error checking repository revision.");
+    public long getRepositoryRevisionNumber() {
+        SVNRepository svnRepository = null;
+        try {
+            svnRepository = SVNRepositoryFactory.create(svnUrl);
+            return svnRepository.getLatestRevision();
+        } catch (SVNException e) {
+            System.err.println("Error checking repository.");
+        } finally {
+            if (svnRepository != null) {
+                svnRepository.closeSession();
             }
-            return false;
         }
-    */
+        return -1;
+    }
+
+    public long getWorkingCopyRevisionNumber() {
+        try {
+            SVNStatusClient statusClient = svnClientManager.getStatusClient();
+            SVNStatus svnStatus = statusClient.doStatus(wcPath, true, false);
+            return svnStatus.getRevision().getNumber();
+        } catch (SVNException e) {
+            System.err.println("Error checking working copy revision.");
+        }
+        return -1;
+    }
+
+    public boolean isRemoteRepositoryNewer() {
+        long repositoryRevision = getRepositoryRevisionNumber();
+        long workingCopyRevision = getWorkingCopyRevisionNumber();
+        System.out.println("repositoryRevision: " + repositoryRevision + ", workingCopyRevision: " + workingCopyRevision);
+        return repositoryRevision > workingCopyRevision;
+    }
+
+    public boolean isWorkingCopyModified(File dataFile) {
+        try {
+            SVNStatusClient statusClient = svnClientManager.getStatusClient();
+            SVNStatus svnStatus = statusClient.doStatus(dataFile, true, false);
+            SVNStatusType statusType = svnStatus.getNodeStatus();
+            return statusType == SVNStatusType.STATUS_MODIFIED;
+        } catch (SVNException e) {
+            System.err.println("Error checking working copy revision.");
+        }
+        return false;
+    }
+
     public boolean checkoutFile() {
 
         SVNUpdateClient updateClient = svnClientManager.getUpdateClient();

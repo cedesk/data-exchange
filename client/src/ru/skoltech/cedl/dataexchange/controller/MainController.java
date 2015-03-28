@@ -6,7 +6,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
@@ -16,6 +19,7 @@ import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
+import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.model.DiffModel;
 import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.StudyModel;
@@ -44,6 +48,8 @@ public class MainController implements Initializable {
     public Button diffButton;
     @FXML
     public Label statusbarLabel;
+    @FXML
+    public CheckBox statusbarRepositoryNewer;
     @FXML
     public BorderPane layout;
 
@@ -191,6 +197,16 @@ public class MainController implements Initializable {
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
+        File workingCopyDirectory = StorageUtils.getDataDir(projectName);
+        String repositoryUrl = ApplicationSettings.getLastUsedRepository();
+        try {
+            RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
+            RepositoryWatcher repositoryWatcher = new RepositoryWatcher(repositoryStorage);
+            statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
+            repositoryWatcher.start();
+        } catch (SVNException e) {
+            System.err.println("Error making repository watcher.\n" + e.getMessage());
+        }
 
         // EDITING PANE
         try {
@@ -201,7 +217,9 @@ public class MainController implements Initializable {
             editingController = loader.getController();
         } catch (IOException ioe) {
             System.err.println("SEVERE ERROR: not able to load editing view pane.");
+            throw new RuntimeException(ioe);
         }
+
     }
 
     public void diffModels(ActionEvent actionEvent) {
