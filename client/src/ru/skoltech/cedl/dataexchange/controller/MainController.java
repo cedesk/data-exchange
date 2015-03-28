@@ -1,8 +1,6 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +8,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.stage.DirectoryChooser;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -96,12 +93,8 @@ public class MainController implements Initializable {
         try {
             String repositoryUrl = ApplicationSettings.getLastUsedRepository();
             if (!RepositoryUtils.checkRepository(repositoryUrl)) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Invalid Repository");
-                alert.setHeaderText(null);
-                alert.setContentText("There is no repository set yet. You will need to specify one!");
-                alert.showAndWait();
-                System.out.println("No repository selected.");
+                Dialogues.showInvalidRepositoryWarning();
+                StatusLogger.getInstance().log("No repository selected.");
                 boolean success = selectRepository(studyModel);
                 if (success) {
                     repositoryUrl = studyModel.getRepositoryPath();
@@ -128,25 +121,12 @@ public class MainController implements Initializable {
 
     private boolean selectRepository(StudyModel sModel) {
 
-        Alert repositoryTypeDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        repositoryTypeDialog.setTitle("Repository type selection");
-        repositoryTypeDialog.setHeaderText("Please choose which type of repository you want to use.");
-        repositoryTypeDialog.setContentText(null);
-
-        ButtonType remoteRepo = new ButtonType("Remote");
-        ButtonType localRepo = new ButtonType("Local");
-        repositoryTypeDialog.getButtonTypes().setAll(remoteRepo, localRepo, ButtonType.CANCEL);
-
-        Optional<ButtonType> selection = repositoryTypeDialog.showAndWait();
-        if (selection.get() == remoteRepo) { // REMOTE
-            TextInputDialog dialog = new TextInputDialog("URL");
-            dialog.setTitle("Repository URL");
-            dialog.setHeaderText("Please insert the URL for the repository. It shall start with 'http' or 'https'.");
-            dialog.setContentText("URL:");
+        Optional<ButtonType> selection = Dialogues.chooseLocalOrRemoteRepository();
+        if (selection.get() == Dialogues.REMOTE_REPO) {
 
             boolean validRepositoryPath = false;
             do {
-                Optional<String> result = dialog.showAndWait();
+                Optional<String> result = Dialogues.inputRemoteRepositoryURL();
                 // if cancel, then abort selection
                 if (!result.isPresent()) {
                     return false;
@@ -156,21 +136,16 @@ public class MainController implements Initializable {
                 if (validRepositoryPath) {
                     sModel.setRepositoryPath(url);
                 } else {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Invalid Repository");
-                    alert.setContentText("The selected path does not contain a valid repository!");
-                    alert.showAndWait();
-                    System.err.println("Error selected invalid path.");
+                    Dialogues.showInvalidRepositoryPath();
+                    StatusLogger.getInstance().log("Error selected invalid path.", true);
                 }
             } while (!validRepositoryPath);
             return true;
-        } else if (selection.get() == localRepo) { // LOCAL
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setTitle("Select Repository path");
+        } else if (selection.get() == Dialogues.LOCAL_REPO) {
 
             boolean validRepositoryPath = false;
             do {
-                File path = directoryChooser.showDialog(null);
+                File path = Dialogues.chooseLocalRepositoryPath();
                 if (path == null) { // user canceled directory selection
                     StatusLogger.getInstance().log("User declined choosing a repository", true);
                     return false;
@@ -181,15 +156,12 @@ public class MainController implements Initializable {
                 if (validRepositoryPath) {
                     sModel.setRepositoryPath(url);
                 } else {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Invalid Repository");
-                    alert.setContentText("The selected path does not contain a valid repository!");
-                    alert.showAndWait();
-                    System.err.println("Error selected invalid path.");
+                    Dialogues.showInvalidRepositoryPath();
+                    StatusLogger.getInstance().log("Error selected invalid path.", true);
                 }
             } while (!validRepositoryPath);
             return true;
-        } else {
+        } else { // selection CANCELED
             return false;
         }
     }
