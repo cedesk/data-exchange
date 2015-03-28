@@ -76,6 +76,10 @@ public class EditingController implements Initializable {
         parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
     }
 
+    private void emptyParameters() {
+        parameterTable.setItems(null);
+    }
+
     public void updateView(SystemModel system) {
         ViewNode rootNode = ViewTreeFactory.getViewTree(system);
         structureTree.setRoot(rootNode);
@@ -87,6 +91,8 @@ public class EditingController implements Initializable {
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
                 EditingController.this.displayParameters(newValue.getValue());
+            } else {
+                EditingController.this.emptyParameters();
             }
         }
     }
