@@ -10,57 +10,20 @@ import java.io.IOException;
  */
 public class StorageUtils {
 
-    private static final String MODEL_FILE = "cedesk-system-model.xml";
-
-    private static final String REVISION_FILE = "revision.txt";
-
     private static final String DATA_DIR = "CEDESK";
 
-    private static final String CO_DIR = ".co";
+    private static final String MODEL_FILE = "cedesk-system-model.xml";
+
     private static final String USER_HOME = System.getProperty("user.home");
 
-    private static File getDataDir() {
+    public static File getDataDir(String projectName) {
         File homeDir = new File(USER_HOME);
-        return new File(homeDir, DATA_DIR);
+        File dataDir = new File(homeDir, DATA_DIR);
+        return new File(dataDir, projectName);
     }
 
-    public static File getDataFile() {
-        File dataFile = new File(getDataDir(), MODEL_FILE);
-        if (!dataFile.exists()) {
-            System.err.println("Warning: Data file does not exist!");
-        } else if (!dataFile.canRead() || !dataFile.canWrite()) {
-            System.err.println("Warning: Data file is not usable!");
-        }
-        return dataFile;
-    }
-
-    public static File getCheckedoutDataFile() {
-        File checkedoutDir = new File(getDataDir(), CO_DIR);
-        makeDirectory(checkedoutDir);
-        File dataFile = new File(checkedoutDir, MODEL_FILE);
-        if (!dataFile.exists()) {
-            System.err.println("Warning: Data file does not exist!");
-        } else if (!dataFile.canRead() || !dataFile.canWrite()) {
-            System.err.println("Warning: Data file is not usable!");
-        }
-        return dataFile;
-    }
-
-    public static File getWorkingCopyDirectory() {
-        File dataDir = new File(getDataDir(), CO_DIR);
-        makeDirectory(dataDir);
-        if (!dataDir.exists()) {
-            System.err.println("Warning: Data file does not exist!");
-        } else if (!dataDir.canRead() || !dataDir.canWrite()) {
-            System.err.println("Warning: Data file is not usable!");
-        }
-        return dataDir;
-    }
-
-    public static File getCheckedoutRivisionFile() {
-        File checkedoutDir = new File(getDataDir(), CO_DIR);
-        makeDirectory(checkedoutDir);
-        File dataFile = new File(checkedoutDir, REVISION_FILE);
+    public static File getDataFile(String projectName) {
+        File dataFile = new File(getDataDir(projectName), MODEL_FILE);
         if (!dataFile.exists()) {
             System.err.println("Warning: Data file does not exist!");
         } else if (!dataFile.canRead() || !dataFile.canWrite()) {
@@ -77,11 +40,6 @@ public class StorageUtils {
         if (!path.canRead() || !path.canWrite()) {
             System.err.println("Warning: Directory is not usable: " + path.toString());
         }
-    }
-
-    public static void makeWorkingDirectory() {
-        File dataDir = getDataDir();
-        makeDirectory(dataDir);
     }
 
     public static boolean fileExistsAndIsNotEmpty(File file) {

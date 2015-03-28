@@ -14,6 +14,11 @@ public class Utils {
         return Utils.class.getClassLoader().getResourceAsStream(fileName);
     }
 
+    public static String getUserName() {
+        String userName = System.getProperty("user.name");
+        return userName;
+    }
+
     public static <T extends Comparable<T>> Set<T> symmetricDiffTwoLists(List<T> l1,
                                                    List<T> l2) {
         Set<T> symDiff = new TreeSet<T>(Comparator.<T >naturalOrder());
