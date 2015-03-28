@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0"
-            prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
-        <BorderPane fx:id="layout" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <BorderPane fx:id="layout" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <center>
             </center>
             <top>
@@ -19,7 +19,7 @@
                     <children>
                         <ImageView fitHeight="85.0" fitWidth="129.0">
                             <image>
-                                <Image url="@/resources/Logo0.png"/>
+                                <Image url="@/resources/Logo0.png" />
                             </image>
                         </ImageView>
                         <VBox>
@@ -28,79 +28,73 @@
                                     <children>
                                         <Label text="Design Study:">
                                             <font>
-                                                <Font size="14.0"/>
+                                                <Font size="14.0" />
                                             </font>
                                             <HBox.margin>
-                                                <Insets right="4.0"/>
+                                                <Insets right="4.0" />
                                             </HBox.margin>
                                         </Label>
                                         <Label fx:id="StudyNameLabel" layoutX="10.0" layoutY="10.0" text="SkoltechSat">
                                             <font>
-                                                <Font size="14.0"/>
+                                                <Font size="14.0" />
                                             </font>
                                             <HBox.margin>
-                                                <Insets/>
+                                                <Insets />
                                             </HBox.margin>
                                         </Label>
                                         <Label text="User:">
                                             <font>
-                                                <Font size="14.0"/>
+                                                <Font size="14.0" />
                                             </font>
                                             <HBox.margin>
-                                                <Insets left="20.0" right="4.0"/>
+                                                <Insets left="20.0" right="4.0" />
                                             </HBox.margin>
                                         </Label>
                                         <Label fx:id="userNameLabel" text="Dominik">
                                             <font>
-                                                <Font size="14.0"/>
+                                                <Font size="14.0" />
                                             </font>
                                             <HBox.margin>
-                                                <Insets/>
+                                                <Insets />
                                             </HBox.margin>
                                         </Label>
                                         <Label layoutX="97.0" layoutY="10.0" text="Role:">
                                             <font>
-                                                <Font size="14.0"/>
+                                                <Font size="14.0" />
                                             </font>
                                             <HBox.margin>
-                                                <Insets left="20.0" right="4.0"/>
+                                                <Insets left="20.0" right="4.0" />
                                             </HBox.margin>
                                         </Label>
                                         <Label fx:id="userRoleLabel" layoutX="211.0" layoutY="10.0" text="Team Leader">
                                             <font>
-                                                <Font size="14.0"/>
+                                                <Font size="14.0" />
                                             </font>
                                             <HBox.margin>
-                                                <Insets/>
+                                                <Insets />
                                             </HBox.margin>
                                         </Label>
                                     </children>
                                     <VBox.margin>
-                                        <Insets top="10.0"/>
+                                        <Insets top="10.0" />
                                     </VBox.margin>
                                 </HBox>
                                 <ToolBar>
                                     <items>
-                                        <Button fx:id="newButton" mnemonicParsing="false" onAction="#newModel"
-                                                text="New"/>
-                                        <Button fx:id="openButton" mnemonicParsing="false" onAction="#loadModel"
-                                                text="Open"/>
-                                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="false"
-                                                onAction="#saveModel" text="Save"/>
-                                        <Button fx:id="checkoutButton" layoutX="105.0" layoutY="13.0"
-                                                mnemonicParsing="false" onAction="#checkoutModel" text="Checkout"/>
-                                        <Button fx:id="commitButton" layoutX="60.0" layoutY="13.0"
-                                                mnemonicParsing="false" onAction="#commitModel" text="Commit"/>
-                                        <Button fx:id="diffButton" layoutX="155.0" layoutY="13.0"
-                                                mnemonicParsing="false" onAction="#diffModels" text="Diff"/>
+                                        <Button fx:id="newButton" mnemonicParsing="false" onAction="#newModel" text="New" />
+                                        <Button fx:id="openButton" mnemonicParsing="false" onAction="#loadModel" text="Open" />
+                                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#saveModel" text="Save" />
+                                        <Button fx:id="checkoutButton" layoutX="105.0" layoutY="13.0" mnemonicParsing="false" onAction="#checkoutModel" text="Checkout" />
+                                        <Button fx:id="commitButton" layoutX="60.0" layoutY="13.0" mnemonicParsing="false" onAction="#commitModel" text="Commit" />
+                                        <Button fx:id="diffButton" layoutX="155.0" layoutY="13.0" mnemonicParsing="false" onAction="#diffModels" text="Diff" />
                                     </items>
                                     <VBox.margin>
-                                        <Insets top="10.0"/>
+                                        <Insets top="10.0" />
                                     </VBox.margin>
                                 </ToolBar>
                             </children>
                             <padding>
-                                <Insets left="10.0"/>
+                                <Insets left="10.0" />
                             </padding>
                         </VBox>
                     </children>
@@ -109,9 +103,8 @@
             <bottom>
                 <AnchorPane prefHeight="20.0" BorderPane.alignment="CENTER">
                     <children>
-                        <Label fx:id="statusbarLabel" prefHeight="20.0" prefWidth="800.0" text="Statusbar"
-                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                               AnchorPane.topAnchor="0.0"/>
+                        <Label fx:id="statusbarLabel" prefHeight="20.0" prefWidth="703.0" text="Statusbar" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <CheckBox fx:id="statusbarRepositoryNewer" disable="true" layoutX="713.0" layoutY="2.0" mnemonicParsing="false" text="Repository Newer" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                     </children>
                 </AnchorPane>
             </bottom>
