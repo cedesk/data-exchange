@@ -155,7 +155,6 @@ public class MainController {
             Parent editingPane = loader.load();
             layout.setCenter(editingPane);
             editingController = loader.getController();
-            editingController.setup();
         } catch (IOException ioe) {
             System.err.println("SEVERE ERROR: not able to load editing view pane.");
         }

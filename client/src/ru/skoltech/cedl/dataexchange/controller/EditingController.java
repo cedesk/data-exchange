@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
@@ -18,10 +19,13 @@ import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 /**
  * Created by D.Knoll on 20.03.2015.
  */
-public class EditingController {
+public class EditingController implements Initializable {
 
     public TableColumn parameterNameColumn;
     public TableColumn parameterValueColumn;
@@ -33,8 +37,8 @@ public class EditingController {
     @FXML
     private TableView<ParameterModel> parameterTable;
 
-
-    public void setup() {
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
         // STRUCTURE TREE VIEW
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
 
@@ -73,6 +77,10 @@ public class EditingController {
         parameterTable.setItems(data);
     }
 
+    private void emptyParameters() {
+        parameterTable.setItems(null);
+    }
+
     public void updateView(SystemModel system) {
         ViewNode rootNode = ViewTreeFactory.getViewTree(system);
         structureTree.setRoot(rootNode);
@@ -84,6 +92,8 @@ public class EditingController {
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
                 EditingController.this.displayParameters(newValue.getValue());
+            } else {
+                EditingController.this.emptyParameters();
             }
         }
     }
