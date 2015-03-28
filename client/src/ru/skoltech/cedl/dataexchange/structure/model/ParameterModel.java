@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.XmlType;
  * Created by D.Knoll on 12.03.2015.
  */
 @XmlType(propOrder = {"name", "value", "type", "isShared", "description"})
-public class ParameterModel {
+public class ParameterModel implements Comparable<ParameterModel> {
 
     private String name;
 
@@ -72,5 +72,26 @@ public class ParameterModel {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    /*
+     * The comparison is done only based on the name, so it enables sorting of parameters by name and identifying changes to values of parameters.
+     */
+    @Override
+    public int compareTo(ParameterModel o) {
+        return name.compareTo(o.name);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ParameterModel) {
+            ParameterModel paramObj = (ParameterModel) obj;
+            return name.equals(paramObj.name) &&
+                    value.equals(paramObj.value) &&
+                    type.equals(paramObj.type) &&
+                    isShared.equals(paramObj.isShared);
+        } else {
+            return super.equals(obj);
+        }
     }
 }

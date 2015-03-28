@@ -17,6 +17,7 @@ import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
+import ru.skoltech.cedl.dataexchange.structure.model.DiffModel;
 import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.StudyModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -40,6 +41,8 @@ public class MainController implements Initializable {
     public Button checkoutButton;
     @FXML
     public Button commitButton;
+    @FXML
+    public Button diffButton;
     @FXML
     public Label statusbarLabel;
     @FXML
@@ -225,5 +228,12 @@ public class MainController implements Initializable {
         } catch (IOException ioe) {
             System.err.println("SEVERE ERROR: not able to load editing view pane.");
         }
+    }
+
+    public void diffModels(ActionEvent actionEvent) {
+        SystemModel m1 = DummySystemBuilder.getSystemModel(3);
+        SystemModel m2 = DummySystemBuilder.getSystemModel(3);
+        DiffModel diff = new DiffModel(m1, m2);
+        // TODO: Change the controller and show the diff table
     }
 }
