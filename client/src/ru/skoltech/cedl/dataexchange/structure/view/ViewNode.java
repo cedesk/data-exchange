@@ -4,7 +4,6 @@ import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 /**
@@ -12,11 +11,11 @@ import ru.skoltech.cedl.dataexchange.structure.model.*;
  */
 public class ViewNode extends TreeItem<ModelNode> {
 
-    final Node sysIcon = new ImageView(new Image(Utils.getResourceAsStream("resources/spacecraft.png")));
+    final Node sysIcon = new ImageView(new Image("/resources/spacecraft.png"));
 
-    final Node subsysIcon = new ImageView(new Image(Utils.getResourceAsStream("resources/subsystem.png")));
+    final Node subsysIcon = new ImageView(new Image("/resources/subsystem.png"));
 
-    final Node elementIcon = new ImageView(new Image(Utils.getResourceAsStream("resources/element.png")));
+    final Node elementIcon = new ImageView(new Image("/resources/element.png"));
 
     public ViewNode(SystemModel system) {
         super(system);
@@ -28,12 +27,12 @@ public class ViewNode extends TreeItem<ModelNode> {
         super.setGraphic(subsysIcon);
     }
 
-    public ViewNode(ElementModel elementModel){
+    public ViewNode(ElementModel elementModel) {
         super(elementModel);
         super.setGraphic(elementIcon);
     }
 
-    public ViewNode(InstrumentModel instrumentModel){
+    public ViewNode(InstrumentModel instrumentModel) {
         super(instrumentModel);
     }
 
