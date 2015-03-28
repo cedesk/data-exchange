@@ -5,6 +5,7 @@ import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.wc.*;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 
 import java.io.File;
 
@@ -36,11 +37,12 @@ public class RepositoryStorage {
         FSRepositoryFactory.setup();
     }
 
-    public RepositoryStorage(String url, File wcPath) throws SVNException {
+    public RepositoryStorage(String url, File wcPath, String userName, String password) throws SVNException {
         this.svnUrl = SVNURL.parseURIEncoded(url);
         this.wcPath = wcPath;
 
-        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(RepositoryUtils.DEFAULT_NAME, RepositoryUtils.DEFAULT_PASSWORD);
+        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(
+                userName, password);
         svnClientManager = SVNClientManager.newInstance();
         svnClientManager.setAuthenticationManager(authManager);
     }
@@ -72,54 +74,61 @@ public class RepositoryStorage {
         SVNUpdateClient updateClient = svnClientManager.getUpdateClient();
         updateClient.setIgnoreExternals(false);
         try {
-            long rev = updateClient.doCheckout(svnUrl, wcPath, SVNRevision.HEAD, SVNRevision.HEAD, SVNDepth.INFINITY, false);
+            long rev = updateClient.doCheckout(svnUrl, wcPath, SVNRevision.HEAD, SVNRevision.HEAD, SVNDepth.IMMEDIATES, false);
             return true;
         } catch (SVNException svne) {
             System.err
                     .println("error accessing SVN repository '"
-                            + svnUrl.toString() + "', '" + wcPath.toString() + "': " + svne.getMessage());
+                            + svnUrl.toString() + "', '" + wcPath.toString() + "'\n" + svne.getMessage());
             return false;
         }
     }
 
-    public void updateFile() {
-
+    public boolean updateFile() {
         SVNUpdateClient updateClient = svnClientManager.getUpdateClient();
         updateClient.setIgnoreExternals(false);
         try {
-            long rev = updateClient.doUpdate(wcPath, SVNRevision.HEAD, SVNDepth.INFINITY, false, false);
+            long rev = updateClient.doUpdate(wcPath, SVNRevision.HEAD, SVNDepth.IMMEDIATES, false, false);
+            return true;
         } catch (SVNException svne) {
             System.err
                     .println("error updating working copy from SVN repository '"
-                            + svnUrl.toString() + "', '" + wcPath.toString() + "': " + svne.getMessage());
+                            + svnUrl.toString() + "', '" + wcPath.toString() + "'\n" + svne.getMessage());
         }
+        return false;
     }
 
-    public void commitFile(String commitMessage, String author) {
+    public boolean commitFile(String commitMessage) {
         SVNProperties revisionProperties = new SVNProperties();
-        revisionProperties.put(SVNProperty.LAST_AUTHOR, author);
-        SVNDepth depth = SVNDepth.INFINITY;
+        SVNDepth depth = SVNDepth.IMMEDIATES;
 
         try {
-            SVNCommitInfo svnCommitInfo = svnClientManager.getCommitClient().doCommit(new File[]{wcPath}, false,
+            SVNCommitClient commitClient = svnClientManager.getCommitClient();
+            SVNCommitInfo svnCommitInfo = commitClient.doCommit(new File[]{wcPath}, false,
                     commitMessage, revisionProperties, null, false, true, depth);
-            System.out.println(svnCommitInfo.getNewRevision());
+            long newRevision = svnCommitInfo.getNewRevision();
+            if (newRevision < 0) {
+                StatusLogger.getInstance().log("Nothing to be committed.");
+            }
+            return true;
         } catch (SVNException svne) {
             System.err
                     .println("error committing to SVN repository '"
-                            + svnUrl.toString() + "', '" + wcPath.toString() + "': " + svne.getMessage());
+                            + svnUrl.toString() + "', '" + wcPath.toString() + "'\n" + svne.getMessage());
+            return false;
         }
     }
 
-    public void showStatus() {
+    public boolean cleanup() {
+        SVNWCClient wcClient = svnClientManager.getWCClient();
         try {
-            SVNStatus dataFileStatus = svnClientManager.getStatusClient().doStatus(wcPath, false, false);
-            // TODO: implement handling of status
-            // (new StatusHandler(false)).handleStatus(dataFileStatus);
+            wcClient.doCleanup(wcPath);
+            return true;
         } catch (SVNException svne) {
             System.err
-                    .println("error checking status with SVN repository '"
-                            + svnUrl.toString() + "', '" + wcPath.toString() + "': " + svne.getMessage());
+                    .println("error committing to SVN repository '"
+                            + svnUrl.toString() + "', '" + wcPath.toString() + "'\n" + svne.getMessage());
+            return false;
         }
     }
 

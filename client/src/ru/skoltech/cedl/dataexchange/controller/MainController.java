@@ -13,6 +13,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
@@ -48,13 +50,14 @@ public class MainController implements Initializable {
     @FXML
     public BorderPane layout;
 
-    private StringProperty statusbarProperty = new SimpleStringProperty();
-
     private final StudyModel studyModel = new StudyModel();
 
     private EditingController editingController;
 
-    private static final String defaultAuthor = "default_author";
+    private static final String projectName = "defaultProject";
+    private static final String userName = Utils.getUserName();
+    private static final String password = "";
+
     private static final String commitMessage = "";
 
     public void newModel(ActionEvent actionEvent) {
@@ -65,29 +68,26 @@ public class MainController implements Initializable {
 
     public void loadModel(ActionEvent actionEvent) {
         try {
-            File dataFile = StorageUtils.getDataFile();
+            File dataFile = StorageUtils.getDataFile(projectName);
             SystemModel system;
             if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
                 system = FileStorage.load(dataFile);
                 studyModel.setSystemModel(system);
                 editingController.updateView(system);
             } else {
-                statusbarProperty.setValue("No model available!");
-                System.err.println("No model available!");
+                StatusLogger.getInstance().log("No model available!", true);
             }
         } catch (IOException ex) {
-            statusbarProperty.setValue("Error loading file!");
-            System.err.println("Error loading file!");
+            StatusLogger.getInstance().log("Error loading file!", true);
         }
     }
 
     public void saveModel(ActionEvent actionEvent) {
         try {
-            FileStorage.store(studyModel.getSystemModel(), StorageUtils.getDataFile());
+            FileStorage.store(studyModel.getSystemModel(), StorageUtils.getDataFile(projectName));
             studyModel.setDirty(false);
         } catch (IOException e) {
-            statusbarProperty.setValue("Error saving file !");
-            System.err.println("Error saving file!");
+            StatusLogger.getInstance().log("Error saving file!", true);
         }
     }
 
@@ -105,26 +105,24 @@ public class MainController implements Initializable {
                 boolean success = selectRepository(studyModel);
                 if (success) {
                     repositoryUrl = studyModel.getRepositoryPath();
-                    statusbarProperty.setValue("Successfully selected repository.");
-                    System.out.println("Successfully selected repository.");
+                    StatusLogger.getInstance().log("Successfully selected repository.");
                 } else {
                     return;
                 }
             }
-            File workingCopyDirectory = StorageUtils.getWorkingCopyDirectory();
-            repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory);
-            if (repositoryStorage.checkoutFile()) {
-                statusbarProperty.setValue("Successfully checked out.");
-                System.out.println("Successfully checked out.");
+            File workingCopyDirectory = StorageUtils.getDataDir(projectName);
+            repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
+            // TODO: not always do CHECKOUT (since it overwrites local changes), but do UPDATE
+            boolean success = repositoryStorage.checkoutFile();
+            if (success) {
+                StatusLogger.getInstance().log("Successfully checked out.");
                 studyModel.setCheckedOut(true);
                 ApplicationSettings.setLastUsedRepository(repositoryStorage.getUrl());
             } else {
-                statusbarProperty.setValue("Nothing to check out.");
-                System.out.println("Nothing to check out.");
+                StatusLogger.getInstance().log("Nothing to check out.");
             }
         } catch (SVNException e) {
-            statusbarProperty.setValue("Error connecting to the repository: " + e.getMessage());
-            System.err.println("Error connecting to the repository: " + e.getMessage());
+            StatusLogger.getInstance().log("Error connecting to the repository: " + e.getMessage(), true);
         }
     }
 
@@ -149,6 +147,7 @@ public class MainController implements Initializable {
             boolean validRepositoryPath = false;
             do {
                 Optional<String> result = dialog.showAndWait();
+                // if cancel, then abort selection
                 if (!result.isPresent()) {
                     return false;
                 }
@@ -173,8 +172,7 @@ public class MainController implements Initializable {
             do {
                 File path = directoryChooser.showDialog(null);
                 if (path == null) { // user canceled directory selection
-                    statusbarProperty.setValue("User declined choosing a repository");
-                    System.err.println("User declined choosing a repository");
+                    StatusLogger.getInstance().log("User declined choosing a repository", true);
                     return false;
                 }
 
@@ -197,14 +195,18 @@ public class MainController implements Initializable {
     }
 
     public void commitModel(ActionEvent actionEvent) {
-        File workingCopyDirectory = StorageUtils.getWorkingCopyDirectory();
+        File workingCopyDirectory = StorageUtils.getDataDir(projectName);
         String repositoryUrl = ApplicationSettings.getLastUsedRepository();
         try {
-            RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory);
-            repositoryStorage.commitFile(commitMessage, defaultAuthor);
+            RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
+            boolean success = repositoryStorage.commitFile(commitMessage);
+            if (success) {
+                StatusLogger.getInstance().log("Successfully committed to repository.");
+            } else {
+                StatusLogger.getInstance().log("Committing to repository failed.", true);
+            }
         } catch (SVNException e) {
-            System.err.println("Error committing to repository.");
-            e.printStackTrace();
+            StatusLogger.getInstance().log("Error connecting to the repository: " + e.getMessage(), true);
         }
     }
 
@@ -216,7 +218,7 @@ public class MainController implements Initializable {
         //commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty()));
 
         // STATUSBAR
-        statusbarLabel.textProperty().bind(statusbarProperty);
+        statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
 
         // EDITING PANE
         try {
