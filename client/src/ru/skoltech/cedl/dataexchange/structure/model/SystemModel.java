@@ -1,17 +1,13 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by D.Knoll on 11.03.2015.
  */
 @XmlRootElement
-public class SystemModel extends ModelNode {
-
-    private List<SubSystemModel> subSystems = new LinkedList<>();
+public class SystemModel extends CompositeModelNode<SubSystemModel> {
 
     public SystemModel() {
         super();
@@ -20,22 +16,5 @@ public class SystemModel extends ModelNode {
     public SystemModel(String name) {
         super(name);
     }
-
-    public List<SubSystemModel> getSubSystems() {
-        return subSystems;
-    }
-
-    public void setSubSystems(List<SubSystemModel> subSystems) {
-        this.subSystems = subSystems;
-    }
-
-    public boolean addSubsystem(SubSystemModel subSystem) {
-        return subSystems.add(subSystem);
-    }
-
-    public Iterator<SubSystemModel> iterator() {
-        return subSystems.iterator();
-    }
-
 
 }
