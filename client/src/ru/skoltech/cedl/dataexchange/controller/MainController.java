@@ -57,6 +57,8 @@ public class MainController implements Initializable {
 
     private EditingController editingController;
 
+    private RepositoryWatcher repositoryWatcher;
+
     private static final String projectName = "defaultProject";
     private static final String userName = Utils.getUserName();
     private static final String password = "";
@@ -197,16 +199,7 @@ public class MainController implements Initializable {
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
-        File workingCopyDirectory = StorageUtils.getDataDir(projectName);
-        String repositoryUrl = ApplicationSettings.getLastUsedRepository();
-        try {
-            RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
-            RepositoryWatcher repositoryWatcher = new RepositoryWatcher(repositoryStorage);
-            statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
-            repositoryWatcher.start();
-        } catch (SVNException e) {
-            System.err.println("Error making repository watcher.\n" + e.getMessage());
-        }
+        makeRepositoryWatcher();
 
         // EDITING PANE
         try {
@@ -220,6 +213,23 @@ public class MainController implements Initializable {
             throw new RuntimeException(ioe);
         }
 
+    }
+
+    private void makeRepositoryWatcher() {
+        File workingCopyDirectory = StorageUtils.getDataDir(projectName);
+        String repositoryUrl = ApplicationSettings.getLastUsedRepository();
+        try {
+            RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
+            repositoryWatcher = new RepositoryWatcher(repositoryStorage);
+            statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
+            repositoryWatcher.start();
+        } catch (SVNException e) {
+            System.err.println("Error making repository watcher.\n" + e.getMessage());
+        }
+    }
+
+    public void close() {
+        repositoryWatcher.finish();
     }
 
     public void diffModels(ActionEvent actionEvent) {
