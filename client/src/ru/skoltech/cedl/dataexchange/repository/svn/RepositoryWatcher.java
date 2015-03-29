@@ -12,6 +12,8 @@ public class RepositoryWatcher extends Thread {
 
     private long timing = DEFAULT_TIMING;
 
+    private boolean continueRunning = true;
+
     private RepositoryStorage repositoryStorage;
 
     private BooleanProperty repositoryNewer = new SimpleBooleanProperty();
@@ -27,7 +29,7 @@ public class RepositoryWatcher extends Thread {
 
     @Override
     public void run() {
-        while (!interrupted()) {
+        while (continueRunning) {
             boolean remoteRepositoryNewer = repositoryStorage.isRemoteRepositoryNewer();
             repositoryNewer.setValue(remoteRepositoryNewer);
             try {
@@ -36,6 +38,12 @@ public class RepositoryWatcher extends Thread {
                 // ignore
             }
         }
+        System.out.println("RepositoryWatcher finished.");
+    }
+
+    public void finish() {
+        continueRunning = false;
+        super.interrupt();
     }
 
     public boolean getRepositoryNewer() {
