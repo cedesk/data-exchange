@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.DirectoryChooser;
 
@@ -47,10 +48,20 @@ public class Dialogues {
     }
 
     static Optional<String> inputRemoteRepositoryURL() {
-        TextInputDialog dialog = new TextInputDialog("URL");
+        TextInputDialog dialog = new TextInputDialog("https://");
         dialog.setTitle("Repository URL");
         dialog.setHeaderText("Please insert the URL for the repository. It shall start with 'http' or 'https'.");
         dialog.setContentText("URL:");
+        // TODO: add input validation
+        return dialog.showAndWait();
+    }
+
+    static Optional<String> inputModelNodeName() {
+        TextInputDialog dialog = new TextInputDialog("new-node");
+        dialog.setTitle("Node Name");
+        dialog.setHeaderText("Please insert a name for the new node.");
+        dialog.setContentText("Name");
+        //TODO: add input validation
         return dialog.showAndWait();
     }
 }

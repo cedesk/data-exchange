@@ -1,54 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
-<SplitPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" dividerPositions="0.25"
-           prefHeight="515.0" prefWidth="800.0" BorderPane.alignment="CENTER"
-        fx:controller="ru.skoltech.cedl.dataexchange.controller.EditingController">
+<SplitPane dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0" BorderPane.alignment="CENTER"
+           xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ru.skoltech.cedl.dataexchange.controller.EditingController">
     <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="598.0">
             <children>
-                <TreeView fx:id="structureTree" layoutY="75.0" prefHeight="598.0" prefWidth="197.0"
-                          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                <TreeView fx:id="structureTree" layoutY="75.0" prefHeight="488.0" prefWidth="197.0"
+                          AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                          AnchorPane.topAnchor="0.0"/>
+                <ToolBar layoutX="-11.0" layoutY="479.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                         AnchorPane.rightAnchor="0.0">
+                    <items>
+                        <Button fx:id="addNodeButton" mnemonicParsing="false" onAction="#addNode" text="Add"/>
+                        <Button fx:id="deleteNodeButton" mnemonicParsing="false" onAction="#deleteNode" text="Delete"/>
+                    </items>
+                </ToolBar>
             </children>
         </AnchorPane>
         <AnchorPane>
             <children>
-                <SplitPane dividerPositions="0.75" layoutX="110.0" layoutY="174.0"
-                           orientation="VERTICAL" prefHeight="598.0" prefWidth="557.0"
-                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                           AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <SplitPane dividerPositions="0.75" layoutX="110.0" layoutY="174.0" orientation="VERTICAL"
+                           prefHeight="598.0" prefWidth="557.0" AnchorPane.bottomAnchor="0.0"
+                           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <items>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                             <children>
-                                <TableView fx:id="parameterTable" layoutX="97.0" layoutY="58.0"
-                                           prefHeight="444.0" prefWidth="593.0"
-                                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                <TableView fx:id="parameterTable" layoutX="97.0" layoutY="58.0" prefHeight="444.0"
+                                           prefWidth="593.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                     <columns>
-                                        <TableColumn text="Name" fx:id="parameterNameColumn">
+                                        <TableColumn fx:id="parameterNameColumn" text="Name">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="name"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn text="Value" fx:id="parameterValueColumn">
+                                        <TableColumn fx:id="parameterValueColumn" text="Value">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="value"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn text="Type" fx:id="parameterTypeColumn">
+                                        <TableColumn fx:id="parameterTypeColumn" text="Type">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="type"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn text="Shared" fx:id="parameterSharedColumn">
+                                        <TableColumn fx:id="parameterSharedColumn" text="Shared">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="shared"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn text="Description" fx:id="parameterDescriptionColumn">
+                                        <TableColumn fx:id="parameterDescriptionColumn" text="Description">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="description"/>
                                             </cellValueFactory>
@@ -57,8 +62,7 @@
                                 </TableView>
                             </children>
                         </AnchorPane>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0"
-                                    prefWidth="160.0"/>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0"/>
                     </items>
                 </SplitPane>
             </children>
