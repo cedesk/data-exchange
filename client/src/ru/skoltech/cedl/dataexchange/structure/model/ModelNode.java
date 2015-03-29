@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import javafx.scene.Node;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ public abstract class ModelNode {
     private String name;
 
     private List<ParameterModel> parameters = new LinkedList<>();
+
 
     public ModelNode() {
     }
