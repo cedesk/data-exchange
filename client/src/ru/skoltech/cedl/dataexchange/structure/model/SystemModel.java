@@ -4,6 +4,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 11.03.2015.
@@ -37,5 +39,30 @@ public class SystemModel extends ModelNode {
         return subSystems.iterator();
     }
 
+    @Override
+    public void initializeServerValues(ModelNode modelNode) {
+        super.initializeServerValues(modelNode);
+
+        SystemModel systemModel = (SystemModel)modelNode;
+
+        if (systemModel == null) {
+            return;
+        }
+        Iterator<SubSystemModel> i = iterator();
+        while (i.hasNext()) {
+            SubSystemModel subSystemModel = i.next();
+            List<SubSystemModel> subSystemModels = systemModel.getSubSystems();
+
+            Map<String, SubSystemModel> map1 = subSystemModels.stream().collect(
+                    Collectors.toMap(SubSystemModel::getName, (m) -> m)
+            );
+
+            String n = subSystemModel.getName();
+            if (map1.containsKey(n)) {
+                SubSystemModel compareTo = map1.get(n);
+                subSystemModel.initializeServerValues(compareTo);
+            }
+        }
+    }
 
 }
