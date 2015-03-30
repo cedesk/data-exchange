@@ -3,13 +3,11 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 11.03.2015.
  */
-public class ElementModel extends ModelNode {
+public class ElementModel extends CompositeModelNode<InstrumentModel> {
 
     private List<InstrumentModel> instruments = new LinkedList<>();
 
