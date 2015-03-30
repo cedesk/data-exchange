@@ -11,6 +11,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.converter.DoubleStringConverter;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
@@ -32,6 +33,7 @@ public class EditingController implements Initializable {
     public TableColumn parameterTypeColumn;
     public TableColumn parameterSharedColumn;
     public TableColumn parameterDescriptionColumn;
+    public TableColumn parameterServerValueColumn;
     @FXML
     private TreeView<ModelNode> structureTree;
     @FXML
@@ -67,6 +69,17 @@ public class EditingController implements Initializable {
             }
         });
 
+        parameterServerValueColumn = new TableColumn<ParameterModel, String>("Server Value");
+        parameterServerValueColumn.setCellFactory(
+                TextFieldTableCell.forTableColumn(
+                        new DoubleStringConverter()
+                )
+        );
+        parameterServerValueColumn.setCellValueFactory(new PropertyValueFactory<ParameterModel, String>
+                ("serverValue"));
+        parameterServerValueColumn.setVisible(false);
+
+        parameterTable.getColumns().add(parameterServerValueColumn);
     }
 
     private void displayParameters(ModelNode modelNode) {
@@ -83,6 +96,7 @@ public class EditingController implements Initializable {
     public void updateView(SystemModel system) {
         ViewNode rootNode = ViewTreeFactory.getViewTree(system);
         structureTree.setRoot(rootNode);
+        parameterTable.autosize();
     }
 
     private class TreeItemSelectionListener implements ChangeListener<TreeItem<ModelNode>> {
@@ -95,5 +109,13 @@ public class EditingController implements Initializable {
                 EditingController.this.emptyParameters();
             }
         }
+    }
+
+    public TableView<ParameterModel> getParameterTable() {
+        return parameterTable;
+    }
+
+    public void setParameters(ObservableList<? extends ParameterModel> l) {
+        parameterTable.setItems((ObservableList<ParameterModel>) l);
     }
 }
