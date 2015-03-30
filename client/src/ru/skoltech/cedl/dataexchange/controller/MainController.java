@@ -48,6 +48,8 @@ public class MainController {
 
     private SimpleBooleanProperty isNotInDiffMode = new SimpleBooleanProperty(true);
 
+    private SimpleBooleanProperty isModelOpened = new SimpleBooleanProperty(false);
+
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
     private final StudyModel studyModel = new StudyModel();
@@ -55,6 +57,7 @@ public class MainController {
     private EditingController editingController;
 
     public void newModel(ActionEvent actionEvent) {
+        isModelOpened.setValue(true);
         SystemModel system = DummySystemBuilder.getSystemModel(4);
         studyModel.setSystemModel(system);
         editingController.updateView(system);
@@ -62,6 +65,7 @@ public class MainController {
 
     public void loadModel(ActionEvent actionEvent) {
         try {
+            isModelOpened.setValue(true);
             File dataFile = StorageUtils.getDataFile();
             SystemModel system;
             if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
@@ -91,6 +95,7 @@ public class MainController {
     public void checkoutModel(ActionEvent actionEvent) {
         RepositoryStorage repositoryStorage = null;
         try {
+            isModelOpened.setValue(true);
             String repositoryUrl = ApplicationSettings.getLastUsedRepository();
             if (repositoryUrl == null || repositoryUrl.isEmpty()) {
                 statusbarProperty.setValue("No repository selected.");
@@ -151,6 +156,7 @@ public class MainController {
         openButton.disableProperty().bind(isNotInDiffMode.not());
         exitDiffButton.disableProperty().bind(isNotInDiffMode);
         checkoutButton.disableProperty().bind(isNotInDiffMode.not());
+        diffButton.disableProperty().bind(isModelOpened.not());
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(statusbarProperty);
@@ -179,5 +185,7 @@ public class MainController {
 
     public void exitDiffView(ActionEvent actionEvent) {
         isNotInDiffMode.setValue(true);
+        editingController.parameterServerValueColumn.setVisible(false);
+        // TODO: clean-up the system model.
     }
 }
