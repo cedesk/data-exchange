@@ -35,8 +35,8 @@ public class UtilsTest {
 
         Set<ParameterModel> rs = Utils.symmetricDiffTwoLists(l1, l2);
 
-        Assert.fail("What is actually the expected result?");
-        //Assert.assertTrue("symmetric difference incorrect size", rs.size() == 0);
+        //Assert.fail("What is actually the expected result?");
+        Assert.assertTrue("symmetric difference incorrect size", rs.size() == 3);
 
     }
 

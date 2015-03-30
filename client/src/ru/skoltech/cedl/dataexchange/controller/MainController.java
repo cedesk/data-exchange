@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
@@ -16,7 +17,6 @@ import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
-import ru.skoltech.cedl.dataexchange.structure.model.DiffModel;
 import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.StudyModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -40,9 +40,13 @@ public class MainController {
     @FXML
     public Button diffButton;
     @FXML
+    public Button exitDiffButton;
+    @FXML
     public Label statusbarLabel;
     @FXML
     public BorderPane layout;
+
+    private SimpleBooleanProperty isNotInDiffMode = new SimpleBooleanProperty(true);
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
@@ -141,9 +145,12 @@ public class MainController {
 
     public void setup() {
         // TOOLBAR BUTTONS
-        newButton.disableProperty().bind(studyModel.checkedOutProperty());
-        saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty()));
-        commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty()));
+        newButton.disableProperty().bind(studyModel.checkedOutProperty().or(isNotInDiffMode.not()));
+        saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty().and(isNotInDiffMode)));
+        commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty().and(isNotInDiffMode)));
+        openButton.disableProperty().bind(isNotInDiffMode.not());
+        exitDiffButton.disableProperty().bind(isNotInDiffMode);
+        checkoutButton.disableProperty().bind(isNotInDiffMode.not());
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(statusbarProperty);
@@ -161,9 +168,16 @@ public class MainController {
     }
 
     public void diffModels(ActionEvent actionEvent) {
-        SystemModel m1 = DummySystemBuilder.getSystemModel(3);
-        SystemModel m2 = DummySystemBuilder.getSystemModel(3);
-        DiffModel diff = new DiffModel(m1, m2);
-        // TODO: Change the controller and show the diff table
+        isNotInDiffMode.setValue(false);
+        SystemModel m1 = studyModel.getSystemModel();
+        // TODO: substitute the dummy model with the server one
+        SystemModel m2 = DummySystemBuilder.getSystemModel(4);
+        m1.initializeServerValues(m2);
+        editingController.parameterServerValueColumn.setVisible(true);
+        editingController.updateView(m1);
+    }
+
+    public void exitDiffView(ActionEvent actionEvent) {
+        isNotInDiffMode.setValue(true);
     }
 }
