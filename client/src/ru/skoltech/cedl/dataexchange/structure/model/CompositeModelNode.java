@@ -3,6 +3,8 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 29.03.2015.
@@ -41,5 +43,25 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
 
     public Iterator<SUBNODES> iterator() {
         return subNodes.iterator();
+    }
+
+    public void diffSubNodes(CompositeModelNode serverModelNode) {
+        super.initializeServerValues(serverModelNode);
+
+        Iterator<SUBNODES> i = iterator();
+        while (i.hasNext()) {
+            SUBNODES subSystemModel = i.next();
+            List<ModelNode> subSystemModels = serverModelNode.getSubNodes();
+
+            Map<String, ModelNode> map1 = subSystemModels.stream().collect(
+                    Collectors.toMap(ModelNode::getName, (m) -> m)
+            );
+
+            String n = subSystemModel.getName();
+            if (map1.containsKey(n)) {
+                ModelNode compareTo = map1.get(n);
+                subSystemModel.initializeServerValues(compareTo);
+            }
+        }
     }
 }
