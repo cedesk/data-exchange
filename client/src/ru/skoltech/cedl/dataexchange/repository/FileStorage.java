@@ -1,5 +1,8 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
+import ru.skoltech.cedl.dataexchange.structure.model.ElementModel;
+import ru.skoltech.cedl.dataexchange.structure.model.InstrumentModel;
+import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import javax.xml.bind.JAXBContext;
@@ -22,7 +25,7 @@ public class FileStorage {
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 
-            JAXBContext jc = JAXBContext.newInstance(SystemModel.class);
+            JAXBContext jc = JAXBContext.newInstance(SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class);
 
             Marshaller m = jc.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -35,7 +38,7 @@ public class FileStorage {
 
     public static SystemModel load(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
-            JAXBContext ct = JAXBContext.newInstance(SystemModel.class);
+            JAXBContext ct = JAXBContext.newInstance(SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class);
 
             Unmarshaller u = ct.createUnmarshaller();
             SystemModel systemModel = (SystemModel) u.unmarshal(inp);

@@ -17,12 +17,12 @@ public class DummySystemBuilder {
         system.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
 
         if (level < 2) return system;
-        system.addSubsystem(getSubystem("Power", level - 1));
-        system.addSubsystem(getSubystem("AOCS", level - 1));
-        system.addSubsystem(getSubystem("Thermal", level - 1));
-        system.addSubsystem(getSubystem("Orbit", level - 1));
-        system.addSubsystem(getSubystem("Payload", level - 1));
-        system.addSubsystem(getSubystem("Communication", level - 1));
+        system.addSubNode(getSubystem("Power", level - 1));
+        system.addSubNode(getSubystem("AOCS", level - 1));
+        system.addSubNode(getSubystem("Thermal", level - 1));
+        system.addSubNode(getSubystem("Orbit", level - 1));
+        system.addSubNode(getSubystem("Payload", level - 1));
+        system.addSubNode(getSubystem("Communication", level - 1));
         return system;
     }
 
@@ -36,7 +36,7 @@ public class DummySystemBuilder {
         subSystem.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
 
         if (level < 2) return subSystem;
-        subSystem.addElement(getElement("element " + elementCnt++, level - 1));
+        subSystem.addSubNode(getElement("element " + elementCnt++, level - 1));
         return subSystem;
     }
 
@@ -46,7 +46,7 @@ public class DummySystemBuilder {
         element.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
 
         if (level < 2) return element;
-        element.addInstrument(getInstrument("instrument " + elementCnt + "/" + instrumentCnt++));
+        element.addSubNode(getInstrument("instrument " + elementCnt + "/" + instrumentCnt++));
         return element;
     }
 
