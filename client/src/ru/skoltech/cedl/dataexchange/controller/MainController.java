@@ -14,7 +14,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
-import javafx.stage.DirectoryChooser;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -258,7 +257,7 @@ public class MainController implements Initializable {
         SystemModel m1 = studyModel.getSystemModel();
         // TODO: substitute the dummy model with the server one
         SystemModel m2 = DummySystemBuilder.getSystemModel(4);
-        m1.initializeServerValues(m2);
+        m1.diffSubNodes(m2);
         editingController.parameterServerValueColumn.setVisible(true);
         editingController.updateView(m1);
     }
