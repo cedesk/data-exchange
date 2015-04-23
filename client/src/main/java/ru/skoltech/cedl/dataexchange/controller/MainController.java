@@ -224,7 +224,7 @@ public class MainController implements Initializable {
         // EDITING PANE
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.editingPane);
+            loader.setLocation(Views.EDITING_PANE);
             Parent editingPane = loader.load();
             layout.setCenter(editingPane);
             editingController = loader.getController();
