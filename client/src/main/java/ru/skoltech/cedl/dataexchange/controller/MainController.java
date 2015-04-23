@@ -249,7 +249,9 @@ public class MainController implements Initializable {
     }
 
     public void close() {
-        repositoryWatcher.finish();
+        if (repositoryWatcher != null) {
+            repositoryWatcher.finish();
+        }
     }
 
     public void diffModels(ActionEvent actionEvent) {
