@@ -7,7 +7,8 @@ import java.net.URL;
  */
 public class Views {
 
-    public static final URL applicationView = Views.class.getResource("application-frame.fxml");
+    public static final URL APPLICATION_VIEW = Views.class.getResource("application-frame.fxml");
 
-    public static final URL editingPane = Views.class.getResource("study-editing.fxml");
+    public static final URL EDITING_PANE = Views.class.getResource("study-editing.fxml");
+
 }
