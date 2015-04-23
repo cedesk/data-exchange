@@ -9,11 +9,11 @@ import ru.skoltech.cedl.dataexchange.structure.model.*;
  */
 public class ViewTreeNodeFactory {
 
-    private final static Image SYS_ICON = new Image("/resources/spacecraft.png");
+    private final static Image SYS_ICON = new Image("/spacecraft.png");
 
-    private final static Image SUBSYS_ICON = new Image("/resources/subsystem.png");
+    private final static Image SUBSYS_ICON = new Image("/subsystem.png");
 
-    private final static Image ELEMENT_ICON = new Image("/resources/element.png");
+    private final static Image ELEMENT_ICON = new Image("/element.png");
 
     public static ViewNode getViewTreeNode(ModelNode model) {
 
