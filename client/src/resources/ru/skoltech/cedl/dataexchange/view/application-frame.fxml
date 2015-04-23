@@ -19,7 +19,7 @@
                     <children>
                         <ImageView fitHeight="85.0" fitWidth="129.0">
                             <image>
-                                <Image url="@/resources/Logo0.png" />
+                                <Image url="@/Logo0.png" />
                             </image>
                         </ImageView>
                         <VBox>
