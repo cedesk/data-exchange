@@ -43,16 +43,16 @@ public abstract class ModelNode {
         return parameters;
     }
 
-    @Override
-    public String toString() {
-        return getName();
-    }
-
-    private Map<String, ParameterModel> getParameterMap() {
+    public Map<String, ParameterModel> getParameterMap() {
         Map<String, ParameterModel> parameterModelMap = getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getName, (m) -> m)
         );
         return parameterModelMap;
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 
     public void diffParameters(ModelNode otherModelNode) {
