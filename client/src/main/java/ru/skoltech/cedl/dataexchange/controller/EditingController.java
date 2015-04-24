@@ -20,6 +20,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.converter.DoubleStringConverter;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.structure.view.TextFieldTreeCellImpl;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeNodeFactory;
@@ -60,6 +61,23 @@ public class EditingController implements Initializable {
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
         addNodeButton.disableProperty().bind(selectedNodeIsLeaf);
         deleteNodeButton.disableProperty().bind(selectedNodeIsRoot);
+
+        ContextMenu rootContextMenu = new ContextMenu();
+        MenuItem addNodeMenuItem = new MenuItem("Add subnode");
+        addNodeMenuItem.setOnAction(actionEvent -> EditingController.this.addNode(actionEvent));
+        rootContextMenu.getItems().add(addNodeMenuItem);
+        MenuItem deleteNodeMenuItem = new MenuItem("Delete subnode");
+        deleteNodeMenuItem.setOnAction(actionEvent -> EditingController.this.deleteNode(actionEvent));
+        rootContextMenu.getItems().add(deleteNodeMenuItem);
+        MenuItem renameNodeMenuItem = new MenuItem("Rename subnode");
+        renameNodeMenuItem.setOnAction(actionEvent -> EditingController.this.renameNode(actionEvent));
+        rootContextMenu.getItems().add(renameNodeMenuItem);
+
+        structureTree.setContextMenu(rootContextMenu);
+        structureTree.setEditable(true);
+        structureTree.setCellFactory(p -> new TextFieldTreeCellImpl());
+
+        // NODE PARAMETERS
         addParameterButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
         deleteParameterButton.disableProperty().bind(parameterTable.getSelectionModel().selectedIndexProperty().lessThan(0));
 
@@ -135,7 +153,7 @@ public class EditingController implements Initializable {
 
         if (selectedItem.getValue() instanceof CompositeModelNode) {
             CompositeModelNode node = (CompositeModelNode) selectedItem.getValue();
-            Optional<String> nodeNameChoice = Dialogues.inputModelNodeName();
+            Optional<String> nodeNameChoice = Dialogues.inputModelNodeName("new-node");
             if (nodeNameChoice.isPresent()) {
                 String subNodeName = nodeNameChoice.get();
                 if (node.getSubNodesMap().containsKey(subNodeName)) {
@@ -169,11 +187,32 @@ public class EditingController implements Initializable {
         }
     }
 
+    public void renameNode(ActionEvent actionEvent) {
+        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        ModelNode modelNode = selectedItem.getValue();
+        if (selectedItem == null) throw new AssertionError("no item selected in tree view");
+        Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(modelNode.getName());
+        if (nodeNameChoice.isPresent()) {
+            String nodeName = nodeNameChoice.get();
+            TreeItem<ModelNode> parent = selectedItem.getParent();
+            if (parent != null) {
+                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
+                if (parentNode.getSubNodesMap().containsKey(nodeName)) {
+                    Dialogues.showError("Duplicate node name", "There is already a sibling node named like that!");
+                    return;
+                }
+            }
+            modelNode.setName(nodeName);
+            selectedItem.valueProperty().setValue(modelNode);
+            studyModel.setDirty(true);
+        }
+    }
+
     public void addParameter(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
         if (selectedItem == null) throw new AssertionError("no item selected in tree view");
 
-        Optional<String> parameterNameChoice = Dialogues.inputParameterName();
+        Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
         if (parameterNameChoice.isPresent()) {
             String parameterName = parameterNameChoice.get();
             Map<String, ParameterModel> parameterMap = selectedItem.getValue().getParameterMap();
