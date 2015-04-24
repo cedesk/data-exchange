@@ -64,4 +64,22 @@ public class Dialogues {
         //TODO: add input validation
         return dialog.showAndWait();
     }
+
+    static Optional<String> inputParameterName() {
+        TextInputDialog dialog = new TextInputDialog("new-parameter");
+        dialog.setTitle("Parameter Name");
+        dialog.setHeaderText("Please insert a name for the new parameter.");
+        dialog.setContentText("Name");
+        //TODO: add input validation
+        return dialog.showAndWait();
+    }
+
+    public static Optional<ButtonType> chooseYesNo(String title, String header) {
+        Alert yesNoDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        yesNoDialog.setTitle(title);
+        yesNoDialog.setHeaderText(header);
+        yesNoDialog.setContentText(null);
+        yesNoDialog.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        return yesNoDialog.showAndWait();
+    }
 }

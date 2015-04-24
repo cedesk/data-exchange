@@ -62,7 +62,18 @@
                                 </TableView>
                             </children>
                         </AnchorPane>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0"/>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                            <children>
+                                <ToolBar>
+                                    <items>
+                                        <Button fx:id="addParameterButton" mnemonicParsing="false"
+                                                onAction="#addParameter" text="Add"/>
+                                        <Button fx:id="deleteParameterButton" mnemonicParsing="false"
+                                                onAction="#deleteParameter" text="Delete"/>
+                                    </items>
+                                </ToolBar>
+                            </children>
+                        </AnchorPane>
                     </items>
                 </SplitPane>
             </children>
