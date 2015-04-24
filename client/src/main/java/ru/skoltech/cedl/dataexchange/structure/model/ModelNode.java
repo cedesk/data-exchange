@@ -48,36 +48,33 @@ public abstract class ModelNode {
         return getName();
     }
 
-    public void initializeServerValues(ModelNode modelNode) {
-        List<ParameterModel> thisParams = getParameters();
-        List<ParameterModel> l = modelNode.getParameters();
-
-        Set<ParameterModel> diff = Utils.symmetricDiffTwoLists(thisParams, l);
-
-        Map<String, ParameterModel> map1 = thisParams.stream().collect(
+    private Map<String, ParameterModel> getParameterMap() {
+        Map<String, ParameterModel> parameterModelMap = getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getName, (m) -> m)
         );
+        return parameterModelMap;
+    }
 
-        Map<String, ParameterModel> map2 = l.stream().collect(
-                Collectors.toMap(ParameterModel::getName, (m) -> m)
-        );
+    public void diffParameters(ModelNode otherModelNode) {
+        Set<ParameterModel> diff = Utils.symmetricDiffTwoLists(this.getParameters(), otherModelNode.getParameters());
 
-        Iterator<ParameterModel> i = diff.iterator();
-        while (i.hasNext()) {
-            ParameterModel param = i.next();
+        Map<String, ParameterModel> thisParameterMap = getParameterMap();
+        Map<String, ParameterModel> otherModelNodeParameterMap = otherModelNode.getParameterMap();
+
+        for(ParameterModel param : diff) {
             String n = param.getName();
             ParameterModel diffParam = null;
-            if (map1.containsKey(n) &&
-                    map2.containsKey(n)) {
-                diffParam = map1.get(n);
-                diffParam.setServerValue(map2.get(n).getValue());
-            } else if (map1.containsKey(n)) {
+            if (thisParameterMap.containsKey(n) &&
+                    otherModelNodeParameterMap.containsKey(n)) {
+                diffParam = thisParameterMap.get(n);
+                diffParam.setServerValue(otherModelNodeParameterMap.get(n).getValue());
+            } else if (thisParameterMap.containsKey(n)) {
                 // TODO: This parameter needs to be removed from the model after the user exits the diff view.
-                diffParam = map1.get(n);
+                diffParam = thisParameterMap.get(n);
                 diffParam.setServerValue(null);
-            } else if (map2.containsKey(n)) {
-                diffParam = new ParameterModel(map2.get(n).getName(), null);
-                diffParam.setServerValue(map2.get(n).getValue());
+            } else if (otherModelNodeParameterMap.containsKey(n)) {
+                diffParam = new ParameterModel(otherModelNodeParameterMap.get(n).getName(), null);
+                diffParam.setServerValue(otherModelNodeParameterMap.get(n).getValue());
                 addParameter(diffParam);
             }
         }
