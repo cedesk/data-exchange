@@ -12,12 +12,30 @@ public class ApplicationSettings {
 
     private static final String SETTINGS_FILE = "application.settings";
     private static final String SETTINGS_COMMENTS = "CEDESK application settings";
-    private static final String REPOSITORY = "repository";
+    private static final String REPOSITORY = "study.last.repository.url";
+    public static final String AUTO_LOAD_LAST_STUDY = "study.last.autoload";
+
 
     private static Properties properties = new Properties();
 
     static {
         load();
+    }
+
+    public static boolean getAutoLoadLastStudyOnStartup() {
+        String autoload = properties.getProperty(AUTO_LOAD_LAST_STUDY);
+        if (autoload != null) {
+            return Boolean.parseBoolean(autoload);
+        }
+        return false;
+    }
+
+    public static void setAutoLoadLastStudyOnStartup(boolean autoload) {
+        String prop = properties.getProperty(AUTO_LOAD_LAST_STUDY);
+        if (prop == null || Boolean.parseBoolean(prop) != autoload) {
+            properties.setProperty(AUTO_LOAD_LAST_STUDY, Boolean.toString(autoload));
+            save();
+        }
     }
 
     public static String getLastUsedRepository() {
@@ -50,7 +68,7 @@ public class ApplicationSettings {
         try (FileWriter fileWriter = new FileWriter(SETTINGS_FILE)) {
             properties.store(fileWriter, SETTINGS_COMMENTS);
         } catch (IOException e) {
-            System.err.println("Error loading application settings!");
+            System.err.println("Error saving application settings!");
         }
     }
 
