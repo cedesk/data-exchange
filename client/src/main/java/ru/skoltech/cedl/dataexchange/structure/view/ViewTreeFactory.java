@@ -20,6 +20,11 @@ public class ViewTreeFactory {
                 if (childNode != null) {
                     node.getChildren().add(childNode);
                 }
+            } else {
+                ViewNode childNode = ViewTreeNodeFactory.getViewTreeNode(subNode);
+                if (childNode != null) {
+                    node.getChildren().add(childNode);
+                }
             }
         }
         return node;
