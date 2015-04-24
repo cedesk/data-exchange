@@ -25,6 +25,7 @@ import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeNodeFactory;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
 
 /**
  * Created by D.Knoll on 20.03.2015.
@@ -39,6 +40,8 @@ public class EditingController implements Initializable {
     public TableColumn parameterServerValueColumn;
     public Button addNodeButton;
     public Button deleteNodeButton;
+    public Button addParameterButton;
+    public Button deleteParameterButton;
     @FXML
     private TreeView<ModelNode> structureTree;
     @FXML
@@ -50,6 +53,8 @@ public class EditingController implements Initializable {
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
         addNodeButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
         deleteNodeButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
+        addParameterButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
+        deleteParameterButton.disableProperty().bind(parameterTable.getSelectionModel().selectedIndexProperty().lessThan(0));
 
         // NODE PARAMETER TABLE
         parameterValueColumn.setCellFactory(
@@ -90,17 +95,21 @@ public class EditingController implements Initializable {
         parameterServerValueColumn.setVisible(false);
 
         parameterTable.getColumns().add(parameterServerValueColumn);
+        ObservableList<ParameterModel> data =
+                FXCollections.observableArrayList();
+        parameterTable.setItems(data);
     }
 
     private void displayParameters(ModelNode modelNode) {
-        ObservableList<ParameterModel> data =
-                FXCollections.observableArrayList(modelNode.getParameters());
-        parameterTable.setItems(data);
+        ObservableList<ParameterModel> items = parameterTable.getItems();
+        items.clear();
+        items.addAll(modelNode.getParameters());
         parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
     }
 
     private void emptyParameters() {
-        parameterTable.setItems(null);
+        ObservableList<ParameterModel> items = parameterTable.getItems();
+        items.clear();
     }
 
     public void updateView(SystemModel system) {
@@ -113,11 +122,11 @@ public class EditingController implements Initializable {
         TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
         if (selectedItem == null) throw new AssertionError("no item selected in tree view");
 
-        if(selectedItem.getValue() instanceof CompositeModelNode) {
+        if (selectedItem.getValue() instanceof CompositeModelNode) {
             CompositeModelNode node = (CompositeModelNode) selectedItem.getValue();
-            Optional<String> modelNodeName = Dialogues.inputModelNodeName();
-            if(modelNodeName.isPresent()) {
-                String subNodeName = modelNodeName.get();
+            Optional<String> nodeNameChoice = Dialogues.inputModelNodeName();
+            if (nodeNameChoice.isPresent()) {
+                String subNodeName = nodeNameChoice.get();
                 // TODO: validate that there is no sub-node with that name already
                 ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
                 selectedItem.getChildren().add(ViewTreeNodeFactory.getViewTreeNode(newNode));
@@ -137,10 +146,40 @@ public class EditingController implements Initializable {
             TreeItem<ModelNode> parent = selectedItem.getParent();
             parent.getChildren().remove(selectedItem);
             ModelNode node = selectedItem.getValue();
-            if(parent.getValue() instanceof CompositeModelNode) {
-                CompositeModelNode parentNode = (CompositeModelNode)parent.getValue();
+            if (parent.getValue() instanceof CompositeModelNode) {
+                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                 parentNode.removeSubNode(node);
             }
+        }
+    }
+
+    public void addParameter(ActionEvent actionEvent) {
+        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) throw new AssertionError("no item selected in tree view");
+
+        Optional<String> parameterNameChoice = Dialogues.inputParameterName();
+        if (parameterNameChoice.isPresent()) {
+            String parameterName = parameterNameChoice.get();
+            // TODO: validate that there is no sub-node with that name already
+            // TODO: use factory
+            ParameterModel pm = new ParameterModel(parameterName, 0.0);
+            selectedItem.getValue().addParameter(pm);
+            StatusLogger.getInstance().log("added parameter: " + pm.getName());
+        }
+        displayParameters(selectedItem.getValue());
+    }
+
+    public void deleteParameter(ActionEvent actionEvent) {
+        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        int selectedParameterIndex = parameterTable.getSelectionModel().getSelectedIndex();
+
+        Optional<ButtonType> parameterNameChoice = Dialogues.chooseYesNo("Parameter deletion", "Are you sure you want to delete this parameter?");
+        if (parameterNameChoice.isPresent() && parameterNameChoice.get() == ButtonType.YES) {
+            // TODO: add sanity check if parameter is referenced
+            ParameterModel parameterModel = selectedItem.getValue().getParameters().get(selectedParameterIndex);
+            selectedItem.getValue().getParameters().remove(selectedParameterIndex);
+            StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
+            displayParameters(selectedItem.getValue());
         }
     }
 
@@ -156,11 +195,4 @@ public class EditingController implements Initializable {
         }
     }
 
-    public TableView<ParameterModel> getParameterTable() {
-        return parameterTable;
-    }
-
-    public void setParameters(ObservableList<? extends ParameterModel> l) {
-        parameterTable.setItems((ObservableList<ParameterModel>) l);
-    }
 }
