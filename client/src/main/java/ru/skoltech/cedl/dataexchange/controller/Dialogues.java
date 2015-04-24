@@ -74,12 +74,20 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
-    public static Optional<ButtonType> chooseYesNo(String title, String header) {
+    public static Optional<ButtonType> chooseYesNo(String title, String text) {
         Alert yesNoDialog = new Alert(Alert.AlertType.CONFIRMATION);
         yesNoDialog.setTitle(title);
-        yesNoDialog.setHeaderText(header);
+        yesNoDialog.setHeaderText(text);
         yesNoDialog.setContentText(null);
         yesNoDialog.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
         return yesNoDialog.showAndWait();
     }
+
+    static void showError(String title, String text) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setContentText(text);
+        alert.showAndWait();
+    }
+
 }

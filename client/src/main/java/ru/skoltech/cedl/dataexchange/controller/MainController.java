@@ -79,7 +79,7 @@ public class MainController implements Initializable {
         isModelOpened.setValue(true);
         SystemModel system = DummySystemBuilder.getSystemModel(4);
         studyModel.setSystemModel(system);
-        editingController.updateView(system);
+        editingController.updateView();
     }
 
     public void loadModel(ActionEvent actionEvent) {
@@ -90,7 +90,7 @@ public class MainController implements Initializable {
             if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
                 system = FileStorage.load(dataFile);
                 studyModel.setSystemModel(system);
-                editingController.updateView(system);
+                editingController.updateView();
             } else {
                 StatusLogger.getInstance().log("No model available!", true);
             }
@@ -225,6 +225,7 @@ public class MainController implements Initializable {
             Parent editingPane = loader.load();
             layout.setCenter(editingPane);
             editingController = loader.getController();
+            editingController.setStudyModel(studyModel);
         } catch (IOException ioe) {
             System.err.println("SEVERE ERROR: not able to load editing view pane.");
             throw new RuntimeException(ioe);
@@ -258,7 +259,7 @@ public class MainController implements Initializable {
         SystemModel m2 = DummySystemBuilder.getSystemModel(4);
         m1.diffSubNodes(m2);
         editingController.parameterServerValueColumn.setVisible(true);
-        editingController.updateView(m1);
+        editingController.updateView();
     }
 
     public void exitDiffView(ActionEvent actionEvent) {

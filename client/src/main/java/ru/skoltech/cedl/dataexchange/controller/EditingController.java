@@ -25,6 +25,7 @@ import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
 import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeNodeFactory;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -32,6 +33,8 @@ import java.util.ResourceBundle;
  * Created by D.Knoll on 20.03.2015.
  */
 public class EditingController implements Initializable {
+
+    private StudyModel studyModel;
 
     public TableColumn parameterNameColumn;
     public TableColumn parameterValueColumn;
@@ -48,9 +51,8 @@ public class EditingController implements Initializable {
     @FXML
     private TableView<ParameterModel> parameterTable;
 
-    private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(false);
-
-    private BooleanProperty selectedNodeIsLeaf = new SimpleBooleanProperty(false);
+    private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(true);
+    private BooleanProperty selectedNodeIsLeaf = new SimpleBooleanProperty(true);
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -73,9 +75,9 @@ public class EditingController implements Initializable {
                 ParameterModel parameterModel = event.getTableView().getItems().get(
                         event.getTablePosition().getRow());
                 parameterModel.setValue(event.getNewValue());
-//                if(!event.getOldValue().equals(event.getNewValue())) {
-//                    studyModel.setDirty(true);
-//                }
+                if (!event.getOldValue().equals(event.getNewValue())) {
+                    studyModel.setDirty(true);
+                }
             }
         });
 
@@ -105,6 +107,10 @@ public class EditingController implements Initializable {
         parameterTable.setItems(data);
     }
 
+    public void setStudyModel(StudyModel studyModel) {
+        this.studyModel = studyModel;
+    }
+
     private void displayParameters(ModelNode modelNode) {
         ObservableList<ParameterModel> items = parameterTable.getItems();
         items.clear();
@@ -117,8 +123,8 @@ public class EditingController implements Initializable {
         items.clear();
     }
 
-    public void updateView(SystemModel system) {
-        ViewNode rootNode = ViewTreeFactory.getViewTree(system);
+    public void updateView() {
+        ViewNode rootNode = ViewTreeFactory.getViewTree(studyModel.getSystemModel());
         structureTree.setRoot(rootNode);
         parameterTable.autosize();
     }
@@ -132,10 +138,14 @@ public class EditingController implements Initializable {
             Optional<String> nodeNameChoice = Dialogues.inputModelNodeName();
             if (nodeNameChoice.isPresent()) {
                 String subNodeName = nodeNameChoice.get();
-                // TODO: validate that there is no sub-node with that name already
-                ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
-                selectedItem.getChildren().add(ViewTreeNodeFactory.getViewTreeNode(newNode));
-                selectedItem.setExpanded(true);
+                if (node.getSubNodesMap().containsKey(subNodeName)) {
+                    Dialogues.showError("Duplicate node name", "There is already a subnode named like that!");
+                } else {
+                    ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
+                    selectedItem.getChildren().add(ViewTreeNodeFactory.getViewTreeNode(newNode));
+                    selectedItem.setExpanded(true);
+                    studyModel.setDirty(true);
+                }
             }
         } else {
             StatusLogger.getInstance().log("The selected node may not have subnodes.");
@@ -155,6 +165,7 @@ public class EditingController implements Initializable {
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                 parentNode.removeSubNode(node);
             }
+            studyModel.setDirty(true);
         }
     }
 
@@ -165,11 +176,16 @@ public class EditingController implements Initializable {
         Optional<String> parameterNameChoice = Dialogues.inputParameterName();
         if (parameterNameChoice.isPresent()) {
             String parameterName = parameterNameChoice.get();
-            // TODO: validate that there is no sub-node with that name already
-            // TODO: use factory
-            ParameterModel pm = new ParameterModel(parameterName, 0.0);
-            selectedItem.getValue().addParameter(pm);
-            StatusLogger.getInstance().log("added parameter: " + pm.getName());
+            Map<String, ParameterModel> parameterMap = selectedItem.getValue().getParameterMap();
+            if (parameterMap.containsKey(parameterName)) {
+                Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
+            } else {
+                // TODO: use factory
+                ParameterModel pm = new ParameterModel(parameterName, 0.0);
+                selectedItem.getValue().addParameter(pm);
+                StatusLogger.getInstance().log("added parameter: " + pm.getName());
+                studyModel.setDirty(true);
+            }
         }
         displayParameters(selectedItem.getValue());
     }
@@ -185,6 +201,7 @@ public class EditingController implements Initializable {
             selectedItem.getValue().getParameters().remove(selectedParameterIndex);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
             displayParameters(selectedItem.getValue());
+            studyModel.setDirty(true);
         }
     }
 
