@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -25,7 +27,6 @@ import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeNodeFactory;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.function.Predicate;
 
 /**
  * Created by D.Knoll on 20.03.2015.
@@ -47,12 +48,16 @@ public class EditingController implements Initializable {
     @FXML
     private TableView<ParameterModel> parameterTable;
 
+    private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(false);
+
+    private BooleanProperty selectedNodeIsLeaf = new SimpleBooleanProperty(false);
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // STRUCTURE TREE VIEW
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
-        addNodeButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
-        deleteNodeButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
+        addNodeButton.disableProperty().bind(selectedNodeIsLeaf);
+        deleteNodeButton.disableProperty().bind(selectedNodeIsRoot);
         addParameterButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
         deleteParameterButton.disableProperty().bind(parameterTable.getSelectionModel().selectedIndexProperty().lessThan(0));
 
@@ -189,8 +194,12 @@ public class EditingController implements Initializable {
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
                 EditingController.this.displayParameters(newValue.getValue());
+                selectedNodeIsLeaf.setValue(!(newValue.getValue() instanceof CompositeModelNode));
+                selectedNodeIsRoot.setValue(newValue.getValue() instanceof SystemModel);
             } else {
                 EditingController.this.emptyParameters();
+                selectedNodeIsLeaf.setValue(false);
+                selectedNodeIsRoot.setValue(false);
             }
         }
     }
