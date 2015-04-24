@@ -231,6 +231,9 @@ public class MainController implements Initializable {
             throw new RuntimeException(ioe);
         }
 
+        if(ApplicationSettings.getAutoLoadLastStudyOnStartup()) {
+            loadModel(null);
+        }
     }
 
     private void makeRepositoryWatcher() {
