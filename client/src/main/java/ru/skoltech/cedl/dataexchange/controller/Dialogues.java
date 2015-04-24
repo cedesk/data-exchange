@@ -56,8 +56,8 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
-    static Optional<String> inputModelNodeName() {
-        TextInputDialog dialog = new TextInputDialog("new-node");
+    static Optional<String> inputModelNodeName(String defaultValue) {
+        TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Node Name");
         dialog.setHeaderText("Please insert a name for the new node.");
         dialog.setContentText("Name");
@@ -65,8 +65,8 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
-    static Optional<String> inputParameterName() {
-        TextInputDialog dialog = new TextInputDialog("new-parameter");
+    static Optional<String> inputParameterName(String defaultValue) {
+        TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Parameter Name");
         dialog.setHeaderText("Please insert a name for the new parameter.");
         dialog.setContentText("Name");
@@ -83,7 +83,7 @@ public class Dialogues {
         return yesNoDialog.showAndWait();
     }
 
-    static void showError(String title, String text) {
+    public static void showError(String title, String text) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setContentText(text);
