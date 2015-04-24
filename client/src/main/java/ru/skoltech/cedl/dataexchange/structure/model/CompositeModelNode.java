@@ -45,22 +45,22 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
         return subNodes.iterator();
     }
 
-    public void diffSubNodes(CompositeModelNode serverModelNode) {
-        super.initializeServerValues(serverModelNode);
+    public Map<String, ModelNode> getSubNodesMap() {
+        Map<String, ModelNode> result = subNodes.stream().collect(
+                Collectors.toMap(ModelNode::getName, (m) -> m)
+        );
+        return result;
+    }
 
-        Iterator<SUBNODES> i = iterator();
-        while (i.hasNext()) {
-            SUBNODES subSystemModel = i.next();
-            List<ModelNode> subSystemModels = serverModelNode.getSubNodes();
+    public void diffSubNodes(CompositeModelNode<SUBNODES> otherModelNode) {
+        super.diffParameters(otherModelNode);
+        Map<String, ModelNode> otherModelSubNodesMap = otherModelNode.getSubNodesMap();
 
-            Map<String, ModelNode> map1 = subSystemModels.stream().collect(
-                    Collectors.toMap(ModelNode::getName, (m) -> m)
-            );
-
-            String n = subSystemModel.getName();
-            if (map1.containsKey(n)) {
-                ModelNode compareTo = map1.get(n);
-                subSystemModel.initializeServerValues(compareTo);
+        for (SUBNODES subSystemModel : subNodes) {
+            String name = subSystemModel.getName();
+            if (otherModelSubNodesMap.containsKey(name)) {
+                ModelNode compareTo = otherModelSubNodesMap.get(name);
+                subSystemModel.diffParameters(compareTo);
             }
         }
     }

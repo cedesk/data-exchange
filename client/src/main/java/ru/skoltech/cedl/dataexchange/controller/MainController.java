@@ -206,16 +206,13 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // TOOLBAR BUTTONS
-        newButton.disableProperty().bind(studyModel.checkedOutProperty());
-        saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty()));
-        //commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty()));
         newButton.disableProperty().bind(studyModel.checkedOutProperty().or(isNotInDiffMode.not()));
-        saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty().and(isNotInDiffMode)));
-        commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty().and(isNotInDiffMode)));
         openButton.disableProperty().bind(isNotInDiffMode.not());
-        exitDiffButton.disableProperty().bind(isNotInDiffMode);
+        saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty().and(isNotInDiffMode)));
         checkoutButton.disableProperty().bind(isNotInDiffMode.not());
+        commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty().and(isNotInDiffMode)));
         diffButton.disableProperty().bind(isModelOpened.not());
+        exitDiffButton.disableProperty().bind(isNotInDiffMode);
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
