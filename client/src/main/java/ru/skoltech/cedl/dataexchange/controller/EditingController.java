@@ -14,6 +14,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -21,10 +22,7 @@ import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.structure.view.TextFieldTreeCellImpl;
-import ru.skoltech.cedl.dataexchange.structure.view.ViewNode;
-import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeFactory;
-import ru.skoltech.cedl.dataexchange.structure.view.ViewTreeNodeFactory;
+import ru.skoltech.cedl.dataexchange.structure.view.*;
 
 import java.net.URL;
 import java.util.Map;
@@ -43,7 +41,6 @@ public class EditingController implements Initializable {
     public TableColumn parameterTypeColumn;
     public TableColumn parameterSharedColumn;
     public TableColumn parameterDescriptionColumn;
-    public TableColumn parameterServerValueColumn;
     public Button addNodeButton;
     public Button deleteNodeButton;
     public Button addParameterButton;
@@ -83,24 +80,30 @@ public class EditingController implements Initializable {
         deleteParameterButton.disableProperty().bind(parameterTable.getSelectionModel().selectedIndexProperty().lessThan(0));
 
         // NODE PARAMETER TABLE
-        parameterValueColumn.setCellFactory(
-                TextFieldTableCell.<ParameterModel, Double>forTableColumn(
-                        new DoubleStringConverter()
-                )
-        );
+        Callback<TableColumn<Object, String>, TableCell<Object, String>> tableCellCallback = TextFieldTableCell.forTableColumn();
+        parameterNameColumn.setCellFactory(tableCellCallback);
+
+        parameterValueColumn.setCellFactory(new Callback<TableColumn<ParameterModel, Object>, TableCell<ParameterModel, Object>>() {
+            @Override
+            public TableCell<ParameterModel, Object> call(TableColumn<ParameterModel, Object> param) {
+                return new ParameterFieldCell(new DoubleStringConverter());
+            }
+        });
         parameterValueColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ParameterModel, Double>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<ParameterModel, Double> event) {
                 ParameterModel parameterModel = event.getTableView().getItems().get(
                         event.getTablePosition().getRow());
-                parameterModel.setValue(event.getNewValue());
                 if (!event.getOldValue().equals(event.getNewValue())) {
+                    parameterModel.setValue(event.getNewValue());
                     studyModel.setDirty(true);
                 }
             }
         });
 
-        Callback<TableColumn<Object, String>, TableCell<Object, String>> tableCellCallback = TextFieldTableCell.forTableColumn();
+        parameterSharedColumn.setCellFactory(CheckBoxTableCell.forTableColumn(parameterSharedColumn));
+        // TODO: handle checkbox change to change on parameter model
+
         parameterDescriptionColumn.setCellFactory(tableCellCallback);
         parameterDescriptionColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ParameterModel, String>>() {
             @Override
@@ -111,43 +114,8 @@ public class EditingController implements Initializable {
             }
         });
 
-        parameterServerValueColumn = new TableColumn<ParameterModel, String>("Server Value");
-        parameterServerValueColumn.setCellFactory(
-                TextFieldTableCell.forTableColumn(
-                        new DoubleStringConverter()
-                )
-        );
-        parameterServerValueColumn.setCellValueFactory(new PropertyValueFactory<ParameterModel, String>
-                ("serverValue"));
-        parameterServerValueColumn.setVisible(false);
-
-        parameterTable.getColumns().add(parameterServerValueColumn);
-        ObservableList<ParameterModel> data =
-                FXCollections.observableArrayList();
+        ObservableList<ParameterModel> data = FXCollections.observableArrayList();
         parameterTable.setItems(data);
-
-        parameterTable.setRowFactory(new Callback<TableView<ParameterModel>, TableRow<ParameterModel>>() {
-            @Override
-            public TableRow<ParameterModel> call(TableView<ParameterModel> tv) {
-                return new TableRow<ParameterModel>() {
-                    private Tooltip tooltip = new Tooltip();
-
-                    @Override
-                    public void updateItem(ParameterModel param, boolean empty) {
-                        super.updateItem(param, empty);
-                        if (param == null) {
-                            setTooltip(null);
-                        } else {
-                            tooltip.setText(param.getName() + ": " + param.getValue().toString());
-                            setTooltip(tooltip);
-                        }
-                    }
-                };
-            }
-        });
-
-        //parameterTable.setTooltip(new Tooltip("tooltip for parameter table"));
-
     }
 
     public void setStudyModel(StudyModel studyModel) {
