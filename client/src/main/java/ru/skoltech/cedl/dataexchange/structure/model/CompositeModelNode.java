@@ -60,7 +60,11 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
             String name = subSystemModel.getName();
             if (otherModelSubNodesMap.containsKey(name)) {
                 ModelNode compareTo = otherModelSubNodesMap.get(name);
-                subSystemModel.diffParameters(compareTo);
+                if(subSystemModel instanceof CompositeModelNode && compareTo instanceof CompositeModelNode) {
+                    ((CompositeModelNode) subSystemModel).diffSubNodes((CompositeModelNode) compareTo);
+                } else {
+                    subSystemModel.diffParameters(compareTo);
+                }
             }
         }
     }
