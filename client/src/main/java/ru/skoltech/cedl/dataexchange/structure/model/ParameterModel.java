@@ -6,14 +6,13 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-@XmlType(propOrder = {"name", "value", "serverValue", "type", "isShared", "description"})
+@XmlType(propOrder = {"name", "value", "type", "isShared", "description"})
 public class ParameterModel implements Comparable<ParameterModel> {
 
     private String name;
 
     private Double value;
 
-    @XmlTransient
     private Double serverValue;
 
     private ParameterType type = ParameterType.DefaultValue;
@@ -54,6 +53,7 @@ public class ParameterModel implements Comparable<ParameterModel> {
         this.value = value;
     }
 
+    @XmlTransient
     public Double getServerValue() { return serverValue; }
 
     public void setServerValue(Double serverValue) { this.serverValue = serverValue; }
