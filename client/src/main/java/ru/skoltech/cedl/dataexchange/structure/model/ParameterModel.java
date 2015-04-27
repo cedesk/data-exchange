@@ -102,4 +102,13 @@ public class ParameterModel implements Comparable<ParameterModel> {
             return super.equals(obj);
         }
     }
+
+    public boolean hasServerChange() {
+        if(getServerValue() != null) {
+            // TODO: account for floating point comparison with imprecision
+            return !getValue().equals(getServerValue());
+        } else {
+            return false;
+        }
+    }
 }
