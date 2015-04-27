@@ -69,12 +69,12 @@ public abstract class ModelNode {
                 diffParam = thisParameterMap.get(n);
                 diffParam.setServerValue(otherModelNodeParameterMap.get(n).getValue());
             } else if (thisParameterMap.containsKey(n)) {
-                // TODO: This parameter needs to be removed from the model after the user exits the diff view.
                 diffParam = thisParameterMap.get(n);
                 diffParam.setServerValue(null);
             } else if (otherModelNodeParameterMap.containsKey(n)) {
                 diffParam = new ParameterModel(otherModelNodeParameterMap.get(n).getName(), null);
                 diffParam.setServerValue(otherModelNodeParameterMap.get(n).getValue());
+                // TODO: This parameter needs to be removed from the model after the user exits the diff view.
                 addParameter(diffParam);
             }
         }
