@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.repository.svn;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 
 /**
  * Created by D.Knoll on 28.03.2015.
@@ -9,6 +10,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 public class RepositoryWatcher extends Thread {
 
     public final long DEFAULT_TIMING = 10;
+    private final String projectName;
 
     private long timing = DEFAULT_TIMING;
 
@@ -18,13 +20,17 @@ public class RepositoryWatcher extends Thread {
 
     private BooleanProperty repositoryNewer = new SimpleBooleanProperty();
 
-    public RepositoryWatcher(RepositoryStorage repositoryStorage) {
+    private BooleanProperty workingCopyModified = new SimpleBooleanProperty();
+
+    public RepositoryWatcher(RepositoryStorage repositoryStorage, String projectName) {
         this.repositoryStorage = repositoryStorage;
+        this.projectName = projectName;
     }
 
-    public RepositoryWatcher(RepositoryStorage repositoryStorage, long timing) {
+    public RepositoryWatcher(RepositoryStorage repositoryStorage, long timing, String projectName) {
         this.repositoryStorage = repositoryStorage;
         this.timing = timing;
+        this.projectName = projectName;
     }
 
     @Override
@@ -32,6 +38,8 @@ public class RepositoryWatcher extends Thread {
         while (continueRunning) {
             boolean remoteRepositoryNewer = repositoryStorage.isRemoteRepositoryNewer();
             repositoryNewer.setValue(remoteRepositoryNewer);
+            boolean wcCopyModified = repositoryStorage.isWorkingCopyModified(StorageUtils.getDataFile(projectName));
+            workingCopyModified.setValue(wcCopyModified);
             try {
                 sleep(timing * 1000);
             } catch (InterruptedException e) {
@@ -53,4 +61,13 @@ public class RepositoryWatcher extends Thread {
     public BooleanProperty repositoryNewerProperty() {
         return repositoryNewer;
     }
+
+    public boolean getWorkingCopyModified() {
+        return workingCopyModified.get();
+    }
+
+    public BooleanProperty workingCopyModifiedProperty() {
+        return workingCopyModified;
+    }
+
 }

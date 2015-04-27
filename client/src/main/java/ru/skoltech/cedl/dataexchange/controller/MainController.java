@@ -57,6 +57,8 @@ public class MainController implements Initializable {
     @FXML
     public CheckBox statusbarRepositoryNewer;
     @FXML
+    public CheckBox workingCopyModified;
+    @FXML
     public BorderPane layout;
 
     private SimpleBooleanProperty isNotInDiffMode = new SimpleBooleanProperty(true);
@@ -243,8 +245,9 @@ public class MainController implements Initializable {
         String repositoryUrl = ApplicationSettings.getLastUsedRepository();
         try {
             RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
-            repositoryWatcher = new RepositoryWatcher(repositoryStorage);
+            repositoryWatcher = new RepositoryWatcher(repositoryStorage, projectName);
             statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
+            workingCopyModified.selectedProperty().bind(repositoryWatcher.workingCopyModifiedProperty());
             repositoryWatcher.start();
         } catch (SVNException e) {
             System.err.println("Error making repository watcher.\n" + e.getMessage());

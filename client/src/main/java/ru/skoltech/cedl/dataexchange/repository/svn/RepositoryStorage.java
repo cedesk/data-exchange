@@ -95,7 +95,9 @@ public class RepositoryStorage {
             SVNStatusClient statusClient = svnClientManager.getStatusClient();
             SVNStatus svnStatus = statusClient.doStatus(dataFile, true, false);
             SVNStatusType statusType = svnStatus.getNodeStatus();
-            return statusType == SVNStatusType.STATUS_MODIFIED;
+            boolean wcModified = svnStatus.getContentsStatus() == SVNStatusType.STATUS_MODIFIED;
+            System.out.println("workingCopyModified: " + wcModified);
+            return wcModified;
         } catch (SVNException e) {
             System.err.println("Error checking working copy revision.");
         }
