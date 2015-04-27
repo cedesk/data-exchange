@@ -4,8 +4,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -15,7 +13,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
@@ -52,6 +49,7 @@ public class EditingController implements Initializable {
 
     private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeIsLeaf = new SimpleBooleanProperty(true);
+    private ViewParameters viewParameters;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -73,7 +71,12 @@ public class EditingController implements Initializable {
 
         structureTree.setContextMenu(rootContextMenu);
         structureTree.setEditable(true);
-        structureTree.setCellFactory(p -> new TextFieldTreeCellImpl());
+        structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
+            @Override
+            public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
+                return new TextFieldTreeCell();
+            }
+        });
 
         // NODE PARAMETERS
         addParameterButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
@@ -114,24 +117,21 @@ public class EditingController implements Initializable {
             }
         });
 
-        ObservableList<ParameterModel> data = FXCollections.observableArrayList();
-        parameterTable.setItems(data);
+        viewParameters = new ViewParameters();
+        parameterTable.setItems(viewParameters.getItems());
     }
 
     public void setStudyModel(StudyModel studyModel) {
         this.studyModel = studyModel;
     }
 
-    private void displayParameters(ModelNode modelNode) {
-        ObservableList<ParameterModel> items = parameterTable.getItems();
-        items.clear();
-        items.addAll(modelNode.getParameters());
+    private void updateParameterTable(ModelNode modelNode) {
+        viewParameters.displayParameters(modelNode.getParameters());
         parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
     }
 
-    private void emptyParameters() {
-        ObservableList<ParameterModel> items = parameterTable.getItems();
-        items.clear();
+    private void clearParameterTable() {
+        parameterTable.getItems().clear();
     }
 
     public void updateView() {
@@ -219,7 +219,7 @@ public class EditingController implements Initializable {
                 studyModel.setDirty(true);
             }
         }
-        displayParameters(selectedItem.getValue());
+        updateParameterTable(selectedItem.getValue());
     }
 
     public void deleteParameter(ActionEvent actionEvent) {
@@ -232,7 +232,7 @@ public class EditingController implements Initializable {
             ParameterModel parameterModel = selectedItem.getValue().getParameters().get(selectedParameterIndex);
             selectedItem.getValue().getParameters().remove(selectedParameterIndex);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
-            displayParameters(selectedItem.getValue());
+            updateParameterTable(selectedItem.getValue());
             studyModel.setDirty(true);
         }
     }
@@ -242,11 +242,11 @@ public class EditingController implements Initializable {
         public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable,
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
-                EditingController.this.displayParameters(newValue.getValue());
+                EditingController.this.updateParameterTable(newValue.getValue());
                 selectedNodeIsLeaf.setValue(!(newValue.getValue() instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(newValue.getValue() instanceof SystemModel);
             } else {
-                EditingController.this.emptyParameters();
+                EditingController.this.clearParameterTable();
                 selectedNodeIsLeaf.setValue(false);
                 selectedNodeIsRoot.setValue(false);
             }

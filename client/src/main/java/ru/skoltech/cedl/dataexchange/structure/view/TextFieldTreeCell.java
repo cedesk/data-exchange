@@ -14,11 +14,11 @@ import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 /**
  * Created by D.Knoll on 24.04.2015.
  */
-public class TextFieldTreeCellImpl extends TreeCell<ModelNode> {
+public class TextFieldTreeCell extends TreeCell<ModelNode> {
 
     private TextField textField;
 
-    public TextFieldTreeCellImpl() {
+    public TextFieldTreeCell() {
     }
 
     @Override
