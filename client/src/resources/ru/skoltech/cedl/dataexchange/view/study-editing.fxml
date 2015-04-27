@@ -50,7 +50,7 @@
                                         </TableColumn>
                                         <TableColumn fx:id="parameterSharedColumn" text="Shared">
                                             <cellValueFactory>
-                                                <PropertyValueFactory property="shared"/>
+                                                <PropertyValueFactory property="isShared"/>
                                             </cellValueFactory>
                                         </TableColumn>
                                         <TableColumn fx:id="parameterDescriptionColumn" text="Description">

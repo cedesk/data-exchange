@@ -9,7 +9,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
@@ -260,7 +263,6 @@ public class MainController implements Initializable {
         SystemModel remoteModel = getModelFromRepository();
 
         localModel.diffSubNodes(remoteModel);
-        editingController.parameterServerValueColumn.setVisible(true);
         editingController.updateView();
     }
 
@@ -280,7 +282,6 @@ public class MainController implements Initializable {
 
     public void exitDiffView(ActionEvent actionEvent) {
         isNotInDiffMode.setValue(true);
-        editingController.parameterServerValueColumn.setVisible(false);
         // TODO: clean-up the system model.
     }
 }
