@@ -213,8 +213,6 @@ public class MainController implements Initializable {
         diffButton.disableProperty().bind(isModelOpened.not());
         exitDiffButton.disableProperty().bind(isNotInDiffMode);
 
-        diffButton.setTooltip(new Tooltip("Tooltip for Button"));
-
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
         makeRepositoryWatcher();

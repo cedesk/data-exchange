@@ -17,6 +17,7 @@ import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -99,7 +100,8 @@ public class EditingController implements Initializable {
             }
         });
 
-        parameterDescriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        Callback<TableColumn<Object, String>, TableCell<Object, String>> tableCellCallback = TextFieldTableCell.forTableColumn();
+        parameterDescriptionColumn.setCellFactory(tableCellCallback);
         parameterDescriptionColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ParameterModel, String>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<ParameterModel, String> event) {
@@ -123,6 +125,29 @@ public class EditingController implements Initializable {
         ObservableList<ParameterModel> data =
                 FXCollections.observableArrayList();
         parameterTable.setItems(data);
+
+        parameterTable.setRowFactory(new Callback<TableView<ParameterModel>, TableRow<ParameterModel>>() {
+            @Override
+            public TableRow<ParameterModel> call(TableView<ParameterModel> tv) {
+                return new TableRow<ParameterModel>() {
+                    private Tooltip tooltip = new Tooltip();
+
+                    @Override
+                    public void updateItem(ParameterModel param, boolean empty) {
+                        super.updateItem(param, empty);
+                        if (param == null) {
+                            setTooltip(null);
+                        } else {
+                            tooltip.setText(param.getName() + ": " + param.getValue().toString());
+                            setTooltip(tooltip);
+                        }
+                    }
+                };
+            }
+        });
+
+        //parameterTable.setTooltip(new Tooltip("tooltip for parameter table"));
+
     }
 
     public void setStudyModel(StudyModel studyModel) {
