@@ -9,16 +9,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
@@ -30,6 +28,7 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -214,6 +213,8 @@ public class MainController implements Initializable {
         diffButton.disableProperty().bind(isModelOpened.not());
         exitDiffButton.disableProperty().bind(isNotInDiffMode);
 
+        diffButton.setTooltip(new Tooltip("Tooltip for Button"));
+
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
         makeRepositoryWatcher();
@@ -231,7 +232,7 @@ public class MainController implements Initializable {
             throw new RuntimeException(ioe);
         }
 
-        if(ApplicationSettings.getAutoLoadLastStudyOnStartup()) {
+        if (ApplicationSettings.getAutoLoadLastStudyOnStartup()) {
             loadModel(null);
         }
     }
@@ -257,12 +258,26 @@ public class MainController implements Initializable {
 
     public void diffModels(ActionEvent actionEvent) {
         isNotInDiffMode.setValue(false);
-        SystemModel m1 = studyModel.getSystemModel();
-        // TODO: substitute the dummy model with the server one
-        SystemModel m2 = DummySystemBuilder.getSystemModel(4);
-        m1.diffSubNodes(m2);
+        SystemModel localModel = studyModel.getSystemModel();
+        SystemModel remoteModel = getModelFromRepository();
+
+        localModel.diffSubNodes(remoteModel);
         editingController.parameterServerValueColumn.setVisible(true);
         editingController.updateView();
+    }
+
+    private SystemModel getModelFromRepository() {
+        SystemModel remoteModel = null;
+        File workingCopyDirectory = StorageUtils.getDataDir(projectName);
+        String repositoryUrl = ApplicationSettings.getLastUsedRepository();
+        try {
+            RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
+            InputStream inStr = repositoryStorage.getFileContentFromRepository(StorageUtils.getDataFileName());
+            remoteModel = RemoteStorage.load(inStr);
+        } catch (IOException | SVNException e) {
+            System.err.println("Error getting versioned remote data file.\n" + e.getMessage());
+        }
+        return remoteModel;
     }
 
     public void exitDiffView(ActionEvent actionEvent) {
