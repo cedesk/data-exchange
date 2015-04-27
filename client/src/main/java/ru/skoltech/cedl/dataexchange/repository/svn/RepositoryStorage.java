@@ -9,17 +9,20 @@ import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.*;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 
 /**
  * Created by D.Knoll on 17.03.2015.
  */
 public class RepositoryStorage {
 
-    private SVNURL svnUrl;
-    private File wcPath;
-
-    private SVNClientManager svnClientManager;
+    private final SVNURL svnUrl;
+    private final File wcPath;
+    private final SVNClientManager svnClientManager;
+    private final ISVNAuthenticationManager authManager;
 
     static {
         setupLibrary();
@@ -43,7 +46,7 @@ public class RepositoryStorage {
         this.svnUrl = SVNURL.parseURIEncoded(url);
         this.wcPath = wcPath;
 
-        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(
+        authManager = SVNWCUtil.createDefaultAuthenticationManager(
                 userName, password);
         svnClientManager = SVNClientManager.newInstance();
         svnClientManager.setAuthenticationManager(authManager);
@@ -160,6 +163,25 @@ public class RepositoryStorage {
                             + svnUrl.toString() + "', '" + wcPath.toString() + "'\n" + svne.getMessage());
             return false;
         }
+    }
+
+    public InputStream getFileContentFromRepository(String fileName) {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        try {
+            SVNRepository repository = SVNRepositoryFactory.create(svnUrl);
+            repository.setAuthenticationManager(authManager);
+            SVNProperties fileProperties = new SVNProperties();
+            repository.getFile(fileName, -1, fileProperties, baos);
+
+        } catch (SVNException svne) {
+            System.err
+                    .println("error accessing SVN repository '"
+                            + svnUrl + "', '" + fileName + "': " + svne.getMessage());
+            return null;
+        }
+        return new ByteArrayInputStream(baos.toByteArray());
     }
 
 }
