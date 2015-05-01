@@ -17,15 +17,14 @@ import javafx.scene.layout.BorderPane;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.model.StudyModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -67,33 +66,31 @@ public class MainController implements Initializable {
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
-    private final StudyModel studyModel = new StudyModel();
+    private final Project project = new Project();
 
     private EditingController editingController;
 
     private RepositoryWatcher repositoryWatcher;
 
-    private static final String projectName = "defaultProject";
-    private static final String userName = Utils.getUserName();
-    private static final String password = "";
+
 
     private static final String commitMessage = "";
 
     public void newModel(ActionEvent actionEvent) {
         isModelOpened.setValue(true);
         SystemModel system = DummySystemBuilder.getSystemModel(4);
-        studyModel.setSystemModel(system);
+        project.setSystemModel(system);
         editingController.updateView();
     }
 
     public void loadModel(ActionEvent actionEvent) {
         try {
-            File dataFile = StorageUtils.getDataFile(projectName);
+            File dataFile = project.getDataFile();
             isModelOpened.setValue(true);
             SystemModel system;
             if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
                 system = FileStorage.load(dataFile);
-                studyModel.setSystemModel(system);
+                project.setSystemModel(system);
                 editingController.updateView();
             } else {
                 StatusLogger.getInstance().log("No model available!", true);
@@ -105,8 +102,8 @@ public class MainController implements Initializable {
 
     public void saveModel(ActionEvent actionEvent) {
         try {
-            FileStorage.store(studyModel.getSystemModel(), StorageUtils.getDataFile(projectName));
-            studyModel.setDirty(false);
+            FileStorage.store(project.getSystemModel(), project.getDataFile());
+            project.setDirty(false);
         } catch (IOException e) {
             StatusLogger.getInstance().log("Error saving file!", true);
         }
@@ -116,26 +113,22 @@ public class MainController implements Initializable {
         RepositoryStorage repositoryStorage = null;
         try {
             isModelOpened.setValue(true);
-            String repositoryUrl = ApplicationSettings.getLastUsedRepository();
-            if (!RepositoryUtils.checkRepository(repositoryUrl)) {
+            if (!RepositoryUtils.checkRepository(project.getRepositoryPath(), Project.getDataFileName())) {
                 Dialogues.showInvalidRepositoryWarning();
                 StatusLogger.getInstance().log("No repository selected.");
-                boolean success = selectRepository(studyModel);
+                boolean success = changeProjectRepository(project);
                 if (success) {
-                    repositoryUrl = studyModel.getRepositoryPath();
                     StatusLogger.getInstance().log("Successfully selected repository.");
                 } else {
                     return;
                 }
             }
-            File workingCopyDirectory = StorageUtils.getDataDir(projectName);
-            repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
+            repositoryStorage = new RepositoryStorage(project);
             // TODO: not always do CHECKOUT (since it overwrites local changes), but do UPDATE
             boolean success = repositoryStorage.checkoutFile();
             if (success) {
                 StatusLogger.getInstance().log("Successfully checked out.");
-                studyModel.setCheckedOut(true);
-                ApplicationSettings.setLastUsedRepository(repositoryStorage.getUrl());
+                project.setCheckedOut(true);
             } else {
                 StatusLogger.getInstance().log("Nothing to check out.");
             }
@@ -144,7 +137,7 @@ public class MainController implements Initializable {
         }
     }
 
-    private boolean selectRepository(StudyModel sModel) {
+    private boolean changeProjectRepository(Project project) {
 
         Optional<ButtonType> selection = Dialogues.chooseLocalOrRemoteRepository();
         if (selection.get() == Dialogues.REMOTE_REPO) {
@@ -157,12 +150,12 @@ public class MainController implements Initializable {
                     return false;
                 }
                 String url = result.get();
-                validRepositoryPath = RepositoryUtils.checkRepository(url);
+                validRepositoryPath = RepositoryUtils.checkRepository(url, Project.getDataFileName());
                 if (validRepositoryPath) {
-                    sModel.setRepositoryPath(url);
+                    project.setRepositoryPath(url);
                 } else {
                     Dialogues.showInvalidRepositoryPath();
-                    StatusLogger.getInstance().log("Error selected invalid path.", true);
+                    StatusLogger.getInstance().log("Error, selected path is invalid.", true);
                 }
             } while (!validRepositoryPath);
             return true;
@@ -172,17 +165,17 @@ public class MainController implements Initializable {
             do {
                 File path = Dialogues.chooseLocalRepositoryPath();
                 if (path == null) { // user canceled directory selection
-                    StatusLogger.getInstance().log("User declined choosing a repository", true);
+                    StatusLogger.getInstance().log("User declined choosing a repository.", true);
                     return false;
                 }
 
                 String url = RepositoryUtils.makeUrlFromPath(path);
-                validRepositoryPath = RepositoryUtils.checkRepository(url);
+                validRepositoryPath = RepositoryUtils.checkRepository(url, Project.getDataFileName());
                 if (validRepositoryPath) {
-                    sModel.setRepositoryPath(url);
+                    project.setRepositoryPath(url);
                 } else {
                     Dialogues.showInvalidRepositoryPath();
-                    StatusLogger.getInstance().log("Error selected invalid path.", true);
+                    StatusLogger.getInstance().log("Error, selected path is invalid.", true);
                 }
             } while (!validRepositoryPath);
             return true;
@@ -192,10 +185,8 @@ public class MainController implements Initializable {
     }
 
     public void commitModel(ActionEvent actionEvent) {
-        File workingCopyDirectory = StorageUtils.getDataDir(projectName);
-        String repositoryUrl = ApplicationSettings.getLastUsedRepository();
         try {
-            RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
+            RepositoryStorage repositoryStorage = new RepositoryStorage(project);
             boolean success = repositoryStorage.commitFile(commitMessage);
             if (success) {
                 StatusLogger.getInstance().log("Successfully committed to repository.");
@@ -209,12 +200,17 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
+            String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
+            project.setProjectName(projectName);
+        }
+
         // TOOLBAR BUTTONS
-        newButton.disableProperty().bind(studyModel.checkedOutProperty().or(isNotInDiffMode.not()));
+        newButton.disableProperty().bind(project.checkedOutProperty().or(isNotInDiffMode.not()));
         openButton.disableProperty().bind(isNotInDiffMode.not());
-        saveButton.disableProperty().bind(Bindings.not(studyModel.dirtyProperty().and(isNotInDiffMode)));
+        saveButton.disableProperty().bind(Bindings.not(project.dirtyProperty().and(isNotInDiffMode)));
         checkoutButton.disableProperty().bind(isNotInDiffMode.not());
-        commitButton.disableProperty().bind(Bindings.not(studyModel.checkedOutProperty().and(isNotInDiffMode)));
+        commitButton.disableProperty().bind(Bindings.not(project.checkedOutProperty().and(isNotInDiffMode)));
         diffButton.disableProperty().bind(isModelOpened.not());
         exitDiffButton.disableProperty().bind(isNotInDiffMode);
 
@@ -229,23 +225,17 @@ public class MainController implements Initializable {
             Parent editingPane = loader.load();
             layout.setCenter(editingPane);
             editingController = loader.getController();
-            editingController.setStudyModel(studyModel);
+            editingController.setProject(project);
         } catch (IOException ioe) {
             System.err.println("SEVERE ERROR: not able to load editing view pane.");
             throw new RuntimeException(ioe);
         }
-
-        if (ApplicationSettings.getAutoLoadLastStudyOnStartup()) {
-            loadModel(null);
-        }
     }
 
     private void makeRepositoryWatcher() {
-        File workingCopyDirectory = StorageUtils.getDataDir(projectName);
-        String repositoryUrl = ApplicationSettings.getLastUsedRepository();
         try {
-            RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
-            repositoryWatcher = new RepositoryWatcher(repositoryStorage, projectName);
+            RepositoryStorage repositoryStorage = new RepositoryStorage(project);
+            repositoryWatcher = new RepositoryWatcher(repositoryStorage, project.getDataFile());
             statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
             workingCopyModified.selectedProperty().bind(repositoryWatcher.workingCopyModifiedProperty());
             repositoryWatcher.start();
@@ -262,7 +252,7 @@ public class MainController implements Initializable {
 
     public void diffModels(ActionEvent actionEvent) {
         isNotInDiffMode.setValue(false);
-        SystemModel localModel = studyModel.getSystemModel();
+        SystemModel localModel = project.getSystemModel();
         SystemModel remoteModel = getModelFromRepository();
 
         localModel.diffSubNodes(remoteModel);
@@ -271,11 +261,9 @@ public class MainController implements Initializable {
 
     private SystemModel getModelFromRepository() {
         SystemModel remoteModel = null;
-        File workingCopyDirectory = StorageUtils.getDataDir(projectName);
-        String repositoryUrl = ApplicationSettings.getLastUsedRepository();
         try {
-            RepositoryStorage repositoryStorage = new RepositoryStorage(repositoryUrl, workingCopyDirectory, userName, password);
-            InputStream inStr = repositoryStorage.getFileContentFromRepository(StorageUtils.getDataFileName());
+            RepositoryStorage repositoryStorage = new RepositoryStorage(project);
+            InputStream inStr = repositoryStorage.getFileContentFromRepository(project.getDataFileName());
             remoteModel = RemoteStorage.load(inStr);
         } catch (IOException | SVNException e) {
             System.err.println("Error getting versioned remote data file.\n" + e.getMessage());

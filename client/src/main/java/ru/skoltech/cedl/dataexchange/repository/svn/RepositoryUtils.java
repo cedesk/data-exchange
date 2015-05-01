@@ -8,7 +8,6 @@ import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 
 import java.io.File;
 
@@ -24,7 +23,7 @@ public class RepositoryUtils {
         return "file:///" + path.toString();
     }
 
-    public static boolean checkRepository(String url) {
+    public static boolean checkRepository(String url, String dataFileName) {
         if (url == null || url.isEmpty()) {
             return false;
         }
@@ -34,7 +33,7 @@ public class RepositoryUtils {
             ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(DEFAULT_NAME, DEFAULT_PASSWORD);
             repository.setAuthenticationManager(authManager);
 
-            SVNNodeKind nodeKind = repository.checkPath(StorageUtils.getDataFileName(), -1);
+            SVNNodeKind nodeKind = repository.checkPath(dataFileName, -1);
             if (nodeKind == SVNNodeKind.FILE) {
                 return true;
             }

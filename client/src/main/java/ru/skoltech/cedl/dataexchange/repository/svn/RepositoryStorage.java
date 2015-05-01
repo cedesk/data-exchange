@@ -8,6 +8,7 @@ import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.*;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,8 +21,11 @@ import java.io.InputStream;
 public class RepositoryStorage {
 
     private final SVNURL svnUrl;
+
     private final File wcPath;
+
     private final SVNClientManager svnClientManager;
+
     private final ISVNAuthenticationManager authManager;
 
     static {
@@ -40,6 +44,10 @@ public class RepositoryStorage {
          * For using over file:///
          */
         FSRepositoryFactory.setup();
+    }
+
+    public RepositoryStorage(Project project) throws SVNException {
+        this(project.getRepositoryPath(), project.getDataDir(), project.getUserName(), project.getPassword());
     }
 
     public RepositoryStorage(String url, File wcPath, String userName, String password) throws SVNException {
@@ -94,7 +102,6 @@ public class RepositoryStorage {
         try {
             SVNStatusClient statusClient = svnClientManager.getStatusClient();
             SVNStatus svnStatus = statusClient.doStatus(dataFile, true, false);
-            SVNStatusType statusType = svnStatus.getNodeStatus();
             boolean wcModified = svnStatus.getContentsStatus() == SVNStatusType.STATUS_MODIFIED;
             System.out.println("workingCopyModified: " + wcModified);
             return wcModified;

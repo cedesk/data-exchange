@@ -12,8 +12,8 @@ public class ApplicationSettings {
 
     private static final String SETTINGS_FILE = "application.settings";
     private static final String SETTINGS_COMMENTS = "CEDESK application settings";
-    private static final String REPOSITORY = "study.last.repository.url";
-    public static final String AUTO_LOAD_LAST_STUDY = "study.last.autoload";
+    private static final String LAST_PROJECT_NAME = "project.last.name";
+    public static final String AUTO_LOAD_LAST_PROJECT = "project.last.autoload";
 
 
     private static Properties properties = new Properties();
@@ -22,34 +22,35 @@ public class ApplicationSettings {
         load();
     }
 
-    public static boolean getAutoLoadLastStudyOnStartup() {
-        String autoload = properties.getProperty(AUTO_LOAD_LAST_STUDY);
+    public static boolean getAutoLoadLastProjectOnStartup() {
+        String autoload = properties.getProperty(AUTO_LOAD_LAST_PROJECT);
         if (autoload != null) {
             return Boolean.parseBoolean(autoload);
         }
         return false;
     }
 
-    public static void setAutoLoadLastStudyOnStartup(boolean autoload) {
-        String prop = properties.getProperty(AUTO_LOAD_LAST_STUDY);
+    public static void setAutoLoadLastProjectOnStartup(boolean autoload) {
+        String prop = properties.getProperty(AUTO_LOAD_LAST_PROJECT);
         if (prop == null || Boolean.parseBoolean(prop) != autoload) {
-            properties.setProperty(AUTO_LOAD_LAST_STUDY, Boolean.toString(autoload));
+            properties.setProperty(AUTO_LOAD_LAST_PROJECT, Boolean.toString(autoload));
             save();
         }
     }
 
-    public static String getLastUsedRepository() {
-        String repo = properties.getProperty(REPOSITORY);
-        if (repo == null) {
-            System.out.println("Warning: Empty last repository!");
+    public static String getLastUsedProject(String defaultVaule) {
+        String projName = properties.getProperty(LAST_PROJECT_NAME);
+        if (projName == null) {
+            System.out.println("Warning: Empty last project!");
+            return defaultVaule;
         }
-        return repo;
+        return projName;
     }
 
-    public static void setLastUsedRepository(String repository) {
-        String previousRepository = properties.getProperty(REPOSITORY);
-        if (previousRepository == null || !previousRepository.equals(repository)) {
-            properties.setProperty(REPOSITORY, repository);
+    public static void setLastUsedProject(String projectName) {
+        String projName = properties.getProperty(LAST_PROJECT_NAME);
+        if (projName == null || !projName.equals(projectName)) {
+            properties.setProperty(LAST_PROJECT_NAME, projectName);
             save();
         }
     }

@@ -4,13 +4,16 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 
+import java.io.File;
+
 /**
  * Created by D.Knoll on 28.03.2015.
  */
 public class RepositoryWatcher extends Thread {
 
-    public final long DEFAULT_TIMING = 10;
-    private final String projectName;
+    public static final long DEFAULT_TIMING = 10;
+
+    private final File dataFile;
 
     private long timing = DEFAULT_TIMING;
 
@@ -22,15 +25,14 @@ public class RepositoryWatcher extends Thread {
 
     private BooleanProperty workingCopyModified = new SimpleBooleanProperty();
 
-    public RepositoryWatcher(RepositoryStorage repositoryStorage, String projectName) {
+    public RepositoryWatcher(RepositoryStorage repositoryStorage, File dataFile) {
         this.repositoryStorage = repositoryStorage;
-        this.projectName = projectName;
+        this.dataFile = dataFile;
     }
 
-    public RepositoryWatcher(RepositoryStorage repositoryStorage, long timing, String projectName) {
-        this.repositoryStorage = repositoryStorage;
+    public RepositoryWatcher(RepositoryStorage repositoryStorage, File dataFile, long timing) {
+        this(repositoryStorage, dataFile);
         this.timing = timing;
-        this.projectName = projectName;
     }
 
     @Override
@@ -38,7 +40,7 @@ public class RepositoryWatcher extends Thread {
         while (continueRunning) {
             boolean remoteRepositoryNewer = repositoryStorage.isRemoteRepositoryNewer();
             repositoryNewer.setValue(remoteRepositoryNewer);
-            boolean wcCopyModified = repositoryStorage.isWorkingCopyModified(StorageUtils.getDataFile(projectName));
+            boolean wcCopyModified = repositoryStorage.isWorkingCopyModified(dataFile);
             workingCopyModified.setValue(wcCopyModified);
             try {
                 sleep(timing * 1000);
