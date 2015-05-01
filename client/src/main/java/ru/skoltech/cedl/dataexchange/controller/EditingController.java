@@ -18,6 +18,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 
@@ -31,7 +32,7 @@ import java.util.ResourceBundle;
  */
 public class EditingController implements Initializable {
 
-    private StudyModel studyModel;
+    private Project project;
 
     public TableColumn parameterNameColumn;
     public TableColumn parameterValueColumn;
@@ -99,7 +100,7 @@ public class EditingController implements Initializable {
                         event.getTablePosition().getRow());
                 if (!event.getOldValue().equals(event.getNewValue())) {
                     parameterModel.setValue(event.getNewValue());
-                    studyModel.setDirty(true);
+                    project.setDirty(true);
                 }
             }
         });
@@ -121,8 +122,8 @@ public class EditingController implements Initializable {
         parameterTable.setItems(viewParameters.getItems());
     }
 
-    public void setStudyModel(StudyModel studyModel) {
-        this.studyModel = studyModel;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     private void updateParameterTable(ModelNode modelNode) {
@@ -135,7 +136,7 @@ public class EditingController implements Initializable {
     }
 
     public void updateView() {
-        ViewNode rootNode = ViewTreeFactory.getViewTree(studyModel.getSystemModel());
+        ViewNode rootNode = ViewTreeFactory.getViewTree(project.getSystemModel());
         structureTree.setRoot(rootNode);
         parameterTable.autosize();
     }
@@ -155,7 +156,7 @@ public class EditingController implements Initializable {
                     ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
                     selectedItem.getChildren().add(ViewTreeNodeFactory.getViewTreeNode(newNode));
                     selectedItem.setExpanded(true);
-                    studyModel.setDirty(true);
+                    project.setDirty(true);
                 }
             }
         } else {
@@ -176,7 +177,7 @@ public class EditingController implements Initializable {
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                 parentNode.removeSubNode(node);
             }
-            studyModel.setDirty(true);
+            project.setDirty(true);
         }
     }
 
@@ -197,7 +198,7 @@ public class EditingController implements Initializable {
             }
             modelNode.setName(nodeName);
             selectedItem.valueProperty().setValue(modelNode);
-            studyModel.setDirty(true);
+            project.setDirty(true);
         }
     }
 
@@ -216,7 +217,7 @@ public class EditingController implements Initializable {
                 ParameterModel pm = new ParameterModel(parameterName, 0.0);
                 selectedItem.getValue().addParameter(pm);
                 StatusLogger.getInstance().log("added parameter: " + pm.getName());
-                studyModel.setDirty(true);
+                project.setDirty(true);
             }
         }
         updateParameterTable(selectedItem.getValue());
@@ -233,7 +234,7 @@ public class EditingController implements Initializable {
             selectedItem.getValue().getParameters().remove(selectedParameterIndex);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
             updateParameterTable(selectedItem.getValue());
-            studyModel.setDirty(true);
+            project.setDirty(true);
         }
     }
 
