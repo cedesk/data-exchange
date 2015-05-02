@@ -11,11 +11,13 @@ import java.util.Iterator;
  */
 public class StructureTreeItemFactory {
 
-    private final static Image SYS_ICON = new Image("/icons/spacecraft.png");
+    private final static Image SYS_ICON = new Image("/icons/element_l1.png");
 
-    private final static Image SUBSYS_ICON = new Image("/icons/subsystem.png");
+    private final static Image SUBSYS_ICON = new Image("/icons/element_l2.png");
 
-    private final static Image ELEMENT_ICON = new Image("/icons/element.png");
+    private final static Image ELEMENT_ICON = new Image("/icons/element_l3.png");
+
+    private final static Image INSTRUMENT_ICON = new Image("/icons/element_l4.png");
 
     public static StructureTreeItem getTreeView(CompositeModelNode modelNode) {
         StructureTreeItem node = getTreeNodeView(modelNode);
@@ -41,17 +43,25 @@ public class StructureTreeItemFactory {
 
         StructureTreeItem structureTreeItem = new StructureTreeItem(model);
         if (model instanceof SystemModel) {
-            structureTreeItem.setGraphic(new ImageView(SYS_ICON));
+            ImageView icon = getImageView(SYS_ICON);
+            structureTreeItem.setGraphic(icon);
         } else if (model instanceof SubSystemModel) {
-            structureTreeItem.setGraphic(new ImageView(SUBSYS_ICON));
+            structureTreeItem.setGraphic(getImageView(SUBSYS_ICON));
         } else if (model instanceof ElementModel) {
-            structureTreeItem.setGraphic(new ImageView(ELEMENT_ICON));
+            structureTreeItem.setGraphic(getImageView(ELEMENT_ICON));
         } else if (model instanceof InstrumentModel) {
-            // no icon yet
+            structureTreeItem.setGraphic(getImageView(INSTRUMENT_ICON));
         } else {
             System.err.println("UNKNOWN model encountered: " + model.getName() + " (" + model.getClass().getName() + "");
         }
         return structureTreeItem;
+    }
+
+    private static ImageView getImageView(Image sysIcon) {
+        ImageView imageView = new ImageView(sysIcon);
+        imageView.setFitHeight(16);
+        imageView.setFitWidth(16);
+        return imageView;
     }
 
 }
