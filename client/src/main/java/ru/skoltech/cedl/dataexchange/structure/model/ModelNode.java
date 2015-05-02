@@ -14,13 +14,11 @@ public abstract class ModelNode {
 
     private List<ParameterModel> parameters = new LinkedList<>();
 
-
     public ModelNode() {
     }
 
     public ModelNode(String name) {
         this.name = name;
-
     }
 
     public String getName() {
@@ -61,7 +59,7 @@ public abstract class ModelNode {
         Map<String, ParameterModel> thisParameterMap = getParameterMap();
         Map<String, ParameterModel> otherModelNodeParameterMap = otherModelNode.getParameterMap();
 
-        for(ParameterModel param : diff) {
+        for (ParameterModel param : diff) {
             String n = param.getName();
             ParameterModel diffParam = null;
             if (thisParameterMap.containsKey(n) &&
