@@ -5,6 +5,7 @@ import javafx.scene.image.ImageView;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by D.Knoll on 12.03.2015.
@@ -39,12 +40,44 @@ public class StructureTreeItemFactory {
         return node;
     }
 
-    public static StructureTreeItem getTreeNodeView(ModelNode model) {
+    public static StructureTreeItem getTreeView(CompositeModelNode localModel, CompositeModelNode remoteModel) {
+        StructureTreeItem node = getTreeNodeView(localModel, remoteModel);
+        node.setExpanded(true);
+        for (Iterator<ModelNode> iter = localModel.iterator(); iter.hasNext(); ) {
+            ModelNode subNode = iter.next();
+            Map<String, ModelNode> remoteModelSubNodesMap = remoteModel.getSubNodesMap();
+            ModelNode remoteSubNode = remoteModelSubNodesMap.get(subNode.getName());
+            if (subNode instanceof CompositeModelNode) {
+                StructureTreeItem childNode = getTreeView((CompositeModelNode) subNode, (CompositeModelNode) remoteSubNode);
+                if (childNode != null) {
+                    node.getChildren().add(childNode);
+                }
+            } else {
+                StructureTreeItem childNode = getTreeNodeView(subNode, remoteSubNode);
+                if (childNode != null) {
+                    node.getChildren().add(childNode);
+                }
+            }
+        }
+        return node;
+    }
 
+    public static StructureTreeItem getTreeNodeView(ModelNode model) {
         StructureTreeItem structureTreeItem = new StructureTreeItem(model);
+        setGraphic(structureTreeItem);
+        return structureTreeItem;
+    }
+
+    public static StructureTreeItem getTreeNodeView(ModelNode local, ModelNode remote) {
+        StructureTreeItem structureTreeItem = new StructureTreeItem(local, remote);
+        setGraphic(structureTreeItem);
+        return structureTreeItem;
+    }
+
+    private static void setGraphic(StructureTreeItem structureTreeItem) {
+        ModelNode model = structureTreeItem.getValue();
         if (model instanceof SystemModel) {
-            ImageView icon = getImageView(SYS_ICON);
-            structureTreeItem.setGraphic(icon);
+            structureTreeItem.setGraphic(getImageView(SYS_ICON));
         } else if (model instanceof SubSystemModel) {
             structureTreeItem.setGraphic(getImageView(SUBSYS_ICON));
         } else if (model instanceof ElementModel) {
@@ -54,11 +87,10 @@ public class StructureTreeItemFactory {
         } else {
             System.err.println("UNKNOWN model encountered: " + model.getName() + " (" + model.getClass().getName() + "");
         }
-        return structureTreeItem;
     }
 
-    private static ImageView getImageView(Image sysIcon) {
-        ImageView imageView = new ImageView(sysIcon);
+    private static ImageView getImageView(Image image) {
+        ImageView imageView = new ImageView(image);
         imageView.setFitHeight(16);
         imageView.setFitWidth(16);
         return imageView;

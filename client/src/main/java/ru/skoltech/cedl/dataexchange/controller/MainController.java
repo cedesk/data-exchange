@@ -1,6 +1,5 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -37,44 +36,53 @@ import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
 
+    private static final String commitMessage = "";
+
+    private final Project project = new Project();
+
     @FXML
     public Button newButton;
+
     @FXML
     public Button openButton;
+
     @FXML
     public Button saveButton;
+
     @FXML
     public Button checkoutButton;
+
     @FXML
     public Button commitButton;
-    @FXML
-    public Button diffButton;
-    @FXML
-    public Button exitDiffButton;
+
     @FXML
     public Label statusbarLabel;
+
     @FXML
     public CheckBox statusbarRepositoryNewer;
+
     @FXML
     public CheckBox workingCopyModified;
+
     @FXML
     public BorderPane layout;
 
-    private SimpleBooleanProperty isNotInDiffMode = new SimpleBooleanProperty(true);
+    @FXML
+    public Label studyNameLabel;
+
+    @FXML
+    public Label userNameLabel;
+
+    @FXML
+    public Label userRoleLabel;
 
     private SimpleBooleanProperty isModelOpened = new SimpleBooleanProperty(false);
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
-    private final Project project = new Project();
-
     private EditingController editingController;
 
     private RepositoryWatcher repositoryWatcher;
-
-
-
-    private static final String commitMessage = "";
 
     public void newModel(ActionEvent actionEvent) {
         isModelOpened.setValue(true);
@@ -200,19 +208,10 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
-            String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
-            project.setProjectName(projectName);
-        }
-
         // TOOLBAR BUTTONS
-        newButton.disableProperty().bind(project.checkedOutProperty().or(isNotInDiffMode.not()));
-        openButton.disableProperty().bind(isNotInDiffMode.not());
-        saveButton.disableProperty().bind(Bindings.not(project.dirtyProperty().and(isNotInDiffMode)));
-        checkoutButton.disableProperty().bind(isNotInDiffMode.not());
-        commitButton.disableProperty().bind(Bindings.not(project.checkedOutProperty().and(isNotInDiffMode)));
-        diffButton.disableProperty().bind(isModelOpened.not());
-        exitDiffButton.disableProperty().bind(isNotInDiffMode);
+        newButton.disableProperty().bind(project.checkedOutProperty());
+        saveButton.disableProperty().bind(project.dirtyProperty().not());
+        commitButton.disableProperty().bind(project.checkedOutProperty().not());
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
@@ -229,6 +228,12 @@ public class MainController implements Initializable {
         } catch (IOException ioe) {
             System.err.println("SEVERE ERROR: not able to load editing view pane.");
             throw new RuntimeException(ioe);
+        }
+
+        if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
+            String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
+            project.setProjectName(projectName);
+            loadModel(null);
         }
     }
 
@@ -250,15 +255,6 @@ public class MainController implements Initializable {
         }
     }
 
-    public void diffModels(ActionEvent actionEvent) {
-        isNotInDiffMode.setValue(false);
-        SystemModel localModel = project.getSystemModel();
-        SystemModel remoteModel = getModelFromRepository();
-
-        localModel.diffSubNodes(remoteModel);
-        editingController.updateView();
-    }
-
     private SystemModel getModelFromRepository() {
         SystemModel remoteModel = null;
         try {
@@ -271,8 +267,4 @@ public class MainController implements Initializable {
         return remoteModel;
     }
 
-    public void exitDiffView(ActionEvent actionEvent) {
-        isNotInDiffMode.setValue(true);
-        // TODO: clean-up the system model.
-    }
 }

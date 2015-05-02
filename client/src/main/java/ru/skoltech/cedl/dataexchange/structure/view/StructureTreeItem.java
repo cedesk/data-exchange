@@ -8,8 +8,30 @@ import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
  */
 public class StructureTreeItem extends TreeItem<ModelNode> {
 
-    public StructureTreeItem(ModelNode model) {
-        super(model);
+    private ModelNode remoteValue;
+
+    public StructureTreeItem(ModelNode local) {
+        super(local);
+    }
+
+    public StructureTreeItem(ModelNode local, ModelNode remote) {
+        super(local);
+        this.remoteValue = remote;
+    }
+
+    public ModelNode getRemoteValue() {
+        return remoteValue;
+    }
+
+    public void setRemoteValue(ModelNode remoteValue) {
+        this.remoteValue = remoteValue;
+    }
+
+    public boolean hasChange() {
+        if(remoteValue != null) {
+            return getValue().equals(remoteValue);
+        }
+        return false;
     }
 
 }
