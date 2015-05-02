@@ -6,9 +6,9 @@ import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-public class ViewNode extends TreeItem<ModelNode> {
+public class StructureTreeItem extends TreeItem<ModelNode> {
 
-    public ViewNode(ModelNode model) {
+    public StructureTreeItem(ModelNode model) {
         super(model);
     }
 

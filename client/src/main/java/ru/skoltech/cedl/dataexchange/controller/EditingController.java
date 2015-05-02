@@ -136,7 +136,7 @@ public class EditingController implements Initializable {
     }
 
     public void updateView() {
-        ViewNode rootNode = ViewTreeFactory.getViewTree(project.getSystemModel());
+        StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
         structureTree.setRoot(rootNode);
         parameterTable.autosize();
     }
@@ -154,7 +154,7 @@ public class EditingController implements Initializable {
                     Dialogues.showError("Duplicate node name", "There is already a subnode named like that!");
                 } else {
                     ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
-                    selectedItem.getChildren().add(ViewTreeNodeFactory.getViewTreeNode(newNode));
+                    selectedItem.getChildren().add(StructureTreeItemFactory.getTreeNodeView(newNode));
                     selectedItem.setExpanded(true);
                     project.setDirty(true);
                 }
