@@ -10,11 +10,13 @@ import java.util.Properties;
  */
 public class ApplicationSettings {
 
-    private static final String SETTINGS_FILE = "application.settings";
-    private static final String SETTINGS_COMMENTS = "CEDESK application settings";
-    private static final String LAST_PROJECT_NAME = "project.last.name";
     public static final String AUTO_LOAD_LAST_PROJECT = "project.last.autoload";
 
+    private static final String SETTINGS_FILE = "application.settings";
+
+    private static final String SETTINGS_COMMENTS = "CEDESK application settings";
+
+    private static final String LAST_PROJECT_NAME = "project.last.name";
 
     private static Properties properties = new Properties();
 
@@ -41,7 +43,7 @@ public class ApplicationSettings {
     public static String getLastUsedProject(String defaultVaule) {
         String projName = properties.getProperty(LAST_PROJECT_NAME);
         if (projName == null) {
-            System.out.println("Warning: Empty last project!");
+            System.out.println("Warning: Empty last project. Using default: " + defaultVaule);
             return defaultVaule;
         }
         return projName;
