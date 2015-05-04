@@ -33,7 +33,11 @@ public class StatusLogger {
         } else {
             System.out.println(msg);
         }
-        lastMessage.setValue(msg);
+        try {
+            lastMessage.setValue(msg);
+        } catch (Exception e) {
+            // ignore
+        }
     }
 
     public void log(String msg) {
