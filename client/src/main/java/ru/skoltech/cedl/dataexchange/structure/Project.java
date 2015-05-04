@@ -37,9 +37,9 @@ public class Project {
 
     private SystemModel remoteModel;
 
-//    private UnitManagement unitManagement;
+    private UnitManagement unitManagement;
 
-//    private UserManagement userManagement;
+    private UserManagement userManagement;
 
     private BooleanProperty loadedProperty = new SimpleBooleanProperty(false);
 
@@ -97,23 +97,23 @@ public class Project {
         setLoaded(true);
     }
 
-    /*
-        public UnitManagement getUnitManagement() {
-            return unitManagement;
-        }
 
-        public void setUnitManagement(UnitManagement unitManagement) {
-            this.unitManagement = unitManagement;
-        }
+    public UnitManagement getUnitManagement() {
+        return unitManagement;
+    }
 
-        public UserManagement getUserManagement() {
-            return userManagement;
-        }
+    public void setUnitManagement(UnitManagement unitManagement) {
+        this.unitManagement = unitManagement;
+    }
 
-        public void setUserManagement(UserManagement userManagement) {
-            this.userManagement = userManagement;
-        }
-    */
+    public UserManagement getUserManagement() {
+        return userManagement;
+    }
+
+    public void setUserManagement(UserManagement userManagement) {
+        this.userManagement = userManagement;
+    }
+
     public boolean getLoaded() {
         return loadedProperty.get();
     }
