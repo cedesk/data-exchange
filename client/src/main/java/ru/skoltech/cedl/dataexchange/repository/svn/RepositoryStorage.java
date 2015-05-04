@@ -46,10 +46,6 @@ public class RepositoryStorage {
         FSRepositoryFactory.setup();
     }
 
-    public RepositoryStorage(Project project) throws SVNException {
-        this(project.getRepositoryPath(), project.getDataDir(), project.getUserName(), project.getPassword());
-    }
-
     public RepositoryStorage(String url, File wcPath, String userName, String password) throws SVNException {
         this.svnUrl = SVNURL.parseURIEncoded(url);
         this.wcPath = wcPath;

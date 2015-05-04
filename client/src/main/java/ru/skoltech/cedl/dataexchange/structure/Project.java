@@ -2,9 +2,12 @@ package ru.skoltech.cedl.dataexchange.structure;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.File;
@@ -28,11 +31,15 @@ public class Project {
 
     private File dataDirectory;
 
+    private RepositoryStorage repositoryStorage;
+
+    private SystemModel systemModel;
+
+    private SystemModel remoteModel;
+
 //    private UnitManagement unitManagement;
 
 //    private UserManagement userManagement;
-
-    private SystemModel systemModel;
 
     private BooleanProperty loadedProperty = new SimpleBooleanProperty(false);
 
@@ -52,12 +59,24 @@ public class Project {
         this.dataDirectory = StorageUtils.getDataDir(projectName);
     }
 
+    public static String getDataFileName() {
+        return MODEL_FILE;
+    }
+
     public String getUserName() {
         return userName;
     }
 
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getRepositoryPath() {
@@ -157,11 +176,6 @@ public class Project {
         return StorageUtils.getDataDir(projectName);
     }
 
-    public static String getDataFileName() {
-        return MODEL_FILE;
-    }
-
-
     public String getProjectName() {
         return projectName;
     }
@@ -170,17 +184,30 @@ public class Project {
         this.projectName = projectName;
         this.projectSettings = new ProjectSettings(projectName);
         this.dataDirectory = StorageUtils.getDataDir(projectName);
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+        try {
+            this.repositoryStorage = new RepositoryStorage(getRepositoryPath(), getDataDir(), getUserName(), getPassword());
+        } catch (SVNException e) {
+            StatusLogger.getInstance().log("Error making connecting to repository!", true);
+            this.repositoryStorage = null;
+        }
     }
 
     public void setDataDirectory(File dataDirectory) {
         this.dataDirectory = dataDirectory;
+    }
+
+    public RepositoryStorage getRepositoryStorage() throws SVNException {
+        if (repositoryStorage == null) {
+            repositoryStorage = new RepositoryStorage(getRepositoryPath(), getDataDir(), getUserName(), getPassword());
+        }
+        return repositoryStorage;
+    }
+
+    public SystemModel getRemoteModel() {
+        return remoteModel;
+    }
+
+    public void setRemoteModel(SystemModel remoteModel) {
+        this.remoteModel = remoteModel;
     }
 }

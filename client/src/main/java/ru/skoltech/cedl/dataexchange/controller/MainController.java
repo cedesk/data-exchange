@@ -1,8 +1,11 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,7 +22,6 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
-import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -118,7 +120,6 @@ public class MainController implements Initializable {
     }
 
     public void checkoutModel(ActionEvent actionEvent) {
-        RepositoryStorage repositoryStorage = null;
         try {
             isModelOpened.setValue(true);
             if (!RepositoryUtils.checkRepository(project.getRepositoryPath(), Project.getDataFileName())) {
@@ -131,9 +132,8 @@ public class MainController implements Initializable {
                     return;
                 }
             }
-            repositoryStorage = new RepositoryStorage(project);
             // TODO: not always do CHECKOUT (since it overwrites local changes), but do UPDATE
-            boolean success = repositoryStorage.checkoutFile();
+            boolean success = project.getRepositoryStorage().checkoutFile();
             if (success) {
                 StatusLogger.getInstance().log("Successfully checked out.");
                 project.setCheckedOut(true);
@@ -194,8 +194,7 @@ public class MainController implements Initializable {
 
     public void commitModel(ActionEvent actionEvent) {
         try {
-            RepositoryStorage repositoryStorage = new RepositoryStorage(project);
-            boolean success = repositoryStorage.commitFile(commitMessage);
+            boolean success = project.getRepositoryStorage().commitFile(commitMessage);
             if (success) {
                 StatusLogger.getInstance().log("Successfully committed to repository.");
             } else {
@@ -215,7 +214,6 @@ public class MainController implements Initializable {
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
-        makeRepositoryWatcher();
 
         // EDITING PANE
         try {
@@ -234,19 +232,39 @@ public class MainController implements Initializable {
             String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
             project.setProjectName(projectName);
             loadModel(null);
+            makeRepositoryWatcher();
         }
     }
 
     private void makeRepositoryWatcher() {
         try {
-            RepositoryStorage repositoryStorage = new RepositoryStorage(project);
-            repositoryWatcher = new RepositoryWatcher(repositoryStorage, project.getDataFile());
+            repositoryWatcher = new RepositoryWatcher(project.getRepositoryStorage(), project.getDataFile());
             statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
             workingCopyModified.selectedProperty().bind(repositoryWatcher.workingCopyModifiedProperty());
+            repositoryWatcher.repositoryNewerProperty().addListener(new ChangeListener<Boolean>() {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    if (newValue) {
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                StatusLogger.getInstance().log("WARNING! Need to update from repository.");
+                                updateRemoteModel();
+                            }
+                        });
+                    }
+                }
+            });
             repositoryWatcher.start();
         } catch (SVNException e) {
             System.err.println("Error making repository watcher.\n" + e.getMessage());
         }
+    }
+
+    public void updateRemoteModel() {
+        SystemModel modelFromRepository = getModelFromRepository();
+        project.setRemoteModel(modelFromRepository);
+        editingController.updateView();
     }
 
     public void close() {
@@ -258,8 +276,7 @@ public class MainController implements Initializable {
     private SystemModel getModelFromRepository() {
         SystemModel remoteModel = null;
         try {
-            RepositoryStorage repositoryStorage = new RepositoryStorage(project);
-            InputStream inStr = repositoryStorage.getFileContentFromRepository(project.getDataFileName());
+            InputStream inStr = project.getRepositoryStorage().getFileContentFromRepository(Project.getDataFileName());
             remoteModel = RemoteStorage.load(inStr);
         } catch (IOException | SVNException e) {
             System.err.println("Error getting versioned remote data file.\n" + e.getMessage());
