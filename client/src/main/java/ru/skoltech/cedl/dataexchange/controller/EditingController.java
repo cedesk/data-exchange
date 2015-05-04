@@ -8,12 +8,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
@@ -32,24 +28,36 @@ import java.util.ResourceBundle;
  */
 public class EditingController implements Initializable {
 
+    public TableColumn parameterNameColumn;
+
+    public TableColumn parameterValueColumn;
+
+    public TableColumn parameterTypeColumn;
+
+    public TableColumn parameterSharedColumn;
+
+    public TableColumn parameterDescriptionColumn;
+
+    public Button addNodeButton;
+
+    public Button deleteNodeButton;
+
+    public Button addParameterButton;
+
+    public Button deleteParameterButton;
+
     private Project project;
 
-    public TableColumn parameterNameColumn;
-    public TableColumn parameterValueColumn;
-    public TableColumn parameterTypeColumn;
-    public TableColumn parameterSharedColumn;
-    public TableColumn parameterDescriptionColumn;
-    public Button addNodeButton;
-    public Button deleteNodeButton;
-    public Button addParameterButton;
-    public Button deleteParameterButton;
     @FXML
     private TreeView<ModelNode> structureTree;
+
     @FXML
     private TableView<ParameterModel> parameterTable;
 
     private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(true);
+
     private BooleanProperty selectedNodeIsLeaf = new SimpleBooleanProperty(true);
+
     private ViewParameters viewParameters;
 
     @Override
@@ -136,8 +144,14 @@ public class EditingController implements Initializable {
     }
 
     public void updateView() {
-        StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
-        structureTree.setRoot(rootNode);
+        if (project.getRemoteModel() == null) {
+            StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
+            structureTree.setRoot(rootNode);
+        } else {
+            StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
+                    project.getSystemModel(), project.getRemoteModel());
+            structureTree.setRoot(rootNode);
+        }
         parameterTable.autosize();
     }
 
@@ -151,7 +165,7 @@ public class EditingController implements Initializable {
             if (nodeNameChoice.isPresent()) {
                 String subNodeName = nodeNameChoice.get();
                 if (node.getSubNodesMap().containsKey(subNodeName)) {
-                    Dialogues.showError("Duplicate node name", "There is already a subnode named like that!");
+                    Dialogues.showError("Duplicate node name", "There is already a sub-node named like that!");
                 } else {
                     ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
                     selectedItem.getChildren().add(StructureTreeItemFactory.getTreeNodeView(newNode));
@@ -239,6 +253,7 @@ public class EditingController implements Initializable {
     }
 
     private class TreeItemSelectionListener implements ChangeListener<TreeItem<ModelNode>> {
+
         @Override
         public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable,
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
