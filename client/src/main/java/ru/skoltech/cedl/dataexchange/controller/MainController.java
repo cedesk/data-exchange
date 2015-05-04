@@ -11,10 +11,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
@@ -67,9 +65,6 @@ public class MainController implements Initializable {
     public CheckBox workingCopyModified;
 
     @FXML
-    public BorderPane layout;
-
-    @FXML
     public Label studyNameLabel;
 
     @FXML
@@ -77,6 +72,9 @@ public class MainController implements Initializable {
 
     @FXML
     public Label userRoleLabel;
+
+    @FXML
+    public Tab modelTab;
 
     private SimpleBooleanProperty isModelOpened = new SimpleBooleanProperty(false);
 
@@ -220,7 +218,7 @@ public class MainController implements Initializable {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.EDITING_PANE);
             Parent editingPane = loader.load();
-            layout.setCenter(editingPane);
+            modelTab.setContent(editingPane);
             editingController = loader.getController();
             editingController.setProject(project);
         } catch (IOException ioe) {
