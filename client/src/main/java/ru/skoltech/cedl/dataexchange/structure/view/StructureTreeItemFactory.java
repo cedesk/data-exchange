@@ -1,5 +1,8 @@
 package ru.skoltech.cedl.dataexchange.structure.view;
 
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -19,6 +22,10 @@ public class StructureTreeItemFactory {
     private final static Image ELEMENT_ICON = new Image("/icons/element_l3.png");
 
     private final static Image INSTRUMENT_ICON = new Image("/icons/element_l4.png");
+
+    public static final Image FLASH_OVERLAY = new Image("/icons/flash-ol.png");
+
+    private static final int ICON_SIZE = 24;
 
     public static StructureTreeItem getTreeView(CompositeModelNode modelNode) {
         StructureTreeItem node = getTreeNodeView(modelNode);
@@ -64,36 +71,46 @@ public class StructureTreeItemFactory {
 
     public static StructureTreeItem getTreeNodeView(ModelNode model) {
         StructureTreeItem structureTreeItem = new StructureTreeItem(model);
-        setGraphic(structureTreeItem);
+        setGraphic(structureTreeItem, false);
         return structureTreeItem;
     }
 
     public static StructureTreeItem getTreeNodeView(ModelNode local, ModelNode remote) {
         StructureTreeItem structureTreeItem = new StructureTreeItem(local, remote);
-        setGraphic(structureTreeItem);
+        setGraphic(structureTreeItem, structureTreeItem.hasChange());
         return structureTreeItem;
     }
 
-    private static void setGraphic(StructureTreeItem structureTreeItem) {
+    private static void setGraphic(StructureTreeItem structureTreeItem, boolean overlayFlash) {
         ModelNode model = structureTreeItem.getValue();
         if (model instanceof SystemModel) {
-            structureTreeItem.setGraphic(getImageView(SYS_ICON));
+            structureTreeItem.setGraphic(getImageView(SYS_ICON, overlayFlash));
         } else if (model instanceof SubSystemModel) {
-            structureTreeItem.setGraphic(getImageView(SUBSYS_ICON));
+            structureTreeItem.setGraphic(getImageView(SUBSYS_ICON, overlayFlash));
         } else if (model instanceof ElementModel) {
-            structureTreeItem.setGraphic(getImageView(ELEMENT_ICON));
+            structureTreeItem.setGraphic(getImageView(ELEMENT_ICON, overlayFlash));
         } else if (model instanceof InstrumentModel) {
-            structureTreeItem.setGraphic(getImageView(INSTRUMENT_ICON));
+            structureTreeItem.setGraphic(getImageView(INSTRUMENT_ICON, overlayFlash));
         } else {
             System.err.println("UNKNOWN model encountered: " + model.getName() + " (" + model.getClass().getName() + "");
         }
     }
 
-    private static ImageView getImageView(Image image) {
-        ImageView imageView = new ImageView(image);
-        imageView.setFitHeight(16);
-        imageView.setFitWidth(16);
-        return imageView;
+    private static Node getImageView(Image image, boolean overlayFlash) {
+        ImageView icon = new ImageView(image);
+        icon.setFitHeight(ICON_SIZE);
+        icon.setFitWidth(ICON_SIZE);
+
+        if(overlayFlash) {
+            ImageView overlay = new ImageView(FLASH_OVERLAY);
+            overlay.setFitHeight(ICON_SIZE);
+            overlay.setFitWidth(ICON_SIZE);
+            overlay.setBlendMode(BlendMode.SRC_OVER);
+
+            return new Group(icon, overlay);
+        } else {
+            return icon;
+        }
     }
 
 }
