@@ -84,7 +84,7 @@ public class Project {
     }
 
     public void setRepositoryPath(String repositoryPath) {
-        this.setRepositoryPath(repositoryPath);
+        projectSettings.setLastUsedRepository(repositoryPath);
     }
 
     public SystemModel getSystemModel() {
