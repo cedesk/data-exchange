@@ -1,7 +1,6 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -12,14 +11,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -76,8 +71,6 @@ public class MainController implements Initializable {
     @FXML
     public Tab modelTab;
 
-    private SimpleBooleanProperty isModelOpened = new SimpleBooleanProperty(false);
-
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
     private EditingController editingController;
@@ -85,7 +78,6 @@ public class MainController implements Initializable {
     private RepositoryWatcher repositoryWatcher;
 
     public void newModel(ActionEvent actionEvent) {
-        isModelOpened.setValue(true);
         SystemModel system = DummySystemBuilder.getSystemModel(4);
         project.setSystemModel(system);
         editingController.updateView();
@@ -93,16 +85,8 @@ public class MainController implements Initializable {
 
     public void loadModel(ActionEvent actionEvent) {
         try {
-            File dataFile = project.getDataFile();
-            isModelOpened.setValue(true);
-            SystemModel system;
-            if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
-                system = FileStorage.load(dataFile);
-                project.setSystemModel(system);
-                editingController.updateView();
-            } else {
-                StatusLogger.getInstance().log("No model available!", true);
-            }
+            project.loadLocal();
+            editingController.updateView();
         } catch (IOException ex) {
             StatusLogger.getInstance().log("Error loading file!", true);
         }
@@ -110,8 +94,7 @@ public class MainController implements Initializable {
 
     public void saveModel(ActionEvent actionEvent) {
         try {
-            FileStorage.store(project.getSystemModel(), project.getDataFile());
-            project.setDirty(false);
+            project.storeLocal();
         } catch (IOException e) {
             StatusLogger.getInstance().log("Error saving file!", true);
         }
@@ -119,7 +102,6 @@ public class MainController implements Initializable {
 
     public void checkoutModel(ActionEvent actionEvent) {
         try {
-            isModelOpened.setValue(true);
             if (!RepositoryUtils.checkRepository(project.getRepositoryPath(), Project.getDataFileName())) {
                 Dialogues.showInvalidRepositoryWarning();
                 StatusLogger.getInstance().log("No repository selected.");
@@ -134,7 +116,6 @@ public class MainController implements Initializable {
             boolean success = project.getRepositoryStorage().checkoutFile();
             if (success) {
                 StatusLogger.getInstance().log("Successfully checked out.");
-                project.setCheckedOut(true);
             } else {
                 StatusLogger.getInstance().log("Nothing to check out.");
             }
@@ -206,9 +187,9 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // TOOLBAR BUTTONS
-        newButton.disableProperty().bind(project.checkedOutProperty());
-        saveButton.disableProperty().bind(project.dirtyProperty().not());
-        commitButton.disableProperty().bind(project.checkedOutProperty().not());
+        //newButton.disableProperty().bind(project.checkedOutProperty());
+        //saveButton.disableProperty().bind(project.dirtyProperty().not());
+        //commitButton.disableProperty().bind(project.checkedOutProperty().not());
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
