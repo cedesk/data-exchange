@@ -29,21 +29,21 @@ public class ModelNodeTest {
         assertTrue(m1.equals(m2));
 
         ElementModel e1 = new ElementModel("element I");
-        m1.getSubNodes().get(1).addSubNode(e1);
+        CompositeModelNode sa1 = (CompositeModelNode) m1.getSubNodesMap().get("subsystem a");
+        sa1.addSubNode(e1);
         ElementModel e2 = new ElementModel("element I");
-        m2.getSubNodes().get(1).addSubNode(e2);
+        CompositeModelNode sa2 = (CompositeModelNode) m2.getSubNodesMap().get("subsystem a");
+        sa2.addSubNode(e2);
         assertTrue(m1.equals(m2));
 
-        m1.getSubNodes().get(1).addSubNode(new ElementModel("element II"));
-        m1.getSubNodes().get(1).addSubNode(new ElementModel("element III"));
-        m2.getSubNodes().get(1).addSubNode(new ElementModel("element III"));
-        m2.getSubNodes().get(1).addSubNode(new ElementModel("element II"));
+        sa1.addSubNode(new ElementModel("element II"));
+        sa1.addSubNode(new ElementModel("element III"));
+        sa2.addSubNode(new ElementModel("element III"));
+        sa2.addSubNode(new ElementModel("element II"));
         assertTrue(m1.equals(m2));
 
         e1.addSubNode(new InstrumentModel("instrument X"));
-        m1.getSubNodes().get(1).getSubNodes().get(1).addSubNode(new InstrumentModel("instrument 1"));
         e2.addSubNode(new InstrumentModel("instrument X"));
-        m2.getSubNodes().get(1).getSubNodes().get(1).addSubNode(new InstrumentModel("instrument 1"));
         assertTrue(m1.equals(m2));
     }
 
