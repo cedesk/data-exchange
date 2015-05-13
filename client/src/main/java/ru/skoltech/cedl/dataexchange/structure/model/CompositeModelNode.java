@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 29.03.2015.
  */
-public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
+public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode implements Iterable<SUBNODES> {
 
     private List<SUBNODES> subNodes = new LinkedList<>();
 

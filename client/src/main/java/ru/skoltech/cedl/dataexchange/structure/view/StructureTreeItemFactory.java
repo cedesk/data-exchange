@@ -48,10 +48,11 @@ public class StructureTreeItemFactory {
     }
 
     public static StructureTreeItem getTreeView(CompositeModelNode localModel, CompositeModelNode remoteModel) {
+        if(remoteModel == null)
+            return getTreeView(localModel);
         StructureTreeItem node = getTreeNodeView(localModel, remoteModel);
         node.setExpanded(true);
-        for (Iterator<ModelNode> iter = localModel.iterator(); iter.hasNext(); ) {
-            ModelNode subNode = iter.next();
+        for (ModelNode subNode : (Iterable<ModelNode>) localModel) {
             Map<String, ModelNode> remoteModelSubNodesMap = remoteModel.getSubNodesMap();
             ModelNode remoteSubNode = remoteModelSubNodesMap.get(subNode.getName());
             if (subNode instanceof CompositeModelNode) {
