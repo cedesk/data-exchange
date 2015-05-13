@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ public class User {
 
     private String authenticator;
 
-    private List<Discipline> disciplines;
+    private List<Discipline> disciplines = new LinkedList<>();
 
     public User() {
     }
