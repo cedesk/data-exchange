@@ -81,14 +81,17 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
     }
 
     private boolean equalSubNodes(Map<String, ModelNode> otherSubNodesMap) {
+        if (subNodes.size() != otherSubNodesMap.size()) return false;
         for (SUBNODES subNode : subNodes) {
+            boolean res = true;
             String nodeName = subNode.getName(); // tree comparison via subnode names
-            if (!otherSubNodesMap.containsKey(nodeName)) { // corresponding node not found
-                return false;
-            } else {
+            if (otherSubNodesMap.containsKey(nodeName)) {
                 ModelNode otherSubNode = otherSubNodesMap.get(nodeName);
-                return subNode.equals(otherSubNode);
+                res = res & subNode.equals(otherSubNode);
+            } else {  // corresponding node not found
+                return false;
             }
+            if (!res) return false;
         }
         return true;
     }
