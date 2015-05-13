@@ -57,6 +57,18 @@ public class User {
         this.disciplines = disciplines;
     }
 
+    public String getDisciplineNames() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < disciplines.size(); i++) {
+            Discipline discipline = disciplines.get(i);
+            sb.append(discipline.getName());
+            if (i < disciplines.size() - 1) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("User{");

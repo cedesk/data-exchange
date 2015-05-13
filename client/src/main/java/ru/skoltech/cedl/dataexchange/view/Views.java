@@ -11,4 +11,6 @@ public class Views {
 
     public static final URL EDITING_PANE = Views.class.getResource("study-editing.fxml");
 
+    public static final URL USERS_PANE = Views.class.getResource("user-editing.fxml");
+
 }

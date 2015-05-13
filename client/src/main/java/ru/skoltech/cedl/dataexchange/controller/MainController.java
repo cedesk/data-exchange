@@ -76,11 +76,16 @@ public class MainController implements Initializable {
     @FXML
     public Tab modelTab;
 
+    @FXML
+    public Tab usersTab;
+
     private SimpleBooleanProperty isModelOpened = new SimpleBooleanProperty(false);
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
     private EditingController editingController;
+
+    private UserManagementController userManagementController;
 
     private RepositoryWatcher repositoryWatcher;
 
@@ -221,6 +226,19 @@ public class MainController implements Initializable {
             modelTab.setContent(editingPane);
             editingController = loader.getController();
             editingController.setProject(project);
+        } catch (IOException ioe) {
+            System.err.println("SEVERE ERROR: not able to load editing view pane.");
+            throw new RuntimeException(ioe);
+        }
+
+        // USERS PANE
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.USERS_PANE);
+            Parent usersPane = loader.load();
+            usersTab.setContent(usersPane);
+            userManagementController = loader.getController();
+            userManagementController.setProject(project);
         } catch (IOException ioe) {
             System.err.println("SEVERE ERROR: not able to load editing view pane.");
             throw new RuntimeException(ioe);

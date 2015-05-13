@@ -15,7 +15,14 @@ public class DummyUserManagementBuilder {
         um.getDisciplines().add(new Discipline("Mission"));
 
         User admin = new User("admin", "Team Lead", "");
+        admin.getDisciplines().add(Discipline.ADMIN_DISCIPLINE);
         um.getUsers().add(admin);
+
+        User expert = new User("expert", "Discipline Expert", "");
+        expert.getDisciplines().add(new Discipline("Mission"));
+        expert.getDisciplines().add(new Discipline("Orbit"));
+        expert.getDisciplines().add(new Discipline("Payload"));
+        um.getUsers().add(expert);
 
         return um;
     }
