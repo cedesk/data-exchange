@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.BiConsumer;
 
 /**
  * Created by D.Knoll on 20.03.2015.
@@ -67,6 +68,21 @@ public class EditingController implements Initializable {
         addNodeButton.disableProperty().bind(selectedNodeIsLeaf);
         deleteNodeButton.disableProperty().bind(selectedNodeIsRoot);
 
+        structureTree.setEditable(true);
+        structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
+            @Override
+            public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
+                return new TextFieldTreeCell();
+            }
+        });
+        structureTree.setOnEditCommit(new EventHandler<TreeView.EditEvent<ModelNode>>() {
+            @Override
+            public void handle(TreeView.EditEvent<ModelNode> event) {
+                project.markSystemModelModified();
+            }
+        });
+
+        // STRUCTURE TREE CONTEXT MENU
         ContextMenu rootContextMenu = new ContextMenu();
         MenuItem addNodeMenuItem = new MenuItem("Add subnode");
         addNodeMenuItem.setOnAction(actionEvent -> EditingController.this.addNode(actionEvent));
@@ -77,15 +93,7 @@ public class EditingController implements Initializable {
         MenuItem renameNodeMenuItem = new MenuItem("Rename subnode");
         renameNodeMenuItem.setOnAction(actionEvent -> EditingController.this.renameNode(actionEvent));
         rootContextMenu.getItems().add(renameNodeMenuItem);
-
         structureTree.setContextMenu(rootContextMenu);
-        structureTree.setEditable(true);
-        structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
-            @Override
-            public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
-                return new TextFieldTreeCell();
-            }
-        });
 
         // NODE PARAMETERS
         addParameterButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
@@ -94,6 +102,7 @@ public class EditingController implements Initializable {
         // NODE PARAMETER TABLE
         Callback<TableColumn<Object, String>, TableCell<Object, String>> tableCellCallback = TextFieldTableCell.forTableColumn();
         parameterNameColumn.setCellFactory(tableCellCallback);
+        parameterNameColumn.setOnEditCommit(new ParameterModelEditListener(ParameterModel::setName));
 
         parameterValueColumn.setCellFactory(new Callback<TableColumn<ParameterModel, Object>, TableCell<ParameterModel, Object>>() {
             @Override
@@ -117,14 +126,7 @@ public class EditingController implements Initializable {
         // TODO: handle checkbox change to change on parameter model
 
         parameterDescriptionColumn.setCellFactory(tableCellCallback);
-        parameterDescriptionColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ParameterModel, String>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<ParameterModel, String> event) {
-                ParameterModel parameterModel = event.getTableView().getItems().get(
-                        event.getTablePosition().getRow());
-                parameterModel.setDescription(event.getNewValue());
-            }
-        });
+        parameterDescriptionColumn.setOnEditCommit(new ParameterModelEditListener(ParameterModel::setDescription));
 
         viewParameters = new ViewParameters();
         parameterTable.setItems(viewParameters.getItems());
@@ -137,6 +139,7 @@ public class EditingController implements Initializable {
     private void updateParameterTable(ModelNode modelNode) {
         viewParameters.displayParameters(modelNode.getParameters());
         parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
+        parameterTable.autosize();
     }
 
     private void clearParameterTable() {
@@ -145,14 +148,15 @@ public class EditingController implements Initializable {
 
     public void updateView() {
         if (project.getRemoteModel() == null) {
+            System.err.println("updating view without remote model");
             StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
             structureTree.setRoot(rootNode);
         } else {
+            System.err.println("updating view WITH remote model");
             StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
                     project.getSystemModel(), project.getRemoteModel());
             structureTree.setRoot(rootNode);
         }
-        parameterTable.autosize();
     }
 
     public void addNode(ActionEvent actionEvent) {
@@ -266,6 +270,23 @@ public class EditingController implements Initializable {
                 selectedNodeIsLeaf.setValue(false);
                 selectedNodeIsRoot.setValue(false);
             }
+        }
+    }
+
+    private class ParameterModelEditListener implements EventHandler<TableColumn.CellEditEvent<ParameterModel, String>> {
+
+        private BiConsumer<ParameterModel, String> setterMethod;
+
+        public ParameterModelEditListener(BiConsumer<ParameterModel, String> setterMethod) {
+            this.setterMethod = setterMethod;
+        }
+
+        @Override
+        public void handle(TableColumn.CellEditEvent<ParameterModel, String> event) {
+            ParameterModel parameterModel = event.getTableView().getItems().get(
+                    event.getTablePosition().getRow());
+            setterMethod.accept(parameterModel, event.getNewValue());
+            project.markSystemModelModified();
         }
     }
 
