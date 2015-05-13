@@ -29,7 +29,7 @@ public class StructureTreeItem extends TreeItem<ModelNode> {
 
     public boolean hasChange() {
         if(remoteValue != null) {
-            return getValue().equals(remoteValue);
+            return !getValue().equals(remoteValue);
         }
         return false;
     }
