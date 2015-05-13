@@ -4,6 +4,9 @@ import ru.skoltech.cedl.dataexchange.structure.model.ElementModel;
 import ru.skoltech.cedl.dataexchange.structure.model.InstrumentModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.users.model.Discipline;
+import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -46,6 +49,23 @@ public class FileStorage {
 
         } catch (JAXBException e) {
             throw new IOException("Error reading system model from XML file.", e);
+        }
+    }
+
+    public static void store(UserManagement userManagement, File outputFile) throws IOException {
+
+        StorageUtils.makeDirectory(outputFile.getParentFile());
+
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+
+            JAXBContext jc = JAXBContext.newInstance(UserManagement.class, User.class, Discipline.class);
+
+            Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            m.marshal(userManagement, fos);
+
+        } catch (JAXBException e) {
+            throw new IOException("Error writing system model to XML file.", e);
         }
     }
 }

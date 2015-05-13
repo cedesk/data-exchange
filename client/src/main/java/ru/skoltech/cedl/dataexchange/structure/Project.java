@@ -9,6 +9,8 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.users.model.DummyUserManagementBuilder;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 import java.io.File;
 
@@ -57,6 +59,7 @@ public class Project {
         password = "";
         this.projectSettings = new ProjectSettings(projectName);
         this.dataDirectory = StorageUtils.getDataDir(projectName);
+        this.userManagement = DummyUserManagementBuilder.getModel();
     }
 
     public static String getDataFileName() {
@@ -209,5 +212,15 @@ public class Project {
 
     public void setRemoteModel(SystemModel remoteModel) {
         this.remoteModel = remoteModel;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Project{");
+        sb.append("projectName='").append(projectName).append('\'');
+        sb.append(", dataDirectory=").append(dataDirectory);
+        sb.append(", repositoryStorage=").append(repositoryStorage);
+        sb.append('}');
+        return sb.toString();
     }
 }
