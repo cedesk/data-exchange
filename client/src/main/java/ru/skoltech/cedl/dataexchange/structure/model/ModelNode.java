@@ -2,7 +2,10 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import ru.skoltech.cedl.dataexchange.Utils;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -29,16 +32,16 @@ public abstract class ModelNode {
         this.name = name;
     }
 
-    public void setParameters(List<ParameterModel> parameters) {
-        this.parameters = parameters;
-    }
-
     public void addParameter(ParameterModel parameter) {
         parameters.add(parameter);
     }
 
     public List<ParameterModel> getParameters() {
         return parameters;
+    }
+
+    public void setParameters(List<ParameterModel> parameters) {
+        this.parameters = parameters;
     }
 
     public Map<String, ParameterModel> getParameterMap() {
@@ -76,5 +79,30 @@ public abstract class ModelNode {
                 addParameter(diffParam);
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ModelNode) {
+            ModelNode other = (ModelNode) obj;
+            if (this.name.equals(other.name) && this.parameters.size() == other.parameters.size()) {
+                return equalParameters(other.getParameterMap());
+            }
+        }
+        return false;
+    }
+
+    private boolean equalParameters(Map<String, ParameterModel> otherModelNodeParameterMap) {
+        for (ParameterModel parameterModel : parameters) {
+            String parameterName = parameterModel.getName();
+            if (otherModelNodeParameterMap.containsKey(parameterName)) {
+                if(!parameterModel.equals(otherModelNodeParameterMap.get(parameterName))) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 }

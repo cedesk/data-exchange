@@ -60,12 +60,36 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
             String name = subSystemModel.getName();
             if (otherModelSubNodesMap.containsKey(name)) {
                 ModelNode compareTo = otherModelSubNodesMap.get(name);
-                if(subSystemModel instanceof CompositeModelNode && compareTo instanceof CompositeModelNode) {
+                if (subSystemModel instanceof CompositeModelNode && compareTo instanceof CompositeModelNode) {
                     ((CompositeModelNode) subSystemModel).diffSubNodes((CompositeModelNode) compareTo);
                 } else {
                     subSystemModel.diffParameters(compareTo);
                 }
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (super.equals(obj)) {
+            if (obj instanceof CompositeModelNode) {
+                CompositeModelNode otherComposite = (CompositeModelNode) obj;
+                return equalSubNodes(otherComposite.getSubNodesMap());
+            }
+        }
+        return false;
+    }
+
+    private boolean equalSubNodes(Map<String, ModelNode> otherSubNodesMap) {
+        for (SUBNODES subNode : subNodes) {
+            String nodeName = subNode.getName(); // tree comparison via subnode names
+            if (!otherSubNodesMap.containsKey(nodeName)) { // corresponding node not found
+                return false;
+            } else {
+                ModelNode otherSubNode = otherSubNodesMap.get(nodeName);
+                return subNode.equals(otherSubNode);
+            }
+        }
+        return true;
     }
 }
