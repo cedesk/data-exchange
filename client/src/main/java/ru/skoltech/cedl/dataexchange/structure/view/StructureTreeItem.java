@@ -31,7 +31,7 @@ public class StructureTreeItem extends TreeItem<ModelNode> {
         if(remoteValue != null) {
             return !getValue().equals(remoteValue);
         }
-        return false;
+        return true;
     }
 
 }
