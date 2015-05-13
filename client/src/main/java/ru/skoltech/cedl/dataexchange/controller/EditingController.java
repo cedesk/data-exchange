@@ -19,6 +19,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -29,25 +30,32 @@ import java.util.function.BiConsumer;
  */
 public class EditingController implements Initializable {
 
-    public TableColumn parameterNameColumn;
+    @FXML
+    private TableColumn parameterNameColumn;
 
-    public TableColumn parameterValueColumn;
+    @FXML
+    private TableColumn parameterValueColumn;
 
-    public TableColumn parameterTypeColumn;
+    @FXML
+    private TableColumn parameterTypeColumn;
 
-    public TableColumn parameterSharedColumn;
+    @FXML
+    private TableColumn parameterSharedColumn;
 
-    public TableColumn parameterDescriptionColumn;
+    @FXML
+    private TableColumn parameterDescriptionColumn;
 
-    public Button addNodeButton;
+    @FXML
+    private Button addNodeButton;
 
-    public Button deleteNodeButton;
+    @FXML
+    private Button deleteNodeButton;
 
-    public Button addParameterButton;
+    @FXML
+    private Button addParameterButton;
 
-    public Button deleteParameterButton;
-
-    private Project project;
+    @FXML
+    private Button deleteParameterButton;
 
     @FXML
     private TreeView<ModelNode> structureTree;
@@ -55,11 +63,13 @@ public class EditingController implements Initializable {
     @FXML
     private TableView<ParameterModel> parameterTable;
 
+    private ViewParameters viewParameters;
+
     private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(true);
 
     private BooleanProperty selectedNodeIsLeaf = new SimpleBooleanProperty(true);
 
-    private ViewParameters viewParameters;
+    private Project project;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -136,8 +146,13 @@ public class EditingController implements Initializable {
         this.project = project;
     }
 
-    private void updateParameterTable(ModelNode modelNode) {
+    private void updateParameterTable(TreeItem<ModelNode> treeItem) {
+        StructureTreeItem item = (StructureTreeItem) treeItem;
+        ModelNode modelNode = item.getValue();
+        // TODO: fix preparation of remote parameters for display
+        modelNode.diffParameters(item.getRemoteValue());
         viewParameters.displayParameters(modelNode.getParameters());
+
         parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
         parameterTable.autosize();
     }
@@ -238,7 +253,7 @@ public class EditingController implements Initializable {
                 project.markSystemModelModified();
             }
         }
-        updateParameterTable(selectedItem.getValue());
+        updateParameterTable(selectedItem);
     }
 
     public void deleteParameter(ActionEvent actionEvent) {
@@ -251,7 +266,7 @@ public class EditingController implements Initializable {
             ParameterModel parameterModel = selectedItem.getValue().getParameters().get(selectedParameterIndex);
             selectedItem.getValue().getParameters().remove(selectedParameterIndex);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
-            updateParameterTable(selectedItem.getValue());
+            updateParameterTable(selectedItem);
             project.markSystemModelModified();
         }
     }
@@ -262,7 +277,7 @@ public class EditingController implements Initializable {
         public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable,
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
-                EditingController.this.updateParameterTable(newValue.getValue());
+                EditingController.this.updateParameterTable(newValue);
                 selectedNodeIsLeaf.setValue(!(newValue.getValue() instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(newValue.getValue() instanceof SystemModel);
             } else {
