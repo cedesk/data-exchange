@@ -14,9 +14,9 @@ import javafx.scene.control.*;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
+import ru.skoltech.cedl.dataexchange.structure.LocalStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -24,8 +24,9 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -101,26 +102,22 @@ public class MainController implements Initializable {
     }
 
     public void checkoutModel(ActionEvent actionEvent) {
-        try {
-            if (!RepositoryUtils.checkRepository(project.getRepositoryPath(), Project.getDataFileName())) {
-                Dialogues.showInvalidRepositoryWarning();
-                StatusLogger.getInstance().log("No repository selected.");
-                boolean success = changeProjectRepository(project);
-                if (success) {
-                    StatusLogger.getInstance().log("Successfully selected repository.");
-                } else {
-                    return;
-                }
-            }
-            // TODO: not always do CHECKOUT (since it overwrites local changes), but do UPDATE
-            boolean success = project.getRepositoryStorage().checkoutFile();
+        if (!RepositoryUtils.checkRepository(project.getRepositoryPath(), Project.getDataFileName())) {
+            Dialogues.showInvalidRepositoryWarning();
+            StatusLogger.getInstance().log("No repository selected.");
+            boolean success = changeProjectRepository(project);
             if (success) {
-                StatusLogger.getInstance().log("Successfully checked out.");
+                StatusLogger.getInstance().log("Successfully selected repository.");
             } else {
-                StatusLogger.getInstance().log("Nothing to check out.");
+                return;
             }
-        } catch (SVNException e) {
-            StatusLogger.getInstance().log("Error connecting to the repository: " + e.getMessage(), true);
+        }
+        // TODO: not always do CHECKOUT (since it overwrites local changes), but do UPDATE
+        boolean success = project.checkoutFile();
+        if (success) {
+            StatusLogger.getInstance().log("Successfully checked out.");
+        } else {
+            StatusLogger.getInstance().log("Nothing to check out.");
         }
     }
 
@@ -172,15 +169,11 @@ public class MainController implements Initializable {
     }
 
     public void commitModel(ActionEvent actionEvent) {
-        try {
-            boolean success = project.getRepositoryStorage().commitFile(commitMessage);
-            if (success) {
-                StatusLogger.getInstance().log("Successfully committed to repository.");
-            } else {
-                StatusLogger.getInstance().log("Committing to repository failed.", true);
-            }
-        } catch (SVNException e) {
-            StatusLogger.getInstance().log("Error connecting to the repository: " + e.getMessage(), true);
+        boolean success = project.commitFile(commitMessage);
+        if (success) {
+            StatusLogger.getInstance().log("Successfully committed to repository.");
+        } else {
+            StatusLogger.getInstance().log("Committing to repository failed.", true);
         }
     }
 
@@ -210,6 +203,14 @@ public class MainController implements Initializable {
         if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
             String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
             project.setProjectName(projectName);
+            project.addLocalStateObserver(new Observer() {
+                @Override
+                public void update(Observable o, Object arg) {
+                    newButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.NEW));
+                    openButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.LOAD));
+                    saveButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.SAVE));
+                }
+            });
             loadModel(null);
             makeRepositoryWatcher();
         }
@@ -217,7 +218,7 @@ public class MainController implements Initializable {
 
     private void makeRepositoryWatcher() {
         try {
-            repositoryWatcher = new RepositoryWatcher(project.getRepositoryStorage(), project.getDataFile());
+            repositoryWatcher = new RepositoryWatcher(project);
             statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
             workingCopyModified.selectedProperty().bind(repositoryWatcher.workingCopyModifiedProperty());
             repositoryWatcher.repositoryNewerProperty().addListener(new ChangeListener<Boolean>() {
@@ -241,8 +242,7 @@ public class MainController implements Initializable {
     }
 
     public void updateRemoteModel() {
-        SystemModel modelFromRepository = getModelFromRepository();
-        project.setRemoteModel(modelFromRepository);
+        project.loadRemote();
         editingController.updateView();
     }
 
@@ -250,17 +250,6 @@ public class MainController implements Initializable {
         if (repositoryWatcher != null) {
             repositoryWatcher.finish();
         }
-    }
-
-    private SystemModel getModelFromRepository() {
-        SystemModel remoteModel = null;
-        try {
-            InputStream inStr = project.getRepositoryStorage().getFileContentFromRepository(Project.getDataFileName());
-            remoteModel = RemoteStorage.load(inStr);
-        } catch (IOException | SVNException e) {
-            System.err.println("Error getting versioned remote data file.\n" + e.getMessage());
-        }
-        return remoteModel;
     }
 
 }
