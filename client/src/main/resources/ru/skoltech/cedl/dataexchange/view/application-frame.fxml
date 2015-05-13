@@ -113,10 +113,10 @@
               <tabs>
                 <Tab fx:id="modelTab" text="Model">
                 </Tab>
+                <Tab fx:id="usersTab" text="Users">
+                </Tab>
                 <Tab fx:id="unitsTab" disable="true" text="Units">
                 </Tab>
-                  <Tab fx:id="usersTab" disable="true" text="Users">
-                  </Tab>
               </tabs>
             </TabPane>
          </center>
