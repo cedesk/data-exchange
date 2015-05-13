@@ -5,12 +5,15 @@ import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Observer;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -90,6 +93,7 @@ public class Project {
         return systemModel;
     }
 
+    @Deprecated
     public void setSystemModel(SystemModel systemModel) {
         this.systemModel = systemModel;
         localStateMachine.performAction(LocalStateMachine.LocalActions.NEW);
@@ -143,7 +147,7 @@ public class Project {
         }
     }
 
-    public RepositoryStorage getRepositoryStorage() throws SVNException {
+    protected RepositoryStorage getRepositoryStorage() throws SVNException {
         if (repositoryStorage == null) {
             repositoryStorage = new RepositoryStorage(getRepositoryPath(), getDataDir(), getUserName(), getPassword());
         }
@@ -178,15 +182,36 @@ public class Project {
     public void loadLocal() throws IOException {
         File dataFile = getDataFile();
         if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
-            SystemModel system = localStorage.load(dataFile);
-            setSystemModel(system);
+            systemModel = localStorage.load(dataFile);
             localStateMachine.performAction(LocalStateMachine.LocalActions.LOAD);
         } else {
             StatusLogger.getInstance().log("No model available!", true);
         }
     }
 
+    public boolean isActionPossible(LocalStateMachine.LocalActions action) {
+        return localStateMachine.isActionPossible(action);
+    }
+
+    public void addLocalStateObserver(Observer o) {
+        localStateMachine.addObserver(o);
+    }
+
     public void markSystemModelModified() {
         localStateMachine.performAction(LocalStateMachine.LocalActions.MODIFY);
     }
+
+    public void loadRemote() {
+        try {
+            InputStream inStr = getRepositoryStorage().getFileContentFromRepository(Project.getDataFileName());
+            remoteModel = RemoteStorage.load(inStr);
+        } catch (IOException | SVNException e) {
+            StatusLogger.getInstance().log("Error getting versioned remote data file.\n" + e.getMessage());
+        }
+    }
+
+    public boolean commitFile(String commitMessage) {
+        return repositoryStorage.commitFile(commitMessage);
+    }
 }
+

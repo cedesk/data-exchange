@@ -1,9 +1,12 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
+import java.util.Observable;
+import java.util.Observer;
+
 /**
  * Created by D.Knoll on 04.05.2015.
  */
-public class LocalStateMachine {
+public class LocalStateMachine extends Observable {
 
     private LocalState state;
 
@@ -15,10 +18,17 @@ public class LocalStateMachine {
         return state;
     }
 
+    private void setState(LocalState state) {
+        if (this.state != state) {
+            this.state = state;
+            setChanged();
+            notifyObservers(state);
+        }
+    }
+
     public void performAction(LocalActions action) {
-        System.out.println("BEFORE = State: " + state.toString() + ", Action: " + action.toString());
-        this.state = state.performAction(action);
-        System.out.println("AFTER = State: " + state.toString() + ", Action: " + action.toString());
+        LocalState newState = this.state.performAction(action);
+        setState(newState);
     }
 
     public LocalActions[] possibleActions() {
