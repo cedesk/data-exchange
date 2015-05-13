@@ -1,7 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
+import java.util.EnumSet;
 import java.util.Observable;
-import java.util.Observer;
 
 /**
  * Created by D.Knoll on 04.05.2015.
@@ -31,23 +31,20 @@ public class LocalStateMachine extends Observable {
         setState(newState);
     }
 
-    public LocalActions[] possibleActions() {
+    public EnumSet<LocalActions> possibleActions() {
         return state.possibleActions();
     }
 
     public boolean isActionPossible(LocalActions action) {
-        for (LocalActions pa : state.possibleActions()) {
-            if (pa == action) return true;
-        }
-        return false;
+        return state.possibleActions().contains(action);
     }
 
     public enum LocalState {
 
         INITIAL {
             @Override
-            LocalActions[] possibleActions() {
-                return new LocalActions[]{LocalActions.NEW, LocalActions.LOAD};
+            EnumSet<LocalActions> possibleActions() {
+                return EnumSet.of(LocalActions.NEW, LocalActions.LOAD);
             }
 
             @Override
@@ -64,8 +61,8 @@ public class LocalStateMachine extends Observable {
         },
         DIRTY {
             @Override
-            LocalActions[] possibleActions() {
-                return new LocalActions[]{LocalActions.MODIFY, LocalActions.LOAD, LocalActions.SAVE};
+            EnumSet<LocalActions> possibleActions() {
+                return EnumSet.of(LocalActions.NEW, LocalActions.MODIFY, LocalActions.LOAD, LocalActions.SAVE);
             }
 
             @Override
@@ -84,8 +81,8 @@ public class LocalStateMachine extends Observable {
         },
         SAVED {
             @Override
-            LocalActions[] possibleActions() {
-                return new LocalActions[]{LocalActions.NEW, LocalActions.MODIFY};
+            EnumSet<LocalActions> possibleActions() {
+                return EnumSet.of(LocalActions.NEW, LocalActions.MODIFY, LocalActions.LOAD);
             }
 
             @Override
@@ -102,7 +99,7 @@ public class LocalStateMachine extends Observable {
             }
         };
 
-        abstract LocalActions[] possibleActions();
+        abstract EnumSet<LocalActions> possibleActions();
 
         abstract LocalState performAction(LocalActions action);
     }
