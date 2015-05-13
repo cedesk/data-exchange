@@ -108,7 +108,7 @@ public class EditingController implements Initializable {
                         event.getTablePosition().getRow());
                 if (!event.getOldValue().equals(event.getNewValue())) {
                     parameterModel.setValue(event.getNewValue());
-                    project.setDirty(true);
+                    project.markSystemModelModified();
                 }
             }
         });
@@ -170,7 +170,7 @@ public class EditingController implements Initializable {
                     ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
                     selectedItem.getChildren().add(StructureTreeItemFactory.getTreeNodeView(newNode));
                     selectedItem.setExpanded(true);
-                    project.setDirty(true);
+                    project.markSystemModelModified();
                 }
             }
         } else {
@@ -191,7 +191,7 @@ public class EditingController implements Initializable {
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                 parentNode.removeSubNode(node);
             }
-            project.setDirty(true);
+            project.markSystemModelModified();
         }
     }
 
@@ -212,7 +212,7 @@ public class EditingController implements Initializable {
             }
             modelNode.setName(nodeName);
             selectedItem.valueProperty().setValue(modelNode);
-            project.setDirty(true);
+            project.markSystemModelModified();
         }
     }
 
@@ -231,7 +231,7 @@ public class EditingController implements Initializable {
                 ParameterModel pm = new ParameterModel(parameterName, 0.0);
                 selectedItem.getValue().addParameter(pm);
                 StatusLogger.getInstance().log("added parameter: " + pm.getName());
-                project.setDirty(true);
+                project.markSystemModelModified();
             }
         }
         updateParameterTable(selectedItem.getValue());
@@ -248,7 +248,7 @@ public class EditingController implements Initializable {
             selectedItem.getValue().getParameters().remove(selectedParameterIndex);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
             updateParameterTable(selectedItem.getValue());
-            project.setDirty(true);
+            project.markSystemModelModified();
         }
     }
 

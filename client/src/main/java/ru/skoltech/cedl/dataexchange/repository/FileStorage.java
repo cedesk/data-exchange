@@ -19,7 +19,21 @@ import java.io.IOException;
  */
 public class FileStorage {
 
-    public static void store(SystemModel systemModel, File outputFile) throws IOException {
+    private File directory;
+
+    public FileStorage(File projectDirectory) {
+        this.directory = projectDirectory;
+    }
+
+    public File getDirectory() {
+        return directory;
+    }
+
+    public void setDirectory(File directory) {
+        this.directory = directory;
+    }
+
+    public void storeSystemModel(SystemModel systemModel, File outputFile) throws IOException {
 
         StorageUtils.makeDirectory(outputFile.getParentFile());
 
@@ -36,7 +50,7 @@ public class FileStorage {
         }
     }
 
-    public static SystemModel load(File inputFile) throws IOException {
+    public SystemModel load(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             JAXBContext ct = JAXBContext.newInstance(SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class);
 

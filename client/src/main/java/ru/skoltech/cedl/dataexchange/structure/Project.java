@@ -1,16 +1,16 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -29,7 +29,9 @@ public class Project {
 
     private String password;
 
-    private File dataDirectory;
+    //private File dataDirectory;
+
+    private FileStorage localStorage;
 
     private RepositoryStorage repositoryStorage;
 
@@ -41,11 +43,7 @@ public class Project {
 
     private UserManagement userManagement;
 
-    private BooleanProperty loadedProperty = new SimpleBooleanProperty(false);
-
-    private BooleanProperty dirtyProperty = new SimpleBooleanProperty(false);
-
-    private BooleanProperty checkedOutProperty = new SimpleBooleanProperty(false);
+    private LocalStateMachine localStateMachine;
 
     public Project() {
         this(DEFAULT_PROJECT_NAME);
@@ -56,7 +54,8 @@ public class Project {
         userName = Utils.getUserName();
         password = "";
         this.projectSettings = new ProjectSettings(projectName);
-        this.dataDirectory = StorageUtils.getDataDir(projectName);
+        this.localStorage = new FileStorage(StorageUtils.getDataDir(projectName));
+        localStateMachine = new LocalStateMachine();
     }
 
     public static String getDataFileName() {
@@ -93,10 +92,8 @@ public class Project {
 
     public void setSystemModel(SystemModel systemModel) {
         this.systemModel = systemModel;
-        setDirty(true);
-        setLoaded(true);
+        localStateMachine.performAction(LocalStateMachine.LocalActions.NEW);
     }
-
 
     public UnitManagement getUnitManagement() {
         return unitManagement;
@@ -114,56 +111,8 @@ public class Project {
         this.userManagement = userManagement;
     }
 
-    public boolean getLoaded() {
-        return loadedProperty.get();
-    }
-
-    public BooleanProperty loadedProperty() {
-        return loadedProperty;
-    }
-
-    public boolean getDirty() {
-        return dirtyProperty.get();
-    }
-
-    public BooleanProperty dirtyProperty() {
-        return dirtyProperty;
-    }
-
-    public boolean getCheckedOut() {
-        return checkedOutProperty.get();
-    }
-
-    public BooleanProperty checkedOutProperty() {
-        return checkedOutProperty;
-    }
-
-    public boolean isLoaded() {
-        return loadedProperty.get();
-    }
-
-    public void setLoaded(boolean loaded) {
-        this.loadedProperty.setValue(loaded);
-    }
-
-    public boolean isDirty() {
-        return dirtyProperty.get();
-    }
-
-    public void setDirty(boolean dirty) {
-        this.dirtyProperty.setValue(dirty);
-    }
-
-    public boolean isCheckedOut() {
-        return checkedOutProperty.get();
-    }
-
-    public void setCheckedOut(boolean checkedOut) {
-        this.checkedOutProperty.setValue(checkedOut);
-    }
-
     public File getDataFile() {
-        File dataFile = new File(dataDirectory, MODEL_FILE);
+        File dataFile = new File(localStorage.getDirectory(), MODEL_FILE);
         if (!dataFile.exists()) {
             System.err.println("Warning: Data file does not exist!");
         } else if (!dataFile.canRead() || !dataFile.canWrite()) {
@@ -183,17 +132,15 @@ public class Project {
     public void setProjectName(String projectName) {
         this.projectName = projectName;
         this.projectSettings = new ProjectSettings(projectName);
-        this.dataDirectory = StorageUtils.getDataDir(projectName);
+        this.localStorage = new FileStorage(StorageUtils.getDataDir(projectName));
+        localStateMachine = new LocalStateMachine();
         try {
-            this.repositoryStorage = new RepositoryStorage(getRepositoryPath(), getDataDir(), getUserName(), getPassword());
+            this.repositoryStorage = null; // to force reconnect
+            getRepositoryStorage();
         } catch (SVNException e) {
-            StatusLogger.getInstance().log("Error making connecting to repository!", true);
+            StatusLogger.getInstance().log("Error connecting to repository!", true);
             this.repositoryStorage = null;
         }
-    }
-
-    public void setDataDirectory(File dataDirectory) {
-        this.dataDirectory = dataDirectory;
     }
 
     public RepositoryStorage getRepositoryStorage() throws SVNException {
@@ -203,11 +150,43 @@ public class Project {
         return repositoryStorage;
     }
 
+    public boolean checkoutFile() {
+        boolean success = repositoryStorage.checkoutFile();
+/*        if (success) {
+            localStateMachine.performAction();
+        }*/
+        return success;
+    }
+
+    public boolean updateFile() {
+        return repositoryStorage.updateFile();
+    }
+
     public SystemModel getRemoteModel() {
         return remoteModel;
     }
 
     public void setRemoteModel(SystemModel remoteModel) {
         this.remoteModel = remoteModel;
+    }
+
+    public void storeLocal() throws IOException {
+        localStorage.storeSystemModel(systemModel, getDataFile());
+        localStateMachine.performAction(LocalStateMachine.LocalActions.SAVE);
+    }
+
+    public void loadLocal() throws IOException {
+        File dataFile = getDataFile();
+        if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
+            SystemModel system = localStorage.load(dataFile);
+            setSystemModel(system);
+            localStateMachine.performAction(LocalStateMachine.LocalActions.LOAD);
+        } else {
+            StatusLogger.getInstance().log("No model available!", true);
+        }
+    }
+
+    public void markSystemModelModified() {
+        localStateMachine.performAction(LocalStateMachine.LocalActions.MODIFY);
     }
 }
