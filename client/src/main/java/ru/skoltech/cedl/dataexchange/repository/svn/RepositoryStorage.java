@@ -189,4 +189,12 @@ public class RepositoryStorage {
         return new ByteArrayInputStream(baos.toByteArray());
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("RepositoryStorage{");
+        sb.append("svnUrl=").append(svnUrl);
+        sb.append(", wcPath=").append(wcPath);
+        sb.append('}');
+        return sb.toString();
+    }
 }
