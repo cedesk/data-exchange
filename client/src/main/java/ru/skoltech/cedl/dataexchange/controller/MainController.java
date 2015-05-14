@@ -230,6 +230,7 @@ public class MainController implements Initializable {
                             public void run() {
                                 StatusLogger.getInstance().log("WARNING! Need to update from repository.");
                                 updateRemoteModel();
+                                StatusLogger.getInstance().log("WARNING! Remote model loaded for comparison.");
                             }
                         });
                     }

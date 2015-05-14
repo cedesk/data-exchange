@@ -34,4 +34,15 @@ public class StructureTreeItem extends TreeItem<ModelNode> {
         return true;
     }
 
+    public String getDiffToolTip() {
+        StringBuilder sb = new StringBuilder();
+        ModelNode value = getValue();
+        ModelNode remoteValue = getRemoteValue();
+        // TODO: just an example
+        if(value.getParameters().size() != remoteValue.getParameters().size()) {
+            sb.append("difference in parameters");
+        }
+        return sb.toString();
+    }
+
 }
