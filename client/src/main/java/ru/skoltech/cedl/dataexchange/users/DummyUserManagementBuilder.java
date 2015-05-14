@@ -1,4 +1,8 @@
-package ru.skoltech.cedl.dataexchange.users.model;
+package ru.skoltech.cedl.dataexchange.users;
+
+import ru.skoltech.cedl.dataexchange.users.model.Discipline;
+import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 /**
  * Created by dknoll on 13/05/15.

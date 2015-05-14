@@ -82,4 +82,12 @@ public class FileStorage {
             throw new IOException("Error writing system model to XML file.", e);
         }
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("FileStorage{");
+        sb.append("directory=").append(directory);
+        sb.append('}');
+        return sb.toString();
+    }
 }

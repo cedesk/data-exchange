@@ -1,4 +1,6 @@
-package ru.skoltech.cedl.dataexchange.structure.model;
+package ru.skoltech.cedl.dataexchange.structure;
+
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 /**
  * Created by D.Knoll on 12.03.2015.
