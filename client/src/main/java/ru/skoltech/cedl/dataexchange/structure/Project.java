@@ -50,17 +50,20 @@ public class Project {
 
     private LocalStateMachine localStateMachine;
 
+    private RemoteStateMachine remoteStateMachine;
+
     public Project() {
         this(DEFAULT_PROJECT_NAME);
     }
 
     public Project(String projectName) {
         this.projectName = projectName;
-        userName = Utils.getUserName();
-        password = "";
+        this.userName = Utils.getUserName();
+        this.password = "";
         this.projectSettings = new ProjectSettings(projectName);
         this.localStorage = new FileStorage(StorageUtils.getDataDir(projectName));
-        localStateMachine = new LocalStateMachine();
+        this.localStateMachine = new LocalStateMachine();
+        this.remoteStateMachine = new RemoteStateMachine();
         this.userManagement = DummyUserManagementBuilder.getModel();
     }
 
@@ -159,14 +162,18 @@ public class Project {
 
     public boolean checkoutFile() {
         boolean success = repositoryStorage.checkoutFile();
-/*        if (success) {
-            localStateMachine.performAction();
-        }*/
+        if (success) {
+            remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.CHECKOUT);
+        }
         return success;
     }
 
     public boolean updateFile() {
-        return repositoryStorage.updateFile();
+        boolean success = repositoryStorage.updateFile();
+        if (success) {
+            remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.UPDATE);
+        }
+        return success;
     }
 
     public SystemModel getRemoteModel() {
@@ -190,6 +197,7 @@ public class Project {
     public void storeLocal() throws IOException {
         localStorage.storeSystemModel(systemModel, getDataFile());
         localStateMachine.performAction(LocalStateMachine.LocalActions.SAVE);
+        remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.LOCAL_CHANGE);
     }
 
     public void loadLocal() throws IOException {
