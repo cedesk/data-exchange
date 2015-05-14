@@ -1,7 +1,6 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -12,25 +11,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.repository.FileStorage;
-import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.LocalStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
@@ -253,9 +246,8 @@ public class MainController implements Initializable {
                         Platform.runLater(new Runnable() {
                             @Override
                             public void run() {
-                                StatusLogger.getInstance().log("WARNING! Need to update from repository.");
                                 updateRemoteModel();
-                                StatusLogger.getInstance().log("WARNING! Remote model loaded for comparison.");
+                                StatusLogger.getInstance().log("Remote model loaded for comparison.");
                             }
                         });
                     }

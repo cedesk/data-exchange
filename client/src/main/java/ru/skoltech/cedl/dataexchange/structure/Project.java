@@ -1,7 +1,5 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -11,7 +9,7 @@ import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.DummyUserManagementBuilder;
+import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 import java.io.File;
@@ -183,7 +181,7 @@ public class Project {
     public String toString() {
         final StringBuilder sb = new StringBuilder("Project{");
         sb.append("projectName='").append(projectName).append('\'');
-        sb.append(", dataDirectory=").append(dataDirectory);
+        sb.append(", localStorage=").append(localStorage);
         sb.append(", repositoryStorage=").append(repositoryStorage);
         sb.append('}');
         return sb.toString();
