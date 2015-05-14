@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -9,6 +11,8 @@ import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.users.model.DummyUserManagementBuilder;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,6 +63,7 @@ public class Project {
         this.projectSettings = new ProjectSettings(projectName);
         this.localStorage = new FileStorage(StorageUtils.getDataDir(projectName));
         localStateMachine = new LocalStateMachine();
+        this.userManagement = DummyUserManagementBuilder.getModel();
     }
 
     public static String getDataFileName() {
@@ -174,6 +179,16 @@ public class Project {
         this.remoteModel = remoteModel;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Project{");
+        sb.append("projectName='").append(projectName).append('\'');
+        sb.append(", dataDirectory=").append(dataDirectory);
+        sb.append(", repositoryStorage=").append(repositoryStorage);
+        sb.append('}');
+        return sb.toString();
+    }
+
     public void storeLocal() throws IOException {
         localStorage.storeSystemModel(systemModel, getDataFile());
         localStateMachine.performAction(LocalStateMachine.LocalActions.SAVE);
@@ -214,4 +229,3 @@ public class Project {
         return repositoryStorage.commitFile(commitMessage);
     }
 }
-

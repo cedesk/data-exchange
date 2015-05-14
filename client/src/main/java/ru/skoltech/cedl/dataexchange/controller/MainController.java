@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -11,9 +12,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.LocalStateMachine;
@@ -24,6 +30,7 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
@@ -72,9 +79,14 @@ public class MainController implements Initializable {
     @FXML
     public Tab modelTab;
 
+    @FXML
+    public Tab usersTab;
+
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
     private EditingController editingController;
+
+    private UserManagementController userManagementController;
 
     private RepositoryWatcher repositoryWatcher;
 
@@ -197,6 +209,19 @@ public class MainController implements Initializable {
             editingController.setProject(project);
         } catch (IOException ioe) {
             System.err.println("SEVERE ERROR: not able to load editing view pane.");
+            throw new RuntimeException(ioe);
+        }
+
+        // USERS PANE
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.USERS_PANE);
+            Parent usersPane = loader.load();
+            usersTab.setContent(usersPane);
+            userManagementController = loader.getController();
+            userManagementController.setProject(project);
+        } catch (IOException ioe) {
+            System.err.println("SEVERE ERROR: not able to load user management view pane.");
             throw new RuntimeException(ioe);
         }
 
