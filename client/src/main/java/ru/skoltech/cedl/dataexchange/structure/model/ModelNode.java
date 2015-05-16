@@ -62,6 +62,7 @@ public abstract class ModelNode {
     }
 
     public void diffParameters(ModelNode otherModelNode) {
+        if (otherModelNode == null) return;
         Set<ParameterModel> diff = Utils.symmetricDiffTwoLists(this.getParameters(), otherModelNode.getParameters());
 
         Map<String, ParameterModel> thisParameterMap = getParameterMap();
