@@ -61,6 +61,7 @@ public class RepositoryStorage {
         SVNRepository svnRepository = null;
         try {
             svnRepository = SVNRepositoryFactory.create(svnUrl);
+            svnRepository.setAuthenticationManager(authManager);
             return svnRepository.getLatestRevision();
         } catch (SVNException e) {
             System.err.println("Error checking repository.");
