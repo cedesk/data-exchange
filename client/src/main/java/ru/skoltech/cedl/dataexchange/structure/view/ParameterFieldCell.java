@@ -1,7 +1,5 @@
 package ru.skoltech.cedl.dataexchange.structure.view;
 
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;

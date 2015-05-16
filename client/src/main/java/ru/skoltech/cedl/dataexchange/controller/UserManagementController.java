@@ -43,7 +43,7 @@ public class UserManagementController implements Initializable {
         updateTables();
     }
 
-    private void updateTables(){
+    private void updateTables() {
         List<User> users = project.getUserManagement().getUsers();
         ObservableList<User> userList = FXCollections.observableList(users);
         userTable.setItems(userList);

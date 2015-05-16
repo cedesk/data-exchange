@@ -11,7 +11,7 @@ public class Identifiers {
     private static final String NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only aplhanumeric characters!";
 
     public static boolean validateNodeName(String nodeName) {
-        if(nodeName.length() < 1) return false;
+        if (nodeName.length() < 1) return false;
         return NAME_RULE.matcher(nodeName).matches();
     }
 

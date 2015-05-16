@@ -7,7 +7,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -15,16 +14,11 @@ import java.util.Map;
  */
 public class StructureTreeItemFactory {
 
-    private final static Image SYS_ICON = new Image("/icons/element_l1.png");
-
-    private final static Image SUBSYS_ICON = new Image("/icons/element_l2.png");
-
-    private final static Image ELEMENT_ICON = new Image("/icons/element_l3.png");
-
-    private final static Image INSTRUMENT_ICON = new Image("/icons/element_l4.png");
-
     public static final Image FLASH_OVERLAY = new Image("/icons/flash-ol.png");
-
+    private final static Image SYS_ICON = new Image("/icons/element_l1.png");
+    private final static Image SUBSYS_ICON = new Image("/icons/element_l2.png");
+    private final static Image ELEMENT_ICON = new Image("/icons/element_l3.png");
+    private final static Image INSTRUMENT_ICON = new Image("/icons/element_l4.png");
     private static final int ICON_SIZE = 24;
 
     public static StructureTreeItem getTreeView(CompositeModelNode modelNode) {
@@ -99,7 +93,7 @@ public class StructureTreeItemFactory {
         icon.setFitHeight(ICON_SIZE);
         icon.setFitWidth(ICON_SIZE);
 
-        if(overlayFlash) {
+        if (overlayFlash) {
             ImageView overlay = new ImageView(FLASH_OVERLAY);
             overlay.setFitHeight(ICON_SIZE);
             overlay.setFitWidth(ICON_SIZE);

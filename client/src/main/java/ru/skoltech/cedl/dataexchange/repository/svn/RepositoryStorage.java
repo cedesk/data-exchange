@@ -8,7 +8,6 @@ import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.*;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,16 +19,23 @@ import java.io.InputStream;
  */
 public class RepositoryStorage {
 
-    private final SVNURL svnUrl;
-
-    private final File wcPath;
-
-    private final SVNClientManager svnClientManager;
-
-    private final ISVNAuthenticationManager authManager;
-
     static {
         setupLibrary();
+    }
+
+    private final SVNURL svnUrl;
+    private final File wcPath;
+    private final SVNClientManager svnClientManager;
+    private final ISVNAuthenticationManager authManager;
+
+    public RepositoryStorage(String url, File wcPath, String userName, String password) throws SVNException {
+        this.svnUrl = SVNURL.parseURIEncoded(url);
+        this.wcPath = wcPath;
+
+        authManager = SVNWCUtil.createDefaultAuthenticationManager(
+                userName, password);
+        svnClientManager = SVNClientManager.newInstance();
+        svnClientManager.setAuthenticationManager(authManager);
     }
 
     /*
@@ -44,16 +50,6 @@ public class RepositoryStorage {
          * For using over file:///
          */
         FSRepositoryFactory.setup();
-    }
-
-    public RepositoryStorage(String url, File wcPath, String userName, String password) throws SVNException {
-        this.svnUrl = SVNURL.parseURIEncoded(url);
-        this.wcPath = wcPath;
-
-        authManager = SVNWCUtil.createDefaultAuthenticationManager(
-                userName, password);
-        svnClientManager = SVNClientManager.newInstance();
-        svnClientManager.setAuthenticationManager(authManager);
     }
 
     public String getUrl() {
