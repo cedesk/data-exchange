@@ -12,7 +12,7 @@ public class Utils {
 
     public static String getUserName() {
         String userName = System.getProperty("user.name");
-        return userName;
+        return userName.toLowerCase();
     }
 
     public static <T extends Comparable<T>> Set<T> symmetricDiffTwoLists(List<T> l1,
