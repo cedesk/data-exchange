@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
@@ -171,7 +172,7 @@ public class MainController implements Initializable {
 
     private boolean checkRepositoryPath(Project project, String url) {
         boolean validRepositoryPath;
-        validRepositoryPath = RepositoryUtils.checkRepository(url, Project.getDataFileName());
+        validRepositoryPath = RepositoryUtils.checkRepository(url, Project.getDataFileName(), Utils.getUserName(), "");
         if (validRepositoryPath) {
             project.setRepositoryPath(url);
         } else {

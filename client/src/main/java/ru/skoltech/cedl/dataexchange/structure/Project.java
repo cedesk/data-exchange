@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
+import org.tmatesoft.svn.core.SVNAuthenticationException;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -147,6 +148,9 @@ public class Project {
         try {
             this.repositoryStorage = null; // to force reconnect
             getRepositoryStorage();
+        } catch (SVNAuthenticationException ae) {
+            System.err.println("SVN Authentication Error.");
+            this.repositoryStorage = null;
         } catch (SVNException e) {
             StatusLogger.getInstance().log("Error connecting to repository!", true);
             this.repositoryStorage = null;
