@@ -26,6 +26,8 @@ public class Project {
 
     private static final String MODEL_FILE = "cedesk-system-model.xml";
 
+    private static final String USER_FILE = "cedesk-user-management.xml";
+
     private ProjectSettings projectSettings;
 
     private String projectName;
@@ -33,8 +35,6 @@ public class Project {
     private String userName;
 
     private String password;
-
-    //private File dataDirectory;
 
     private FileStorage localStorage;
 
@@ -156,20 +156,30 @@ public class Project {
     protected RepositoryStorage getRepositoryStorage() throws SVNException {
         if (repositoryStorage == null) {
             repositoryStorage = new RepositoryStorage(getRepositoryPath(), getDataDir(), getUserName(), getPassword());
+            updateRemoteStatus();
         }
         return repositoryStorage;
     }
 
-    public boolean checkoutFile() {
-        boolean success = repositoryStorage.checkoutFile();
+    private void updateRemoteStatus() {
+        if (repositoryStorage != null) {
+            long repositoryRevisionNumber = repositoryStorage.getRepositoryRevisionNumber();
+            long workingCopyRevisionNumber = repositoryStorage.getWorkingCopyRevisionNumber();
+            boolean workingCopyModified = repositoryStorage.isWorkingCopyModified(getDataFile());
+            remoteStateMachine.initialize(true, workingCopyModified, workingCopyRevisionNumber < repositoryRevisionNumber);
+        }
+    }
+
+    public boolean checkoutFile() throws SVNException {
+        boolean success = getRepositoryStorage().checkoutFile();
         if (success) {
             remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.CHECKOUT);
         }
         return success;
     }
 
-    public boolean updateFile() {
-        boolean success = repositoryStorage.updateFile();
+    public boolean updateFile() throws SVNException {
+        boolean success = getRepositoryStorage().updateFile();
         if (success) {
             remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.UPDATE);
         }
@@ -196,6 +206,7 @@ public class Project {
 
     public void storeLocal() throws IOException {
         localStorage.storeSystemModel(systemModel, getDataFile());
+        localStorage.storeUserManagement(userManagement, getUserFile());
         localStateMachine.performAction(LocalStateMachine.LocalActions.SAVE);
         remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.LOCAL_CHANGE);
     }
@@ -203,7 +214,7 @@ public class Project {
     public void loadLocal() throws IOException {
         File dataFile = getDataFile();
         if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
-            systemModel = localStorage.load(dataFile);
+            systemModel = localStorage.loadSystemModel(dataFile);
             localStateMachine.performAction(LocalStateMachine.LocalActions.LOAD);
         } else {
             StatusLogger.getInstance().log("No model available!", true);
@@ -214,8 +225,16 @@ public class Project {
         return localStateMachine.isActionPossible(action);
     }
 
+    public boolean isActionPossible(RemoteStateMachine.RemoteActions action) {
+        return remoteStateMachine.isActionPossible(action);
+    }
+
     public void addLocalStateObserver(Observer o) {
         localStateMachine.addObserver(o);
+    }
+
+    public void addRemoteStateObserver(Observer o) {
+        remoteStateMachine.addObserver(o);
     }
 
     public void markSystemModelModified() {
@@ -232,6 +251,18 @@ public class Project {
     }
 
     public boolean commitFile(String commitMessage) {
-        return repositoryStorage.commitFile(commitMessage);
+        boolean success = repositoryStorage.commitFile(commitMessage);
+        remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.COMMIT);
+        return success;
+    }
+
+    public File getUserFile() {
+        File userFile = new File(localStorage.getDirectory(), USER_FILE);
+        if (!userFile.exists()) {
+            System.err.println("Warning: User file does not exist!");
+        } else if (!userFile.canRead() || !userFile.canWrite()) {
+            System.err.println("Warning: User file is not usable!");
+        }
+        return userFile;
     }
 }

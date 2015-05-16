@@ -16,9 +16,10 @@ import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
+import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.LocalStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.RemoteStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -49,6 +50,9 @@ public class MainController implements Initializable {
     public Button checkoutButton;
 
     @FXML
+    public Button updateButton;
+
+    @FXML
     public Button commitButton;
 
     @FXML
@@ -71,7 +75,6 @@ public class MainController implements Initializable {
 
     @FXML
     public Tab modelTab;
-
     @FXML
     public Tab usersTab;
 
@@ -93,8 +96,9 @@ public class MainController implements Initializable {
         try {
             project.loadLocal();
             editingController.updateView();
-        } catch (IOException ex) {
+        } catch (IOException e) {
             StatusLogger.getInstance().log("Error loading file!", true);
+            e.printStackTrace();
         }
     }
 
@@ -103,6 +107,7 @@ public class MainController implements Initializable {
             project.storeLocal();
         } catch (IOException e) {
             StatusLogger.getInstance().log("Error saving file!", true);
+            e.printStackTrace();
         }
     }
 
@@ -118,11 +123,15 @@ public class MainController implements Initializable {
             }
         }
         // TODO: not always do CHECKOUT (since it overwrites local changes), but do UPDATE
-        boolean success = project.checkoutFile();
-        if (success) {
-            StatusLogger.getInstance().log("Successfully checked out.");
-        } else {
-            StatusLogger.getInstance().log("Nothing to check out.");
+        try {
+            boolean success = project.checkoutFile();
+            if (success) {
+                StatusLogger.getInstance().log("Successfully checked out.");
+            } else {
+                StatusLogger.getInstance().log("Nothing to check out.");
+            }
+        } catch (SVNException e) {
+            StatusLogger.getInstance().log("Error checking out.", true);
         }
     }
 
@@ -139,13 +148,7 @@ public class MainController implements Initializable {
                     return false;
                 }
                 String url = result.get();
-                validRepositoryPath = RepositoryUtils.checkRepository(url, Project.getDataFileName());
-                if (validRepositoryPath) {
-                    project.setRepositoryPath(url);
-                } else {
-                    Dialogues.showInvalidRepositoryPath();
-                    StatusLogger.getInstance().log("Error, selected path is invalid.", true);
-                }
+                validRepositoryPath = checkRepositoryPath(project, url);
             } while (!validRepositoryPath);
             return true;
         } else if (selection.get() == Dialogues.LOCAL_REPO) {
@@ -157,20 +160,25 @@ public class MainController implements Initializable {
                     StatusLogger.getInstance().log("User declined choosing a repository.", true);
                     return false;
                 }
-
                 String url = RepositoryUtils.makeUrlFromPath(path);
-                validRepositoryPath = RepositoryUtils.checkRepository(url, Project.getDataFileName());
-                if (validRepositoryPath) {
-                    project.setRepositoryPath(url);
-                } else {
-                    Dialogues.showInvalidRepositoryPath();
-                    StatusLogger.getInstance().log("Error, selected path is invalid.", true);
-                }
+                validRepositoryPath = checkRepositoryPath(project, url);
             } while (!validRepositoryPath);
             return true;
         } else { // selection CANCELED
             return false;
         }
+    }
+
+    private boolean checkRepositoryPath(Project project, String url) {
+        boolean validRepositoryPath;
+        validRepositoryPath = RepositoryUtils.checkRepository(url, Project.getDataFileName());
+        if (validRepositoryPath) {
+            project.setRepositoryPath(url);
+        } else {
+            Dialogues.showInvalidRepositoryPath();
+            StatusLogger.getInstance().log("Error, selected path is invalid.", true);
+        }
+        return validRepositoryPath;
     }
 
     public void commitModel(ActionEvent actionEvent) {
@@ -184,11 +192,6 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // TOOLBAR BUTTONS
-        //newButton.disableProperty().bind(project.checkedOutProperty());
-        //saveButton.disableProperty().bind(project.dirtyProperty().not());
-        //commitButton.disableProperty().bind(project.checkedOutProperty().not());
-
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
 
@@ -229,9 +232,23 @@ public class MainController implements Initializable {
                     saveButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.SAVE));
                 }
             });
+            project.addRemoteStateObserver(new Observer() {
+                @Override
+                public void update(Observable o, Object arg) {
+                    checkoutButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.CHECKOUT));
+                    updateButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.UPDATE));
+                    commitButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.COMMIT));
+                }
+            });
             loadModel(null);
             makeRepositoryWatcher();
         }
+
+        // TOOLBAR BUTTONS
+        //newButton.disableProperty().bind(project.checkedOutProperty());
+        //saveButton.disableProperty().bind(project.dirtyProperty().not());
+        //commitButton.disableProperty().bind(project.checkedOutProperty().not());
+
     }
 
     private void makeRepositoryWatcher() {
@@ -270,4 +287,16 @@ public class MainController implements Initializable {
         }
     }
 
+    public void updateModel(ActionEvent actionEvent) {
+        try {
+            boolean success = project.updateFile();
+            if (success) {
+                StatusLogger.getInstance().log("Successfully updated.");
+            } else {
+                StatusLogger.getInstance().log("Nothing to update.");
+            }
+        } catch (SVNException e) {
+            StatusLogger.getInstance().log("Error updating.", true);
+        }
+    }
 }

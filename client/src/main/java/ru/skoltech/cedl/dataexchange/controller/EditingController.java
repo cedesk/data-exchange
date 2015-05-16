@@ -13,13 +13,13 @@ import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
+import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -95,13 +95,13 @@ public class EditingController implements Initializable {
         // STRUCTURE TREE CONTEXT MENU
         ContextMenu rootContextMenu = new ContextMenu();
         MenuItem addNodeMenuItem = new MenuItem("Add subnode");
-        addNodeMenuItem.setOnAction(actionEvent -> EditingController.this.addNode(actionEvent));
+        addNodeMenuItem.setOnAction(EditingController.this::addNode);
         rootContextMenu.getItems().add(addNodeMenuItem);
         MenuItem deleteNodeMenuItem = new MenuItem("Delete subnode");
-        deleteNodeMenuItem.setOnAction(actionEvent -> EditingController.this.deleteNode(actionEvent));
+        deleteNodeMenuItem.setOnAction(EditingController.this::deleteNode);
         rootContextMenu.getItems().add(deleteNodeMenuItem);
         MenuItem renameNodeMenuItem = new MenuItem("Rename subnode");
-        renameNodeMenuItem.setOnAction(actionEvent -> EditingController.this.renameNode(actionEvent));
+        renameNodeMenuItem.setOnAction(EditingController.this::renameNode);
         rootContextMenu.getItems().add(renameNodeMenuItem);
         structureTree.setContextMenu(rootContextMenu);
 
@@ -181,6 +181,10 @@ public class EditingController implements Initializable {
             Optional<String> nodeNameChoice = Dialogues.inputModelNodeName("new-node");
             if (nodeNameChoice.isPresent()) {
                 String subNodeName = nodeNameChoice.get();
+                if(!Identifiers.validateNodeName(subNodeName)) {
+                    Dialogues.showError("Invalid name", Identifiers.getNameValidationDescription());
+                    return;
+                }
                 if (node.getSubNodesMap().containsKey(subNodeName)) {
                     Dialogues.showError("Duplicate node name", "There is already a sub-node named like that!");
                 } else {
@@ -214,20 +218,28 @@ public class EditingController implements Initializable {
 
     public void renameNode(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
-        ModelNode modelNode = selectedItem.getValue();
         if (selectedItem == null) throw new AssertionError("no item selected in tree view");
-        Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(modelNode.getName());
+        ModelNode modelNode = selectedItem.getValue();
+        String oldNodeName = modelNode.getName();
+        Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(oldNodeName);
         if (nodeNameChoice.isPresent()) {
-            String nodeName = nodeNameChoice.get();
+            String newNodeName = nodeNameChoice.get();
+            if(!Identifiers.validateNodeName(newNodeName)) {
+                Dialogues.showError("Invalid name", Identifiers.getNameValidationDescription());
+                return;
+            }
+
+            if (newNodeName.equals(oldNodeName)) return;
             TreeItem<ModelNode> parent = selectedItem.getParent();
             if (parent != null) {
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                if (parentNode.getSubNodesMap().containsKey(nodeName)) {
+                Map subNodesMap = parentNode.getSubNodesMap();
+                if (subNodesMap.containsKey(newNodeName)) {
                     Dialogues.showError("Duplicate node name", "There is already a sibling node named like that!");
                     return;
                 }
             }
-            modelNode.setName(nodeName);
+            modelNode.setName(newNodeName);
             selectedItem.valueProperty().setValue(modelNode);
             project.markSystemModelModified();
         }
@@ -240,8 +252,11 @@ public class EditingController implements Initializable {
         Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
         if (parameterNameChoice.isPresent()) {
             String parameterName = parameterNameChoice.get();
-            Map<String, ParameterModel> parameterMap = selectedItem.getValue().getParameterMap();
-            if (parameterMap.containsKey(parameterName)) {
+            if(!Identifiers.validateNodeName(parameterName)) {
+                Dialogues.showError("Invalid name", Identifiers.getNameValidationDescription());
+                return;
+            }
+            if (selectedItem.getValue().hasParameter(parameterName)) {
                 Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
             } else {
                 // TODO: use factory
