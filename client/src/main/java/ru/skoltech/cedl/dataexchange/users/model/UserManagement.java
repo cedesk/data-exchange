@@ -12,12 +12,12 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class UserManagement {
 
-    @XmlElementWrapper(name="users")
-    @XmlElement(name="user")
+    @XmlElementWrapper(name = "users")
+    @XmlElement(name = "user")
     private List<User> users = new LinkedList<>();
 
-    @XmlElementWrapper(name="disciplines")
-    @XmlElement(name="discipline")
+    @XmlElementWrapper(name = "disciplines")
+    @XmlElement(name = "discipline")
     private List<Discipline> disciplines = new LinkedList<>();
 
     public UserManagement() {

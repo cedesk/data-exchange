@@ -28,7 +28,7 @@ public class StructureTreeItem extends TreeItem<ModelNode> {
     }
 
     public boolean hasChange() {
-        if(remoteValue != null) {
+        if (remoteValue != null) {
             return !getValue().equals(remoteValue);
         }
         return true;
@@ -39,7 +39,7 @@ public class StructureTreeItem extends TreeItem<ModelNode> {
         ModelNode value = getValue();
         ModelNode remoteValue = getRemoteValue();
         // TODO: just an example
-        if(value.getParameters().size() != remoteValue.getParameters().size()) {
+        if (value.getParameters().size() != remoteValue.getParameters().size()) {
             sb.append("difference in parameters");
         }
         return sb.toString();

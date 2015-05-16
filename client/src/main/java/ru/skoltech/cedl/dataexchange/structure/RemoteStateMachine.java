@@ -40,11 +40,11 @@ public class RemoteStateMachine extends Observable {
     }
 
     public void initialize(boolean hasRepository, boolean localChange, boolean remoteChange) {
-        if(!localChange && !remoteChange) {
+        if (!localChange && !remoteChange) {
             state = RemoteState.CLEAN;
-        } else if(localChange && !remoteChange) {
+        } else if (localChange && !remoteChange) {
             state = RemoteState.ADVANCED;
-        } else if(!localChange && remoteChange) {
+        } else if (!localChange && remoteChange) {
             state = RemoteState.OUTDATED;
         } else { // localChange && remoteChange
             state = RemoteState.CONFLICTED;

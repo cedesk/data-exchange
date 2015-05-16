@@ -54,9 +54,13 @@ public class ParameterModel implements Comparable<ParameterModel> {
     }
 
     @XmlTransient
-    public Double getServerValue() { return serverValue; }
+    public Double getServerValue() {
+        return serverValue;
+    }
 
-    public void setServerValue(Double serverValue) { this.serverValue = serverValue; }
+    public void setServerValue(Double serverValue) {
+        this.serverValue = serverValue;
+    }
 
     public ParameterType getType() {
         return type;
@@ -104,7 +108,7 @@ public class ParameterModel implements Comparable<ParameterModel> {
     }
 
     public boolean hasServerChange() {
-        if(getServerValue() != null) {
+        if (getServerValue() != null) {
             // TODO: account for floating point comparison with imprecision
             return !getValue().equals(getServerValue());
         } else {

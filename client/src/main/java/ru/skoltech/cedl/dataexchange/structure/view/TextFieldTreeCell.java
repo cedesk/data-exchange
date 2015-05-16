@@ -7,7 +7,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
-import ru.skoltech.cedl.dataexchange.controller.EditingController;
 import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 
@@ -70,9 +69,9 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
                 if (t.getCode() == KeyCode.ENTER) {
                     String newName = textField.getText();
                     TreeItem<ModelNode> parent = getTreeItem().getParent();
-                    if(parent != null) {
+                    if (parent != null) {
                         CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                        if(parentNode.getSubNodesMap().containsKey(newName)) {
+                        if (parentNode.getSubNodesMap().containsKey(newName)) {
                             Dialogues.showError("Duplicate node name", "There is already a sibling node named like that!");
                             return;
                         }

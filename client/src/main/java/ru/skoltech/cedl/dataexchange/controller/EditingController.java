@@ -181,7 +181,7 @@ public class EditingController implements Initializable {
             Optional<String> nodeNameChoice = Dialogues.inputModelNodeName("new-node");
             if (nodeNameChoice.isPresent()) {
                 String subNodeName = nodeNameChoice.get();
-                if(!Identifiers.validateNodeName(subNodeName)) {
+                if (!Identifiers.validateNodeName(subNodeName)) {
                     Dialogues.showError("Invalid name", Identifiers.getNameValidationDescription());
                     return;
                 }
@@ -224,7 +224,7 @@ public class EditingController implements Initializable {
         Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(oldNodeName);
         if (nodeNameChoice.isPresent()) {
             String newNodeName = nodeNameChoice.get();
-            if(!Identifiers.validateNodeName(newNodeName)) {
+            if (!Identifiers.validateNodeName(newNodeName)) {
                 Dialogues.showError("Invalid name", Identifiers.getNameValidationDescription());
                 return;
             }
@@ -252,7 +252,7 @@ public class EditingController implements Initializable {
         Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
         if (parameterNameChoice.isPresent()) {
             String parameterName = parameterNameChoice.get();
-            if(!Identifiers.validateNodeName(parameterName)) {
+            if (!Identifiers.validateNodeName(parameterName)) {
                 Dialogues.showError("Invalid name", Identifiers.getNameValidationDescription());
                 return;
             }
