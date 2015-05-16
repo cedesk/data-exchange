@@ -1,6 +1,6 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -8,10 +8,16 @@ import java.util.List;
  * Created by D.Knoll on 01.05.2015.
  */
 @XmlRootElement
+@XmlType(propOrder = {"disciplines", "users"})
+@XmlAccessorType(XmlAccessType.FIELD)
 public class UserManagement {
 
+    @XmlElementWrapper(name="users")
+    @XmlElement(name="user")
     private List<User> users = new LinkedList<>();
 
+    @XmlElementWrapper(name="disciplines")
+    @XmlElement(name="discipline")
     private List<Discipline> disciplines = new LinkedList<>();
 
     public UserManagement() {

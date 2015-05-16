@@ -1,16 +1,23 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
+import javax.xml.bind.annotation.*;
+
 /**
  * Created by dknoll on 13/05/15.
  */
+@XmlType(propOrder = {"name", "builtIn", "description"})
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Discipline {
 
     public static Discipline ADMIN_DISCIPLINE = new Discipline("Admin", true);
 
+    @XmlID
+    @XmlAttribute
     private String name;
 
     private String description;
 
+    @XmlAttribute
     private boolean builtIn = false;
 
     public Discipline() {
