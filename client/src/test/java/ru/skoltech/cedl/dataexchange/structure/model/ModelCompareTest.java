@@ -29,15 +29,15 @@ public class ModelCompareTest {
 
         URL url1 = this.getClass().getResource("/model1.xml");
         File file1 = new File(url1.getFile());
-        m1 = fs.load(file1);
+        m1 = fs.loadSystemModel(file1);
 
         URL url3 = this.getClass().getResource("/model1.xml");
         File file3 = new File(url3.getFile());
-        m3 = fs.load(file3);
+        m3 = fs.loadSystemModel(file3);
 
         URL url2 = this.getClass().getResource("/model2.xml");
         File file2 = new File(url2.getFile());
-        m2 = fs.load(file2);
+        m2 = fs.loadSystemModel(file2);
 
     }
 
