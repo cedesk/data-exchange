@@ -39,8 +39,23 @@ public class RemoteStateMachine extends Observable {
         return state.possibleActions().contains(action);
     }
 
+    public void initialize(boolean hasRepository, boolean localChange, boolean remoteChange) {
+        if(!localChange && !remoteChange) {
+            state = RemoteState.CLEAN;
+        } else if(localChange && !remoteChange) {
+            state = RemoteState.ADVANCED;
+        } else if(!localChange && remoteChange) {
+            state = RemoteState.OUTDATED;
+        } else { // localChange && remoteChange
+            state = RemoteState.CONFLICTED;
+        }
+    }
+
     public enum RemoteState {
 
+        /**
+         * local working copy has not been connected to a remote repository
+         */
         UNCOUPLED {
             @Override
             EnumSet<RemoteActions> possibleActions() {
@@ -57,6 +72,9 @@ public class RemoteStateMachine extends Observable {
                 }
             }
         },
+        /**
+         * working copy is clean
+         */
         CLEAN {
             @Override
             EnumSet<RemoteActions> possibleActions() {
@@ -75,10 +93,13 @@ public class RemoteStateMachine extends Observable {
                 }
             }
         },
+        /**
+         * working copy has been changed after last checkout
+         */
         ADVANCED {
             @Override
             EnumSet<RemoteActions> possibleActions() {
-                return EnumSet.of(RemoteActions.COMMIT, RemoteActions.REMOTE_CHANGE);
+                return EnumSet.of(RemoteActions.COMMIT, RemoteActions.LOCAL_CHANGE, RemoteActions.REMOTE_CHANGE);
             }
 
             @Override
@@ -86,6 +107,8 @@ public class RemoteStateMachine extends Observable {
                 switch (action) {
                     case COMMIT:
                         return CLEAN;
+                    case LOCAL_CHANGE:
+                        return ADVANCED;
                     case REMOTE_CHANGE:
                         return CONFLICTED;
                     default:
@@ -93,6 +116,9 @@ public class RemoteStateMachine extends Observable {
                 }
             }
         },
+        /**
+         * the repository has newer revisions than the working copy
+         */
         OUTDATED {
             @Override
             EnumSet<RemoteActions> possibleActions() {
@@ -111,6 +137,9 @@ public class RemoteStateMachine extends Observable {
                 }
             }
         },
+        /**
+         * working copy has been changed after last checkout, and the repository has newer revisions
+         */
         CONFLICTED {
             @Override
             EnumSet<RemoteActions> possibleActions() {
@@ -138,11 +167,29 @@ public class RemoteStateMachine extends Observable {
     }
 
     public enum RemoteActions {
+        /**
+         * check out clean working copy
+         */
         CHECKOUT,
+        /**
+         * committing changes on the working copy to the repository
+         */
         COMMIT,
+        /**
+         * updating the working copy to the latest revision in the repository
+         */
         UPDATE,
+        /**
+         * consolidate changes made on the working copy with new revisions made on the repository
+         */
         MERGE,
+        /**
+         * change to the local working copy
+         */
         LOCAL_CHANGE,
+        /**
+         * new revision appeared in repository
+         */
         REMOTE_CHANGE
     }
 }

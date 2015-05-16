@@ -112,7 +112,7 @@ public class RepositoryStorage {
         SVNUpdateClient updateClient = svnClientManager.getUpdateClient();
         updateClient.setIgnoreExternals(false);
         try {
-            long rev = updateClient.doCheckout(svnUrl, wcPath, SVNRevision.HEAD, SVNRevision.HEAD, SVNDepth.IMMEDIATES, false);
+            long rev = updateClient.doCheckout(svnUrl, wcPath, SVNRevision.HEAD, SVNRevision.HEAD, SVNDepth.INFINITY, false);
             return true;
         } catch (SVNException svne) {
             System.err
@@ -126,7 +126,7 @@ public class RepositoryStorage {
         SVNUpdateClient updateClient = svnClientManager.getUpdateClient();
         updateClient.setIgnoreExternals(false);
         try {
-            long rev = updateClient.doUpdate(wcPath, SVNRevision.HEAD, SVNDepth.IMMEDIATES, false, false);
+            long rev = updateClient.doUpdate(wcPath, SVNRevision.HEAD, SVNDepth.INFINITY, false, false);
             return true;
         } catch (SVNException svne) {
             System.err
@@ -138,7 +138,7 @@ public class RepositoryStorage {
 
     public boolean commitFile(String commitMessage) {
         SVNProperties revisionProperties = new SVNProperties();
-        SVNDepth depth = SVNDepth.IMMEDIATES;
+        SVNDepth depth = SVNDepth.INFINITY;
 
         try {
             SVNCommitClient commitClient = svnClientManager.getCommitClient();
@@ -197,4 +197,5 @@ public class RepositoryStorage {
         sb.append('}');
         return sb.toString();
     }
+
 }

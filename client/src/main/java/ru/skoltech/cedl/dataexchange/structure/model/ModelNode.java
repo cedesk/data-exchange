@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -44,11 +45,15 @@ public abstract class ModelNode {
         this.parameters = parameters;
     }
 
-    public Map<String, ParameterModel> getParameterMap() {
+    private Map<String, ParameterModel> getParameterMap() {
         Map<String, ParameterModel> parameterModelMap = getParameters().stream().collect(
-                Collectors.toMap(ParameterModel::getName, (m) -> m)
+                Collectors.toMap(ParameterModel::getName, Function.identity())
         );
         return parameterModelMap;
+    }
+
+    public boolean hasParameter(String parameterName) {
+        return getParameterMap().containsKey(parameterName);
     }
 
     @Override
@@ -96,7 +101,7 @@ public abstract class ModelNode {
         for (ParameterModel parameterModel : parameters) {
             String parameterName = parameterModel.getName();
             if (otherModelNodeParameterMap.containsKey(parameterName)) {
-                if(!parameterModel.equals(otherModelNodeParameterMap.get(parameterName))) {
+                if (!parameterModel.equals(otherModelNodeParameterMap.get(parameterName))) {
                     return false;
                 }
             } else {

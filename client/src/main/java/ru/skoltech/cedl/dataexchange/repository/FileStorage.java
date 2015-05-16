@@ -53,7 +53,7 @@ public class FileStorage {
         }
     }
 
-    public SystemModel load(File inputFile) throws IOException {
+    public SystemModel loadSystemModel(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             JAXBContext ct = JAXBContext.newInstance(SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class);
 
@@ -66,7 +66,7 @@ public class FileStorage {
         }
     }
 
-    public static void store(UserManagement userManagement, File outputFile) throws IOException {
+    public void storeUserManagement(UserManagement userManagement, File outputFile) throws IOException {
 
         StorageUtils.makeDirectory(outputFile.getParentFile());
 
@@ -79,7 +79,20 @@ public class FileStorage {
             m.marshal(userManagement, fos);
 
         } catch (JAXBException e) {
-            throw new IOException("Error writing system model to XML file.", e);
+            throw new IOException("Error writing user management to XML file.", e);
+        }
+    }
+
+    public UserManagement loadUserManagement(File inputFile) throws IOException {
+        try (FileInputStream inp = new FileInputStream(inputFile)) {
+            JAXBContext ct = JAXBContext.newInstance(UserManagement.class, User.class, Discipline.class);
+
+            Unmarshaller u = ct.createUnmarshaller();
+            UserManagement userManagement = (UserManagement) u.unmarshal(inp);
+            return userManagement;
+
+        } catch (JAXBException e) {
+            throw new IOException("Error reading user management from XML file.", e);
         }
     }
 
