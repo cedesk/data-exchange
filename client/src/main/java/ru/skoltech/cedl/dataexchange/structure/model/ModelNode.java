@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
 public abstract class ModelNode {
 
     @XmlAttribute
-    private String name;
+    protected String name;
 
     @XmlElementWrapper(name = "parameters")
     @XmlElement(name = "parameter")
-    private List<ParameterModel> parameters = new LinkedList<>();
+    protected List<ParameterModel> parameters = new LinkedList<>();
 
     public ModelNode() {
     }
@@ -60,11 +60,6 @@ public abstract class ModelNode {
 
     public boolean hasParameter(String parameterName) {
         return getParameterMap().containsKey(parameterName);
-    }
-
-    @Override
-    public String toString() {
-        return getName();
     }
 
     public void diffParameters(ModelNode otherModelNode) {
@@ -116,5 +111,14 @@ public abstract class ModelNode {
             }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ModelNode{");
+        sb.append("name='").append(name).append('\'');
+        sb.append(", parameters=").append(parameters);
+        sb.append('}');
+        return sb.toString();
     }
 }

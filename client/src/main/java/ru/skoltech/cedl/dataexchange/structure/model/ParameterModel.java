@@ -119,4 +119,17 @@ public class ParameterModel implements Comparable<ParameterModel> {
             return false;
         }
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ParameterModel{");
+        sb.append("name='").append(name).append('\'');
+        sb.append(", value=").append(value);
+        sb.append(", serverValue=").append(serverValue);
+        sb.append(", type=").append(type);
+        sb.append(", isShared=").append(isShared);
+        sb.append(", description='").append(description).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

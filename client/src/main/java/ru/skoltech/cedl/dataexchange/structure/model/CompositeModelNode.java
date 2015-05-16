@@ -18,7 +18,7 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
 
     @XmlElementWrapper(name = "subNodes")
     @XmlElement(name = "subNode")
-    private List<SUBNODES> subNodes = new LinkedList<>();
+    protected List<SUBNODES> subNodes = new LinkedList<>();
 
     public CompositeModelNode() {
         super();
@@ -101,5 +101,15 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
             if (!res) return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CompositeModelNode{");
+        sb.append("name='").append(name).append('\'');
+        sb.append(", parameters=").append(parameters);
+        sb.append("subNodes=").append(subNodes);
+        sb.append('}');
+        return sb.toString();
     }
 }
