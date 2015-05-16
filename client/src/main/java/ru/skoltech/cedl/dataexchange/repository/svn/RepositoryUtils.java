@@ -16,7 +16,7 @@ import java.io.File;
  */
 public class RepositoryUtils {
 
-    static final String DEFAULT_NAME = "anonymous";
+    static final String DEFAULT_USER_NAME = "anonymous";
     static final String DEFAULT_PASSWORD = "anonymous";
 
     public static String makeUrlFromPath(File path) {
@@ -24,13 +24,17 @@ public class RepositoryUtils {
     }
 
     public static boolean checkRepository(String url, String dataFileName) {
+        return checkRepository(url, dataFileName, DEFAULT_USER_NAME, DEFAULT_PASSWORD);
+    }
+
+    public static boolean checkRepository(String url, String dataFileName, String userName, String password) {
         if (url == null || url.isEmpty()) {
             return false;
         }
         SVNRepository repository = null;
         try {
             repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
-            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(DEFAULT_NAME, DEFAULT_PASSWORD);
+            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(userName, password);
             repository.setAuthenticationManager(authManager);
 
             SVNNodeKind nodeKind = repository.checkPath(dataFileName, -1);
