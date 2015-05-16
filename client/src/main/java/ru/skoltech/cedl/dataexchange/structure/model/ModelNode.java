@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import ru.skoltech.cedl.dataexchange.Utils;
 
+import javax.xml.bind.annotation.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,10 +13,15 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 11.03.2015.
  */
+@XmlType(propOrder = {"name", "parameters"})
+@XmlAccessorType(XmlAccessType.FIELD)
 public abstract class ModelNode {
 
+    @XmlAttribute
     private String name;
 
+    @XmlElementWrapper(name = "parameters")
+    @XmlElement(name = "parameter")
     private List<ParameterModel> parameters = new LinkedList<>();
 
     public ModelNode() {

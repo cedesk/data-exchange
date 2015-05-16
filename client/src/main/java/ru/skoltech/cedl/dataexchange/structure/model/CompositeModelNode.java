@@ -1,5 +1,9 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,8 +13,11 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 29.03.2015.
  */
+@XmlAccessorType(XmlAccessType.FIELD)
 public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode implements Iterable<SUBNODES> {
 
+    @XmlElementWrapper(name = "subNodes")
+    @XmlElement(name = "subNode")
     private List<SUBNODES> subNodes = new LinkedList<>();
 
     public CompositeModelNode() {

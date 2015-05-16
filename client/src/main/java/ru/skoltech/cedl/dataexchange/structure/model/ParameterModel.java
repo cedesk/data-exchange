@@ -1,22 +1,27 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 
 /**
  * Created by D.Knoll on 12.03.2015.
  */
 @XmlType(propOrder = {"name", "value", "type", "isShared", "description"})
+@XmlAccessorType(XmlAccessType.FIELD)
 public class ParameterModel implements Comparable<ParameterModel> {
 
+    @XmlAttribute
     private String name;
 
+    @XmlAttribute
     private Double value;
 
+    @XmlTransient
     private Double serverValue;
 
+    @XmlAttribute
     private ParameterType type = ParameterType.DefaultValue;
 
+    @XmlAttribute
     private Boolean isShared = false;
 
     private String description;
@@ -53,7 +58,6 @@ public class ParameterModel implements Comparable<ParameterModel> {
         this.value = value;
     }
 
-    @XmlTransient
     public Double getServerValue() {
         return serverValue;
     }
