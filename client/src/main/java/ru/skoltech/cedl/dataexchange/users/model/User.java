@@ -1,19 +1,25 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
+import javax.xml.bind.annotation.*;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by dknoll on 13/05/15.
  */
+@XmlType(propOrder = {"userName", "fullName", "authenticator", "disciplines"})
+@XmlAccessorType(XmlAccessType.FIELD)
 public class User {
 
+    @XmlAttribute
     private String userName;
 
+    @XmlAttribute
     private String fullName;
 
     private String authenticator;
 
+    @XmlIDREF
     private List<Discipline> disciplines = new LinkedList<>();
 
     public User() {
