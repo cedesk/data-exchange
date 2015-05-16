@@ -112,7 +112,7 @@ public class MainController implements Initializable {
     }
 
     public void checkoutModel(ActionEvent actionEvent) {
-        if (!RepositoryUtils.checkRepository(project.getRepositoryPath(), Project.getDataFileName())) {
+        if (!RepositoryUtils.checkRepository(project.getRepositoryPath(), Project.getDataFileName(), project.getUserName(), project.getPassword())) {
             Dialogues.showInvalidRepositoryWarning();
             StatusLogger.getInstance().log("No repository selected.");
             boolean success = changeProjectRepository(project);
