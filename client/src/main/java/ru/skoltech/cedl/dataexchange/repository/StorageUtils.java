@@ -10,14 +10,19 @@ import java.io.IOException;
  */
 public class StorageUtils {
 
-    private static final String DATA_DIR = "CEDESK";
+    private static final String APP_DIR = "CEDESK";
 
     private static final String USER_HOME = System.getProperty("user.home");
 
+    public static File getAppDir() {
+        File homeDir = new File(USER_HOME);
+        return new File(homeDir, APP_DIR);
+    }
+
     public static File getDataDir(String projectName) {
         File homeDir = new File(USER_HOME);
-        File dataDir = new File(homeDir, DATA_DIR);
-        return new File(dataDir, projectName);
+        File appDir = new File(homeDir, APP_DIR);
+        return new File(appDir, projectName);
     }
 
     public static void makeDirectory(File path) {
