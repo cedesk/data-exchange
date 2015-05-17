@@ -32,8 +32,8 @@ public class RepositoryStorage {
         this.svnUrl = SVNURL.parseURIEncoded(url);
         this.wcPath = wcPath;
 
-        authManager = SVNWCUtil.createDefaultAuthenticationManager(
-                userName, password);
+        File confDir = SVNWCUtil.getDefaultConfigurationDirectory();
+        authManager = SVNWCUtil.createDefaultAuthenticationManager(confDir, userName, password.toCharArray(), false);
         svnClientManager = SVNClientManager.newInstance();
         svnClientManager.setAuthenticationManager(authManager);
     }
