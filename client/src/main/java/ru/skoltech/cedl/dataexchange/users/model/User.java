@@ -19,6 +19,8 @@ public class User {
 
     private String authenticator;
 
+    @XmlElementWrapper(name = "disciplines")
+    @XmlElement(name = "discipline")
     @XmlIDREF
     private List<Discipline> disciplines = new LinkedList<>();
 
