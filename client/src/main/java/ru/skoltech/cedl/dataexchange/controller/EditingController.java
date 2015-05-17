@@ -18,6 +18,7 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
+import ru.skoltech.cedl.dataexchange.users.AccessVerifier;
 
 import java.net.URL;
 import java.util.Map;
@@ -78,7 +79,7 @@ public class EditingController implements Initializable {
         addNodeButton.disableProperty().bind(selectedNodeIsLeaf);
         deleteNodeButton.disableProperty().bind(selectedNodeIsRoot);
 
-        structureTree.setEditable(true);
+        structureTree.setEditable(true); // TODO: make editable only for ADMIN
         structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
             @Override
             public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
@@ -153,7 +154,8 @@ public class EditingController implements Initializable {
         modelNode.diffParameters(item.getRemoteValue());
         viewParameters.displayParameters(modelNode.getParameters());
 
-        parameterTable.setEditable(true); // TODO: editable only for the subsystem the user has access
+        boolean editable = AccessVerifier.check(project.getSystemModel(), treeItem, project.getUserName(), project.getUserManagement());
+        parameterTable.setEditable(editable);
         parameterTable.autosize();
     }
 

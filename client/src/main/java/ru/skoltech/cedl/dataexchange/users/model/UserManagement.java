@@ -3,6 +3,9 @@ package ru.skoltech.cedl.dataexchange.users.model;
 import javax.xml.bind.annotation.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 01.05.2015.
@@ -46,5 +49,15 @@ public class UserManagement {
         sb.append(", disciplines=").append(disciplines);
         sb.append('}');
         return sb.toString();
+    }
+
+    public Map<String, User> getUserMap() {
+        return users.stream().collect(
+                Collectors.toMap(User::getUserName, Function.<User>identity()));
+    }
+
+    public Map<String, Discipline> getDisciplineMap() {
+        return disciplines.stream().collect(
+                Collectors.toMap(Discipline::getName, Function.<Discipline>identity()));
     }
 }
