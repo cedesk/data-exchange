@@ -113,7 +113,7 @@ public class MainController implements Initializable {
     }
 
     public void checkoutModel(ActionEvent actionEvent) {
-        if (!RepositoryStorage.checkRepository(project.getRepositoryPath(), Project.getDataFileName(), project.getUserName(), project.getPassword())) {
+        if (!RepositoryStorage.checkRepository(project.getRepositoryPath(), project.getUserName(), project.getPassword(), Project.getDataFileName())) {
             Dialogues.showInvalidRepositoryWarning();
             StatusLogger.getInstance().log("No repository selected.");
             boolean success = changeProjectRepository(project);
@@ -123,7 +123,6 @@ public class MainController implements Initializable {
                 return;
             }
         }
-        // TODO: not always do CHECKOUT (since it overwrites local changes), but do UPDATE
         try {
             boolean success = project.checkoutFile();
             if (success) {
@@ -172,7 +171,7 @@ public class MainController implements Initializable {
 
     private boolean checkRepositoryPath(Project project, String url) {
         boolean validRepositoryPath;
-        validRepositoryPath = RepositoryStorage.checkRepository(url, Project.getDataFileName(), Utils.getUserName(), "");
+        validRepositoryPath = RepositoryStorage.checkRepository(url, Utils.getUserName(), "", Project.getDataFileName());
         if (validRepositoryPath) {
             project.setRepositoryPath(url);
         } else {
