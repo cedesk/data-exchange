@@ -14,7 +14,7 @@
         <dependency>
             <groupId>org.tmatesoft.svnkit</groupId>
             <artifactId>svnkit</artifactId>
-            <version>1.8.7</version>
+            <version>1.8.9</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

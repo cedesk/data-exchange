@@ -12,7 +12,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.tmatesoft.svnkit:svnkit:1.8.7" level="project" />
+    <orderEntry type="library" name="Maven: org.tmatesoft.svnkit:svnkit:1.8.9" level="project" />
     <orderEntry type="library" name="Maven: com.jcraft:jsch.agentproxy.svnkit-trilead-ssh2:0.0.7" level="project" />
     <orderEntry type="library" name="Maven: com.jcraft:jsch.agentproxy.core:0.0.7" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jna:jna-platform:4.1.0" level="project" />
