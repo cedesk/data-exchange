@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.users;
 
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
@@ -15,6 +16,8 @@ public class DummyUserManagementBuilder {
         um.getDisciplines().add(new Discipline("Orbit"));
         um.getDisciplines().add(new Discipline("Payload"));
         um.getDisciplines().add(new Discipline("Power"));
+        um.getDisciplines().add(new Discipline("Thermal"));
+        um.getDisciplines().add(new Discipline("Communication"));
         um.getDisciplines().add(new Discipline("Propulsion"));
         um.getDisciplines().add(new Discipline("Mission"));
 
@@ -29,5 +32,18 @@ public class DummyUserManagementBuilder {
         um.getUsers().add(expert);
 
         return um;
+    }
+
+    public static void addCurrentUserWithAllPower(UserManagement userManagement) {
+        User godfather = new User(Utils.getUserName(), "Godfather", "ad-hoc permissions for current user");
+
+        godfather.getDisciplines().add(Discipline.ADMIN_DISCIPLINE);
+/*
+        for (Discipline disc : userManagement.getDisciplines()) {
+            godfather.getDisciplines().add(disc);
+        }
+*/
+//        godfather.getDisciplines().add(new Discipline("AOCS"));
+        userManagement.getUsers().add(godfather);
     }
 }

@@ -59,6 +59,8 @@ public class Project {
         this.localStateMachine = new LocalStateMachine();
         this.remoteStateMachine = new RemoteStateMachine();
         this.userManagement = DummyUserManagementBuilder.getModel();
+        //TODO: remove after testing
+        DummyUserManagementBuilder.addCurrentUserWithAllPower(userManagement);
     }
 
     public static String getDataFileName() {
