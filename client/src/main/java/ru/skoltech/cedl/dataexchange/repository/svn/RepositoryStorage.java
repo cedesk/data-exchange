@@ -19,6 +19,9 @@ import java.io.InputStream;
  */
 public class RepositoryStorage {
 
+    static final String DEFAULT_USER_NAME = "anonymous";
+    static final String DEFAULT_PASSWORD = "anonymous";
+
     static {
         setupLibrary();
     }
@@ -33,7 +36,8 @@ public class RepositoryStorage {
         this.wcPath = wcPath;
 
         File confDir = SVNWCUtil.getDefaultConfigurationDirectory();
-        authManager = SVNWCUtil.createDefaultAuthenticationManager(confDir, userName, password.toCharArray(), false);
+        char[] pwd = password != null ? password.toCharArray() : new char[]{};
+        authManager = SVNWCUtil.createDefaultAuthenticationManager(confDir, userName, pwd, false);
         svnClientManager = SVNClientManager.newInstance();
         svnClientManager.setAuthenticationManager(authManager);
     }
@@ -52,10 +56,40 @@ public class RepositoryStorage {
         FSRepositoryFactory.setup();
     }
 
+    public static String makeUrlFromPath(File path) {
+        return "file:///" + path.toString();
+    }
+
+    public static boolean checkRepository(String url, String dataFileName) {
+        return checkRepository(url, dataFileName, DEFAULT_USER_NAME, DEFAULT_PASSWORD);
+    }
+
+    public static boolean checkRepository(String url, String dataFileName, String userName, String password) {
+        if (url == null || url.isEmpty()) {
+            return false;
+        }
+        SVNRepository repository = null;
+        try {
+            repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
+            File confDir = SVNWCUtil.getDefaultConfigurationDirectory();
+            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(confDir, userName, password.toCharArray(), false);
+            repository.setAuthenticationManager(authManager);
+
+            SVNNodeKind nodeKind = repository.checkPath(dataFileName, -1);
+            if (nodeKind == SVNNodeKind.FILE) {
+                return true;
+            }
+        } catch (SVNAuthenticationException ae) {
+            System.err.println("SVN Authentication Error.");
+        } catch (SVNException e) {
+            System.err.println("SVNException: " + e.getMessage());
+        }
+        return false;
+    }
+
     public String getUrl() {
         return svnUrl.toString();
     }
-
 
     public long getRepositoryRevisionNumber() {
         SVNRepository svnRepository = null;
