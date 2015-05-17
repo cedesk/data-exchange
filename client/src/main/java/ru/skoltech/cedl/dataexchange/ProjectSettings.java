@@ -13,11 +13,15 @@ import java.util.Properties;
  */
 public class ProjectSettings {
 
-    private static final String SETTINGS_FILE = "project.settings";
+    private static final String SETTINGS_EEXTENSION = ".project";
 
     private static final String SETTINGS_COMMENTS = "CEDESK project settings";
 
     private static final String REPOSITORY = "repository.url";
+
+    private static final String USER = "repository.user";
+
+    private static final String AUTHENTICATOR = "repository.authenticator";
 
     private static Properties properties = new Properties();
 
@@ -27,7 +31,7 @@ public class ProjectSettings {
 
     public ProjectSettings(String projectName) {
         this.projectName = projectName;
-        this.settingsFile = new File(StorageUtils.getDataDir(this.projectName), SETTINGS_FILE);
+        this.settingsFile = new File(StorageUtils.getAppDir(), projectName + SETTINGS_EEXTENSION);
         loadSettings();
     }
 
@@ -43,6 +47,40 @@ public class ProjectSettings {
         String previousRepository = properties.getProperty(REPOSITORY);
         if (previousRepository == null || !previousRepository.equals(repository)) {
             properties.setProperty(REPOSITORY, repository);
+            saveSettings();
+        }
+    }
+
+    public String getUser() {
+        String user = properties.getProperty(USER);
+        if (user == null) {
+            user = Utils.getUserName();
+            System.out.println("Warning: Empty user name! Using local user '" + user + "'");
+            setUser(user);
+        }
+        return user;
+    }
+
+    public void setUser(String user) {
+        String previousUser = properties.getProperty(USER);
+        if (previousUser == null || !previousUser.equals(user)) {
+            properties.setProperty(USER, user);
+            saveSettings();
+        }
+    }
+
+    public String getAuthenticator() {
+        String authenticator = properties.getProperty(AUTHENTICATOR);
+        if (authenticator == null) {
+            System.out.println("Warning: Empty authenticator!");
+        }
+        return authenticator;
+    }
+
+    public void setAuthenticator(String authenticator) {
+        String previousAuth = properties.getProperty(AUTHENTICATOR);
+        if (previousAuth == null || !previousAuth.equals(authenticator)) {
+            properties.setProperty(AUTHENTICATOR, authenticator);
             saveSettings();
         }
     }

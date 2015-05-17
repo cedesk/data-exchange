@@ -4,7 +4,6 @@ import org.tmatesoft.svn.core.SVNAuthenticationException;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
@@ -33,10 +32,6 @@ public class Project {
 
     private String projectName;
 
-    private String userName;
-
-    private String password;
-
     private FileStorage localStorage;
 
     private RepositoryStorage repositoryStorage;
@@ -59,8 +54,6 @@ public class Project {
 
     public Project(String projectName) {
         this.projectName = projectName;
-        this.userName = Utils.getUserName();
-        this.password = "";
         this.projectSettings = new ProjectSettings(projectName);
         this.localStorage = new FileStorage(StorageUtils.getDataDir(projectName));
         this.localStateMachine = new LocalStateMachine();
@@ -73,19 +66,19 @@ public class Project {
     }
 
     public String getUserName() {
-        return userName;
+        return projectSettings.getUser();
     }
 
     public void setUserName(String userName) {
-        this.userName = userName;
+        projectSettings.setUser(userName);
     }
 
     public String getPassword() {
-        return password;
+        return projectSettings.getAuthenticator();
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        projectSettings.setAuthenticator(password);
     }
 
     public String getRepositoryPath() {
