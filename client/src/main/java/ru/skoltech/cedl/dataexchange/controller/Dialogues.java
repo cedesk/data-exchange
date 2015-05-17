@@ -73,6 +73,15 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
+    static Optional<String> inputUserName() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("User Name");
+        dialog.setHeaderText("Please insert a name for the new user.");
+        dialog.setContentText("Name");
+        //TODO: add input validation
+        return dialog.showAndWait();
+    }
+
     public static Optional<ButtonType> chooseYesNo(String title, String text) {
         Alert yesNoDialog = new Alert(Alert.AlertType.CONFIRMATION);
         yesNoDialog.setTitle(title);

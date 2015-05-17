@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 public class Identifiers {
     private static final Pattern NAME_RULE = Pattern.compile("[a-zA-Z]*");
 
-    private static final String NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only aplhanumeric characters!";
+    private static final String NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphanumeric characters!";
 
     public static boolean validateNodeName(String nodeName) {
         if (nodeName.length() < 1) return false;
