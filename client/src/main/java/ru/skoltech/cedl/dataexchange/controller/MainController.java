@@ -15,7 +15,7 @@ import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryUtils;
+import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.LocalStateMachine;
@@ -113,7 +113,7 @@ public class MainController implements Initializable {
     }
 
     public void checkoutModel(ActionEvent actionEvent) {
-        if (!RepositoryUtils.checkRepository(project.getRepositoryPath(), Project.getDataFileName(), project.getUserName(), project.getPassword())) {
+        if (!RepositoryStorage.checkRepository(project.getRepositoryPath(), Project.getDataFileName(), project.getUserName(), project.getPassword())) {
             Dialogues.showInvalidRepositoryWarning();
             StatusLogger.getInstance().log("No repository selected.");
             boolean success = changeProjectRepository(project);
@@ -161,7 +161,7 @@ public class MainController implements Initializable {
                     StatusLogger.getInstance().log("User declined choosing a repository.", true);
                     return false;
                 }
-                String url = RepositoryUtils.makeUrlFromPath(path);
+                String url = RepositoryStorage.makeUrlFromPath(path);
                 validRepositoryPath = checkRepositoryPath(project, url);
             } while (!validRepositoryPath);
             return true;
@@ -172,7 +172,7 @@ public class MainController implements Initializable {
 
     private boolean checkRepositoryPath(Project project, String url) {
         boolean validRepositoryPath;
-        validRepositoryPath = RepositoryUtils.checkRepository(url, Project.getDataFileName(), Utils.getUserName(), "");
+        validRepositoryPath = RepositoryStorage.checkRepository(url, Project.getDataFileName(), Utils.getUserName(), "");
         if (validRepositoryPath) {
             project.setRepositoryPath(url);
         } else {
