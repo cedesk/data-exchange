@@ -61,10 +61,19 @@ public class RepositoryStorage {
     }
 
     public static boolean checkRepository(String url, String dataFileName) {
-        return checkRepository(url, dataFileName, DEFAULT_USER_NAME, DEFAULT_PASSWORD);
+        return checkRepository(url, DEFAULT_USER_NAME, DEFAULT_PASSWORD, dataFileName);
     }
 
-    public static boolean checkRepository(String url, String dataFileName, String userName, String password) {
+    /**
+     * This method tries to connect to the repository with the specified credentials and checks whether it contains the given file.
+     *
+     * @param url
+     * @param userName
+     * @param password
+     * @param dataFileName
+     * @return true when the repository exists and contains the given file
+     */
+    public static boolean checkRepository(String url, String userName, String password, String dataFileName) {
         if (url == null || url.isEmpty()) {
             return false;
         }
