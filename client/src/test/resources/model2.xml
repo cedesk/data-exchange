@@ -1,133 +1,68 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<systemModel>
-    <name>SkoltechSat</name>
+<systemModel name="SkoltechSat">
     <parameters>
-        <name>parameter 39</name>
-        <value>25.0</value>
-        <type>DefaultValue</type>
-        <isShared>false</isShared>
+        <parameter name="parameter 1" value="47.0" type="DefaultValue" isShared="false"/>
+        <parameter name="parameter 2" value="23.0" type="DefaultValue" isShared="false"/>
     </parameters>
-    <parameters>
-        <name>parameter 40</name>
-        <value>43.0</value>
-        <type>DefaultValue</type>
-        <isShared>false</isShared>
-    </parameters>
-    <parameters>
-        <name>GAMMA</name>
-        <value>33.0</value>
-        <type>DefaultValue</type>
-        <isShared>false</isShared>
-    </parameters>
-    <subNodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel">
-        <name>Power</name>
-        <parameters>
-            <name>parameter 41</name>
-            <value>2.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-        <parameters>
-            <name>parameter 42</name>
-            <value>36.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-    </subNodes>
-    <subNodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel">
-        <name>AOCS</name>
-        <parameters>
-            <name>parameter 47</name>
-            <value>58.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-        <parameters>
-            <name>parameter 48</name>
-            <value>42.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-        <subNodes xsi:type="elementModel">
-            <name>Magnetic Torquer</name>
+    <subNodes>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Power">
             <parameters>
-                <name>parameter 49</name>
-                <value>21.0</value>
-                <type>DefaultValue</type>
-                <isShared>false</isShared>
+                <parameter name="parameter 3" value="46.0" type="DefaultValue" isShared="false"/>
+                <parameter name="parameter 4" value="71.0" type="DefaultValue" isShared="false"/>
             </parameters>
+            <subNodes/>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="AOCS">
             <parameters>
-                <name>parameter 50</name>
-                <value>75.0</value>
-                <type>DefaultValue</type>
-                <isShared>false</isShared>
+                <parameter name="parameter 9" value="83.0" type="DefaultValue" isShared="false"/>
+                <parameter name="parameter 10" value="75.0" type="DefaultValue" isShared="false"/>
             </parameters>
-        </subNodes>
-        <subNodes xsi:type="elementModel">
-            <name>Acceleration Wheel</name>
-        </subNodes>
-    </subNodes>
-    <subNodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel">
-        <name>Thermal</name>
-        <parameters>
-            <name>parameter 53</name>
-            <value>60.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-        <parameters>
-            <name>parameter 54</name>
-            <value>96.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-    </subNodes>
-    <subNodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel">
-        <name>Orbit</name>
-        <parameters>
-            <name>parameter 59</name>
-            <value>73.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-        <parameters>
-            <name>parameter 60</name>
-            <value>25.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-    </subNodes>
-    <subNodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel">
-        <name>Payload</name>
-        <parameters>
-            <name>parameter 65</name>
-            <value>85.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-        <parameters>
-            <name>parameter 66</name>
-            <value>13.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-    </subNodes>
-    <subNodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel">
-        <name>Communication</name>
-        <parameters>
-            <name>parameter 71</name>
-            <value>4.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-        <parameters>
-            <name>parameter 72</name>
-            <value>1.0</value>
-            <type>DefaultValue</type>
-            <isShared>false</isShared>
-        </parameters>
-    </subNodes>
-    <subNodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel">
-        <name>Mission2</name>
+            <subNodes>
+                <subNode xsi:type="elementModel" name="MagneticTorquer">
+                    <parameters>
+                        <parameter name="powerConsumption" value="0.04" type="DefaultValue" isShared="false"/>
+                    </parameters>
+                    <subNodes/>
+                </subNode>
+                <subNode xsi:type="elementModel" name="ReactionWheel">
+                    <parameters>
+                        <parameter name="powerConsumption" value="0.0" type="DefaultValue" isShared="false"/>
+                    </parameters>
+                    <subNodes/>
+                </subNode>
+            </subNodes>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Thermal">
+            <parameters>
+                <parameter name="parameter 15" value="78.0" type="DefaultValue" isShared="false"/>
+                <parameter name="parameter 16" value="49.0" type="DefaultValue" isShared="false"/>
+            </parameters>
+            <subNodes/>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Orbit">
+            <parameters>
+                <parameter name="parameter 21" value="23.0" type="DefaultValue" isShared="false"/>
+                <parameter name="parameter 22" value="96.0" type="DefaultValue" isShared="false"/>
+            </parameters>
+            <subNodes/>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Payload">
+            <parameters>
+                <parameter name="parameter 27" value="6.0" type="DefaultValue" isShared="false"/>
+                <parameter name="parameter 28" value="14.0" type="DefaultValue" isShared="false"/>
+            </parameters>
+            <subNodes/>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Communication">
+            <parameters>
+                <parameter name="parameter 33" value="61.0" type="DefaultValue" isShared="false"/>
+                <parameter name="parameter 34" value="71.0" type="DefaultValue" isShared="false"/>
+            </parameters>
+            <subNodes/>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Mission2">
+            <parameters/>
+            <subNodes/>
+        </subNode>
     </subNodes>
 </systemModel>
