@@ -49,6 +49,8 @@ public class RemoteStateMachine extends Observable {
         } else { // localChange && remoteChange
             state = RemoteState.CONFLICTED;
         }
+        setChanged();
+        notifyObservers(state);
     }
 
     public enum RemoteState {
