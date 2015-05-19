@@ -81,7 +81,8 @@ public class RepositoryStorage {
         try {
             repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
             File confDir = SVNWCUtil.getDefaultConfigurationDirectory();
-            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(confDir, userName, password.toCharArray(), false);
+            char[] pwd = password != null ? password.toCharArray() : new char[]{};
+            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(confDir, userName, pwd, false);
             repository.setAuthenticationManager(authManager);
 
             SVNNodeKind nodeKind = repository.checkPath(dataFileName, -1);
