@@ -34,8 +34,8 @@ public class DummyUserManagementBuilder {
         return um;
     }
 
-    public static void addCurrentUserWithAllPower(UserManagement userManagement) {
-        User godfather = new User(Utils.getUserName(), "Godfather", "ad-hoc permissions for current user");
+    public static void addUserWithAllPower(UserManagement userManagement, String userName) {
+        User godfather = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
 
         godfather.getDisciplines().add(Discipline.ADMIN_DISCIPLINE);
 /*
