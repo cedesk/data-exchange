@@ -221,25 +221,26 @@ public class MainController implements Initializable {
             throw new RuntimeException(ioe);
         }
 
+        project.addLocalStateObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                newButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.NEW));
+                openButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.LOAD));
+                saveButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.SAVE));
+            }
+        });
+        project.addRemoteStateObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                checkoutButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.CHECKOUT));
+                updateButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.UPDATE));
+                commitButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.COMMIT));
+            }
+        });
+
         if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
             String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
             project.setProjectName(projectName);
-            project.addLocalStateObserver(new Observer() {
-                @Override
-                public void update(Observable o, Object arg) {
-                    newButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.NEW));
-                    openButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.LOAD));
-                    saveButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.SAVE));
-                }
-            });
-            project.addRemoteStateObserver(new Observer() {
-                @Override
-                public void update(Observable o, Object arg) {
-                    checkoutButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.CHECKOUT));
-                    updateButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.UPDATE));
-                    commitButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.COMMIT));
-                }
-            });
             loadModel(null);
             makeRepositoryWatcher();
         }
