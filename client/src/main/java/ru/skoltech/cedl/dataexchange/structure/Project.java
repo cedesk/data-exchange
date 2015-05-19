@@ -10,6 +10,7 @@ import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
+import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 import java.io.File;
@@ -60,7 +61,7 @@ public class Project {
         this.remoteStateMachine = new RemoteStateMachine();
         this.userManagement = DummyUserManagementBuilder.getModel();
         //TODO: remove after testing
-        DummyUserManagementBuilder.addCurrentUserWithAllPower(userManagement);
+        DummyUserManagementBuilder.addUserWithAllPower(userManagement, getUserName());
     }
 
     public static String getDataFileName() {
@@ -69,6 +70,10 @@ public class Project {
 
     public String getUserName() {
         return projectSettings.getUser();
+    }
+
+    public User getUser() {
+        return userManagement.getUserMap().get(getUserName());
     }
 
     public void setUserName(String userName) {

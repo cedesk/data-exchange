@@ -242,6 +242,9 @@ public class MainController implements Initializable {
             String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
             project.setProjectName(projectName);
             loadModel(null);
+            studyNameLabel.setText(project.getSystemModel().getName());
+            userNameLabel.setText(project.getUser().getName());
+            userRoleLabel.setText(project.getUser().getDisciplineNames());
             makeRepositoryWatcher();
         }
 

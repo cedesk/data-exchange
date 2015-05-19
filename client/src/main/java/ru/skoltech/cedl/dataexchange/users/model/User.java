@@ -33,6 +33,17 @@ public class User {
         this.authenticator = authenticator;
     }
 
+    /**
+     * @return fullname if present, otherwise username
+     */
+    public String getName() {
+        if(fullName != null && !fullName.isEmpty()) {
+            return fullName;
+        } else {
+            return userName;
+        }
+    }
+
     public String getUserName() {
         return userName;
     }

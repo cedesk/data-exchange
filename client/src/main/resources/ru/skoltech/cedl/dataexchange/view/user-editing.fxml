@@ -35,7 +35,7 @@
                         </TableColumn>
                         <TableColumn fx:id="userDisciplinesColumn" prefWidth="117.0" text="Disciplines">
                             <cellValueFactory>
-                                <PropertyValueFactory property="disciplinesNames" />
+                                <PropertyValueFactory property="disciplineNames" />
                             </cellValueFactory>
                         </TableColumn>
                     </columns>
