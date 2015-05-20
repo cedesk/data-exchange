@@ -120,5 +120,11 @@
                 <package.output.dir>${user.home}</package.output.dir>
             </properties>
         </profile>
+        <profile>
+            <id>build-server</id>
+            <properties>
+                <package.output.dir>c:/data/cedesk-builds/</package.output.dir>
+            </properties>
+        </profile>
     </profiles>
 </project>
