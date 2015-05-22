@@ -8,7 +8,8 @@
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
         <!-- This is where we tell JPA/Hibernate about our @Entity objects -->
-        <class>org.ocpsoft.example.hibernate.model.SimpleObject</class>
+        <class>org.ocpsoft.example.hibernate.model.ModelNode</class>
+        <class>org.ocpsoft.example.hibernate.model.ModelParameter</class>
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver"/>
