@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import ru.skoltech.cedl.dataexchange.Utils;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +16,10 @@ import java.util.stream.Collectors;
  */
 @XmlType(propOrder = {"name", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
+@Entity
+@Table(name = "CEDESK_Model")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.INTEGER)
 public abstract class ModelNode {
 
     @XmlAttribute
@@ -22,7 +27,15 @@ public abstract class ModelNode {
 
     @XmlElementWrapper(name = "parameters")
     @XmlElement(name = "parameter")
+    @Transient
     protected List<ParameterModel> parameters = new LinkedList<>();
+
+    @Transient
+    protected ModelNode parent;
+
+    @Id
+    @GeneratedValue
+    protected long id;
 
     public ModelNode() {
     }
@@ -56,6 +69,22 @@ public abstract class ModelNode {
                 Collectors.toMap(ParameterModel::getName, Function.identity())
         );
         return parameterModelMap;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public ModelNode getParent() {
+        return parent;
+    }
+
+    public void setParent(ModelNode parent) {
+        this.parent = parent;
     }
 
     public boolean hasParameter(String parameterName) {
