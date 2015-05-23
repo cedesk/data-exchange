@@ -1,9 +1,11 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
+import java.lang.annotation.Target;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
  * Created by D.Knoll on 29.03.2015.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
+@Entity
+@Access(AccessType.PROPERTY)
 public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode implements Iterable<SUBNODES> {
 
     @XmlElementWrapper(name = "subNodes")
@@ -28,6 +32,7 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
         super(name);
     }
 
+    @Transient
     public List<SUBNODES> getSubNodes() {
         return subNodes;
     }
@@ -52,6 +57,7 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
         return subNodes.iterator();
     }
 
+    @Transient
     public Map<String, ModelNode> getSubNodesMap() {
         Map<String, ModelNode> result = subNodes.stream().collect(
                 Collectors.toMap(ModelNode::getName, (m) -> m)
