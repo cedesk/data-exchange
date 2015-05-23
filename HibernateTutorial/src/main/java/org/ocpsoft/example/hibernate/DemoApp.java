@@ -21,18 +21,32 @@ public class DemoApp {
         modelNode1.setName("SpaceCraft");
         modelNode1.setDescription("beschreibung");
 
-        ModelParameter par1 = new ModelParameter();
-        par1.setName("parameter-1");
-        par1.setDescription("par desc 1");
+        ModelParameter parameter = new ModelParameter();
+        parameter.setName("parameter-1");
+        parameter.setDescription("par desc 1");
+        parameter.setNode(modelNode1);
+        modelNode1.getParameterList().add(parameter);
 
-        modelNode1.getParameterList().add(par1);
-        par1.setNode(modelNode1);
-        //em.persist(par1);
+        parameter = new ModelParameter();
+        parameter.setName("parameter-2");
+        parameter.setDescription("par desc 2");
+        parameter.setNode(modelNode1);
+        modelNode1.getParameterList().add(parameter);
+
+        parameter = new ModelParameter();
+        parameter.setName("parameter-3");
+        parameter.setDescription("par desc 3");
+        parameter.setNode(modelNode1);
+        modelNode1.getParameterList().add(parameter);
 
         em.persist(modelNode1);
+        final Long modelNode1Id = modelNode1.getId();
+
         transaction.commit();
 
-        ModelNode modelNode2 = em.getReference(ModelNode.class, 1L);
+        ModelNode modelNode2 = em.getReference(ModelNode.class, modelNode1Id);
+        System.out.println("DemoApp.main");
+        System.out.println("modelNode2 = " + modelNode2);
 
         em.close();
         System.exit(0);

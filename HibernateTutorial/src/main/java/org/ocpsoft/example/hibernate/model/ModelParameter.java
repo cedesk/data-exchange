@@ -75,4 +75,16 @@ public class ModelParameter {
     public void setNode(ModelNode node) {
         this.node = node;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ModelParameter{");
+        sb.append("id=").append(id);
+        sb.append(", version=").append(version);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", shared=").append(shared);
+        sb.append('}');
+        return sb.toString();
+    }
 }
