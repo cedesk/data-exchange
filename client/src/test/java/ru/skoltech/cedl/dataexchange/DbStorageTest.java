@@ -1,9 +1,11 @@
 package ru.skoltech.cedl.dataexchange;
 
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.DBUtil;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 /**
@@ -11,13 +13,25 @@ import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
  */
 public class DbStorageTest {
 
-    @Test
-    public void storeAndRetrieve() {
-        //Study study = DBUtil.loadStudy();
+    private SystemModel systemModel;
 
-        //System.out.println(study);
-        SystemModel systemModel = DummySystemBuilder.getSystemModel(4);
+    @Before
+    public void storeAndRetrieve() {
+        systemModel = DummySystemBuilder.getSystemModel(4);
         System.out.println(systemModel);
         DBUtil.storeModel(systemModel);
+    }
+
+    @Test
+    public void compareStoredAndRetrievedModel() {
+        ModelNode modelNode = DBUtil.loadModel();
+        System.out.println(modelNode);
+
+        Assert.assertEquals(modelNode.getName(), systemModel.getName());
+
+        Assert.assertEquals(modelNode.getParameters(), systemModel.getParameters());
+
+        Assert.assertEquals(modelNode, systemModel);
+
     }
 }
