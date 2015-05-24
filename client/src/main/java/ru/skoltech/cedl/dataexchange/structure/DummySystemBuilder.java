@@ -14,7 +14,7 @@ public class DummySystemBuilder {
     private static int instrumentCnt = 1;
 
     public static SystemModel getSystemModel(int level) {
-        SystemModel system = new SystemModel("Spacecraft");
+        SystemModel system = new SystemModel("Spacecraft " + getRandomInt());
         system.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
         system.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
 
@@ -26,6 +26,10 @@ public class DummySystemBuilder {
         system.addSubNode(getSubystem("Payload", level - 1, system));
         system.addSubNode(getSubystem("Communication", level - 1, system));
         return system;
+    }
+
+    private static int getRandomInt() {
+        return (int) (Math.random() * 100);
     }
 
     private static double getRandomDouble() {

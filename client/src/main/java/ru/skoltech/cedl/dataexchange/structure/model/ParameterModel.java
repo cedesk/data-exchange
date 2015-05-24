@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -7,7 +8,11 @@ import javax.xml.bind.annotation.*;
  */
 @XmlType(propOrder = {"name", "value", "type", "isShared", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
+@Entity
+@Access(AccessType.PROPERTY)
 public class ParameterModel implements Comparable<ParameterModel> {
+
+    private long id;
 
     @XmlAttribute
     private String name;
@@ -42,6 +47,16 @@ public class ParameterModel implements Comparable<ParameterModel> {
         this.description = description;
     }
 
+    @Id
+    @GeneratedValue
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -58,6 +73,7 @@ public class ParameterModel implements Comparable<ParameterModel> {
         this.value = value;
     }
 
+    @Transient
     public Double getServerValue() {
         return serverValue;
     }
@@ -91,8 +107,8 @@ public class ParameterModel implements Comparable<ParameterModel> {
     }
 
     /*
-     * The comparison is done only based on the name, so it enables sorting of parameters by name and identifying changes to values of parameters.
-     */
+         * The comparison is done only based on the name, so it enables sorting of parameters by name and identifying changes to values of parameters.
+         */
     @Override
     public int compareTo(ParameterModel o) {
         return name.compareTo(o.name);

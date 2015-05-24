@@ -20,7 +20,7 @@ public class ElementModel extends CompositeModelNode<InstrumentModel> {
     }
 
     @Override
-    @OneToMany(targetEntity=InstrumentModel.class, mappedBy = "parent")
+    @OneToMany(targetEntity=InstrumentModel.class, mappedBy = "parent", cascade = CascadeType.ALL)
     public List<InstrumentModel> getSubNodes() {
         return super.getSubNodes();
     }

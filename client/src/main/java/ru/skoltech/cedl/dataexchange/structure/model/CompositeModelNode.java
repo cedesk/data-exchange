@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * Created by D.Knoll on 29.03.2015.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@Entity
+@MappedSuperclass
 @Access(AccessType.PROPERTY)
 public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode implements Iterable<SUBNODES> {
 

@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
  * Created by D.Knoll on 11.03.2015.
  */
 @XmlType(propOrder = {"name", "parameters"})
-@XmlAccessorType(XmlAccessType.FIELD)
-@Entity
+@XmlAccessorType(XmlAccessType.PROPERTY)
+@MappedSuperclass
 @Table(name = "CEDESK_Model")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.INTEGER)
@@ -27,14 +27,10 @@ public abstract class ModelNode {
 
     @XmlElementWrapper(name = "parameters")
     @XmlElement(name = "parameter")
-    @Transient
     protected List<ParameterModel> parameters = new LinkedList<>();
 
-    @Transient
     protected ModelNode parent;
 
-    @Id
-    @GeneratedValue
     protected long id;
 
     public ModelNode() {
@@ -56,6 +52,7 @@ public abstract class ModelNode {
         parameters.add(parameter);
     }
 
+    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL)
     public List<ParameterModel> getParameters() {
         return parameters;
     }
@@ -64,6 +61,7 @@ public abstract class ModelNode {
         this.parameters = parameters;
     }
 
+    @Transient
     private Map<String, ParameterModel> getParameterMap() {
         Map<String, ParameterModel> parameterModelMap = getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getName, Function.identity())
@@ -71,6 +69,8 @@ public abstract class ModelNode {
         return parameterModelMap;
     }
 
+    @Id
+    @GeneratedValue
     public long getId() {
         return id;
     }
@@ -79,6 +79,7 @@ public abstract class ModelNode {
         this.id = id;
     }
 
+    @Transient
     public ModelNode getParent() {
         return parent;
     }

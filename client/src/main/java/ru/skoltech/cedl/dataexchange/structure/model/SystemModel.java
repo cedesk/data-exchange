@@ -22,13 +22,12 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
     }
 
     @Override
-    @OneToMany(targetEntity = SubSystemModel.class, mappedBy = "parent")
+    @OneToMany(targetEntity = SubSystemModel.class, mappedBy = "parent", cascade = CascadeType.ALL)
     public List<SubSystemModel> getSubNodes() {
         return super.getSubNodes();
     }
 
     @Override
-    //@Transient
     @ManyToOne(targetEntity = SystemModel.class)
     public ModelNode getParent() {
         return null;
