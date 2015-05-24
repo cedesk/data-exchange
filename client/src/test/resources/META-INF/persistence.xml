@@ -13,6 +13,7 @@
         <class>ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel</class>
         <class>ru.skoltech.cedl.dataexchange.structure.model.ElementModel</class>
         <class>ru.skoltech.cedl.dataexchange.structure.model.InstrumentModel</class>
+        <class>ru.skoltech.cedl.dataexchange.structure.model.ParameterModel</class>
 
         <properties>
 <!--
