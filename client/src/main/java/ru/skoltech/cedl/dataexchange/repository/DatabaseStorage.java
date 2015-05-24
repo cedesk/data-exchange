@@ -7,21 +7,29 @@ import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DBUtil {
+/**
+ * Created by dknoll on 24/05/15.
+ */
+public class DatabaseStorage {
 
-    private static EntityManager em;
+    private static final String LOCALHOST = "localhost";
 
-    private static EntityManager getEntityManager() {
-        if (em == null) {
-            Map<String, String> map = new HashMap<String, String>();
-            map.put("javax.persistence.jdbc.url", "jdbc:mysql://localhost:3306/cedesk_dev");
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory("db", map);
-            em = emf.createEntityManager();
-        }
-        return em;
+    private EntityManager em;
+
+    private String hostName;
+
+    /**
+     * The default backend uses a DB on the localhost.
+     */
+    public DatabaseStorage() {
+        this(LOCALHOST);
     }
 
-    public static void storeStudy(Study study) {
+    public DatabaseStorage(String hostName) {
+        this.hostName = hostName;
+    }
+
+    public void storeStudy(Study study) {
         EntityManager entityManager = getEntityManager();
         entityManager.setFlushMode(FlushModeType.AUTO);
         //EntityTransaction transaction = entityManager.getTransaction();
@@ -30,7 +38,7 @@ public class DBUtil {
         //transaction.commit();
     }
 
-    public static Study loadStudy() {
+    public Study loadStudy() {
         EntityManager entityManager = getEntityManager();
         try {
             Study reference = entityManager.getReference(Study.class, 1L);
@@ -41,7 +49,7 @@ public class DBUtil {
         }
     }
 
-    public static void storeModel(SystemModel modelNode) {
+    public void storeModel(SystemModel modelNode) {
         EntityManager entityManager = getEntityManager();
         //entityManager.setFlushMode(FlushModeType.AUTO);
         EntityTransaction transaction = entityManager.getTransaction();
@@ -50,9 +58,23 @@ public class DBUtil {
         transaction.commit();
     }
 
-    public static SystemModel loadModel() {
+    public SystemModel loadModel() {
         EntityManager entityManager = getEntityManager();
         return entityManager.getReference(SystemModel.class, 1L);
     }
 
+    private EntityManager getEntityManager() {
+        if (em == null) {
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("javax.persistence.jdbc.url", "jdbc:mysql://" + hostName + ":3306/cedesk_dev");
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("db", map);
+            em = emf.createEntityManager();
+        }
+        return em;
+    }
+
+    public void finalize() throws Throwable {
+        em.close();
+        super.finalize();
+    }
 }
