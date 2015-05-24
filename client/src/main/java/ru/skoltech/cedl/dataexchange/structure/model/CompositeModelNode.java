@@ -1,11 +1,13 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import javax.persistence.*;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import java.lang.annotation.Target;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;

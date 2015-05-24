@@ -1,6 +1,5 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 

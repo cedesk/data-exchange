@@ -17,9 +17,6 @@ import java.util.stream.Collectors;
 @XmlType(propOrder = {"name", "parameters"})
 @XmlAccessorType(XmlAccessType.PROPERTY)
 @MappedSuperclass
-@Table(name = "CEDESK_Model")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.INTEGER)
 public abstract class ModelNode {
 
     @XmlAttribute
