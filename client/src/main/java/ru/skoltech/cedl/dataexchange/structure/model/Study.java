@@ -7,7 +7,6 @@ import javax.persistence.Id;
 /**
  * Created by dknoll on 23/05/15.
  */
-@Entity(name = "CEDESK_Study")
 public class Study {
 
     @Id

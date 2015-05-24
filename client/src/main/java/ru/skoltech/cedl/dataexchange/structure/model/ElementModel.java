@@ -8,7 +8,6 @@ import java.util.List;
  */
 @Entity
 @Access(AccessType.PROPERTY)
-@DiscriminatorValue(value="3")
 public class ElementModel extends CompositeModelNode<InstrumentModel> {
 
     public ElementModel() {
@@ -20,7 +19,7 @@ public class ElementModel extends CompositeModelNode<InstrumentModel> {
     }
 
     @Override
-    @OneToMany(targetEntity=InstrumentModel.class, mappedBy = "parent", cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = InstrumentModel.class, mappedBy = "parent", cascade = CascadeType.ALL)
     public List<InstrumentModel> getSubNodes() {
         return super.getSubNodes();
     }

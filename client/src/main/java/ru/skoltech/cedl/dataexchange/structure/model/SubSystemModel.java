@@ -8,7 +8,6 @@ import java.util.List;
  */
 @Entity
 @Access(AccessType.PROPERTY)
-@DiscriminatorValue(value="2")
 public class SubSystemModel extends CompositeModelNode<ElementModel> {
 
     public SubSystemModel() {

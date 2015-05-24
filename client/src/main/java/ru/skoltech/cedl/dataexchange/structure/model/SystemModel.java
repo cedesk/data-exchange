@@ -10,7 +10,6 @@ import java.util.List;
 @XmlRootElement
 @Entity
 @Access(AccessType.PROPERTY)
-@DiscriminatorValue(value = "1")
 public class SystemModel extends CompositeModelNode<SubSystemModel> {
 
     public SystemModel() {
