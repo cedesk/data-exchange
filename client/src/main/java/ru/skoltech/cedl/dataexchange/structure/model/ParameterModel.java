@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.*;
 @Access(AccessType.PROPERTY)
 public class ParameterModel implements Comparable<ParameterModel> {
 
+    @XmlTransient
     private long id;
 
     @XmlAttribute
