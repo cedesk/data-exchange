@@ -123,7 +123,7 @@ public class MainController implements Initializable {
                 return;
             }
         }
-        try {
+        /*try {
             boolean success = project.checkoutFile();
             if (success) {
                 StatusLogger.getInstance().log("Successfully checked out.");
@@ -132,7 +132,7 @@ public class MainController implements Initializable {
             }
         } catch (SVNException e) {
             StatusLogger.getInstance().log("Error checking out.", true);
-        }
+        }*/
     }
 
     private boolean changeProjectRepository(Project project) {
@@ -182,12 +182,12 @@ public class MainController implements Initializable {
     }
 
     public void commitModel(ActionEvent actionEvent) {
-        boolean success = project.commitFile(commitMessage);
+        /*boolean success = project.commitFile(commitMessage);
         if (success) {
             StatusLogger.getInstance().log("Successfully committed to repository.");
         } else {
             StatusLogger.getInstance().log("Committing to repository failed.", true);
-        }
+        }*/
     }
 
     @Override
@@ -229,14 +229,6 @@ public class MainController implements Initializable {
                 saveButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.SAVE));
             }
         });
-        project.addRemoteStateObserver(new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                checkoutButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.CHECKOUT));
-                updateButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.UPDATE));
-                commitButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.COMMIT));
-            }
-        });
 
         if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
             String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
@@ -245,7 +237,7 @@ public class MainController implements Initializable {
             studyNameLabel.setText(project.getSystemModel().getName());
             userNameLabel.setText(project.getUser().getName());
             userRoleLabel.setText(project.getUser().getDisciplineNames());
-            makeRepositoryWatcher();
+            //makeRepositoryWatcher();
         }
 
         // TOOLBAR BUTTONS
@@ -281,7 +273,7 @@ public class MainController implements Initializable {
     }
 
     public void updateRemoteModel() {
-        project.loadRemote();
+        //project.loadRemote();
         editingController.updateView();
     }
 
@@ -292,7 +284,7 @@ public class MainController implements Initializable {
     }
 
     public void updateModel(ActionEvent actionEvent) {
-        try {
+        /*try {
             boolean success = project.updateFile();
             if (success) {
                 StatusLogger.getInstance().log("Successfully updated.");
@@ -301,6 +293,6 @@ public class MainController implements Initializable {
             }
         } catch (SVNException e) {
             StatusLogger.getInstance().log("Error updating.", true);
-        }
+        }*/
     }
 }

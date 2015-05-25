@@ -5,7 +5,6 @@ import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
-import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -35,8 +34,6 @@ public class Project {
 
     private FileStorage localStorage;
 
-    private RepositoryStorage repositoryStorage;
-
     private SystemModel systemModel;
 
     private SystemModel remoteModel;
@@ -47,8 +44,6 @@ public class Project {
 
     private LocalStateMachine localStateMachine;
 
-    private RemoteStateMachine remoteStateMachine;
-
     public Project() {
         this(DEFAULT_PROJECT_NAME);
     }
@@ -58,7 +53,7 @@ public class Project {
         this.projectSettings = new ProjectSettings(projectName);
         this.localStorage = new FileStorage(StorageUtils.getDataDir(projectName));
         this.localStateMachine = new LocalStateMachine();
-        this.remoteStateMachine = new RemoteStateMachine();
+        //this.remoteStateMachine = new RemoteStateMachine();
         this.userManagement = DummyUserManagementBuilder.getModel();
         //TODO: remove after testing
         DummyUserManagementBuilder.addUserWithAllPower(userManagement, getUserName());
@@ -145,57 +140,6 @@ public class Project {
         this.projectSettings = new ProjectSettings(projectName);
         this.localStorage = new FileStorage(StorageUtils.getDataDir(projectName));
         localStateMachine = new LocalStateMachine();
-        try {
-            this.repositoryStorage = null; // to force reconnect
-            getRepositoryStorage();
-        } catch (SVNAuthenticationException ae) {
-            System.err.println("SVN Authentication Error.");
-            this.repositoryStorage = null;
-        } catch (SVNException e) {
-            StatusLogger.getInstance().log("Error connecting to repository!", true);
-            this.repositoryStorage = null;
-        }
-    }
-
-    protected RepositoryStorage getRepositoryStorage() throws SVNException {
-        if (repositoryStorage == null) {
-            repositoryStorage = new RepositoryStorage(getRepositoryPath(), getDataDir(), getUserName(), getPassword());
-            updateRemoteStatus();
-        }
-        return repositoryStorage;
-    }
-
-    private void updateRemoteStatus() {
-        if (repositoryStorage != null) {
-            long repositoryRevisionNumber = repositoryStorage.getRepositoryRevisionNumber();
-            long workingCopyRevisionNumber = repositoryStorage.getWorkingCopyRevisionNumber();
-            boolean workingCopyModified = repositoryStorage.isWorkingCopyModified(getDataFile());
-            remoteStateMachine.initialize(true, workingCopyModified, workingCopyRevisionNumber < repositoryRevisionNumber);
-        }
-    }
-
-    public boolean checkoutFile() throws SVNException {
-        boolean success = getRepositoryStorage().checkoutFile();
-        if (success) {
-            remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.CHECKOUT);
-        }
-        return success;
-    }
-
-    public boolean updateFile() throws SVNException {
-        boolean success = getRepositoryStorage().updateFile();
-        if (success) {
-            remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.UPDATE);
-        }
-        return success;
-    }
-
-    public SystemModel getRemoteModel() {
-        return remoteModel;
-    }
-
-    public void setRemoteModel(SystemModel remoteModel) {
-        this.remoteModel = remoteModel;
     }
 
     @Override
@@ -203,7 +147,6 @@ public class Project {
         final StringBuilder sb = new StringBuilder("Project{");
         sb.append("projectName='").append(projectName).append('\'');
         sb.append(", localStorage=").append(localStorage);
-        sb.append(", repositoryStorage=").append(repositoryStorage);
         sb.append('}');
         return sb.toString();
     }
@@ -212,7 +155,6 @@ public class Project {
         localStorage.storeSystemModel(systemModel, getDataFile());
         localStorage.storeUserManagement(userManagement, getUserFile());
         localStateMachine.performAction(LocalStateMachine.LocalActions.SAVE);
-        remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.LOCAL_CHANGE);
     }
 
     public void loadLocal() throws IOException {
@@ -229,35 +171,12 @@ public class Project {
         return localStateMachine.isActionPossible(action);
     }
 
-    public boolean isActionPossible(RemoteStateMachine.RemoteActions action) {
-        return remoteStateMachine.isActionPossible(action);
-    }
-
     public void addLocalStateObserver(Observer o) {
         localStateMachine.addObserver(o);
     }
 
-    public void addRemoteStateObserver(Observer o) {
-        remoteStateMachine.addObserver(o);
-    }
-
     public void markSystemModelModified() {
         localStateMachine.performAction(LocalStateMachine.LocalActions.MODIFY);
-    }
-
-    public void loadRemote() {
-        try {
-            InputStream inStr = getRepositoryStorage().getFileContentFromRepository(Project.getDataFileName());
-            remoteModel = RemoteStorage.load(inStr);
-        } catch (IOException | SVNException e) {
-            StatusLogger.getInstance().log("Error getting versioned remote data file.\n" + e.getMessage());
-        }
-    }
-
-    public boolean commitFile(String commitMessage) {
-        boolean success = repositoryStorage.commitFile(commitMessage);
-        remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.COMMIT);
-        return success;
     }
 
     public File getUserFile() {
