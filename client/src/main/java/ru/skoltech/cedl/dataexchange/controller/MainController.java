@@ -78,14 +78,12 @@ public class MainController implements Initializable {
 
     public void newModel(ActionEvent actionEvent) {
         project.newStudy();
-        this.updateView();
-        editingController.updateView();
+        updateView();
     }
 
     public void loadModel(ActionEvent actionEvent) {
         try {
             project.loadStudy();
-            this.updateView();
         } catch (NoResultException nre) {
             StatusLogger.getInstance().log("Error loading project!", true);
         } catch (Exception e) {
@@ -94,8 +92,7 @@ public class MainController implements Initializable {
             //TODO: remove workaround
             newModel(null);
         }
-        this.updateView();
-        editingController.updateView();
+        updateView();
     }
 
     public void saveModel(ActionEvent actionEvent) {
@@ -118,6 +115,11 @@ public class MainController implements Initializable {
             loader.setLocation(Views.EDITING_PANE);
             Parent editingPane = loader.load();
             modelTab.setContent(editingPane);
+            modelTab.setOnSelectionChanged(event -> {
+                if(modelTab.isSelected()) {
+                    editingController.updateView();
+                }
+            });
             editingController = loader.getController();
             editingController.setProject(project);
         } catch (IOException ioe) {
@@ -131,6 +133,11 @@ public class MainController implements Initializable {
             loader.setLocation(Views.USERS_PANE);
             Parent usersPane = loader.load();
             usersTab.setContent(usersPane);
+            usersTab.setOnSelectionChanged(event -> {
+                if (usersTab.isSelected()) {
+                    userManagementController.updateView();
+                }
+            });
             userManagementController = loader.getController();
             userManagementController.setProject(project);
         } catch (IOException ioe) {
@@ -154,17 +161,14 @@ public class MainController implements Initializable {
             //makeRepositoryWatcher();
         }
 
-        // TOOLBAR BUTTONS
-        //newButton.disableProperty().bind(project.checkedOutProperty());
-        //saveButton.disableProperty().bind(project.dirtyProperty().not());
-        //commitButton.disableProperty().bind(project.checkedOutProperty().not());
-
     }
 
     private void updateView() {
         studyNameLabel.setText(project.getStudy().getName());
         userNameLabel.setText(project.getUser().getName());
         userRoleLabel.setText(project.getUser().getDisciplineNames());
+        editingController.updateView();
+        userManagementController.updateView();
     }
 
     private void makeRepositoryWatcher() {
@@ -194,7 +198,7 @@ public class MainController implements Initializable {
 
     public void updateRemoteModel() {
         //project.loadRemote();
-        editingController.updateView();
+        updateView();
     }
 
     public void close() {

@@ -29,6 +29,11 @@ public class UserManagementController implements Initializable {
     public TableColumn userNameColumn;
     private Project project;
 
+    public void updateView() {
+        updateUserTable();
+        updateDisciplineTable();
+    }
+
     public void addUser(ActionEvent actionEvent) {
         Optional<String> userNameChoice = Dialogues.inputUserName();
         if (userNameChoice.isPresent()) {
@@ -64,8 +69,6 @@ public class UserManagementController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
-//        updateUserTable();
-//        updateDisciplineTable();
     }
 
     private void updateUserTable() {
