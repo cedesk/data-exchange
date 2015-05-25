@@ -77,8 +77,7 @@ public class MainController implements Initializable {
     private RepositoryWatcher repositoryWatcher;
 
     public void newModel(ActionEvent actionEvent) {
-        SystemModel system = DummySystemBuilder.getSystemModel(4);
-        project.setSystemModel(system);
+        project.newStudy();
         this.updateView();
         editingController.updateView();
     }
@@ -89,8 +88,6 @@ public class MainController implements Initializable {
             this.updateView();
         } catch (NoResultException nre) {
             StatusLogger.getInstance().log("Error loading project!", true);
-            newModel(null);
-            StatusLogger.getInstance().log("WARNING! using a dummy model: " + project.getSystemModel().getName(), true);
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading project!", true);
             e.printStackTrace();
@@ -165,7 +162,7 @@ public class MainController implements Initializable {
     }
 
     private void updateView() {
-        studyNameLabel.setText(project.getSystemModel().getName());
+        studyNameLabel.setText(project.getStudy().getName());
         userNameLabel.setText(project.getUser().getName());
         userRoleLabel.setText(project.getUser().getDisciplineNames());
     }

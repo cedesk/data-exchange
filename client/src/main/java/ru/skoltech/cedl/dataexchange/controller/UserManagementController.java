@@ -64,8 +64,8 @@ public class UserManagementController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
-        updateUserTable();
-        updateDisciplineTable();
+//        updateUserTable();
+//        updateDisciplineTable();
     }
 
     private void updateUserTable() {
