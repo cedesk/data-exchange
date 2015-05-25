@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
+import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 /**
@@ -12,4 +13,8 @@ public interface Repository {
     void storeSystemModel(SystemModel systemModel);
 
     void close();
+
+    Study loadStudy(String name);
+
+    void storeStudy(Study study);
 }

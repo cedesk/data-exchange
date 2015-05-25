@@ -7,6 +7,7 @@ import ru.skoltech.cedl.dataexchange.repository.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.lang.reflect.Constructor;
@@ -25,13 +26,17 @@ public class DbStorageTest {
     public void storeAndRetrieve() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         systemModel = DummySystemBuilder.getSystemModel(4);
         System.out.println(systemModel);
+
         Constructor<DatabaseStorage> constructor = DatabaseStorage.class.getDeclaredConstructor();
         constructor.setAccessible(true);
         databaseStorage = constructor.newInstance();
+
         databaseStorage.storeSystemModel(systemModel);
+
+        databaseStorage.storeSystemModel(DummySystemBuilder.getSystemModel(1));
     }
 
-    @Test
+    //@Test
     public void compareStoredAndRetrievedModel() {
         ModelNode modelNode = databaseStorage.loadSystemModel();
         System.out.println(modelNode);
@@ -42,5 +47,17 @@ public class DbStorageTest {
 
         Assert.assertEquals(modelNode, systemModel);
 
+    }
+
+    @Test
+    public void storeAndRetrieveStudy() {
+        String name = "testStudy";
+        Study study = new Study(name);
+        System.out.println(study);
+
+        databaseStorage.storeStudy(study);
+
+        Study study1 = databaseStorage.loadStudy(name);
+        System.out.println(study1);
     }
 }
