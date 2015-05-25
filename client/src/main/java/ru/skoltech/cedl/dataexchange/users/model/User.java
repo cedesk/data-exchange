@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,7 +10,11 @@ import java.util.List;
  */
 @XmlType(propOrder = {"userName", "fullName", "authenticator", "disciplines"})
 @XmlAccessorType(XmlAccessType.FIELD)
+@Entity
+@Access(AccessType.PROPERTY)
 public class User {
+    @XmlTransient
+    private long id;
 
     @XmlAttribute
     private String userName;
@@ -33,11 +38,22 @@ public class User {
         this.authenticator = authenticator;
     }
 
+    @Id
+    @GeneratedValue
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     /**
      * @return fullname if present, otherwise username
      */
+    @Transient
     public String getName() {
-        if(fullName != null && !fullName.isEmpty()) {
+        if (fullName != null && !fullName.isEmpty()) {
             return fullName;
         } else {
             return userName;
@@ -68,6 +84,7 @@ public class User {
         this.authenticator = authenticator;
     }
 
+    @Transient
     public List<Discipline> getDisciplines() {
         return disciplines;
     }
@@ -76,6 +93,7 @@ public class User {
         this.disciplines = disciplines;
     }
 
+    @Transient
     public String getDisciplineNames() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < disciplines.size(); i++) {

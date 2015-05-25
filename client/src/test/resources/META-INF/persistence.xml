@@ -14,6 +14,10 @@
         <class>ru.skoltech.cedl.dataexchange.structure.model.InstrumentModel</class>
         <class>ru.skoltech.cedl.dataexchange.structure.model.ParameterModel</class>
 
+        <class>ru.skoltech.cedl.dataexchange.users.model.UserManagement</class>
+        <class>ru.skoltech.cedl.dataexchange.users.model.User</class>
+        <class>ru.skoltech.cedl.dataexchange.users.model.Discipline</class>
+
         <properties>
             <!--
                         <property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver"/>
