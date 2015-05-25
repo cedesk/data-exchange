@@ -4,11 +4,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.DatabaseStorage;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -36,9 +37,9 @@ public class DbStorageTest {
         databaseStorage.storeSystemModel(DummySystemBuilder.getSystemModel(1));
     }
 
-    //@Test
+    @Test
     public void compareStoredAndRetrievedModel() {
-        ModelNode modelNode = databaseStorage.loadSystemModel();
+        ModelNode modelNode = databaseStorage.loadSystemModel(1L);
         System.out.println(modelNode);
 
         Assert.assertEquals(modelNode.getName(), systemModel.getName());
@@ -59,5 +60,19 @@ public class DbStorageTest {
 
         Study study1 = databaseStorage.loadStudy(name);
         System.out.println(study1);
+
+        Assert.assertEquals(study, study1);
+    }
+
+    @Test
+    public void storeAndRetrieveUserManagement() {
+        UserManagement userManagement = DummyUserManagementBuilder.getModel();
+        DummyUserManagementBuilder.addUserWithAllPower(userManagement, Utils.getUserName());
+
+        databaseStorage.storeUserManagement(userManagement);
+
+        UserManagement userManagement1 = databaseStorage.loadUserManagement(1L);
+
+        Assert.assertEquals(userManagement, userManagement1);
     }
 }

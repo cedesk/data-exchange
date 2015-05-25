@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +14,12 @@ import java.util.stream.Collectors;
 @XmlRootElement
 @XmlType(propOrder = {"disciplines", "users"})
 @XmlAccessorType(XmlAccessType.FIELD)
+@Entity
+@Access(AccessType.PROPERTY)
 public class UserManagement {
+
+    @XmlTransient
+    private long id;
 
     @XmlElementWrapper(name = "users")
     @XmlElement(name = "user")
@@ -26,6 +32,17 @@ public class UserManagement {
     public UserManagement() {
     }
 
+    @Id
+    @GeneratedValue
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    @OneToMany(targetEntity = User.class, cascade = CascadeType.ALL)
     public List<User> getUsers() {
         return users;
     }
@@ -34,6 +51,7 @@ public class UserManagement {
         this.users = users;
     }
 
+    @OneToMany(targetEntity = Discipline.class, cascade = CascadeType.ALL)
     public List<Discipline> getDisciplines() {
         return disciplines;
     }
@@ -51,11 +69,13 @@ public class UserManagement {
         return sb.toString();
     }
 
+    @Transient
     public Map<String, User> getUserMap() {
         return users.stream().collect(
                 Collectors.toMap(User::getUserName, Function.<User>identity()));
     }
 
+    @Transient
     public Map<String, Discipline> getDisciplineMap() {
         return disciplines.stream().collect(
                 Collectors.toMap(Discipline::getName, Function.<Discipline>identity()));

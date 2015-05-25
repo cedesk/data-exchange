@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -7,9 +8,14 @@ import javax.xml.bind.annotation.*;
  */
 @XmlType(propOrder = {"name", "builtIn", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
+@Entity
+@Access(AccessType.PROPERTY)
 public class Discipline {
 
     public static Discipline ADMIN_DISCIPLINE = new Discipline("Admin", true);
+
+    @XmlTransient
+    private long id;
 
     @XmlID
     @XmlAttribute
@@ -32,6 +38,16 @@ public class Discipline {
         this.name = name;
     }
 
+    @Id
+    @GeneratedValue
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -50,6 +66,10 @@ public class Discipline {
 
     public boolean isBuiltIn() {
         return builtIn;
+    }
+
+    protected void setBuiltIn(boolean builtIn) {
+        this.builtIn = builtIn;
     }
 
     @Override
