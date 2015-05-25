@@ -10,7 +10,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -21,6 +24,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
+import javax.persistence.NoResultException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Observable;
@@ -28,8 +32,6 @@ import java.util.Observer;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
-
-    private static final String commitMessage = "";
 
     private final Project project = new Project();
 
@@ -77,23 +79,31 @@ public class MainController implements Initializable {
     public void newModel(ActionEvent actionEvent) {
         SystemModel system = DummySystemBuilder.getSystemModel(4);
         project.setSystemModel(system);
+        this.updateView();
         editingController.updateView();
     }
 
     public void loadModel(ActionEvent actionEvent) {
         try {
-            project.loadModel();
-            editingController.updateView();
+            project.loadStudy();
+            this.updateView();
+        } catch (NoResultException nre) {
+            StatusLogger.getInstance().log("Error loading project!", true);
+            newModel(null);
+            StatusLogger.getInstance().log("WARNING! using a dummy model: " + project.getSystemModel().getName(), true);
         } catch (Exception e) {
-            StatusLogger.getInstance().log("Error loading file!", true);
+            StatusLogger.getInstance().log("Error loading project!", true);
             e.printStackTrace();
+            //TODO: remove workaround
             newModel(null);
         }
+        this.updateView();
+        editingController.updateView();
     }
 
     public void saveModel(ActionEvent actionEvent) {
         try {
-            project.saveModel();
+            project.storeStudy();
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error saving file!", true);
             e.printStackTrace();
@@ -144,9 +154,6 @@ public class MainController implements Initializable {
             String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
             project.setProjectName(projectName);
             loadModel(null);
-            studyNameLabel.setText(project.getSystemModel().getName());
-            userNameLabel.setText(project.getUser().getName());
-            userRoleLabel.setText(project.getUser().getDisciplineNames());
             //makeRepositoryWatcher();
         }
 
@@ -155,6 +162,12 @@ public class MainController implements Initializable {
         //saveButton.disableProperty().bind(project.dirtyProperty().not());
         //commitButton.disableProperty().bind(project.checkedOutProperty().not());
 
+    }
+
+    private void updateView() {
+        studyNameLabel.setText(project.getSystemModel().getName());
+        userNameLabel.setText(project.getUser().getName());
+        userRoleLabel.setText(project.getUser().getDisciplineNames());
     }
 
     private void makeRepositoryWatcher() {
