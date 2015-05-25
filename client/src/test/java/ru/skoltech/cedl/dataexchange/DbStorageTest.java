@@ -7,6 +7,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
+import ru.skoltech.cedl.dataexchange.structure.model.StudyFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
@@ -53,9 +54,7 @@ public class DbStorageTest {
     @Test
     public void storeAndRetrieveStudy() {
         String name = "testStudy";
-        Study study = new Study(name);
-        study.setSystemModel(DummySystemBuilder.getSystemModel(1));
-        study.setUserManagement(DummyUserManagementBuilder.getModel());
+        Study study = StudyFactory.makeStudy(name);
         System.out.println(study);
 
         databaseStorage.storeStudy(study);

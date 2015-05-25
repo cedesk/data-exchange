@@ -1,10 +1,13 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
+import ru.skoltech.cedl.dataexchange.structure.model.StudyFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
@@ -58,22 +61,8 @@ public class Project {
         projectSettings.setAuthenticator(password);
     }
 
-    public String getRepositoryPath() {
-        return projectSettings.getLastUsedRepository();
-    }
-
-    public void setRepositoryPath(String repositoryPath) {
-        projectSettings.setLastUsedRepository(repositoryPath);
-    }
-
     public SystemModel getSystemModel() {
         return getStudy() != null ? getStudy().getSystemModel() : null;
-    }
-
-    @Deprecated
-    public void setSystemModel(SystemModel systemModel) {
-        getStudy().setSystemModel(systemModel);
-        localStateMachine.performAction(LocalStateMachine.LocalActions.NEW);
     }
 
     public Study getStudy() {
@@ -82,10 +71,15 @@ public class Project {
                 loadStudy();
             } catch (Exception e) {
                 System.err.println("lazy loading failed");
-                study = new Study(projectName);
+                initializeStudy();
             }
         }
         return study;
+    }
+
+    private void initializeStudy() {
+        study = StudyFactory.makeStudy(projectName);
+        DummyUserManagementBuilder.addUserWithAllPower(study.getUserManagement(), Utils.getUserName());
     }
 
     private void setStudy(Study study) {
@@ -147,5 +141,11 @@ public class Project {
     public void finalize() throws Throwable {
         repository.close();
         super.finalize();
+    }
+
+    public void newStudy() {
+        SystemModel system = DummySystemBuilder.getSystemModel(3);
+        study.setSystemModel(system);
+        localStateMachine.performAction(LocalStateMachine.LocalActions.NEW);
     }
 }
