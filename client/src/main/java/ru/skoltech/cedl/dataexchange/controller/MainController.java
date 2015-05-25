@@ -14,22 +14,17 @@ import javafx.scene.control.*;
 import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
 import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.LocalStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.RemoteStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
@@ -46,15 +41,6 @@ public class MainController implements Initializable {
 
     @FXML
     public Button saveButton;
-
-    @FXML
-    public Button checkoutButton;
-
-    @FXML
-    public Button updateButton;
-
-    @FXML
-    public Button commitButton;
 
     @FXML
     public Label statusbarLabel;
@@ -76,6 +62,7 @@ public class MainController implements Initializable {
 
     @FXML
     public Tab modelTab;
+
     @FXML
     public Tab usersTab;
 
@@ -95,99 +82,22 @@ public class MainController implements Initializable {
 
     public void loadModel(ActionEvent actionEvent) {
         try {
-            project.loadLocal();
+            project.loadModel();
             editingController.updateView();
-        } catch (IOException e) {
+        } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading file!", true);
             e.printStackTrace();
+            newModel(null);
         }
     }
 
     public void saveModel(ActionEvent actionEvent) {
         try {
-            project.storeLocal();
-        } catch (IOException e) {
+            project.saveModel();
+        } catch (Exception e) {
             StatusLogger.getInstance().log("Error saving file!", true);
             e.printStackTrace();
         }
-    }
-
-    public void checkoutModel(ActionEvent actionEvent) {
-        if (!RepositoryStorage.checkRepository(project.getRepositoryPath(), project.getUserName(), project.getPassword(), Project.getDataFileName())) {
-            Dialogues.showInvalidRepositoryWarning();
-            StatusLogger.getInstance().log("No repository selected.");
-            boolean success = changeProjectRepository(project);
-            if (success) {
-                StatusLogger.getInstance().log("Successfully selected repository.");
-            } else {
-                return;
-            }
-        }
-        /*try {
-            boolean success = project.checkoutFile();
-            if (success) {
-                StatusLogger.getInstance().log("Successfully checked out.");
-            } else {
-                StatusLogger.getInstance().log("Nothing to check out.");
-            }
-        } catch (SVNException e) {
-            StatusLogger.getInstance().log("Error checking out.", true);
-        }*/
-    }
-
-    private boolean changeProjectRepository(Project project) {
-
-        Optional<ButtonType> selection = Dialogues.chooseLocalOrRemoteRepository();
-        if (selection.get() == Dialogues.REMOTE_REPO) {
-
-            boolean validRepositoryPath = false;
-            do {
-                Optional<String> result = Dialogues.inputRemoteRepositoryURL();
-                // if cancel, then abort selection
-                if (!result.isPresent()) {
-                    return false;
-                }
-                String url = result.get();
-                validRepositoryPath = checkRepositoryPath(project, url);
-            } while (!validRepositoryPath);
-            return true;
-        } else if (selection.get() == Dialogues.LOCAL_REPO) {
-
-            boolean validRepositoryPath = false;
-            do {
-                File path = Dialogues.chooseLocalRepositoryPath();
-                if (path == null) { // user canceled directory selection
-                    StatusLogger.getInstance().log("User declined choosing a repository.", true);
-                    return false;
-                }
-                String url = RepositoryStorage.makeUrlFromPath(path);
-                validRepositoryPath = checkRepositoryPath(project, url);
-            } while (!validRepositoryPath);
-            return true;
-        } else { // selection CANCELED
-            return false;
-        }
-    }
-
-    private boolean checkRepositoryPath(Project project, String url) {
-        boolean validRepositoryPath;
-        validRepositoryPath = RepositoryStorage.checkRepository(url, Utils.getUserName(), "", Project.getDataFileName());
-        if (validRepositoryPath) {
-            project.setRepositoryPath(url);
-        } else {
-            Dialogues.showInvalidRepositoryPath();
-            StatusLogger.getInstance().log("Error, selected path is invalid.", true);
-        }
-        return validRepositoryPath;
-    }
-
-    public void commitModel(ActionEvent actionEvent) {
-        /*boolean success = project.commitFile(commitMessage);
-        if (success) {
-            StatusLogger.getInstance().log("Successfully committed to repository.");
-        } else {
-            StatusLogger.getInstance().log("Committing to repository failed.", true);
-        }*/
     }
 
     @Override
@@ -281,18 +191,11 @@ public class MainController implements Initializable {
         if (repositoryWatcher != null) {
             repositoryWatcher.finish();
         }
+        try {
+            project.finalize();
+        } catch (Throwable throwable) {
+            // ignore
+        }
     }
 
-    public void updateModel(ActionEvent actionEvent) {
-        /*try {
-            boolean success = project.updateFile();
-            if (success) {
-                StatusLogger.getInstance().log("Successfully updated.");
-            } else {
-                StatusLogger.getInstance().log("Nothing to update.");
-            }
-        } catch (SVNException e) {
-            StatusLogger.getInstance().log("Error updating.", true);
-        }*/
-    }
 }
