@@ -4,6 +4,10 @@ import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,11 +44,18 @@ public class DatabaseStorage implements Repository {
         transaction.commit();
     }
 
-    public Study loadStudy() {
+    public Study loadStudy(String name) {
         EntityManager entityManager = getEntityManager();
         try {
-            Study reference = entityManager.getReference(Study.class, 1L);
-            return reference;
+            final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+            final CriteriaQuery criteriaQuery = criteriaBuilder.createQuery(Study.class);
+            final Root stateRoot = criteriaQuery.from(Study.class);
+            Predicate predicate2 = criteriaBuilder.equal(stateRoot.get("name"), name);
+            //criteriaQuery.select(criteriaBuilder.construct(Study.class));
+            criteriaQuery.where(predicate2);
+            final TypedQuery query = entityManager.createQuery(criteriaQuery);
+            Object singleResult = query.getSingleResult();
+            return (Study) singleResult;
         } catch (EntityNotFoundException e) {
             System.err.println("WARNING! Study not found.");
             return null;
