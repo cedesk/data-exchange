@@ -164,14 +164,14 @@ public class EditingController implements Initializable {
     }
 
     public void updateView() {
-        if (project.getRemoteModel() == null) {
+        //if (project.getRemoteModel() == null) {
             StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
             structureTree.setRoot(rootNode);
-        } else {
+        /*} else {
             StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
                     project.getSystemModel(), project.getRemoteModel());
             structureTree.setRoot(rootNode);
-        }
+        }*/
     }
 
     public void addNode(ActionEvent actionEvent) {
