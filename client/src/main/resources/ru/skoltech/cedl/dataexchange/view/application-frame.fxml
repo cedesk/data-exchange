@@ -82,12 +82,9 @@
                                 <ToolBar>
                                     <items>
                                         <Button fx:id="newButton" mnemonicParsing="false" onAction="#newModel" text="New" />
+                                        <Separator orientation="VERTICAL" />
                                         <Button fx:id="openButton" mnemonicParsing="false" onAction="#loadModel" text="Open" />
                                         <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#saveModel" text="Save" />
-                              <Separator orientation="VERTICAL" />
-                                        <Button fx:id="checkoutButton" layoutX="105.0" layoutY="13.0" mnemonicParsing="false" onAction="#checkoutModel" text="Checkout" />
-                                        <Button fx:id="updateButton" layoutX="105.0" layoutY="13.0" mnemonicParsing="false" onAction="#updateModel" text="Update" />
-                                        <Button fx:id="commitButton" layoutX="60.0" layoutY="13.0" mnemonicParsing="false" onAction="#commitModel" text="Commit" />
                                     </items>
                                     <VBox.margin>
                                         <Insets top="10.0" />
