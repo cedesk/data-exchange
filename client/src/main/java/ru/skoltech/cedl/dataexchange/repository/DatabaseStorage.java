@@ -9,7 +9,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -17,12 +16,14 @@ import java.util.Map;
  */
 public class DatabaseStorage implements Repository {
 
-    private static final String URL = "jdbc:mysql://HOSTNAME:3306/cedesk_dev";
+    public static final String JAVAX_PERSISTENCE_JDBC_URL = "javax.persistence.jdbc.url";
+
     private static final String LOCALHOST = "localhost";
 
     private EntityManager em;
 
     private String hostName;
+
     private EntityManagerFactory emf;
 
     /**
@@ -109,10 +110,14 @@ public class DatabaseStorage implements Repository {
 
     private EntityManager getEntityManager() {
         if (em == null) {
-            Map<String, String> map = new HashMap<String, String>();
-            String url = URL.replace("HOSTNAME", hostName);
-            map.put("javax.persistence.jdbc.url", url);
-            emf = Persistence.createEntityManagerFactory("db", map);
+            emf = Persistence.createEntityManagerFactory("db");
+            if (!hostName.equals(LOCALHOST)) {
+                Map<String, Object> properties = emf.getProperties();
+                String jdbcUrl = (String) properties.get(JAVAX_PERSISTENCE_JDBC_URL);
+                String newUrl = jdbcUrl.replace(LOCALHOST, hostName);
+                properties.put(JAVAX_PERSISTENCE_JDBC_URL, newUrl);
+                emf = Persistence.createEntityManagerFactory("db", properties);
+            }
             em = emf.createEntityManager();
         }
         return em;
@@ -140,4 +145,5 @@ public class DatabaseStorage implements Repository {
                 "hostName='" + hostName + '\'' +
                 '}';
     }
+
 }
