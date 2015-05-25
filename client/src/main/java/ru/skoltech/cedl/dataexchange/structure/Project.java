@@ -1,11 +1,10 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
-import ru.skoltech.cedl.dataexchange.repository.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
@@ -24,13 +23,7 @@ public class Project {
 
     private Repository repository;
 
-    private SystemModel systemModel;
-
-    private SystemModel remoteModel;
-
-    private UnitManagement unitManagement;
-
-    private UserManagement userManagement;
+    private Study study;
 
     private LocalStateMachine localStateMachine;
 
@@ -43,21 +36,18 @@ public class Project {
         this.projectSettings = new ProjectSettings(projectName);
         this.repository = RepositoryFactory.getDefaultRepository();
         this.localStateMachine = new LocalStateMachine();
-        this.userManagement = DummyUserManagementBuilder.getModel();
-        //TODO: remove after testing
-        DummyUserManagementBuilder.addUserWithAllPower(userManagement, getUserName());
     }
 
     public String getUserName() {
         return projectSettings.getUser();
     }
 
-    public User getUser() {
-        return userManagement.getUserMap().get(getUserName());
-    }
-
     public void setUserName(String userName) {
         projectSettings.setUser(userName);
+    }
+
+    public User getUser() {
+        return getUserManagement().getUserMap().get(getUserName());
     }
 
     public String getPassword() {
@@ -77,29 +67,37 @@ public class Project {
     }
 
     public SystemModel getSystemModel() {
-        return systemModel;
+        return getStudy() != null ? getStudy().getSystemModel() : null;
     }
 
     @Deprecated
     public void setSystemModel(SystemModel systemModel) {
-        this.systemModel = systemModel;
+        getStudy().setSystemModel(systemModel);
         localStateMachine.performAction(LocalStateMachine.LocalActions.NEW);
     }
 
-    public UnitManagement getUnitManagement() {
-        return unitManagement;
+    public Study getStudy() {
+        if (study == null) {
+            try {
+                loadStudy();
+            } catch (Exception e) {
+                System.err.println("lazy loading failed");
+                study = new Study(projectName);
+            }
+        }
+        return study;
     }
 
-    public void setUnitManagement(UnitManagement unitManagement) {
-        this.unitManagement = unitManagement;
+    private void setStudy(Study study) {
+        this.study = study;
+    }
+
+    public UnitManagement getUnitManagement() {
+        return null;
     }
 
     public UserManagement getUserManagement() {
-        return userManagement;
-    }
-
-    public void setUserManagement(UserManagement userManagement) {
-        this.userManagement = userManagement;
+        return getStudy() != null ? getStudy().getUserManagement() : null;
     }
 
     public String getProjectName() {
@@ -122,15 +120,16 @@ public class Project {
         return sb.toString();
     }
 
-    public void saveModel() {
-        repository.storeSystemModel(systemModel);
+    public void storeStudy() {
+        repository.storeStudy(study);
         localStateMachine.performAction(LocalStateMachine.LocalActions.SAVE);
     }
 
-    public void loadModel() {
-        systemModel = repository.loadSystemModel();
+    public void loadStudy() {
+        setStudy(repository.loadStudy(projectName));
         localStateMachine.performAction(LocalStateMachine.LocalActions.LOAD);
     }
+
 
     public boolean isActionPossible(LocalStateMachine.LocalActions action) {
         return localStateMachine.isActionPossible(action);

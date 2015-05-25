@@ -14,7 +14,6 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 import java.net.URL;
 import java.util.List;
@@ -29,7 +28,6 @@ public class UserManagementController implements Initializable {
     public TableView disciplinesTable;
     public TableColumn userNameColumn;
     private Project project;
-    private UserManagement userManagement;
 
     public void addUser(ActionEvent actionEvent) {
         Optional<String> userNameChoice = Dialogues.inputUserName();
@@ -46,7 +44,7 @@ public class UserManagementController implements Initializable {
                 User user = new User();
                 user.setUserName(userName);
                 StatusLogger.getInstance().log("added user: " + user.getUserName());
-                userManagement.getUsers().add(user);
+                project.getUserManagement().getUsers().add(user);
             }
         }
         updateUserTable();
@@ -54,7 +52,7 @@ public class UserManagementController implements Initializable {
 
     public void deleteUser(ActionEvent actionEvent) {
         Object selecteditem = userTable.getSelectionModel().getSelectedItem();
-        userManagement.getUsers().remove(selecteditem);
+        project.getUserManagement().getUsers().remove(selecteditem);
         updateUserTable();
     }
 
@@ -66,21 +64,24 @@ public class UserManagementController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
-        this.userManagement = project.getUserManagement();
         updateUserTable();
         updateDisciplineTable();
     }
 
     private void updateUserTable() {
-        List<User> users = userManagement.getUsers();
-        ObservableList<User> userList = FXCollections.observableList(users);
-        userTable.setItems(userList);
+        if (project.getUserManagement() != null) {
+            List<User> users = project.getUserManagement().getUsers();
+            ObservableList<User> userList = FXCollections.observableList(users);
+            userTable.setItems(userList);
+        }
     }
 
     private void updateDisciplineTable() {
-        List<Discipline> disciplines = userManagement.getDisciplines();
-        ObservableList<Discipline> disciplineList = FXCollections.observableList(disciplines);
-        disciplinesTable.setItems(disciplineList);
+        if (project.getUserManagement() != null) {
+            List<Discipline> disciplines = project.getUserManagement().getDisciplines();
+            ObservableList<Discipline> disciplineList = FXCollections.observableList(disciplines);
+            disciplinesTable.setItems(disciplineList);
+        }
     }
 
     @Override

@@ -1,21 +1,23 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.UniqueConstraint;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+
+import javax.persistence.*;
 
 /**
  * Created by dknoll on 23/05/15.
  */
 @Entity
+@Access(AccessType.PROPERTY)
 public class Study {
 
-    @Id
-    @GeneratedValue
     private long id;
 
     private String name;
+
+    private SystemModel systemModel;
+
+    private UserManagement userManagement;
 
     public Study() {
     }
@@ -24,6 +26,8 @@ public class Study {
         this.name = name;
     }
 
+    @Id
+    @GeneratedValue
     public long getId() {
         return id;
     }
@@ -38,6 +42,24 @@ public class Study {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @OneToOne(targetEntity = SystemModel.class, cascade = CascadeType.ALL)
+    public SystemModel getSystemModel() {
+        return systemModel;
+    }
+
+    public void setSystemModel(SystemModel systemModel) {
+        this.systemModel = systemModel;
+    }
+
+    @OneToOne(targetEntity = UserManagement.class, cascade = CascadeType.ALL)
+    public UserManagement getUserManagement() {
+        return userManagement;
+    }
+
+    public void setUserManagement(UserManagement userManagement) {
+        this.userManagement = userManagement;
     }
 
     @Override

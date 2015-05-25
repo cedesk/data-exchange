@@ -6,7 +6,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
@@ -22,8 +21,6 @@ public class DbStorageTest {
 
     private static DatabaseStorage databaseStorage;
 
-    private static SystemModel systemModel;
-
     @BeforeClass
     public static void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor<DatabaseStorage> constructor = DatabaseStorage.class.getDeclaredConstructor();
@@ -31,28 +28,34 @@ public class DbStorageTest {
         databaseStorage = constructor.newInstance();
     }
 
+    @AfterClass
+    public static void cleanup() {
+        databaseStorage.close();
+    }
+
     @Test
     public void compareStoredAndRetrievedModel() {
-        systemModel = DummySystemBuilder.getSystemModel(4);
+        SystemModel systemModel = DummySystemBuilder.getSystemModel(4);
         System.out.println(systemModel);
         databaseStorage.storeSystemModel(systemModel);
+        long systemModelId = systemModel.getId();
+
         databaseStorage.storeSystemModel(DummySystemBuilder.getSystemModel(1));
 
-        ModelNode modelNode = databaseStorage.loadSystemModel(1L);
-        System.out.println(modelNode);
+        SystemModel systemModel1 = databaseStorage.loadSystemModel(systemModelId);
+        System.out.println(systemModel1);
 
-        Assert.assertEquals(modelNode.getName(), systemModel.getName());
-
-        Assert.assertEquals(modelNode.getParameters(), systemModel.getParameters());
-
-        Assert.assertEquals(modelNode, systemModel);
-
+        Assert.assertEquals(systemModel1.getName(), systemModel.getName());
+        Assert.assertEquals(systemModel1.getParameters(), systemModel.getParameters());
+        Assert.assertEquals(systemModel1, systemModel);
     }
 
     @Test
     public void storeAndRetrieveStudy() {
         String name = "testStudy";
         Study study = new Study(name);
+        study.setSystemModel(DummySystemBuilder.getSystemModel(1));
+        study.setUserManagement(DummyUserManagementBuilder.getModel());
         System.out.println(study);
 
         databaseStorage.storeStudy(study);
@@ -73,10 +76,5 @@ public class DbStorageTest {
         UserManagement userManagement1 = databaseStorage.loadUserManagement(1L);
 
         Assert.assertEquals(userManagement, userManagement1);
-    }
-
-    @AfterClass
-    public static void cleanup() {
-        databaseStorage.close();
     }
 }
