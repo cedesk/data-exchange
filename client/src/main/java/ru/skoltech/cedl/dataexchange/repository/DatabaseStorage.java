@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.repository;
 
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -35,6 +36,7 @@ public class DatabaseStorage implements Repository {
         this.hostName = hostName;
     }
 
+    @Override
     public void storeStudy(Study study) {
         EntityManager entityManager = getEntityManager();
         entityManager.setFlushMode(FlushModeType.AUTO);
@@ -44,6 +46,7 @@ public class DatabaseStorage implements Repository {
         transaction.commit();
     }
 
+    @Override
     public Study loadStudy(String name) {
         EntityManager entityManager = getEntityManager();
         try {
@@ -62,6 +65,28 @@ public class DatabaseStorage implements Repository {
         }
     }
 
+    @Override
+    public void storeUserManagement(UserManagement userManagement) {
+        EntityManager entityManager = getEntityManager();
+        EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
+        entityManager.persist(userManagement);
+        transaction.commit();
+    }
+
+    @Override
+    public UserManagement loadUserManagement(long studyId) {
+        EntityManager entityManager = getEntityManager();
+        UserManagement userManagement = null;
+        try {
+            userManagement = entityManager.getReference(UserManagement.class, studyId);
+        } catch (EntityNotFoundException e) {
+            System.err.println("WARNING! UserManagement not found.");
+        }
+        return userManagement;
+    }
+
+    @Override
     public void storeSystemModel(SystemModel modelNode) {
         EntityManager entityManager = getEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
@@ -70,11 +95,12 @@ public class DatabaseStorage implements Repository {
         transaction.commit();
     }
 
-    public SystemModel loadSystemModel() {
+    @Override
+    public SystemModel loadSystemModel(long studyId) {
         EntityManager entityManager = getEntityManager();
         SystemModel systemModel = null;
         try {
-            systemModel = entityManager.getReference(SystemModel.class, 1L);
+            systemModel = entityManager.getReference(SystemModel.class, studyId);
         } catch (EntityNotFoundException e) {
             System.err.println("WARNING! Model not found.");
         }
