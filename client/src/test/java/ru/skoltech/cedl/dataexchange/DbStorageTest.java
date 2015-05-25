@@ -1,7 +1,8 @@
 package ru.skoltech.cedl.dataexchange;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
@@ -19,26 +20,24 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class DbStorageTest {
 
-    private SystemModel systemModel;
+    private static DatabaseStorage databaseStorage;
 
-    private DatabaseStorage databaseStorage;
+    private static SystemModel systemModel;
 
-    @Before
-    public void storeAndRetrieve() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        systemModel = DummySystemBuilder.getSystemModel(4);
-        System.out.println(systemModel);
-
+    @BeforeClass
+    public static void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor<DatabaseStorage> constructor = DatabaseStorage.class.getDeclaredConstructor();
         constructor.setAccessible(true);
         databaseStorage = constructor.newInstance();
-
-        databaseStorage.storeSystemModel(systemModel);
-
-        databaseStorage.storeSystemModel(DummySystemBuilder.getSystemModel(1));
     }
 
     @Test
     public void compareStoredAndRetrievedModel() {
+        systemModel = DummySystemBuilder.getSystemModel(4);
+        System.out.println(systemModel);
+        databaseStorage.storeSystemModel(systemModel);
+        databaseStorage.storeSystemModel(DummySystemBuilder.getSystemModel(1));
+
         ModelNode modelNode = databaseStorage.loadSystemModel(1L);
         System.out.println(modelNode);
 
@@ -74,5 +73,10 @@ public class DbStorageTest {
         UserManagement userManagement1 = databaseStorage.loadUserManagement(1L);
 
         Assert.assertEquals(userManagement, userManagement1);
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        databaseStorage.close();
     }
 }
