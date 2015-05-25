@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * Created by D.Knoll on 11.03.2015.
  */
 @XmlType(propOrder = {"name", "parameters"})
-@XmlAccessorType(XmlAccessType.PROPERTY)
+@XmlAccessorType(XmlAccessType.FIELD)
 @MappedSuperclass
 public abstract class ModelNode {
 
@@ -26,8 +26,10 @@ public abstract class ModelNode {
     @XmlElement(name = "parameter")
     protected List<ParameterModel> parameters = new LinkedList<>();
 
+    @XmlTransient
     protected ModelNode parent;
 
+    @XmlTransient
     protected long id;
 
     public ModelNode() {
