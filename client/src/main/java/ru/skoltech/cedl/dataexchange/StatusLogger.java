@@ -2,11 +2,14 @@ package ru.skoltech.cedl.dataexchange;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.apache.log4j.Logger;
 
 /**
  * Created by D.Knoll on 28.03.2015.
  */
 public class StatusLogger {
+
+    final static Logger logger = Logger.getLogger(StatusLogger.class);
 
     private static StatusLogger instance = new StatusLogger();
 
@@ -29,9 +32,9 @@ public class StatusLogger {
 
     public void log(String msg, boolean error) {
         if (error) {
-            System.err.println(msg);
+            logger.error(msg);
         } else {
-            System.out.println(msg);
+            logger.info(msg);
         }
         try {
             lastMessage.setValue(msg);
