@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange.structure;
+package ru.skoltech.cedl.dataexchange.repository;
 
 import java.util.EnumSet;
 import java.util.Observable;
@@ -6,19 +6,19 @@ import java.util.Observable;
 /**
  * Created by D.Knoll on 04.05.2015.
  */
-public class LocalStateMachine extends Observable {
+public class RepositoryStateMachine extends Observable {
 
-    private LocalState state;
+    private RepositoryState state;
 
-    public LocalStateMachine() {
-        state = LocalState.INITIAL;
+    public RepositoryStateMachine() {
+        state = RepositoryState.INITIAL;
     }
 
-    public LocalState getState() {
+    public RepositoryState getState() {
         return state;
     }
 
-    private void setState(LocalState state) {
+    private void setState(RepositoryState state) {
         if (this.state != state) {
             this.state = state;
             setChanged();
@@ -26,29 +26,33 @@ public class LocalStateMachine extends Observable {
         }
     }
 
-    public void performAction(LocalActions action) {
-        LocalState newState = this.state.performAction(action);
+    public void performAction(RepositoryActions action) {
+        RepositoryState newState = state.performAction(action);
         setState(newState);
     }
 
-    public EnumSet<LocalActions> possibleActions() {
+    public EnumSet<RepositoryActions> possibleActions() {
         return state.possibleActions();
     }
 
-    public boolean isActionPossible(LocalActions action) {
+    public boolean isActionPossible(RepositoryActions action) {
         return state.possibleActions().contains(action);
     }
 
-    public enum LocalState {
+    public void reset() {
+        this.setState(RepositoryState.INITIAL);
+    }
+
+    public enum RepositoryState {
 
         INITIAL {
             @Override
-            EnumSet<LocalActions> possibleActions() {
-                return EnumSet.of(LocalActions.NEW, LocalActions.LOAD);
+            EnumSet<RepositoryActions> possibleActions() {
+                return EnumSet.of(RepositoryActions.NEW, RepositoryActions.LOAD);
             }
 
             @Override
-            LocalState performAction(LocalActions action) {
+            RepositoryState performAction(RepositoryActions action) {
                 switch (action) {
                     case LOAD:
                         return SAVED;
@@ -61,12 +65,12 @@ public class LocalStateMachine extends Observable {
         },
         DIRTY {
             @Override
-            EnumSet<LocalActions> possibleActions() {
-                return EnumSet.of(LocalActions.NEW, LocalActions.MODIFY, LocalActions.LOAD, LocalActions.SAVE);
+            EnumSet<RepositoryActions> possibleActions() {
+                return EnumSet.of(RepositoryActions.NEW, RepositoryActions.MODIFY, RepositoryActions.LOAD, RepositoryActions.SAVE);
             }
 
             @Override
-            LocalState performAction(LocalActions action) {
+            RepositoryState performAction(RepositoryActions action) {
                 switch (action) {
                     case NEW:
                     case MODIFY:
@@ -81,12 +85,12 @@ public class LocalStateMachine extends Observable {
         },
         SAVED {
             @Override
-            EnumSet<LocalActions> possibleActions() {
-                return EnumSet.of(LocalActions.NEW, LocalActions.MODIFY, LocalActions.LOAD);
+            EnumSet<RepositoryActions> possibleActions() {
+                return EnumSet.of(RepositoryActions.NEW, RepositoryActions.MODIFY, RepositoryActions.LOAD);
             }
 
             @Override
-            LocalState performAction(LocalActions action) {
+            RepositoryState performAction(RepositoryActions action) {
                 switch (action) {
                     case NEW:
                     case MODIFY:
@@ -99,12 +103,12 @@ public class LocalStateMachine extends Observable {
             }
         };
 
-        abstract EnumSet<LocalActions> possibleActions();
+        abstract EnumSet<RepositoryActions> possibleActions();
 
-        abstract LocalState performAction(LocalActions action);
+        abstract RepositoryState performAction(RepositoryActions action);
     }
 
-    public enum LocalActions {
+    public enum RepositoryActions {
         NEW,
         MODIFY,
         LOAD,
