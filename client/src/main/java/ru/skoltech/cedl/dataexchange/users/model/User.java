@@ -84,7 +84,7 @@ public class User {
         this.authenticator = authenticator;
     }
 
-    @Transient
+    @OneToMany(targetEntity = Discipline.class, cascade = CascadeType.PERSIST)
     public List<Discipline> getDisciplines() {
         return disciplines;
     }
