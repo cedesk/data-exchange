@@ -14,14 +14,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
-import org.tmatesoft.svn.core.SVNException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
-import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.LocalStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import javax.persistence.NoResultException;
@@ -116,7 +113,7 @@ public class MainController implements Initializable {
             Parent editingPane = loader.load();
             modelTab.setContent(editingPane);
             modelTab.setOnSelectionChanged(event -> {
-                if(modelTab.isSelected()) {
+                if (modelTab.isSelected()) {
                     editingController.updateView();
                 }
             });
@@ -172,28 +169,25 @@ public class MainController implements Initializable {
     }
 
     private void makeRepositoryWatcher() {
-        try {
-            repositoryWatcher = new RepositoryWatcher(project);
-            statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
-            workingCopyModified.selectedProperty().bind(repositoryWatcher.workingCopyModifiedProperty());
-            repositoryWatcher.repositoryNewerProperty().addListener(new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                    if (newValue) {
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateRemoteModel();
-                                StatusLogger.getInstance().log("Remote model loaded for comparison.");
-                            }
-                        });
-                    }
+        repositoryWatcher = new RepositoryWatcher(project);
+        statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
+        workingCopyModified.selectedProperty().bind(repositoryWatcher.workingCopyModifiedProperty());
+        repositoryWatcher.repositoryNewerProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateRemoteModel();
+                            StatusLogger.getInstance().log("Remote model loaded for comparison.");
+                        }
+                    });
                 }
-            });
-            repositoryWatcher.start();
-        } catch (SVNException e) {
-            System.err.println("Error making repository watcher.\n" + e.getMessage());
-        }
+            }
+        });
+        repositoryWatcher.start();
+
     }
 
     public void updateRemoteModel() {

@@ -1,11 +1,7 @@
-package ru.skoltech.cedl.dataexchange.repository.svn;
+package ru.skoltech.cedl.dataexchange.repository;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import org.tmatesoft.svn.core.SVNException;
-import ru.skoltech.cedl.dataexchange.repository.DatabaseStorage;
-import ru.skoltech.cedl.dataexchange.repository.Repository;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 /**
@@ -25,7 +21,7 @@ public class RepositoryWatcher extends Thread {
 
     private BooleanProperty workingCopyModified = new SimpleBooleanProperty();
 
-    public RepositoryWatcher(Project project) throws SVNException {
+    public RepositoryWatcher(Project project) {
         this.repository = RepositoryFactory.getDefaultRepository();
     }
 
