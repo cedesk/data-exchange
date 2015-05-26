@@ -17,7 +17,7 @@ import javafx.scene.control.Tab;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
-import ru.skoltech.cedl.dataexchange.structure.LocalStateMachine;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -142,12 +142,12 @@ public class MainController implements Initializable {
             throw new RuntimeException(ioe);
         }
 
-        project.addLocalStateObserver(new Observer() {
+        project.addRepositoryStateObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
-                newButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.NEW));
-                openButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.LOAD));
-                saveButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.SAVE));
+                newButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
+                openButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
+                saveButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE));
             }
         });
 

@@ -1,9 +1,11 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.StudyFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -19,7 +21,7 @@ import java.util.Observer;
 public class Project {
 
     public static final String DEFAULT_PROJECT_NAME = "defaultProject";
-
+    private static Logger logger = Logger.getLogger(Project.class);
     private ProjectSettings projectSettings;
 
     private String projectName;
@@ -28,7 +30,7 @@ public class Project {
 
     private Study study;
 
-    private LocalStateMachine localStateMachine;
+    private RepositoryStateMachine repositoryStateMachine;
 
     public Project() {
         this(DEFAULT_PROJECT_NAME);
@@ -38,7 +40,7 @@ public class Project {
         this.projectName = projectName;
         this.projectSettings = new ProjectSettings(projectName);
         this.repository = RepositoryFactory.getDefaultRepository();
-        this.localStateMachine = new LocalStateMachine();
+        this.repositoryStateMachine = new RepositoryStateMachine();
     }
 
     public String getUserName() {
@@ -77,13 +79,14 @@ public class Project {
         return study;
     }
 
+    private void setStudy(Study study) {
+        this.study = study;
+    }
+
     private void initializeStudy() {
         study = StudyFactory.makeStudy(projectName);
         DummyUserManagementBuilder.addUserWithAllPower(study.getUserManagement(), Utils.getUserName());
-    }
-
-    private void setStudy(Study study) {
-        this.study = study;
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
     }
 
     public UnitManagement getUnitManagement() {
@@ -102,7 +105,7 @@ public class Project {
         this.projectName = projectName;
         this.projectSettings = new ProjectSettings(projectName);
         this.repository = RepositoryFactory.getDefaultRepository();
-        this.localStateMachine = new LocalStateMachine();
+        this.repositoryStateMachine.reset();
     }
 
     @Override
@@ -114,27 +117,42 @@ public class Project {
         return sb.toString();
     }
 
-    public void storeStudy() {
-        repository.storeStudy(study);
-        localStateMachine.performAction(LocalStateMachine.LocalActions.SAVE);
+    public boolean storeStudy() {
+        try {
+            repository.storeStudy(study);
+            repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+            return true;
+        } catch (Exception e) {
+            logger.error("Error loading study!", e);
+        }
+        return false;
     }
 
-    public void loadStudy() {
-        setStudy(repository.loadStudy(projectName));
-        localStateMachine.performAction(LocalStateMachine.LocalActions.LOAD);
+    public boolean loadStudy() {
+        Study study = null;
+        try {
+            study = repository.loadStudy(projectName);
+        } catch (Exception e) {
+            logger.error("Error loading study!", e);
+        }
+        if (study != null) {
+            setStudy(study);
+            repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        }
+        return study != null;
     }
 
 
-    public boolean isActionPossible(LocalStateMachine.LocalActions action) {
-        return localStateMachine.isActionPossible(action);
+    public boolean isActionPossible(RepositoryStateMachine.RepositoryActions action) {
+        return repositoryStateMachine.isActionPossible(action);
     }
 
-    public void addLocalStateObserver(Observer o) {
-        localStateMachine.addObserver(o);
+    public void addRepositoryStateObserver(Observer o) {
+        repositoryStateMachine.addObserver(o);
     }
 
     public void markSystemModelModified() {
-        localStateMachine.performAction(LocalStateMachine.LocalActions.MODIFY);
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
     }
 
     @Override
@@ -146,6 +164,6 @@ public class Project {
     public void newStudy() {
         SystemModel system = DummySystemBuilder.getSystemModel(3);
         study.setSystemModel(system);
-        localStateMachine.performAction(LocalStateMachine.LocalActions.NEW);
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
     }
 }
