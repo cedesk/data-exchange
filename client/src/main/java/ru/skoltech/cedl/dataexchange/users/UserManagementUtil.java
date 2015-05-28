@@ -10,14 +10,12 @@ import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 /**
  * Created by dknoll on 17/05/15.
  */
-public class AccessVerifier {
+public class UserManagementUtil {
 
-    public static boolean check(SystemModel systemModel, TreeItem<ModelNode> treeItem, String userName, UserManagement userManagement) {
+    public static boolean checkAccess(SystemModel systemModel, TreeItem<ModelNode> treeItem, User user, UserManagement userManagement) {
 
         // check username contained in user management
-        User user = userManagement.getUserMap().get(userName);
         if (user == null) {
-            System.err.println("user '" + userName + "'not contained in userManagement");
             return false;
         }
 
@@ -56,5 +54,12 @@ public class AccessVerifier {
         }
         return treeItem.getValue();
 
+    }
+
+    public static boolean isAdmin(User user) {
+        for (Discipline userDiscipline : user.getDisciplines()) {
+            if (userDiscipline.equals(Discipline.ADMIN_DISCIPLINE)) return true;
+        }
+        return false;
     }
 }

@@ -18,7 +18,7 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
-import ru.skoltech.cedl.dataexchange.users.AccessVerifier;
+import ru.skoltech.cedl.dataexchange.users.UserManagementUtil;
 
 import java.net.URL;
 import java.util.Map;
@@ -79,7 +79,7 @@ public class EditingController implements Initializable {
         addNodeButton.disableProperty().bind(selectedNodeIsLeaf);
         deleteNodeButton.disableProperty().bind(selectedNodeIsRoot);
 
-        structureTree.setEditable(true); // TODO: make editable only for ADMIN
+        //structureTree.setEditable(true);
         structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
             @Override
             public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
@@ -154,7 +154,8 @@ public class EditingController implements Initializable {
         modelNode.diffParameters(item.getRemoteValue());
         viewParameters.displayParameters(modelNode.getParameters());
 
-        boolean editable = AccessVerifier.check(project.getSystemModel(), treeItem, project.getUserName(), project.getUserManagement());
+        boolean editable = UserManagementUtil.checkAccess(project.getSystemModel(), treeItem, project.getUser(), project.getUserManagement());
+        System.out.println(treeItem.getValue().getName() + " - " + editable);
         parameterTable.setEditable(editable);
         parameterTable.autosize();
     }
@@ -164,6 +165,10 @@ public class EditingController implements Initializable {
     }
 
     public void updateView() {
+
+        boolean isAdmin = UserManagementUtil.isAdmin(project.getUser());
+        structureTree.setEditable(isAdmin);
+
         //if (project.getRemoteModel() == null) {
         StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
         structureTree.setRoot(rootNode);
