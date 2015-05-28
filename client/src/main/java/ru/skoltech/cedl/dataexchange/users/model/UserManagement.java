@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
+import org.apache.log4j.Logger;
+
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import java.util.LinkedList;
@@ -17,6 +19,8 @@ import java.util.stream.Collectors;
 @Entity
 @Access(AccessType.PROPERTY)
 public class UserManagement {
+
+    private static final Logger logger = Logger.getLogger(UserManagement.class);
 
     @XmlTransient
     private long id;
@@ -79,5 +83,13 @@ public class UserManagement {
     public Map<String, Discipline> getDisciplineMap() {
         return disciplines.stream().collect(
                 Collectors.toMap(Discipline::getName, Function.<Discipline>identity()));
+    }
+
+    public User findUser(String userName) {
+        User user = getUserMap().get(userName);
+        if (user == null) {
+            logger.warn("user not found: " + userName);
+        }
+        return user;
     }
 }
