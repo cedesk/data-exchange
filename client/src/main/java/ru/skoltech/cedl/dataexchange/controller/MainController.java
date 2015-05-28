@@ -16,8 +16,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.view.Views;
 

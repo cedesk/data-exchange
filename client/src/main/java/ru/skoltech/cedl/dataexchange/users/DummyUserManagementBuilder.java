@@ -1,6 +1,5 @@
 package ru.skoltech.cedl.dataexchange.users;
 
-import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
