@@ -11,23 +11,33 @@ public class DummyUserManagementBuilder {
 
     public static UserManagement getModel() {
         UserManagement um = new UserManagement();
-        um.getDisciplines().add(new Discipline("AOCS"));
-        um.getDisciplines().add(new Discipline("Orbit"));
-        um.getDisciplines().add(new Discipline("Payload"));
-        um.getDisciplines().add(new Discipline("Power"));
-        um.getDisciplines().add(new Discipline("Thermal"));
-        um.getDisciplines().add(new Discipline("Communication"));
-        um.getDisciplines().add(new Discipline("Propulsion"));
-        um.getDisciplines().add(new Discipline("Mission"));
+        Discipline orbitDiscipline = new Discipline("Orbit");
+        Discipline payloadDiscipline = new Discipline("Payload");
+        Discipline aocsDiscipline = new Discipline("AOCS");
+        Discipline powerDiscipline = new Discipline("Power");
+        Discipline thermalDiscipline = new Discipline("Thermal");
+        Discipline communicationDiscipline = new Discipline("Communication");
+        Discipline propulsionDiscipline = new Discipline("Propulsion");
+        Discipline missionDiscipline = new Discipline("Mission");
+
+        um.getDisciplines().add(Discipline.ADMIN_DISCIPLINE);
+        um.getDisciplines().add(aocsDiscipline);
+        um.getDisciplines().add(orbitDiscipline);
+        um.getDisciplines().add(payloadDiscipline);
+        um.getDisciplines().add(powerDiscipline);
+        um.getDisciplines().add(thermalDiscipline);
+        um.getDisciplines().add(communicationDiscipline);
+        um.getDisciplines().add(propulsionDiscipline);
+        um.getDisciplines().add(missionDiscipline);
 
         User admin = new User("admin", "Team Lead", "");
         admin.getDisciplines().add(Discipline.ADMIN_DISCIPLINE);
         um.getUsers().add(admin);
 
         User expert = new User("expert", "Discipline Expert", "");
-        expert.getDisciplines().add(new Discipline("Mission"));
-        expert.getDisciplines().add(new Discipline("Orbit"));
-        expert.getDisciplines().add(new Discipline("Payload"));
+        expert.getDisciplines().add(missionDiscipline);
+        expert.getDisciplines().add(orbitDiscipline);
+        expert.getDisciplines().add(payloadDiscipline);
         um.getUsers().add(expert);
 
         return um;
