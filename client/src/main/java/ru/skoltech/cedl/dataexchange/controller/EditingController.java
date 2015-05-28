@@ -165,8 +165,8 @@ public class EditingController implements Initializable {
 
     public void updateView() {
         //if (project.getRemoteModel() == null) {
-            StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
-            structureTree.setRoot(rootNode);
+        StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
+        structureTree.setRoot(rootNode);
         /*} else {
             StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
                     project.getSystemModel(), project.getRemoteModel());
