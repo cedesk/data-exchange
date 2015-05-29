@@ -9,17 +9,17 @@ import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
  */
 public interface Repository {
 
-    SystemModel loadSystemModel(long studyId);
+    SystemModel loadSystemModel(long studyId) throws RepositoryException;
 
     void storeSystemModel(SystemModel systemModel);
 
     void close();
 
-    Study loadStudy(String name);
+    Study loadStudy(String name) throws RepositoryException;
 
     void storeStudy(Study study);
 
     void storeUserManagement(UserManagement userManagement);
 
-    UserManagement loadUserManagement(long studyId);
+    UserManagement loadUserManagement(long studyId) throws RepositoryException;
 }

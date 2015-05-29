@@ -46,7 +46,7 @@ public class UserManagement {
         this.id = id;
     }
 
-    @OneToMany(targetEntity = User.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = User.class, cascade = CascadeType.ALL)//, orphanRemoval = true)
     public List<User> getUsers() {
         return users;
     }
@@ -55,7 +55,7 @@ public class UserManagement {
         this.users = users;
     }
 
-    @OneToMany(targetEntity = Discipline.class, cascade = CascadeType.MERGE, orphanRemoval = true)
+    @OneToMany(targetEntity = Discipline.class, cascade = CascadeType.ALL)//, orphanRemoval = true)
     public List<Discipline> getDisciplines() {
         return disciplines;
     }

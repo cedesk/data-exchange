@@ -84,7 +84,7 @@ public class User {
         this.authenticator = authenticator;
     }
 
-    @OneToMany(targetEntity = Discipline.class, cascade = CascadeType.PERSIST)
+    @ManyToMany(targetEntity = Discipline.class, cascade = CascadeType.ALL)
     public List<Discipline> getDisciplines() {
         return disciplines;
     }

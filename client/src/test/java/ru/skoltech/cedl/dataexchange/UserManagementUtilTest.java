@@ -1,13 +1,11 @@
 package ru.skoltech.cedl.dataexchange;
 
-import javafx.scene.control.TreeItem;
 import org.junit.Assert;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ElementModel;
+import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItem;
-import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItemFactory;
 import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
 import ru.skoltech.cedl.dataexchange.users.UserManagementUtil;
 import ru.skoltech.cedl.dataexchange.users.model.User;
@@ -27,14 +25,17 @@ public class UserManagementUtilTest {
         String testUserName = "test user";
         DummyUserManagementBuilder.addUserWithAllPower(userManagement, testUserName);
 
-        SystemModel systemModel = DummySystemBuilder.getSystemModel(1);
-        StructureTreeItem systemNode = StructureTreeItemFactory.getTreeView(systemModel);
+        SystemModel systemModel = DummySystemBuilder.getSystemModel(3);
 
-        TreeItem<ModelNode> firstSubsystemNode = systemNode.getChildren().get(0);
+        SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
-        TreeItem<ModelNode> firstElementSubsystemNode = systemNode.getChildren().get(0);
+        ElementModel firstElementSubsystemNode = firstSubsystemNode.getSubNodes().get(0);
 
-
-        //UserManagementUtil.checkAccess(systemModel,)
+        Assert.assertTrue(
+                UserManagementUtil.checkAccess(systemModel, systemModel, admin, userManagement));
+        Assert.assertTrue(
+                UserManagementUtil.checkAccess(systemModel, firstSubsystemNode, admin, userManagement));
+        Assert.assertTrue(
+                UserManagementUtil.checkAccess(systemModel, firstElementSubsystemNode, admin, userManagement));
     }
 }

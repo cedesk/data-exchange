@@ -52,7 +52,8 @@ public class Project {
     }
 
     public User getUser() {
-        return getUserManagement().getUserMap().get(getUserName());
+        String userName = getUserName();
+        return getUserManagement().findUser(userName);
     }
 
     public String getPassword() {
@@ -69,12 +70,7 @@ public class Project {
 
     public Study getStudy() {
         if (study == null) {
-            try {
-                loadStudy();
-            } catch (Exception e) {
-                System.err.println("lazy loading failed");
-                initializeStudy();
-            }
+            initializeStudy();
         }
         return study;
     }

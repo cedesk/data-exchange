@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
@@ -15,6 +16,8 @@ import java.util.Map;
  * Created by dknoll on 24/05/15.
  */
 public class DatabaseStorage implements Repository {
+
+    private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
 
     public static final String JAVAX_PERSISTENCE_JDBC_URL = "javax.persistence.jdbc.url";
 
@@ -48,21 +51,20 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public Study loadStudy(String name) {
+    public Study loadStudy(String name) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         try {
             final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
             final CriteriaQuery criteriaQuery = criteriaBuilder.createQuery(Study.class);
-            final Root stateRoot = criteriaQuery.from(Study.class);
-            Predicate predicate2 = criteriaBuilder.equal(stateRoot.get("name"), name);
-            //criteriaQuery.select(criteriaBuilder.construct(Study.class));
-            criteriaQuery.where(predicate2);
+            final Root studyRoot = criteriaQuery.from(Study.class);
+            final Predicate namePredicate = criteriaBuilder.equal(studyRoot.get("name"), name);
+            criteriaQuery.where(namePredicate);
             final TypedQuery query = entityManager.createQuery(criteriaQuery);
             Object singleResult = query.getSingleResult();
             return (Study) singleResult;
         } catch (EntityNotFoundException e) {
-            System.err.println("WARNING! Study not found.");
-            return null;
+            logger.error("Study not found.");
+            throw new RepositoryException("Study not found.", e);
         }
     }
 
@@ -76,13 +78,14 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public UserManagement loadUserManagement(long studyId) {
+    public UserManagement loadUserManagement(long studyId) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         UserManagement userManagement = null;
         try {
             userManagement = entityManager.getReference(UserManagement.class, studyId);
         } catch (EntityNotFoundException e) {
-            System.err.println("WARNING! UserManagement not found.");
+            logger.error("UserManagement not found.");
+            throw new RepositoryException("UserManagement not found.", e);
         }
         return userManagement;
     }
@@ -97,13 +100,14 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public SystemModel loadSystemModel(long studyId) {
+    public SystemModel loadSystemModel(long studyId) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         SystemModel systemModel = null;
         try {
             systemModel = entityManager.getReference(SystemModel.class, studyId);
         } catch (EntityNotFoundException e) {
-            System.err.println("WARNING! Model not found.");
+            logger.error("SystemModel not found.");
+            throw new RepositoryException("SystemModel not found.", e);
         }
         return systemModel;
     }

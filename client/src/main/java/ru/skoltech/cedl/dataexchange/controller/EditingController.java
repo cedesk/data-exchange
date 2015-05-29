@@ -154,7 +154,7 @@ public class EditingController implements Initializable {
         modelNode.diffParameters(item.getRemoteValue());
         viewParameters.displayParameters(modelNode.getParameters());
 
-        boolean editable = UserManagementUtil.checkAccess(project.getSystemModel(), treeItem, project.getUser(), project.getUserManagement());
+        boolean editable = UserManagementUtil.checkAccess(project.getSystemModel(), modelNode, project.getUser(), project.getUserManagement());
         System.out.println(treeItem.getValue().getName() + " - " + editable);
         parameterTable.setEditable(editable);
         parameterTable.autosize();
