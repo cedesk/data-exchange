@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.repository;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 /**
@@ -10,6 +11,8 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 public class RepositoryWatcher extends Thread {
 
     public static final long DEFAULT_TIMING = 10;
+
+    private static final Logger logger = Logger.getLogger(RepositoryWatcher.class);
 
     private long timing = DEFAULT_TIMING;
 
@@ -40,7 +43,7 @@ public class RepositoryWatcher extends Thread {
                 // ignore
             }
         }
-        System.out.println("RepositoryWatcher finished.");
+        logger.info("RepositoryWatcher finished.");
     }
 
     public void finish() {

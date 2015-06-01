@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange;
 
+import org.apache.log4j.Logger;
+
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,6 +11,8 @@ import java.util.Properties;
  * Created by D.Knoll on 18.03.2015.
  */
 public class ApplicationSettings {
+
+    private static final Logger logger = Logger.getLogger(ApplicationSettings.class);
 
     public static final String AUTO_LOAD_LAST_PROJECT = "project.last.autoload";
 
@@ -43,7 +47,7 @@ public class ApplicationSettings {
     public static String getLastUsedProject(String defaultVaule) {
         String projName = properties.getProperty(LAST_PROJECT_NAME);
         if (projName == null) {
-            System.out.println("Warning: Empty last project. Using default: " + defaultVaule);
+            logger.warn("Empty last project. Using default: " + defaultVaule);
             return defaultVaule;
         }
         return projName;
@@ -63,7 +67,7 @@ public class ApplicationSettings {
             props.load(fileReader);
             properties = props;
         } catch (IOException e) {
-            System.err.println("Error loading application settings!");
+            logger.error("Error loading application settings!");
         }
     }
 
@@ -71,7 +75,7 @@ public class ApplicationSettings {
         try (FileWriter fileWriter = new FileWriter(SETTINGS_FILE)) {
             properties.store(fileWriter, SETTINGS_COMMENTS);
         } catch (IOException e) {
-            System.err.println("Error saving application settings!");
+            logger.error("Error saving application settings!");
         }
     }
 
