@@ -14,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
@@ -21,14 +22,16 @@ import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
-import javax.persistence.NoResultException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
+
+    private static final Logger logger = Logger.getLogger(MainController.class);
 
     private final Project project = new Project();
 
@@ -74,30 +77,36 @@ public class MainController implements Initializable {
     private RepositoryWatcher repositoryWatcher;
 
     public void newModel(ActionEvent actionEvent) {
-        project.newStudy();
-        updateView();
+        Optional<String> choice = Dialogues.inputStudyName("SkolTechSat");
+        if (choice.isPresent()) {
+            // TODO: validate name not to exist already
+            project.newStudy(choice.get());
+            updateView();
+        }
     }
 
     public void loadModel(ActionEvent actionEvent) {
         try {
-            project.loadStudy();
-        } catch (NoResultException nre) {
-            StatusLogger.getInstance().log("Error loading project!", true);
+            boolean success = project.loadStudy();
+            if (success) {
+                ApplicationSettings.setLastUsedProject(project.getProjectName());
+            }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading project!", true);
-            e.printStackTrace();
-            //TODO: remove workaround
-            newModel(null);
+            logger.error(e);
         }
         updateView();
     }
 
     public void saveModel(ActionEvent actionEvent) {
         try {
-            project.storeStudy();
+            boolean success = project.storeStudy();
+            if (success) {
+                ApplicationSettings.setLastUsedProject(project.getProjectName());
+            }
         } catch (Exception e) {
-            StatusLogger.getInstance().log("Error saving file!", true);
-            e.printStackTrace();
+            StatusLogger.getInstance().log("Error saving project!", true);
+            logger.error(e);
         }
     }
 
@@ -120,7 +129,7 @@ public class MainController implements Initializable {
             editingController = loader.getController();
             editingController.setProject(project);
         } catch (IOException ioe) {
-            System.err.println("SEVERE ERROR: not able to load editing view pane.");
+            logger.error("Unable to load editing view pane.");
             throw new RuntimeException(ioe);
         }
 
@@ -138,7 +147,7 @@ public class MainController implements Initializable {
             userManagementController = loader.getController();
             userManagementController.setProject(project);
         } catch (IOException ioe) {
-            System.err.println("SEVERE ERROR: not able to load user management view pane.");
+            logger.error("Unable to load user management view pane.");
             throw new RuntimeException(ioe);
         }
 

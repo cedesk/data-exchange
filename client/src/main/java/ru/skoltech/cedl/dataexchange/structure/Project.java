@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
@@ -128,6 +129,8 @@ public class Project {
         Study study = null;
         try {
             study = repository.loadStudy(projectName);
+        } catch (RepositoryException e) {
+            logger.error("Study not found!");
         } catch (Exception e) {
             logger.error("Error loading study!", e);
         }
@@ -157,9 +160,11 @@ public class Project {
         super.finalize();
     }
 
-    public void newStudy() {
+    public void newStudy(String studyName) {
         SystemModel system = DummySystemBuilder.getSystemModel(3);
+        system.setName(studyName);
         study.setSystemModel(system);
+        study.setName(studyName);
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
     }
 }

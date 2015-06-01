@@ -17,10 +17,8 @@ import java.util.Map;
  */
 public class DatabaseStorage implements Repository {
 
-    private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
-
     public static final String JAVAX_PERSISTENCE_JDBC_URL = "javax.persistence.jdbc.url";
-
+    private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
     private static final String LOCALHOST = "localhost";
 
     private EntityManager em;
@@ -62,8 +60,7 @@ public class DatabaseStorage implements Repository {
             final TypedQuery query = entityManager.createQuery(criteriaQuery);
             Object singleResult = query.getSingleResult();
             return (Study) singleResult;
-        } catch (EntityNotFoundException e) {
-            logger.error("Study not found.");
+        } catch (NoResultException e) {
             throw new RepositoryException("Study not found.", e);
         }
     }
@@ -83,8 +80,7 @@ public class DatabaseStorage implements Repository {
         UserManagement userManagement = null;
         try {
             userManagement = entityManager.getReference(UserManagement.class, studyId);
-        } catch (EntityNotFoundException e) {
-            logger.error("UserManagement not found.");
+        } catch (NoResultException e) {
             throw new RepositoryException("UserManagement not found.", e);
         }
         return userManagement;
@@ -105,8 +101,7 @@ public class DatabaseStorage implements Repository {
         SystemModel systemModel = null;
         try {
             systemModel = entityManager.getReference(SystemModel.class, studyId);
-        } catch (EntityNotFoundException e) {
-            logger.error("SystemModel not found.");
+        } catch (NoResultException e) {
             throw new RepositoryException("SystemModel not found.", e);
         }
         return systemModel;
