@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<SplitPane dividerPositions="0.5" prefHeight="515.0" prefWidth="800.0" stylesheets="@styling.css" BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.UserManagementController">
+<SplitPane dividerPositions="0.5" prefHeight="515.0" prefWidth="800.0" stylesheets="@styling.css" BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.UserManagementController">
     <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="598.0">
             <children>
@@ -21,7 +21,7 @@
                         <Insets left="8.0" top="4.0" />
                     </padding>
                 </Label>
-                <TableView fx:id="userTable" layoutY="29.0" prefHeight="400.0" prefWidth="395.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                <TableView fx:id="userTable" layoutY="29.0" prefHeight="443.0" prefWidth="388.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="30.0">
                     <columns>
                         <TableColumn fx:id="userNameColumn" text="Name">
                             <cellValueFactory>
@@ -58,7 +58,7 @@
                         <Insets left="8.0" top="4.0" />
                     </padding>
                 </Label>
-                <TableView fx:id="disciplinesTable" layoutY="29.0" prefHeight="400.0" prefWidth="395.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
+                <TableView fx:id="disciplinesTable" layoutX="8.0" layoutY="29.0" prefHeight="441.0" prefWidth="388.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
                     <columns>
                         <TableColumn fx:id="disciplineNameColumn" text="Name">
                             <cellValueFactory>
