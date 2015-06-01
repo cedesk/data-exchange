@@ -64,6 +64,15 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
+    static Optional<String> inputStudyName(String defaultValue) {
+        TextInputDialog dialog = new TextInputDialog(defaultValue);
+        dialog.setTitle("Study Name");
+        dialog.setHeaderText("Please insert a name for the new Study.");
+        dialog.setContentText("Name");
+        //TODO: add input validation
+        return dialog.showAndWait();
+    }
+
     static Optional<String> inputParameterName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Parameter Name");
