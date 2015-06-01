@@ -9,6 +9,7 @@ import javax.persistence.*;
  */
 @Entity
 @Access(AccessType.PROPERTY)
+@Table(uniqueConstraints = {@UniqueConstraint(name = "uniqueStudyName", columnNames = {"name"})})
 public class Study {
 
     private long id;
