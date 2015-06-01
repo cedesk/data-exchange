@@ -13,6 +13,7 @@ import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -30,6 +31,8 @@ import java.util.function.BiConsumer;
  * Created by D.Knoll on 20.03.2015.
  */
 public class EditingController implements Initializable {
+
+    private static final Logger logger = Logger.getLogger(EditingController.class);
 
     @FXML
     private TableColumn parameterNameColumn;
@@ -155,7 +158,7 @@ public class EditingController implements Initializable {
         viewParameters.displayParameters(modelNode.getParameters());
 
         boolean editable = UserManagementUtil.checkAccess(project.getSystemModel(), modelNode, project.getUser(), project.getUserManagement());
-        System.out.println(treeItem.getValue().getName() + " - " + editable);
+        logger.info("selected node: " + treeItem.getValue().getName() + ", editable: " + editable);
         parameterTable.setEditable(editable);
         parameterTable.autosize();
     }

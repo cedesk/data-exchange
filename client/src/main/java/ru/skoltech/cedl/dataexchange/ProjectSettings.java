@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange;
 
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 
 import java.io.File;
@@ -12,6 +13,8 @@ import java.util.Properties;
  * Created by D.Knoll on 01.05.2015.
  */
 public class ProjectSettings {
+
+    private static final Logger logger = Logger.getLogger(ProjectSettings.class);
 
     private static final String SETTINGS_EEXTENSION = ".project";
 
@@ -91,7 +94,7 @@ public class ProjectSettings {
             props.load(fileReader);
             properties = props;
         } catch (IOException e) {
-            System.err.println("Error loading project settings!");
+            logger.error("Error loading project settings!");
         }
     }
 
@@ -99,7 +102,7 @@ public class ProjectSettings {
         try (FileWriter fileWriter = new FileWriter(settingsFile)) {
             properties.store(fileWriter, SETTINGS_COMMENTS);
         } catch (IOException e) {
-            System.err.println("Error saving project settings!");
+            logger.error("Error saving project settings!");
         }
     }
 
