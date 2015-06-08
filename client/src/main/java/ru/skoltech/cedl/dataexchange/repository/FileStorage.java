@@ -6,7 +6,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -66,30 +66,30 @@ public class FileStorage {
         }
     }
 
-    public void storeUserManagement(UserManagement userManagement, File outputFile) throws IOException {
+    public void storeUserManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
 
         StorageUtils.makeDirectory(outputFile.getParentFile());
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 
-            JAXBContext jc = JAXBContext.newInstance(UserManagement.class, User.class, Discipline.class);
+            JAXBContext jc = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
 
             Marshaller m = jc.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(userManagement, fos);
+            m.marshal(userRoleManagement, fos);
 
         } catch (JAXBException e) {
             throw new IOException("Error writing user management to XML file.", e);
         }
     }
 
-    public UserManagement loadUserManagement(File inputFile) throws IOException {
+    public UserRoleManagement loadUserManagement(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
-            JAXBContext ct = JAXBContext.newInstance(UserManagement.class, User.class, Discipline.class);
+            JAXBContext ct = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
 
             Unmarshaller u = ct.createUnmarshaller();
-            UserManagement userManagement = (UserManagement) u.unmarshal(inp);
-            return userManagement;
+            UserRoleManagement userRoleManagement = (UserRoleManagement) u.unmarshal(inp);
+            return userRoleManagement;
 
         } catch (JAXBException e) {
             throw new IOException("Error reading user management from XML file.", e);

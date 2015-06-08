@@ -1,6 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import javax.persistence.*;
 
@@ -18,7 +18,7 @@ public class Study {
 
     private SystemModel systemModel;
 
-    private UserManagement userManagement;
+    private UserRoleManagement userRoleManagement;
 
     public Study() {
     }
@@ -54,13 +54,13 @@ public class Study {
         this.systemModel = systemModel;
     }
 
-    @OneToOne(targetEntity = UserManagement.class, cascade = CascadeType.ALL)
-    public UserManagement getUserManagement() {
-        return userManagement;
+    @OneToOne(targetEntity = UserRoleManagement.class, cascade = CascadeType.ALL)
+    public UserRoleManagement getUserRoleManagement() {
+        return userRoleManagement;
     }
 
-    public void setUserManagement(UserManagement userManagement) {
-        this.userManagement = userManagement;
+    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
+        this.userRoleManagement = userRoleManagement;
     }
 
     @Override

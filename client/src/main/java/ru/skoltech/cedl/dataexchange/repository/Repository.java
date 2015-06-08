@@ -2,7 +2,7 @@ package ru.skoltech.cedl.dataexchange.repository;
 
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 /**
  * Created by D.Knoll on 25.05.2015.
@@ -19,7 +19,7 @@ public interface Repository {
 
     void storeStudy(Study study);
 
-    void storeUserManagement(UserManagement userManagement);
+    void storeUserManagement(UserRoleManagement userRoleManagement);
 
-    UserManagement loadUserManagement(long studyId) throws RepositoryException;
+    UserRoleManagement loadUserManagement(long studyId) throws RepositoryException;
 }
