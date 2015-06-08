@@ -7,7 +7,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Created by dknoll on 23/05/15.
  */
-public class UserManagementStorageTest {
+public class UserRoleManagementStorageTest {
 
     private static DatabaseStorage databaseStorage;
 
@@ -33,13 +33,13 @@ public class UserManagementStorageTest {
 
     @Test
     public void storeAndRetrieveUserManagement() throws RepositoryException {
-        UserManagement userManagement = DummyUserManagementBuilder.getModel();
-        DummyUserManagementBuilder.addUserWithAllPower(userManagement, Utils.getUserName());
+        UserRoleManagement userRoleManagement = DummyUserManagementBuilder.getModel();
+        DummyUserManagementBuilder.addUserWithAllPower(userRoleManagement, Utils.getUserName());
 
-        databaseStorage.storeUserManagement(userManagement);
+        databaseStorage.storeUserManagement(userRoleManagement);
 
-        UserManagement userManagement1 = databaseStorage.loadUserManagement(1L);
+        UserRoleManagement userRoleManagement1 = databaseStorage.loadUserManagement(1L);
 
-        Assert.assertEquals(userManagement, userManagement1);
+        Assert.assertEquals(userRoleManagement, userRoleManagement1);
     }
 }

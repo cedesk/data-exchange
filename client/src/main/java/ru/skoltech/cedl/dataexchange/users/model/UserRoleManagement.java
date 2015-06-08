@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
-public class UserManagement {
+public class UserRoleManagement {
 
-    private static final Logger logger = Logger.getLogger(UserManagement.class);
+    private static final Logger logger = Logger.getLogger(UserRoleManagement.class);
 
     @XmlTransient
     private long id;
@@ -33,7 +33,7 @@ public class UserManagement {
     @XmlElement(name = "discipline")
     private List<Discipline> disciplines = new LinkedList<>();
 
-    public UserManagement() {
+    public UserRoleManagement() {
     }
 
     @Id
@@ -66,7 +66,7 @@ public class UserManagement {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UserManagement{");
+        final StringBuilder sb = new StringBuilder("UserRoleManagement{");
         sb.append("users=").append(users);
         sb.append(", disciplines=").append(disciplines);
         sb.append('}');

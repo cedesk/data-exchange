@@ -12,7 +12,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.StudyFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
 import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.util.Observer;
 
@@ -82,7 +82,7 @@ public class Project {
 
     private void initializeStudy() {
         study = StudyFactory.makeStudy(projectName);
-        DummyUserManagementBuilder.addUserWithAllPower(study.getUserManagement(), Utils.getUserName());
+        DummyUserManagementBuilder.addUserWithAllPower(study.getUserRoleManagement(), Utils.getUserName());
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
     }
 
@@ -90,8 +90,8 @@ public class Project {
         return null;
     }
 
-    public UserManagement getUserManagement() {
-        return getStudy() != null ? getStudy().getUserManagement() : null;
+    public UserRoleManagement getUserManagement() {
+        return getStudy() != null ? getStudy().getUserRoleManagement() : null;
     }
 
     public String getProjectName() {

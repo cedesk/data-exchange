@@ -3,7 +3,7 @@ package ru.skoltech.cedl.dataexchange.repository;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -66,24 +66,24 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public void storeUserManagement(UserManagement userManagement) {
+    public void storeUserManagement(UserRoleManagement userRoleManagement) {
         EntityManager entityManager = getEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         transaction.begin();
-        entityManager.persist(userManagement);
+        entityManager.persist(userRoleManagement);
         transaction.commit();
     }
 
     @Override
-    public UserManagement loadUserManagement(long studyId) throws RepositoryException {
+    public UserRoleManagement loadUserManagement(long studyId) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
-        UserManagement userManagement = null;
+        UserRoleManagement userRoleManagement = null;
         try {
-            userManagement = entityManager.getReference(UserManagement.class, studyId);
+            userRoleManagement = entityManager.getReference(UserRoleManagement.class, studyId);
         } catch (NoResultException e) {
-            throw new RepositoryException("UserManagement not found.", e);
+            throw new RepositoryException("UserRoleManagement not found.", e);
         }
-        return userManagement;
+        return userRoleManagement;
     }
 
     @Override
