@@ -81,10 +81,10 @@
                                 </HBox>
                                 <ToolBar>
                                     <items>
-                                        <Button fx:id="newButton" mnemonicParsing="false" onAction="#newModel" text="New" />
+                                        <Button fx:id="newButton" mnemonicParsing="false" onAction="#newProject" text="New" />
                                         <Separator orientation="VERTICAL" />
-                                        <Button fx:id="openButton" mnemonicParsing="false" onAction="#loadModel" text="Open" />
-                                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#saveModel" text="Save" />
+                                        <Button fx:id="openButton" mnemonicParsing="false" onAction="#loadProject" text="Open" />
+                                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#saveProject" text="Save" />
                                     </items>
                                     <VBox.margin>
                                         <Insets top="10.0" />
