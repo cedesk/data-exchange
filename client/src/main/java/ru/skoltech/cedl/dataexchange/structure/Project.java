@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
@@ -49,16 +50,9 @@ public class Project {
         this.repositoryStateMachine = new RepositoryStateMachine();
     }
 
-    public String getUserName() {
-        return projectSettings.getUser();
-    }
-
-    public void setUserName(String userName) {
-        projectSettings.setUser(userName);
-    }
 
     public User getUser() {
-        String userName = getUserName();
+        String userName = ApplicationSettings.getLastUsedUser("admin");
         return getUserManagement().findUser(userName);
     }
 
@@ -87,7 +81,6 @@ public class Project {
 
     private void initializeStudy() {
         study = StudyFactory.makeStudy(projectName);
-        DummyUserManagementBuilder.addUserWithAllPower(study.getUserRoleManagement(), getUserManagement(), Utils.getUserName());
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
     }
 
@@ -95,11 +88,8 @@ public class Project {
         if (userManagement == null) {
             try {
                 userManagement = repository.loadUserManagement();
-                if(userManagement == null) {
-                    initializeUserManagement();
-                }
             } catch (RepositoryException e) {
-                logger.error("error loading user management", e);
+                logger.error("Error loading user management. recreating new user management.");
                 initializeUserManagement();
             }
         }
@@ -111,14 +101,16 @@ public class Project {
         try {
             repository.storeUserManagement(userManagement);
         } catch (RepositoryException re) {
-            logger.error("error storing user management", re);
+            logger.error("Error storing user management!");
         }
     }
 
     public UserRoleManagement getUserRoleManagement() {
         UserRoleManagement userRoleManagement = getStudy() != null ? getStudy().getUserRoleManagement() : null;
-        if(getStudy() != null && userRoleManagement == null) {
+        if (getStudy() != null && userRoleManagement == null) {
             userRoleManagement = DummyUserManagementBuilder.getUserRoleManagement();
+            DummyUserManagementBuilder.addUserWithAllPower(userRoleManagement, getUserManagement(), Utils.getUserName());
+
             getStudy().setUserRoleManagement(userRoleManagement);
             // TODO: improper naming, this enables saving of user-role-management
             markSystemModelModified();
@@ -152,6 +144,7 @@ public class Project {
         try {
             repository.storeStudy(study);
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+            projectSettings.setLastUsedRepository(repository.getUrl());
             return true;
         } catch (Exception e) {
             logger.error("Error storing study!", e);
@@ -175,7 +168,6 @@ public class Project {
         return study != null;
     }
 
-
     public boolean isActionPossible(RepositoryStateMachine.RepositoryActions action) {
         return repositoryStateMachine.isActionPossible(action);
     }
@@ -195,6 +187,8 @@ public class Project {
     }
 
     public void newStudy(String studyName) {
+        setProjectName(studyName);
+        initializeStudy();
         SystemModel system = DummySystemBuilder.getSystemModel(3);
         system.setName(studyName);
         study.setSystemModel(system);
@@ -203,8 +197,9 @@ public class Project {
     }
 
     public void importSystemModel(SystemModel systemModel) {
-        String studyName = systemModel.getName();
-        study.setName(studyName);
+        setProjectName(systemModel.getName());
+        initializeStudy();
+        study.setName(systemModel.getName());
         study.setSystemModel(systemModel);
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
     }

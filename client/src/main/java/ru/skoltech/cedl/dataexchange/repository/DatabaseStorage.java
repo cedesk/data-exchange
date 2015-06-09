@@ -108,6 +108,11 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
+    public String getUrl() {
+        return hostName;
+    }
+
+    @Override
     public UserManagement loadUserManagement() throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         UserManagement userManagement = null;

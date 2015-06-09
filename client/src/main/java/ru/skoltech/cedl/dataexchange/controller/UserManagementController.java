@@ -38,8 +38,8 @@ public class UserManagementController implements Initializable {
         Optional<String> userNameChoice = Dialogues.inputUserName();
         if (userNameChoice.isPresent()) {
             String userName = userNameChoice.get();
-            if (!Identifiers.validateNodeName(userName)) {
-                Dialogues.showError("Invalid name", Identifiers.getNameValidationDescription());
+            if (!Identifiers.validateUserName(userName)) {
+                Dialogues.showError("Invalid name", Identifiers.getUserNameValidationDescription());
                 return;
             }
             if (project.getUserRoleManagement().getDisciplineMap().containsKey(userName)) {

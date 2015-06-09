@@ -1,9 +1,6 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
-import ru.skoltech.cedl.dataexchange.structure.model.ElementModel;
-import ru.skoltech.cedl.dataexchange.structure.model.InstrumentModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -49,10 +46,22 @@ public class FileStorage {
 
             Unmarshaller u = ct.createUnmarshaller();
             SystemModel systemModel = (SystemModel) u.unmarshal(inp);
+
+            postProcessSystemModel(systemModel, null);
             return systemModel;
 
         } catch (JAXBException e) {
             throw new IOException("Error reading system model from XML file.", e);
+        }
+    }
+
+    private void postProcessSystemModel(ModelNode modelNode, ModelNode parent) {
+        modelNode.setParent(parent);
+        if (modelNode instanceof CompositeModelNode) {
+            CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
+            for (Object node : compositeModelNode.getSubNodes()) {
+                postProcessSystemModel((ModelNode) node, modelNode);
+            }
         }
     }
 
@@ -89,7 +98,6 @@ public class FileStorage {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("FileStorage{");
-        //sb.append("directory=").append(directory);
         sb.append('}');
         return sb.toString();
     }
