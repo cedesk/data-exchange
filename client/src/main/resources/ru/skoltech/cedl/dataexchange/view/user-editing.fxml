@@ -33,11 +33,6 @@
                                 <PropertyValueFactory property="fullName" />
                             </cellValueFactory>
                         </TableColumn>
-                        <TableColumn fx:id="userDisciplinesColumn" prefWidth="117.0" text="Disciplines">
-                            <cellValueFactory>
-                                <PropertyValueFactory property="disciplineNames" />
-                            </cellValueFactory>
-                        </TableColumn>
                     </columns>
                 </TableView>
                 <ToolBar layoutX="-11.0" layoutY="479.0" styleClass="sectionTitle" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">

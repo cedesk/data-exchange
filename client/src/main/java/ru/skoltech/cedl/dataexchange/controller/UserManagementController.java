@@ -72,7 +72,7 @@ public class UserManagementController implements Initializable {
     }
 
     private void updateUserTable() {
-        if (project.getUserRoleManagement() != null) {
+        if (project.getUserManagement() != null) {
             List<User> users = project.getUserManagement().getUsers();
             ObservableList<User> userList = FXCollections.observableList(users);
             userTable.setItems(userList);

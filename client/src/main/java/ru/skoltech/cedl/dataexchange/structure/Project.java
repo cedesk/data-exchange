@@ -95,21 +95,35 @@ public class Project {
         if (userManagement == null) {
             try {
                 userManagement = repository.loadUserManagement();
+                if(userManagement == null) {
+                    initializeUserManagement();
+                }
             } catch (RepositoryException e) {
                 logger.error("error loading user management", e);
-                userManagement = DummyUserManagementBuilder.getUserManagement();
-                try {
-                    repository.storeUserManagement(userManagement);
-                } catch (RepositoryException re) {
-                    re.printStackTrace();
-                }
+                initializeUserManagement();
             }
         }
         return userManagement;
     }
 
+    private void initializeUserManagement() {
+        userManagement = DummyUserManagementBuilder.getUserManagement();
+        try {
+            repository.storeUserManagement(userManagement);
+        } catch (RepositoryException re) {
+            logger.error("error storing user management", re);
+        }
+    }
+
     public UserRoleManagement getUserRoleManagement() {
-        return getStudy() != null ? getStudy().getUserRoleManagement() : null;
+        UserRoleManagement userRoleManagement = getStudy() != null ? getStudy().getUserRoleManagement() : null;
+        if(getStudy() != null && userRoleManagement == null) {
+            userRoleManagement = DummyUserManagementBuilder.getUserRoleManagement();
+            getStudy().setUserRoleManagement(userRoleManagement);
+            // TODO: improper naming, this enables saving of user-role-management
+            markSystemModelModified();
+        }
+        return userRoleManagement;
     }
 
     public String getProjectName() {
@@ -185,6 +199,13 @@ public class Project {
         system.setName(studyName);
         study.setSystemModel(system);
         study.setName(studyName);
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+    }
+
+    public void importSystemModel(SystemModel systemModel) {
+        String studyName = systemModel.getName();
+        study.setName(studyName);
+        study.setSystemModel(systemModel);
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
     }
 }

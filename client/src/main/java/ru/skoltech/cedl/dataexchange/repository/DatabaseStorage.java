@@ -98,9 +98,11 @@ public class DatabaseStorage implements Repository {
         EntityManager entityManager = getEntityManager();
         UserRoleManagement userRoleManagement = null;
         try {
-            userRoleManagement = entityManager.getReference(UserRoleManagement.class, studyId);
-        } catch (NoResultException e) {
-            throw new RepositoryException("UserRoleManagement not found.", e);
+            userRoleManagement = entityManager.find(UserRoleManagement.class, studyId);
+            if(userRoleManagement == null)
+                throw new RepositoryException("UserRoleManagement not found.");
+        } catch (Exception e) {
+            throw new RepositoryException("Loading UserRoleManagement failed.", e);
         }
         return userRoleManagement;
     }
@@ -110,9 +112,11 @@ public class DatabaseStorage implements Repository {
         EntityManager entityManager = getEntityManager();
         UserManagement userManagement = null;
         try {
-            userManagement = entityManager.getReference(UserManagement.class, 1L);
-        } catch (NoResultException e) {
-            throw new RepositoryException("UserManagement not found.", e);
+            userManagement = entityManager.find(UserManagement.class, 1L);
+            if(userManagement == null)
+                throw new RepositoryException("UserManagement not found.");
+        } catch (Exception e) {
+            throw new RepositoryException("Loading UserManagement failed.", e);
         }
         return userManagement;
     }
@@ -128,7 +132,6 @@ public class DatabaseStorage implements Repository {
         } catch (Exception e) {
             throw new RepositoryException("Storing SystemModel failed.", e);
         }
-
     }
 
     @Override
@@ -136,9 +139,11 @@ public class DatabaseStorage implements Repository {
         EntityManager entityManager = getEntityManager();
         SystemModel systemModel = null;
         try {
-            systemModel = entityManager.getReference(SystemModel.class, studyId);
-        } catch (NoResultException e) {
-            throw new RepositoryException("SystemModel not found.", e);
+            systemModel = entityManager.find(SystemModel.class, studyId);
+            if(systemModel == null)
+                throw new RepositoryException("SystemModel not found.");
+        } catch (Exception e) {
+            throw new RepositoryException("Loading SystemModel failed.", e);
         }
         return systemModel;
     }

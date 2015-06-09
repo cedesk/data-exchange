@@ -3,7 +3,11 @@ package ru.skoltech.cedl.dataexchange.controller;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextInputDialog;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 
+import java.io.File;
 import java.util.Optional;
 
 /**
@@ -54,6 +58,21 @@ public class Dialogues {
             return dialog.showAndWait();
         }
     */
+
+    static File chooseExportPath() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setInitialDirectory(StorageUtils.getAppDir());
+        directoryChooser.setTitle("Select export path.");
+        return directoryChooser.showDialog(null);
+    }
+
+    static File chooseImportFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(StorageUtils.getAppDir());
+        fileChooser.setTitle("Select import file.");
+        return fileChooser.showOpenDialog(null);
+    }
+
     static Optional<String> inputModelNodeName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Node Name");
