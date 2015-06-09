@@ -1,9 +1,8 @@
 package ru.skoltech.cedl.dataexchange;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by D.Knoll on 12.03.2015.
@@ -13,6 +12,12 @@ public class Utils {
     public static String getUserName() {
         String userName = System.getProperty("user.name");
         return userName.toLowerCase();
+    }
+
+    public static String getFormattedDateAndTime() {
+        Date now = new Date();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+        return dateFormat.format(now);
     }
 
     public static <T extends Comparable<T>> Set<T> symmetricDiffTwoLists(List<T> l1,
