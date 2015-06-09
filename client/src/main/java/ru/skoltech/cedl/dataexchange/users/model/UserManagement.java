@@ -66,7 +66,7 @@ public class UserManagement {
     public User findUser(String userName) {
         User user = getUserMap().get(userName);
         if (user == null) {
-            logger.warn("user not found: " + userName);
+            logger.error("user not found: " + userName);
         }
         return user;
     }

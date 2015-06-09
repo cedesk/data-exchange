@@ -27,4 +27,6 @@ public interface Repository {
     void storeUserManagement(UserManagement userManagement) throws RepositoryException;
 
     UserManagement loadUserManagement() throws RepositoryException;
+
+    String getUrl();
 }
