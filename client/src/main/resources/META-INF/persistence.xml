@@ -15,15 +15,17 @@
         <class>ru.skoltech.cedl.dataexchange.structure.model.ParameterModel</class>
 
         <class>ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement</class>
+        <class>ru.skoltech.cedl.dataexchange.users.model.UserManagement</class>
         <class>ru.skoltech.cedl.dataexchange.users.model.User</class>
         <class>ru.skoltech.cedl.dataexchange.users.model.Discipline</class>
+        <class>ru.skoltech.cedl.dataexchange.users.model.UserDiscipline</class>
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/cedesk_dev"/>
             <property name="javax.persistence.jdbc.user" value="cedesk"/>
             <property name="javax.persistence.jdbc.password" value="cedesk"/>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <!--<property name="hibernate.show_sql" value="true"/>-->
             <property name="hibernate.format_sql" value="true"/>

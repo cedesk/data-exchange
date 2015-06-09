@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.repository;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import javax.persistence.*;
@@ -66,16 +67,34 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public void storeUserManagement(UserRoleManagement userRoleManagement) {
-        EntityManager entityManager = getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
-        entityManager.persist(userRoleManagement);
-        transaction.commit();
+    public void storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException {
+        try {
+            EntityManager entityManager = getEntityManager();
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
+            entityManager.persist(userRoleManagement);
+            transaction.commit();
+        } catch (Exception e) {
+            throw new RepositoryException("Storing UserRoleManagement failed.", e);
+        }
     }
 
     @Override
-    public UserRoleManagement loadUserManagement(long studyId) throws RepositoryException {
+    public void storeUserManagement(UserManagement userManagement) throws RepositoryException {
+        try {
+            EntityManager entityManager = getEntityManager();
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
+            entityManager.persist(userManagement);
+            transaction.commit();
+        } catch (Exception e) {
+            throw new RepositoryException("Storing UserManagement failed.", e);
+        }
+
+    }
+
+    @Override
+    public UserRoleManagement loadUserRoleManagement(long studyId) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         UserRoleManagement userRoleManagement = null;
         try {
@@ -87,12 +106,29 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public void storeSystemModel(SystemModel modelNode) {
+    public UserManagement loadUserManagement() throws RepositoryException {
         EntityManager entityManager = getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
-        entityManager.persist(modelNode);
-        transaction.commit();
+        UserManagement userManagement = null;
+        try {
+            userManagement = entityManager.getReference(UserManagement.class, 1L);
+        } catch (NoResultException e) {
+            throw new RepositoryException("UserManagement not found.", e);
+        }
+        return userManagement;
+    }
+
+    @Override
+    public void storeSystemModel(SystemModel modelNode) throws RepositoryException {
+        try {
+            EntityManager entityManager = getEntityManager();
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
+            entityManager.persist(modelNode);
+            transaction.commit();
+        } catch (Exception e) {
+            throw new RepositoryException("Storing SystemModel failed.", e);
+        }
+
     }
 
     @Override
@@ -124,7 +160,9 @@ public class DatabaseStorage implements Repository {
 
     private void releaseEntityManager() {
         em.close();
+        em = null;
         emf.close();
+        emf = null;
     }
 
     @Override

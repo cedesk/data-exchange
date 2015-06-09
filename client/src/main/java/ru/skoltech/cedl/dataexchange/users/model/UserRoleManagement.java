@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
  * Created by D.Knoll on 01.05.2015.
  */
 @XmlRootElement
-@XmlType(propOrder = {"disciplines", "users"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
@@ -25,15 +24,28 @@ public class UserRoleManagement {
     @XmlTransient
     private long id;
 
-    @XmlElementWrapper(name = "users")
-    @XmlElement(name = "user")
-    private List<User> users = new LinkedList<>();
-
     @XmlElementWrapper(name = "disciplines")
     @XmlElement(name = "discipline")
     private List<Discipline> disciplines = new LinkedList<>();
 
+    private List<UserDiscipline> userDisciplines = new LinkedList<>();
+
     public UserRoleManagement() {
+    }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @OneToMany(targetEntity = UserDiscipline.class, mappedBy = "userRoleManagement")
+    public List<UserDiscipline> getUserDisciplines() {
+        return userDisciplines;
+    }
+
+    public void setUserDisciplines(List<UserDiscipline> userDisciplines) {
+        this.userDisciplines = userDisciplines;
+    }
+
+    public void addUserDiscipline(User user, Discipline discipline) {
+        UserDiscipline e = new UserDiscipline(this, user, discipline);
+        userDisciplines.add(e);
     }
 
     @Id
@@ -46,16 +58,8 @@ public class UserRoleManagement {
         this.id = id;
     }
 
-    @OneToMany(targetEntity = User.class, cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<User> users) {
-        this.users = users;
-    }
-
-    @OneToMany(targetEntity = Discipline.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @OneToMany(targetEntity = Discipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<Discipline> getDisciplines() {
         return disciplines;
     }
@@ -67,16 +71,10 @@ public class UserRoleManagement {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("UserRoleManagement{");
-        sb.append("users=").append(users);
-        sb.append(", disciplines=").append(disciplines);
+        sb.append("disciplines=").append(disciplines);
+        sb.append("userDisciplines").append(userDisciplines);
         sb.append('}');
         return sb.toString();
-    }
-
-    @Transient
-    public Map<String, User> getUserMap() {
-        return users.stream().collect(
-                Collectors.toMap(User::getUserName, Function.<User>identity()));
     }
 
     @Transient
@@ -85,11 +83,5 @@ public class UserRoleManagement {
                 Collectors.toMap(Discipline::getName, Function.<Discipline>identity()));
     }
 
-    public User findUser(String userName) {
-        User user = getUserMap().get(userName);
-        if (user == null) {
-            logger.warn("user not found: " + userName);
-        }
-        return user;
-    }
+
 }

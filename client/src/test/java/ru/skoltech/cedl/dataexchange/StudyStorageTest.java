@@ -17,7 +17,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class StudyStorageTest {
 
-    private static DatabaseStorage databaseStorage;
+    private DatabaseStorage databaseStorage;
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {

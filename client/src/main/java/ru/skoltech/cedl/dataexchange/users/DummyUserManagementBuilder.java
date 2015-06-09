@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.users;
 
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 /**
@@ -9,50 +10,56 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
  */
 public class DummyUserManagementBuilder {
 
-    public static UserRoleManagement getModel() {
-        UserRoleManagement um = new UserRoleManagement();
-        Discipline orbitDiscipline = new Discipline("Orbit");
-        Discipline payloadDiscipline = new Discipline("Payload");
-        Discipline aocsDiscipline = new Discipline("AOCS");
-        Discipline powerDiscipline = new Discipline("Power");
-        Discipline thermalDiscipline = new Discipline("Thermal");
-        Discipline communicationDiscipline = new Discipline("Communication");
-        Discipline propulsionDiscipline = new Discipline("Propulsion");
-        Discipline missionDiscipline = new Discipline("Mission");
+    private static final String ADMIN = "admin";
+    private static final String EXPERT = "expert";
 
-        um.getDisciplines().add(Discipline.ADMIN_DISCIPLINE);
-        um.getDisciplines().add(aocsDiscipline);
-        um.getDisciplines().add(orbitDiscipline);
-        um.getDisciplines().add(payloadDiscipline);
-        um.getDisciplines().add(powerDiscipline);
-        um.getDisciplines().add(thermalDiscipline);
-        um.getDisciplines().add(communicationDiscipline);
-        um.getDisciplines().add(propulsionDiscipline);
-        um.getDisciplines().add(missionDiscipline);
+    private static User admin = new User(ADMIN, "Laboratory Administrator", "");
+    private static User expert = new User(EXPERT, "Discipline Expert", "");
 
-        User admin = new User("admin", "Team Lead", "");
+    public static UserManagement getUserManagement() {
+        UserManagement userManagement = new UserManagement();
         admin.getDisciplines().add(Discipline.ADMIN_DISCIPLINE);
-        um.getUsers().add(admin);
+        userManagement.getUsers().add(admin);
 
-        User expert = new User("expert", "Discipline Expert", "");
-        expert.getDisciplines().add(missionDiscipline);
-        expert.getDisciplines().add(orbitDiscipline);
-        expert.getDisciplines().add(payloadDiscipline);
-        um.getUsers().add(expert);
-
-        return um;
+        userManagement.getUsers().add(expert);
+        return userManagement;
     }
 
-    public static void addUserWithAllPower(UserRoleManagement userRoleManagement, String userName) {
-        User godfather = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
+    public static UserRoleManagement getUserRoleManagement() {
 
+        UserRoleManagement urm = new UserRoleManagement();
+        Discipline.ADMIN_DISCIPLINE.setUserRoleManagement(urm);
+        Discipline orbitDiscipline = new Discipline("Orbit", urm);
+        Discipline payloadDiscipline = new Discipline("Payload", urm);
+        Discipline aocsDiscipline = new Discipline("AOCS", urm);
+        Discipline powerDiscipline = new Discipline("Power", urm);
+        Discipline thermalDiscipline = new Discipline("Thermal", urm);
+        Discipline communicationDiscipline = new Discipline("Communication", urm);
+        Discipline propulsionDiscipline = new Discipline("Propulsion", urm);
+        Discipline missionDiscipline = new Discipline("Mission", urm);
+
+        urm.getDisciplines().add(Discipline.ADMIN_DISCIPLINE);
+        urm.getDisciplines().add(aocsDiscipline);
+        urm.getDisciplines().add(orbitDiscipline);
+        urm.getDisciplines().add(payloadDiscipline);
+        urm.getDisciplines().add(powerDiscipline);
+        urm.getDisciplines().add(thermalDiscipline);
+        urm.getDisciplines().add(communicationDiscipline);
+        urm.getDisciplines().add(propulsionDiscipline);
+        urm.getDisciplines().add(missionDiscipline);
+
+        urm.addUserDiscipline(expert, missionDiscipline);
+
+        return urm;
+    }
+
+    public static void addUserWithAllPower(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName) {
+        User godfather = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
         godfather.getDisciplines().add(Discipline.ADMIN_DISCIPLINE);
-/*
-        for (Discipline disc : userRoleManagement.getDisciplines()) {
-            godfather.getDisciplines().add(disc);
-        }
-*/
-//        godfather.getDisciplines().add(new Discipline("AOCS"));
-        userRoleManagement.getUsers().add(godfather);
+
+        userManagement.getUsers().add(godfather);
+
+        userRoleManagement.addUserDiscipline(godfather, Discipline.ADMIN_DISCIPLINE);
+
     }
 }

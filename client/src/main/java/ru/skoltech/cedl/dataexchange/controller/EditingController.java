@@ -19,7 +19,7 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
-import ru.skoltech.cedl.dataexchange.users.UserManagementUtil;
+import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 
 import java.net.URL;
 import java.util.Map;
@@ -157,7 +157,7 @@ public class EditingController implements Initializable {
         modelNode.diffParameters(item.getRemoteValue());
         viewParameters.displayParameters(modelNode.getParameters());
 
-        boolean editable = UserManagementUtil.checkAccess(project.getSystemModel(), modelNode, project.getUser(), project.getUserManagement());
+        boolean editable = UserRoleUtil.checkAccess(project.getSystemModel(), modelNode, project.getUser(), project.getUserRoleManagement());
         logger.info("selected node: " + treeItem.getValue().getName() + ", editable: " + editable);
         parameterTable.setEditable(editable);
         parameterTable.autosize();
@@ -169,7 +169,7 @@ public class EditingController implements Initializable {
 
     public void updateView() {
 
-        boolean isAdmin = UserManagementUtil.isAdmin(project.getUser());
+        boolean isAdmin = UserRoleUtil.isAdmin(project.getUser());
         structureTree.setEditable(isAdmin);
 
         //if (project.getRemoteModel() == null) {

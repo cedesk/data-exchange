@@ -12,6 +12,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.StudyFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
 import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.util.Observer;
@@ -22,7 +23,9 @@ import java.util.Observer;
 public class Project {
 
     public static final String DEFAULT_PROJECT_NAME = "defaultProject";
+
     private static Logger logger = Logger.getLogger(Project.class);
+
     private ProjectSettings projectSettings;
 
     private String projectName;
@@ -32,6 +35,8 @@ public class Project {
     private Study study;
 
     private RepositoryStateMachine repositoryStateMachine;
+
+    private UserManagement userManagement;
 
     public Project() {
         this(DEFAULT_PROJECT_NAME);
@@ -82,15 +87,28 @@ public class Project {
 
     private void initializeStudy() {
         study = StudyFactory.makeStudy(projectName);
-        DummyUserManagementBuilder.addUserWithAllPower(study.getUserRoleManagement(), Utils.getUserName());
+        DummyUserManagementBuilder.addUserWithAllPower(study.getUserRoleManagement(), getUserManagement(), Utils.getUserName());
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
     }
 
-    public UnitManagement getUnitManagement() {
-        return null;
+    public UserManagement getUserManagement() {
+        if (userManagement == null) {
+            try {
+                userManagement = repository.loadUserManagement();
+            } catch (RepositoryException e) {
+                logger.error("error loading user management", e);
+                userManagement = DummyUserManagementBuilder.getUserManagement();
+                try {
+                    repository.storeUserManagement(userManagement);
+                } catch (RepositoryException re) {
+                    re.printStackTrace();
+                }
+            }
+        }
+        return userManagement;
     }
 
-    public UserRoleManagement getUserManagement() {
+    public UserRoleManagement getUserRoleManagement() {
         return getStudy() != null ? getStudy().getUserRoleManagement() : null;
     }
 
@@ -109,7 +127,9 @@ public class Project {
     public String toString() {
         final StringBuilder sb = new StringBuilder("Project{");
         sb.append("projectName='").append(projectName).append('\'');
+        sb.append(", projectSettings=").append(projectSettings);
         sb.append(", repository=").append(repository);
+        sb.append(", repositoryStateMachine=").append(repositoryStateMachine);
         sb.append('}');
         return sb.toString();
     }
@@ -120,7 +140,7 @@ public class Project {
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
             return true;
         } catch (Exception e) {
-            logger.error("Error loading study!", e);
+            logger.error("Error storing study!", e);
         }
         return false;
     }

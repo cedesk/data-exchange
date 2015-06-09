@@ -10,9 +10,9 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 /**
  * Created by dknoll on 17/05/15.
  */
-public class UserManagementUtil {
+public class UserRoleUtil {
 
-    private static final Logger logger = Logger.getLogger(UserManagementUtil.class);
+    private static final Logger logger = Logger.getLogger(UserRoleUtil.class);
 
     public static boolean checkAccess(SystemModel systemModel, ModelNode someModelNode, User user, UserRoleManagement userRoleManagement) {
 
