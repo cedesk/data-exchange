@@ -22,18 +22,8 @@ import java.io.IOException;
  */
 public class FileStorage {
 
-    private File directory;
 
-    public FileStorage(File projectDirectory) {
-        this.directory = projectDirectory;
-    }
-
-    public File getDirectory() {
-        return directory;
-    }
-
-    public void setDirectory(File directory) {
-        this.directory = directory;
+    public FileStorage() {
     }
 
     public void storeSystemModel(SystemModel systemModel, File outputFile) throws IOException {
@@ -99,7 +89,7 @@ public class FileStorage {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("FileStorage{");
-        sb.append("directory=").append(directory);
+        //sb.append("directory=").append(directory);
         sb.append('}');
         return sb.toString();
     }
