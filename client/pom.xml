@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.skoltech.cedl</groupId>
     <artifactId>dataexchange-client</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <properties>
         <jar.final.name>cedesk-client</jar.final.name>
         <main.class>ru.skoltech.cedl.dataexchange.ClientApplication</main.class>
