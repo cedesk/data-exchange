@@ -14,6 +14,13 @@ public class RepositoryStateMachine extends Observable {
         state = RepositoryState.INITIAL;
     }
 
+    @Override
+    public String toString() {
+        return "RepositoryStateMachine{" +
+                "state=" + state +
+                '}';
+    }
+
     public RepositoryState getState() {
         return state;
     }

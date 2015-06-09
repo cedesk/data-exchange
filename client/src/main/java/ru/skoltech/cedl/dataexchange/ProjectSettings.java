@@ -106,4 +106,8 @@ public class ProjectSettings {
         }
     }
 
+    @Override
+    public String toString() {
+        return "ProjectSettings{projectName='" + projectName + '\'' + ", properties=" + properties + ", settingsFile=" + settingsFile + '}';
+    }
 }
