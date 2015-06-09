@@ -76,7 +76,7 @@ public class MainController implements Initializable {
 
     private RepositoryWatcher repositoryWatcher;
 
-    public void newModel(ActionEvent actionEvent) {
+    public void newProject(ActionEvent actionEvent) {
         Optional<String> choice = Dialogues.inputStudyName("SkolTechSat");
         if (choice.isPresent()) {
             // TODO: validate name not to exist already
@@ -85,7 +85,7 @@ public class MainController implements Initializable {
         }
     }
 
-    public void loadModel(ActionEvent actionEvent) {
+    public void loadProject(ActionEvent actionEvent) {
         try {
             boolean success = project.loadStudy();
             if (success) {
@@ -98,7 +98,7 @@ public class MainController implements Initializable {
         updateView();
     }
 
-    public void saveModel(ActionEvent actionEvent) {
+    public void saveProject(ActionEvent actionEvent) {
         try {
             boolean success = project.storeStudy();
             if (success) {
@@ -163,7 +163,7 @@ public class MainController implements Initializable {
         if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
             String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
             project.setProjectName(projectName);
-            loadModel(null);
+            loadProject(null);
             //makeRepositoryWatcher();
         }
 
