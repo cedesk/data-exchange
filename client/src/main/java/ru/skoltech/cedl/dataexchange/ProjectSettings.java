@@ -94,7 +94,7 @@ public class ProjectSettings {
             props.load(fileReader);
             properties = props;
         } catch (IOException e) {
-            logger.error("Error loading project settings!");
+            logger.error("Error loading project settings! " + e.getMessage());
         }
     }
 
@@ -102,7 +102,7 @@ public class ProjectSettings {
         try (FileWriter fileWriter = new FileWriter(settingsFile)) {
             properties.store(fileWriter, SETTINGS_COMMENTS);
         } catch (IOException e) {
-            logger.error("Error saving project settings!");
+            logger.error("Error saving project settings! " + e.getMessage());
         }
     }
 

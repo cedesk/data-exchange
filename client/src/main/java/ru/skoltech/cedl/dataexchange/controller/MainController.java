@@ -17,11 +17,15 @@ import javafx.scene.control.Tab;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Observable;
@@ -166,7 +170,6 @@ public class MainController implements Initializable {
             loadProject(null);
             //makeRepositoryWatcher();
         }
-
     }
 
     private void updateView() {
@@ -196,7 +199,6 @@ public class MainController implements Initializable {
             }
         });
         repositoryWatcher.start();
-
     }
 
     public void updateRemoteModel() {
@@ -215,4 +217,41 @@ public class MainController implements Initializable {
         }
     }
 
+    public void importProject(ActionEvent actionEvent) {
+        // TODO: warn user about replacing current project
+
+        File importFile = Dialogues.chooseImportFile();
+        if (importFile != null) {
+            FileStorage fs = new FileStorage();
+            try {
+                SystemModel systemModel = fs.loadSystemModel(importFile);
+                project.importSystemModel(systemModel);
+                updateView();
+            } catch (IOException e) {
+                logger.error("error importing model from file");
+            }
+        } else {
+            logger.info("user aborted import file selection.");
+        }
+    }
+
+    public void exportProject(ActionEvent actionEvent) {
+        File exportPath = Dialogues.chooseExportPath();
+        if (exportPath != null) {
+            String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
+            File outputFile = new File(exportPath, outputFileName);
+            FileStorage fs = new FileStorage();
+            try {
+                fs.storeSystemModel(project.getSystemModel(), outputFile);
+            } catch (IOException e) {
+                logger.error("error exporting model to file", e);
+            }
+        } else {
+            logger.info("user aborted export path selection.");
+        }
+    }
+
+    public void quit(ActionEvent actionEvent) {
+        Platform.exit();
+    }
 }

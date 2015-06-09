@@ -11,114 +11,146 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
-        <BorderPane fx:id="layout" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <center>
+      <VBox prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <MenuBar>
+              <menus>
+                <Menu mnemonicParsing="false" text="Project">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="New..." onAction="#newProject" />
+                        <MenuItem mnemonicParsing="false" text="Load" onAction="#loadProject" />
+                        <MenuItem mnemonicParsing="false" text="Save" onAction="#saveProject" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" text="Import" onAction="#importProject" />
+                        <MenuItem mnemonicParsing="false" text="Export" onAction="#exportProject" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" text="Quit" onAction="#quit" />
+                  </items>
+                </Menu>
+<!--
+                <Menu mnemonicParsing="false" text="Edit">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Settings" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="About" />
+                  </items>
+                </Menu>
+-->
+              </menus>
+            </MenuBar>
+              <BorderPane fx:id="layout" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="600.0" prefWidth="800.0">
+                  <center>
             </center>
-            <top>
-                <HBox prefHeight="48.0" prefWidth="800.0" BorderPane.alignment="CENTER">
-                    <children>
-                        <ImageView fitHeight="85.0" fitWidth="129.0">
-                            <image>
-                                <Image url="@/Logo0.png" />
-                            </image>
-                        </ImageView>
-                        <VBox>
-                            <children>
-                                <HBox>
-                                    <children>
-                                        <Label text="Design Study:">
-                                            <font>
-                                                <Font size="14.0" />
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets right="4.0" />
-                                            </HBox.margin>
-                                        </Label>
-                                        <Label fx:id="studyNameLabel" layoutX="10.0" layoutY="10.0" text="SkoltechSat">
-                                            <font>
-                                                <Font size="14.0" />
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets />
-                                            </HBox.margin>
-                                        </Label>
-                                        <Label text="User:">
-                                            <font>
-                                                <Font size="14.0" />
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets left="20.0" right="4.0" />
-                                            </HBox.margin>
-                                        </Label>
-                                        <Label fx:id="userNameLabel" text="Dominik">
-                                            <font>
-                                                <Font size="14.0" />
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets />
-                                            </HBox.margin>
-                                        </Label>
-                                        <Label layoutX="97.0" layoutY="10.0" text="Role:">
-                                            <font>
-                                                <Font size="14.0" />
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets left="20.0" right="4.0" />
-                                            </HBox.margin>
-                                        </Label>
-                                        <Label fx:id="userRoleLabel" layoutX="211.0" layoutY="10.0" text="Team Leader">
-                                            <font>
-                                                <Font size="14.0" />
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets />
-                                            </HBox.margin>
-                                        </Label>
-                                    </children>
-                                    <VBox.margin>
-                                        <Insets top="10.0" />
-                                    </VBox.margin>
-                                </HBox>
-                                <ToolBar>
-                                    <items>
-                                        <Button fx:id="newButton" mnemonicParsing="false" onAction="#newProject" text="New" />
-                                        <Separator orientation="VERTICAL" />
-                                        <Button fx:id="openButton" mnemonicParsing="false" onAction="#loadProject" text="Open" />
-                                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#saveProject" text="Save" />
-                                    </items>
-                                    <VBox.margin>
-                                        <Insets top="10.0" />
-                                    </VBox.margin>
-                                </ToolBar>
-                            </children>
-                            <padding>
-                                <Insets left="10.0" />
-                            </padding>
-                        </VBox>
-                    </children>
-                </HBox>
-            </top>
-            <bottom>
-                <AnchorPane prefHeight="20.0" BorderPane.alignment="CENTER">
-                    <children>
-                        <Label fx:id="statusbarLabel" prefHeight="20.0" prefWidth="703.0" text="Statusbar" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                  <CheckBox fx:id="statusbarRepositoryNewer" disable="true" layoutX="713.0" layoutY="2.0" mnemonicParsing="false" text="Repository Newer" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                  <CheckBox fx:id="workingCopyModified" disable="true" layoutX="553.0" mnemonicParsing="false" text="Local modification" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                    </children>
-                </AnchorPane>
-            </bottom>
-         <center>
-            <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
-              <tabs>
-                <Tab fx:id="modelTab" text="Model">
+                  <top>
+                      <HBox prefHeight="48.0" prefWidth="800.0" BorderPane.alignment="CENTER">
+                          <children>
+                              <ImageView fitHeight="85.0" fitWidth="129.0">
+                                  <image>
+                                      <Image url="@/Logo0.png" />
+                                  </image>
+                              </ImageView>
+                              <VBox>
+                                  <children>
+                                      <HBox>
+                                          <children>
+                                              <Label text="Design Study:">
+                                                  <font>
+                                                      <Font size="14.0" />
+                                                  </font>
+                                                  <HBox.margin>
+                                                      <Insets right="4.0" />
+                                                  </HBox.margin>
+                                              </Label>
+                                              <Label fx:id="studyNameLabel" layoutX="10.0" layoutY="10.0" text="SkoltechSat">
+                                                  <font>
+                                                      <Font size="14.0" />
+                                                  </font>
+                                                  <HBox.margin>
+                                                      <Insets />
+                                                  </HBox.margin>
+                                              </Label>
+                                              <Label text="User:">
+                                                  <font>
+                                                      <Font size="14.0" />
+                                                  </font>
+                                                  <HBox.margin>
+                                                      <Insets left="20.0" right="4.0" />
+                                                  </HBox.margin>
+                                              </Label>
+                                              <Label fx:id="userNameLabel" text="Dominik">
+                                                  <font>
+                                                      <Font size="14.0" />
+                                                  </font>
+                                                  <HBox.margin>
+                                                      <Insets />
+                                                  </HBox.margin>
+                                              </Label>
+                                              <Label layoutX="97.0" layoutY="10.0" text="Roles:">
+                                                  <font>
+                                                      <Font size="14.0" />
+                                                  </font>
+                                                  <HBox.margin>
+                                                      <Insets left="20.0" right="4.0" />
+                                                  </HBox.margin>
+                                              </Label>
+                                              <Label fx:id="userRoleLabel" layoutX="211.0" layoutY="10.0" text="Team Leader">
+                                                  <font>
+                                                      <Font size="14.0" />
+                                                  </font>
+                                                  <HBox.margin>
+                                                      <Insets />
+                                                  </HBox.margin>
+                                              </Label>
+                                          </children>
+                                          <VBox.margin>
+                                              <Insets top="10.0" />
+                                          </VBox.margin>
+                                      </HBox>
+                                      <ToolBar>
+                                          <items>
+                                              <Button fx:id="newButton" mnemonicParsing="true" onAction="#newProject" text="New" />
+                                              <Separator orientation="VERTICAL" />
+                                              <Button fx:id="openButton" mnemonicParsing="true" onAction="#loadProject" text="Open" />
+                                              <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="true" onAction="#saveProject" text="Save" />
+                                          </items>
+                                          <VBox.margin>
+                                              <Insets top="10.0" />
+                                          </VBox.margin>
+                                      </ToolBar>
+                                  </children>
+                                  <padding>
+                                      <Insets left="10.0" />
+                                  </padding>
+                              </VBox>
+                          </children>
+                      </HBox>
+                  </top>
+                  <bottom>
+                      <AnchorPane prefHeight="20.0" BorderPane.alignment="CENTER">
+                          <children>
+                              <Label fx:id="statusbarLabel" prefHeight="20.0" prefWidth="703.0" text="Statusbar" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <CheckBox fx:id="statusbarRepositoryNewer" disable="true" layoutX="713.0" layoutY="2.0" mnemonicParsing="false" text="Repository Newer" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <CheckBox fx:id="workingCopyModified" disable="true" layoutX="553.0" mnemonicParsing="false" text="Local modification" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                          </children>
+                      </AnchorPane>
+                  </bottom>
+               <center>
+                  <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+                    <tabs>
+                      <Tab fx:id="modelTab" text="Model">
                 </Tab>
-                <Tab fx:id="usersTab" text="Users">
+                      <Tab fx:id="usersTab" text="Users">
                 </Tab>
-                <Tab fx:id="unitsTab" disable="true" text="Units">
+                      <Tab fx:id="unitsTab" disable="true" text="Units">
                 </Tab>
-              </tabs>
-            </TabPane>
-         </center>
-        </BorderPane>
+                    </tabs>
+                  </TabPane>
+               </center>
+              </BorderPane>
+         </children>
+      </VBox>
     </children>
 </AnchorPane>
