@@ -25,7 +25,7 @@ public class StudyFactory {
 
     private static UserRoleManagement getEmptyUserManagement() {
         // TODO: remove dummy, make empty
-        return DummyUserManagementBuilder.getModel();
+        return DummyUserManagementBuilder.getUserRoleManagement();
     }
 
 }

@@ -42,7 +42,7 @@ public class UserManagementController implements Initializable {
                 Dialogues.showError("Invalid name", Identifiers.getNameValidationDescription());
                 return;
             }
-            if (project.getUserManagement().getDisciplineMap().containsKey(userName)) {
+            if (project.getUserRoleManagement().getDisciplineMap().containsKey(userName)) {
                 Dialogues.showError("Duplicate user name", "There is already a user named like that!");
             } else {
                 // TODO: use factory
@@ -72,7 +72,7 @@ public class UserManagementController implements Initializable {
     }
 
     private void updateUserTable() {
-        if (project.getUserManagement() != null) {
+        if (project.getUserRoleManagement() != null) {
             List<User> users = project.getUserManagement().getUsers();
             ObservableList<User> userList = FXCollections.observableList(users);
             userTable.setItems(userList);
@@ -80,8 +80,8 @@ public class UserManagementController implements Initializable {
     }
 
     private void updateDisciplineTable() {
-        if (project.getUserManagement() != null) {
-            List<Discipline> disciplines = project.getUserManagement().getDisciplines();
+        if (project.getUserRoleManagement() != null) {
+            List<Discipline> disciplines = project.getUserRoleManagement().getDisciplines();
             ObservableList<Discipline> disciplineList = FXCollections.observableList(disciplines);
             disciplinesTable.setItems(disciplineList);
         }

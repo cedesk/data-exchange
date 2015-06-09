@@ -26,6 +26,8 @@ public class Discipline {
     @XmlAttribute
     private boolean builtIn = false;
 
+    private UserRoleManagement userRoleManagement;
+
     public Discipline() {
     }
 
@@ -34,8 +36,9 @@ public class Discipline {
         this.builtIn = builtIn;
     }
 
-    public Discipline(String name) {
+    public Discipline(String name, UserRoleManagement userRoleManagement) {
         this.name = name;
+        this.userRoleManagement = userRoleManagement;
     }
 
     @Id
@@ -98,5 +101,14 @@ public class Discipline {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (builtIn ? 1 : 0);
         return result;
+    }
+
+    @ManyToOne(optional = false, targetEntity = UserRoleManagement.class)
+    public UserRoleManagement getUserRoleManagement() {
+        return userRoleManagement;
+    }
+
+    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
+        this.userRoleManagement = userRoleManagement;
     }
 }
