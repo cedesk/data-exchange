@@ -8,11 +8,15 @@ import java.util.regex.Pattern;
 public class Identifiers {
     private static final Pattern NAME_RULE = Pattern.compile("^[a-zA-Z]{1,}$");
 
-    private static final Pattern USER_NAME_RULE = Pattern.compile("^[a-zA-Z]{1,}[\\.\\-_]?[a-zA-Z]{1,}$");
+    private static final Pattern USER_NAME_RULE = Pattern.compile("^[a-z]{1,}[\\.\\-_]?[a-z]{1,}$");
 
-    private static final String NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphanumeric characters!";
+    private static final Pattern PROJECT_NAME_RULE = Pattern.compile("^[a-zA-Z]{2,}[\\-]?[a-zA-Z0-9]{1,}$");
 
-    private static final String USER_NAME_RULE_DESCRIPTION = "User names must be at least of 1 character and contain only alphanumeric characters!";
+    private static final String NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphabetic characters!";
+
+    private static final String USER_NAME_RULE_DESCRIPTION = "User names must be at least of 1 character and contain only alphanumeric lowercase characters and '_.-' inside!";
+
+    private static final String PROJECT_NAME_RULE_DESCRIPTION = "Project names must be at least of 4 character and contain only alphanumeric characters and - inside!";
 
     public static boolean validateNodeName(String nodeName) {
         if (nodeName.length() < 1) return false;
@@ -24,6 +28,11 @@ public class Identifiers {
         return USER_NAME_RULE.matcher(userName).matches();
     }
 
+    public static boolean validateProjectName(String projectName) {
+        if (projectName.length() < 5) return false;
+        return PROJECT_NAME_RULE.matcher(projectName).matches();
+    }
+
     public static String getNameValidationDescription() {
         return NAME_RULE_DESCRIPTION;
     }
@@ -32,4 +41,7 @@ public class Identifiers {
         return USER_NAME_RULE_DESCRIPTION;
     }
 
+    public static String getProjectNameValidationDescription() {
+        return PROJECT_NAME_RULE_DESCRIPTION;
+    }
 }

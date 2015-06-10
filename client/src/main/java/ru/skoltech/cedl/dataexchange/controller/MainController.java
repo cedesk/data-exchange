@@ -16,6 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
@@ -81,10 +82,14 @@ public class MainController implements Initializable {
     private RepositoryWatcher repositoryWatcher;
 
     public void newProject(ActionEvent actionEvent) {
-        Optional<String> choice = Dialogues.inputStudyName("SkolTechSat");
+        Optional<String> choice = Dialogues.inputStudyName(Project.DEFAULT_PROJECT_NAME);
         if (choice.isPresent()) {
-            // TODO: validate name not to exist already
-            project.newStudy(choice.get());
+            String projectName = choice.get();
+            if (!Identifiers.validateProjectName(projectName)) {
+                Dialogues.showError("Invalid name", Identifiers.getProjectNameValidationDescription());
+                return;
+            }
+            project.newStudy(projectName);
             updateView();
         }
     }
