@@ -3,7 +3,6 @@ package ru.skoltech.cedl.dataexchange.structure;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
-import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
@@ -11,7 +10,7 @@ import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.StudyFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
+import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -97,7 +96,7 @@ public class Project {
     }
 
     private void initializeUserManagement() {
-        userManagement = DummyUserManagementBuilder.getUserManagement();
+        userManagement = UserManagementFactory.getUserManagement();
         try {
             repository.storeUserManagement(userManagement);
         } catch (RepositoryException re) {
@@ -108,12 +107,8 @@ public class Project {
     public UserRoleManagement getUserRoleManagement() {
         UserRoleManagement userRoleManagement = getStudy() != null ? getStudy().getUserRoleManagement() : null;
         if (getStudy() != null && userRoleManagement == null) {
-            userRoleManagement = DummyUserManagementBuilder.getUserRoleManagement();
-            DummyUserManagementBuilder.addUserWithAllPower(userRoleManagement, getUserManagement(), Utils.getUserName());
-
-            getStudy().setUserRoleManagement(userRoleManagement);
-            // TODO: improper naming, this enables saving of user-role-management
-            markSystemModelModified();
+            StudyFactory.addUserRoleManagement(getStudy());
+            markStudyModified();
         }
         return userRoleManagement;
     }
@@ -176,7 +171,7 @@ public class Project {
         repositoryStateMachine.addObserver(o);
     }
 
-    public void markSystemModelModified() {
+    public void markStudyModified() {
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
     }
 

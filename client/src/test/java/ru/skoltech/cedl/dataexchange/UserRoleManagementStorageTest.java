@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
+import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
@@ -34,10 +34,10 @@ public class UserRoleManagementStorageTest {
 
     @Test
     public void storeAndRetrieveUserManagement() throws RepositoryException {
-        UserRoleManagement userRoleManagement = DummyUserManagementBuilder.getUserRoleManagement();
-        UserManagement userManagement = DummyUserManagementBuilder.getUserManagement();
+        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement();
+        UserManagement userManagement = UserManagementFactory.getUserManagement();
         String userName = Utils.getUserName();
-        DummyUserManagementBuilder.addUserWithAllPower(userRoleManagement, userManagement, userName);
+        UserManagementFactory.addUserWithAllPower(userRoleManagement, userManagement, userName);
 
         databaseStorage.storeUserRoleManagement(userRoleManagement);
 

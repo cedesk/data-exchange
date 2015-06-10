@@ -6,8 +6,9 @@ import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ElementModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
+import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
+import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -18,15 +19,15 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 public class UserRoleUtilTest {
 
     @Test
-    public void checkAccessTest() {
-        UserRoleManagement userRoleManagement = DummyUserManagementBuilder.getUserRoleManagement();
-        UserManagement userManagement = DummyUserManagementBuilder.getUserManagement();
+    public void checkAccessAdminTest() {
+        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement();
+        UserManagement userManagement = UserManagementFactory.getUserManagement();
 
         User admin = userManagement.getUsers().get(0);
         Assert.assertTrue(UserRoleUtil.isAdmin(admin));
 
         String testUserName = "test user";
-        DummyUserManagementBuilder.addUserWithAllPower(userRoleManagement, userManagement, testUserName);
+        UserManagementFactory.addUserWithAllPower(userRoleManagement, userManagement, testUserName);
 
         SystemModel systemModel = DummySystemBuilder.getSystemModel(3);
 
@@ -35,10 +36,36 @@ public class UserRoleUtilTest {
         ElementModel firstElementSubsystemNode = firstSubsystemNode.getSubNodes().get(0);
 
         Assert.assertTrue(
-                UserRoleUtil.checkAccess(systemModel, systemModel, admin, userRoleManagement));
+                UserRoleUtil.checkAccess(systemModel, admin, userRoleManagement));
         Assert.assertTrue(
-                UserRoleUtil.checkAccess(systemModel, firstSubsystemNode, admin, userRoleManagement));
+                UserRoleUtil.checkAccess(firstSubsystemNode, admin, userRoleManagement));
         Assert.assertTrue(
-                UserRoleUtil.checkAccess(systemModel, firstElementSubsystemNode, admin, userRoleManagement));
+                UserRoleUtil.checkAccess(firstElementSubsystemNode, admin, userRoleManagement));
+    }
+
+    @Test
+    public void checkAccessExpertTest() {
+        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement();
+        UserManagement userManagement = UserManagementFactory.getUserManagement();
+
+        String testUserName = "test expert";
+        User expert = new User(testUserName, "", "");
+        userManagement.getUsers().add(expert);
+
+        SystemModel systemModel = DummySystemBuilder.getSystemModel(3);
+        SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
+
+        Discipline firstDiscipline = userRoleManagement.getDisciplines().get(0);
+
+        firstSubsystemNode.setName(firstDiscipline.getName());
+
+        ElementModel firstElementSubsystemNode = firstSubsystemNode.getSubNodes().get(0);
+
+        Assert.assertTrue(
+                UserRoleUtil.checkAccess(systemModel, expert, userRoleManagement));
+        Assert.assertTrue(
+                UserRoleUtil.checkAccess(firstSubsystemNode, expert, userRoleManagement));
+        Assert.assertTrue(
+                UserRoleUtil.checkAccess(firstElementSubsystemNode, expert, userRoleManagement));
     }
 }
