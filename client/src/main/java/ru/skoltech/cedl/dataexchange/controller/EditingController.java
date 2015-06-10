@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -79,8 +80,8 @@ public class EditingController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // STRUCTURE TREE VIEW
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
-        addNodeButton.disableProperty().bind(selectedNodeIsLeaf);
-        deleteNodeButton.disableProperty().bind(selectedNodeIsRoot);
+        addNodeButton.disableProperty().bind(Bindings.and(structureTree.getSelectionModel().selectedItemProperty().isNull(), selectedNodeIsLeaf));
+        deleteNodeButton.disableProperty().bind(Bindings.or(structureTree.getSelectionModel().selectedItemProperty().isNull(), selectedNodeIsRoot));
 
         //structureTree.setEditable(true);
         structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
@@ -327,5 +328,4 @@ public class EditingController implements Initializable {
             project.markStudyModified();
         }
     }
-
 }
