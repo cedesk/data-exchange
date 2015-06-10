@@ -54,7 +54,6 @@ public class Dialogues {
             dialog.setTitle("Repository URL");
             dialog.setHeaderText("Please insert the URL for the repository. It shall start with 'http' or 'https'.");
             dialog.setContentText("URL:");
-            // TODO: add input validation
             return dialog.showAndWait();
         }
     */
@@ -78,7 +77,6 @@ public class Dialogues {
         dialog.setTitle("Node Name");
         dialog.setHeaderText("Please insert a name for the new node.");
         dialog.setContentText("Name");
-        //TODO: add input validation
         return dialog.showAndWait();
     }
 
@@ -87,7 +85,6 @@ public class Dialogues {
         dialog.setTitle("Study Name");
         dialog.setHeaderText("Please insert a name for the new Study.");
         dialog.setContentText("Name");
-        //TODO: add input validation
         return dialog.showAndWait();
     }
 
@@ -96,7 +93,6 @@ public class Dialogues {
         dialog.setTitle("Parameter Name");
         dialog.setHeaderText("Please insert a name for the new parameter.");
         dialog.setContentText("Name");
-        //TODO: add input validation
         return dialog.showAndWait();
     }
 
@@ -105,7 +101,6 @@ public class Dialogues {
         dialog.setTitle("User Name");
         dialog.setHeaderText("Please insert a name for the new user.");
         dialog.setContentText("Name");
-        //TODO: add input validation
         return dialog.showAndWait();
     }
 
