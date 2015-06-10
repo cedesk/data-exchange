@@ -158,7 +158,7 @@ public class EditingController implements Initializable {
         viewParameters.displayParameters(modelNode.getParameters());
 
         boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
-        logger.info("selected node: " + treeItem.getValue().getName() + ", editable: " + editable);
+        logger.debug("selected node: " + treeItem.getValue().getName() + ", editable: " + editable);
         parameterTable.setEditable(editable);
         parameterTable.autosize();
     }

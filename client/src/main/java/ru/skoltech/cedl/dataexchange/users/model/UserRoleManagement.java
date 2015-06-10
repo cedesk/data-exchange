@@ -34,7 +34,7 @@ public class UserRoleManagement {
     }
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @OneToMany(targetEntity = UserDiscipline.class, mappedBy = "userRoleManagement")
+    @OneToMany(targetEntity = UserDiscipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<UserDiscipline> getUserDisciplines() {
         return userDisciplines;
     }
@@ -44,6 +44,8 @@ public class UserRoleManagement {
     }
 
     public void addUserDiscipline(User user, Discipline discipline) {
+        discipline.setUserRoleManagement(this);
+        user.getDisciplines().add(discipline);
         UserDiscipline e = new UserDiscipline(this, user, discipline);
         userDisciplines.add(e);
     }
@@ -82,6 +84,4 @@ public class UserRoleManagement {
         return disciplines.stream().collect(
                 Collectors.toMap(Discipline::getName, Function.<Discipline>identity()));
     }
-
-
 }

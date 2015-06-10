@@ -20,8 +20,8 @@ public class UserRoleUtilTest {
 
     @Test
     public void checkAccessAdminTest() {
-        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement();
         UserManagement userManagement = UserManagementFactory.getUserManagement();
+        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
 
         User admin = userManagement.getUsers().get(0);
         Assert.assertTrue(UserRoleUtil.isAdmin(admin));
@@ -45,8 +45,8 @@ public class UserRoleUtilTest {
 
     @Test
     public void checkAccessExpertTest() {
-        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement();
         UserManagement userManagement = UserManagementFactory.getUserManagement();
+        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
 
         String testUserName = "test expert";
         User expert = new User(testUserName, "", "");
@@ -56,7 +56,7 @@ public class UserRoleUtilTest {
         SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
         Discipline firstDiscipline = userRoleManagement.getDisciplines().get(0);
-
+        userRoleManagement.addUserDiscipline(expert, firstDiscipline);
         firstSubsystemNode.setName(firstDiscipline.getName());
 
         ElementModel firstElementSubsystemNode = firstSubsystemNode.getSubNodes().get(0);
@@ -67,5 +67,11 @@ public class UserRoleUtilTest {
                 UserRoleUtil.checkAccess(firstSubsystemNode, expert, userRoleManagement));
         Assert.assertTrue(
                 UserRoleUtil.checkAccess(firstElementSubsystemNode, expert, userRoleManagement));
+
+        firstSubsystemNode.setName(firstDiscipline.getName()+"#");
+
+        Assert.assertFalse(
+                UserRoleUtil.checkAccess(firstSubsystemNode, expert, userRoleManagement));
+
     }
 }

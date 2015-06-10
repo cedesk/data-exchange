@@ -11,6 +11,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.StudyFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
+import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -49,7 +50,6 @@ public class Project {
         this.repositoryStateMachine = new RepositoryStateMachine();
     }
 
-
     public User getUser() {
         String userName = ApplicationSettings.getLastUsedUser("admin");
         return getUserManagement().findUser(userName);
@@ -68,19 +68,14 @@ public class Project {
     }
 
     public Study getStudy() {
-        if (study == null) {
-            initializeStudy();
-        }
+        /*if (study == null) {
+            newStudy(DEFAULT_PROJECT_NAME);
+        }*/
         return study;
     }
 
     private void setStudy(Study study) {
         this.study = study;
-    }
-
-    private void initializeStudy() {
-        study = StudyFactory.makeStudy(projectName);
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
     }
 
     public UserManagement getUserManagement() {
@@ -95,22 +90,10 @@ public class Project {
         return userManagement;
     }
 
-    private void initializeUserManagement() {
-        userManagement = UserManagementFactory.getUserManagement();
-        try {
-            repository.storeUserManagement(userManagement);
-        } catch (RepositoryException re) {
-            logger.error("Error storing user management!");
-        }
-    }
-
     public UserRoleManagement getUserRoleManagement() {
-        UserRoleManagement userRoleManagement = getStudy() != null ? getStudy().getUserRoleManagement() : null;
-        if (getStudy() != null && userRoleManagement == null) {
-            StudyFactory.addUserRoleManagement(getStudy());
-            markStudyModified();
-        }
-        return userRoleManagement;
+        if (getStudy() == null)
+            return null;
+        return getStudy().getUserRoleManagement();
     }
 
     public String getProjectName() {
@@ -182,20 +165,34 @@ public class Project {
     }
 
     public void newStudy(String studyName) {
-        setProjectName(studyName);
-        initializeStudy();
-        SystemModel system = DummySystemBuilder.getSystemModel(3);
-        system.setName(studyName);
-        study.setSystemModel(system);
-        study.setName(studyName);
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+        SystemModel systemModel = DummySystemBuilder.getSystemModel(3);
+        systemModel.setName(studyName);
+        reinitializeProject(systemModel);
     }
 
     public void importSystemModel(SystemModel systemModel) {
+        reinitializeProject(systemModel);
+    }
+
+    private void reinitializeProject(SystemModel systemModel) {
         setProjectName(systemModel.getName());
-        initializeStudy();
-        study.setName(systemModel.getName());
+        study = StudyFactory.makeStudy(projectName, userManagement);
         study.setSystemModel(systemModel);
+        study.setName(systemModel.getName());
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+
+        UserRoleManagement userRoleManagement;
+        userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
+        userRoleManagement.addUserDiscipline(getUser(), Discipline.ADMIN_DISCIPLINE);
+        getStudy().setUserRoleManagement(userRoleManagement);
+    }
+
+    private void initializeUserManagement() {
+        userManagement = UserManagementFactory.getUserManagement();
+        try {
+            repository.storeUserManagement(userManagement);
+        } catch (RepositoryException re) {
+            logger.error("Error storing user management!");
+        }
     }
 }

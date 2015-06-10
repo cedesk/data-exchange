@@ -99,6 +99,9 @@ public class MainController implements Initializable {
             boolean success = project.loadStudy();
             if (success) {
                 ApplicationSettings.setLastUsedProject(project.getProjectName());
+                StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
+            } else {
+                StatusLogger.getInstance().log("Loading study failed!", false);
             }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading project!", true);
@@ -112,6 +115,9 @@ public class MainController implements Initializable {
             boolean success = project.storeStudy();
             if (success) {
                 ApplicationSettings.setLastUsedProject(project.getProjectName());
+                StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
+            } else {
+                StatusLogger.getInstance().log("Saving study failed!", false);
             }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error saving project!", true);
@@ -232,6 +238,7 @@ public class MainController implements Initializable {
                 SystemModel systemModel = fs.loadSystemModel(importFile);
                 project.importSystemModel(systemModel);
                 updateView();
+                StatusLogger.getInstance().log("Successfully imported study!", false);
             } catch (IOException e) {
                 logger.error("error importing model from file");
             }
@@ -248,6 +255,7 @@ public class MainController implements Initializable {
             FileStorage fs = new FileStorage();
             try {
                 fs.storeSystemModel(project.getSystemModel(), outputFile);
+                StatusLogger.getInstance().log("Successfully exported study!", false);
             } catch (IOException e) {
                 logger.error("error exporting model to file", e);
             }
