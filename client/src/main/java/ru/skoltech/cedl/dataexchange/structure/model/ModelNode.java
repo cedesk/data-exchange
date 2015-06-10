@@ -87,6 +87,11 @@ public abstract class ModelNode {
         this.parent = parent;
     }
 
+    @Transient
+    public boolean isRootNode() {
+        return parent == null;
+    }
+
     public boolean hasParameter(String parameterName) {
         return getParameterMap().containsKey(parameterName);
     }

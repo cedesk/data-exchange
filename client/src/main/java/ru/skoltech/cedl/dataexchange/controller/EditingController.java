@@ -92,7 +92,7 @@ public class EditingController implements Initializable {
         structureTree.setOnEditCommit(new EventHandler<TreeView.EditEvent<ModelNode>>() {
             @Override
             public void handle(TreeView.EditEvent<ModelNode> event) {
-                project.markSystemModelModified();
+                project.markStudyModified();
             }
         });
 
@@ -131,7 +131,7 @@ public class EditingController implements Initializable {
                         event.getTablePosition().getRow());
                 if (!event.getOldValue().equals(event.getNewValue())) {
                     parameterModel.setValue(event.getNewValue());
-                    project.markSystemModelModified();
+                    project.markStudyModified();
                 }
             }
         });
@@ -157,7 +157,7 @@ public class EditingController implements Initializable {
         modelNode.diffParameters(item.getRemoteValue());
         viewParameters.displayParameters(modelNode.getParameters());
 
-        boolean editable = UserRoleUtil.checkAccess(project.getSystemModel(), modelNode, project.getUser(), project.getUserRoleManagement());
+        boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
         logger.info("selected node: " + treeItem.getValue().getName() + ", editable: " + editable);
         parameterTable.setEditable(editable);
         parameterTable.autosize();
@@ -201,7 +201,7 @@ public class EditingController implements Initializable {
                     ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
                     selectedItem.getChildren().add(StructureTreeItemFactory.getTreeNodeView(newNode));
                     selectedItem.setExpanded(true);
-                    project.markSystemModelModified();
+                    project.markStudyModified();
                 }
             }
         } else {
@@ -222,7 +222,7 @@ public class EditingController implements Initializable {
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                 parentNode.removeSubNode(node);
             }
-            project.markSystemModelModified();
+            project.markStudyModified();
         }
     }
 
@@ -251,7 +251,7 @@ public class EditingController implements Initializable {
             }
             modelNode.setName(newNodeName);
             selectedItem.valueProperty().setValue(modelNode);
-            project.markSystemModelModified();
+            project.markStudyModified();
         }
     }
 
@@ -273,7 +273,7 @@ public class EditingController implements Initializable {
                 ParameterModel pm = new ParameterModel(parameterName, 0.0);
                 selectedItem.getValue().addParameter(pm);
                 StatusLogger.getInstance().log("added parameter: " + pm.getName());
-                project.markSystemModelModified();
+                project.markStudyModified();
             }
         }
         updateParameterTable(selectedItem);
@@ -290,7 +290,7 @@ public class EditingController implements Initializable {
             selectedItem.getValue().getParameters().remove(selectedParameterIndex);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
             updateParameterTable(selectedItem);
-            project.markSystemModelModified();
+            project.markStudyModified();
         }
     }
 
@@ -324,7 +324,7 @@ public class EditingController implements Initializable {
             ParameterModel parameterModel = event.getTableView().getItems().get(
                     event.getTablePosition().getRow());
             setterMethod.accept(parameterModel, event.getNewValue());
-            project.markSystemModelModified();
+            project.markStudyModified();
         }
     }
 

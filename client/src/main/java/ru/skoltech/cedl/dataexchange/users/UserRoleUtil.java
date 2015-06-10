@@ -14,7 +14,7 @@ public class UserRoleUtil {
 
     private static final Logger logger = Logger.getLogger(UserRoleUtil.class);
 
-    public static boolean checkAccess(SystemModel systemModel, ModelNode someModelNode, User user, UserRoleManagement userRoleManagement) {
+    public static boolean checkAccess(ModelNode someModelNode, User user, UserRoleManagement userRoleManagement) {
 
         // check username contained in user management
         if (user == null) {
@@ -22,8 +22,7 @@ public class UserRoleUtil {
         }
 
         // check system to be modified only by admin
-        ModelNode subSystem = findOwningSubSystem(systemModel, someModelNode);
-        if (subSystem == systemModel) {
+        if (someModelNode.isRootNode()) {
             for (Discipline userDiscipline : user.getDisciplines()) {
                 if (userDiscipline.equals(Discipline.ADMIN_DISCIPLINE)) return true;
             }
@@ -31,6 +30,7 @@ public class UserRoleUtil {
         }
 
         // check subsystem to be contained in user management
+        ModelNode subSystem = findOwningSubSystem(someModelNode);
         String subSystemName = subSystem.getName();
         Discipline discipline = userRoleManagement.getDisciplineMap().get(subSystemName);
         if (discipline == null) {
@@ -45,17 +45,16 @@ public class UserRoleUtil {
         return false;
     }
 
-    private static ModelNode findOwningSubSystem(SystemModel rootNode, ModelNode someNode) {
-        if (someNode == rootNode) {
-            return rootNode;
+    private static ModelNode findOwningSubSystem(ModelNode modelNode) {
+        if (modelNode.isRootNode()) {
+            return modelNode;
         }
-        ModelNode parent = someNode.getParent();
-        while (parent != rootNode) {
-            someNode = parent;
+        ModelNode parent = modelNode.getParent();
+        while (!parent.isRootNode()) {
+            modelNode = parent;
             parent = parent.getParent();
         }
-        return someNode;
-
+        return modelNode;
     }
 
     public static boolean isAdmin(User user) {

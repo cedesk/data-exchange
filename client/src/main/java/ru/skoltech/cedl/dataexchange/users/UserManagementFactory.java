@@ -8,7 +8,7 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 /**
  * Created by dknoll on 13/05/15.
  */
-public class DummyUserManagementBuilder {
+public class UserManagementFactory {
 
     private static final String ADMIN = "admin";
     private static final String EXPERT = "expert";
