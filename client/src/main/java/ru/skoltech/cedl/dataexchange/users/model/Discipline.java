@@ -12,8 +12,6 @@ import javax.xml.bind.annotation.*;
 @Access(AccessType.PROPERTY)
 public class Discipline {
 
-    public static Discipline ADMIN_DISCIPLINE = new Discipline("Admin", true);
-
     @XmlTransient
     private long id;
 
@@ -31,14 +29,19 @@ public class Discipline {
     public Discipline() {
     }
 
-    private Discipline(String name, boolean builtIn) {
+    private Discipline(String name, UserRoleManagement userRoleManagement, boolean builtIn) {
         this.name = name;
+        this.userRoleManagement = userRoleManagement;
         this.builtIn = builtIn;
     }
 
     public Discipline(String name, UserRoleManagement userRoleManagement) {
         this.name = name;
         this.userRoleManagement = userRoleManagement;
+    }
+
+    public static Discipline getAdminDiscipline(UserRoleManagement userRoleManagement) {
+        return new Discipline("Admin", userRoleManagement, true);
     }
 
     @Id
@@ -93,7 +96,6 @@ public class Discipline {
 
         if (builtIn != otherDiscipline.builtIn) return false;
         return !(name != null ? !name.equals(otherDiscipline.name) : otherDiscipline.name != null);
-
     }
 
     @Override

@@ -27,6 +27,7 @@ public class UserDiscipline {
     }
 
     @Id
+    @GeneratedValue
     public long getId() {
         return id;
     }

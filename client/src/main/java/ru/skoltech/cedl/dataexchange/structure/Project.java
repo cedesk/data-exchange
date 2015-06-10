@@ -183,7 +183,7 @@ public class Project {
 
         UserRoleManagement userRoleManagement;
         userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
-        userRoleManagement.addUserDiscipline(getUser(), Discipline.ADMIN_DISCIPLINE);
+        userRoleManagement.addUserDiscipline(getUser(), userRoleManagement.getAdminDiscipline());
         getStudy().setUserRoleManagement(userRoleManagement);
     }
 

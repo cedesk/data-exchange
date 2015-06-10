@@ -24,7 +24,7 @@ public class UserRoleUtil {
         // check system to be modified only by admin
         if (someModelNode.isRootNode()) {
             for (Discipline userDiscipline : user.getDisciplines()) {
-                if (userDiscipline.equals(Discipline.ADMIN_DISCIPLINE)) return true;
+                if (userDiscipline.isBuiltIn()) return true;
             }
             return false;
         }
@@ -39,7 +39,7 @@ public class UserRoleUtil {
         }
 
         for (Discipline userDiscipline : user.getDisciplines()) {
-            if (userDiscipline.equals(Discipline.ADMIN_DISCIPLINE)) return true;
+            if (userDiscipline.isBuiltIn()) return true;
             if (userDiscipline.equals(discipline)) return true;
         }
         return false;
@@ -59,7 +59,7 @@ public class UserRoleUtil {
 
     public static boolean isAdmin(User user) {
         for (Discipline userDiscipline : user.getDisciplines()) {
-            if (userDiscipline.equals(Discipline.ADMIN_DISCIPLINE)) return true;
+            if (userDiscipline.isBuiltIn()) return true;
         }
         return false;
     }

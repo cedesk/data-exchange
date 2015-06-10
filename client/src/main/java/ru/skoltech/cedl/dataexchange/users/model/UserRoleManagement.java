@@ -28,9 +28,14 @@ public class UserRoleManagement {
     @XmlElement(name = "discipline")
     private List<Discipline> disciplines = new LinkedList<>();
 
+    @XmlTransient
+    private Discipline adminDiscipline;
+
     private List<UserDiscipline> userDisciplines = new LinkedList<>();
 
     public UserRoleManagement() {
+        adminDiscipline = Discipline.getAdminDiscipline(this);
+        disciplines.add(adminDiscipline);
     }
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -48,6 +53,21 @@ public class UserRoleManagement {
         user.getDisciplines().add(discipline);
         UserDiscipline e = new UserDiscipline(this, user, discipline);
         userDisciplines.add(e);
+    }
+
+    @Transient
+    public Discipline getAdminDiscipline() {
+        if (adminDiscipline == null) {
+            for (Discipline discipline : disciplines) {
+                if (discipline.isBuiltIn()) {
+                    adminDiscipline = discipline;
+                    break;
+                }
+            }
+        }
+        if (adminDiscipline == null)
+            throw new RuntimeException("inconsistent UserManagement!");
+        return adminDiscipline;
     }
 
     @Id
