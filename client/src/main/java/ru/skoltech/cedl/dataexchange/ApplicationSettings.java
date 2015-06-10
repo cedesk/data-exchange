@@ -68,6 +68,8 @@ public class ApplicationSettings {
             properties.setProperty(LAST_PROJECT_NAME, projectName);
             save();
         }
+        // TODO: remove
+        setAutoLoadLastProjectOnStartup(true);
     }
 
     public static void setLastUsedUser(String lastUsedUser) {

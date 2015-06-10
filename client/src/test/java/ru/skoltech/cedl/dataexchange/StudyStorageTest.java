@@ -34,7 +34,7 @@ public class StudyStorageTest {
     @Test
     public void storeAndRetrieveStudy() throws RepositoryException {
         String name = "testStudy";
-        Study study = StudyFactory.makeStudy(name);
+        Study study = StudyFactory.makeStudy(name, null);
         System.out.println(study);
 
         databaseStorage.storeStudy(study);
