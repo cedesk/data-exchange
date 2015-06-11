@@ -44,7 +44,7 @@ public class MainController implements Initializable {
     public Button newButton;
 
     @FXML
-    public Button openButton;
+    public Button loadButton;
 
     @FXML
     public Button saveButton;
@@ -77,7 +77,7 @@ public class MainController implements Initializable {
 
     private EditingController editingController;
 
-    private UserManagementController userManagementController;
+    private UserRoleManagementController userRoleManagementController;
 
     private RepositoryWatcher repositoryWatcher;
 
@@ -90,6 +90,7 @@ public class MainController implements Initializable {
                 return;
             }
             project.newStudy(projectName);
+            StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
             updateView();
         }
     }
@@ -133,7 +134,7 @@ public class MainController implements Initializable {
         // EDITING PANE
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.EDITING_PANE);
+            loader.setLocation(Views.MODEL_EDITING_PANE);
             Parent editingPane = loader.load();
             modelTab.setContent(editingPane);
             modelTab.setOnSelectionChanged(event -> {
@@ -151,16 +152,16 @@ public class MainController implements Initializable {
         // USERS PANE
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.USERS_PANE);
+            loader.setLocation(Views.USER_ROLES_EDITING_PANE);
             Parent usersPane = loader.load();
             usersTab.setContent(usersPane);
             usersTab.setOnSelectionChanged(event -> {
                 if (usersTab.isSelected()) {
-                    userManagementController.updateView();
+                    userRoleManagementController.updateView();
                 }
             });
-            userManagementController = loader.getController();
-            userManagementController.setProject(project);
+            userRoleManagementController = loader.getController();
+            userRoleManagementController.setProject(project);
         } catch (IOException ioe) {
             logger.error("Unable to load user management view pane.");
             throw new RuntimeException(ioe);
@@ -170,7 +171,7 @@ public class MainController implements Initializable {
             @Override
             public void update(Observable o, Object arg) {
                 newButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
-                openButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
+                loadButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
                 saveButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE));
             }
         });
@@ -184,11 +185,18 @@ public class MainController implements Initializable {
     }
 
     private void updateView() {
-        studyNameLabel.setText(project.getStudy().getName());
-        userNameLabel.setText(project.getUser().getName());
-        userRoleLabel.setText(project.getUser().getDisciplineNames());
-        editingController.updateView();
-        userManagementController.updateView();
+        if (project.getStudy() != null) {
+            studyNameLabel.setText(project.getStudy().getName());
+            userNameLabel.setText(project.getUser().getName());
+            userRoleLabel.setText(project.getUser().getDisciplineNames());
+            // TODO: improve: update only visible tab
+            editingController.updateView();
+            userRoleManagementController.updateView();
+        } else {
+            studyNameLabel.setText(project.getProjectName());
+            userNameLabel.setText("--");
+            userRoleLabel.setText("--");
+        }
     }
 
     private void makeRepositoryWatcher() {

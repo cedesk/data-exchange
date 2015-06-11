@@ -169,18 +169,21 @@ public class EditingController implements Initializable {
     }
 
     public void updateView() {
-
-        boolean isAdmin = UserRoleUtil.isAdmin(project.getUser());
-        structureTree.setEditable(isAdmin);
-
-        //if (project.getRemoteModel() == null) {
-        StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
-        structureTree.setRoot(rootNode);
+        if (project.getSystemModel() != null) {
+            //if (project.getRemoteModel() == null) {
+            StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
+            structureTree.setRoot(rootNode);
         /*} else {
             StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
                     project.getSystemModel(), project.getRemoteModel());
             structureTree.setRoot(rootNode);
         }*/
+            boolean isAdmin = UserRoleUtil.isAdmin(project.getUser());
+            structureTree.setEditable(isAdmin);
+        } else {
+            structureTree.setRoot(null);
+            clearParameterTable();
+        }
     }
 
     public void addNode(ActionEvent actionEvent) {
@@ -203,6 +206,7 @@ public class EditingController implements Initializable {
                     selectedItem.getChildren().add(StructureTreeItemFactory.getTreeNodeView(newNode));
                     selectedItem.setExpanded(true);
                     project.markStudyModified();
+                    StatusLogger.getInstance().log("added node: " + newNode.getName());
                 }
             }
         } else {
@@ -218,12 +222,13 @@ public class EditingController implements Initializable {
         } else {
             TreeItem<ModelNode> parent = selectedItem.getParent();
             parent.getChildren().remove(selectedItem);
-            ModelNode node = selectedItem.getValue();
+            ModelNode deleteNode = selectedItem.getValue();
             if (parent.getValue() instanceof CompositeModelNode) {
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                parentNode.removeSubNode(node);
+                parentNode.removeSubNode(deleteNode);
             }
             project.markStudyModified();
+            StatusLogger.getInstance().log("deleted node: " + deleteNode.getName());
         }
     }
 

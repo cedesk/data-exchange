@@ -80,6 +80,14 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
+    static Optional<String> inputDisciplineName(String defaultValue) {
+        TextInputDialog dialog = new TextInputDialog(defaultValue);
+        dialog.setTitle("Discipline Name");
+        dialog.setHeaderText("Please insert a name for the discipline.");
+        dialog.setContentText("Name");
+        return dialog.showAndWait();
+    }
+
     static Optional<String> inputStudyName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Study Name");

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<SplitPane dividerPositions="0.5" prefHeight="515.0" prefWidth="800.0" stylesheets="@styling.css"
+           BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ru.skoltech.cedl.dataexchange.controller.UserRoleManagementController">
+    <items>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+            <children>
+                <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                    <items>
+                        <Button fx:id="addDisciplineButton" mnemonicParsing="false" onAction="#addDiscipline"
+                                text="Add"/>
+                        <Button fx:id="deleteDisciplineButton" mnemonicParsing="false" onAction="#deleteDiscipline"
+                                text="Delete"/>
+                    </items>
+                </ToolBar>
+                <Label text="Disciplines" underline="true" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                       AnchorPane.topAnchor="0.0">
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                    <padding>
+                        <Insets left="8.0" top="4.0"/>
+                    </padding>
+                </Label>
+                <TableView fx:id="disciplinesTable" prefHeight="441.0" prefWidth="388.0" AnchorPane.bottomAnchor="40.0"
+                           AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
+                    <columns>
+                        <TableColumn fx:id="disciplineNameColumn" minWidth="100.0" prefWidth="-1.0" text="Name">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="name"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="disciplineDescriptionColumn" minWidth="100.0" prefWidth="-1.0"
+                                     text="Description">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="description"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                    </columns>
+                </TableView>
+            </children>
+        </AnchorPane>
+        <AnchorPane>
+            <children>
+                <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="513.0" prefWidth="396.0"
+                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                           AnchorPane.topAnchor="0.0">
+                    <items>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                            <children>
+                                <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                         AnchorPane.rightAnchor="0.0">
+                                    <items>
+                                        <Button fx:id="addSubsystemButton" mnemonicParsing="false"
+                                                onAction="#addSubsystem" text="Add"/>
+                                        <Button fx:id="deleteSubsystemButton" mnemonicParsing="false"
+                                                onAction="#deleteSubsystem" text="Delete"/>
+                                    </items>
+                                </ToolBar>
+                                <Label text="Subsystems" underline="true" AnchorPane.leftAnchor="0.0"
+                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <font>
+                                        <Font size="16.0"/>
+                                    </font>
+                                    <padding>
+                                        <Insets left="8.0" top="4.0"/>
+                                    </padding>
+                                </Label>
+                                <TableView fx:id="subsystemsTable" prefHeight="441.0" prefWidth="388.0"
+                                           AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="8.0"
+                                           AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
+                                    <columns>
+                                        <TableColumn fx:id="susbsystemNameColumn" minWidth="100.0" prefWidth="-1.0"
+                                                     text="Name">
+                                            <cellValueFactory>
+                                                <PropertyValueFactory property="name"/>
+                                            </cellValueFactory>
+                                        </TableColumn>
+                                    </columns>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="598.0">
+                            <children>
+                                <Label layoutY="6.0" styleClass="sectionTitle" text="Users" underline="true"
+                                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                       AnchorPane.topAnchor="0.0">
+                                    <font>
+                                        <Font size="16.0"/>
+                                    </font>
+                                    <padding>
+                                        <Insets left="8.0" top="4.0"/>
+                                    </padding>
+                                </Label>
+                                <TableView fx:id="userTable" layoutY="29.0" prefHeight="443.0" prefWidth="388.0"
+                                           AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
+                                           AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="30.0">
+                                    <columns>
+                                        <TableColumn fx:id="userNameColumn" minWidth="100.0" prefWidth="-1.0"
+                                                     text="Name">
+                                            <cellValueFactory>
+                                                <PropertyValueFactory property="userName"/>
+                                            </cellValueFactory>
+                                        </TableColumn>
+                                        <TableColumn fx:id="userFullNameColumn" minWidth="100.0" prefWidth="-1.0"
+                                                     text="Full Name">
+                                            <cellValueFactory>
+                                                <PropertyValueFactory property="fullName"/>
+                                            </cellValueFactory>
+                                        </TableColumn>
+                                    </columns>
+                                </TableView>
+                                <ToolBar layoutX="-11.0" layoutY="479.0" styleClass="sectionTitle"
+                                         AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                         AnchorPane.rightAnchor="0.0">
+                                    <items>
+                                        <Button fx:id="addUserButton" mnemonicParsing="false" onAction="#addUser"
+                                                text="Add"/>
+                                        <Button fx:id="deleteUserButton" mnemonicParsing="false" onAction="#deleteUser"
+                                                text="Delete"/>
+                                    </items>
+                                </ToolBar>
+                            </children>
+                        </AnchorPane>
+                    </items>
+                </SplitPane>
+            </children>
+        </AnchorPane>
+    </items>
+</SplitPane>
