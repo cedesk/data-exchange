@@ -10,8 +10,8 @@
             prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
-        <BorderPane fx:id="layout" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-                    prefHeight="600.0" prefWidth="800.0">
+        <BorderPane fx:id="layout" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <center>
             </center>
             <top>
@@ -115,7 +115,7 @@
                                         </Label>
                                     </children>
                                     <VBox.margin>
-                                        <Insets left="12.0" top="6.0" bottom="6.0"/>
+                                        <Insets bottom="6.0" left="12.0" top="6.0"/>
                                     </VBox.margin>
                                 </HBox>
                             </children>
@@ -125,7 +125,7 @@
                                 <Image url="@/Logo0.png"/>
                             </image>
                             <HBox.margin>
-                                <Insets top="4" bottom="4" right="4"/>
+                                <Insets bottom="4" right="4" top="4"/>
                             </HBox.margin>
                         </ImageView>
                     </children>
@@ -148,9 +148,9 @@
                 <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE"
                          BorderPane.alignment="CENTER">
                     <tabs>
-                        <Tab fx:id="modelTab" text="Model">
+                        <Tab fx:id="userRolesTab" text="Users">
                         </Tab>
-                        <Tab fx:id="usersTab" text="Users">
+                        <Tab fx:id="modelTab" text="Model">
                         </Tab>
                         <Tab fx:id="unitsTab" disable="true" text="Units">
                         </Tab>
