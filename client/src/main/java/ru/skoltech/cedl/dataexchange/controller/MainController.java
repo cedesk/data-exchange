@@ -71,7 +71,7 @@ public class MainController implements Initializable {
     public Tab modelTab;
 
     @FXML
-    public Tab usersTab;
+    public Tab userRolesTab;
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
@@ -154,9 +154,9 @@ public class MainController implements Initializable {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.USER_ROLES_EDITING_PANE);
             Parent usersPane = loader.load();
-            usersTab.setContent(usersPane);
-            usersTab.setOnSelectionChanged(event -> {
-                if (usersTab.isSelected()) {
+            userRolesTab.setContent(usersPane);
+            userRolesTab.setOnSelectionChanged(event -> {
+                if (userRolesTab.isSelected()) {
                     userRoleManagementController.updateView();
                 }
             });
