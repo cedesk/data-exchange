@@ -24,15 +24,15 @@ import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.users.model.Discipline;
+import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainController implements Initializable {
 
@@ -188,7 +188,7 @@ public class MainController implements Initializable {
         if (project.getStudy() != null) {
             studyNameLabel.setText(project.getStudy().getName());
             userNameLabel.setText(project.getUser().getName());
-            userRoleLabel.setText(project.getUser().getDisciplineNames());
+            userRoleLabel.setText(getDisciplineNames(project.getUser()));
             // TODO: improve: update only visible tab
             editingController.updateView();
             userRoleManagementController.updateView();
@@ -197,6 +197,13 @@ public class MainController implements Initializable {
             userNameLabel.setText("--");
             userRoleLabel.setText("--");
         }
+    }
+
+    private String getDisciplineNames(User user) {
+        List<Discipline> disciplinesOfUser = project.getUserRoleManagement().getDisciplinesOfUser(user);
+        return disciplinesOfUser.stream()
+                .map(Discipline::getName)
+                .collect(Collectors.joining(", "));
     }
 
     private void makeRepositoryWatcher() {

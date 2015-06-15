@@ -177,7 +177,7 @@ public class EditingController implements Initializable {
                     project.getSystemModel(), project.getRemoteModel());
             structureTree.setRoot(rootNode);
         }*/
-            boolean isAdmin = UserRoleUtil.isAdmin(project.getUser());
+            boolean isAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
             structureTree.setEditable(isAdmin);
         } else {
             structureTree.setRoot(null);

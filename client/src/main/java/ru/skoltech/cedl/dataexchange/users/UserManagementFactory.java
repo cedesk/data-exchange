@@ -70,7 +70,6 @@ public class UserManagementFactory {
 
     public static void addUserWithAllPower(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName) {
         User godfather = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
-        godfather.getDisciplines().add(userRoleManagement.getAdminDiscipline());
 
         userManagement.getUsers().add(godfather);
 

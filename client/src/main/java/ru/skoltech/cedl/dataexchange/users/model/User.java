@@ -2,17 +2,17 @@ package ru.skoltech.cedl.dataexchange.users.model;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by dknoll on 13/05/15.
  */
-@XmlType(propOrder = {"userName", "fullName", "authenticator", "disciplines"})
+@XmlType(propOrder = {"userName", "fullName", "disciplines"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
-public class User {
+public class User implements Comparable<User> {
     @XmlTransient
     private long id;
 
@@ -22,20 +22,24 @@ public class User {
     @XmlAttribute
     private String fullName;
 
-    private String authenticator;
+    @XmlTransient
+    private String salt;
+
+    @XmlTransient
+    private String passwordHash;
 
     @XmlElementWrapper(name = "disciplines")
     @XmlElement(name = "discipline")
     @XmlIDREF
-    private List<Discipline> disciplines = new LinkedList<>();
+    private Set<Discipline> disciplines = new HashSet<>();
 
     public User() {
     }
 
-    public User(String userName, String fullName, String authenticator) {
+    public User(String userName, String fullName, String salt) {
         this.userName = userName;
         this.fullName = fullName;
-        this.authenticator = authenticator;
+        this.salt = salt;
     }
 
     @Id
@@ -76,34 +80,12 @@ public class User {
         this.fullName = fullName;
     }
 
-    public String getAuthenticator() {
-        return authenticator;
+    public String getSalt() {
+        return salt;
     }
 
-    public void setAuthenticator(String authenticator) {
-        this.authenticator = authenticator;
-    }
-
-    @ManyToMany(targetEntity = Discipline.class, cascade = CascadeType.ALL)
-    public List<Discipline> getDisciplines() {
-        return disciplines;
-    }
-
-    public void setDisciplines(List<Discipline> disciplines) {
-        this.disciplines = disciplines;
-    }
-
-    @Transient
-    public String getDisciplineNames() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < disciplines.size(); i++) {
-            Discipline discipline = disciplines.get(i);
-            sb.append(discipline.getName());
-            if (i < disciplines.size() - 1) {
-                sb.append(", ");
-            }
-        }
-        return sb.toString();
+    public void setSalt(String salt) {
+        this.salt = salt;
     }
 
     @Override
@@ -114,5 +96,18 @@ public class User {
         sb.append(", disciplines=").append(disciplines);
         sb.append('}');
         return sb.toString();
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    @Override
+    public int compareTo(User other) {
+        return userName.compareTo(other.userName);
     }
 }

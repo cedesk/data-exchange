@@ -40,6 +40,7 @@ public class UserRoleManagementStorageTest {
         String userName = Utils.getUserName();
         UserManagementFactory.addUserWithAllPower(userRoleManagement, userManagement, userName);
 
+        databaseStorage.storeUserManagement(userManagement);
         databaseStorage.storeUserRoleManagement(userRoleManagement);
 
         UserRoleManagement userRoleManagement1 = databaseStorage.loadUserRoleManagement(1L);
