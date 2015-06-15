@@ -48,11 +48,22 @@ public class UserRoleManagement {
         this.userDisciplines = userDisciplines;
     }
 
-    public void addUserDiscipline(User user, Discipline discipline) {
-        discipline.setUserRoleManagement(this);
-        user.getDisciplines().add(discipline);
-        UserDiscipline e = new UserDiscipline(this, user, discipline);
-        userDisciplines.add(e);
+    /**
+     * Adds a user-discipline association, without allowing duplicates.
+     *
+     * @param user
+     * @param discipline
+     * @return true if the association already existed.
+     */
+    public boolean addUserDiscipline(User user, Discipline discipline) {
+        UserDiscipline userDiscipline = new UserDiscipline(this, user, discipline);
+        boolean found = userDisciplines.contains(userDiscipline);
+        if (!found) {
+            discipline.setUserRoleManagement(this);
+            user.getDisciplines().add(discipline);
+            userDisciplines.add(userDiscipline);
+        }
+        return found;
     }
 
     @Transient
