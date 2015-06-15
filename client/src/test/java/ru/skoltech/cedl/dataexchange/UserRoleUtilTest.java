@@ -24,7 +24,7 @@ public class UserRoleUtilTest {
         UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
 
         User admin = userManagement.getUsers().get(0);
-        Assert.assertTrue(UserRoleUtil.isAdmin(admin));
+        Assert.assertTrue(userRoleManagement.isAdmin(admin));
 
         String testUserName = "test user";
         UserManagementFactory.addUserWithAllPower(userRoleManagement, userManagement, testUserName);
@@ -68,10 +68,9 @@ public class UserRoleUtilTest {
         Assert.assertTrue(
                 UserRoleUtil.checkAccess(firstElementSubsystemNode, expert, userRoleManagement));
 
-        firstSubsystemNode.setName(firstDiscipline.getName()+"#");
+        firstSubsystemNode.setName(firstDiscipline.getName() + "#");
 
         Assert.assertFalse(
                 UserRoleUtil.checkAccess(firstSubsystemNode, expert, userRoleManagement));
-
     }
 }

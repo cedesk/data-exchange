@@ -60,7 +60,6 @@ public class UserRoleManagement {
         boolean found = userDisciplines.contains(userDiscipline);
         if (!found) {
             discipline.setUserRoleManagement(this);
-            user.getDisciplines().add(discipline);
             userDisciplines.add(userDiscipline);
         }
         return found;
@@ -114,5 +113,31 @@ public class UserRoleManagement {
     public Map<String, Discipline> getDisciplineMap() {
         return disciplines.stream().collect(
                 Collectors.toMap(Discipline::getName, Function.<Discipline>identity()));
+    }
+
+    @Transient
+    public List<User> getUsersOfDiscipline(Discipline discipline) {
+        List<User> userList = userDisciplines.stream()
+                .filter(userDiscipline -> discipline.equals(userDiscipline.getDiscipline()))
+                .map(UserDiscipline::getUser)
+                .collect(Collectors.toCollection(() -> new LinkedList<>()));
+        return userList;
+    }
+
+    @Transient
+    public List<Discipline> getDisciplinesOfUser(User user) {
+        List<Discipline> disciplineList = userDisciplines.stream()
+                .filter(userDiscipline -> user.equals(userDiscipline.getUser()))
+                .map(UserDiscipline::getDiscipline)
+                .collect(Collectors.toCollection(() -> new LinkedList<>()));
+        return disciplineList;
+    }
+
+    @Transient
+    public boolean isAdmin(User user) {
+        for (UserDiscipline userDiscipline : userDisciplines) {
+            if (userDiscipline.getDiscipline().isBuiltIn()) return true;
+        }
+        return false;
     }
 }

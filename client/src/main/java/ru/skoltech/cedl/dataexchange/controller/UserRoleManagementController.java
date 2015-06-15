@@ -132,7 +132,7 @@ public class UserRoleManagementController implements Initializable {
             List<Discipline> disciplines = project.getUserRoleManagement().getDisciplines();
             ObservableList<Discipline> disciplineList = FXCollections.observableList(disciplines);
             disciplinesTable.setItems(disciplineList);
-            boolean editable = UserRoleUtil.isAdmin(project.getUser());
+            boolean editable = project.getUserRoleManagement().isAdmin(project.getUser());
             disciplinesTable.setEditable(editable);
         }
     }
