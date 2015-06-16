@@ -23,7 +23,6 @@ public class RemoteStorage {
             Unmarshaller u = ct.createUnmarshaller();
             SystemModel systemModel = (SystemModel) u.unmarshal(inp);
             return systemModel;
-
         } catch (JAXBException e) {
             throw new IOException("Error reading system model from stream.", e);
         }

@@ -25,7 +25,7 @@ public class ParameterFieldCell extends TextFieldTableCell<ParameterModel, Objec
     public void updateItem(Object item, boolean empty) {
         super.updateItem(item, empty);
 
-        if (item != null) {
+        if (item != null && !empty) {
             setText(item.toString());
             ParameterModel parameterModel = (ParameterModel) getTableRow().getItem();
             if (parameterModel != null && parameterModel.hasServerChange()) {

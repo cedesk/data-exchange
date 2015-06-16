@@ -25,7 +25,7 @@ public class ModelCompareTest {
 
     @Before
     public void setup() throws IOException {
-        FileStorage fs = new FileStorage(null);
+        FileStorage fs = new FileStorage();
 
         URL url1 = this.getClass().getResource("/model1.xml");
         File file1 = new File(url1.getFile());

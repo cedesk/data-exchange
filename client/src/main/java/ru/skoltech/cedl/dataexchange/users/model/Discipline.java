@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -7,9 +8,12 @@ import javax.xml.bind.annotation.*;
  */
 @XmlType(propOrder = {"name", "builtIn", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Discipline {
+@Entity
+@Access(AccessType.PROPERTY)
+public class Discipline implements Comparable<Discipline> {
 
-    public static Discipline ADMIN_DISCIPLINE = new Discipline("Admin", true);
+    @XmlTransient
+    private long id;
 
     @XmlID
     @XmlAttribute
@@ -20,16 +24,34 @@ public class Discipline {
     @XmlAttribute
     private boolean builtIn = false;
 
+    private UserRoleManagement userRoleManagement;
+
     public Discipline() {
     }
 
-    private Discipline(String name, boolean builtIn) {
+    private Discipline(String name, UserRoleManagement userRoleManagement, boolean builtIn) {
         this.name = name;
+        this.userRoleManagement = userRoleManagement;
         this.builtIn = builtIn;
     }
 
-    public Discipline(String name) {
+    public Discipline(String name, UserRoleManagement userRoleManagement) {
         this.name = name;
+        this.userRoleManagement = userRoleManagement;
+    }
+
+    public static Discipline getAdminDiscipline(UserRoleManagement userRoleManagement) {
+        return new Discipline("Admin", userRoleManagement, true);
+    }
+
+    @Id
+    @GeneratedValue
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -52,6 +74,10 @@ public class Discipline {
         return builtIn;
     }
 
+    protected void setBuiltIn(boolean builtIn) {
+        this.builtIn = builtIn;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Discipline{");
@@ -70,7 +96,6 @@ public class Discipline {
 
         if (builtIn != otherDiscipline.builtIn) return false;
         return !(name != null ? !name.equals(otherDiscipline.name) : otherDiscipline.name != null);
-
     }
 
     @Override
@@ -78,5 +103,20 @@ public class Discipline {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (builtIn ? 1 : 0);
         return result;
+    }
+
+    @ManyToOne(optional = false, targetEntity = UserRoleManagement.class)
+    public UserRoleManagement getUserRoleManagement() {
+        return userRoleManagement;
+    }
+
+    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
+        this.userRoleManagement = userRoleManagement;
+    }
+
+    @Override
+    public int compareTo(Discipline other) {
+        int builtinCompare = Boolean.compare(builtIn, other.builtIn);
+        return builtinCompare != 0 ? -builtinCompare : name.compareTo(other.name);
     }
 }

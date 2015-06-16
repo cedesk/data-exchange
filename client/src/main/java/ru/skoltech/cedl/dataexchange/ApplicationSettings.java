@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange;
 
+import org.apache.log4j.Logger;
+
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,12 +13,14 @@ import java.util.Properties;
 public class ApplicationSettings {
 
     public static final String AUTO_LOAD_LAST_PROJECT = "project.last.autoload";
-
+    private static final Logger logger = Logger.getLogger(ApplicationSettings.class);
     private static final String SETTINGS_FILE = "application.settings";
 
     private static final String SETTINGS_COMMENTS = "CEDESK application settings";
 
     private static final String LAST_PROJECT_NAME = "project.last.name";
+
+    private static final String LAST_PROJECT_USER = "project.last.user";
 
     private static Properties properties = new Properties();
 
@@ -40,19 +44,38 @@ public class ApplicationSettings {
         }
     }
 
-    public static String getLastUsedProject(String defaultVaule) {
+    public static String getLastUsedProject(String defaultValue) {
         String projName = properties.getProperty(LAST_PROJECT_NAME);
         if (projName == null) {
-            System.out.println("Warning: Empty last project. Using default: " + defaultVaule);
-            return defaultVaule;
+            logger.warn("Empty last project. Using default: " + defaultValue);
+            return defaultValue;
         }
         return projName;
+    }
+
+    public static String getLastUsedUser(String defaultValue) {
+        String userName = properties.getProperty(LAST_PROJECT_USER);
+        if (userName == null) {
+            logger.warn("Empty last user. Using default: " + defaultValue);
+            return defaultValue;
+        }
+        return userName;
     }
 
     public static void setLastUsedProject(String projectName) {
         String projName = properties.getProperty(LAST_PROJECT_NAME);
         if (projName == null || !projName.equals(projectName)) {
             properties.setProperty(LAST_PROJECT_NAME, projectName);
+            save();
+        }
+        // TODO: remove
+        setAutoLoadLastProjectOnStartup(true);
+    }
+
+    public static void setLastUsedUser(String lastUsedUser) {
+        String userName = properties.getProperty(LAST_PROJECT_USER);
+        if (userName == null || !userName.equals(lastUsedUser)) {
+            properties.setProperty(LAST_PROJECT_NAME, lastUsedUser);
             save();
         }
     }
@@ -63,7 +86,7 @@ public class ApplicationSettings {
             props.load(fileReader);
             properties = props;
         } catch (IOException e) {
-            System.err.println("Error loading application settings!");
+            logger.error("Error loading application settings!");
         }
     }
 
@@ -71,8 +94,7 @@ public class ApplicationSettings {
         try (FileWriter fileWriter = new FileWriter(SETTINGS_FILE)) {
             properties.store(fileWriter, SETTINGS_COMMENTS);
         } catch (IOException e) {
-            System.err.println("Error saving application settings!");
+            logger.error("Error saving application settings!");
         }
     }
-
 }

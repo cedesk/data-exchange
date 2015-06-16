@@ -1,12 +1,9 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
-import ru.skoltech.cedl.dataexchange.structure.model.ElementModel;
-import ru.skoltech.cedl.dataexchange.structure.model.InstrumentModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -22,18 +19,7 @@ import java.io.IOException;
  */
 public class FileStorage {
 
-    private File directory;
-
-    public FileStorage(File projectDirectory) {
-        this.directory = projectDirectory;
-    }
-
-    public File getDirectory() {
-        return directory;
-    }
-
-    public void setDirectory(File directory) {
-        this.directory = directory;
+    public FileStorage() {
     }
 
     public void storeSystemModel(SystemModel systemModel, File outputFile) throws IOException {
@@ -47,7 +33,6 @@ public class FileStorage {
             Marshaller m = jc.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             m.marshal(systemModel, fos);
-
         } catch (JAXBException e) {
             throw new IOException("Error writing system model to XML file.", e);
         }
@@ -59,38 +44,47 @@ public class FileStorage {
 
             Unmarshaller u = ct.createUnmarshaller();
             SystemModel systemModel = (SystemModel) u.unmarshal(inp);
-            return systemModel;
 
+            postProcessSystemModel(systemModel, null);
+            return systemModel;
         } catch (JAXBException e) {
             throw new IOException("Error reading system model from XML file.", e);
         }
     }
 
-    public void storeUserManagement(UserManagement userManagement, File outputFile) throws IOException {
+    private void postProcessSystemModel(ModelNode modelNode, ModelNode parent) {
+        modelNode.setParent(parent);
+        if (modelNode instanceof CompositeModelNode) {
+            CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
+            for (Object node : compositeModelNode.getSubNodes()) {
+                postProcessSystemModel((ModelNode) node, modelNode);
+            }
+        }
+    }
+
+    public void storeUserManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
 
         StorageUtils.makeDirectory(outputFile.getParentFile());
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 
-            JAXBContext jc = JAXBContext.newInstance(UserManagement.class, User.class, Discipline.class);
+            JAXBContext jc = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
 
             Marshaller m = jc.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(userManagement, fos);
-
+            m.marshal(userRoleManagement, fos);
         } catch (JAXBException e) {
             throw new IOException("Error writing user management to XML file.", e);
         }
     }
 
-    public UserManagement loadUserManagement(File inputFile) throws IOException {
+    public UserRoleManagement loadUserManagement(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
-            JAXBContext ct = JAXBContext.newInstance(UserManagement.class, User.class, Discipline.class);
+            JAXBContext ct = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
 
             Unmarshaller u = ct.createUnmarshaller();
-            UserManagement userManagement = (UserManagement) u.unmarshal(inp);
-            return userManagement;
-
+            UserRoleManagement userRoleManagement = (UserRoleManagement) u.unmarshal(inp);
+            return userRoleManagement;
         } catch (JAXBException e) {
             throw new IOException("Error reading user management from XML file.", e);
         }
@@ -99,7 +93,6 @@ public class FileStorage {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("FileStorage{");
-        sb.append("directory=").append(directory);
         sb.append('}');
         return sb.toString();
     }

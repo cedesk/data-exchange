@@ -44,5 +44,4 @@ public class StructureTreeItem extends TreeItem<ModelNode> {
         }
         return sb.toString();
     }
-
 }
