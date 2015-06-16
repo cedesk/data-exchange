@@ -17,15 +17,16 @@ import javafx.util.Callback;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
+import ru.skoltech.cedl.dataexchange.users.model.DisciplineSubSystem;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserDiscipline;
 
 import java.net.URL;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Created by d.knoll on 10.06.2015.
@@ -99,8 +100,8 @@ public class UserRoleManagementController implements Initializable {
                 }
             }
         });
+        disciplineNameColumn.setCellFactory(new DisciplineNameCellFactory());
         Callback<TableColumn<Object, String>, TableCell<Object, String>> tableCellCallback = TextFieldTableCell.forTableColumn();
-        disciplineNameColumn.setCellFactory(tableCellCallback);
         disciplineDescriptionColumn.setCellFactory(tableCellCallback);
 
         // SUB-SYSTEMS
@@ -108,7 +109,7 @@ public class UserRoleManagementController implements Initializable {
         subsystemsPane.disableProperty().bind(noSelectionOnDisciplinesTable);
 
         subsystemsAvailableList.setCellFactory(new SubsystemsViewCellFactory());
-        subsystemsAssignedList.setCellFactory(new SubsystemsViewCellFactory());
+        subsystemsAssignedList.setCellFactory(new DisciplineSubSystemViewCellFactory());
         BooleanBinding noSelectionOnAvailableSubsystems = subsystemsAvailableList.getSelectionModel().selectedItemProperty().isNull();
         addSubsystemButton.disableProperty().bind(noSelectionOnAvailableSubsystems);
         BooleanBinding noSelectionOnAssignedSubsystems = subsystemsAssignedList.getSelectionModel().selectedItemProperty().isNull();
@@ -135,6 +136,7 @@ public class UserRoleManagementController implements Initializable {
         if (project.getUserRoleManagement() != null) {
             List<Discipline> disciplines = project.getUserRoleManagement().getDisciplines();
             ObservableList<Discipline> disciplineList = FXCollections.observableList(disciplines);
+            disciplineList.sort(Comparator.<Discipline>naturalOrder());
             disciplinesTable.setItems(disciplineList);
             boolean editable = project.getUserRoleManagement().isAdmin(project.getUser());
             disciplinesTable.setEditable(editable);
@@ -143,31 +145,44 @@ public class UserRoleManagementController implements Initializable {
 
     private void updateSubsystems(Discipline discipline) {
         if (project.getSystemModel() != null) {
-            //TODO: getAssignedSubsystems
-            ObservableList<Object> emptyList = FXCollections.observableArrayList(new Object[]{});
-            subsystemsAssignedList.setItems(emptyList);
-            //TODO: change to getAllSubsystems - assignedSubsystems
-            List<SubSystemModel> modelNodes = project.getSystemModel().getSubNodes();
-            List<SubSystemModel> subsystemsList = new ArrayList<>(modelNodes);
-            ObservableList<SubSystemModel> nodesList = FXCollections.observableList(subsystemsList);
-            subsystemsAvailableList.setItems(nodesList);
+            if (discipline != null) {
+                // all discipline-subsystem assignments
+                List<DisciplineSubSystem> disciplineSubSystemList = project.getUserRoleManagement().getDisciplineSubSystems();
+                ObservableList allDisciplineSubsystems = FXCollections.observableArrayList(disciplineSubSystemList);
+                ObservableList assignedSubsystemsList = new FilteredList<DisciplineSubSystem>(allDisciplineSubsystems, new DisciplineSubsystemFilter(discipline));
+                subsystemsAssignedList.setItems(assignedSubsystemsList);
+
+                // get assigned subsystems
+                LinkedList<SubSystemModel> assignedSubsystems = disciplineSubSystemList.stream()
+                        .map(DisciplineSubSystem::getSubSystem).distinct()
+                        .collect(Collectors.toCollection(() -> new LinkedList<>()));
+                // get all subsystems
+                List<SubSystemModel> subsystemsList = new ArrayList<>(project.getSystemModel().getSubNodes());
+                // retain only un-assigned subsystems
+                subsystemsList.removeAll(assignedSubsystems);
+                ObservableList<SubSystemModel> nodesList = FXCollections.observableList(subsystemsList);
+                nodesList.sort(Comparator.<SubSystemModel>naturalOrder());
+                subsystemsAvailableList.setItems(nodesList);
+            }
         }
     }
 
     private void updateUsers(Discipline discipline) {
         if (project.getUserManagement() != null) {
-            // all Users
-            List<User> allUsers = project.getUserManagement().getUsers();
-            ObservableList<User> allUserList = FXCollections.observableList(allUsers);
-            allUserList.sort(Comparator.<User>naturalOrder());
-            userTable.setItems(allUserList);
+            if (project.getUserManagement() != null) {
+                // all Users
+                List<User> allUsers = project.getUserManagement().getUsers();
+                ObservableList<User> allUserList = FXCollections.observableList(allUsers);
+                allUserList.sort(Comparator.<User>naturalOrder());
+                userTable.setItems(allUserList);
 
-            if (discipline != null) {
-                // assigned Users
-                List<UserDiscipline> userDisciplineList = project.getUserRoleManagement().getUserDisciplines();
-                ObservableList allUserDisciplines = FXCollections.observableArrayList(userDisciplineList);
-                ObservableList assignedUsersList = new FilteredList<UserDiscipline>(allUserDisciplines, new DisciplineFilter(discipline));
-                userRolesAssignedList.setItems(assignedUsersList);
+                if (discipline != null) {
+                    // assigned Users
+                    List<UserDiscipline> userDisciplineList = project.getUserRoleManagement().getUserDisciplines();
+                    ObservableList allUserDisciplines = FXCollections.observableArrayList(userDisciplineList);
+                    ObservableList assignedUsersList = new FilteredList<UserDiscipline>(allUserDisciplines, new UserDisciplineFilter(discipline));
+                    userRolesAssignedList.setItems(assignedUsersList);
+                }
             }
         }
     }
@@ -203,18 +218,19 @@ public class UserRoleManagementController implements Initializable {
         updateDisciplineTable();
     }
 
-    public void addSubsystem(ActionEvent actionEvent) {
-        ModelNode selectedItem = (ModelNode) subsystemsAvailableList.getSelectionModel().getSelectedItem();
-        subsystemsAvailableList.getItems().remove(selectedItem);
-        subsystemsAssignedList.getItems().add(selectedItem);
-        //TODO: record in DB-backed data model
+    public void addDisciplineSubsystem(ActionEvent actionEvent) {
+        SubSystemModel subsystem = (SubSystemModel) subsystemsAvailableList.getSelectionModel().getSelectedItem();
+        Discipline discipline = getSelectedDiscipline();
+        project.getUserRoleManagement().addDisciplineSubsystem(discipline, subsystem);
+        updateSubsystems(discipline);
+        project.markStudyModified();
     }
 
-    public void deleteSubsystem(ActionEvent actionEvent) {
-        ModelNode selectedItem = (ModelNode) subsystemsAssignedList.getSelectionModel().getSelectedItem();
-        subsystemsAssignedList.getItems().remove(selectedItem);
-        subsystemsAvailableList.getItems().add(selectedItem);
-        //TODO: record in DB-backed data model
+    public void deleteDisciplineSubsystem(ActionEvent actionEvent) {
+        DisciplineSubSystem disciplineSubsystem = (DisciplineSubSystem) subsystemsAssignedList.getSelectionModel().getSelectedItem();
+        project.getUserRoleManagement().getDisciplineSubSystems().remove(disciplineSubsystem);
+        updateSubsystems(getSelectedDiscipline());
+        project.markStudyModified();
     }
 
     public void addUser(ActionEvent actionEvent) {
@@ -251,14 +267,21 @@ public class UserRoleManagementController implements Initializable {
     }
 
     public void addUserRole(ActionEvent actionEvent) {
-        project.getUserRoleManagement().addUserDiscipline(getSelectedUser(), getSelectedDiscipline());
-        updateUsers(getSelectedDiscipline());
+        User user = getSelectedUser();
+        Discipline discipline = getSelectedDiscipline();
+        if (user == null || discipline == null)
+            throw new AssertionError("user or discipline must not be null");
+        boolean duplicate = project.getUserRoleManagement().addUserDiscipline(user, discipline);
+        if (duplicate) {
+            StatusLogger.getInstance().log("user '" + user.getUserName() + "' can not be added twice to a discipline '" + discipline.getName() + "'");
+        }
+        updateUsers(discipline);
         project.markStudyModified();
     }
 
     public void deleteUserRole(ActionEvent actionEvent) {
         UserDiscipline selectedUserDiscipline = (UserDiscipline) userRolesAssignedList.getSelectionModel().getSelectedItem();
-        userRolesAssignedList.getItems().remove(selectedUserDiscipline);
+        project.getUserRoleManagement().getUserDisciplines().remove(selectedUserDiscipline);
         updateUsers(getSelectedDiscipline());
         project.markStudyModified();
     }
@@ -287,6 +310,8 @@ public class UserRoleManagementController implements Initializable {
                     super.updateItem(model, blank);
                     if (model != null && !blank) {
                         setText(model.getName());
+                    } else {
+                        setText(null);
                     }
                 }
             };
@@ -304,6 +329,8 @@ public class UserRoleManagementController implements Initializable {
                     if (userDiscipline != null && !blank) {
                         User user = userDiscipline.getUser();
                         setText(user.getUserName() + " (" + user.getFullName() + ")");
+                    } else {
+                        setText(null);
                     }
                 }
             };
@@ -311,16 +338,70 @@ public class UserRoleManagementController implements Initializable {
         }
     }
 
-    private class DisciplineFilter implements Predicate<UserDiscipline> {
+    private class UserDisciplineFilter implements Predicate<UserDiscipline> {
         private Discipline filterDiscipline;
 
-        public DisciplineFilter(Discipline discipline) {
+        public UserDisciplineFilter(Discipline discipline) {
             this.filterDiscipline = discipline;
         }
 
         @Override
         public boolean test(UserDiscipline userDiscipline) {
             return userDiscipline.getDiscipline() == filterDiscipline;
+        }
+    }
+
+    private class DisciplineSubSystemViewCellFactory implements Callback<ListView<DisciplineSubSystem>, ListCell<DisciplineSubSystem>> {
+        @Override
+        public ListCell<DisciplineSubSystem> call(ListView<DisciplineSubSystem> p) {
+            ListCell<DisciplineSubSystem> cell = new ListCell<DisciplineSubSystem>() {
+                @Override
+                protected void updateItem(DisciplineSubSystem disciplineSubSystem, boolean blank) {
+                    super.updateItem(disciplineSubSystem, blank);
+                    if (disciplineSubSystem != null && !blank) {
+                        SubSystemModel subSystem = disciplineSubSystem.getSubSystem();
+                        setText(subSystem.getName());
+                    } else {
+                        setText(null);
+                    }
+                }
+            };
+            return cell;
+        }
+    }
+
+    private class DisciplineSubsystemFilter implements Predicate<DisciplineSubSystem> {
+        private Discipline filterDiscipline;
+
+        public DisciplineSubsystemFilter(Discipline discipline) {
+            this.filterDiscipline = discipline;
+        }
+
+        @Override
+        public boolean test(DisciplineSubSystem disciplineSubSystem) {
+            return disciplineSubSystem.getDiscipline() == filterDiscipline;
+        }
+    }
+
+    private class DisciplineNameCellFactory implements Callback<TableColumn<Discipline, Object>, TableCell<Discipline, Object>> {
+        @Override
+        public TableCell<Discipline, Object> call(TableColumn<Discipline, Object> param) {
+            return new TextFieldTableCell<Discipline, Object>() {
+                @Override
+                public void updateItem(Object item, boolean empty) {
+                    super.updateItem(item, empty);
+
+                    if (item != null && !empty) {
+                        Discipline discipline = (Discipline) getTableRow().getItem();
+                        String name = discipline.getName() + (discipline.isBuiltIn() ? " (builtin)" : "");
+                        setText(name);
+                        if (discipline.isBuiltIn())
+                            setStyle("-fx-font-weight: bold;");
+                    } else {
+                        setText(null);
+                    }
+                }
+            };
         }
     }
 }
