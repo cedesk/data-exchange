@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -102,21 +104,26 @@ public class UserRoleManagementController implements Initializable {
         disciplineDescriptionColumn.setCellFactory(tableCellCallback);
 
         // SUB-SYSTEMS
-        subsystemsPane.disableProperty().bind(disciplinesTable.getSelectionModel().selectedItemProperty().isNull());
+        BooleanBinding noSelectionOnDisciplinesTable = disciplinesTable.getSelectionModel().selectedItemProperty().isNull();
+        subsystemsPane.disableProperty().bind(noSelectionOnDisciplinesTable);
 
         subsystemsAvailableList.setCellFactory(new SubsystemsViewCellFactory());
         subsystemsAssignedList.setCellFactory(new SubsystemsViewCellFactory());
-        addSubsystemButton.disableProperty().bind(subsystemsAvailableList.getSelectionModel().selectedItemProperty().isNull());
-        deleteSubsystemButton.disableProperty().bind(subsystemsAssignedList.getSelectionModel().selectedItemProperty().isNull());
+        BooleanBinding noSelectionOnAvailableSubsystems = subsystemsAvailableList.getSelectionModel().selectedItemProperty().isNull();
+        addSubsystemButton.disableProperty().bind(noSelectionOnAvailableSubsystems);
+        BooleanBinding noSelectionOnAssignedSubsystems = subsystemsAssignedList.getSelectionModel().selectedItemProperty().isNull();
+        deleteSubsystemButton.disableProperty().bind(noSelectionOnAssignedSubsystems);
 
         // USER-ROLES
-        userRolesAssignedList.disableProperty().bind(disciplinesTable.getSelectionModel().selectedItemProperty().isNull());
+        userRolesAssignedList.disableProperty().bind(noSelectionOnDisciplinesTable);
         userRolesAssignedList.setCellFactory(new UserDisciplineViewCellFactory());
-        addUserRoleButton.disableProperty().bind(userTable.getSelectionModel().selectedItemProperty().isNull());
-        deleteUserRoleButton.disableProperty().bind(userRolesAssignedList.getSelectionModel().selectedItemProperty().isNull());
+        BooleanBinding noSelectionOnUserTable = userTable.getSelectionModel().selectedItemProperty().isNull();
+        addUserRoleButton.disableProperty().bind(Bindings.and(noSelectionOnUserTable, noSelectionOnDisciplinesTable));
+        BooleanBinding noSelectionOnAssignedUsers = userRolesAssignedList.getSelectionModel().selectedItemProperty().isNull();
+        deleteUserRoleButton.disableProperty().bind(noSelectionOnAssignedUsers);
 
         // USERS
-        deleteUserButton.disableProperty().bind(userTable.getSelectionModel().selectedItemProperty().isNull());
+        deleteUserButton.disableProperty().bind(noSelectionOnUserTable);
     }
 
     public void updateView() {
@@ -246,14 +253,14 @@ public class UserRoleManagementController implements Initializable {
     public void addUserRole(ActionEvent actionEvent) {
         project.getUserRoleManagement().addUserDiscipline(getSelectedUser(), getSelectedDiscipline());
         updateUsers(getSelectedDiscipline());
-        // TODO: record in DB-backed data model
+        project.markStudyModified();
     }
 
     public void deleteUserRole(ActionEvent actionEvent) {
         UserDiscipline selectedUserDiscipline = (UserDiscipline) userRolesAssignedList.getSelectionModel().getSelectedItem();
         userRolesAssignedList.getItems().remove(selectedUserDiscipline);
         updateUsers(getSelectedDiscipline());
-        // TODO: record in DB-backed data model
+        project.markStudyModified();
     }
 
     public void reloadUsers(ActionEvent actionEvent) {
