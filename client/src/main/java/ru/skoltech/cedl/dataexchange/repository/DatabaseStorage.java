@@ -90,7 +90,6 @@ public class DatabaseStorage implements Repository {
         } catch (Exception e) {
             throw new RepositoryException("Storing UserManagement failed.", e);
         }
-
     }
 
     @Override
@@ -99,7 +98,7 @@ public class DatabaseStorage implements Repository {
         UserRoleManagement userRoleManagement = null;
         try {
             userRoleManagement = entityManager.find(UserRoleManagement.class, studyId);
-            if(userRoleManagement == null)
+            if (userRoleManagement == null)
                 throw new RepositoryException("UserRoleManagement not found.");
         } catch (Exception e) {
             throw new RepositoryException("Loading UserRoleManagement failed.", e);
@@ -118,7 +117,7 @@ public class DatabaseStorage implements Repository {
         UserManagement userManagement = null;
         try {
             userManagement = entityManager.find(UserManagement.class, 1L);
-            if(userManagement == null)
+            if (userManagement == null)
                 throw new RepositoryException("UserManagement not found.");
         } catch (Exception e) {
             throw new RepositoryException("Loading UserManagement failed.", e);
@@ -145,7 +144,7 @@ public class DatabaseStorage implements Repository {
         SystemModel systemModel = null;
         try {
             systemModel = entityManager.find(SystemModel.class, studyId);
-            if(systemModel == null)
+            if (systemModel == null)
                 throw new RepositoryException("SystemModel not found.");
         } catch (Exception e) {
             throw new RepositoryException("Loading SystemModel failed.", e);
@@ -192,5 +191,4 @@ public class DatabaseStorage implements Repository {
                 "hostName='" + hostName + '\'' +
                 '}';
     }
-
 }

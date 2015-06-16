@@ -92,6 +92,5 @@ public class UserManagementController implements Initializable {
         // NODE PARAMETER TABLE
         Callback<TableColumn<Object, String>, TableCell<Object, String>> tableCellCallback = TextFieldTableCell.forTableColumn();
         userNameColumn.setCellFactory(tableCellCallback);
-
     }
 }

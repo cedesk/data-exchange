@@ -66,5 +66,4 @@ public class RepositoryWatcher extends Thread {
     public BooleanProperty workingCopyModifiedProperty() {
         return workingCopyModified;
     }
-
 }

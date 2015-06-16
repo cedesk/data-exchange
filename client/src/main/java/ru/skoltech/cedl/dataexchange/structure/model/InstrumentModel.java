@@ -24,5 +24,4 @@ public class InstrumentModel extends ModelNode {
     public ModelNode getParent() {
         return super.getParent();
     }
-
 }

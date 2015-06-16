@@ -19,7 +19,6 @@ import java.io.IOException;
  */
 public class FileStorage {
 
-
     public FileStorage() {
     }
 
@@ -34,7 +33,6 @@ public class FileStorage {
             Marshaller m = jc.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             m.marshal(systemModel, fos);
-
         } catch (JAXBException e) {
             throw new IOException("Error writing system model to XML file.", e);
         }
@@ -49,7 +47,6 @@ public class FileStorage {
 
             postProcessSystemModel(systemModel, null);
             return systemModel;
-
         } catch (JAXBException e) {
             throw new IOException("Error reading system model from XML file.", e);
         }
@@ -76,7 +73,6 @@ public class FileStorage {
             Marshaller m = jc.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             m.marshal(userRoleManagement, fos);
-
         } catch (JAXBException e) {
             throw new IOException("Error writing user management to XML file.", e);
         }
@@ -89,7 +85,6 @@ public class FileStorage {
             Unmarshaller u = ct.createUnmarshaller();
             UserRoleManagement userRoleManagement = (UserRoleManagement) u.unmarshal(inp);
             return userRoleManagement;
-
         } catch (JAXBException e) {
             throw new IOException("Error reading user management from XML file.", e);
         }

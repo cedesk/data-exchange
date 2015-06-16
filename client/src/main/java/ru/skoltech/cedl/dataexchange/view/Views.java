@@ -12,5 +12,4 @@ public class Views {
     public static final URL MODEL_EDITING_PANE = Views.class.getResource("model-editing.fxml");
 
     public static final URL USER_ROLES_EDITING_PANE = Views.class.getResource("user-role-editing.fxml");
-
 }

@@ -127,5 +127,4 @@ public class Dialogues {
         alert.setContentText(text);
         alert.showAndWait();
     }
-
 }

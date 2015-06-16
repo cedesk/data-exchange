@@ -97,5 +97,4 @@ public class ApplicationSettings {
             logger.error("Error saving application settings!");
         }
     }
-
 }
