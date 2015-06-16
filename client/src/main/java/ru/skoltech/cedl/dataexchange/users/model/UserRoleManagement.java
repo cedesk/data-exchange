@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -31,11 +32,35 @@ public class UserRoleManagement {
     @XmlTransient
     private Discipline adminDiscipline;
 
+    @XmlTransient
     private List<UserDiscipline> userDisciplines = new LinkedList<>();
+
+    @XmlTransient
+    private List<DisciplineSubSystem> disciplineSubSystems = new LinkedList<>();
 
     public UserRoleManagement() {
         adminDiscipline = Discipline.getAdminDiscipline(this);
         disciplines.add(adminDiscipline);
+    }
+
+    @Id
+    @GeneratedValue
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @OneToMany(targetEntity = Discipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<Discipline> getDisciplines() {
+        return disciplines;
+    }
+
+    public void setDisciplines(List<Discipline> disciplines) {
+        this.disciplines = disciplines;
     }
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -59,7 +84,7 @@ public class UserRoleManagement {
         UserDiscipline userDiscipline = new UserDiscipline(this, user, discipline);
         boolean found = userDisciplines.contains(userDiscipline);
         if (!found) {
-            discipline.setUserRoleManagement(this);
+            userDiscipline.setUserRoleManagement(this);
             userDisciplines.add(userDiscipline);
         }
         return found;
@@ -80,24 +105,31 @@ public class UserRoleManagement {
         return adminDiscipline;
     }
 
-    @Id
-    @GeneratedValue
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
     @ElementCollection(fetch = FetchType.EAGER)
-    @OneToMany(targetEntity = Discipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<Discipline> getDisciplines() {
-        return disciplines;
+    @OneToMany(targetEntity = DisciplineSubSystem.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<DisciplineSubSystem> getDisciplineSubSystems() {
+        return disciplineSubSystems;
     }
 
-    public void setDisciplines(List<Discipline> disciplines) {
-        this.disciplines = disciplines;
+    public void setDisciplineSubSystems(List<DisciplineSubSystem> disciplineSubSystems) {
+        this.disciplineSubSystems = disciplineSubSystems;
+    }
+
+    /**
+     * Adds a discipline-subsystem association, without allowing duplicates.
+     *
+     * @param discipline
+     * @param subSystem
+     * @return true if the association already existed.
+     */
+    public boolean addDisciplineSubsystem(Discipline discipline, SubSystemModel subSystem) {
+        DisciplineSubSystem disciplineSubSystem = new DisciplineSubSystem(this, discipline, subSystem);
+        boolean found = userDisciplines.contains(discipline);
+        if (!found) {
+            disciplineSubSystem.setUserRoleManagement(this);
+            disciplineSubSystems.add(disciplineSubSystem);
+        }
+        return found;
     }
 
     @Override

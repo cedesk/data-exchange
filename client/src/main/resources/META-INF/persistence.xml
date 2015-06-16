@@ -19,6 +19,7 @@
         <class>ru.skoltech.cedl.dataexchange.users.model.User</class>
         <class>ru.skoltech.cedl.dataexchange.users.model.Discipline</class>
         <class>ru.skoltech.cedl.dataexchange.users.model.UserDiscipline</class>
+        <class>ru.skoltech.cedl.dataexchange.users.model.DisciplineSubSystem</class>
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>

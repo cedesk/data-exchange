@@ -90,12 +90,12 @@
                             <center>
                                 <VBox alignment="CENTER" BorderPane.alignment="CENTER">
                                     <children>
-                                        <Button fx:id="addSubsystemButton" mnemonicParsing="false" onAction="#addSubsystem" text="&lt;&lt;">
+                                        <Button fx:id="addSubsystemButton" mnemonicParsing="false" onAction="#addDisciplineSubsystem" text="&lt;&lt;">
                                             <VBox.margin>
                                                 <Insets bottom="8.0" />
                                             </VBox.margin>
                                         </Button>
-                                        <Button fx:id="deleteSubsystemButton" mnemonicParsing="false" onAction="#deleteSubsystem" text="&gt;&gt;" />
+                                        <Button fx:id="deleteSubsystemButton" mnemonicParsing="false" onAction="#deleteDisciplineSubsystem" text="&gt;&gt;" />
                                     </children>
                                 </VBox>
                             </center>
