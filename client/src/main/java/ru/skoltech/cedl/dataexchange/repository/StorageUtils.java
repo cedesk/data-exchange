@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -9,6 +11,8 @@ import java.io.IOException;
  * Created by D.Knoll on 17.03.2015.
  */
 public class StorageUtils {
+
+    private static final Logger logger = Logger.getLogger(StorageUtils.class);
 
     private static final String APP_DIR = "CEDESK";
 
@@ -27,11 +31,11 @@ public class StorageUtils {
 
     public static void makeDirectory(File path) {
         if (!path.exists()) {
-            System.out.println("Creating directory: " + path.toString());
+            logger.info("Creating directory: " + path.toString());
             path.mkdirs();
         }
         if (!path.canRead() || !path.canWrite()) {
-            System.err.println("Warning: Directory is not usable: " + path.toString());
+            logger.error("Warning: Directory is not usable: " + path.toString());
         }
     }
 
@@ -48,5 +52,4 @@ public class StorageUtils {
         }
         return false;
     }
-
 }

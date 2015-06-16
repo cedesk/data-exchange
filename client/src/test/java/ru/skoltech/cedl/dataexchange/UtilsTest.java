@@ -40,5 +40,10 @@ public class UtilsTest {
 
     }
 
+    @Test
+    public void testDate() {
+        System.out.println(Utils.getFormattedDateAndTime());
+    }
+
 
 }

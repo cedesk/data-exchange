@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -13,12 +14,13 @@ import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
-import ru.skoltech.cedl.dataexchange.users.AccessVerifier;
+import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 
 import java.net.URL;
 import java.util.Map;
@@ -30,6 +32,8 @@ import java.util.function.BiConsumer;
  * Created by D.Knoll on 20.03.2015.
  */
 public class EditingController implements Initializable {
+
+    private static final Logger logger = Logger.getLogger(EditingController.class);
 
     @FXML
     private TableColumn parameterNameColumn;
@@ -76,10 +80,9 @@ public class EditingController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // STRUCTURE TREE VIEW
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
-        addNodeButton.disableProperty().bind(selectedNodeIsLeaf);
-        deleteNodeButton.disableProperty().bind(selectedNodeIsRoot);
+        addNodeButton.disableProperty().bind(Bindings.and(structureTree.getSelectionModel().selectedItemProperty().isNull(), selectedNodeIsLeaf));
+        deleteNodeButton.disableProperty().bind(Bindings.or(structureTree.getSelectionModel().selectedItemProperty().isNull(), selectedNodeIsRoot));
 
-        structureTree.setEditable(true); // TODO: make editable only for ADMIN
         structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
             @Override
             public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
@@ -89,7 +92,7 @@ public class EditingController implements Initializable {
         structureTree.setOnEditCommit(new EventHandler<TreeView.EditEvent<ModelNode>>() {
             @Override
             public void handle(TreeView.EditEvent<ModelNode> event) {
-                project.markSystemModelModified();
+                project.markStudyModified();
             }
         });
 
@@ -128,7 +131,7 @@ public class EditingController implements Initializable {
                         event.getTablePosition().getRow());
                 if (!event.getOldValue().equals(event.getNewValue())) {
                     parameterModel.setValue(event.getNewValue());
-                    project.markSystemModelModified();
+                    project.markStudyModified();
                 }
             }
         });
@@ -154,7 +157,8 @@ public class EditingController implements Initializable {
         modelNode.diffParameters(item.getRemoteValue());
         viewParameters.displayParameters(modelNode.getParameters());
 
-        boolean editable = AccessVerifier.check(project.getSystemModel(), treeItem, project.getUserName(), project.getUserManagement());
+        boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
+        logger.debug("selected node: " + treeItem.getValue().getName() + ", editable: " + editable);
         parameterTable.setEditable(editable);
         parameterTable.autosize();
     }
@@ -164,13 +168,20 @@ public class EditingController implements Initializable {
     }
 
     public void updateView() {
-        if (project.getRemoteModel() == null) {
+        if (project.getSystemModel() != null) {
+            //if (project.getRemoteModel() == null) {
             StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
             structureTree.setRoot(rootNode);
-        } else {
+        /*} else {
             StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
                     project.getSystemModel(), project.getRemoteModel());
             structureTree.setRoot(rootNode);
+        }*/
+            boolean isAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
+            structureTree.setEditable(isAdmin);
+        } else {
+            structureTree.setRoot(null);
+            clearParameterTable();
         }
     }
 
@@ -193,7 +204,8 @@ public class EditingController implements Initializable {
                     ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
                     selectedItem.getChildren().add(StructureTreeItemFactory.getTreeNodeView(newNode));
                     selectedItem.setExpanded(true);
-                    project.markSystemModelModified();
+                    project.markStudyModified();
+                    StatusLogger.getInstance().log("added node: " + newNode.getName());
                 }
             }
         } else {
@@ -209,12 +221,13 @@ public class EditingController implements Initializable {
         } else {
             TreeItem<ModelNode> parent = selectedItem.getParent();
             parent.getChildren().remove(selectedItem);
-            ModelNode node = selectedItem.getValue();
+            ModelNode deleteNode = selectedItem.getValue();
             if (parent.getValue() instanceof CompositeModelNode) {
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                parentNode.removeSubNode(node);
+                parentNode.removeSubNode(deleteNode);
             }
-            project.markSystemModelModified();
+            project.markStudyModified();
+            StatusLogger.getInstance().log("deleted node: " + deleteNode.getName());
         }
     }
 
@@ -243,7 +256,7 @@ public class EditingController implements Initializable {
             }
             modelNode.setName(newNodeName);
             selectedItem.valueProperty().setValue(modelNode);
-            project.markSystemModelModified();
+            project.markStudyModified();
         }
     }
 
@@ -265,7 +278,7 @@ public class EditingController implements Initializable {
                 ParameterModel pm = new ParameterModel(parameterName, 0.0);
                 selectedItem.getValue().addParameter(pm);
                 StatusLogger.getInstance().log("added parameter: " + pm.getName());
-                project.markSystemModelModified();
+                project.markStudyModified();
             }
         }
         updateParameterTable(selectedItem);
@@ -282,7 +295,7 @@ public class EditingController implements Initializable {
             selectedItem.getValue().getParameters().remove(selectedParameterIndex);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
             updateParameterTable(selectedItem);
-            project.markSystemModelModified();
+            project.markStudyModified();
         }
     }
 
@@ -316,8 +329,7 @@ public class EditingController implements Initializable {
             ParameterModel parameterModel = event.getTableView().getItems().get(
                     event.getTablePosition().getRow());
             setterMethod.accept(parameterModel, event.getNewValue());
-            project.markSystemModelModified();
+            project.markStudyModified();
         }
     }
-
 }

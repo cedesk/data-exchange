@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<SplitPane dividerPositions="0.33" prefHeight="600.0" prefWidth="800.0" stylesheets="@styling.css" BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.UserRoleManagementController">
+    <items>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+            <children>
+                <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                    <items>
+                        <Button fx:id="addDisciplineButton" mnemonicParsing="false" onAction="#addDiscipline" text="Add" />
+                        <Button fx:id="deleteDisciplineButton" mnemonicParsing="false" onAction="#deleteDiscipline" text="Delete" />
+                    </items>
+                </ToolBar>
+                <Label text="Disciplines" underline="true" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <font>
+                        <Font size="16.0" />
+                    </font>
+                    <padding>
+                        <Insets left="8.0" top="4.0" />
+                    </padding>
+                </Label>
+                <TableView fx:id="disciplinesTable" prefHeight="441.0" prefWidth="388.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
+                    <columns>
+                        <TableColumn fx:id="disciplineNameColumn" minWidth="100.0" prefWidth="-1.0" text="Name">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="name" />
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="subsystemCountColumn" minWidth="50.0" prefWidth="-1.0" text="#Subsystems">
+                        </TableColumn>
+                        <TableColumn fx:id="disciplineDescriptionColumn" minWidth="100.0" prefWidth="-1.0" text="Description">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="description" />
+                            </cellValueFactory>
+                        </TableColumn>
+                    </columns>
+                </TableView>
+            </children>
+        </AnchorPane>
+        <AnchorPane>
+            <children>
+                <SplitPane dividerPositions="0.4" orientation="VERTICAL" prefHeight="513.0" prefWidth="396.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <items>
+                        <BorderPane fx:id="subsystemsPane" prefHeight="200.0" prefWidth="200.0">
+                            <top>
+                                <Label alignment="BASELINE_LEFT" text="Subsystems" underline="true">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                    <padding>
+                                        <Insets left="8.0" top="4.0" />
+                                    </padding>
+                                </Label>
+                            </top>
+                            <left>
+                                <VBox>
+                                    <children>
+                                        <Label alignment="BASELINE_LEFT" text="assigned" underline="true">
+                                            <font>
+                                                <Font size="16.0" />
+                                            </font>
+                                            <padding>
+                                                <Insets left="16.0" />
+                                            </padding>
+                                        </Label>
+                                        <ListView fx:id="subsystemsAssignedList" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                                    </children>
+                                </VBox>
+                            </left>
+                            <right>
+                                <VBox>
+                                    <children>
+                                        <Label alignment="BASELINE_LEFT" text="unassigned" underline="true">
+                                            <font>
+                                                <Font size="16.0" />
+                                            </font>
+                                            <padding>
+                                                <Insets left="16.0" />
+                                            </padding>
+                                        </Label>
+                                        <ListView fx:id="subsystemsAvailableList" BorderPane.alignment="CENTER" />
+                                    </children>
+                                </VBox>
+                            </right>
+                            <center>
+                                <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+                                    <children>
+                                        <Button fx:id="addSubsystemButton" mnemonicParsing="false" onAction="#addDisciplineSubsystem" text="&lt;&lt;">
+                                            <VBox.margin>
+                                                <Insets bottom="8.0" />
+                                            </VBox.margin>
+                                        </Button>
+                                        <Button fx:id="deleteSubsystemButton" mnemonicParsing="false" onAction="#deleteDisciplineSubsystem" text="&gt;&gt;" />
+                                    </children>
+                                </VBox>
+                            </center>
+                            <padding>
+                                <Insets bottom="4.0" left="4.0" right="4.0" />
+                            </padding>
+                        </BorderPane>
+                        <BorderPane fx:id="userRolePane" prefHeight="200.0" prefWidth="200.0">
+                            <top>
+                                <Label styleClass="sectionTitle" text="Users" underline="true">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                    <padding>
+                                        <Insets left="8.0" top="4.0" />
+                                    </padding>
+                                </Label>
+                            </top>
+                            <right>
+                                <VBox>
+                                    <children>
+                                        <Label styleClass="sectionTitle" text="available" underline="true">
+                                            <font>
+                                                <Font size="16.0" />
+                                            </font>
+                                            <padding>
+                                                <Insets left="16.0" />
+                                            </padding>
+                                        </Label>
+                                        <VBox>
+                                            <children>
+                                                <TableView fx:id="userTable" BorderPane.alignment="CENTER">
+                                                    <columns>
+                                                        <TableColumn fx:id="userNameColumn" minWidth="100.0" prefWidth="-1.0" text="Name">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="userName" />
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                        <TableColumn fx:id="userFullNameColumn" minWidth="100.0" prefWidth="-1.0" text="Full Name">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="fullName" />
+                                                            </cellValueFactory>
+                                                        </TableColumn>
+                                                    </columns>
+                                                </TableView>
+                                            </children>
+                                        </VBox>
+                                        <ToolBar styleClass="sectionTitle">
+                                            <items>
+                                                <Button fx:id="addUserButton" mnemonicParsing="false" onAction="#addUser" text="Add" />
+                                                <Button fx:id="deleteUserButton" mnemonicParsing="false" onAction="#deleteUser" text="Delete" />
+                                    <Separator orientation="VERTICAL" />
+                                    <Button fx:id="reloadUsers" layoutX="107.0" layoutY="10.0" mnemonicParsing="false" onAction="#reloadUsers" text="Reload" />
+                                    <Button fx:id="saveUsers" mnemonicParsing="false" onAction="#saveUsers" text="Save" />
+                                            </items>
+                                        </ToolBar>
+                                    </children>
+                                </VBox>
+                            </right>
+                            <center>
+                                <VBox alignment="CENTER">
+                                    <children>
+                                        <Button fx:id="addUserRoleButton" mnemonicParsing="false" onAction="#addUserRole" text="&lt;&lt;" BorderPane.alignment="CENTER">
+                                            <VBox.margin>
+                                                <Insets bottom="8.0" />
+                                            </VBox.margin>
+                                        </Button>
+                                        <Button fx:id="deleteUserRoleButton" mnemonicParsing="false" onAction="#deleteUserRole" text="&gt;&gt;" />
+                                    </children>
+                                </VBox>
+                            </center>
+                            <left>
+                                <VBox>
+                                    <children>
+                                        <Label styleClass="sectionTitle" text="assigned" underline="true">
+                                            <font>
+                                                <Font size="16.0" />
+                                            </font>
+                                            <padding>
+                                                <Insets left="16.0" />
+                                            </padding>
+                                        </Label>
+                                        <ListView fx:id="userRolesAssignedList" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                                    </children>
+                                </VBox>
+                            </left>
+                            <padding>
+                                <Insets bottom="4.0" left="4.0" right="4.0" />
+                            </padding>
+                        </BorderPane>
+                    </items>
+                </SplitPane>
+            </children>
+        </AnchorPane>
+    </items>
+</SplitPane>

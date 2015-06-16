@@ -1,21 +1,20 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
-import org.tmatesoft.svn.core.SVNAuthenticationException;
-import org.tmatesoft.svn.core.SVNException;
+import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.repository.FileStorage;
-import ru.skoltech.cedl.dataexchange.repository.RemoteStorage;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
-import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
+import ru.skoltech.cedl.dataexchange.repository.Repository;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
+import ru.skoltech.cedl.dataexchange.structure.model.Study;
+import ru.skoltech.cedl.dataexchange.structure.model.StudyFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.DummyUserManagementBuilder;
+import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Observer;
 
 /**
@@ -25,29 +24,19 @@ public class Project {
 
     public static final String DEFAULT_PROJECT_NAME = "defaultProject";
 
-    private static final String MODEL_FILE = "cedesk-system-model.xml";
-
-    private static final String USER_FILE = "cedesk-user-management.xml";
+    private static Logger logger = Logger.getLogger(Project.class);
 
     private ProjectSettings projectSettings;
 
     private String projectName;
 
-    private FileStorage localStorage;
+    private Repository repository;
 
-    private RepositoryStorage repositoryStorage;
+    private Study study;
 
-    private SystemModel systemModel;
-
-    private SystemModel remoteModel;
-
-    private UnitManagement unitManagement;
+    private RepositoryStateMachine repositoryStateMachine;
 
     private UserManagement userManagement;
-
-    private LocalStateMachine localStateMachine;
-
-    private RemoteStateMachine remoteStateMachine;
 
     public Project() {
         this(DEFAULT_PROJECT_NAME);
@@ -56,28 +45,13 @@ public class Project {
     public Project(String projectName) {
         this.projectName = projectName;
         this.projectSettings = new ProjectSettings(projectName);
-        this.localStorage = new FileStorage(StorageUtils.getDataDir(projectName));
-        this.localStateMachine = new LocalStateMachine();
-        this.remoteStateMachine = new RemoteStateMachine();
-        this.userManagement = DummyUserManagementBuilder.getModel();
-        //TODO: remove after testing
-        DummyUserManagementBuilder.addUserWithAllPower(userManagement, getUserName());
-    }
-
-    public static String getDataFileName() {
-        return MODEL_FILE;
-    }
-
-    public String getUserName() {
-        return projectSettings.getUser();
+        this.repository = RepositoryFactory.getDefaultRepository();
+        this.repositoryStateMachine = new RepositoryStateMachine();
     }
 
     public User getUser() {
-        return userManagement.getUserMap().get(getUserName());
-    }
-
-    public void setUserName(String userName) {
-        projectSettings.setUser(userName);
+        String userName = ApplicationSettings.getLastUsedUser("admin");
+        return getUserManagement().findUser(userName);
     }
 
     public String getPassword() {
@@ -88,52 +62,40 @@ public class Project {
         projectSettings.setAuthenticator(password);
     }
 
-    public String getRepositoryPath() {
-        return projectSettings.getLastUsedRepository();
-    }
-
-    public void setRepositoryPath(String repositoryPath) {
-        projectSettings.setLastUsedRepository(repositoryPath);
-    }
-
     public SystemModel getSystemModel() {
-        return systemModel;
+        return getStudy() != null ? getStudy().getSystemModel() : null;
     }
 
-    @Deprecated
-    public void setSystemModel(SystemModel systemModel) {
-        this.systemModel = systemModel;
-        localStateMachine.performAction(LocalStateMachine.LocalActions.NEW);
+    public Study getStudy() {
+        return study;
     }
 
-    public UnitManagement getUnitManagement() {
-        return unitManagement;
-    }
-
-    public void setUnitManagement(UnitManagement unitManagement) {
-        this.unitManagement = unitManagement;
+    private void setStudy(Study study) {
+        this.study = study;
     }
 
     public UserManagement getUserManagement() {
+        if (userManagement == null) {
+            loadUserManagement();
+        }
         return userManagement;
     }
 
-    public void setUserManagement(UserManagement userManagement) {
-        this.userManagement = userManagement;
-    }
-
-    public File getDataFile() {
-        File dataFile = new File(localStorage.getDirectory(), MODEL_FILE);
-        if (!dataFile.exists()) {
-            System.err.println("Warning: Data file does not exist!");
-        } else if (!dataFile.canRead() || !dataFile.canWrite()) {
-            System.err.println("Warning: Data file is not usable!");
+    public boolean loadUserManagement() {
+        try {
+            userManagement = repository.loadUserManagement();
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error loading user management. recreating new user management.");
+            initializeUserManagement();
         }
-        return dataFile;
+        return false;
     }
 
-    public File getDataDir() {
-        return StorageUtils.getDataDir(projectName);
+    public UserRoleManagement getUserRoleManagement() {
+        if (getStudy() == null)
+            return null;
+        return getStudy().getUserRoleManagement();
     }
 
     public String getProjectName() {
@@ -143,130 +105,106 @@ public class Project {
     public void setProjectName(String projectName) {
         this.projectName = projectName;
         this.projectSettings = new ProjectSettings(projectName);
-        this.localStorage = new FileStorage(StorageUtils.getDataDir(projectName));
-        localStateMachine = new LocalStateMachine();
-        try {
-            this.repositoryStorage = null; // to force reconnect
-            getRepositoryStorage();
-        } catch (SVNAuthenticationException ae) {
-            System.err.println("SVN Authentication Error.");
-            this.repositoryStorage = null;
-        } catch (SVNException e) {
-            StatusLogger.getInstance().log("Error connecting to repository!", true);
-            this.repositoryStorage = null;
-        }
-    }
-
-    protected RepositoryStorage getRepositoryStorage() throws SVNException {
-        if (repositoryStorage == null) {
-            repositoryStorage = new RepositoryStorage(getRepositoryPath(), getDataDir(), getUserName(), getPassword());
-            updateRemoteStatus();
-        }
-        return repositoryStorage;
-    }
-
-    private void updateRemoteStatus() {
-        if (repositoryStorage != null) {
-            long repositoryRevisionNumber = repositoryStorage.getRepositoryRevisionNumber();
-            long workingCopyRevisionNumber = repositoryStorage.getWorkingCopyRevisionNumber();
-            boolean workingCopyModified = repositoryStorage.isWorkingCopyModified(getDataFile());
-            remoteStateMachine.initialize(true, workingCopyModified, workingCopyRevisionNumber < repositoryRevisionNumber);
-        }
-    }
-
-    public boolean checkoutFile() throws SVNException {
-        boolean success = getRepositoryStorage().checkoutFile();
-        if (success) {
-            remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.CHECKOUT);
-        }
-        return success;
-    }
-
-    public boolean updateFile() throws SVNException {
-        boolean success = getRepositoryStorage().updateFile();
-        if (success) {
-            remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.UPDATE);
-        }
-        return success;
-    }
-
-    public SystemModel getRemoteModel() {
-        return remoteModel;
-    }
-
-    public void setRemoteModel(SystemModel remoteModel) {
-        this.remoteModel = remoteModel;
+        this.repository = RepositoryFactory.getDefaultRepository();
+        this.repositoryStateMachine.reset();
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Project{");
         sb.append("projectName='").append(projectName).append('\'');
-        sb.append(", localStorage=").append(localStorage);
-        sb.append(", repositoryStorage=").append(repositoryStorage);
+        sb.append(", projectSettings=").append(projectSettings);
+        sb.append(", repository=").append(repository);
+        sb.append(", repositoryStateMachine=").append(repositoryStateMachine);
         sb.append('}');
         return sb.toString();
     }
 
-    public void storeLocal() throws IOException {
-        localStorage.storeSystemModel(systemModel, getDataFile());
-        localStorage.storeUserManagement(userManagement, getUserFile());
-        localStateMachine.performAction(LocalStateMachine.LocalActions.SAVE);
-        remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.LOCAL_CHANGE);
-    }
-
-    public void loadLocal() throws IOException {
-        File dataFile = getDataFile();
-        if (StorageUtils.fileExistsAndIsNotEmpty(dataFile)) {
-            systemModel = localStorage.loadSystemModel(dataFile);
-            localStateMachine.performAction(LocalStateMachine.LocalActions.LOAD);
-        } else {
-            StatusLogger.getInstance().log("No model available!", true);
-        }
-    }
-
-    public boolean isActionPossible(LocalStateMachine.LocalActions action) {
-        return localStateMachine.isActionPossible(action);
-    }
-
-    public boolean isActionPossible(RemoteStateMachine.RemoteActions action) {
-        return remoteStateMachine.isActionPossible(action);
-    }
-
-    public void addLocalStateObserver(Observer o) {
-        localStateMachine.addObserver(o);
-    }
-
-    public void addRemoteStateObserver(Observer o) {
-        remoteStateMachine.addObserver(o);
-    }
-
-    public void markSystemModelModified() {
-        localStateMachine.performAction(LocalStateMachine.LocalActions.MODIFY);
-    }
-
-    public void loadRemote() {
+    public boolean storeStudy() {
         try {
-            InputStream inStr = getRepositoryStorage().getFileContentFromRepository(Project.getDataFileName());
-            remoteModel = RemoteStorage.load(inStr);
-        } catch (IOException | SVNException e) {
-            StatusLogger.getInstance().log("Error getting versioned remote data file.\n" + e.getMessage());
+            repository.storeStudy(study);
+            repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+            projectSettings.setLastUsedRepository(repository.getUrl());
+            return true;
+        } catch (Exception e) {
+            logger.error("Error storing study!", e);
+        }
+        return false;
+    }
+
+    public boolean loadStudy() {
+        Study study = null;
+        try {
+            study = repository.loadStudy(projectName);
+        } catch (RepositoryException e) {
+            logger.error("Study not found!");
+        } catch (Exception e) {
+            logger.error("Error loading study!", e);
+        }
+        if (study != null) {
+            setStudy(study);
+            repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        }
+        return study != null;
+    }
+
+    public boolean isActionPossible(RepositoryStateMachine.RepositoryActions action) {
+        return repositoryStateMachine.isActionPossible(action);
+    }
+
+    public void addRepositoryStateObserver(Observer o) {
+        repositoryStateMachine.addObserver(o);
+    }
+
+    public void markStudyModified() {
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
+    }
+
+    @Override
+    public void finalize() throws Throwable {
+        repository.close();
+        super.finalize();
+    }
+
+    public void newStudy(String studyName) {
+        SystemModel systemModel = DummySystemBuilder.getSystemModel(3);
+        systemModel.setName(studyName);
+        reinitializeProject(systemModel);
+    }
+
+    public void importSystemModel(SystemModel systemModel) {
+        reinitializeProject(systemModel);
+    }
+
+    private void reinitializeProject(SystemModel systemModel) {
+        setProjectName(systemModel.getName());
+        study = StudyFactory.makeStudy(projectName, userManagement);
+        study.setSystemModel(systemModel);
+        study.setName(systemModel.getName());
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+
+        UserRoleManagement userRoleManagement;
+        userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
+        userRoleManagement.addUserDiscipline(getUser(), userRoleManagement.getAdminDiscipline());
+        getStudy().setUserRoleManagement(userRoleManagement);
+    }
+
+    private void initializeUserManagement() {
+        userManagement = UserManagementFactory.getUserManagement();
+        try {
+            repository.storeUserManagement(userManagement);
+        } catch (RepositoryException re) {
+            logger.error("Error storing user management!");
         }
     }
 
-    public boolean commitFile(String commitMessage) {
-        boolean success = repositoryStorage.commitFile(commitMessage);
-        remoteStateMachine.performAction(RemoteStateMachine.RemoteActions.COMMIT);
-        return success;
-    }
-
-    public File getUserFile() {
-        File userFile = new File(localStorage.getDirectory(), USER_FILE);
-        if (!userFile.exists()) {
-            System.err.println("Warning: User file does not exist!");
-        } else if (!userFile.canRead() || !userFile.canWrite()) {
-            System.err.println("Warning: User file is not usable!");
+    public boolean storeUserManagement() {
+        try {
+            repository.storeUserManagement(userManagement);
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error storing user management.");
         }
-        return userFile;
+        return false;
     }
 }

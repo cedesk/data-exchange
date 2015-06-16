@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import ru.skoltech.cedl.dataexchange.Utils;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,7 +16,8 @@ import java.util.stream.Collectors;
  */
 @XmlType(propOrder = {"name", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public abstract class ModelNode {
+@MappedSuperclass
+public abstract class ModelNode implements Comparable<ModelNode> {
 
     @XmlAttribute
     protected String name;
@@ -23,6 +25,12 @@ public abstract class ModelNode {
     @XmlElementWrapper(name = "parameters")
     @XmlElement(name = "parameter")
     protected List<ParameterModel> parameters = new LinkedList<>();
+
+    @XmlTransient
+    protected ModelNode parent;
+
+    @XmlTransient
+    protected long id;
 
     public ModelNode() {
     }
@@ -43,6 +51,7 @@ public abstract class ModelNode {
         parameters.add(parameter);
     }
 
+    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL)
     public List<ParameterModel> getParameters() {
         return parameters;
     }
@@ -51,11 +60,36 @@ public abstract class ModelNode {
         this.parameters = parameters;
     }
 
+    @Transient
     private Map<String, ParameterModel> getParameterMap() {
         Map<String, ParameterModel> parameterModelMap = getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getName, Function.identity())
         );
         return parameterModelMap;
+    }
+
+    @Id
+    @GeneratedValue
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    @Transient
+    public ModelNode getParent() {
+        return parent;
+    }
+
+    public void setParent(ModelNode parent) {
+        this.parent = parent;
+    }
+
+    @Transient
+    public boolean isRootNode() {
+        return parent == null;
     }
 
     public boolean hasParameter(String parameterName) {
@@ -120,5 +154,10 @@ public abstract class ModelNode {
         sb.append(", parameters=").append(parameters);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public int compareTo(ModelNode other) {
+        return name.compareTo(other.name);
     }
 }

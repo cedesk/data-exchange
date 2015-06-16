@@ -10,31 +10,33 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.*;
-import org.tmatesoft.svn.core.SVNException;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryStorage;
-import ru.skoltech.cedl.dataexchange.repository.svn.RepositoryWatcher;
-import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.LocalStateMachine;
+import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.RemoteStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.users.model.Discipline;
+import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainController implements Initializable {
 
-    private static final String commitMessage = "";
+    private static final Logger logger = Logger.getLogger(MainController.class);
 
     private final Project project = new Project();
 
@@ -42,19 +44,10 @@ public class MainController implements Initializable {
     public Button newButton;
 
     @FXML
-    public Button openButton;
+    public Button loadButton;
 
     @FXML
     public Button saveButton;
-
-    @FXML
-    public Button checkoutButton;
-
-    @FXML
-    public Button updateButton;
-
-    @FXML
-    public Button commitButton;
 
     @FXML
     public Label statusbarLabel;
@@ -76,117 +69,60 @@ public class MainController implements Initializable {
 
     @FXML
     public Tab modelTab;
+
     @FXML
-    public Tab usersTab;
+    public Tab userRolesTab;
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
     private EditingController editingController;
 
-    private UserManagementController userManagementController;
+    private UserRoleManagementController userRoleManagementController;
 
     private RepositoryWatcher repositoryWatcher;
 
-    public void newModel(ActionEvent actionEvent) {
-        SystemModel system = DummySystemBuilder.getSystemModel(4);
-        project.setSystemModel(system);
-        editingController.updateView();
-    }
-
-    public void loadModel(ActionEvent actionEvent) {
-        try {
-            project.loadLocal();
-            editingController.updateView();
-        } catch (IOException e) {
-            StatusLogger.getInstance().log("Error loading file!", true);
-            e.printStackTrace();
-        }
-    }
-
-    public void saveModel(ActionEvent actionEvent) {
-        try {
-            project.storeLocal();
-        } catch (IOException e) {
-            StatusLogger.getInstance().log("Error saving file!", true);
-            e.printStackTrace();
-        }
-    }
-
-    public void checkoutModel(ActionEvent actionEvent) {
-        if (!RepositoryStorage.checkRepository(project.getRepositoryPath(), project.getUserName(), project.getPassword(), Project.getDataFileName())) {
-            Dialogues.showInvalidRepositoryWarning();
-            StatusLogger.getInstance().log("No repository selected.");
-            boolean success = changeProjectRepository(project);
-            if (success) {
-                StatusLogger.getInstance().log("Successfully selected repository.");
-            } else {
+    public void newProject(ActionEvent actionEvent) {
+        Optional<String> choice = Dialogues.inputStudyName(Project.DEFAULT_PROJECT_NAME);
+        if (choice.isPresent()) {
+            String projectName = choice.get();
+            if (!Identifiers.validateProjectName(projectName)) {
+                Dialogues.showError("Invalid name", Identifiers.getProjectNameValidationDescription());
                 return;
             }
+            project.newStudy(projectName);
+            StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
+            updateView();
         }
+    }
+
+    public void loadProject(ActionEvent actionEvent) {
         try {
-            boolean success = project.checkoutFile();
+            boolean success = project.loadStudy();
             if (success) {
-                StatusLogger.getInstance().log("Successfully checked out.");
+                ApplicationSettings.setLastUsedProject(project.getProjectName());
+                StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
             } else {
-                StatusLogger.getInstance().log("Nothing to check out.");
+                StatusLogger.getInstance().log("Loading study failed!", false);
             }
-        } catch (SVNException e) {
-            StatusLogger.getInstance().log("Error checking out.", true);
+        } catch (Exception e) {
+            StatusLogger.getInstance().log("Error loading project!", true);
+            logger.error(e);
         }
+        updateView();
     }
 
-    private boolean changeProjectRepository(Project project) {
-
-        Optional<ButtonType> selection = Dialogues.chooseLocalOrRemoteRepository();
-        if (selection.get() == Dialogues.REMOTE_REPO) {
-
-            boolean validRepositoryPath = false;
-            do {
-                Optional<String> result = Dialogues.inputRemoteRepositoryURL();
-                // if cancel, then abort selection
-                if (!result.isPresent()) {
-                    return false;
-                }
-                String url = result.get();
-                validRepositoryPath = checkRepositoryPath(project, url);
-            } while (!validRepositoryPath);
-            return true;
-        } else if (selection.get() == Dialogues.LOCAL_REPO) {
-
-            boolean validRepositoryPath = false;
-            do {
-                File path = Dialogues.chooseLocalRepositoryPath();
-                if (path == null) { // user canceled directory selection
-                    StatusLogger.getInstance().log("User declined choosing a repository.", true);
-                    return false;
-                }
-                String url = RepositoryStorage.makeUrlFromPath(path);
-                validRepositoryPath = checkRepositoryPath(project, url);
-            } while (!validRepositoryPath);
-            return true;
-        } else { // selection CANCELED
-            return false;
-        }
-    }
-
-    private boolean checkRepositoryPath(Project project, String url) {
-        boolean validRepositoryPath;
-        validRepositoryPath = RepositoryStorage.checkRepository(url, Utils.getUserName(), "", Project.getDataFileName());
-        if (validRepositoryPath) {
-            project.setRepositoryPath(url);
-        } else {
-            Dialogues.showInvalidRepositoryPath();
-            StatusLogger.getInstance().log("Error, selected path is invalid.", true);
-        }
-        return validRepositoryPath;
-    }
-
-    public void commitModel(ActionEvent actionEvent) {
-        boolean success = project.commitFile(commitMessage);
-        if (success) {
-            StatusLogger.getInstance().log("Successfully committed to repository.");
-        } else {
-            StatusLogger.getInstance().log("Committing to repository failed.", true);
+    public void saveProject(ActionEvent actionEvent) {
+        try {
+            boolean success = project.storeStudy();
+            if (success) {
+                ApplicationSettings.setLastUsedProject(project.getProjectName());
+                StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
+            } else {
+                StatusLogger.getInstance().log("Saving study failed!", false);
+            }
+        } catch (Exception e) {
+            StatusLogger.getInstance().log("Error saving project!", true);
+            logger.error(e);
         }
     }
 
@@ -198,109 +134,152 @@ public class MainController implements Initializable {
         // EDITING PANE
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.EDITING_PANE);
+            loader.setLocation(Views.MODEL_EDITING_PANE);
             Parent editingPane = loader.load();
             modelTab.setContent(editingPane);
+            modelTab.setOnSelectionChanged(event -> {
+                if (modelTab.isSelected()) {
+                    editingController.updateView();
+                }
+            });
             editingController = loader.getController();
             editingController.setProject(project);
         } catch (IOException ioe) {
-            System.err.println("SEVERE ERROR: not able to load editing view pane.");
+            logger.error("Unable to load editing view pane.");
             throw new RuntimeException(ioe);
         }
 
         // USERS PANE
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.USERS_PANE);
+            loader.setLocation(Views.USER_ROLES_EDITING_PANE);
             Parent usersPane = loader.load();
-            usersTab.setContent(usersPane);
-            userManagementController = loader.getController();
-            userManagementController.setProject(project);
+            userRolesTab.setContent(usersPane);
+            userRolesTab.setOnSelectionChanged(event -> {
+                if (userRolesTab.isSelected()) {
+                    userRoleManagementController.updateView();
+                }
+            });
+            userRoleManagementController = loader.getController();
+            userRoleManagementController.setProject(project);
         } catch (IOException ioe) {
-            System.err.println("SEVERE ERROR: not able to load user management view pane.");
+            logger.error("Unable to load user management view pane.");
             throw new RuntimeException(ioe);
         }
 
-        project.addLocalStateObserver(new Observer() {
+        project.addRepositoryStateObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
-                newButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.NEW));
-                openButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.LOAD));
-                saveButton.setDisable(!project.isActionPossible(LocalStateMachine.LocalActions.SAVE));
-            }
-        });
-        project.addRemoteStateObserver(new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                checkoutButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.CHECKOUT));
-                updateButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.UPDATE));
-                commitButton.setDisable(!project.isActionPossible(RemoteStateMachine.RemoteActions.COMMIT));
+                newButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
+                loadButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
+                saveButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE));
             }
         });
 
         if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
             String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
             project.setProjectName(projectName);
-            loadModel(null);
-            studyNameLabel.setText(project.getSystemModel().getName());
-            userNameLabel.setText(project.getUser().getName());
-            userRoleLabel.setText(project.getUser().getDisciplineNames());
-            makeRepositoryWatcher();
+            loadProject(null);
+            //makeRepositoryWatcher();
         }
+    }
 
-        // TOOLBAR BUTTONS
-        //newButton.disableProperty().bind(project.checkedOutProperty());
-        //saveButton.disableProperty().bind(project.dirtyProperty().not());
-        //commitButton.disableProperty().bind(project.checkedOutProperty().not());
+    private void updateView() {
+        if (project.getStudy() != null) {
+            studyNameLabel.setText(project.getStudy().getName());
+            userNameLabel.setText(project.getUser().getName());
+            userRoleLabel.setText(getDisciplineNames(project.getUser()));
+            // TODO: improve: update only visible tab
+            editingController.updateView();
+            userRoleManagementController.updateView();
+        } else {
+            studyNameLabel.setText(project.getProjectName());
+            userNameLabel.setText("--");
+            userRoleLabel.setText("--");
+        }
+    }
 
+    private String getDisciplineNames(User user) {
+        List<Discipline> disciplinesOfUser = project.getUserRoleManagement().getDisciplinesOfUser(user);
+        return disciplinesOfUser.stream()
+                .map(Discipline::getName)
+                .collect(Collectors.joining(", "));
     }
 
     private void makeRepositoryWatcher() {
-        try {
-            repositoryWatcher = new RepositoryWatcher(project);
-            statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
-            workingCopyModified.selectedProperty().bind(repositoryWatcher.workingCopyModifiedProperty());
-            repositoryWatcher.repositoryNewerProperty().addListener(new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                    if (newValue) {
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateRemoteModel();
-                                StatusLogger.getInstance().log("Remote model loaded for comparison.");
-                            }
-                        });
-                    }
+        repositoryWatcher = new RepositoryWatcher(project);
+        statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
+        workingCopyModified.selectedProperty().bind(repositoryWatcher.workingCopyModifiedProperty());
+        repositoryWatcher.repositoryNewerProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateRemoteModel();
+                            StatusLogger.getInstance().log("Remote model loaded for comparison.");
+                        }
+                    });
                 }
-            });
-            repositoryWatcher.start();
-        } catch (SVNException e) {
-            System.err.println("Error making repository watcher.\n" + e.getMessage());
-        }
+            }
+        });
+        repositoryWatcher.start();
     }
 
     public void updateRemoteModel() {
-        project.loadRemote();
-        editingController.updateView();
+        //project.loadRemote();
+        updateView();
     }
 
     public void close() {
         if (repositoryWatcher != null) {
             repositoryWatcher.finish();
         }
+        try {
+            project.finalize();
+        } catch (Throwable throwable) {
+            // ignore
+        }
     }
 
-    public void updateModel(ActionEvent actionEvent) {
-        try {
-            boolean success = project.updateFile();
-            if (success) {
-                StatusLogger.getInstance().log("Successfully updated.");
-            } else {
-                StatusLogger.getInstance().log("Nothing to update.");
+    public void importProject(ActionEvent actionEvent) {
+        // TODO: warn user about replacing current project
+
+        File importFile = Dialogues.chooseImportFile();
+        if (importFile != null) {
+            FileStorage fs = new FileStorage();
+            try {
+                SystemModel systemModel = fs.loadSystemModel(importFile);
+                project.importSystemModel(systemModel);
+                updateView();
+                StatusLogger.getInstance().log("Successfully imported study!", false);
+            } catch (IOException e) {
+                logger.error("error importing model from file");
             }
-        } catch (SVNException e) {
-            StatusLogger.getInstance().log("Error updating.", true);
+        } else {
+            logger.info("user aborted import file selection.");
         }
+    }
+
+    public void exportProject(ActionEvent actionEvent) {
+        File exportPath = Dialogues.chooseExportPath();
+        if (exportPath != null) {
+            String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
+            File outputFile = new File(exportPath, outputFileName);
+            FileStorage fs = new FileStorage();
+            try {
+                fs.storeSystemModel(project.getSystemModel(), outputFile);
+                StatusLogger.getInstance().log("Successfully exported study!", false);
+            } catch (IOException e) {
+                logger.error("error exporting model to file", e);
+            }
+        } else {
+            logger.info("user aborted export path selection.");
+        }
+    }
+
+    public void quit(ActionEvent actionEvent) {
+        Platform.exit();
     }
 }

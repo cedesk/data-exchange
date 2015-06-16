@@ -5,6 +5,7 @@ import javafx.scene.Node;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.Map;
 public class StructureTreeItemFactory {
 
     public static final Image FLASH_OVERLAY = new Image("/icons/flash-ol.png");
+    private static final Logger logger = Logger.getLogger(StructureTreeItemFactory.class);
     private final static Image SYS_ICON = new Image("/icons/element_l1.png");
     private final static Image SUBSYS_ICON = new Image("/icons/element_l2.png");
     private final static Image ELEMENT_ICON = new Image("/icons/element_l3.png");
@@ -84,7 +86,7 @@ public class StructureTreeItemFactory {
         } else if (model instanceof InstrumentModel) {
             structureTreeItem.setGraphic(getImageView(INSTRUMENT_ICON, overlayFlash));
         } else {
-            System.err.println("UNKNOWN model encountered: " + model.getName() + " (" + model.getClass().getName() + "");
+            logger.error("UNKNOWN model encountered: " + model.getName() + " (" + model.getClass().getName() + "");
         }
     }
 
@@ -104,5 +106,4 @@ public class StructureTreeItemFactory {
             return icon;
         }
     }
-
 }
