@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -81,6 +82,9 @@ public class UserRoleManagementController implements Initializable {
     @FXML
     public Button deleteUserRoleButton;
 
+    @FXML
+    public TableColumn subsystemCountColumn;
+
     private Project project;
 
     public void setProject(Project project) {
@@ -103,6 +107,19 @@ public class UserRoleManagementController implements Initializable {
         disciplineNameColumn.setCellFactory(new DisciplineNameCellFactory());
         Callback<TableColumn<Object, String>, TableCell<Object, String>> tableCellCallback = TextFieldTableCell.forTableColumn();
         disciplineDescriptionColumn.setCellFactory(tableCellCallback);
+        subsystemCountColumn.setCellFactory(tableCellCallback);
+        subsystemCountColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Discipline, String>, ObservableValue>() {
+            @Override
+            public ObservableValue call(TableColumn.CellDataFeatures<Discipline, String> param) {
+                Discipline discipline = param.getValue();
+                if (discipline != null) {
+                    long subSystemsCount = project.getUserRoleManagement().getSubSystemsOfDiscipline(discipline);
+                    return new SimpleStringProperty(String.valueOf(subSystemsCount));
+                } else {
+                    return new SimpleStringProperty("");
+                }
+            }
+        });
 
         // SUB-SYSTEMS
         BooleanBinding noSelectionOnDisciplinesTable = disciplinesTable.getSelectionModel().selectedItemProperty().isNull();
@@ -210,7 +227,7 @@ public class UserRoleManagementController implements Initializable {
 
     public void deleteDiscipline(ActionEvent actionEvent) {
         Discipline selectedDiscipline = getSelectedDiscipline();
-        if (selectedDiscipline != null)
+        if (selectedDiscipline == null)
             throw new AssertionError("no discipline in table view");
         project.getUserRoleManagement().getDisciplines().remove(selectedDiscipline);
         project.markStudyModified();
@@ -395,8 +412,11 @@ public class UserRoleManagementController implements Initializable {
                         Discipline discipline = (Discipline) getTableRow().getItem();
                         String name = discipline.getName() + (discipline.isBuiltIn() ? " (builtin)" : "");
                         setText(name);
-                        if (discipline.isBuiltIn())
+                        if (discipline.isBuiltIn()) {
                             setStyle("-fx-font-weight: bold;");
+                        } else {
+                            setStyle("-fx-font-weight: normal;");
+                        }
                     } else {
                         setText(null);
                     }
