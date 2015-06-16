@@ -67,9 +67,6 @@ public class Project {
     }
 
     public Study getStudy() {
-        /*if (study == null) {
-            newStudy(DEFAULT_PROJECT_NAME);
-        }*/
         return study;
     }
 
@@ -79,14 +76,20 @@ public class Project {
 
     public UserManagement getUserManagement() {
         if (userManagement == null) {
-            try {
-                userManagement = repository.loadUserManagement();
-            } catch (RepositoryException e) {
-                logger.error("Error loading user management. recreating new user management.");
-                initializeUserManagement();
-            }
+            loadUserManagement();
         }
         return userManagement;
+    }
+
+    public boolean loadUserManagement() {
+        try {
+            userManagement = repository.loadUserManagement();
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error loading user management. recreating new user management.");
+            initializeUserManagement();
+        }
+        return false;
     }
 
     public UserRoleManagement getUserRoleManagement() {
@@ -193,5 +196,15 @@ public class Project {
         } catch (RepositoryException re) {
             logger.error("Error storing user management!");
         }
+    }
+
+    public boolean storeUserManagement() {
+        try {
+            repository.storeUserManagement(userManagement);
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error storing user management.");
+        }
+        return false;
     }
 }
