@@ -100,7 +100,7 @@ public class UserRoleManagementController implements Initializable {
                 if (newValue != null) {
                     Discipline discipline = (Discipline) newValue;
                     updateSubsystems(discipline);
-                    updateUsers(discipline);
+                    updateUserDisciplines(discipline);
                 }
             }
         });
@@ -146,7 +146,7 @@ public class UserRoleManagementController implements Initializable {
 
     public void updateView() {
         updateDisciplineTable();
-        updateUsers(null);
+        updateUsers();
     }
 
     private void updateDisciplineTable() {
@@ -184,7 +184,19 @@ public class UserRoleManagementController implements Initializable {
         }
     }
 
-    private void updateUsers(Discipline discipline) {
+    private void updateUserDisciplines(Discipline discipline) {
+        if (project.getUserManagement() != null) {
+            if (project.getUserManagement() != null && discipline != null) {
+                // assigned Users
+                List<UserDiscipline> userDisciplineList = project.getUserRoleManagement().getUserDisciplines();
+                ObservableList allUserDisciplines = FXCollections.observableArrayList(userDisciplineList);
+                ObservableList assignedUsersList = new FilteredList<UserDiscipline>(allUserDisciplines, new UserDisciplineFilter(discipline));
+                userRolesAssignedList.setItems(assignedUsersList);
+            }
+        }
+    }
+
+    private void updateUsers() {
         if (project.getUserManagement() != null) {
             if (project.getUserManagement() != null) {
                 // all Users
@@ -192,14 +204,6 @@ public class UserRoleManagementController implements Initializable {
                 ObservableList<User> allUserList = FXCollections.observableList(allUsers);
                 allUserList.sort(Comparator.<User>naturalOrder());
                 userTable.setItems(allUserList);
-
-                if (discipline != null) {
-                    // assigned Users
-                    List<UserDiscipline> userDisciplineList = project.getUserRoleManagement().getUserDisciplines();
-                    ObservableList allUserDisciplines = FXCollections.observableArrayList(userDisciplineList);
-                    ObservableList assignedUsersList = new FilteredList<UserDiscipline>(allUserDisciplines, new UserDisciplineFilter(discipline));
-                    userRolesAssignedList.setItems(assignedUsersList);
-                }
             }
         }
     }
@@ -267,12 +271,12 @@ public class UserRoleManagementController implements Initializable {
                 project.getUserManagement().getUsers().add(user);
             }
         }
-        updateUsers(getSelectedDiscipline());
+        updateUsers();
     }
 
     public void deleteUser(ActionEvent actionEvent) {
         project.getUserManagement().getUsers().remove(getSelectedUser());
-        updateUsers(getSelectedDiscipline());
+        updateUsers();
     }
 
     public Discipline getSelectedDiscipline() {
@@ -292,20 +296,20 @@ public class UserRoleManagementController implements Initializable {
         if (duplicate) {
             StatusLogger.getInstance().log("user '" + user.getUserName() + "' can not be added twice to a discipline '" + discipline.getName() + "'");
         }
-        updateUsers(discipline);
+        updateUserDisciplines(discipline);
         project.markStudyModified();
     }
 
     public void deleteUserRole(ActionEvent actionEvent) {
         UserDiscipline selectedUserDiscipline = (UserDiscipline) userRolesAssignedList.getSelectionModel().getSelectedItem();
         project.getUserRoleManagement().getUserDisciplines().remove(selectedUserDiscipline);
-        updateUsers(getSelectedDiscipline());
+        updateUserDisciplines(getSelectedDiscipline());
         project.markStudyModified();
     }
 
     public void reloadUsers(ActionEvent actionEvent) {
         boolean success = project.loadUserManagement();
-        updateUsers(getSelectedDiscipline());
+        updateUserDisciplines(getSelectedDiscipline());
         if (!success) {
             StatusLogger.getInstance().log("Error loading user list!", true);
         }
