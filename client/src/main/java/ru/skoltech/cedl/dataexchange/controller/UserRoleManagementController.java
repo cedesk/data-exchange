@@ -17,16 +17,12 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserDiscipline;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -155,7 +151,7 @@ public class UserRoleManagementController implements Initializable {
             // all Users
             List<User> allUsers = project.getUserManagement().getUsers();
             ObservableList<User> allUserList = FXCollections.observableList(allUsers);
-            //allUserList.sort(Comparator.<User>naturalOrder());
+            allUserList.sort(Comparator.<User>naturalOrder());
             userTable.setItems(allUserList);
 
             // assigned Users

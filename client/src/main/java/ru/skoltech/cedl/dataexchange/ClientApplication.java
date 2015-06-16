@@ -33,7 +33,5 @@ public class ClientApplication extends Application {
                 mainController.close();
             }
         });
-
     }
-
 }

@@ -2,7 +2,6 @@ package ru.skoltech.cedl.dataexchange.users;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
