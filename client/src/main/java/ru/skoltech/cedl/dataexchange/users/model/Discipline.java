@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
-public class Discipline {
+public class Discipline implements Comparable<Discipline> {
 
     @XmlTransient
     private long id;
@@ -112,5 +112,10 @@ public class Discipline {
 
     public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
         this.userRoleManagement = userRoleManagement;
+    }
+
+    @Override
+    public int compareTo(Discipline other) {
+        return name.compareTo(other.name);
     }
 }

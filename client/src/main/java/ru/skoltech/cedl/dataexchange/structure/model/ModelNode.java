@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @XmlType(propOrder = {"name", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @MappedSuperclass
-public abstract class ModelNode {
+public abstract class ModelNode implements Comparable<ModelNode> {
 
     @XmlAttribute
     protected String name;
@@ -154,5 +154,10 @@ public abstract class ModelNode {
         sb.append(", parameters=").append(parameters);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public int compareTo(ModelNode other) {
+        return name.compareTo(other.name);
     }
 }
