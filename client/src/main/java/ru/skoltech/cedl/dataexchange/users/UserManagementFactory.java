@@ -16,7 +16,7 @@ public class UserManagementFactory {
     public static UserManagement getUserManagement() {
         UserManagement userManagement = new UserManagement();
 
-        User expert = new User(EXPERT, "Discipline Expert", "");
+        User expert = new User(EXPERT, "Expert in all Disciplines", "");
         User admin = new User(ADMIN, "Laboratory Administrator", "");
 
         userManagement.getUsers().add(admin);
