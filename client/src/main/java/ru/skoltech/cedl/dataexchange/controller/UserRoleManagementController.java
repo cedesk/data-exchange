@@ -253,6 +253,14 @@ public class UserRoleManagementController implements Initializable {
         // TODO: record in DB-backed data model
     }
 
+    public void reloadUsers(ActionEvent actionEvent) {
+
+    }
+
+    public void saveUsers(ActionEvent actionEvent) {
+
+    }
+
     private class SubsystemsViewCellFactory implements Callback<ListView<SubSystemModel>, ListCell<SubSystemModel>> {
         @Override
         public ListCell<SubSystemModel> call(ListView<SubSystemModel> p) {
