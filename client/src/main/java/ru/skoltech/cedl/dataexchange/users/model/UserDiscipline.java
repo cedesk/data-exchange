@@ -73,4 +73,22 @@ public class UserDiscipline {
         sb.append('}');
         return sb.toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserDiscipline that = (UserDiscipline) o;
+
+        if (!user.equals(that.user)) return false;
+        return discipline.equals(that.discipline);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = user.hashCode();
+        result = 31 * result + discipline.hashCode();
+        return result;
+    }
 }
