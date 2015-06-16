@@ -142,6 +142,14 @@ public class UserRoleManagement {
     }
 
     @Transient
+    public long getSubSystemsOfDiscipline(Discipline discipline) {
+        long count = disciplineSubSystems.stream()
+                .filter(disciplineSubSystem -> discipline.equals(disciplineSubSystem.getDiscipline()))
+                .count();
+        return count;
+    }
+
+    @Transient
     public Map<String, Discipline> getDisciplineMap() {
         return disciplines.stream().collect(
                 Collectors.toMap(Discipline::getName, Function.<Discipline>identity()));
