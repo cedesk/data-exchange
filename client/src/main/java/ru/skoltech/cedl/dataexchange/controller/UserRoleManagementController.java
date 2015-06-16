@@ -121,6 +121,7 @@ public class UserRoleManagementController implements Initializable {
 
     public void updateView() {
         updateDisciplineTable();
+        updateUsers(null);
     }
 
     private void updateDisciplineTable() {
@@ -154,11 +155,13 @@ public class UserRoleManagementController implements Initializable {
             allUserList.sort(Comparator.<User>naturalOrder());
             userTable.setItems(allUserList);
 
-            // assigned Users
-            List<UserDiscipline> userDisciplineList = project.getUserRoleManagement().getUserDisciplines();
-            ObservableList allUserDisciplines = FXCollections.observableArrayList(userDisciplineList);
-            ObservableList assignedUsersList = new FilteredList<UserDiscipline>(allUserDisciplines, new DisciplineFilter(discipline));
-            userRolesAssignedList.setItems(assignedUsersList);
+            if (discipline != null) {
+                // assigned Users
+                List<UserDiscipline> userDisciplineList = project.getUserRoleManagement().getUserDisciplines();
+                ObservableList allUserDisciplines = FXCollections.observableArrayList(userDisciplineList);
+                ObservableList assignedUsersList = new FilteredList<UserDiscipline>(allUserDisciplines, new DisciplineFilter(discipline));
+                userRolesAssignedList.setItems(assignedUsersList);
+            }
         }
     }
 
@@ -254,11 +257,18 @@ public class UserRoleManagementController implements Initializable {
     }
 
     public void reloadUsers(ActionEvent actionEvent) {
-
+        boolean success = project.loadUserManagement();
+        updateUsers(getSelectedDiscipline());
+        if (!success) {
+            StatusLogger.getInstance().log("Error loading user list!", true);
+        }
     }
 
     public void saveUsers(ActionEvent actionEvent) {
-
+        boolean success = project.storeUserManagement();
+        if (!success) {
+            StatusLogger.getInstance().log("Error saving user list!", true);
+        }
     }
 
     private class SubsystemsViewCellFactory implements Callback<ListView<SubSystemModel>, ListCell<SubSystemModel>> {
