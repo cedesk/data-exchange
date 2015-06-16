@@ -116,6 +116,7 @@ public class Discipline implements Comparable<Discipline> {
 
     @Override
     public int compareTo(Discipline other) {
-        return name.compareTo(other.name);
+        int builtinCompare = Boolean.compare(builtIn, other.builtIn);
+        return builtinCompare != 0 ? -builtinCompare : name.compareTo(other.name);
     }
 }
