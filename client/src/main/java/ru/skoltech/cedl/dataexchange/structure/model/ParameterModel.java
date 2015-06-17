@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import java.sql.Timestamp;
 
 /**
  * Created by D.Knoll on 12.03.2015.
@@ -32,6 +33,8 @@ public class ParameterModel implements Comparable<ParameterModel> {
 
     private String description;
 
+    private Timestamp lastModified;
+
     public ParameterModel() {
     }
 
@@ -46,6 +49,15 @@ public class ParameterModel implements Comparable<ParameterModel> {
         this.type = type;
         this.isShared = isShared;
         this.description = description;
+    }
+
+    @Version
+    public Timestamp getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Timestamp lastModified) {
+        this.lastModified = lastModified;
     }
 
     @Id
@@ -145,6 +157,7 @@ public class ParameterModel implements Comparable<ParameterModel> {
         sb.append(", serverValue=").append(serverValue);
         sb.append(", type=").append(type);
         sb.append(", isShared=").append(isShared);
+        sb.append(", lastModified=").append(lastModified);
         sb.append(", description='").append(description).append('\'');
         sb.append('}');
         return sb.toString();

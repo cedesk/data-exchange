@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
 import org.apache.log4j.Logger;
+import org.hibernate.jpa.QueryHints;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
@@ -52,6 +53,8 @@ public class DatabaseStorage implements Repository {
     @Override
     public Study loadStudy(String name) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
+        //entityManager.flush();
+        //entityManager.clear();
         try {
             final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
             final CriteriaQuery criteriaQuery = criteriaBuilder.createQuery(Study.class);
@@ -60,6 +63,7 @@ public class DatabaseStorage implements Repository {
             criteriaQuery.where(namePredicate);
             final TypedQuery query = entityManager.createQuery(criteriaQuery);
             Object singleResult = query.getSingleResult();
+            //entityManager.refresh(singleResult);
             return (Study) singleResult;
         } catch (NoResultException e) {
             throw new RepositoryException("Study not found.", e);
@@ -164,6 +168,7 @@ public class DatabaseStorage implements Repository {
             }
             em = emf.createEntityManager();
         }
+        //emf.getCache().evictAll();
         return em;
     }
 
