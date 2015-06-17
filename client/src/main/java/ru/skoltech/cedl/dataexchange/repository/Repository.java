@@ -20,7 +20,7 @@ public interface Repository {
 
     Study loadStudy(String name) throws RepositoryException;
 
-    void storeStudy(Study study);
+    void storeStudy(Study study) throws RepositoryException;
 
     void storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException;
 
