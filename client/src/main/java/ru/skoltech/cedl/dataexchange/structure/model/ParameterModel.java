@@ -33,6 +33,7 @@ public class ParameterModel implements Comparable<ParameterModel> {
 
     private String description;
 
+    @XmlTransient
     private Timestamp lastModified;
 
     public ParameterModel() {
