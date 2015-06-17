@@ -26,6 +26,10 @@
             <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/cedesk_dev"/>
             <property name="javax.persistence.jdbc.user" value="cedesk"/>
             <property name="javax.persistence.jdbc.password" value="cedesk"/>
+            <property name="hibernate.cache.use_second_level_cache" value="false"/>
+            <property name="hibernate.cache.use_query_cache" value="false"/>
+            <property name="javax.persistence.sharedCache.mode" value="NONE"/>
+            <property name="org.hibernate.cacheable" value="false"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <!--<property name="hibernate.show_sql" value="true"/>-->

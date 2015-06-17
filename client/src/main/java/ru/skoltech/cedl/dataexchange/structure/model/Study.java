@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 /**
  * Created by dknoll on 23/05/15.
@@ -19,6 +20,8 @@ public class Study {
     private SystemModel systemModel;
 
     private UserRoleManagement userRoleManagement;
+
+    private Timestamp lastModified;
 
     public Study() {
     }
@@ -61,6 +64,15 @@ public class Study {
 
     public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
         this.userRoleManagement = userRoleManagement;
+    }
+
+    @Version
+    public Timestamp getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Timestamp lastModified) {
+        this.lastModified = lastModified;
     }
 
     @Override
