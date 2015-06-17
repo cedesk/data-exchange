@@ -44,7 +44,7 @@ public class ModelStorageTest {
         System.out.println(systemModel1);
 
         Assert.assertEquals(systemModel1.getName(), systemModel.getName());
-        Assert.assertEquals(systemModel1.getParameters(), systemModel.getParameters());
+        Assert.assertArrayEquals(systemModel1.getParameters().toArray(), systemModel.getParameters().toArray());
         Assert.assertEquals(systemModel1, systemModel);
     }
 
