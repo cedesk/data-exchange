@@ -1,7 +1,6 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
 import org.apache.log4j.Logger;
-import org.hibernate.jpa.QueryHints;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
@@ -23,8 +22,6 @@ public class DatabaseStorage implements Repository {
     private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
     private static final String LOCALHOST = "localhost";
 
-    private EntityManager em;
-
     private String hostName;
 
     private EntityManagerFactory emf;
@@ -41,20 +38,27 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public void storeStudy(Study study) {
-        EntityManager entityManager = getEntityManager();
-        entityManager.setFlushMode(FlushModeType.AUTO);
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
-        entityManager.persist(study);
-        transaction.commit();
+    public void storeStudy(Study study) throws RepositoryException {
+        try {
+            EntityManager entityManager = getEntityManager();
+            entityManager.setFlushMode(FlushModeType.AUTO);
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
+            entityManager.persist(study);
+            transaction.commit();
+        } catch (Exception e) {
+            throw new RepositoryException("Storing Study failed.", e);
+        } finally {
+            try {
+                getEntityManager().close();
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     @Override
     public Study loadStudy(String name) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
-        //entityManager.flush();
-        //entityManager.clear();
         try {
             final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
             final CriteriaQuery criteriaQuery = criteriaBuilder.createQuery(Study.class);
@@ -63,10 +67,15 @@ public class DatabaseStorage implements Repository {
             criteriaQuery.where(namePredicate);
             final TypedQuery query = entityManager.createQuery(criteriaQuery);
             Object singleResult = query.getSingleResult();
-            //entityManager.refresh(singleResult);
+            entityManager.refresh(singleResult);
             return (Study) singleResult;
         } catch (NoResultException e) {
             throw new RepositoryException("Study not found.", e);
+        } finally {
+            try {
+                getEntityManager().close();
+            } catch (Exception ignore) {
+            }
         }
     }
 
@@ -80,6 +89,11 @@ public class DatabaseStorage implements Repository {
             transaction.commit();
         } catch (Exception e) {
             throw new RepositoryException("Storing UserRoleManagement failed.", e);
+        } finally {
+            try {
+                getEntityManager().close();
+            } catch (Exception ignore) {
+            }
         }
     }
 
@@ -93,6 +107,11 @@ public class DatabaseStorage implements Repository {
             transaction.commit();
         } catch (Exception e) {
             throw new RepositoryException("Storing UserManagement failed.", e);
+        } finally {
+            try {
+                getEntityManager().close();
+            } catch (Exception ignore) {
+            }
         }
     }
 
@@ -106,6 +125,11 @@ public class DatabaseStorage implements Repository {
                 throw new RepositoryException("UserRoleManagement not found.");
         } catch (Exception e) {
             throw new RepositoryException("Loading UserRoleManagement failed.", e);
+        } finally {
+            try {
+                getEntityManager().close();
+            } catch (Exception ignore) {
+            }
         }
         return userRoleManagement;
     }
@@ -125,6 +149,11 @@ public class DatabaseStorage implements Repository {
                 throw new RepositoryException("UserManagement not found.");
         } catch (Exception e) {
             throw new RepositoryException("Loading UserManagement failed.", e);
+        } finally {
+            try {
+                getEntityManager().close();
+            } catch (Exception ignore) {
+            }
         }
         return userManagement;
     }
@@ -139,54 +168,55 @@ public class DatabaseStorage implements Repository {
             transaction.commit();
         } catch (Exception e) {
             throw new RepositoryException("Storing SystemModel failed.", e);
+        } finally {
+            try {
+                getEntityManager().close();
+            } catch (Exception ignore) {
+            }
         }
     }
 
     @Override
     public SystemModel loadSystemModel(long studyId) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
-        SystemModel systemModel = null;
         try {
-            systemModel = entityManager.find(SystemModel.class, studyId);
+            SystemModel systemModel = entityManager.find(SystemModel.class, studyId);
             if (systemModel == null)
                 throw new RepositoryException("SystemModel not found.");
+            return systemModel;
         } catch (Exception e) {
             throw new RepositoryException("Loading SystemModel failed.", e);
         }
-        return systemModel;
     }
 
     private EntityManager getEntityManager() {
-        if (em == null) {
-            emf = Persistence.createEntityManagerFactory("db");
-            if (!hostName.equals(LOCALHOST)) {
+        if (emf == null) {
+            if (hostName.equals(LOCALHOST)) {
+                emf = Persistence.createEntityManagerFactory("db");
+            } else {
                 Map<String, Object> properties = emf.getProperties();
                 String jdbcUrl = (String) properties.get(JAVAX_PERSISTENCE_JDBC_URL);
                 String newUrl = jdbcUrl.replace(LOCALHOST, hostName);
                 properties.put(JAVAX_PERSISTENCE_JDBC_URL, newUrl);
                 emf = Persistence.createEntityManagerFactory("db", properties);
             }
-            em = emf.createEntityManager();
         }
-        //emf.getCache().evictAll();
-        return em;
+        return emf.createEntityManager();
     }
 
-    private void releaseEntityManager() {
-        em.close();
-        em = null;
+    private void releaseEntityManagerFactory() {
         emf.close();
         emf = null;
     }
 
     @Override
     public void close() {
-        releaseEntityManager();
+        releaseEntityManagerFactory();
     }
 
     @Override
     public void finalize() throws Throwable {
-        releaseEntityManager();
+        releaseEntityManagerFactory();
         super.finalize();
     }
 
