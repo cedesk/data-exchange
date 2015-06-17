@@ -51,7 +51,7 @@ public abstract class ModelNode implements Comparable<ModelNode> {
         parameters.add(parameter);
     }
 
-    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     public List<ParameterModel> getParameters() {
         return parameters;
     }

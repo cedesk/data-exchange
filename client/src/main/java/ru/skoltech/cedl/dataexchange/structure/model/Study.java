@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlTransient;
 import java.sql.Timestamp;
 
 /**
@@ -21,6 +22,7 @@ public class Study {
 
     private UserRoleManagement userRoleManagement;
 
+    @XmlTransient
     private Timestamp lastModified;
 
     public Study() {
@@ -48,7 +50,7 @@ public class Study {
         this.name = name;
     }
 
-    @OneToOne(targetEntity = SystemModel.class, cascade = CascadeType.ALL)
+    @OneToOne(targetEntity = SystemModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     public SystemModel getSystemModel() {
         return systemModel;
     }
@@ -57,7 +59,7 @@ public class Study {
         this.systemModel = systemModel;
     }
 
-    @OneToOne(targetEntity = UserRoleManagement.class, cascade = CascadeType.ALL)
+    @OneToOne(targetEntity = UserRoleManagement.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     public UserRoleManagement getUserRoleManagement() {
         return userRoleManagement;
     }
@@ -80,6 +82,7 @@ public class Study {
         final StringBuilder sb = new StringBuilder("Study{");
         sb.append("id=").append(id);
         sb.append(", name=").append(name);
+        sb.append(", lastModified=").append(lastModified);
         sb.append('}');
         return sb.toString();
     }
