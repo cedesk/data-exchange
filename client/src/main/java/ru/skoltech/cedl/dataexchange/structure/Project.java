@@ -134,7 +134,8 @@ public class Project {
 
     public boolean storeStudy() {
         try {
-            repository.storeStudy(study);
+            Study study1 = repository.storeStudy(study);
+            study = study1;
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
             projectSettings.setLastUsedRepository(repository.getUrl());
             return true;

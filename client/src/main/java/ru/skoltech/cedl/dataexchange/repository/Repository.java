@@ -14,13 +14,13 @@ public interface Repository {
 
     UserRoleManagement loadUserRoleManagement(long studyId) throws RepositoryException;
 
-    void storeSystemModel(SystemModel systemModel) throws RepositoryException;
+    SystemModel storeSystemModel(SystemModel systemModel) throws RepositoryException;
 
     void close();
 
     Study loadStudy(String name) throws RepositoryException;
 
-    void storeStudy(Study study) throws RepositoryException;
+    Study storeStudy(Study study) throws RepositoryException;
 
     void storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException;
 

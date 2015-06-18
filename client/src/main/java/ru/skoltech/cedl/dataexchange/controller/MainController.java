@@ -114,6 +114,7 @@ public class MainController implements Initializable {
     public void saveProject(ActionEvent actionEvent) {
         try {
             boolean success = project.storeStudy();
+            updateView();
             if (success) {
                 ApplicationSettings.setLastUsedProject(project.getProjectName());
                 StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
