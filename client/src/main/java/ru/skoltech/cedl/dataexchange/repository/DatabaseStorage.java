@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
 import org.apache.log4j.Logger;
+import org.hibernate.StaleObjectStateException;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
@@ -11,6 +12,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
@@ -50,6 +53,8 @@ public class DatabaseStorage implements Repository {
                 study = entityManager.merge(study);
             }
             transaction.commit();
+        } catch (OptimisticLockException | RollbackException re) {
+            throw extractAndRepackCause(re);
         } catch (Exception e) {
             throw new RepositoryException("Storing Study failed.", e);
         } finally {
@@ -137,6 +142,39 @@ public class DatabaseStorage implements Repository {
             }
         }
         return userRoleManagement;
+    }
+
+    private RepositoryException extractAndRepackCause(Throwable throwable) {
+        Throwable cause = throwable.getCause();
+        while (cause != null && !(cause instanceof StaleObjectStateException)) {
+            cause = cause.getCause();
+        }
+        if (cause != null) {
+            StaleObjectStateException staleObjectStateException = (StaleObjectStateException) cause;
+            String entityName = staleObjectStateException.getEntityName();
+            Serializable identifier = staleObjectStateException.getIdentifier();
+            RepositoryException re = new RepositoryException("Stale object encountered");
+            re.setEntityClassName(entityName);
+            re.setEntityIdentifier(identifier.toString());
+            EntityManager entityManager = null;
+            try {
+                entityManager = getEntityManager();
+                Class<?> entityClass = Class.forName(entityName);
+                Object entity = entityManager.find(entityClass, identifier);
+                if (entity != null) {
+                    re.setEntityAsString(entity.toString());
+                    Method getNameMethod = entity.getClass().getMethod("getName");
+                    Object name = getNameMethod.invoke(entity);
+                    re.setEntityName(name.toString());
+                }
+            } catch (Exception ignore) {
+            } finally {
+                if (entityManager != null)
+                    entityManager.close();
+            }
+            return re;
+        }
+        return new RepositoryException("Unknown DataStorage Exception", throwable);
     }
 
     @Override
