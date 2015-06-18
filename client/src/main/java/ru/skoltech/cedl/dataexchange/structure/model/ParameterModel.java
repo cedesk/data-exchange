@@ -1,5 +1,5 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
-
+import org.hibernate.envers.Audited;
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 
@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
+@Audited
 public class ParameterModel implements Comparable<ParameterModel> {
 
     @XmlTransient
