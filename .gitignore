@@ -2,3 +2,5 @@ client/out/
 client/.idea/workspace.xml
 client/target/
 client/.idea/libraries/
+client/application.settings
+client/.clover/
