@@ -2,8 +2,6 @@ package ru.skoltech.cedl.dataexchange.users.model;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by dknoll on 13/05/15.
@@ -27,11 +25,6 @@ public class User implements Comparable<User> {
 
     @XmlTransient
     private String passwordHash;
-
-    @XmlElementWrapper(name = "disciplines")
-    @XmlElement(name = "discipline")
-    @XmlIDREF
-    private Set<Discipline> disciplines = new HashSet<>();
 
     public User() {
     }
@@ -93,7 +86,6 @@ public class User implements Comparable<User> {
         final StringBuilder sb = new StringBuilder("User{");
         sb.append("userName='").append(userName).append('\'');
         sb.append(", fullName='").append(fullName).append('\'');
-        sb.append(", disciplines=").append(disciplines);
         sb.append('}');
         return sb.toString();
     }
