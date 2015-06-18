@@ -6,6 +6,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -137,6 +138,7 @@ public class UserRoleManagement {
     public String toString() {
         final StringBuilder sb = new StringBuilder("UserRoleManagement{");
         sb.append("disciplines=").append(disciplines);
+        sb.append("disciplineSubSystems").append(disciplineSubSystems);
         sb.append("userDisciplines").append(userDisciplines);
         sb.append('}');
         return sb.toString();
@@ -182,6 +184,7 @@ public class UserRoleManagement {
         return false;
     }
 
+    @Transient
     public Discipline getDisciplineOfSubSystem(ModelNode modelNode) {
         if (modelNode.isRootNode()) {
             return getAdminDiscipline();
@@ -200,5 +203,25 @@ public class UserRoleManagement {
             logger.error("no discipline found for subsystem '" + modelNode.getName() + "'");
             return null;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserRoleManagement that = (UserRoleManagement) o;
+
+        if (!Arrays.equals(disciplines.toArray(), that.disciplines.toArray())) return false;
+        if (!Arrays.equals(userDisciplines.toArray(), that.userDisciplines.toArray())) return false;
+        return Arrays.equals(disciplineSubSystems.toArray(), that.disciplineSubSystems.toArray());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = disciplines.hashCode();
+        result = 31 * result + userDisciplines.hashCode();
+        result = 31 * result + disciplineSubSystems.hashCode();
+        return result;
     }
 }
