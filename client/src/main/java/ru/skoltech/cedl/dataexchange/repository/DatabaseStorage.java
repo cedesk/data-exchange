@@ -38,13 +38,17 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public void storeStudy(Study study) throws RepositoryException {
+    public Study storeStudy(Study study) throws RepositoryException {
         try {
             EntityManager entityManager = getEntityManager();
             entityManager.setFlushMode(FlushModeType.AUTO);
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
-            entityManager.persist(study);
+            if (study.getId() == 0) {
+                entityManager.persist(study);
+            } else {
+                study = entityManager.merge(study);
+            }
             transaction.commit();
         } catch (Exception e) {
             throw new RepositoryException("Storing Study failed.", e);
@@ -54,6 +58,7 @@ public class DatabaseStorage implements Repository {
             } catch (Exception ignore) {
             }
         }
+        return study;
     }
 
     @Override
@@ -159,12 +164,16 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public void storeSystemModel(SystemModel modelNode) throws RepositoryException {
+    public SystemModel storeSystemModel(SystemModel modelNode) throws RepositoryException {
         try {
             EntityManager entityManager = getEntityManager();
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
-            entityManager.persist(modelNode);
+            if (modelNode.getId() == 0) {
+                entityManager.persist(modelNode);
+            } else {
+                modelNode = entityManager.merge(modelNode);
+            }
             transaction.commit();
         } catch (Exception e) {
             throw new RepositoryException("Storing SystemModel failed.", e);
@@ -174,6 +183,7 @@ public class DatabaseStorage implements Repository {
             } catch (Exception ignore) {
             }
         }
+        return modelNode;
     }
 
     @Override
