@@ -1,7 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import org.apache.log4j.Logger;
-import org.hibernate.StaleObjectStateException;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -17,7 +16,6 @@ import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
-import javax.persistence.RollbackException;
 import java.util.Observer;
 
 /**
@@ -139,26 +137,14 @@ public class Project {
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
             projectSettings.setLastUsedRepository(repository.getUrl());
             return true;
-        } catch (RollbackException re) {
+        } catch (RepositoryException re) {
             StatusLogger.getInstance().log("Unable to store. Concurrent editing appeared!", true);
-            String cause = findCause(re);
-            logger.error("Entity was modified concurrently: " + cause);
+            logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier());
+            StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
         } catch (Exception e) {
             logger.error("Error storing study!", e);
         }
         return false;
-    }
-
-    private String findCause(RollbackException re) {
-        Throwable cause = re.getCause();
-        while (cause != null && !(cause instanceof StaleObjectStateException)) {
-            cause = cause.getCause();
-        }
-        if (cause != null) {
-            StaleObjectStateException staleObjectStateException = (StaleObjectStateException) cause;
-            return staleObjectStateException.getEntityName() + "#" + staleObjectStateException.getIdentifier();
-        }
-        return "<unknown>";
     }
 
     public boolean loadStudy() {
