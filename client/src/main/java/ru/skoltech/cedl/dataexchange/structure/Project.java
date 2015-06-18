@@ -41,6 +41,8 @@ public class Project {
 
     private UserManagement userManagement;
 
+    private User currentUser;
+
     public Project() {
         this(DEFAULT_PROJECT_NAME);
     }
@@ -53,8 +55,15 @@ public class Project {
     }
 
     public User getUser() {
-        String userName = ApplicationSettings.getLastUsedUser("admin");
-        return getUserManagement().findUser(userName);
+        if (currentUser == null) { // caching
+            String userName = ApplicationSettings.getLastUsedUser();
+            if (userName == null) {
+                userName = UserManagementFactory.ADMIN;
+                logger.warn("No user in application settings found. Assuming admin!");
+            }
+            currentUser = getUserManagement().findUser(userName);
+        }
+        return currentUser;
     }
 
     public String getPassword() {
