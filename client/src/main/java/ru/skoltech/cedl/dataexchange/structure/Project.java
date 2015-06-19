@@ -2,7 +2,6 @@ package ru.skoltech.cedl.dataexchange.structure;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.ProjectSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
@@ -27,15 +26,13 @@ public class Project {
 
     private static Logger logger = Logger.getLogger(Project.class);
 
-    private ProjectSettings projectSettings;
-
     private String projectName;
 
     private Repository repository;
 
     private Study study;
 
-    private RepositoryStateMachine repositoryStateMachine;
+    private RepositoryStateMachine repositoryStateMachine = new RepositoryStateMachine();
 
     private UserManagement userManagement;
 
@@ -46,10 +43,13 @@ public class Project {
     }
 
     public Project(String projectName) {
+        initialize(projectName);
+    }
+
+    private void initialize(String projectName) {
         this.projectName = projectName;
-        this.projectSettings = new ProjectSettings(projectName);
-        this.repository = RepositoryFactory.getDefaultRepository();
-        this.repositoryStateMachine = new RepositoryStateMachine();
+        this.repository = RepositoryFactory.getDatabaseRepository();
+        this.repositoryStateMachine.reset();
     }
 
     public User getUser() {
@@ -62,14 +62,6 @@ public class Project {
             currentUser = getUserManagement().findUser(userName);
         }
         return currentUser;
-    }
-
-    public String getPassword() {
-        return projectSettings.getAuthenticator();
-    }
-
-    public void setPassword(String password) {
-        projectSettings.setAuthenticator(password);
     }
 
     public SystemModel getSystemModel() {
@@ -113,17 +105,13 @@ public class Project {
     }
 
     public void setProjectName(String projectName) {
-        this.projectName = projectName;
-        this.projectSettings = new ProjectSettings(projectName);
-        this.repository = RepositoryFactory.getDefaultRepository();
-        this.repositoryStateMachine.reset();
+        initialize(projectName);
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Project{");
         sb.append("projectName='").append(projectName).append('\'');
-        sb.append(", projectSettings=").append(projectSettings);
         sb.append(", repository=").append(repository);
         sb.append(", repositoryStateMachine=").append(repositoryStateMachine);
         sb.append('}');
@@ -135,7 +123,7 @@ public class Project {
             Study study1 = repository.storeStudy(study);
             study = study1;
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
-            projectSettings.setLastUsedRepository(repository.getUrl());
+            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException re) {
             StatusLogger.getInstance().log("Unable to store. Concurrent editing appeared!", true);
@@ -206,16 +194,13 @@ public class Project {
 
     private void initializeUserManagement() {
         userManagement = UserManagementFactory.getUserManagement();
-        try {
-            userManagement = repository.storeUserManagement(userManagement);
-        } catch (RepositoryException re) {
-            logger.error("Error storing user management!");
-        }
+        storeUserManagement();
     }
 
     public boolean storeUserManagement() {
         try {
             userManagement = repository.storeUserManagement(userManagement);
+            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing user management.");

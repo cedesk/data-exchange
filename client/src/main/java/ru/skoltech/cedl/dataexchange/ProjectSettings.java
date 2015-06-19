@@ -12,17 +12,14 @@ import java.util.Properties;
 /**
  * Created by D.Knoll on 01.05.2015.
  */
+@Deprecated
 public class ProjectSettings {
 
     private static final Logger logger = Logger.getLogger(ProjectSettings.class);
 
-    private static final String SETTINGS_EEXTENSION = ".project";
+    private static final String SETTINGS_EXTENSION = ".project";
 
     private static final String SETTINGS_COMMENTS = "CEDESK project settings";
-
-    private static final String REPOSITORY = "repository.url";
-
-    private static final String USER = "repository.user";
 
     private static final String AUTHENTICATOR = "repository.authenticator";
 
@@ -34,42 +31,8 @@ public class ProjectSettings {
 
     public ProjectSettings(String projectName) {
         this.projectName = projectName;
-        this.settingsFile = new File(StorageUtils.getAppDir(), projectName + SETTINGS_EEXTENSION);
+        this.settingsFile = new File(StorageUtils.getAppDir(), projectName + SETTINGS_EXTENSION);
         loadSettings();
-    }
-
-    public String getLastUsedRepository() {
-        String repo = properties.getProperty(REPOSITORY);
-        if (repo == null) {
-            System.out.println("Warning: Empty last repository!");
-        }
-        return repo;
-    }
-
-    public void setLastUsedRepository(String repository) {
-        String previousRepository = properties.getProperty(REPOSITORY);
-        if (previousRepository == null || !previousRepository.equals(repository)) {
-            properties.setProperty(REPOSITORY, repository);
-            saveSettings();
-        }
-    }
-
-    public String getUser() {
-        String user = properties.getProperty(USER);
-        if (user == null) {
-            user = Utils.getUserName();
-            System.out.println("Warning: Empty user name! Using local user '" + user + "'");
-            setUser(user);
-        }
-        return user;
-    }
-
-    public void setUser(String user) {
-        String previousUser = properties.getProperty(USER);
-        if (previousUser == null || !previousUser.equals(user)) {
-            properties.setProperty(USER, user);
-            saveSettings();
-        }
     }
 
     public String getAuthenticator() {
