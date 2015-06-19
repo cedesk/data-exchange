@@ -22,9 +22,9 @@ public interface Repository {
 
     Study storeStudy(Study study) throws RepositoryException;
 
-    void storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException;
+    UserRoleManagement storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException;
 
-    void storeUserManagement(UserManagement userManagement) throws RepositoryException;
+    UserManagement storeUserManagement(UserManagement userManagement) throws RepositoryException;
 
     UserManagement loadUserManagement() throws RepositoryException;
 
