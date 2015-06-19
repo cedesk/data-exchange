@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.skoltech.cedl</groupId>
     <artifactId>dataexchange-client</artifactId>
-    <version>1.1</version>
+    <version>1.2-Snapshot</version>
     <properties>
         <jar.final.name>cedesk-client</jar.final.name>
         <main.class>ru.skoltech.cedl.dataexchange.ClientApplication</main.class>
@@ -121,28 +121,24 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
                 <executions>
                     <execution>
-                        <id>copy</id>
-                        <phase>package</phase>
+                        <id>copy-native-installer-file</id>
+                        <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>copy</goal>
+                            <goal>run</goal>
                         </goals>
+                        <configuration>
+                            <target name="copy native installer to external output directory">
+                                <copy todir="${package.output.dir}">
+                                    <fileset dir="${project.build.directory}/jfx/native" includes="CEDESK-${project.version}.exe" />
+                                </copy>
+                            </target>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <artifactItems>
-                        <artifactItem>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <version>${project.version}</version>
-                            <type>jar</type>
-                            <overWrite>true</overWrite>
-                            <outputDirectory>${package.output.dir}</outputDirectory>
-                        </artifactItem>
-                    </artifactItems>
-                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -150,7 +146,7 @@
         <profile>
             <id>manual</id>
             <properties>
-                <package.output.dir>${user.home}</package.output.dir>
+                <package.output.dir>${user.home}/Development/cedesk-builds/</package.output.dir>
             </properties>
         </profile>
         <profile>
