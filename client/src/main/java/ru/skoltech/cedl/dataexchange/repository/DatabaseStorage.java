@@ -14,6 +14,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -253,14 +254,14 @@ public class DatabaseStorage implements Repository {
             try {
                 emf = Persistence.createEntityManagerFactory("db");
                 if (!hostName.equals(LOCALHOST)) {
-                    Map<String, Object> properties = emf.getProperties();
+                    Map<String, Object> properties = new HashMap<>(emf.getProperties());
                     String jdbcUrl = (String) properties.get(JAVAX_PERSISTENCE_JDBC_URL);
                     String newUrl = jdbcUrl.replace(LOCALHOST, hostName);
                     properties.put(JAVAX_PERSISTENCE_JDBC_URL, newUrl);
                     emf = Persistence.createEntityManagerFactory("db", properties);
                 }
-            } catch (Exception ex) {
-                logger.error("Error establishing DB connection. Using a in-memory DB for now. Need to set repository.url property in application.settings file!");
+            } catch (PersistenceException pex) {
+                logger.fatal("Error establishing DB connection. Using a in-memory DB for now. Need to set repository.url property in application.settings file!");
                 emf = Persistence.createEntityManagerFactory("mem");
             }
         }
