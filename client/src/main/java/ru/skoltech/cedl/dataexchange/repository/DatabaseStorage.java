@@ -22,8 +22,9 @@ import java.util.Map;
 public class DatabaseStorage implements Repository {
 
     public static final String JAVAX_PERSISTENCE_JDBC_URL = "javax.persistence.jdbc.url";
+    public static final String DEFAULT_REPOSITORY_HOST_NAME = "localhost";
     private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
-    private static final String LOCALHOST = "localhost";
+    private static final String LOCALHOST = "localhost"; // matches hostname in JDBC url in persistence.xml
 
     private String hostName;
 
@@ -33,7 +34,7 @@ public class DatabaseStorage implements Repository {
      * The default backend uses a DB on the localhost.
      */
     DatabaseStorage() {
-        this(LOCALHOST);
+        this(DEFAULT_REPOSITORY_HOST_NAME);
     }
 
     DatabaseStorage(String hostName) {
@@ -249,22 +250,31 @@ public class DatabaseStorage implements Repository {
 
     private EntityManager getEntityManager() {
         if (emf == null) {
-            if (hostName.equals(LOCALHOST)) {
+            try {
                 emf = Persistence.createEntityManagerFactory("db");
-            } else {
-                Map<String, Object> properties = emf.getProperties();
-                String jdbcUrl = (String) properties.get(JAVAX_PERSISTENCE_JDBC_URL);
-                String newUrl = jdbcUrl.replace(LOCALHOST, hostName);
-                properties.put(JAVAX_PERSISTENCE_JDBC_URL, newUrl);
-                emf = Persistence.createEntityManagerFactory("db", properties);
+                if (!hostName.equals(LOCALHOST)) {
+                    Map<String, Object> properties = emf.getProperties();
+                    String jdbcUrl = (String) properties.get(JAVAX_PERSISTENCE_JDBC_URL);
+                    String newUrl = jdbcUrl.replace(LOCALHOST, hostName);
+                    properties.put(JAVAX_PERSISTENCE_JDBC_URL, newUrl);
+                    emf = Persistence.createEntityManagerFactory("db", properties);
+                }
+            } catch (Exception ex) {
+                logger.error("Error establishing DB connection. Using a in-memory DB for now. Need to set repository.url property in application.settings file!");
+                emf = Persistence.createEntityManagerFactory("mem");
             }
         }
         return emf.createEntityManager();
     }
 
     private void releaseEntityManagerFactory() {
-        emf.close();
-        emf = null;
+        if (emf != null) {
+            try {
+                emf.close();
+            } catch (Exception ignore) {
+            }
+            emf = null;
+        }
     }
 
     @Override

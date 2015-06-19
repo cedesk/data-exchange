@@ -18,6 +18,8 @@ public class ApplicationSettings {
 
     private static final String SETTINGS_COMMENTS = "CEDESK application settings";
 
+    private static final String REPOSITORY = "repository.url";
+
     private static final String LAST_PROJECT_NAME = "project.last.name";
 
     private static final String LAST_PROJECT_USER = "project.last.user";
@@ -57,22 +59,22 @@ public class ApplicationSettings {
         return properties.getProperty(LAST_PROJECT_USER);
     }
 
-    public static void setLastUsedProject(String projectName) {
-        String projName = properties.getProperty(LAST_PROJECT_NAME);
-        if (projName == null || !projName.equals(projectName)) {
-            properties.setProperty(LAST_PROJECT_NAME, projectName);
-            save();
-        }
-        // TODO: remove
-        setAutoLoadLastProjectOnStartup(true);
-    }
-
     public static void setLastUsedUser(String lastUsedUser) {
         String userName = properties.getProperty(LAST_PROJECT_USER);
         if (userName == null || !userName.equals(lastUsedUser)) {
             properties.setProperty(LAST_PROJECT_NAME, lastUsedUser);
             save();
         }
+    }
+
+    public static void setLastUsedProject(String projectName) {
+        String projName = properties.getProperty(LAST_PROJECT_NAME);
+        if (projName == null || !projName.equals(projectName)) {
+            properties.setProperty(LAST_PROJECT_NAME, projectName);
+            save();
+        }
+        // TODO: remove, when there are is a settings dialog
+        setAutoLoadLastProjectOnStartup(true);
     }
 
     private static synchronized void load() {
@@ -90,6 +92,22 @@ public class ApplicationSettings {
             properties.store(fileWriter, SETTINGS_COMMENTS);
         } catch (IOException e) {
             logger.error("Error saving application settings!");
+        }
+    }
+
+    public static String getRepositoryServerHostname() {
+        String repo = properties.getProperty(REPOSITORY);
+        if (repo == null) {
+            System.out.println("Warning: Empty last repository!");
+        }
+        return repo;
+    }
+
+    public static void setRepositoryServerHostname(String repository) {
+        String previousRepository = properties.getProperty(REPOSITORY);
+        if (previousRepository == null || !previousRepository.equals(repository)) {
+            properties.setProperty(REPOSITORY, repository);
+            save();
         }
     }
 }
