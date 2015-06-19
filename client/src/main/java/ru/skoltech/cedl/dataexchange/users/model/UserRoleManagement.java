@@ -1,10 +1,12 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +138,7 @@ public class UserRoleManagement {
     public String toString() {
         final StringBuilder sb = new StringBuilder("UserRoleManagement{");
         sb.append("disciplines=").append(disciplines);
+        sb.append("disciplineSubSystems").append(disciplineSubSystems);
         sb.append("userDisciplines").append(userDisciplines);
         sb.append('}');
         return sb.toString();
@@ -144,7 +147,7 @@ public class UserRoleManagement {
     @Transient
     public long getSubSystemsOfDiscipline(Discipline discipline) {
         long count = disciplineSubSystems.stream()
-                .filter(disciplineSubSystem -> discipline.equals(disciplineSubSystem.getDiscipline()))
+                .filter(disciplineSubSystem -> disciplineSubSystem.getDiscipline().getId() == discipline.getId())
                 .count();
         return count;
     }
@@ -158,7 +161,7 @@ public class UserRoleManagement {
     @Transient
     public List<User> getUsersOfDiscipline(Discipline discipline) {
         List<User> userList = userDisciplines.stream()
-                .filter(userDiscipline -> discipline.equals(userDiscipline.getDiscipline()))
+                .filter(userDiscipline -> userDiscipline.getDiscipline().getId() == discipline.getId())
                 .map(UserDiscipline::getUser)
                 .collect(Collectors.toCollection(() -> new LinkedList<>()));
         return userList;
@@ -167,7 +170,7 @@ public class UserRoleManagement {
     @Transient
     public List<Discipline> getDisciplinesOfUser(User user) {
         List<Discipline> disciplineList = userDisciplines.stream()
-                .filter(userDiscipline -> user.equals(userDiscipline.getUser()))
+                .filter(userDiscipline -> userDiscipline.getUser().getId() == user.getId())
                 .map(UserDiscipline::getDiscipline)
                 .collect(Collectors.toCollection(() -> new LinkedList<>()));
         return disciplineList;
@@ -179,5 +182,46 @@ public class UserRoleManagement {
             if (userDiscipline.getDiscipline().isBuiltIn()) return true;
         }
         return false;
+    }
+
+    @Transient
+    public Discipline getDisciplineOfSubSystem(ModelNode modelNode) {
+        if (modelNode.isRootNode()) {
+            return getAdminDiscipline();
+        }
+        DisciplineSubSystem associationFound = null;
+        for (DisciplineSubSystem disciplineSubSystem : disciplineSubSystems) {
+            if (disciplineSubSystem.getSubSystem().equals(modelNode)) {
+                associationFound = disciplineSubSystem;
+                break;
+            }
+        }
+
+        if (associationFound != null) {
+            return associationFound.getDiscipline();
+        } else {
+            logger.error("no discipline found for subsystem '" + modelNode.getName() + "'");
+            return null;
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserRoleManagement that = (UserRoleManagement) o;
+
+        if (!Arrays.equals(disciplines.toArray(), that.disciplines.toArray())) return false;
+        if (!Arrays.equals(userDisciplines.toArray(), that.userDisciplines.toArray())) return false;
+        return Arrays.equals(disciplineSubSystems.toArray(), that.disciplineSubSystems.toArray());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = disciplines.hashCode();
+        result = 31 * result + userDisciplines.hashCode();
+        result = 31 * result + disciplineSubSystems.hashCode();
+        return result;
     }
 }

@@ -1,5 +1,5 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
-
+import org.hibernate.envers.Audited;
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 
@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
+@Audited
 public class ParameterModel implements Comparable<ParameterModel> {
 
     @XmlTransient
@@ -32,6 +33,9 @@ public class ParameterModel implements Comparable<ParameterModel> {
 
     private String description;
 
+    @XmlTransient
+    private long version;
+
     public ParameterModel() {
     }
 
@@ -46,6 +50,15 @@ public class ParameterModel implements Comparable<ParameterModel> {
         this.type = type;
         this.isShared = isShared;
         this.description = description;
+    }
+
+    @Version()
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
     }
 
     @Id
@@ -145,6 +158,7 @@ public class ParameterModel implements Comparable<ParameterModel> {
         sb.append(", serverValue=").append(serverValue);
         sb.append(", type=").append(type);
         sb.append(", isShared=").append(isShared);
+        sb.append(", version=").append(version);
         sb.append(", description='").append(description).append('\'');
         sb.append('}');
         return sb.toString();

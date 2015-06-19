@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.structure;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectSettings;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
@@ -38,6 +39,8 @@ public class Project {
 
     private UserManagement userManagement;
 
+    private User currentUser;
+
     public Project() {
         this(DEFAULT_PROJECT_NAME);
     }
@@ -50,8 +53,15 @@ public class Project {
     }
 
     public User getUser() {
-        String userName = ApplicationSettings.getLastUsedUser("admin");
-        return getUserManagement().findUser(userName);
+        if (currentUser == null) { // caching
+            String userName = ApplicationSettings.getLastUsedUser();
+            if (userName == null) {
+                userName = UserManagementFactory.ADMIN;
+                logger.warn("No user in application settings found. Assuming admin!");
+            }
+            currentUser = getUserManagement().findUser(userName);
+        }
+        return currentUser;
     }
 
     public String getPassword() {
@@ -122,10 +132,15 @@ public class Project {
 
     public boolean storeStudy() {
         try {
-            repository.storeStudy(study);
+            Study study1 = repository.storeStudy(study);
+            study = study1;
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
             projectSettings.setLastUsedRepository(repository.getUrl());
             return true;
+        } catch (RepositoryException re) {
+            StatusLogger.getInstance().log("Unable to store. Concurrent editing appeared!", true);
+            logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier());
+            StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
         } catch (Exception e) {
             logger.error("Error storing study!", e);
         }
@@ -192,7 +207,7 @@ public class Project {
     private void initializeUserManagement() {
         userManagement = UserManagementFactory.getUserManagement();
         try {
-            repository.storeUserManagement(userManagement);
+            userManagement = repository.storeUserManagement(userManagement);
         } catch (RepositoryException re) {
             logger.error("Error storing user management!");
         }
@@ -200,7 +215,7 @@ public class Project {
 
     public boolean storeUserManagement() {
         try {
-            repository.storeUserManagement(userManagement);
+            userManagement = repository.storeUserManagement(userManagement);
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing user management.");

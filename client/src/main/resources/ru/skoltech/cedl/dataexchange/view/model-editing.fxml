@@ -33,27 +33,27 @@
                                            prefWidth="593.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                     <columns>
-                                        <TableColumn fx:id="parameterNameColumn" text="Name">
+                                        <TableColumn fx:id="parameterNameColumn" minWidth="150.0" text="Name">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="name"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn fx:id="parameterValueColumn" text="Value">
+                                        <TableColumn fx:id="parameterValueColumn" minWidth="50.0" text="Value">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="value"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn fx:id="parameterTypeColumn" text="Type">
+                                        <TableColumn fx:id="parameterTypeColumn" minWidth="100.0" text="Type">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="type"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn fx:id="parameterSharedColumn" text="Shared">
+                                        <TableColumn fx:id="parameterSharedColumn" minWidth="50.0" text="Shared">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="isShared"/>
                                             </cellValueFactory>
                                         </TableColumn>
-                                        <TableColumn fx:id="parameterDescriptionColumn" text="Description">
+                                        <TableColumn fx:id="parameterDescriptionColumn" minWidth="150.0" text="Description">
                                             <cellValueFactory>
                                                 <PropertyValueFactory property="description"/>
                                             </cellValueFactory>
