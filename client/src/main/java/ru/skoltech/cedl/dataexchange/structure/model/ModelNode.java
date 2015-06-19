@@ -51,7 +51,7 @@ public abstract class ModelNode implements Comparable<ModelNode> {
         parameters.add(parameter);
     }
 
-    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     public List<ParameterModel> getParameters() {
         return parameters;
     }
@@ -126,7 +126,7 @@ public abstract class ModelNode implements Comparable<ModelNode> {
     public boolean equals(Object obj) {
         if (obj instanceof ModelNode) {
             ModelNode other = (ModelNode) obj;
-            if (this.name.equals(other.name) && this.parameters.size() == other.parameters.size()) {
+            if (this.name.equals(other.name)) {
                 return equalParameters(other.getParameterMap());
             }
         }
@@ -134,6 +134,8 @@ public abstract class ModelNode implements Comparable<ModelNode> {
     }
 
     private boolean equalParameters(Map<String, ParameterModel> otherModelNodeParameterMap) {
+        if (this.parameters.size() != otherModelNodeParameterMap.size())
+            return false;
         for (ParameterModel parameterModel : parameters) {
             String parameterName = parameterModel.getName();
             if (otherModelNodeParameterMap.containsKey(parameterName)) {
@@ -156,6 +158,11 @@ public abstract class ModelNode implements Comparable<ModelNode> {
         return sb.toString();
     }
 
+    /**
+     * For natural ordering by name.
+     * @param other
+     * @return <code>name.compareTo(other.name)</code>
+     */
     @Override
     public int compareTo(ModelNode other) {
         return name.compareTo(other.name);

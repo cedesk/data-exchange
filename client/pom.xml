@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.skoltech.cedl</groupId>
     <artifactId>dataexchange-client</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <properties>
         <jar.final.name>cedesk-client</jar.final.name>
         <main.class>ru.skoltech.cedl.dataexchange.ClientApplication</main.class>
@@ -19,12 +19,12 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>4.3.5.Final</version>
+            <version>4.3.10.Final</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.6</version>
+            <version>5.1.35</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate.javax.persistence</groupId>
@@ -34,6 +34,11 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
+            <version>4.3.10.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-envers</artifactId>
             <version>4.3.10.Final</version>
         </dependency>
         <dependency>
@@ -101,6 +106,8 @@
                 <version>8.1.2</version>
                 <configuration>
                     <mainClass>${main.class}</mainClass>
+                    <nativeReleaseVersion>${project.version}</nativeReleaseVersion>
+                    <appName>CEDESK</appName>
                     <vendor>${app.vendor}</vendor>
                 </configuration>
                 <executions>

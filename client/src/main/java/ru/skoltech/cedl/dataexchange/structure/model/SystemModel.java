@@ -21,7 +21,7 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
     }
 
     @Override
-    @OneToMany(targetEntity = SubSystemModel.class, mappedBy = "parent", cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = SubSystemModel.class, mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     public List<SubSystemModel> getSubNodes() {
         return super.getSubNodes();
     }

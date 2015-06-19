@@ -16,30 +16,19 @@ public class UserRoleUtil {
     public static boolean checkAccess(ModelNode someModelNode, User user, UserRoleManagement userRoleManagement) {
 
         // check username contained in user management
-        if (user == null) {
+        if (user == null)
             return false;
-        }
 
-        // check system to be modified only by admin
-        if (someModelNode.isRootNode()) {
-            for (Discipline userDiscipline : userRoleManagement.getDisciplinesOfUser(user)) {
-                if (userDiscipline.isBuiltIn()) return true;
-            }
-            return false;
-        }
-
-        // check subsystem to be contained in user management
         ModelNode subSystem = findOwningSubSystem(someModelNode);
-        String subSystemName = subSystem.getName();
-        Discipline discipline = userRoleManagement.getDisciplineMap().get(subSystemName);
-        if (discipline == null) {
-            logger.error("discipline '" + subSystemName + "' not contained in userRoleManagement");
+        // check disciplines associated with the subsystem
+        Discipline discipline = userRoleManagement.getDisciplineOfSubSystem(subSystem);
+        if (discipline == null)
             return false;
-        }
 
+        // check the users associated disciplines
         for (Discipline userDiscipline : userRoleManagement.getDisciplinesOfUser(user)) {
-            if (userDiscipline.isBuiltIn()) return true;
-            if (userDiscipline.equals(discipline)) return true;
+            if (userDiscipline.equals(discipline) || userDiscipline.isBuiltIn())
+                return true;
         }
         return false;
     }

@@ -96,7 +96,8 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
     }
 
     private boolean equalSubNodes(Map<String, ModelNode> otherSubNodesMap) {
-        if (subNodes.size() != otherSubNodesMap.size()) return false;
+        if (subNodes.size() != otherSubNodesMap.size())
+            return false;
         for (SUBNODES subNode : subNodes) {
             boolean res = true;
             String nodeName = subNode.getName(); // tree comparison via subnode names
@@ -116,8 +117,8 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
         final StringBuilder sb = new StringBuilder("CompositeModelNode{");
         sb.append("name='").append(name).append('\'');
         sb.append(", parameters=").append(parameters);
-        sb.append("subNodes=").append(subNodes);
-        sb.append('}');
+        sb.append(", subNodes=\n").append(subNodes);
+        sb.append("\n}");
         return sb.toString();
     }
 }

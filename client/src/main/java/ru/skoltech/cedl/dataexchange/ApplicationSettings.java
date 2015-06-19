@@ -53,13 +53,8 @@ public class ApplicationSettings {
         return projName;
     }
 
-    public static String getLastUsedUser(String defaultValue) {
-        String userName = properties.getProperty(LAST_PROJECT_USER);
-        if (userName == null) {
-            logger.warn("Empty last user. Using default: " + defaultValue);
-            return defaultValue;
-        }
-        return userName;
+    public static String getLastUsedUser() {
+        return properties.getProperty(LAST_PROJECT_USER);
     }
 
     public static void setLastUsedProject(String projectName) {
