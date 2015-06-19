@@ -90,12 +90,16 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public void storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException {
+    public UserRoleManagement storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException {
         try {
             EntityManager entityManager = getEntityManager();
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
-            entityManager.persist(userRoleManagement);
+            if (userRoleManagement.getId() == 0) {
+                entityManager.persist(userRoleManagement);
+            } else {
+                userRoleManagement = entityManager.merge(userRoleManagement);
+            }
             transaction.commit();
         } catch (Exception e) {
             throw new RepositoryException("Storing UserRoleManagement failed.", e);
@@ -105,15 +109,20 @@ public class DatabaseStorage implements Repository {
             } catch (Exception ignore) {
             }
         }
+        return userRoleManagement;
     }
 
     @Override
-    public void storeUserManagement(UserManagement userManagement) throws RepositoryException {
+    public UserManagement storeUserManagement(UserManagement userManagement) throws RepositoryException {
         try {
             EntityManager entityManager = getEntityManager();
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
-            entityManager.persist(userManagement);
+            if (userManagement.getId() == 0) {
+                entityManager.persist(userManagement);
+            } else {
+                userManagement = entityManager.merge(userManagement);
+            }
             transaction.commit();
         } catch (Exception e) {
             throw new RepositoryException("Storing UserManagement failed.", e);
@@ -123,6 +132,7 @@ public class DatabaseStorage implements Repository {
             } catch (Exception ignore) {
             }
         }
+        return userManagement;
     }
 
     @Override

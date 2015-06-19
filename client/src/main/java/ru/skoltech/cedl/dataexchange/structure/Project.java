@@ -207,7 +207,7 @@ public class Project {
     private void initializeUserManagement() {
         userManagement = UserManagementFactory.getUserManagement();
         try {
-            repository.storeUserManagement(userManagement);
+            userManagement = repository.storeUserManagement(userManagement);
         } catch (RepositoryException re) {
             logger.error("Error storing user management!");
         }
@@ -215,7 +215,7 @@ public class Project {
 
     public boolean storeUserManagement() {
         try {
-            repository.storeUserManagement(userManagement);
+            userManagement = repository.storeUserManagement(userManagement);
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing user management.");
