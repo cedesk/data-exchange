@@ -1,7 +1,9 @@
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.db;
 
 import org.apache.log4j.Logger;
 import org.hibernate.StaleObjectStateException;
+import ru.skoltech.cedl.dataexchange.repository.Repository;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
@@ -34,11 +36,11 @@ public class DatabaseStorage implements Repository {
     /**
      * The default backend uses a DB on the localhost.
      */
-    DatabaseStorage() {
+    public DatabaseStorage() {
         this(DEFAULT_REPOSITORY_HOST_NAME);
     }
 
-    DatabaseStorage(String hostName) {
+    public DatabaseStorage(String hostName) {
         this.hostName = hostName;
     }
 

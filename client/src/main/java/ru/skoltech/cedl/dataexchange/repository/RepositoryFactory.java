@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 
 /**
  * Created by D.Knoll on 25.05.2015.
