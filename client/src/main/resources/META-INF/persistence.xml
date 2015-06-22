@@ -7,6 +7,8 @@
         <description>HSQLDB Persistence Unit</description>
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
+        <class>ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity</class>
+
         <class>ru.skoltech.cedl.dataexchange.structure.model.Study</class>
         <class>ru.skoltech.cedl.dataexchange.structure.model.SystemModel</class>
         <class>ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel</class>
@@ -38,6 +40,8 @@
 
         <description>HSQLDB Persistence Unit</description>
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <class>ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity</class>
 
         <class>ru.skoltech.cedl.dataexchange.structure.model.Study</class>
         <class>ru.skoltech.cedl.dataexchange.structure.model.SystemModel</class>
