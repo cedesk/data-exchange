@@ -4,10 +4,12 @@ import org.apache.log4j.Logger;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
@@ -20,6 +22,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -256,18 +259,28 @@ public class DatabaseStorage implements Repository {
         }
     }
 
-    public List getChangeHistory(ParameterModel parameterModel) {
+    public List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) {
         final AuditReader reader = AuditReaderFactory.get(getEntityManager());
         final long pk = parameterModel.getId();
-        final List<Number> revisionNumbers = reader.getRevisions(ParameterModel.class, pk);
+        //final List<Number> revisionNumbers = reader.getRevisions(ParameterModel.class, pk);
 
-        List revisions = reader.createQuery()
+        List<Object[]> revisions = reader.createQuery()
                 .forRevisionsOfEntity(ParameterModel.class, false, true)
                 .add(AuditEntity.id().eq(pk))
                 .addOrder(AuditEntity.revisionNumber().asc())
                 .getResultList();
 
-        return revisionNumbers;
+        List<ParameterRevision> revisionList = new ArrayList<>(revisions.size());
+        for(Object[] array : revisions){
+            ParameterModel versionedParameterModel = (ParameterModel) array[0];
+            CustomRevisionEntity revisionEntity = (CustomRevisionEntity) array[1];
+            RevisionType revisionType = (RevisionType) array[2];
+
+            ParameterRevision parameterRevision = new ParameterRevision(versionedParameterModel, revisionEntity, revisionType);
+            revisionList.add(parameterRevision);
+        }
+
+        return revisionList;
     }
 
     private EntityManager getEntityManager() {
