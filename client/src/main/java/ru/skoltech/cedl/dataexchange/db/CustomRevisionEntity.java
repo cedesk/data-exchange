@@ -1,11 +1,11 @@
 package ru.skoltech.cedl.dataexchange.db;
 
+import org.hibernate.envers.DefaultTrackingModifiedEntitiesRevisionEntity;
 import org.hibernate.envers.RevisionEntity;
-import org.hibernate.envers.RevisionNumber;
-import org.hibernate.envers.RevisionTimestamp;
 
-import javax.persistence.*;
-import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -13,40 +13,16 @@ import java.util.Date;
  * Created by D.Knoll on 22.06.2015.
  */
 @Entity
-@Table(name = "Revisions")
+@Table(name = "REVINFO")
 @RevisionEntity(CustomRevisionListener.class)
-public class CustomRevisionEntity implements Serializable {
-    private static final long serialVersionUID = -1255842407304508513L;
-
-    @Id
-    @GeneratedValue
-    @RevisionNumber
-    private int id;
-
-    @RevisionTimestamp
-    private long timestamp;
+public class CustomRevisionEntity extends DefaultTrackingModifiedEntitiesRevisionEntity {
+    private static final long serialVersionUID = -1255842407304108513L;
 
     private String username;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     @Transient
     public Date getRevisionDate() {
-        return new Date(timestamp);
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+        return new Date(this.getTimestamp());
     }
 
     public String getUsername() {
@@ -60,25 +36,21 @@ public class CustomRevisionEntity implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof CustomRevisionEntity)) return false;
-
+        if (!super.equals(o)) return false;
         CustomRevisionEntity that = (CustomRevisionEntity) o;
-
-        if (id != that.id) return false;
-        if (timestamp != that.timestamp) return false;
-        if (timestamp != that.timestamp) return false;
-        if (username != that.username) return false;
-
-        return true;
+        return (username.equals(that.username));
     }
 
     public int hashCode() {
         int result;
-        result = id;
-        result = 31 * result + (int) (timestamp ^ (timestamp >>> 32));
+        result = super.getId();
+        result = 31 * result + (int) (getTimestamp() ^ (getTimestamp() >>> 32));
         return result;
     }
 
     public String toString() {
-        return "CustomRevisionEntity(user = " + username + "id = " + id + ", revisionDate = " + DateFormat.getDateTimeInstance().format(getRevisionDate()) + ")";
+        return "CustomRevisionEntity(user = " + username + "id = " + getId() +
+                ", revisionDate = " + DateFormat.getDateTimeInstance().format(getRevisionDate()) +
+                ", entityNames=" + getModifiedEntityNames() + ")";
     }
 }
