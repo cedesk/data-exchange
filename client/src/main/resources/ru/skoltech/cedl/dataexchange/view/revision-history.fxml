@@ -1,33 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import javafx.scene.control.cell.*?>
-<?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="280.0" prefWidth="340.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="280.0"
+            prefWidth="420.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController">
     <children>
-        <TableView fx:id="revisionHistoryTable" layoutX="224.0" layoutY="31.0" prefHeight="280.0" prefWidth="340.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <TableView fx:id="revisionHistoryTable" layoutX="224.0" layoutY="31.0" prefHeight="280.0" prefWidth="400.0"
+                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                   AnchorPane.topAnchor="0.0">
             <columns>
                 <TableColumn fx:id="revisionNumberColumn" prefWidth="50.0" text="Rev#">
                     <cellValueFactory>
-                        <PropertyValueFactory property="revisionId" />
+                        <PropertyValueFactory property="revisionId"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="revisionTimestampColumn" prefWidth="120.0" text="Date">
                     <cellValueFactory>
-                        <PropertyValueFactory property="revisionDate" />
+                        <PropertyValueFactory property="revisionDate"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="revisionAuthorColumn" prefWidth="75.0" text="Author">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="revisionAuthor"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="parameterNameColumn" prefWidth="100.0" text="Name">
                     <cellValueFactory>
-                        <PropertyValueFactory property="name" />
+                        <PropertyValueFactory property="name"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="parameterValueColumn" prefWidth="60.0" text="Value">
                     <cellValueFactory>
-                        <PropertyValueFactory property="value" />
+                        <PropertyValueFactory property="value"/>
                     </cellValueFactory>
                 </TableColumn>
             </columns>

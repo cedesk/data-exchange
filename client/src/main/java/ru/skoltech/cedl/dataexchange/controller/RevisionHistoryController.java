@@ -39,6 +39,9 @@ public class RevisionHistoryController implements Initializable {
     @FXML
     public TableColumn parameterValueColumn;
 
+    @FXML
+    public TableColumn revisionAuthorColumn;
+
     private ParameterModel parameter;
     private Repository repository;
 

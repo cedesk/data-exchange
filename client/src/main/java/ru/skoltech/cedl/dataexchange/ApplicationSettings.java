@@ -62,7 +62,7 @@ public class ApplicationSettings {
     public static void setLastUsedUser(String lastUsedUser) {
         String userName = properties.getProperty(LAST_PROJECT_USER);
         if (userName == null || !userName.equals(lastUsedUser)) {
-            properties.setProperty(LAST_PROJECT_NAME, lastUsedUser);
+            properties.setProperty(LAST_PROJECT_USER, lastUsedUser);
             save();
         }
     }

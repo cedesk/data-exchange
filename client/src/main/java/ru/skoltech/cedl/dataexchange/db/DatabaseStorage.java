@@ -34,9 +34,9 @@ public class DatabaseStorage implements Repository {
 
     public static final String JAVAX_PERSISTENCE_JDBC_URL = "javax.persistence.jdbc.url";
     public static final String DEFAULT_REPOSITORY_HOST_NAME = "localhost";
+    public static final String JAVAX_PERSISTENCE_JDBC_USER = "javax.persistence.jdbc.user";
     private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
     private static final String LOCALHOST = "localhost"; // matches hostname in JDBC url in persistence.xml
-
     private String hostName;
 
     private EntityManagerFactory emf;
@@ -271,7 +271,7 @@ public class DatabaseStorage implements Repository {
                 .getResultList();
 
         List<ParameterRevision> revisionList = new ArrayList<>(revisions.size());
-        for(Object[] array : revisions){
+        for (Object[] array : revisions) {
             ParameterModel versionedParameterModel = (ParameterModel) array[0];
             CustomRevisionEntity revisionEntity = (CustomRevisionEntity) array[1];
             RevisionType revisionType = (RevisionType) array[2];
@@ -292,6 +292,8 @@ public class DatabaseStorage implements Repository {
                     String jdbcUrl = (String) properties.get(JAVAX_PERSISTENCE_JDBC_URL);
                     String newUrl = jdbcUrl.replace(LOCALHOST, hostName);
                     properties.put(JAVAX_PERSISTENCE_JDBC_URL, newUrl);
+                    String user = "'cedesk'@'" + hostName + "'";
+                    properties.put(JAVAX_PERSISTENCE_JDBC_USER, user);
                     emf = Persistence.createEntityManagerFactory("db", properties);
                 }
             } catch (PersistenceException pex) {

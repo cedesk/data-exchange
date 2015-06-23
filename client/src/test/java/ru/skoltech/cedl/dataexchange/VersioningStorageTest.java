@@ -8,6 +8,7 @@ import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.lang.reflect.Constructor;
@@ -19,6 +20,7 @@ import java.util.List;
  */
 public class VersioningStorageTest {
 
+    public static final String ADMIN = "admin";
     private DatabaseStorage databaseStorage;
 
     @Before
@@ -26,6 +28,8 @@ public class VersioningStorageTest {
         Constructor<DatabaseStorage> constructor = DatabaseStorage.class.getDeclaredConstructor();
         constructor.setAccessible(true);
         databaseStorage = constructor.newInstance();
+
+        ApplicationSettings.setLastUsedUser(ADMIN);
     }
 
     @After
@@ -47,8 +51,10 @@ public class VersioningStorageTest {
 
         databaseStorage.storeSystemModel(systemModel);
 
-        List changeHistory = databaseStorage.getChangeHistory(parameterModel);
+        List<ParameterRevision> changeHistory = databaseStorage.getChangeHistory(parameterModel);
 
-        Assert.assertTrue(changeHistory.size() == 2);
+        Assert.assertEquals(2, changeHistory.size());
+
+        Assert.assertEquals(ADMIN, changeHistory.get(0).getRevisionAuthor());
     }
 }

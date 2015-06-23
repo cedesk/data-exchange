@@ -14,11 +14,14 @@ public class ParameterRevision extends ParameterModel {
 
     private Date revisionDate;
 
+    private String revisionAuthor;
+
     private RevisionType revisionType;
 
     public ParameterRevision(ParameterModel versionedParameterModel, CustomRevisionEntity revisionEntity, RevisionType revisionType) {
         this.revisionId = revisionEntity.getId();
         this.revisionDate = revisionEntity.getRevisionDate();
+        this.revisionAuthor = revisionEntity.getUsername();
         this.revisionType = revisionType;
 
         setId(versionedParameterModel.getId());
@@ -43,6 +46,14 @@ public class ParameterRevision extends ParameterModel {
 
     public void setRevisionDate(Date revisionDate) {
         this.revisionDate = revisionDate;
+    }
+
+    public String getRevisionAuthor() {
+        return revisionAuthor;
+    }
+
+    public void setRevisionAuthor(String revisionAuthor) {
+        this.revisionAuthor = revisionAuthor;
     }
 
     public RevisionType getRevisionType() {
