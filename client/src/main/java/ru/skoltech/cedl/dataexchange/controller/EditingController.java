@@ -8,10 +8,16 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
 import org.apache.log4j.Logger;
@@ -21,7 +27,9 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
+import ru.skoltech.cedl.dataexchange.view.Views;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
@@ -97,17 +105,7 @@ public class EditingController implements Initializable {
         });
 
         // STRUCTURE TREE CONTEXT MENU
-        ContextMenu rootContextMenu = new ContextMenu();
-        MenuItem addNodeMenuItem = new MenuItem("Add subnode");
-        addNodeMenuItem.setOnAction(EditingController.this::addNode);
-        rootContextMenu.getItems().add(addNodeMenuItem);
-        MenuItem deleteNodeMenuItem = new MenuItem("Delete subnode");
-        deleteNodeMenuItem.setOnAction(EditingController.this::deleteNode);
-        rootContextMenu.getItems().add(deleteNodeMenuItem);
-        MenuItem renameNodeMenuItem = new MenuItem("Rename subnode");
-        renameNodeMenuItem.setOnAction(EditingController.this::renameNode);
-        rootContextMenu.getItems().add(renameNodeMenuItem);
-        structureTree.setContextMenu(rootContextMenu);
+        structureTree.setContextMenu(makeStructureTreeContextMenu());
 
         // NODE PARAMETERS
         addParameterButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
@@ -144,6 +142,26 @@ public class EditingController implements Initializable {
 
         viewParameters = new ViewParameters();
         parameterTable.setItems(viewParameters.getItems());
+
+        ContextMenu parameterContextMenu = new ContextMenu();
+        MenuItem addNodeMenuItem = new MenuItem("View history");
+        addNodeMenuItem.setOnAction(EditingController.this::openParameterHistoryDialog);
+        parameterContextMenu.getItems().add(addNodeMenuItem);
+        parameterTable.setContextMenu(parameterContextMenu);
+    }
+
+    private ContextMenu makeStructureTreeContextMenu() {
+        ContextMenu rootContextMenu = new ContextMenu();
+        MenuItem addNodeMenuItem = new MenuItem("Add subnode");
+        addNodeMenuItem.setOnAction(EditingController.this::addNode);
+        rootContextMenu.getItems().add(addNodeMenuItem);
+        MenuItem deleteNodeMenuItem = new MenuItem("Delete subnode");
+        deleteNodeMenuItem.setOnAction(EditingController.this::deleteNode);
+        rootContextMenu.getItems().add(deleteNodeMenuItem);
+        MenuItem renameNodeMenuItem = new MenuItem("Rename subnode");
+        renameNodeMenuItem.setOnAction(EditingController.this::renameNode);
+        rootContextMenu.getItems().add(renameNodeMenuItem);
+        return rootContextMenu;
     }
 
     public void setProject(Project project) {
@@ -182,6 +200,33 @@ public class EditingController implements Initializable {
         } else {
             structureTree.setRoot(null);
             clearParameterTable();
+        }
+    }
+
+    public void openParameterHistoryDialog(ActionEvent actionEvent) {
+        ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem();
+        if (selectedParameter == null)
+            throw new AssertionError("no parameter selected");
+
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.REVISION_HISTORY);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Revision History");
+            stage.getIcons().add(new Image("/icons/app-icon.png"));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(parameterTable.getScene().getWindow());
+            RevisionHistoryController controller = loader.getController();
+            controller.setRepository(project.getRepository());
+            controller.setParameter(selectedParameter);
+            controller.updateView();
+
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
         }
     }
 

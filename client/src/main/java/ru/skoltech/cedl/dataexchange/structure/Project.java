@@ -207,4 +207,8 @@ public class Project {
         }
         return false;
     }
+
+    public Repository getRepository() {
+        return repository;
+    }
 }
