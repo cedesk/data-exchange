@@ -43,12 +43,12 @@ public class Project {
     }
 
     public Project(String projectName) {
+        this.repository = RepositoryFactory.getDatabaseRepository();
         initialize(projectName);
     }
 
     private void initialize(String projectName) {
         this.projectName = projectName;
-        this.repository = RepositoryFactory.getDatabaseRepository();
         this.repositoryStateMachine.reset();
     }
 

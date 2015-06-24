@@ -6,11 +6,11 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -22,9 +22,7 @@ public class ModelStorageTest {
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        Constructor<DatabaseStorage> constructor = DatabaseStorage.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        databaseStorage = constructor.newInstance();
+        databaseStorage = RepositoryFactory.getTempRepository();
     }
 
     @After

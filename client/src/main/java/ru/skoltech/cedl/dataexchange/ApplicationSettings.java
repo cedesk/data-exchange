@@ -12,16 +12,17 @@ import java.util.Properties;
  */
 public class ApplicationSettings {
 
-    public static final String AUTO_LOAD_LAST_PROJECT = "project.last.autoload";
     private static final Logger logger = Logger.getLogger(ApplicationSettings.class);
+
     private static final String SETTINGS_FILE = "application.settings";
-
     private static final String SETTINGS_COMMENTS = "CEDESK application settings";
+    private static final String REPOSITORY_HOST = "repository.host";
 
-    private static final String REPOSITORY = "repository.url";
+    private static final String REPOSITORY_USER = "repository.user";
+    private static final String REPOSITORY_PASSWORD = "repository.passwor";
 
+    private static final String PROJECT_LAST_AUTOLOAD = "project.last.autoload";
     private static final String LAST_PROJECT_NAME = "project.last.name";
-
     private static final String LAST_PROJECT_USER = "project.last.user";
 
     private static Properties properties = new Properties();
@@ -31,7 +32,7 @@ public class ApplicationSettings {
     }
 
     public static boolean getAutoLoadLastProjectOnStartup() {
-        String autoload = properties.getProperty(AUTO_LOAD_LAST_PROJECT);
+        String autoload = properties.getProperty(PROJECT_LAST_AUTOLOAD);
         if (autoload != null) {
             return Boolean.parseBoolean(autoload);
         }
@@ -39,9 +40,9 @@ public class ApplicationSettings {
     }
 
     public static void setAutoLoadLastProjectOnStartup(boolean autoload) {
-        String prop = properties.getProperty(AUTO_LOAD_LAST_PROJECT);
+        String prop = properties.getProperty(PROJECT_LAST_AUTOLOAD);
         if (prop == null || Boolean.parseBoolean(prop) != autoload) {
-            properties.setProperty(AUTO_LOAD_LAST_PROJECT, Boolean.toString(autoload));
+            properties.setProperty(PROJECT_LAST_AUTOLOAD, Boolean.toString(autoload));
             save();
         }
     }
@@ -95,18 +96,53 @@ public class ApplicationSettings {
         }
     }
 
-    public static String getRepositoryServerHostname() {
-        String repo = properties.getProperty(REPOSITORY);
+    public static String getRepositoryServerHostname(String defaultRepositoryHostName) {
+        String repo = properties.getProperty(REPOSITORY_HOST);
         if (repo == null) {
-            System.out.println("Warning: Empty last repository!");
+            System.out.println("Warning: Empty repository url. Assuming: " + defaultRepositoryHostName);
+            repo = defaultRepositoryHostName;
         }
         return repo;
     }
 
     public static void setRepositoryServerHostname(String repository) {
-        String previousRepository = properties.getProperty(REPOSITORY);
+        String previousRepository = properties.getProperty(REPOSITORY_HOST);
         if (previousRepository == null || !previousRepository.equals(repository)) {
-            properties.setProperty(REPOSITORY, repository);
+            properties.setProperty(REPOSITORY_HOST, repository);
+            save();
+        }
+    }
+
+    public static String getRepositoryUserName(String defaultUserName) {
+        String repositoryUser = properties.getProperty(REPOSITORY_USER);
+        if (repositoryUser == null) {
+            System.out.println("Warning: Empty repository user. Assuming: " + defaultUserName);
+            repositoryUser = defaultUserName;
+        }
+        return repositoryUser;
+    }
+
+    public static void setRepositoryUserName(String userName) {
+        String previousUser = properties.getProperty(REPOSITORY_USER);
+        if (previousUser == null || !previousUser.equals(userName)) {
+            properties.setProperty(REPOSITORY_USER, userName);
+            save();
+        }
+    }
+
+    public static String getRepositoryPassword(String defaultPassword) {
+        String repositoryPassword = properties.getProperty(REPOSITORY_PASSWORD);
+        if (repositoryPassword == null) {
+            System.out.println("Warning: Empty repository password. Assuming: " + defaultPassword);
+            repositoryPassword = defaultPassword;
+        }
+        return repositoryPassword;
+    }
+
+    public static void setRepositoryPassword(String password) {
+        String previousPassword = properties.getProperty(REPOSITORY_PASSWORD);
+        if (previousPassword == null || !previousPassword.equals(password)) {
+            properties.setProperty(REPOSITORY_PASSWORD, password);
             save();
         }
     }

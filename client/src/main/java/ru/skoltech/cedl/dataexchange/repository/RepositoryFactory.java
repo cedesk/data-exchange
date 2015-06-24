@@ -8,15 +8,14 @@ import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
  */
 public class RepositoryFactory {
 
-    public static Repository getDefaultRepository() {
-        return new DatabaseStorage();
+    public static Repository getDatabaseRepository() {
+        String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.LOCALHOST);
+        String repoUser = ApplicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
+        String repoPassword = ApplicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
+        return new DatabaseStorage(DatabaseStorage.DB_PERSISTENCE_UNIT_NAME, hostname, repoUser, repoPassword);
     }
 
-    public static Repository getDatabaseRepository() {
-        String hostname = ApplicationSettings.getRepositoryServerHostname();
-        if (hostname == null) {
-            hostname = DatabaseStorage.DEFAULT_REPOSITORY_HOST_NAME;
-        }
-        return new DatabaseStorage(hostname);
+    public static DatabaseStorage getTempRepository() {
+        return new DatabaseStorage(DatabaseStorage.MEM_PERSISTENCE_UNIT_NAME);
     }
 }
