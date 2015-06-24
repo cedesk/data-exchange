@@ -14,6 +14,8 @@ public class RepositoryWatcher extends Thread {
 
     private static final Logger logger = Logger.getLogger(RepositoryWatcher.class);
 
+    private final Project project;
+
     private long timing = DEFAULT_TIMING;
 
     private boolean continueRunning = true;
@@ -25,7 +27,8 @@ public class RepositoryWatcher extends Thread {
     private BooleanProperty workingCopyModified = new SimpleBooleanProperty();
 
     public RepositoryWatcher(Project project) {
-        this.repository = RepositoryFactory.getDefaultRepository();
+        this.project = project;
+        this.repository = RepositoryFactory.getDatabaseRepository();
     }
 
     @Override

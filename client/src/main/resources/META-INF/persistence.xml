@@ -25,12 +25,9 @@
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
-            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/cedesk_dev"/>
-            <property name="javax.persistence.jdbc.user" value="cedesk"/>
-            <property name="javax.persistence.jdbc.password" value="cedesk"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
-            <property name="hibernate.show_sql" value="true"/>
+            <!--<property name="hibernate.show_sql" value="true"/>-->
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.transaction.flush_before_completion" value="true"/>
             <!--<property name="hibernate.ejb.interceptor" value="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />-->

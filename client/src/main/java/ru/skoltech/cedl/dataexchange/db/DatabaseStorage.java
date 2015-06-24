@@ -1,6 +1,5 @@
 package ru.skoltech.cedl.dataexchange.db;
 
-import org.apache.log4j.Logger;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -32,24 +31,34 @@ import java.util.Map;
  */
 public class DatabaseStorage implements Repository {
 
-    public static final String JAVAX_PERSISTENCE_JDBC_URL = "javax.persistence.jdbc.url";
-    public static final String DEFAULT_REPOSITORY_HOST_NAME = "localhost";
-    public static final String JAVAX_PERSISTENCE_JDBC_USER = "javax.persistence.jdbc.user";
-    private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
-    private static final String LOCALHOST = "localhost"; // matches hostname in JDBC url in persistence.xml
+    public static final String PERSISTENCE_URL_PROPERTY = "javax.persistence.jdbc.url";
+    public static final String PERSISTENCE_USER_PROPERTY = "javax.persistence.jdbc.user";
+    public static final String PERSISTENCE_PASSWORD_PROPERTY = "javax.persistence.jdbc.password";
+    public static final String DEFAULT_USER_NAME = "cedesk";
+    public static final String DEFAULT_PASSWORD = "cedesk";
+    public static final String LOCALHOST = "localhost";
+    public static final String DB_PERSISTENCE_UNIT_NAME = "db";
+    public final static String MEM_PERSISTENCE_UNIT_NAME = "mem";
+    private static final String DEFAULT_JDBC_URL = "jdbc:mysql://HOSTNAME:3306/cedesk_dev";
+    private static final String HOST_NAME = "HOSTNAME";
     private String hostName;
-
     private EntityManagerFactory emf;
 
     /**
      * The default backend uses a DB on the localhost.
      */
-    public DatabaseStorage() {
-        this(DEFAULT_REPOSITORY_HOST_NAME);
+    public DatabaseStorage(String persistenceUnit) {
+        emf = Persistence.createEntityManagerFactory(persistenceUnit);
     }
 
-    public DatabaseStorage(String hostName) {
+    public DatabaseStorage(String persistenceUnit, String hostName, String userName, String password) {
         this.hostName = hostName;
+        Map<String, Object> properties = new HashMap<>();
+        String url = DEFAULT_JDBC_URL.replace(HOST_NAME, hostName);
+        properties.put(PERSISTENCE_URL_PROPERTY, url);
+        properties.put(PERSISTENCE_USER_PROPERTY, userName);
+        properties.put(PERSISTENCE_PASSWORD_PROPERTY, password);
+        emf = Persistence.createEntityManagerFactory(persistenceUnit, properties);
     }
 
     @Override
@@ -262,7 +271,6 @@ public class DatabaseStorage implements Repository {
     public List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) {
         final AuditReader reader = AuditReaderFactory.get(getEntityManager());
         final long pk = parameterModel.getId();
-        //final List<Number> revisionNumbers = reader.getRevisions(ParameterModel.class, pk);
 
         List<Object[]> revisions = reader.createQuery()
                 .forRevisionsOfEntity(ParameterModel.class, false, true)
@@ -284,23 +292,6 @@ public class DatabaseStorage implements Repository {
     }
 
     private EntityManager getEntityManager() {
-        if (emf == null) {
-            try {
-                emf = Persistence.createEntityManagerFactory("db");
-                if (!hostName.equals(LOCALHOST)) {
-                    Map<String, Object> properties = new HashMap<>(emf.getProperties());
-                    String jdbcUrl = (String) properties.get(JAVAX_PERSISTENCE_JDBC_URL);
-                    String newUrl = jdbcUrl.replace(LOCALHOST, hostName);
-                    properties.put(JAVAX_PERSISTENCE_JDBC_URL, newUrl);
-                    String user = "'cedesk'@'" + hostName + "'";
-                    properties.put(JAVAX_PERSISTENCE_JDBC_USER, user);
-                    emf = Persistence.createEntityManagerFactory("db", properties);
-                }
-            } catch (PersistenceException pex) {
-                logger.fatal("Error establishing DB connection. Using a in-memory DB for now. Need to set repository.url property in application.settings file!");
-                emf = Persistence.createEntityManagerFactory("mem");
-            }
-        }
         return emf.createEntityManager();
     }
 
