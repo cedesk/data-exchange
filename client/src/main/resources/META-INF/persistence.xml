@@ -30,7 +30,7 @@
             <!--<property name="hibernate.show_sql" value="true"/>-->
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.transaction.flush_before_completion" value="true"/>
-            <!--<property name="hibernate.ejb.interceptor" value="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />-->
+            <property name="hibernate.ejb.interceptor" value="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />
         </properties>
     </persistence-unit>
     <persistence-unit name="mem" transaction-type="RESOURCE_LOCAL">
@@ -65,6 +65,7 @@
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.transaction.flush_before_completion" value="true"/>
+            <property name="hibernate.ejb.interceptor" value="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />
         </properties>
     </persistence-unit>
 </persistence>
