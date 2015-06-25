@@ -9,6 +9,7 @@
         <jar.final.name>cedesk-client</jar.final.name>
         <main.class>ru.skoltech.cedl.dataexchange.ClientApplication</main.class>
         <app.vendor>CEDL - SkolTech</app.vendor>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
     </properties>
     <dependencies>
         <dependency>
@@ -131,9 +132,10 @@
                         </goals>
                         <configuration>
                             <target name="copy native installer to external output directory">
-                                <copy todir="${package.output.dir}">
-                                    <fileset dir="${project.build.directory}/jfx/native" includes="CEDESK-${project.version}.exe" />
-                                </copy>
+                                <tstamp>
+                                    <format property="timestamp" pattern="yyyy-MM-dd_HH-mm" />
+                                </tstamp>
+                                <copy file="${project.build.directory}/jfx/native/CEDESK-${project.version}.exe" tofile="${package.output.dir}/CEDESK-${project.version}_${timestamp}.exe" />
                             </target>
                         </configuration>
                     </execution>
