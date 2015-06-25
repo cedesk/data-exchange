@@ -78,21 +78,6 @@ public class Study {
         this.version = version;
     }
 
-    public Timestamp findLatestModification() {
-        long latest = 0L;
-        Iterator<ModelNode> iterator = systemModel.treeIterator();
-        while (iterator.hasNext()) {
-            ModelNode modelNode = iterator.next();
-
-            for (ParameterModel parameterModel : modelNode.getParameters()) {
-                Long parameterModelLastModification = parameterModel.getLastModification();
-                if (parameterModelLastModification != null && parameterModelLastModification > latest)
-                    latest = parameterModelLastModification;
-            }
-        }
-        return new Timestamp(latest);
-    }
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Study{");

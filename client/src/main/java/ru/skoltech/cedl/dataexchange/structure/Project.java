@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -15,6 +17,7 @@ import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
+import java.sql.Timestamp;
 import java.util.Observer;
 
 /**
@@ -31,6 +34,8 @@ public class Project {
     private Repository repository;
 
     private Study study;
+
+    private LongProperty latestModification = new SimpleLongProperty(-1L);
 
     private RepositoryStateMachine repositoryStateMachine = new RepositoryStateMachine();
 
@@ -83,6 +88,14 @@ public class Project {
         return userManagement;
     }
 
+    public long getLatestModification() {
+        return latestModification.get();
+    }
+
+    public LongProperty latestModificationProperty() {
+        return latestModification;
+    }
+
     public boolean loadUserManagement() {
         try {
             userManagement = repository.loadUserManagement();
@@ -120,8 +133,9 @@ public class Project {
 
     public boolean storeStudy() {
         try {
-            Study study1 = repository.storeStudy(study);
-            study = study1;
+            study = repository.storeStudy(study);
+            Timestamp latestMod = study.getSystemModel().findLatestModification();
+            latestModification.setValue(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
             ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
@@ -139,6 +153,8 @@ public class Project {
         Study study = null;
         try {
             study = repository.loadStudy(projectName);
+            Timestamp latestMod = study.getSystemModel().findLatestModification();
+            latestModification.setValue(latestMod.getTime());
         } catch (RepositoryException e) {
             logger.error("Study not found!");
         } catch (Exception e) {
