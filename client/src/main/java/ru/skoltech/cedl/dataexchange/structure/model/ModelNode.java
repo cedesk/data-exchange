@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @XmlType(propOrder = {"name", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @MappedSuperclass
-public abstract class ModelNode implements Comparable<ModelNode> {
+public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped {
 
     @XmlAttribute
     protected String name;
@@ -32,6 +32,8 @@ public abstract class ModelNode implements Comparable<ModelNode> {
     @XmlTransient
     protected long id;
 
+    private Long lastModification;
+
     public ModelNode() {
     }
 
@@ -45,6 +47,16 @@ public abstract class ModelNode implements Comparable<ModelNode> {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public void setLastModification(Long timestamp) {
+        this.lastModification = timestamp;
+    }
+
+    @Override
+    public Long getLastModification() {
+        return lastModification;
     }
 
     public void addParameter(ParameterModel parameter) {
@@ -160,6 +172,7 @@ public abstract class ModelNode implements Comparable<ModelNode> {
 
     /**
      * For natural ordering by name.
+     *
      * @param other
      * @return <code>name.compareTo(other.name)</code>
      */

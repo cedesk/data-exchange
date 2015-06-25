@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.*;
 @Entity
 @Access(AccessType.PROPERTY)
 @Audited
-public class ParameterModel implements Comparable<ParameterModel> {
+public class ParameterModel implements Comparable<ParameterModel>, ModificationTimestamped {
 
     @XmlTransient
     private long id;
@@ -36,6 +36,8 @@ public class ParameterModel implements Comparable<ParameterModel> {
     @XmlTransient
     private long version;
 
+    private Long lastModification;
+
     public ParameterModel() {
     }
 
@@ -59,6 +61,16 @@ public class ParameterModel implements Comparable<ParameterModel> {
 
     public void setVersion(long version) {
         this.version = version;
+    }
+
+    @Override
+    public Long getLastModification() {
+        return lastModification;
+    }
+
+    @Override
+    public void setLastModification(Long timestamp) {
+        this.lastModification = timestamp;
     }
 
     @Id
