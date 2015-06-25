@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -59,10 +60,14 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
         return subNodes.iterator();
     }
 
+    public Iterator<ModelNode> treeIterator() {
+        return new ModelTreeIterator(this);
+    }
+
     @Transient
     public Map<String, ModelNode> getSubNodesMap() {
         Map<String, ModelNode> result = subNodes.stream().collect(
-                Collectors.toMap(ModelNode::getName, (m) -> m)
+                Collectors.toMap(ModelNode::getName, Function.identity())
         );
         return result;
     }
