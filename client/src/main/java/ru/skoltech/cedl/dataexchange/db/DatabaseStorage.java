@@ -21,10 +21,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by dknoll on 24/05/15.
@@ -214,6 +211,17 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
+    public long getLatestVersion(Study study) {
+        final AuditReader reader = AuditReaderFactory.get(getEntityManager());
+        final long pk = study.getId();
+
+        List<Number> revisions = reader.getRevisions(Study.class, pk);
+        Number max = Collections.max(revisions, Comparator.comparingLong(value -> value.longValue()));
+
+        return max.longValue();
+    }
+
+    @Override
     public UserManagement loadUserManagement() throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         UserManagement userManagement = null;
@@ -256,10 +264,10 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public SystemModel loadSystemModel(long studyId) throws RepositoryException {
+    public SystemModel loadSystemModel(long systemModelId) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         try {
-            SystemModel systemModel = entityManager.find(SystemModel.class, studyId);
+            SystemModel systemModel = entityManager.find(SystemModel.class, systemModelId);
             if (systemModel == null)
                 throw new RepositoryException("SystemModel not found.");
             return systemModel;
