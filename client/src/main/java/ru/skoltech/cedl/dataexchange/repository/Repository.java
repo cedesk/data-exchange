@@ -35,4 +35,6 @@ public interface Repository {
     List<ParameterRevision> getChangeHistory(ParameterModel parameterModel);
 
     String getUrl();
+
+    long getLatestVersion(Study study);
 }
