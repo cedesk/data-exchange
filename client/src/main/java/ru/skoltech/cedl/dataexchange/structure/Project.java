@@ -35,7 +35,9 @@ public class Project {
 
     private Study study;
 
-    private LongProperty latestModification = new SimpleLongProperty(-1L);
+    private LongProperty latestLoadedModification = new SimpleLongProperty(-1L);
+
+    private LongProperty latestRepositoryModification = new SimpleLongProperty(-1L);
 
     private RepositoryStateMachine repositoryStateMachine = new RepositoryStateMachine();
 
@@ -88,12 +90,20 @@ public class Project {
         return userManagement;
     }
 
-    public long getLatestModification() {
-        return latestModification.get();
+    public long getLatestLoadedModification() {
+        return latestLoadedModification.get();
     }
 
-    public LongProperty latestModificationProperty() {
-        return latestModification;
+    public LongProperty latestLoadedModificationProperty() {
+        return latestLoadedModification;
+    }
+
+    public long getLatestRepositoryModification() {
+        return latestRepositoryModification.get();
+    }
+
+    public LongProperty latestRepositoryModificationProperty() {
+        return latestRepositoryModification;
     }
 
     public boolean loadUserManagement() {
@@ -135,7 +145,7 @@ public class Project {
         try {
             study = repository.storeStudy(study);
             Timestamp latestMod = study.getSystemModel().findLatestModification();
-            latestModification.setValue(latestMod.getTime());
+            latestLoadedModification.setValue(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
             ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
@@ -154,7 +164,7 @@ public class Project {
         try {
             study = repository.loadStudy(projectName);
             Timestamp latestMod = study.getSystemModel().findLatestModification();
-            latestModification.setValue(latestMod.getTime());
+            latestLoadedModification.setValue(latestMod.getTime());
         } catch (RepositoryException e) {
             logger.error("Study not found!");
         } catch (Exception e) {
