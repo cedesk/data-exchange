@@ -1,7 +1,5 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -23,10 +21,6 @@ public class RepositoryWatcher extends Thread {
 
     private Repository repository;
 
-    private BooleanProperty repositoryNewer = new SimpleBooleanProperty();
-
-    private BooleanProperty workingCopyModified = new SimpleBooleanProperty();
-
     public RepositoryWatcher(Project project) {
         this.project = project;
         this.repository = RepositoryFactory.getDatabaseRepository();
@@ -34,20 +28,24 @@ public class RepositoryWatcher extends Thread {
 
     @Override
     public void run() {
+        try {
+            sleep(SECONDS_OF_CHECK_PERIODICITY * 1000);
+        } catch (InterruptedException ignore) {
+        }
         while (continueRunning) {
-            long timeOfModificationLoaded = project.getLatestModification();
-            long systemModelId = project.getStudy().getSystemModel().getId();
             try {
-                SystemModel systemModel = repository.loadSystemModel(systemModelId);
-                Timestamp latestModification = systemModel.findLatestModification();
-                boolean repoNewer = latestModification.getTime() > timeOfModificationLoaded;
-                logger.info(latestModification + " > " + timeOfModificationLoaded + " = " + repoNewer);
-                repositoryNewer.setValue(repoNewer);
-            } catch (RepositoryException ignore) {
-            }
-            try {
+                if (project.getStudy() != null) {
+                    // load model from repository
+                    long systemModelId = project.getStudy().getSystemModel().getId();
+                    SystemModel systemModel = repository.loadSystemModel(systemModelId);
+                    Timestamp latestModification = systemModel.findLatestModification();
+                    project.latestRepositoryModificationProperty().setValue(latestModification.getTime());
+                }
                 sleep(SECONDS_OF_CHECK_PERIODICITY * 1000);
-            } catch (InterruptedException ignore) {
+                //} catch (RepositoryException ignore1) {
+                //} catch (InterruptedException ignore2) {
+            } catch (Exception ex) {
+                logger.warn(ex.getMessage());
             }
         }
         logger.info("RepositoryWatcher finished.");
@@ -56,21 +54,5 @@ public class RepositoryWatcher extends Thread {
     public void finish() {
         continueRunning = false;
         super.interrupt();
-    }
-
-    public boolean getRepositoryNewer() {
-        return repositoryNewer.get();
-    }
-
-    public BooleanProperty repositoryNewerProperty() {
-        return repositoryNewer;
-    }
-
-    public boolean getWorkingCopyModified() {
-        return workingCopyModified.get();
-    }
-
-    public BooleanProperty workingCopyModifiedProperty() {
-        return workingCopyModified;
     }
 }

@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -181,7 +182,7 @@ public class MainController implements Initializable {
             String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
             project.setProjectName(projectName);
             loadProject(null);
-            //makeRepositoryWatcher();
+            makeRepositoryWatcher();
         }
     }
 
@@ -209,28 +210,34 @@ public class MainController implements Initializable {
 
     private void makeRepositoryWatcher() {
         repositoryWatcher = new RepositoryWatcher(project);
-        statusbarRepositoryNewer.selectedProperty().bind(repositoryWatcher.repositoryNewerProperty());
-        workingCopyModified.selectedProperty().bind(repositoryWatcher.workingCopyModifiedProperty());
-        repositoryWatcher.repositoryNewerProperty().addListener(new ChangeListener<Boolean>() {
+        project.latestRepositoryModificationProperty().addListener(new ChangeListener<Number>() {
             @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue) {
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateRemoteModel();
-                            StatusLogger.getInstance().log("Remote model loaded for comparison.");
-                        }
-                    });
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                if (newValue != null) {
+                    long timeOfModificationInRepository = newValue.longValue();
+                    long timeOfModificationLoaded = project.getLatestLoadedModification();
+                    boolean repoNewer = timeOfModificationInRepository > timeOfModificationLoaded;
+                    logger.info(timeOfModificationInRepository + " > " + timeOfModificationLoaded + " = " + repoNewer);
+                    if (repoNewer) {
+                        updateRemoteModel();
+                    }
                 }
             }
         });
+        statusbarRepositoryNewer.selectedProperty().bind(
+                Bindings.greaterThan(project.latestRepositoryModificationProperty(), project.latestLoadedModificationProperty()));
         repositoryWatcher.start();
     }
 
     public void updateRemoteModel() {
         //project.loadRemote();
-        updateView();
+        StatusLogger.getInstance().log("Remote model loaded for comparison.");
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                editingController.updateView();
+            }
+        });
     }
 
     public void close() {
