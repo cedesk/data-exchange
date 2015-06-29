@@ -43,7 +43,7 @@ public class RepositoryWatcher extends Thread {
                 }
                 sleep(SECONDS_OF_CHECK_PERIODICITY * 1000);
                 //} catch (RepositoryException ignore1) {
-                //} catch (InterruptedException ignore2) {
+            } catch (InterruptedException ignore) {
             } catch (Exception ex) {
                 logger.warn(ex.getMessage());
             }
