@@ -55,8 +55,7 @@ public class UserRoleManagement {
         this.id = id;
     }
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @OneToMany(targetEntity = Discipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = Discipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     public List<Discipline> getDisciplines() {
         return disciplines;
     }
@@ -65,8 +64,7 @@ public class UserRoleManagement {
         this.disciplines = disciplines;
     }
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @OneToMany(targetEntity = UserDiscipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = UserDiscipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     public List<UserDiscipline> getUserDisciplines() {
         return userDisciplines;
     }
@@ -107,8 +105,7 @@ public class UserRoleManagement {
         return adminDiscipline;
     }
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @OneToMany(targetEntity = DisciplineSubSystem.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = DisciplineSubSystem.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     public List<DisciplineSubSystem> getDisciplineSubSystems() {
         return disciplineSubSystems;
     }

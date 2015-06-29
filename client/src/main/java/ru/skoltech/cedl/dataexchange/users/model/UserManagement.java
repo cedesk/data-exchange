@@ -41,8 +41,7 @@ public class UserManagement {
         this.id = id;
     }
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @OneToMany(targetEntity = User.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = User.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     public List<User> getUsers() {
         return users;
     }
