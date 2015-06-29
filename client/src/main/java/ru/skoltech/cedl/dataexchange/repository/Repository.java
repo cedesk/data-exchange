@@ -36,5 +36,5 @@ public interface Repository {
 
     String getUrl();
 
-    long getLatestVersion(Study study);
+    long getLatestVersion(Study study) throws RepositoryException;
 }

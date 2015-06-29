@@ -60,8 +60,9 @@ public class DatabaseStorage implements Repository {
 
     @Override
     public Study storeStudy(Study study) throws RepositoryException {
+        EntityManager entityManager = null;
         try {
-            EntityManager entityManager = getEntityManager();
+            entityManager = getEntityManager();
             entityManager.setFlushMode(FlushModeType.AUTO);
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
@@ -77,7 +78,8 @@ public class DatabaseStorage implements Repository {
             throw new RepositoryException("Storing Study failed.", e);
         } finally {
             try {
-                getEntityManager().close();
+                if (entityManager != null)
+                    entityManager.close();
             } catch (Exception ignore) {
             }
         }
@@ -86,8 +88,9 @@ public class DatabaseStorage implements Repository {
 
     @Override
     public Study loadStudy(String name) throws RepositoryException {
-        EntityManager entityManager = getEntityManager();
+        EntityManager entityManager = null;
         try {
+            entityManager = getEntityManager();
             final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
             final CriteriaQuery criteriaQuery = criteriaBuilder.createQuery(Study.class);
             final Root studyRoot = criteriaQuery.from(Study.class);
@@ -99,9 +102,12 @@ public class DatabaseStorage implements Repository {
             return (Study) singleResult;
         } catch (NoResultException e) {
             throw new RepositoryException("Study not found.", e);
+        } catch (Exception e) {
+            throw new RepositoryException("Study loading failed.", e);
         } finally {
             try {
-                getEntityManager().close();
+                if (entityManager != null)
+                    entityManager.close();
             } catch (Exception ignore) {
             }
         }
@@ -109,8 +115,9 @@ public class DatabaseStorage implements Repository {
 
     @Override
     public UserRoleManagement storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException {
+        EntityManager entityManager = null;
         try {
-            EntityManager entityManager = getEntityManager();
+            entityManager = getEntityManager();
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
             if (userRoleManagement.getId() == 0) {
@@ -123,7 +130,8 @@ public class DatabaseStorage implements Repository {
             throw new RepositoryException("Storing UserRoleManagement failed.", e);
         } finally {
             try {
-                getEntityManager().close();
+                if (entityManager != null)
+                    entityManager.close();
             } catch (Exception ignore) {
             }
         }
@@ -132,8 +140,9 @@ public class DatabaseStorage implements Repository {
 
     @Override
     public UserManagement storeUserManagement(UserManagement userManagement) throws RepositoryException {
+        EntityManager entityManager = null;
         try {
-            EntityManager entityManager = getEntityManager();
+            entityManager = getEntityManager();
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
             if (userManagement.getId() == 0) {
@@ -146,7 +155,8 @@ public class DatabaseStorage implements Repository {
             throw new RepositoryException("Storing UserManagement failed.", e);
         } finally {
             try {
-                getEntityManager().close();
+                if (entityManager != null)
+                    entityManager.close();
             } catch (Exception ignore) {
             }
         }
@@ -165,7 +175,8 @@ public class DatabaseStorage implements Repository {
             throw new RepositoryException("Loading UserRoleManagement failed.", e);
         } finally {
             try {
-                getEntityManager().close();
+                if (entityManager != null)
+                    entityManager.close();
             } catch (Exception ignore) {
             }
         }
@@ -211,14 +222,25 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public long getLatestVersion(Study study) {
-        final AuditReader reader = AuditReaderFactory.get(getEntityManager());
-        final long pk = study.getId();
+    public long getLatestVersion(Study study) throws RepositoryException {
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            final AuditReader reader = AuditReaderFactory.get(entityManager);
+            final long pk = study.getId();
 
-        List<Number> revisions = reader.getRevisions(Study.class, pk);
-        Number max = Collections.max(revisions, Comparator.comparingLong(value -> value.longValue()));
-
-        return max.longValue();
+            List<Number> revisions = reader.getRevisions(Study.class, pk);
+            Number max = Collections.max(revisions, Comparator.comparingLong(value -> value.longValue()));
+            return max.longValue();
+        } catch (Exception e) {
+            throw new RepositoryException("Getting study versions failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     @Override
@@ -233,7 +255,8 @@ public class DatabaseStorage implements Repository {
             throw new RepositoryException("Loading UserManagement failed.", e);
         } finally {
             try {
-                getEntityManager().close();
+                if (entityManager != null)
+                    entityManager.close();
             } catch (Exception ignore) {
             }
         }
@@ -242,8 +265,9 @@ public class DatabaseStorage implements Repository {
 
     @Override
     public SystemModel storeSystemModel(SystemModel modelNode) throws RepositoryException {
+        EntityManager entityManager = null;
         try {
-            EntityManager entityManager = getEntityManager();
+            entityManager = getEntityManager();
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
             if (modelNode.getId() == 0) {
@@ -256,7 +280,8 @@ public class DatabaseStorage implements Repository {
             throw new RepositoryException("Storing SystemModel failed.", e);
         } finally {
             try {
-                getEntityManager().close();
+                if (entityManager != null)
+                    entityManager.close();
             } catch (Exception ignore) {
             }
         }
@@ -273,6 +298,12 @@ public class DatabaseStorage implements Repository {
             return systemModel;
         } catch (Exception e) {
             throw new RepositoryException("Loading SystemModel failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
         }
     }
 
