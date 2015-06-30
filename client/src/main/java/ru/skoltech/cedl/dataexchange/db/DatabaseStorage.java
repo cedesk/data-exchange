@@ -169,8 +169,6 @@ public class DatabaseStorage implements Repository {
         UserRoleManagement userRoleManagement = null;
         try {
             userRoleManagement = entityManager.find(UserRoleManagement.class, studyId);
-            if (userRoleManagement == null)
-                throw new RepositoryException("UserRoleManagement not found.");
         } catch (Exception e) {
             throw new RepositoryException("Loading UserRoleManagement failed.", e);
         } finally {
@@ -180,6 +178,9 @@ public class DatabaseStorage implements Repository {
             } catch (Exception ignore) {
             }
         }
+        if (userRoleManagement == null)
+            throw new RepositoryException("UserRoleManagement not found.");
+
         return userRoleManagement;
     }
 
@@ -249,8 +250,6 @@ public class DatabaseStorage implements Repository {
         UserManagement userManagement = null;
         try {
             userManagement = entityManager.find(UserManagement.class, 1L);
-            if (userManagement == null)
-                throw new RepositoryException("UserManagement not found.");
         } catch (Exception e) {
             throw new RepositoryException("Loading UserManagement failed.", e);
         } finally {
@@ -260,6 +259,8 @@ public class DatabaseStorage implements Repository {
             } catch (Exception ignore) {
             }
         }
+        if (userManagement == null)
+            throw new RepositoryException("UserManagement not found.");
         return userManagement;
     }
 
@@ -291,11 +292,10 @@ public class DatabaseStorage implements Repository {
     @Override
     public SystemModel loadSystemModel(long systemModelId) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
+        SystemModel systemModel = null;
         try {
-            SystemModel systemModel = entityManager.find(SystemModel.class, systemModelId);
-            if (systemModel == null)
-                throw new RepositoryException("SystemModel not found.");
-            return systemModel;
+            systemModel = entityManager.find(SystemModel.class, systemModelId);
+            entityManager.refresh(systemModel);
         } catch (Exception e) {
             throw new RepositoryException("Loading SystemModel failed.", e);
         } finally {
@@ -305,6 +305,9 @@ public class DatabaseStorage implements Repository {
             } catch (Exception ignore) {
             }
         }
+        if (systemModel == null)
+            throw new RepositoryException("SystemModel not found.");
+        return systemModel;
     }
 
     public List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) {
