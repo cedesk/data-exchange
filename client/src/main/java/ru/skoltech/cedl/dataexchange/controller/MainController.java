@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -11,10 +12,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
+import javafx.scene.image.Image;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -27,6 +32,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.view.ToggleImageView;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
@@ -73,6 +79,9 @@ public class MainController implements Initializable {
 
     @FXML
     public Tab userRolesTab;
+
+    @FXML
+    public ToggleImageView repositoryNewerIndicator;
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
@@ -130,8 +139,6 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // STATUSBAR
-        statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
 
         // EDITING PANE
         try {
@@ -169,6 +176,28 @@ public class MainController implements Initializable {
             throw new RuntimeException(ioe);
         }
 
+        // STATUSBAR
+        statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
+
+        // TOOLBAR
+        project.latestRepositoryModificationProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                if (newValue != null) {
+                    long timeOfModificationInRepository = newValue.longValue();
+                    long timeOfModificationLoaded = project.getLatestLoadedModification();
+                    boolean repoNewer = timeOfModificationInRepository > timeOfModificationLoaded;
+                    logger.info(timeOfModificationInRepository + " > " + timeOfModificationLoaded + " = " + repoNewer);
+                    if (repoNewer) {
+                        updateRemoteModel();
+                    }
+                }
+            }
+        });
+        BooleanBinding repositoryNewer = Bindings.greaterThan(project.latestRepositoryModificationProperty(), project.latestLoadedModificationProperty());
+        statusbarRepositoryNewer.selectedProperty().bind(repositoryNewer);
+        repositoryNewerIndicator.activeStateProperty().bind(repositoryNewer);
+
         project.addRepositoryStateObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
@@ -179,10 +208,17 @@ public class MainController implements Initializable {
         });
 
         if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
-            String projectName = ApplicationSettings.getLastUsedProject(Project.DEFAULT_PROJECT_NAME);
-            project.setProjectName(projectName);
-            loadProject(null);
-            makeRepositoryWatcher();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    String projectName = ApplicationSettings.getLastUsedProject(null);
+                    if (projectName != null) {
+                        project.setProjectName(projectName);
+                        loadProject(null);
+                    }
+                    makeRepositoryWatcher();
+                }
+            });
         }
     }
 
@@ -210,32 +246,16 @@ public class MainController implements Initializable {
 
     private void makeRepositoryWatcher() {
         repositoryWatcher = new RepositoryWatcher(project);
-        project.latestRepositoryModificationProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if (newValue != null) {
-                    long timeOfModificationInRepository = newValue.longValue();
-                    long timeOfModificationLoaded = project.getLatestLoadedModification();
-                    boolean repoNewer = timeOfModificationInRepository > timeOfModificationLoaded;
-                    logger.info(timeOfModificationInRepository + " > " + timeOfModificationLoaded + " = " + repoNewer);
-                    if (repoNewer) {
-                        updateRemoteModel();
-                    }
-                }
-            }
-        });
-        statusbarRepositoryNewer.selectedProperty().bind(
-                Bindings.greaterThan(project.latestRepositoryModificationProperty(), project.latestLoadedModificationProperty()));
         repositoryWatcher.start();
     }
 
     public void updateRemoteModel() {
         //project.loadRemote();
-        StatusLogger.getInstance().log("Remote model loaded for comparison.");
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 editingController.updateView();
+                StatusLogger.getInstance().log("Remote model loaded for comparison.");
             }
         });
     }
@@ -246,8 +266,7 @@ public class MainController implements Initializable {
         }
         try {
             project.finalize();
-        } catch (Throwable throwable) {
-            // ignore
+        } catch (Throwable ignore) {
         }
     }
 
@@ -287,7 +306,27 @@ public class MainController implements Initializable {
         }
     }
 
+    public void openAboutDialog(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.ABOUT);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Revision History");
+            stage.getIcons().add(new Image("/icons/app-icon.png"));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(this.statusbarLabel.getScene().getWindow());
+
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
     public void quit(ActionEvent actionEvent) {
         Platform.exit();
     }
+
 }
