@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
+<?import ru.skoltech.cedl.dataexchange.view.ToggleImageView?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0"
+            prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
-        <BorderPane fx:id="layout" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <BorderPane fx:id="layout" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <center>
             </center>
             <top>
@@ -23,14 +24,16 @@
                                     <menus>
                                         <Menu mnemonicParsing="false" text="Project">
                                             <items>
-                                                <MenuItem mnemonicParsing="false" onAction="#newProject" text="New..." />
-                                                <MenuItem mnemonicParsing="false" onAction="#loadProject" text="Load" />
-                                                <MenuItem mnemonicParsing="false" onAction="#saveProject" text="Save" />
-                                                <SeparatorMenuItem mnemonicParsing="false" />
-                                                <MenuItem mnemonicParsing="false" onAction="#importProject" text="Import" />
-                                                <MenuItem mnemonicParsing="false" onAction="#exportProject" text="Export" />
-                                                <SeparatorMenuItem mnemonicParsing="false" />
-                                                <MenuItem mnemonicParsing="false" onAction="#quit" text="Quit" />
+                                                <MenuItem mnemonicParsing="false" onAction="#newProject" text="New..."/>
+                                                <MenuItem mnemonicParsing="false" onAction="#loadProject" text="Load"/>
+                                                <MenuItem mnemonicParsing="false" onAction="#saveProject" text="Save"/>
+                                                <SeparatorMenuItem mnemonicParsing="false"/>
+                                                <MenuItem mnemonicParsing="false" onAction="#importProject"
+                                                          text="Import"/>
+                                                <MenuItem mnemonicParsing="false" onAction="#exportProject"
+                                                          text="Export"/>
+                                                <SeparatorMenuItem mnemonicParsing="false"/>
+                                                <MenuItem mnemonicParsing="false" onAction="#quit" text="Quit"/>
                                             </items>
                                         </Menu>
                                         <!--
@@ -39,88 +42,106 @@
                                                                   <MenuItem mnemonicParsing="false" text="Settings" />
                                                                 </items>
                                                               </Menu>
-                                                              <Menu mnemonicParsing="false" text="Help">
-                                                                <items>
-                                                                  <MenuItem mnemonicParsing="false" text="About" />
-                                                                </items>
-                                                              </Menu>
-                                              -->
+                                                              -->
+                                        <Menu mnemonicParsing="false" text="Help">
+                                            <items>
+                                                <MenuItem mnemonicParsing="false" text="About"
+                                                          onAction="#openAboutDialog"/>
+                                            </items>
+                                        </Menu>
+
                                     </menus>
                                 </MenuBar>
                                 <ToolBar>
                                     <items>
-                                        <Button fx:id="newButton" mnemonicParsing="true" onAction="#newProject" text="New" />
-                                        <Separator orientation="VERTICAL" />
-                                        <Button fx:id="loadButton" mnemonicParsing="true" onAction="#loadProject" text="Load" />
-                                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="true" onAction="#saveProject" text="Save" />
+                                        <Button fx:id="newButton" mnemonicParsing="true" onAction="#newProject"
+                                                text="New"/>
+                                        <Separator orientation="VERTICAL"/>
+                                        <Button fx:id="loadButton" mnemonicParsing="true" onAction="#loadProject"
+                                                text="Load"/>
+                                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="true"
+                                                onAction="#saveProject" text="Save"/>
                                     </items>
                                     <VBox.margin>
-                                        <Insets />
+                                        <Insets/>
                                     </VBox.margin>
                                 </ToolBar>
                                 <HBox>
                                     <children>
                                         <Label text="Design Study:">
                                             <font>
-                                                <Font size="14.0" />
+                                                <Font size="14.0"/>
                                             </font>
                                             <HBox.margin>
-                                                <Insets right="4.0" />
+                                                <Insets right="4.0"/>
                                             </HBox.margin>
                                         </Label>
                                         <Label fx:id="studyNameLabel" layoutX="10.0" layoutY="10.0" text="SkoltechSat">
                                             <font>
-                                                <Font size="14.0" />
+                                                <Font size="14.0"/>
                                             </font>
                                             <HBox.margin>
-                                                <Insets />
+                                                <Insets/>
                                             </HBox.margin>
                                         </Label>
                                         <Label text="User:">
                                             <font>
-                                                <Font size="14.0" />
+                                                <Font size="14.0"/>
                                             </font>
                                             <HBox.margin>
-                                                <Insets left="20.0" right="4.0" />
+                                                <Insets left="20.0" right="4.0"/>
                                             </HBox.margin>
                                         </Label>
                                         <Label fx:id="userNameLabel" text="Dominik">
                                             <font>
-                                                <Font size="14.0" />
+                                                <Font size="14.0"/>
                                             </font>
                                             <HBox.margin>
-                                                <Insets />
+                                                <Insets/>
                                             </HBox.margin>
                                         </Label>
                                         <Label layoutX="97.0" layoutY="10.0" text="Roles:">
                                             <font>
-                                                <Font size="14.0" />
+                                                <Font size="14.0"/>
                                             </font>
                                             <HBox.margin>
-                                                <Insets left="20.0" right="4.0" />
+                                                <Insets left="20.0" right="4.0"/>
                                             </HBox.margin>
                                         </Label>
                                         <Label fx:id="userRoleLabel" layoutX="211.0" layoutY="10.0" text="Team Leader">
                                             <font>
-                                                <Font size="14.0" />
+                                                <Font size="14.0"/>
                                             </font>
                                             <HBox.margin>
-                                                <Insets />
+                                                <Insets/>
                                             </HBox.margin>
                                         </Label>
+                                        <ToggleImageView fx:id="repositoryNewerIndicator" fitHeight="24.0"
+                                                         fitWidth="24.0"
+                                                         pickOnBounds="true" preserveRatio="true" disable="true">
+                                            <activeImage>
+                                                <Image url="@/icons/flash-orange.png"/>
+                                            </activeImage>
+                                            <inactiveImage>
+                                                <Image url="@/icons/flash-grey.png"/>
+                                            </inactiveImage>
+                                            <HBox.margin>
+                                                <Insets/>
+                                            </HBox.margin>
+                                        </ToggleImageView>
                                     </children>
                                     <VBox.margin>
-                                        <Insets bottom="6.0" left="12.0" top="6.0" />
+                                        <Insets bottom="6.0" left="12.0" top="6.0"/>
                                     </VBox.margin>
                                 </HBox>
                             </children>
                         </VBox>
                         <ImageView fitHeight="85.0" fitWidth="129.0">
                             <image>
-                                <Image url="@/Logo0.png" />
+                                <Image url="@/Logo0.png"/>
                             </image>
                             <HBox.margin>
-                                <Insets bottom="4" right="4" top="4" />
+                                <Insets bottom="4" right="4" top="4"/>
                             </HBox.margin>
                         </ImageView>
                     </children>
@@ -129,14 +150,19 @@
             <bottom>
                 <AnchorPane prefHeight="20.0" BorderPane.alignment="CENTER">
                     <children>
-                        <Label fx:id="statusbarLabel" prefHeight="20.0" prefWidth="703.0" text="Statusbar" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <CheckBox fx:id="statusbarRepositoryNewer" disable="true" layoutX="713.0" layoutY="2.0" mnemonicParsing="false" text="Repository Newer" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <CheckBox fx:id="workingCopyModified" disable="true" layoutX="553.0" mnemonicParsing="false" text="Local modification" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <Label fx:id="statusbarLabel" prefHeight="20.0" prefWidth="703.0" text="Statusbar"
+                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                        <CheckBox fx:id="statusbarRepositoryNewer" disable="true" layoutX="713.0" layoutY="2.0"
+                                  mnemonicParsing="false" text="Repository Newer" AnchorPane.bottomAnchor="0.0"
+                                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                        <CheckBox fx:id="workingCopyModified" disable="true" layoutX="553.0" mnemonicParsing="false"
+                                  text="Local modification" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
                     </children>
                 </AnchorPane>
             </bottom>
             <center>
-                <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+                <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE"
+                         BorderPane.alignment="CENTER">
                     <tabs>
                         <Tab fx:id="modelTab" text="Model">
                         </Tab>

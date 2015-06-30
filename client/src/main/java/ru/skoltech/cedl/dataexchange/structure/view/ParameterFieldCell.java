@@ -12,7 +12,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
  */
 public class ParameterFieldCell extends TextFieldTableCell<ParameterModel, Object> {
 
-    private final static Image FLASH_ICON = new Image("/icons/flash.png");
+    private final static Image FLASH_ICON = new Image("/icons/flash-orange.png");
 
     public ParameterFieldCell() {
     }
