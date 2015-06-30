@@ -48,6 +48,7 @@ public class RepositoryWatcher extends Thread {
                 logger.warn(ex.getMessage());
             }
         }
+        repository.close();
         logger.info("RepositoryWatcher finished.");
     }
 
