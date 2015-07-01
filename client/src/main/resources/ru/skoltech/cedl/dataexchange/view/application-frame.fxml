@@ -8,7 +8,7 @@
 <?import javafx.scene.text.*?>
 <?import ru.skoltech.cedl.dataexchange.view.ToggleImageView?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0"
-            prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
         <BorderPane fx:id="layout" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0"
@@ -45,8 +45,8 @@
                                                               -->
                                         <Menu mnemonicParsing="false" text="Help">
                                             <items>
-                                                <MenuItem mnemonicParsing="false" text="About"
-                                                          onAction="#openAboutDialog"/>
+                                                <MenuItem mnemonicParsing="false" onAction="#openAboutDialog"
+                                                          text="About"/>
                                             </items>
                                         </Menu>
 
@@ -66,56 +66,65 @@
                                         <Insets/>
                                     </VBox.margin>
                                 </ToolBar>
-                                <HBox>
+                                <AnchorPane>
+                                    <VBox.margin>
+                                        <Insets bottom="6.0" left="12.0" top="6.0"/>
+                                    </VBox.margin>
                                     <children>
-                                        <Label text="Design Study:">
-                                            <font>
-                                                <Font size="14.0"/>
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets right="4.0"/>
-                                            </HBox.margin>
-                                        </Label>
-                                        <Label fx:id="studyNameLabel" layoutX="10.0" layoutY="10.0" text="SkoltechSat">
-                                            <font>
-                                                <Font size="14.0"/>
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets/>
-                                            </HBox.margin>
-                                        </Label>
-                                        <Label text="User:">
-                                            <font>
-                                                <Font size="14.0"/>
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets left="20.0" right="4.0"/>
-                                            </HBox.margin>
-                                        </Label>
-                                        <Label fx:id="userNameLabel" text="Dominik">
-                                            <font>
-                                                <Font size="14.0"/>
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets/>
-                                            </HBox.margin>
-                                        </Label>
-                                        <Label layoutX="97.0" layoutY="10.0" text="Roles:">
-                                            <font>
-                                                <Font size="14.0"/>
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets left="20.0" right="4.0"/>
-                                            </HBox.margin>
-                                        </Label>
-                                        <Label fx:id="userRoleLabel" layoutX="211.0" layoutY="10.0" text="Team Leader">
-                                            <font>
-                                                <Font size="14.0"/>
-                                            </font>
-                                            <HBox.margin>
-                                                <Insets/>
-                                            </HBox.margin>
-                                        </Label>
+                                        <HBox>
+                                            <children>
+                                                <Label text="Design Study:">
+                                                    <font>
+                                                        <Font size="14.0"/>
+                                                    </font>
+                                                    <HBox.margin>
+                                                        <Insets right="4.0"/>
+                                                    </HBox.margin>
+                                                </Label>
+                                                <Label fx:id="studyNameLabel" layoutX="10.0" layoutY="10.0"
+                                                       text="SkoltechSat">
+                                                    <font>
+                                                        <Font size="14.0"/>
+                                                    </font>
+                                                    <HBox.margin>
+                                                        <Insets/>
+                                                    </HBox.margin>
+                                                </Label>
+                                                <Label text="User:">
+                                                    <font>
+                                                        <Font size="14.0"/>
+                                                    </font>
+                                                    <HBox.margin>
+                                                        <Insets left="20.0" right="4.0"/>
+                                                    </HBox.margin>
+                                                </Label>
+                                                <Label fx:id="userNameLabel" text="Dominik">
+                                                    <font>
+                                                        <Font size="14.0"/>
+                                                    </font>
+                                                    <HBox.margin>
+                                                        <Insets/>
+                                                    </HBox.margin>
+                                                </Label>
+                                                <Label layoutX="97.0" layoutY="10.0" text="Roles:">
+                                                    <font>
+                                                        <Font size="14.0"/>
+                                                    </font>
+                                                    <HBox.margin>
+                                                        <Insets left="20.0" right="4.0"/>
+                                                    </HBox.margin>
+                                                </Label>
+                                                <Label fx:id="userRoleLabel" layoutX="211.0" layoutY="10.0"
+                                                       text="Team Leader">
+                                                    <font>
+                                                        <Font size="14.0"/>
+                                                    </font>
+                                                    <HBox.margin>
+                                                        <Insets/>
+                                                    </HBox.margin>
+                                                </Label>
+                                            </children>
+                                        </HBox>
                                         <ToggleImageView fx:id="repositoryNewerIndicator" fitHeight="24.0"
                                                          fitWidth="24.0"
                                                          pickOnBounds="true" preserveRatio="true" disable="true">
@@ -126,14 +135,11 @@
                                                 <Image url="@/icons/flash-grey.png"/>
                                             </inactiveImage>
                                             <HBox.margin>
-                                                <Insets/>
+                                                <Insets right="8"/>
                                             </HBox.margin>
                                         </ToggleImageView>
                                     </children>
-                                    <VBox.margin>
-                                        <Insets bottom="6.0" left="12.0" top="6.0"/>
-                                    </VBox.margin>
-                                </HBox>
+                                </AnchorPane>
                             </children>
                         </VBox>
                         <ImageView fitHeight="85.0" fitWidth="129.0">
