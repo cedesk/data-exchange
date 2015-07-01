@@ -16,4 +16,6 @@ public class Views {
     public static final URL REVISION_HISTORY = Views.class.getResource("revision-history.fxml");
 
     public static final URL ABOUT = Views.class.getResource("about.fxml");
+
+    public static final URL SPREADSHEET_VIEW = Views.class.getResource("spreadsheet.fxml");
 }
