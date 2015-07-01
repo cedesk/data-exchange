@@ -2,7 +2,6 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
-<?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.*?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0"
@@ -14,13 +13,14 @@
             <center>
                 <TableView fx:id="spreadsheetTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                     <columns>
-                        <TableColumn prefWidth="75.0" text="C1"/>
                     </columns>
                 </TableView>
             </center>
             <top>
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER_LEFT">
                     <buttons>
+                        <Button fx:id="createButton" mnemonicParsing="false" onAction="#createSpreadsheet"
+                                text="Create"/>
                         <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#refreshTable" text="Refresh"/>
                     </buttons>
                 </ButtonBar>
