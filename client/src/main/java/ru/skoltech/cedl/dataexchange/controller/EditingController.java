@@ -24,7 +24,10 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNodeFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
@@ -187,14 +190,14 @@ public class EditingController implements Initializable {
 
     public void updateView() {
         if (project.getSystemModel() != null) {
-            //if (project.getRemoteModel() == null) {
-            StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
-            structureTree.setRoot(rootNode);
-        /*} else {
-            StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
-                    project.getSystemModel(), project.getRemoteModel());
-            structureTree.setRoot(rootNode);
-        }*/
+            if (project.getRepositoryStudy() == null || project.getRepositoryStudy().getSystemModel() == null) {
+                StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
+                structureTree.setRoot(rootNode);
+            } else {
+                StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
+                        project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
+                structureTree.setRoot(rootNode);
+            }
             boolean isAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
             structureTree.setEditable(isAdmin);
         } else {
