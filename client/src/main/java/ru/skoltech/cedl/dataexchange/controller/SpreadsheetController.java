@@ -7,17 +7,16 @@ import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.util.Callback;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import ru.skoltech.cedl.dataexchange.links.SpreadsheetFactory;
+import ru.skoltech.cedl.dataexchange.links.SpreadsheetTable;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -26,122 +25,90 @@ import java.util.ResourceBundle;
  */
 public class SpreadsheetController implements Initializable {
 
-    public static final String FILE_NAME = "MyExcel.xls";
     public TableView spreadsheetTable;
+    public TextField filenameLabel;
+    private File spreadsheetFile;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
     }
 
     public void close() {
-
-    }
-
-    public void createSpreadsheet(ActionEvent actionEvent) {
-        Workbook wb = new HSSFWorkbook();
-        Sheet sheet = wb.createSheet("sheet-1");
-
-        // Create a row and put some cells in it. Rows are 0 based.
-        Row row = sheet.createRow(1);
-
-        // Create a cell and put a value in it.
-        Cell cell = row.createCell(1);
-        cell.setCellValue(4);
-
-        // Style the cell with borders all around.
-        CellStyle style = wb.createCellStyle();
-        style.setBorderBottom(CellStyle.BORDER_THIN);
-        style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
-        style.setBorderLeft(CellStyle.BORDER_THIN);
-        style.setLeftBorderColor(IndexedColors.GREEN.getIndex());
-        style.setBorderRight(CellStyle.BORDER_THIN);
-        style.setRightBorderColor(IndexedColors.BLUE.getIndex());
-        style.setBorderTop(CellStyle.BORDER_MEDIUM_DASHED);
-        style.setTopBorderColor(IndexedColors.BLACK.getIndex());
-        cell.setCellStyle(style);
-
-        // Write the output to a file
-        try {
-            FileOutputStream fileOut = new FileOutputStream(FILE_NAME + "x");
-            wb.write(fileOut);
-            fileOut.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void refreshTable(ActionEvent actionEvent) {
-
         try {
-            FileInputStream fileInputStream = new FileInputStream(FILE_NAME);
-            NPOIFSFileSystem fs = new NPOIFSFileSystem(fileInputStream);
-            HSSFWorkbook wb = new HSSFWorkbook(fs.getRoot(), true);
-            Sheet sheet = wb.getSheetAt(0);
-
-            List<List<Cell>> dataColumns = extractColumns(sheet);
-            makeTableColumns(dataColumns);
-
-            spreadsheetTable.setItems(FXCollections.observableArrayList(sheet.rowIterator()));
-
+            if (spreadsheetFile != null) {
+                SpreadsheetTable spreadsheetTable = SpreadsheetFactory.getTable(spreadsheetFile, 0);
+                makeTableColumns(spreadsheetTable.getColumnCount());
+                this.spreadsheetTable.setItems(FXCollections.observableArrayList(spreadsheetTable.getRowList()));
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private List<List<Cell>> extractColumns(Sheet sheet) {
-        int columns = sheet.getRow(0).getPhysicalNumberOfCells();
-        // transform rows
-        List<List<Cell>> tableData = new ArrayList<List<Cell>>(columns);
-        for (int i = 0; i < columns; i++) {
-            tableData.add(0, new LinkedList<>());
-        }
-
-        for (Row row : sheet) {
-            int rowNum = row.getRowNum();
-            System.out.println("row: " + rowNum);
-            for (Cell cell : row) {
-                int columnIndex = cell.getColumnIndex();
-                System.out.print("c" + rowNum + ": ");
-                tableData.get(columnIndex).add(cell);
-                String value = getValue(cell);
-                System.out.print(value);
-                System.out.println(", ");
-            }
-            System.out.println();
-        }
-        return tableData;
-    }
-
-    private String getValue(Cell cell) {
-        String result = null;
-        switch (cell.getCellType()) {
-            case Cell.CELL_TYPE_STRING:
-                result = cell.getStringCellValue();
-                break;
-            case Cell.CELL_TYPE_NUMERIC:
-                result = String.valueOf(cell.getNumericCellValue());
-                break;
-            default:
-                result = "<unknown>";
-        }
-        return result;
-    }
-
-    private void makeTableColumns(List<List<Cell>> columns) {
+    private void makeTableColumns(int columnCount) {
         spreadsheetTable.getColumns().clear();
-        for (int i = 0; i < columns.size(); i++) {
+        for (int i = 0; i < columnCount; i++) {
             TableColumn column = new TableColumn();
-            column.setText("C" + i);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterRevision, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue call(TableColumn.CellDataFeatures<ParameterRevision, String> parameterRevision) {
-                    Object value = param.getValue();
-                    Cell cell = (Cell) value;
-                    return new SimpleStringProperty(getValue(cell));
-                }
-            });
+            column.setText("Col" + i);
+            column.setCellValueFactory(new TableCellValueFactory(i));
             spreadsheetTable.getColumns().add(column);
+        }
+    }
+
+    public void setSpreadsheetFile(File spreadsheetFile) {
+        this.spreadsheetFile = spreadsheetFile;
+        try {
+            this.filenameLabel.setText(spreadsheetFile.getCanonicalPath());
+        } catch (IOException ignore) {
+        }
+    }
+
+    public void createSpreadsheet(ActionEvent actionEvent) {
+        //SpreadsheetFactory.writeDummy(spreadsheetFile);
+    }
+
+    public void openSpreadsheet(ActionEvent actionEvent) {
+        try {
+            Desktop.getDesktop().edit(spreadsheetFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class TableCellValueFactory implements Callback<TableColumn.CellDataFeatures<List<Cell>, String>, ObservableValue<String>> {
+        private final int columnIndex;
+
+        public TableCellValueFactory(int columnIndex) {
+            this.columnIndex = columnIndex;
+        }
+
+        @Override
+        public ObservableValue call(TableColumn.CellDataFeatures<List<Cell>, String> param) {
+            Cell cell = param.getValue().get(columnIndex);
+            return new SimpleStringProperty(getValue(cell));
+        }
+
+        private String getValue(Cell cell) {
+            String result = "";
+            if (cell != null) {
+                switch (cell.getCellType()) {
+                    case Cell.CELL_TYPE_STRING:
+                        result = cell.getStringCellValue();
+                        break;
+                    case Cell.CELL_TYPE_NUMERIC:
+                        result = String.valueOf(cell.getNumericCellValue());
+                        break;
+                    case Cell.CELL_TYPE_FORMULA:
+                        result = String.valueOf(cell.getNumericCellValue());
+                        break;
+                    default:
+                        result = "<unknown>";
+                }
+            }
+            return result;
         }
     }
 }
