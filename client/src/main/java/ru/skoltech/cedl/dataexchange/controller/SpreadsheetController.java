@@ -10,13 +10,19 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import org.apache.poi.ss.usermodel.Cell;
+import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.links.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.links.SpreadsheetTable;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -75,6 +81,30 @@ public class SpreadsheetController implements Initializable {
             Desktop.getDesktop().edit(spreadsheetFile);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void saveSpreadsheet(ActionEvent actionEvent) {
+        DatabaseStorage databaseStorage = null;
+        try {
+
+            Path path = Paths.get(spreadsheetFile.getAbsolutePath());
+            byte[] fileBytes = Files.readAllBytes(path);
+
+            ExternalModel externalModel = new ExternalModel();
+            externalModel.setAttachment(fileBytes);
+
+            databaseStorage = (DatabaseStorage) RepositoryFactory.getDatabaseRepository();
+            databaseStorage.storeExternalModel(externalModel);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (databaseStorage != null) {
+                try {
+                    databaseStorage.close();
+                } catch (Exception ignore) {
+                }
+            }
         }
     }
 
