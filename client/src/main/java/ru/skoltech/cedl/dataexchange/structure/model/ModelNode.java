@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 11.03.2015.
  */
-@XmlType(propOrder = {"name", "parameters"})
+@XmlType(propOrder = {"name", "lastModification", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @MappedSuperclass
 public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped {
@@ -32,6 +32,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     @XmlTransient
     protected long id;
 
+    @XmlAttribute
     private Long lastModification;
 
     public ModelNode() {
@@ -176,6 +177,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         final StringBuilder sb = new StringBuilder("ModelNode{");
         sb.append("name='").append(name).append('\'');
         sb.append(", parameters=").append(parameters);
+        sb.append("lastModification=").append(lastModification);
         sb.append('}');
         return sb.toString();
     }
