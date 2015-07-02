@@ -389,4 +389,24 @@ public class DatabaseStorage implements Repository {
         }
         return externalModel;
     }
+
+    public ExternalModel loadExternalModel(long externalModelId) throws RepositoryException {
+        EntityManager entityManager = getEntityManager();
+        ExternalModel externalModel = null;
+        try {
+            externalModel = entityManager.find(ExternalModel.class, externalModelId);
+            entityManager.refresh(externalModel);
+        } catch (Exception e) {
+            throw new RepositoryException("Loading ExternalModel failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+        if (externalModel == null)
+            throw new RepositoryException("ExternalModel not found.");
+        return externalModel;
+    }
 }
