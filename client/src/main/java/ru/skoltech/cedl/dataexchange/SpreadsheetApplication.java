@@ -26,7 +26,6 @@ public class SpreadsheetApplication extends Application {
         loader.setLocation(Views.SPREADSHEET_VIEW);
         Parent root = loader.load();
         SpreadsheetController spreadsheetController = loader.getController();
-        spreadsheetController.setSpreadsheetFile(new File("MyExcel.xls"));
 
         primaryStage.setTitle("CEDESK Spreadsheet Viewer");
         primaryStage.setScene(new Scene(root, 800, 480));

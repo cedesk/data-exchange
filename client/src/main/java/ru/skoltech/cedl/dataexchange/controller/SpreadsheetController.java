@@ -76,7 +76,7 @@ public class SpreadsheetController implements Initializable {
 
     public void openSpreadsheet(ActionEvent actionEvent) {
         try {
-            Desktop.getDesktop().open(spreadsheetFile);
+            Desktop.getDesktop().edit(spreadsheetFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -97,6 +97,15 @@ public class SpreadsheetController implements Initializable {
                 } catch (Exception ignore) {
                 }
             }
+        }
+    }
+
+    public void selectFile(ActionEvent actionEvent) {
+        File externalModelFile = Dialogues.chooseExternalModelFile();
+        if (!externalModelFile.isFile() || !externalModelFile.getName().endsWith(".xls")) {
+            Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
+        } else {
+            setSpreadsheetFile(externalModelFile);
         }
     }
 
