@@ -231,8 +231,7 @@ public class UserRoleManagementController implements Initializable {
 
     public void deleteDiscipline(ActionEvent actionEvent) {
         Discipline selectedDiscipline = getSelectedDiscipline();
-        if (selectedDiscipline == null)
-            throw new AssertionError("no discipline in table view");
+        Objects.requireNonNull(selectedDiscipline, "no discipline in table view");
         project.getUserRoleManagement().getDisciplines().remove(selectedDiscipline);
         project.markStudyModified();
         StatusLogger.getInstance().log("removed discipline: " + selectedDiscipline.getName());
@@ -290,8 +289,8 @@ public class UserRoleManagementController implements Initializable {
     public void addUserRole(ActionEvent actionEvent) {
         User user = getSelectedUser();
         Discipline discipline = getSelectedDiscipline();
-        if (user == null || discipline == null)
-            throw new AssertionError("user or discipline must not be null");
+        Objects.requireNonNull(user, "user must not be null");
+        Objects.requireNonNull(user, "discipline must not be null");
         boolean duplicate = project.getUserRoleManagement().addUserDiscipline(user, discipline);
         if (duplicate) {
             StatusLogger.getInstance().log("user '" + user.getUserName() + "' can not be added twice to a discipline '" + discipline.getName() + "'");

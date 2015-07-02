@@ -72,6 +72,14 @@ public class Dialogues {
         return fileChooser.showOpenDialog(null);
     }
 
+    static File chooseExternalModelFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(StorageUtils.getAppDir());
+        fileChooser.setTitle("Select model file.");
+        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Excel", ".xls"));
+        return fileChooser.showOpenDialog(null);
+    }
+
     static Optional<String> inputModelNodeName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Node Name");
