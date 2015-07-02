@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -31,6 +32,9 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     @XmlTransient
     protected long id;
+
+    @XmlTransient
+    protected ExternalModel externalModels;
 
     @XmlAttribute
     private Long lastModification;
@@ -79,6 +83,16 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
                 Collectors.toMap(ParameterModel::getName, Function.identity())
         );
         return parameterModelMap;
+    }
+
+    //TODO: fix EAGER
+    @OneToOne(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    public ExternalModel getExternalModels() {
+        return externalModels;
+    }
+
+    public void setExternalModels(ExternalModel externalModels) {
+        this.externalModels = externalModels;
     }
 
     @Id
