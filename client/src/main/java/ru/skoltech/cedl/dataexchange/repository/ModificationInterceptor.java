@@ -26,8 +26,7 @@ public class ModificationInterceptor extends EmptyInterceptor {
                                 Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types) {
 
         if (entity instanceof ModificationTimestamped) {
-            logger.debug(entity.getClass().getCanonicalName() + "#" + id);
-            logger.debug(getNodeName(currentState, propertyNames));
+            logger.debug(entity.getClass().getCanonicalName() + "#" + id + ":" + getNodeName(currentState, propertyNames));
             ModificationTimestamped timestampedEntity = (ModificationTimestamped) entity;
             timestampedEntity.setLastModification(flushTimeStamp);
         }
@@ -38,8 +37,7 @@ public class ModificationInterceptor extends EmptyInterceptor {
     public boolean onSave(Object entity, Serializable id,
                           Object[] state, String[] propertyNames, Type[] types) {
         if (entity instanceof ModificationTimestamped) {
-            logger.debug(entity.getClass().getCanonicalName() + "#" + id);
-            logger.debug(getNodeName(state, propertyNames));
+            logger.debug(entity.getClass().getCanonicalName() + "#" + id + ":" + getNodeName(state, propertyNames));
             ModificationTimestamped timestampedEntity = (ModificationTimestamped) entity;
             timestampedEntity.setLastModification(flushTimeStamp);
         }
