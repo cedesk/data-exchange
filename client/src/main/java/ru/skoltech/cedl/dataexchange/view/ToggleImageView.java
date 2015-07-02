@@ -12,38 +12,15 @@ import javafx.scene.image.ImageView;
  */
 public class ToggleImageView extends ImageView {
 
-    private ObjectProperty<Image> activeImage = new ObjectPropertyBase<Image>() {
-        @Override
-        public Object getBean() {
-            return ToggleImageView.this;
-        }
+    private Image activeImage;
 
-        @Override
-        public String getName() {
-            return "activeImage";
-        }
-    };
-    private ObjectProperty<Image> inactiveImage = new ObjectPropertyBase<Image>() {
-        @Override
-        public Object getBean() {
-            return ToggleImageView.this;
-        }
-
-        @Override
-        public String getName() {
-            return "inactiveImage";
-        }
-    };
+    private Image inactiveImage;
 
     private BooleanProperty activeState = new SimpleBooleanProperty(false);
 
     public ToggleImageView() {
         super();
         initialize();
-    }
-
-    public ToggleImageView(String inactiveUrl, String activeUrl) {
-        this(new Image(inactiveUrl), new Image(activeUrl));
     }
 
     public ToggleImageView(Image inactiveImage, Image activeImage) {
@@ -83,26 +60,18 @@ public class ToggleImageView extends ImageView {
     }
 
     public Image getActiveImage() {
-        return activeImage.get();
-    }
-
-    public void setActiveImage(Image activeImage) {
-        this.activeImage.set(activeImage);
-    }
-
-    public final ObjectProperty<Image> activeImageProperty() {
         return activeImage;
     }
 
-    public Image getInactiveImage() {
-        return inactiveImage.get();
+    public void setActiveImage(Image activeImage) {
+        this.activeImage = activeImage;
     }
 
-    public ObjectProperty<Image> inactiveImageProperty() {
+    public Image getInactiveImage() {
         return inactiveImage;
     }
 
     public void setInactiveImage(Image inactiveImage) {
-        this.inactiveImage.set(inactiveImage);
+        this.inactiveImage = inactiveImage;
     }
 }

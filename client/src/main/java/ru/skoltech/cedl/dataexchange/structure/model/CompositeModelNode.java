@@ -72,6 +72,11 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
         return result;
     }
 
+    @Transient
+    public boolean isLeafNode() {
+        return subNodes.isEmpty();
+    }
+
     public void diffSubNodes(CompositeModelNode<SUBNODES> otherModelNode) {
         super.diffParameters(otherModelNode);
         Map<String, ModelNode> otherModelSubNodesMap = otherModelNode.getSubNodesMap();

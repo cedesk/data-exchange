@@ -59,9 +59,9 @@ public class StudyStorageTest {
         Study study = StudyFactory.makeStudy(name, null);
         System.out.println(study);
 
-        Study study0 = databaseStorage.storeStudy(study);
+        Study study0 = databaseStorage.storeLocalStudy(study);
 
-        Study study1 = databaseStorage.loadStudy(name);
+        Study study1 = databaseStorage.loadLocalStudy(name);
         System.out.println(study1);
 
         Assert.assertEquals(study, study1);

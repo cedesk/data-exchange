@@ -25,7 +25,6 @@ public class ModificationInterceptor extends EmptyInterceptor {
     public boolean onFlushDirty(Object entity, Serializable id,
                                 Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types) {
 
-        logger.debug("onFlushDirty");
         if (entity instanceof ModificationTimestamped) {
             logger.debug(entity.getClass().getCanonicalName() + "#" + id);
             logger.debug(getNodeName(currentState, propertyNames));
@@ -38,7 +37,6 @@ public class ModificationInterceptor extends EmptyInterceptor {
     @Override
     public boolean onSave(Object entity, Serializable id,
                           Object[] state, String[] propertyNames, Type[] types) {
-        logger.debug("onSave");
         if (entity instanceof ModificationTimestamped) {
             logger.debug(entity.getClass().getCanonicalName() + "#" + id);
             logger.debug(getNodeName(state, propertyNames));
