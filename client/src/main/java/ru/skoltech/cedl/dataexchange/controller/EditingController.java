@@ -24,7 +24,10 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNodeFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
@@ -80,7 +83,7 @@ public class EditingController implements Initializable {
 
     private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(true);
 
-    private BooleanProperty selectedNodeIsLeaf = new SimpleBooleanProperty(true);
+    private BooleanProperty selectedNodeCanHaveChildren = new SimpleBooleanProperty(true);
 
     private Project project;
 
@@ -88,7 +91,7 @@ public class EditingController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // STRUCTURE TREE VIEW
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
-        addNodeButton.disableProperty().bind(Bindings.and(structureTree.getSelectionModel().selectedItemProperty().isNull(), selectedNodeIsLeaf));
+        addNodeButton.disableProperty().bind(Bindings.and(structureTree.getSelectionModel().selectedItemProperty().isNull(), selectedNodeCanHaveChildren));
         deleteNodeButton.disableProperty().bind(Bindings.or(structureTree.getSelectionModel().selectedItemProperty().isNull(), selectedNodeIsRoot));
 
         structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
@@ -176,7 +179,7 @@ public class EditingController implements Initializable {
         viewParameters.displayParameters(modelNode.getParameters());
 
         boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
-        logger.debug("selected node: " + treeItem.getValue().getName() + ", editable: " + editable);
+        logger.debug("selected node: " + treeItem.getValue().getNodePath() + ", editable: " + editable);
         parameterTable.setEditable(editable);
         parameterTable.autosize();
     }
@@ -187,14 +190,14 @@ public class EditingController implements Initializable {
 
     public void updateView() {
         if (project.getSystemModel() != null) {
-            //if (project.getRemoteModel() == null) {
-            StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
-            structureTree.setRoot(rootNode);
-        /*} else {
-            StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
-                    project.getSystemModel(), project.getRemoteModel());
-            structureTree.setRoot(rootNode);
-        }*/
+            if (project.getRepositoryStudy() == null || project.getRepositoryStudy().getSystemModel() == null) {
+                StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
+                structureTree.setRoot(rootNode);
+            } else {
+                StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
+                        project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
+                structureTree.setRoot(rootNode);
+            }
             boolean isAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
             structureTree.setEditable(isAdmin);
         } else {
@@ -246,11 +249,13 @@ public class EditingController implements Initializable {
                 if (node.getSubNodesMap().containsKey(subNodeName)) {
                     Dialogues.showError("Duplicate node name", "There is already a sub-node named like that!");
                 } else {
+                    // model
                     ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
+                    // view
                     selectedItem.getChildren().add(StructureTreeItemFactory.getTreeNodeView(newNode));
                     selectedItem.setExpanded(true);
                     project.markStudyModified();
-                    StatusLogger.getInstance().log("added node: " + newNode.getName());
+                    StatusLogger.getInstance().log("added node: " + newNode.getNodePath());
                 }
             }
         } else {
@@ -264,15 +269,17 @@ public class EditingController implements Initializable {
         if (selectedItem.getParent() == null) { // is ROOT
             StatusLogger.getInstance().log("Node can not be deleted!", true);
         } else {
+            // view
             TreeItem<ModelNode> parent = selectedItem.getParent();
             parent.getChildren().remove(selectedItem);
+            // model
             ModelNode deleteNode = selectedItem.getValue();
             if (parent.getValue() instanceof CompositeModelNode) {
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                 parentNode.removeSubNode(deleteNode);
             }
             project.markStudyModified();
-            StatusLogger.getInstance().log("deleted node: " + deleteNode.getName());
+            StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
         }
     }
 
@@ -299,7 +306,9 @@ public class EditingController implements Initializable {
                     return;
                 }
             }
+            // model
             modelNode.setName(newNodeName);
+            // view
             selectedItem.valueProperty().setValue(modelNode);
             project.markStudyModified();
         }
@@ -351,11 +360,11 @@ public class EditingController implements Initializable {
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
                 EditingController.this.updateParameterTable(newValue);
-                selectedNodeIsLeaf.setValue(!(newValue.getValue() instanceof CompositeModelNode));
-                selectedNodeIsRoot.setValue(newValue.getValue() instanceof SystemModel);
+                selectedNodeCanHaveChildren.setValue(!(newValue.getValue() instanceof CompositeModelNode));
+                selectedNodeIsRoot.setValue(newValue.getValue().isRootNode());
             } else {
                 EditingController.this.clearParameterTable();
-                selectedNodeIsLeaf.setValue(false);
+                selectedNodeCanHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
             }
         }

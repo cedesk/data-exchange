@@ -50,13 +50,13 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     }
 
     @Override
-    public void setLastModification(Long timestamp) {
-        this.lastModification = timestamp;
+    public Long getLastModification() {
+        return lastModification;
     }
 
     @Override
-    public Long getLastModification() {
-        return lastModification;
+    public void setLastModification(Long timestamp) {
+        this.lastModification = timestamp;
     }
 
     public void addParameter(ParameterModel parameter) {
@@ -104,6 +104,11 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         return parent == null;
     }
 
+    @Transient
+    public boolean isLeafNode() {
+        return true;
+    }
+
     public boolean hasParameter(String parameterName) {
         return getParameterMap().containsKey(parameterName);
     }
@@ -132,6 +137,11 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
                 addParameter(diffParam);
             }
         }
+    }
+
+    @Transient
+    public String getNodePath() {
+        return isRootNode() ? name : parent.getNodePath() + "\\" + name;
     }
 
     @Override

@@ -317,7 +317,7 @@ public class DatabaseStorage implements Repository {
         List<Object[]> revisions = reader.createQuery()
                 .forRevisionsOfEntity(ParameterModel.class, false, true)
                 .add(AuditEntity.id().eq(pk))
-                .addOrder(AuditEntity.revisionNumber().asc())
+                .addOrder(AuditEntity.revisionNumber().desc())
                 .getResultList();
 
         List<ParameterRevision> revisionList = new ArrayList<>(revisions.size());

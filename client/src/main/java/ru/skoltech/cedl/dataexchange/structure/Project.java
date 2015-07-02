@@ -35,6 +35,8 @@ public class Project {
 
     private Study study;
 
+    private Study repositoryStudy;
+
     private LongProperty latestLoadedModification = new SimpleLongProperty(-1L);
 
     private LongProperty latestRepositoryModification = new SimpleLongProperty(-1L);
@@ -81,6 +83,14 @@ public class Project {
 
     private void setStudy(Study study) {
         this.study = study;
+    }
+
+    public Study getRepositoryStudy() {
+        return repositoryStudy;
+    }
+
+    public void setRepositoryStudy(Study repositoryStudy) {
+        this.repositoryStudy = repositoryStudy;
     }
 
     public UserManagement getUserManagement() {
@@ -141,7 +151,7 @@ public class Project {
         return sb.toString();
     }
 
-    public boolean storeStudy() {
+    public boolean storeLocalStudy() {
         try {
             study = repository.storeStudy(study);
             Timestamp latestMod = study.getSystemModel().findLatestModification();
@@ -159,7 +169,7 @@ public class Project {
         return false;
     }
 
-    public boolean loadStudy() {
+    public boolean loadLocalStudy() {
         Study study = null;
         try {
             study = repository.loadStudy(projectName);
@@ -175,6 +185,24 @@ public class Project {
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         }
         return study != null;
+    }
+
+    public boolean loadRepositoryStudy() {
+        Study repositoryStudy = null;
+        try {
+            // TODO: make more efficient, not to load the entire model, if it is not newer
+            repositoryStudy = repository.loadStudy(projectName);
+            Timestamp latestMod = repositoryStudy.getSystemModel().findLatestModification();
+            latestRepositoryModification.setValue(latestMod.getTime());
+        } catch (RepositoryException e) {
+            logger.error("Study not found!");
+        } catch (Exception e) {
+            logger.error("Error loading repositoryStudy!", e);
+        }
+        if (repositoryStudy != null) {
+            setRepositoryStudy(repositoryStudy);
+        }
+        return repositoryStudy != null;
     }
 
     public boolean isActionPossible(RepositoryStateMachine.RepositoryActions action) {

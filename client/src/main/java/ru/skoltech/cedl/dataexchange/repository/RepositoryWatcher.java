@@ -2,9 +2,6 @@ package ru.skoltech.cedl.dataexchange.repository;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-
-import java.sql.Timestamp;
 
 /**
  * Created by D.Knoll on 28.03.2015.
@@ -19,11 +16,8 @@ public class RepositoryWatcher extends Thread {
 
     private boolean continueRunning = true;
 
-    private Repository repository;
-
     public RepositoryWatcher(Project project) {
         this.project = project;
-        this.repository = RepositoryFactory.getDatabaseRepository();
     }
 
     @Override
@@ -35,11 +29,7 @@ public class RepositoryWatcher extends Thread {
         while (continueRunning) {
             try {
                 if (project.getStudy() != null) {
-                    // load model from repository
-                    long systemModelId = project.getStudy().getSystemModel().getId();
-                    SystemModel systemModel = repository.loadSystemModel(systemModelId);
-                    Timestamp latestModification = systemModel.findLatestModification();
-                    project.latestRepositoryModificationProperty().setValue(latestModification.getTime());
+                    project.loadRepositoryStudy();
                 }
                 sleep(SECONDS_OF_CHECK_PERIODICITY * 1000);
                 //} catch (RepositoryException ignore1) {
@@ -48,7 +38,6 @@ public class RepositoryWatcher extends Thread {
                 logger.warn(ex.getMessage());
             }
         }
-        repository.close();
         logger.info("RepositoryWatcher finished.");
     }
 

@@ -8,7 +8,7 @@
 <?import javafx.scene.text.*?>
 <?import ru.skoltech.cedl.dataexchange.view.ToggleImageView?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0"
-            prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
         <BorderPane fx:id="layout" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0"
@@ -125,9 +125,9 @@
                                                 </Label>
                                             </children>
                                         </HBox>
-                                        <ToggleImageView fx:id="repositoryNewerIndicator" fitHeight="24.0"
-                                                         fitWidth="24.0"
-                                                         pickOnBounds="true" preserveRatio="true" disable="true">
+                                        <ToggleImageView fx:id="repositoryNewerIndicator" disable="true"
+                                                         fitHeight="24.0" fitWidth="24.0" pickOnBounds="true"
+                                                         preserveRatio="true" AnchorPane.rightAnchor="0.0">
                                             <activeImage>
                                                 <Image url="@/icons/flash-orange.png"/>
                                             </activeImage>

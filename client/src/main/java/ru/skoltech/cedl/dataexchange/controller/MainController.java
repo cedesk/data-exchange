@@ -107,7 +107,7 @@ public class MainController implements Initializable {
 
     public void loadProject(ActionEvent actionEvent) {
         try {
-            boolean success = project.loadStudy();
+            boolean success = project.loadLocalStudy();
             if (success) {
                 ApplicationSettings.setLastUsedProject(project.getProjectName());
                 StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
@@ -123,7 +123,7 @@ public class MainController implements Initializable {
 
     public void saveProject(ActionEvent actionEvent) {
         try {
-            boolean success = project.storeStudy();
+            boolean success = project.storeLocalStudy();
             updateView();
             if (success) {
                 ApplicationSettings.setLastUsedProject(project.getProjectName());
@@ -250,7 +250,7 @@ public class MainController implements Initializable {
     }
 
     public void updateRemoteModel() {
-        //project.loadRemote();
+        project.loadRepositoryStudy();
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
