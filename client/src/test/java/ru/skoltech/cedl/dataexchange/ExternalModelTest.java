@@ -8,16 +8,12 @@ import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 
 /**
  * Created by D.Knoll on 02.07.2015.
@@ -38,12 +34,9 @@ public class ExternalModelTest {
 
     @Test()
     public void storeAndRetrieveAttachment() throws URISyntaxException, IOException, RepositoryException {
-        URL url = this.getClass().getResource("/attachment.xls");
-        File file = new File(url.toURI());
-        Path path = Paths.get(file.getAbsolutePath());
-        byte[] data = Files.readAllBytes(path);
-        ExternalModel externalModel = new ExternalModel();
-        externalModel.setAttachment(data);
+        File file = new File(this.getClass().getResource("/attachment.xls").toURI());
+
+        ExternalModel externalModel = ExternalModelUtil.fromFile(file);
 
         System.err.println("before: " + externalModel.getId());
         ExternalModel externalModel1 = databaseStorage.storeExternalModel(externalModel);
@@ -52,8 +45,7 @@ public class ExternalModelTest {
         System.err.println("second: " + externalModel1.getId());
 
         ExternalModel externalModel2 = databaseStorage.loadExternalModel(pk);
-        byte[] attachment = externalModel2.getAttachment();
 
-        Assert.assertArrayEquals(data, attachment);
+        Assert.assertArrayEquals(externalModel1.getAttachment(), externalModel2.getAttachment());
     }
 }

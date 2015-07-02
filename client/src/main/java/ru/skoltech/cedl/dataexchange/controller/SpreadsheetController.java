@@ -15,14 +15,12 @@ import ru.skoltech.cedl.dataexchange.links.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.links.SpreadsheetTable;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -78,7 +76,7 @@ public class SpreadsheetController implements Initializable {
 
     public void openSpreadsheet(ActionEvent actionEvent) {
         try {
-            Desktop.getDesktop().edit(spreadsheetFile);
+            Desktop.getDesktop().open(spreadsheetFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -87,13 +85,7 @@ public class SpreadsheetController implements Initializable {
     public void saveSpreadsheet(ActionEvent actionEvent) {
         DatabaseStorage databaseStorage = null;
         try {
-
-            Path path = Paths.get(spreadsheetFile.getAbsolutePath());
-            byte[] fileBytes = Files.readAllBytes(path);
-
-            ExternalModel externalModel = new ExternalModel();
-            externalModel.setAttachment(fileBytes);
-
+            ExternalModel externalModel = ExternalModelUtil.fromFile(spreadsheetFile);
             databaseStorage = (DatabaseStorage) RepositoryFactory.getDatabaseRepository();
             databaseStorage.storeExternalModel(externalModel);
         } catch (Exception ex) {
