@@ -197,7 +197,7 @@ public class UserRoleManagement {
         if (associationFound != null) {
             return associationFound.getDiscipline();
         } else {
-            logger.error("no discipline found for subsystem '" + modelNode.getName() + "'");
+            logger.debug("no discipline found for subsystem '" + modelNode.getName() + "'");
             return null;
         }
     }
