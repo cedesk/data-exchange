@@ -1,12 +1,14 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
+
 import org.hibernate.envers.Audited;
+
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-@XmlType(propOrder = {"name", "value", "type", "isShared", "description"})
+@XmlType(propOrder = {"name", "value", "type", "isShared", "description", "lastModification"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
@@ -36,6 +38,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @XmlTransient
     private long version;
 
+    @XmlAttribute
     private Long lastModification;
 
     public ParameterModel() {
@@ -172,6 +175,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         sb.append(", isShared=").append(isShared);
         sb.append(", version=").append(version);
         sb.append(", description='").append(description).append('\'');
+        sb.append(", lastModification='").append(lastModification).append('\'');
         sb.append('}');
         return sb.toString();
     }
