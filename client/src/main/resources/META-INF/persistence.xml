@@ -15,6 +15,7 @@
         <class>ru.skoltech.cedl.dataexchange.structure.model.ElementModel</class>
         <class>ru.skoltech.cedl.dataexchange.structure.model.InstrumentModel</class>
         <class>ru.skoltech.cedl.dataexchange.structure.model.ParameterModel</class>
+        <class>ru.skoltech.cedl.dataexchange.structure.ExternalModel</class>
 
         <class>ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement</class>
         <class>ru.skoltech.cedl.dataexchange.users.model.UserManagement</class>
@@ -47,6 +48,7 @@
         <class>ru.skoltech.cedl.dataexchange.structure.model.ElementModel</class>
         <class>ru.skoltech.cedl.dataexchange.structure.model.InstrumentModel</class>
         <class>ru.skoltech.cedl.dataexchange.structure.model.ParameterModel</class>
+        <class>ru.skoltech.cedl.dataexchange.structure.ExternalModel</class>
 
         <class>ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement</class>
         <class>ru.skoltech.cedl.dataexchange.users.model.UserManagement</class>
