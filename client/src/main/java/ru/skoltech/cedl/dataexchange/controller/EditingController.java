@@ -23,6 +23,8 @@ import javafx.util.converter.DoubleStringConverter;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
@@ -32,9 +34,11 @@ import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.BiConsumer;
@@ -45,6 +49,15 @@ import java.util.function.BiConsumer;
 public class EditingController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(EditingController.class);
+
+    @FXML
+    private Button atachButton;
+
+    @FXML
+    private Button detachButton;
+
+    @FXML
+    private TextField externalModelFilePath;
 
     @FXML
     private TableColumn parameterNameColumn;
@@ -109,6 +122,9 @@ public class EditingController implements Initializable {
 
         // STRUCTURE TREE CONTEXT MENU
         structureTree.setContextMenu(makeStructureTreeContextMenu());
+
+        atachButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
+        detachButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
 
         // NODE PARAMETERS
         addParameterButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
@@ -208,8 +224,7 @@ public class EditingController implements Initializable {
 
     public void openParameterHistoryDialog(ActionEvent actionEvent) {
         ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem();
-        if (selectedParameter == null)
-            throw new AssertionError("no parameter selected");
+        Objects.requireNonNull(selectedParameter, "no parameter selected");
 
         try {
             FXMLLoader loader = new FXMLLoader();
@@ -235,7 +250,7 @@ public class EditingController implements Initializable {
 
     public void addNode(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
-        if (selectedItem == null) throw new AssertionError("no item selected in tree view");
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
 
         if (selectedItem.getValue() instanceof CompositeModelNode) {
             CompositeModelNode node = (CompositeModelNode) selectedItem.getValue();
@@ -265,7 +280,7 @@ public class EditingController implements Initializable {
 
     public void deleteNode(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
-        if (selectedItem == null) throw new AssertionError("no item selected in tree view");
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
         if (selectedItem.getParent() == null) { // is ROOT
             StatusLogger.getInstance().log("Node can not be deleted!", true);
         } else {
@@ -285,7 +300,7 @@ public class EditingController implements Initializable {
 
     public void renameNode(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
-        if (selectedItem == null) throw new AssertionError("no item selected in tree view");
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
         ModelNode modelNode = selectedItem.getValue();
         String oldNodeName = modelNode.getName();
         Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(oldNodeName);
@@ -316,7 +331,7 @@ public class EditingController implements Initializable {
 
     public void addParameter(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
-        if (selectedItem == null) throw new AssertionError("no item selected in tree view");
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
 
         Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
         if (parameterNameChoice.isPresent()) {
@@ -353,6 +368,34 @@ public class EditingController implements Initializable {
         }
     }
 
+    public void attachExternalModel(ActionEvent actionEvent) {
+        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        Objects.requireNonNull(selectedItem);
+        File externalModelFile = Dialogues.chooseExternalModelFile();
+        if (externalModelFile != null) {
+            if (!externalModelFile.isFile() || !externalModelFile.getName().endsWith(".xls")) {
+                Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
+            } else {
+                externalModelFilePath.setText(externalModelFile.getAbsolutePath());
+                try {
+                    ExternalModel externalModel = ExternalModelUtil.fromFile(externalModelFile);
+                    selectedItem.getValue().setExternalModels(externalModel);
+                    project.markStudyModified();
+                } catch (IOException e) {
+                    logger.warn("Unable to import model file.", e);
+                }
+            }
+        }
+
+    }
+
+    public void detachExternalModel(ActionEvent actionEvent) {
+        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        Objects.requireNonNull(selectedItem);
+        selectedItem.getValue().setExternalModels(null);
+        project.markStudyModified();
+    }
+
     private class TreeItemSelectionListener implements ChangeListener<TreeItem<ModelNode>> {
 
         @Override
@@ -362,10 +405,16 @@ public class EditingController implements Initializable {
                 EditingController.this.updateParameterTable(newValue);
                 selectedNodeCanHaveChildren.setValue(!(newValue.getValue() instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(newValue.getValue().isRootNode());
+                if (newValue.getValue().getExternalModels() != null) {
+                    externalModelFilePath.setText(newValue.getValue().getExternalModels().getName());
+                } else {
+                    externalModelFilePath.setText(null);
+                }
             } else {
                 EditingController.this.clearParameterTable();
                 selectedNodeCanHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
+                externalModelFilePath.setText(null);
             }
         }
     }

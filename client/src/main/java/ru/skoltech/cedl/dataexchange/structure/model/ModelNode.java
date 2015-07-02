@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;

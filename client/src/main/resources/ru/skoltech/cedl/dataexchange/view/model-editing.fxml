@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 <SplitPane dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0" BorderPane.alignment="CENTER"
-           xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+           xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="ru.skoltech.cedl.dataexchange.controller.EditingController">
     <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="598.0">
@@ -29,51 +30,76 @@
                     <items>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                             <children>
-                                <TableView fx:id="parameterTable" layoutX="97.0" layoutY="58.0" prefHeight="444.0"
-                                           prefWidth="593.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                           AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                    <columns>
-                                        <TableColumn fx:id="parameterNameColumn" minWidth="150.0" text="Name">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="name"/>
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="parameterValueColumn" minWidth="50.0" text="Value">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="value"/>
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="parameterTypeColumn" minWidth="100.0" text="Type">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="type"/>
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="parameterSharedColumn" minWidth="50.0" text="Shared">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="isShared"/>
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                        <TableColumn fx:id="parameterDescriptionColumn" minWidth="150.0" text="Description">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="description"/>
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                    </columns>
-                                </TableView>
+                                <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <children>
+                                        <TableView fx:id="parameterTable" prefHeight="444.0" prefWidth="593.0">
+                                            <columns>
+                                                <TableColumn fx:id="parameterNameColumn" minWidth="150.0" text="Name">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="name"/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn fx:id="parameterValueColumn" minWidth="50.0" text="Value">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="value"/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn fx:id="parameterTypeColumn" minWidth="100.0" text="Type">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="type"/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn fx:id="parameterSharedColumn" minWidth="50.0"
+                                                             text="Shared">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="isShared"/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn fx:id="parameterDescriptionColumn" minWidth="150.0"
+                                                             text="Description">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="description"/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                            </columns>
+                                        </TableView>
+                                        <ToolBar>
+                                            <items>
+                                                <Button fx:id="addParameterButton" mnemonicParsing="false"
+                                                        onAction="#addParameter" text="Add"/>
+                                                <Button fx:id="deleteParameterButton" mnemonicParsing="false"
+                                                        onAction="#deleteParameter" text="Delete"/>
+                                            </items>
+                                        </ToolBar>
+                                        <TitledPane animated="false" text="External Model">
+                                            <content>
+                                                <FlowPane prefHeight="200.0" prefWidth="200.0">
+                                                    <children>
+                                                        <TextField fx:id="externalModelFilePath" editable="false"
+                                                                   prefWidth="400.0" promptText="File"/>
+                                                        <Button fx:id="atachButton" mnemonicParsing="false"
+                                                                onAction="#attachExternalModel" text="Attach">
+                                                            <FlowPane.margin>
+                                                                <Insets left="8.0"/>
+                                                            </FlowPane.margin>
+                                                        </Button>
+                                                        <Button fx:id="detachButton" layoutX="428.0" layoutY="20.0"
+                                                                mnemonicParsing="false" onAction="#detachExternalModel"
+                                                                text="Detach">
+                                                            <FlowPane.margin>
+                                                                <Insets left="8.0"/>
+                                                            </FlowPane.margin>
+                                                        </Button>
+                                                    </children>
+                                                </FlowPane>
+                                            </content>
+                                        </TitledPane>
+                                    </children>
+                                </VBox>
                             </children>
                         </AnchorPane>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-                            <children>
-                                <ToolBar>
-                                    <items>
-                                        <Button fx:id="addParameterButton" mnemonicParsing="false"
-                                                onAction="#addParameter" text="Add"/>
-                                        <Button fx:id="deleteParameterButton" mnemonicParsing="false"
-                                                onAction="#deleteParameter" text="Delete"/>
-                                    </items>
-                                </ToolBar>
-                            </children>
-                        </AnchorPane>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
                     </items>
                 </SplitPane>
             </children>
