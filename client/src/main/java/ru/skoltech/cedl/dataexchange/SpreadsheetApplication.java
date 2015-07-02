@@ -29,7 +29,7 @@ public class SpreadsheetApplication extends Application {
         spreadsheetController.setSpreadsheetFile(new File("MyExcel.xls"));
 
         primaryStage.setTitle("CEDESK Spreadsheet Viewer");
-        primaryStage.setScene(new Scene(root, 640, 480));
+        primaryStage.setScene(new Scene(root, 800, 480));
         primaryStage.getIcons().add(new Image("/icons/app-icon.png"));
         primaryStage.show();
         primaryStage.setOnCloseRequest(we -> spreadsheetController.close());
