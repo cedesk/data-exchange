@@ -12,6 +12,8 @@ import ru.skoltech.cedl.dataexchange.controller.MainController;
 import ru.skoltech.cedl.dataexchange.controller.SpreadsheetController;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
+import java.io.File;
+
 public class SpreadsheetApplication extends Application {
 
     public static void main(String[] args) {
@@ -24,6 +26,7 @@ public class SpreadsheetApplication extends Application {
         loader.setLocation(Views.SPREADSHEET_VIEW);
         Parent root = loader.load();
         SpreadsheetController spreadsheetController = loader.getController();
+        spreadsheetController.setSpreadsheetFile(new File("MyExcel.xls"));
 
         primaryStage.setTitle("CEDESK Spreadsheet Viewer");
         primaryStage.setScene(new Scene(root, 640, 480));
