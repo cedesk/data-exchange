@@ -7,6 +7,7 @@ import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
@@ -363,5 +364,29 @@ public class DatabaseStorage implements Repository {
         return "DatabaseStorage{" +
                 "hostName='" + hostName + '\'' +
                 '}';
+    }
+
+    public ExternalModel storeExternalModel(ExternalModel externalModel) throws RepositoryException {
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
+            if (externalModel.getId() == 0) {
+                entityManager.persist(externalModel);
+            } else {
+                externalModel = entityManager.merge(externalModel);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            throw new RepositoryException("Storing ExternalModel failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+        return externalModel;
     }
 }
