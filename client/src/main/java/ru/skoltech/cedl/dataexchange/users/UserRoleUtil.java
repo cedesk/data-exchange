@@ -6,6 +6,8 @@ import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
+import java.util.List;
+
 /**
  * Created by dknoll on 17/05/15.
  */
@@ -19,14 +21,11 @@ public class UserRoleUtil {
         if (user == null)
             return false;
 
-        ModelNode subSystem = findOwningSubSystem(someModelNode);
-        // check disciplines associated with the subsystem
-        Discipline discipline = userRoleManagement.getDisciplineOfSubSystem(subSystem);
-        if (discipline == null)
-            return false;
-
         // check the users associated disciplines
-        for (Discipline userDiscipline : userRoleManagement.getDisciplinesOfUser(user)) {
+        ModelNode subSystem = findOwningSubSystem(someModelNode);
+        Discipline discipline = userRoleManagement.getDisciplineOfSubSystem(subSystem);
+        List<Discipline> disciplinesOfUser = userRoleManagement.getDisciplinesOfUser(user);
+        for (Discipline userDiscipline : disciplinesOfUser) {
             if (userDiscipline.equals(discipline) || userDiscipline.isBuiltIn())
                 return true;
         }
