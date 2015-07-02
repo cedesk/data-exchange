@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -70,5 +71,16 @@ public class UserManagement {
             logger.error("user not found: " + userName);
         }
         return user;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserManagement that = (UserManagement) o;
+
+        if (id != that.id) return false;
+        return Arrays.equals(users.toArray(), that.users.toArray());
     }
 }

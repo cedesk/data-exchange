@@ -102,4 +102,26 @@ public class User implements Comparable<User> {
     public int compareTo(User other) {
         return userName.compareTo(other.userName);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        if (userName != null ? !userName.equals(user.userName) : user.userName != null) return false;
+        if (fullName != null ? !fullName.equals(user.fullName) : user.fullName != null) return false;
+        if (salt != null ? !salt.equals(user.salt) : user.salt != null) return false;
+        return !(passwordHash != null ? !passwordHash.equals(user.passwordHash) : user.passwordHash != null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userName != null ? userName.hashCode() : 0;
+        result = 31 * result + (fullName != null ? fullName.hashCode() : 0);
+        result = 31 * result + (salt != null ? salt.hashCode() : 0);
+        result = 31 * result + (passwordHash != null ? passwordHash.hashCode() : 0);
+        return result;
+    }
 }

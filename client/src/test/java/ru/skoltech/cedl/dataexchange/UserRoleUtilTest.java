@@ -48,29 +48,25 @@ public class UserRoleUtilTest {
         UserManagement userManagement = UserManagementFactory.getUserManagement();
         UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
 
-        String testUserName = "test expert";
-        User expert = new User(testUserName, "", "");
-        userManagement.getUsers().add(expert);
+        String testUserName = "testUSER";
+        User testUser = new User(testUserName, "", "");
+        userManagement.getUsers().add(testUser);
 
         SystemModel systemModel = DummySystemBuilder.getSystemModel(3);
         SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
-        Discipline firstDiscipline = userRoleManagement.getDisciplines().get(0);
-        userRoleManagement.addUserDiscipline(expert, firstDiscipline);
-        firstSubsystemNode.setName(firstDiscipline.getName());
+        Discipline secondDiscipline = userRoleManagement.getDisciplines().get(1);
+        userRoleManagement.addUserDiscipline(testUser, secondDiscipline);
+        userRoleManagement.addDisciplineSubsystem(secondDiscipline, firstSubsystemNode);
 
         ElementModel firstElementSubsystemNode = firstSubsystemNode.getSubNodes().get(0);
 
-        Assert.assertTrue(
-                UserRoleUtil.checkAccess(systemModel, expert, userRoleManagement));
-        Assert.assertTrue(
-                UserRoleUtil.checkAccess(firstSubsystemNode, expert, userRoleManagement));
-        Assert.assertTrue(
-                UserRoleUtil.checkAccess(firstElementSubsystemNode, expert, userRoleManagement));
-
-        firstSubsystemNode.setName(firstDiscipline.getName() + "#");
-
         Assert.assertFalse(
-                UserRoleUtil.checkAccess(firstSubsystemNode, expert, userRoleManagement));
+                UserRoleUtil.checkAccess(systemModel, testUser, userRoleManagement));
+        Assert.assertTrue(
+                UserRoleUtil.checkAccess(firstSubsystemNode, testUser, userRoleManagement));
+        Assert.assertTrue(
+                UserRoleUtil.checkAccess(firstElementSubsystemNode, testUser, userRoleManagement));
+
     }
 }

@@ -144,7 +144,7 @@ public class UserRoleManagement {
     @Transient
     public long getSubSystemsOfDiscipline(Discipline discipline) {
         long count = disciplineSubSystems.stream()
-                .filter(disciplineSubSystem -> disciplineSubSystem.getDiscipline().getId() == discipline.getId())
+                .filter(disciplineSubSystem -> disciplineSubSystem.getDiscipline().equals(discipline))
                 .count();
         return count;
     }
@@ -158,7 +158,7 @@ public class UserRoleManagement {
     @Transient
     public List<User> getUsersOfDiscipline(Discipline discipline) {
         List<User> userList = userDisciplines.stream()
-                .filter(userDiscipline -> userDiscipline.getDiscipline().getId() == discipline.getId())
+                .filter(userDiscipline -> userDiscipline.getDiscipline().equals(discipline))
                 .map(UserDiscipline::getUser)
                 .collect(Collectors.toCollection(() -> new LinkedList<>()));
         return userList;
@@ -167,7 +167,7 @@ public class UserRoleManagement {
     @Transient
     public List<Discipline> getDisciplinesOfUser(User user) {
         List<Discipline> disciplineList = userDisciplines.stream()
-                .filter(userDiscipline -> userDiscipline.getUser().getId() == user.getId())
+                .filter(userDiscipline -> userDiscipline.getUser().equals(user))
                 .map(UserDiscipline::getDiscipline)
                 .collect(Collectors.toCollection(() -> new LinkedList<>()));
         return disciplineList;
