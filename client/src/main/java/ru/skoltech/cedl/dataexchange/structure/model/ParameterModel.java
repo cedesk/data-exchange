@@ -8,12 +8,18 @@ import javax.xml.bind.annotation.*;
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-@XmlType(propOrder = {"name", "value", "valueSource", "isExported", "description", "lastModification"})
+@XmlType(propOrder = {"name", "value", "nature", "valueSource", "isExported", "lastModification", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
 @Audited
 public class ParameterModel implements Comparable<ParameterModel>, ModificationTimestamped {
+
+    public static final ParameterNature DEFAULT_NATURE = ParameterNature.Internal;
+
+    public static final ParameterValueSource DEFAULT_VALUE_SOURCE = ParameterValueSource.Manual;
+
+    public static final Boolean DEFAULT_EXPORTED = Boolean.FALSE;
 
     @XmlTransient
     private long id;
@@ -28,13 +34,13 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     private Double serverValue;
 
     @XmlAttribute
-    private ParameterNature nature = ParameterNature.Internal;
+    private ParameterNature nature = DEFAULT_NATURE;
 
     @XmlAttribute
-    private ParameterValueSource valueSource = ParameterValueSource.Manual;
+    private ParameterValueSource valueSource = DEFAULT_VALUE_SOURCE;
 
     @XmlAttribute
-    private Boolean isExported = false;
+    private Boolean isExported = DEFAULT_EXPORTED;
 
     private String description;
 
@@ -115,7 +121,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     }
 
     public ParameterNature getNature() {
-        return nature;
+        return nature == null ? DEFAULT_NATURE : nature;
     }
 
     public void setNature(ParameterNature nature) {
@@ -123,7 +129,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     }
 
     public ParameterValueSource getValueSource() {
-        return valueSource;
+        return valueSource == null ? DEFAULT_VALUE_SOURCE : valueSource;
     }
 
     public void setValueSource(ParameterValueSource valueSource) {
@@ -131,7 +137,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     }
 
     public Boolean getIsExported() {
-        return isExported;
+        return isExported == null ? DEFAULT_EXPORTED : isExported;
     }
 
     public void setIsExported(Boolean isExported) {
@@ -147,8 +153,8 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     }
 
     /*
-         * The comparison is done only based on the name, so it enables sorting of parameters by name and identifying changes to values of parameters.
-         */
+     * The comparison is done only based on the name, so it enables sorting of parameters by name and identifying changes to values of parameters.
+     */
     @Override
     public int compareTo(ParameterModel o) {
         return name.compareTo(o.name);
