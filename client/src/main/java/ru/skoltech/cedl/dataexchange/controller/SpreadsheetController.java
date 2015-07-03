@@ -4,6 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.TextField;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
@@ -60,8 +61,15 @@ public class SpreadsheetController implements Initializable {
         }
     }
 
-    public void createSpreadsheet(ActionEvent actionEvent) {
-        //SpreadsheetFactory.writeDummy(spreadsheetFile);
+    public void chooseSelectedCell(ActionEvent actionEvent) {
+        TablePosition focusedCell = spreadsheetView.getSelectionModel().getFocusedCell();
+        if (focusedCell != null) {
+            System.out.println(getCellCoordinates(focusedCell));
+        }
+    }
+
+    private String getCellCoordinates(TablePosition tablePosition) {
+        return tablePosition.getTableColumn().getText() + String.valueOf(tablePosition.getRow() + 1);
     }
 
     public void openSpreadsheet(ActionEvent actionEvent) {

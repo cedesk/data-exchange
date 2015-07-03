@@ -30,8 +30,8 @@
                                 <Insets left="12.0"/>
                             </HBox.margin>
                         </Button>
-                        <Button fx:id="createButton" disable="true" mnemonicParsing="false"
-                                onAction="#createSpreadsheet" text="Create">
+                        <Button fx:id="chooseCellButton" mnemonicParsing="false"
+                                onAction="#chooseSelectedCell" text="Choose Cell">
                             <HBox.margin>
                                 <Insets left="12.0"/>
                             </HBox.margin>
