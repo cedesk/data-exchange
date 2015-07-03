@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
+<?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
 <SplitPane dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0" BorderPane.alignment="CENTER"
            xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="ru.skoltech.cedl.dataexchange.controller.EditingController">
@@ -35,7 +36,8 @@
                                     <children>
                                         <TableView fx:id="parameterTable" prefHeight="444.0" prefWidth="593.0">
                                             <columns>
-                                                <TableColumn fx:id="parameterNameColumn" minWidth="150.0" text="Name">
+                                                <TableColumn fx:id="parameterNameColumn" minWidth="150.0" text="Name"
+                                                             editable="false">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="name"/>
                                                     </cellValueFactory>
@@ -51,13 +53,13 @@
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn fx:id="parameterSharedColumn" minWidth="30.0"
-                                                             text="Shared">
+                                                             text="Shared" editable="false">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="isShared"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn fx:id="parameterDescriptionColumn" minWidth="150.0"
-                                                             text="Description">
+                                                             text="Description" editable="false">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="description"/>
                                                     </cellValueFactory>
@@ -99,7 +101,8 @@
                                 </VBox>
                             </children>
                         </AnchorPane>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+                        <ParameterEditor fx:id="parameterEditor" minHeight="0.0" minWidth="0.0" prefHeight="100.0"
+                                         prefWidth="160.0"/>
                     </items>
                 </SplitPane>
             </children>

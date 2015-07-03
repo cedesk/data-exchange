@@ -23,6 +23,7 @@ import javafx.util.converter.DoubleStringConverter;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -49,6 +50,9 @@ import java.util.function.BiConsumer;
 public class EditingController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(EditingController.class);
+
+    @FXML
+    private ParameterEditor parameterEditor;
 
     @FXML
     private Button attachButton;
@@ -163,6 +167,7 @@ public class EditingController implements Initializable {
 
         viewParameters = new ViewParameters();
         parameterTable.setItems(viewParameters.getItems());
+        parameterTable.getSelectionModel().selectedItemProperty().addListener(new ParameterModelSelectionListener());
 
         ContextMenu parameterContextMenu = new ContextMenu();
         MenuItem addNodeMenuItem = new MenuItem("View history");
@@ -388,7 +393,6 @@ public class EditingController implements Initializable {
                 }
             }
         }
-
     }
 
     public void detachExternalModel(ActionEvent actionEvent) {
@@ -396,6 +400,13 @@ public class EditingController implements Initializable {
         Objects.requireNonNull(selectedItem);
         selectedItem.getValue().setExternalModels(null);
         project.markStudyModified();
+    }
+
+    private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
+        @Override
+        public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
+            parameterEditor.setParameterModel(newValue);
+        }
     }
 
     private class TreeItemSelectionListener implements ChangeListener<TreeItem<ModelNode>> {
