@@ -85,7 +85,7 @@ public class MainController implements Initializable {
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
-    private EditingController editingController;
+    private ModelEditingController modelEditingController;
 
     private UserRoleManagementController userRoleManagementController;
 
@@ -148,11 +148,11 @@ public class MainController implements Initializable {
             modelTab.setContent(editingPane);
             modelTab.setOnSelectionChanged(event -> {
                 if (modelTab.isSelected()) {
-                    editingController.updateView();
+                    modelEditingController.updateView();
                 }
             });
-            editingController = loader.getController();
-            editingController.setProject(project);
+            modelEditingController = loader.getController();
+            modelEditingController.setProject(project);
         } catch (IOException ioe) {
             logger.error("Unable to load editing view pane.");
             throw new RuntimeException(ioe);
@@ -228,7 +228,7 @@ public class MainController implements Initializable {
             userNameLabel.setText(project.getUser().getName());
             userRoleLabel.setText(getDisciplineNames(project.getUser()));
             // TODO: improve: update only visible tab
-            editingController.updateView();
+            modelEditingController.updateView();
             userRoleManagementController.updateView();
         } else {
             studyNameLabel.setText(project.getProjectName());
@@ -254,7 +254,7 @@ public class MainController implements Initializable {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                editingController.updateView();
+                modelEditingController.updateView();
                 StatusLogger.getInstance().log("Remote model loaded for comparison.");
             }
         });

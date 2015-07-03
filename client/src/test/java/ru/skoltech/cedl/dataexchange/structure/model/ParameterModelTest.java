@@ -24,15 +24,15 @@ public class ParameterModelTest {
     @Test
     public void testEquals2() throws Exception {
 
-        ParameterModel p5 = new ParameterModel("power CONSUMPTION", 40.10, ParameterType.DefaultValue, true, "desc");
-        ParameterModel p6 = new ParameterModel("power CONSUMPTION", 40.10, ParameterType.CalculatedValue, true, "desc");
+        ParameterModel p5 = new ParameterModel("power CONSUMPTION", 40.10, ParameterValueSource.Manual, true, "desc");
+        ParameterModel p6 = new ParameterModel("power CONSUMPTION", 40.10, ParameterValueSource.Reference, true, "desc");
         Assert.assertNotEquals("different type, but equal", p5, p6);
 
-        ParameterModel p7 = new ParameterModel("power CONSUMPTION", 40.10, ParameterType.CalculatedValue, true, "desc");
-        ParameterModel p8 = new ParameterModel("power CONSUMPTION", 40.10, ParameterType.CalculatedValue, false, "desc");
+        ParameterModel p7 = new ParameterModel("power CONSUMPTION", 40.10, ParameterValueSource.Reference, true, "desc");
+        ParameterModel p8 = new ParameterModel("power CONSUMPTION", 40.10, ParameterValueSource.Reference, false, "desc");
         Assert.assertNotEquals("different shared, but equal", p7, p8);
 
-        ParameterModel p9 = new ParameterModel("power CONSUMPTION", 40.10, ParameterType.CalculatedValue, true, "DESC");
+        ParameterModel p9 = new ParameterModel("power CONSUMPTION", 40.10, ParameterValueSource.Reference, true, "DESC");
         Assert.assertEquals("different descriptions should be ignored, but they change result", p7, p9);
     }
 }

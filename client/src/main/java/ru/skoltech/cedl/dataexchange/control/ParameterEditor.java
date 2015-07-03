@@ -1,15 +1,20 @@
 package ru.skoltech.cedl.dataexchange.control;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterType;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
 
 import java.io.IOException;
 import java.net.URL;
@@ -30,16 +35,16 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private TextField nameText;
 
     @FXML
-    private ChoiceBox<ParameterType> typeChoiceBox;
+    private ChoiceBox<ParameterNature> natureChoiceBox;
+
+    @FXML
+    private ChoiceBox<ParameterValueSource> valueSourceChoiceBox;
 
     @FXML
     private TextField valueText;
 
     @FXML
-    private CheckBox isSharedCheckbox;
-
-    @FXML
-    private ToggleButton isSharedButton;
+    private ToggleButton isExportedButton;
 
     @FXML
     private TextArea descriptionText;
@@ -61,7 +66,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         propertyPane.setVisible(false);
-        typeChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterType.class)));
+        natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
+        valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
     }
 
     public ParameterModel getParameterModel() {
@@ -70,16 +76,16 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void setParameterModel(ParameterModel parameterModel) {
         this.parameterModel = parameterModel;
-        updateView();
+        Platform.runLater(this::updateView);
     }
 
     private void updateView() {
         if (parameterModel != null) {
             nameText.setText(parameterModel.getName());
             valueText.setText(String.valueOf(parameterModel.getValue()));
-            typeChoiceBox.setValue(parameterModel.getType());
-            isSharedCheckbox.setSelected(parameterModel.getIsShared());
-            isSharedButton.setSelected(parameterModel.getIsShared());
+            natureChoiceBox.setValue(parameterModel.getNature());
+            valueSourceChoiceBox.setValue(parameterModel.getValueSource());
+            isExportedButton.setSelected(parameterModel.getIsExported());
             descriptionText.setText(parameterModel.getDescription());
             propertyPane.setVisible(true);
         } else {

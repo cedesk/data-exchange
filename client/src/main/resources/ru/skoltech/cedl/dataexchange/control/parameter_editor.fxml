@@ -1,42 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
+<?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/null"
-         xmlns:fx="http://javafx.com/fxml/1">
+
+<fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <GridPane hgap="8.0" vgap="4.0" fx:id="propertyPane">
+        <GridPane fx:id="propertyPane" hgap="8.0" vgap="4.0">
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="10.0" prefWidth="100.0"/>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="500.0" minWidth="10.0" prefWidth="486.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="500.0" minWidth="10.0" prefWidth="486.0" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER"/>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER"/>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER"/>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER"/>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER"/>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
             </rowConstraints>
             <children>
-                <Label text="Name" GridPane.halignment="RIGHT"/>
-                <Label layoutX="10.0" layoutY="33.0" text="Type" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
-                <Label layoutX="48.0" layoutY="179.0" text="Value" GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
-                <Label layoutX="10.0" layoutY="96.0" text="Shared" GridPane.halignment="RIGHT" GridPane.rowIndex="3"/>
-                <Label layoutX="10.0" layoutY="159.0" text="Description" GridPane.halignment="RIGHT"
-                       GridPane.rowIndex="4"/>
-                <TextField fx:id="nameText" promptText="name" GridPane.columnIndex="1"/>
-                <ChoiceBox fx:id="typeChoiceBox" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                <TextField fx:id="valueText" promptText="0123.45" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                <HBox GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.valignment="CENTER">
-                    <children>
-                        <CheckBox fx:id="isSharedCheckbox" mnemonicParsing="false"/>
-                        <ToggleButton fx:id="isSharedButton" mnemonicParsing="false" text="ToggleButton"/>
-                    </children>
-                </HBox>
-                <TextArea fx:id="descriptionText" prefHeight="200.0" prefWidth="200.0" promptText="description"
-                          GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                <Label text="Name" GridPane.halignment="RIGHT" />
+                <Label text="Nature" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+                <Label text="Value Source" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
+                <Label text="Value" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
+                <Label text="Shared" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
+                <Label text="Description" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
+                <TextField fx:id="nameText" promptText="name" GridPane.columnIndex="1" />
+                <ChoiceBox fx:id="natureChoiceBox" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <ChoiceBox fx:id="valueSourceChoiceBox" layoutX="118.0" layoutY="46.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <TextField fx:id="valueText" promptText="0123.45" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <ToggleButton fx:id="isExportedButton" mnemonicParsing="false" text="ToggleButton" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <TextArea fx:id="descriptionText" prefHeight="200.0" prefWidth="200.0" promptText="description" GridPane.columnIndex="1" GridPane.rowIndex="5" />
             </children>
         </GridPane>
     </children>

@@ -28,8 +28,9 @@ public class ParameterRevision extends ParameterModel {
         setName(versionedParameterModel.getName());
         setValue(versionedParameterModel.getValue());
         setDescription(versionedParameterModel.getDescription());
-        setType(versionedParameterModel.getType());
-        setIsShared(versionedParameterModel.getIsShared());
+        setNature(versionedParameterModel.getNature());
+        setValueSource(versionedParameterModel.getValueSource());
+        setIsExported(versionedParameterModel.getIsExported());
     }
 
     public int getRevisionId() {

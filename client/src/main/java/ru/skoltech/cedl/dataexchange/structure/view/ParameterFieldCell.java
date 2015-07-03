@@ -6,7 +6,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.StringConverter;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterType;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
 
 /**
  * Created by D.Knoll on 27.04.2015.
@@ -29,7 +29,7 @@ public class ParameterFieldCell extends TextFieldTableCell<ParameterModel, Objec
         if (item != null && !empty) {
             setText(item.toString());
             ParameterModel parameterModel = (ParameterModel) getTableRow().getItem();
-            setEditable(parameterModel == null ? false : parameterModel.getType() == ParameterType.DefaultValue);
+            setEditable(parameterModel == null ? false : parameterModel.getValueSource() == ParameterValueSource.Manual);
             if (parameterModel != null && parameterModel.hasServerChange()) {
                 // set graphical hint
                 ImageView imageView = new ImageView(FLASH_ICON);

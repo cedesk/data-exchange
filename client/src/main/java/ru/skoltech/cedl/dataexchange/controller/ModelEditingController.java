@@ -47,9 +47,12 @@ import java.util.function.BiConsumer;
 /**
  * Created by D.Knoll on 20.03.2015.
  */
-public class EditingController implements Initializable {
+public class ModelEditingController implements Initializable {
 
-    private static final Logger logger = Logger.getLogger(EditingController.class);
+    private static final Logger logger = Logger.getLogger(ModelEditingController.class);
+
+    @FXML
+    private TitledPane externalModelPane;
 
     @FXML
     private ParameterEditor parameterEditor;
@@ -171,7 +174,7 @@ public class EditingController implements Initializable {
 
         ContextMenu parameterContextMenu = new ContextMenu();
         MenuItem addNodeMenuItem = new MenuItem("View history");
-        addNodeMenuItem.setOnAction(EditingController.this::openParameterHistoryDialog);
+        addNodeMenuItem.setOnAction(ModelEditingController.this::openParameterHistoryDialog);
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
     }
@@ -179,13 +182,13 @@ public class EditingController implements Initializable {
     private ContextMenu makeStructureTreeContextMenu() {
         ContextMenu rootContextMenu = new ContextMenu();
         MenuItem addNodeMenuItem = new MenuItem("Add subnode");
-        addNodeMenuItem.setOnAction(EditingController.this::addNode);
+        addNodeMenuItem.setOnAction(ModelEditingController.this::addNode);
         rootContextMenu.getItems().add(addNodeMenuItem);
         MenuItem deleteNodeMenuItem = new MenuItem("Delete subnode");
-        deleteNodeMenuItem.setOnAction(EditingController.this::deleteNode);
+        deleteNodeMenuItem.setOnAction(ModelEditingController.this::deleteNode);
         rootContextMenu.getItems().add(deleteNodeMenuItem);
         MenuItem renameNodeMenuItem = new MenuItem("Rename subnode");
-        renameNodeMenuItem.setOnAction(EditingController.this::renameNode);
+        renameNodeMenuItem.setOnAction(ModelEditingController.this::renameNode);
         rootContextMenu.getItems().add(renameNodeMenuItem);
         return rootContextMenu;
     }
@@ -415,16 +418,18 @@ public class EditingController implements Initializable {
         public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable,
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
-                EditingController.this.updateParameterTable(newValue);
+                ModelEditingController.this.updateParameterTable(newValue);
                 selectedNodeCanHaveChildren.setValue(!(newValue.getValue() instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(newValue.getValue().isRootNode());
                 if (newValue.getValue().getExternalModels() != null) {
                     externalModelFilePath.setText(newValue.getValue().getExternalModels().getName());
+                    externalModelPane.setExpanded(true);
                 } else {
                     externalModelFilePath.setText(null);
+                    externalModelPane.setExpanded(false);
                 }
             } else {
-                EditingController.this.clearParameterTable();
+                ModelEditingController.this.clearParameterTable();
                 selectedNodeCanHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
                 externalModelFilePath.setText(null);
