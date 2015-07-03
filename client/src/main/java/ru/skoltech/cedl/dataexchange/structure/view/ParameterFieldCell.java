@@ -6,6 +6,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.StringConverter;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterType;
 
 /**
  * Created by D.Knoll on 27.04.2015.
@@ -28,6 +29,7 @@ public class ParameterFieldCell extends TextFieldTableCell<ParameterModel, Objec
         if (item != null && !empty) {
             setText(item.toString());
             ParameterModel parameterModel = (ParameterModel) getTableRow().getItem();
+            setEditable(parameterModel.getType() == ParameterType.DefaultValue);
             if (parameterModel != null && parameterModel.hasServerChange()) {
                 // set graphical hint
                 ImageView imageView = new ImageView(FLASH_ICON);
@@ -46,6 +48,7 @@ public class ParameterFieldCell extends TextFieldTableCell<ParameterModel, Objec
         } else {
             setText(null);
             setGraphic(null);
+            setEditable(false);
         }
     }
 }

@@ -24,7 +24,7 @@
         </AnchorPane>
         <AnchorPane>
             <children>
-                <SplitPane dividerPositions="0.75" layoutX="110.0" layoutY="174.0" orientation="VERTICAL"
+                <SplitPane dividerPositions="0.5" layoutX="110.0" layoutY="174.0" orientation="VERTICAL"
                            prefHeight="598.0" prefWidth="557.0" AnchorPane.bottomAnchor="0.0"
                            AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <items>
@@ -45,12 +45,12 @@
                                                         <PropertyValueFactory property="value"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
-                                                <TableColumn fx:id="parameterTypeColumn" minWidth="100.0" text="Type">
+                                                <TableColumn fx:id="parameterTypeColumn" minWidth="50.0" text="Type">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="type"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
-                                                <TableColumn fx:id="parameterSharedColumn" minWidth="50.0"
+                                                <TableColumn fx:id="parameterSharedColumn" minWidth="30.0"
                                                              text="Shared">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="isShared"/>
@@ -78,7 +78,7 @@
                                                     <children>
                                                         <TextField fx:id="externalModelFilePath" editable="false"
                                                                    prefWidth="400.0" promptText="File"/>
-                                                        <Button fx:id="atachButton" mnemonicParsing="false"
+                                                        <Button fx:id="attachButton" mnemonicParsing="false"
                                                                 onAction="#attachExternalModel" text="Attach">
                                                             <FlowPane.margin>
                                                                 <Insets left="8.0"/>
