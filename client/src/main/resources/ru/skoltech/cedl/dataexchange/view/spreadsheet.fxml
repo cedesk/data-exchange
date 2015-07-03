@@ -1,52 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import javafx.geometry.*?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.SpreadsheetController">
+<?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0"
+            prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.SpreadsheetController">
     <children>
-        <BorderPane prefHeight="480.0" prefWidth="640.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <center>
-                <TableView fx:id="spreadsheetTable" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-                    <columns>
-                    </columns>
-                </TableView>
-            </center>
+        <BorderPane prefHeight="480.0" prefWidth="640.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <top>
                 <HBox BorderPane.alignment="CENTER_LEFT">
                     <children>
-                        <TextField fx:id="filenameLabel" editable="false" prefWidth="400.0" />
-                  <Button fx:id="selectButton" layoutX="422.0" layoutY="10.0" mnemonicParsing="false" onAction="#selectFile" text="Select">
-                     <HBox.margin>
-                        <Insets left="12.0" />
-                     </HBox.margin>
-                  </Button>
+                        <TextField fx:id="filenameLabel" editable="false" prefWidth="400.0"/>
+                        <Button fx:id="selectButton" layoutX="422.0" layoutY="10.0" mnemonicParsing="false"
+                                onAction="#selectFile" text="Select">
+                            <HBox.margin>
+                                <Insets left="12.0"/>
+                            </HBox.margin>
+                        </Button>
                         <Button fx:id="openButton" mnemonicParsing="false" onAction="#openSpreadsheet" text="Open">
                             <HBox.margin>
-                                <Insets left="12.0" />
+                                <Insets left="12.0"/>
                             </HBox.margin>
                         </Button>
                         <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveSpreadsheet" text="Save">
                             <HBox.margin>
-                                <Insets left="12.0" />
+                                <Insets left="12.0"/>
                             </HBox.margin>
                         </Button>
-                        <Button fx:id="createButton" mnemonicParsing="false" onAction="#createSpreadsheet" text="Create" disable="true">
+                        <Button fx:id="createButton" disable="true" mnemonicParsing="false"
+                                onAction="#createSpreadsheet" text="Create">
                             <HBox.margin>
-                                <Insets left="12.0" />
+                                <Insets left="12.0"/>
                             </HBox.margin>
                         </Button>
-                        <Button fx:id="refreshButton" defaultButton="true" mnemonicParsing="false" onAction="#refreshTable" text="Refresh">
+                        <Button fx:id="refreshButton" defaultButton="true" mnemonicParsing="false"
+                                onAction="#refreshTable" text="Refresh">
                             <HBox.margin>
-                                <Insets left="12.0" />
+                                <Insets left="12.0"/>
                             </HBox.margin>
                         </Button>
                     </children>
                 </HBox>
             </top>
+            <center>
+                <SpreadsheetView fx:id="spreadsheetView" editable="false" prefWidth="500.0"
+                                 BorderPane.alignment="CENTER"/>
+            </center>
         </BorderPane>
     </children>
 </AnchorPane>
