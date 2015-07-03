@@ -51,7 +51,7 @@ public class EditingController implements Initializable {
     private static final Logger logger = Logger.getLogger(EditingController.class);
 
     @FXML
-    private Button atachButton;
+    private Button attachButton;
 
     @FXML
     private Button detachButton;
@@ -123,7 +123,8 @@ public class EditingController implements Initializable {
         // STRUCTURE TREE CONTEXT MENU
         structureTree.setContextMenu(makeStructureTreeContextMenu());
 
-        atachButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
+        // EXTERNAL MODEL ATTACHMENT
+        attachButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
         detachButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
 
         // NODE PARAMETERS
@@ -131,9 +132,9 @@ public class EditingController implements Initializable {
         deleteParameterButton.disableProperty().bind(parameterTable.getSelectionModel().selectedIndexProperty().lessThan(0));
 
         // NODE PARAMETER TABLE
-        Callback<TableColumn<Object, String>, TableCell<Object, String>> tableCellCallback = TextFieldTableCell.forTableColumn();
-        parameterNameColumn.setCellFactory(tableCellCallback);
-        parameterNameColumn.setOnEditCommit(new ParameterModelEditListener(ParameterModel::setName));
+        Callback<TableColumn<Object, String>, TableCell<Object, String>> textFieldFactory = TextFieldTableCell.forTableColumn();
+        parameterNameColumn.setCellFactory(textFieldFactory);
+        //parameterNameColumn.setOnEditCommit(new ParameterModelEditListener(ParameterModel::setName));
 
         parameterValueColumn.setCellFactory(new Callback<TableColumn<ParameterModel, Object>, TableCell<ParameterModel, Object>>() {
             @Override
@@ -153,11 +154,12 @@ public class EditingController implements Initializable {
             }
         });
 
-        parameterSharedColumn.setCellFactory(CheckBoxTableCell.forTableColumn(parameterSharedColumn));
+        Callback cellFactory = CheckBoxTableCell.forTableColumn(parameterSharedColumn);
+        parameterSharedColumn.setCellFactory(cellFactory);
         // TODO: handle checkbox change to change on parameter model
 
-        parameterDescriptionColumn.setCellFactory(tableCellCallback);
-        parameterDescriptionColumn.setOnEditCommit(new ParameterModelEditListener(ParameterModel::setDescription));
+        parameterDescriptionColumn.setCellFactory(textFieldFactory);
+        //parameterDescriptionColumn.setOnEditCommit(new ParameterModelEditListener(ParameterModel::setDescription));
 
         viewParameters = new ViewParameters();
         parameterTable.setItems(viewParameters.getItems());
