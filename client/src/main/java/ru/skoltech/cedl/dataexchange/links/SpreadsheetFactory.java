@@ -1,40 +1,89 @@
 package ru.skoltech.cedl.dataexchange.links;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
+import org.controlsfx.control.spreadsheet.Grid;
+import org.controlsfx.control.spreadsheet.GridBase;
+import org.controlsfx.control.spreadsheet.SpreadsheetCell;
+import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by D.Knoll on 02.07.2015.
  */
 public class SpreadsheetFactory {
 
-    public static SpreadsheetTable getTable(File spreadsheetFile, int sheetIndex) throws IOException {
+    public static Grid getGrid(File spreadsheetFile, int sheetIndex) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(spreadsheetFile);
         NPOIFSFileSystem fs = new NPOIFSFileSystem(fileInputStream);
         HSSFWorkbook wb = new HSSFWorkbook(fs.getRoot(), true);
         Sheet sheet = wb.getSheetAt(sheetIndex);
-        SpreadsheetTable spreadsheetTable = getTable(sheet);
+        Grid grid = getGrid(sheet);
         wb.close();
-        return spreadsheetTable;
+        return grid;
     }
 
-    public static SpreadsheetTable getTable(Sheet sheet) {
-        int rows = sheet.getLastRowNum() + 1;
-        int lastColumnNum = extractColumns(sheet);
+    public static Grid getGrid(Sheet sheet) {
+        final int maxRows = sheet.getLastRowNum() + 1;
+        final int maxColumns = extractColumns(sheet);
+        ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(maxRows);
+        for (Row dataRow : sheet) {
+            final int rowIndex = dataRow.getRowNum();
+            final ObservableList<SpreadsheetCell> viewRow = FXCollections.observableArrayList();
+            int lastColumnIndex = -1;
+            for (Cell dataCell : dataRow) {
+                int columnIndex = dataCell.getColumnIndex();
+                paddingMissingCells(viewRow, lastColumnIndex, rowIndex, columnIndex);
+                String value = getValue(dataCell);
+                SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(
+                        rowIndex, columnIndex, 1, 1, value);
+                viewRow.add(viewCell);
+                lastColumnIndex = columnIndex;
+            }
+            paddingMissingCells(viewRow, lastColumnIndex, rowIndex, maxColumns);
+            viewRows.add(viewRow);
+        }
+        final GridBase grid = new GridBase(maxRows, maxColumns);
+        grid.setRows(viewRows);
+        return grid;
+    }
 
-        SpreadsheetTable spreadsheetTable = new SpreadsheetTable(rows, lastColumnNum);
-        for (Row row : sheet) {
-            for (Cell cell : row) {
-                spreadsheetTable.addCell(cell);
+    private static void paddingMissingCells(ObservableList<SpreadsheetCell> viewRow, int lastColumnIndex, int rowIndex, int columnIndex) {
+        if (columnIndex > lastColumnIndex + 1) {
+            for (int i = lastColumnIndex + 1; i < columnIndex; i++) {
+                SpreadsheetCell padCell = SpreadsheetCellType.STRING.createCell(
+                        rowIndex, i, 1, 1, "");
+                viewRow.add(padCell);
             }
         }
-        return spreadsheetTable;
+    }
+
+    private static String getValue(Cell cell) {
+        String result = "";
+        if (cell != null) {
+            switch (cell.getCellType()) {
+                case Cell.CELL_TYPE_STRING:
+                    result = cell.getStringCellValue();
+                    break;
+                case Cell.CELL_TYPE_NUMERIC:
+                    result = String.valueOf(cell.getNumericCellValue());
+                    break;
+                case Cell.CELL_TYPE_FORMULA:
+                    result = String.valueOf(cell.getNumericCellValue());
+                    break;
+                default:
+                    result = "<unknown>";
+            }
+        }
+        return result;
     }
 
     private static int extractColumns(Sheet sheet) {

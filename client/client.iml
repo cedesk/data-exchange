@@ -35,5 +35,7 @@
     <orderEntry type="library" name="Maven: org.hsqldb:hsqldb:2.3.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.poi:poi:3.12" level="project" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.9" level="project" />
+    <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:8.40.9" level="project" />
+    <orderEntry type="library" name="Maven: org.controlsfx:openjfx-dialogs:1.0.3" level="project" />
   </component>
 </module>
