@@ -7,7 +7,7 @@
 <?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
 <SplitPane dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0" BorderPane.alignment="CENTER"
            xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="ru.skoltech.cedl.dataexchange.controller.EditingController">
+           fx:controller="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
     <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="598.0">
             <children>
@@ -49,13 +49,13 @@
                                                 </TableColumn>
                                                 <TableColumn fx:id="parameterTypeColumn" minWidth="50.0" text="Type">
                                                     <cellValueFactory>
-                                                        <PropertyValueFactory property="type"/>
+                                                        <PropertyValueFactory property="valueSource"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn fx:id="parameterSharedColumn" minWidth="30.0"
                                                              text="Shared" editable="false">
                                                     <cellValueFactory>
-                                                        <PropertyValueFactory property="isShared"/>
+                                                        <PropertyValueFactory property="isExported"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn fx:id="parameterDescriptionColumn" minWidth="150.0"
@@ -74,7 +74,7 @@
                                                         onAction="#deleteParameter" text="Delete"/>
                                             </items>
                                         </ToolBar>
-                                        <TitledPane animated="false" text="External Model">
+                                        <TitledPane fx:id="externalModelPane" animated="false" text="External Model" expanded="false">
                                             <content>
                                                 <FlowPane prefHeight="200.0" prefWidth="200.0">
                                                     <children>

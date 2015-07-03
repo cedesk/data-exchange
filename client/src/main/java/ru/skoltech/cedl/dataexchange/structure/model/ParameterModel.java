@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.*;
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-@XmlType(propOrder = {"name", "value", "type", "isShared", "description", "lastModification"})
+@XmlType(propOrder = {"name", "value", "valueSource", "isExported", "description", "lastModification"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
@@ -28,10 +28,13 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     private Double serverValue;
 
     @XmlAttribute
-    private ParameterType type = ParameterType.DefaultValue;
+    private ParameterNature nature = ParameterNature.Internal;
 
     @XmlAttribute
-    private Boolean isShared = false;
+    private ParameterValueSource valueSource = ParameterValueSource.Manual;
+
+    @XmlAttribute
+    private Boolean isExported = false;
 
     private String description;
 
@@ -49,11 +52,11 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.value = value;
     }
 
-    public ParameterModel(String name, Double value, ParameterType type, Boolean isShared, String description) {
+    public ParameterModel(String name, Double value, ParameterValueSource valueSource, Boolean isExported, String description) {
         this.name = name;
         this.value = value;
-        this.type = type;
-        this.isShared = isShared;
+        this.valueSource = valueSource;
+        this.isExported = isExported;
         this.description = description;
     }
 
@@ -111,20 +114,28 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.serverValue = serverValue;
     }
 
-    public ParameterType getType() {
-        return type;
+    public ParameterNature getNature() {
+        return nature;
     }
 
-    public void setType(ParameterType type) {
-        this.type = type;
+    public void setNature(ParameterNature nature) {
+        this.nature = nature;
     }
 
-    public Boolean getIsShared() {
-        return isShared;
+    public ParameterValueSource getValueSource() {
+        return valueSource;
     }
 
-    public void setIsShared(Boolean isShared) {
-        this.isShared = isShared;
+    public void setValueSource(ParameterValueSource valueSource) {
+        this.valueSource = valueSource;
+    }
+
+    public Boolean getIsExported() {
+        return isExported;
+    }
+
+    public void setIsExported(Boolean isExported) {
+        this.isExported = isExported;
     }
 
     public String getDescription() {
@@ -149,8 +160,9 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
             ParameterModel paramObj = (ParameterModel) obj;
             return name.equals(paramObj.name) &&
                     value != null && value.equals(paramObj.value) &&
-                    type.equals(paramObj.type) &&
-                    isShared.equals(paramObj.isShared);
+                    nature != null && nature.equals(paramObj.nature) &&
+                    valueSource != null && valueSource.equals(paramObj.valueSource) &&
+                    isExported.equals(paramObj.isExported);
         } else {
             return super.equals(obj);
         }
@@ -171,8 +183,9 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         sb.append("name='").append(name).append('\'');
         sb.append(", value=").append(value);
         sb.append(", serverValue=").append(serverValue);
-        sb.append(", type=").append(type);
-        sb.append(", isShared=").append(isShared);
+        sb.append(", nature=").append(nature);
+        sb.append(", valueSource=").append(valueSource);
+        sb.append(", isExported=").append(isExported);
         sb.append(", version=").append(version);
         sb.append(", description='").append(description).append('\'');
         sb.append(", lastModification='").append(lastModification).append('\'');
