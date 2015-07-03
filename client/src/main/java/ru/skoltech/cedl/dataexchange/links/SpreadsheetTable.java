@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.links;
 import org.apache.poi.ss.usermodel.Cell;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -38,14 +39,9 @@ public class SpreadsheetTable {
 
     public List<List<Cell>> getRowList() {
         int rowCount = getRowCount();
-        int columnCount = getColumnCount();
         List<List<Cell>> list = new ArrayList<>(rowCount);
         for (int i = 0; i < rowCount; i++) {
-            ArrayList<Cell> elements = new ArrayList<Cell>(columnCount);
-            list.add(i, elements);
-            for (int j = 0; j < columnCount; j++) {
-                elements.add(j, getCell(i, j));
-            }
+            list.add(Arrays.asList(tableCells[i]));
         }
         return list;
     }
