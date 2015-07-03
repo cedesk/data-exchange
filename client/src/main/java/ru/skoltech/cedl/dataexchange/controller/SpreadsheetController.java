@@ -75,10 +75,12 @@ public class SpreadsheetController implements Initializable {
     }
 
     public void openSpreadsheet(ActionEvent actionEvent) {
-        try {
-            Desktop.getDesktop().edit(spreadsheetFile);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (spreadsheetFile != null) {
+            try {
+                Desktop.getDesktop().edit(spreadsheetFile);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
