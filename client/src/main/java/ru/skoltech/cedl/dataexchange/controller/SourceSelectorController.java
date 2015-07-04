@@ -5,7 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TextField;
@@ -16,6 +16,8 @@ import ru.skoltech.cedl.dataexchange.links.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
 import java.awt.*;
 import java.io.File;
@@ -29,7 +31,7 @@ import java.util.ResourceBundle;
 public class SourceSelectorController implements Initializable {
 
     @FXML
-    private ChoiceBox<ExternalModel> attachmentChooser;
+    private ComboBox<ExternalModel> attachmentChooser;
 
     @FXML
     private TextField chosenCellsText;
@@ -37,19 +39,38 @@ public class SourceSelectorController implements Initializable {
     @FXML
     private SpreadsheetView spreadsheetView;
 
+    private ModelNode modelNode;
+
+    private ParameterModel parameterModel;
+
     private ExternalModel externalModel;
 
-    public ExternalModel getExternalModel() {
-        return externalModel;
+    public ModelNode getModelNode() {
+        return modelNode;
     }
 
-    public void setExternalModel(ExternalModel externalModel) {
-        this.externalModel = externalModel;
-        attachmentChooser.setItems(FXCollections.singletonObservableList(externalModel));
+    public void setModelNode(ModelNode modelNode) {
+        this.modelNode = modelNode;
+        attachmentChooser.setItems(FXCollections.observableArrayList(modelNode.getExternalModels()));
+        attachmentChooser.setValue(modelNode.getExternalModels());
+    }
+
+    public ParameterModel getParameterModel() {
+        return parameterModel;
+    }
+
+    public void setParameterModel(ParameterModel parameterModel) {
+        this.parameterModel = parameterModel;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        attachmentChooser.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                externalModel = newValue;
+                updateView();
+            }
+        });
         spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
     }
 
@@ -96,9 +117,14 @@ public class SourceSelectorController implements Initializable {
     }
 
     public void acceptAndClose(ActionEvent actionEvent) {
+        parameterModel.setDescription(chosenCellsText.getText());
+
         Node source = (Node) actionEvent.getSource();
         Stage stage = (Stage) source.getScene().getWindow();
         stage.close();
     }
 
+    public void updateView() {
+        this.refreshTable(null);
+    }
 }
