@@ -52,10 +52,10 @@
                                                         <PropertyValueFactory property="valueSource"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
-                                                <TableColumn fx:id="parameterSharedColumn" minWidth="30.0"
-                                                             text="Shared" editable="false">
+                                                <TableColumn fx:id="parameterNatureColumn" minWidth="30.0"
+                                                             text="Nature" editable="false">
                                                     <cellValueFactory>
-                                                        <PropertyValueFactory property="isExported"/>
+                                                        <PropertyValueFactory property="nature"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn fx:id="parameterDescriptionColumn" minWidth="150.0"

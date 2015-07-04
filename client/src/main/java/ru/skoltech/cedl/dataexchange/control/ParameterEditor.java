@@ -6,10 +6,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import org.apache.log4j.Logger;
@@ -46,7 +46,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private TextField valueText;
 
     @FXML
-    private ToggleButton isExportedButton;
+    private CheckBox isExportedCheckbox;
 
     @FXML
     private TextArea descriptionText;
@@ -97,7 +97,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             valueText.setText(String.valueOf(parameterModel.getValue()));
             natureChoiceBox.setValue(parameterModel.getNature());
             valueSourceChoiceBox.setValue(parameterModel.getValueSource());
-            isExportedButton.setSelected(parameterModel.getIsExported());
+            isExportedCheckbox.setSelected(parameterModel.getIsExported());
             descriptionText.setText(parameterModel.getDescription());
             propertyPane.setVisible(true);
         } else {
@@ -116,9 +116,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             parameterModel.setNature(natureChoiceBox.getValue());
             modified |= valueSourceChoiceBox.getValue().equals(parameterModel.getValueSource());
             parameterModel.setValueSource(valueSourceChoiceBox.getValue());
-            modified |= isExportedButton.isSelected() == parameterModel.getIsExported();
-            parameterModel.setIsExported(isExportedButton.isSelected());
-            modified |= descriptionText.getText().equals(parameterModel.getDescription());
+            modified |= isExportedCheckbox.isSelected() == parameterModel.getIsExported();
+            parameterModel.setIsExported(isExportedCheckbox.isSelected());
+            modified |= descriptionText.getText() != null && descriptionText.getText().equals(parameterModel.getDescription());
             parameterModel.setDescription(descriptionText.getText());
             if (project != null && modified) {
                 project.markStudyModified();
