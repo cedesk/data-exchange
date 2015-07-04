@@ -4,7 +4,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
  * Created by D.Knoll on 12.03.2015.
  */
 public enum ParameterValueSource {
-    Manual {
+    MANUAL {
         public String toString() {
             return "manual";
         }
@@ -14,7 +14,7 @@ public enum ParameterValueSource {
             return "calculated";
         }
     }*/
-    Reference {
+    REFERENCE {
         public String toString() {
             return "reference";
         }

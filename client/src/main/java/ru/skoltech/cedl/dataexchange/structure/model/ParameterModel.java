@@ -15,9 +15,9 @@ import javax.xml.bind.annotation.*;
 @Audited
 public class ParameterModel implements Comparable<ParameterModel>, ModificationTimestamped {
 
-    public static final ParameterNature DEFAULT_NATURE = ParameterNature.Internal;
+    public static final ParameterNature DEFAULT_NATURE = ParameterNature.INTERNAL;
 
-    public static final ParameterValueSource DEFAULT_VALUE_SOURCE = ParameterValueSource.Manual;
+    public static final ParameterValueSource DEFAULT_VALUE_SOURCE = ParameterValueSource.MANUAL;
 
     public static final Boolean DEFAULT_EXPORTED = Boolean.FALSE;
 
