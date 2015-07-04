@@ -29,7 +29,7 @@ public class ParameterFieldCell extends TextFieldTableCell<ParameterModel, Objec
         if (item != null && !empty) {
             setText(item.toString());
             ParameterModel parameterModel = (ParameterModel) getTableRow().getItem();
-            setEditable(parameterModel == null ? false : parameterModel.getValueSource() == ParameterValueSource.Manual);
+            setEditable(parameterModel == null ? false : parameterModel.getValueSource() == ParameterValueSource.MANUAL);
             if (parameterModel != null && parameterModel.hasServerChange()) {
                 // set graphical hint
                 ImageView imageView = new ImageView(FLASH_ICON);
