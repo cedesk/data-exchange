@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <GridPane fx:id="propertyPane" hgap="8.0" vgap="4.0">
             <columnConstraints>
@@ -18,6 +19,7 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
             </rowConstraints>
             <children>
                 <Label text="Name" GridPane.halignment="RIGHT" />
@@ -32,6 +34,8 @@
                 <TextField fx:id="valueText" promptText="0123.45" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                 <ToggleButton fx:id="isExportedButton" mnemonicParsing="false" text="ToggleButton" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                 <TextArea fx:id="descriptionText" prefHeight="200.0" prefWidth="200.0" promptText="description" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            <Button mnemonicParsing="false" onAction="#applyChanges" text="Apply" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
+            <Button mnemonicParsing="false" onAction="#revertChanges" text="Revert" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="6"/>
             </children>
         </GridPane>
     </children>

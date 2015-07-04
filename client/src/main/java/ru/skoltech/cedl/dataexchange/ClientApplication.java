@@ -25,7 +25,7 @@ public class ClientApplication extends Application {
         MainController mainController = loader.getController();
 
         primaryStage.setTitle("Concurrent Engineering Data Exchange Skoltech");
-        primaryStage.setScene(new Scene(root, 800, 600));
+        primaryStage.setScene(new Scene(root, 800, 700));
         primaryStage.getIcons().add(new Image("/icons/app-icon.png"));
         primaryStage.show();
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {

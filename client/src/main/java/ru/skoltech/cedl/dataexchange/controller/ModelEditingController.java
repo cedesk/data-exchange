@@ -402,12 +402,14 @@ public class ModelEditingController implements Initializable {
         TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
         Objects.requireNonNull(selectedItem);
         selectedItem.getValue().setExternalModels(null);
+        externalModelFilePath.setText(null);
         project.markStudyModified();
     }
 
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
+            parameterEditor.setProject(project);
             parameterEditor.setParameterModel(newValue);
         }
     }

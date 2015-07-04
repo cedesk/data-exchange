@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.control;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -12,6 +13,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
@@ -51,6 +53,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private ParameterModel parameterModel;
 
+    private Project project;
+
     public ParameterEditor() {
         FXMLLoader fxmlLoader = new FXMLLoader(ParameterEditor.class.getResource("parameter_editor.fxml"));
         fxmlLoader.setRoot(this);
@@ -79,6 +83,14 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         Platform.runLater(this::updateView);
     }
 
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     private void updateView() {
         if (parameterModel != null) {
             nameText.setText(parameterModel.getName());
@@ -91,5 +103,30 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         } else {
             propertyPane.setVisible(false);
         }
+    }
+
+    public void applyChanges(ActionEvent actionEvent) {
+        if (parameterModel != null) {
+            boolean modified = false;
+            modified |= nameText.getText().equals(parameterModel.getName());
+            parameterModel.setName(nameText.getText());
+            modified |= Double.valueOf(valueText.getText()).equals(parameterModel.getValue());
+            parameterModel.setValue(Double.valueOf(valueText.getText()));
+            modified |= natureChoiceBox.getValue().equals(parameterModel.getNature());
+            parameterModel.setNature(natureChoiceBox.getValue());
+            modified |= valueSourceChoiceBox.getValue().equals(parameterModel.getValueSource());
+            parameterModel.setValueSource(valueSourceChoiceBox.getValue());
+            modified |= isExportedButton.isSelected() == parameterModel.getIsExported();
+            parameterModel.setIsExported(isExportedButton.isSelected());
+            modified |= descriptionText.getText().equals(parameterModel.getDescription());
+            parameterModel.setDescription(descriptionText.getText());
+            if (project != null && modified) {
+                project.markStudyModified();
+            }
+        }
+    }
+
+    public void revertChanges(ActionEvent actionEvent) {
+        updateView();
     }
 }
