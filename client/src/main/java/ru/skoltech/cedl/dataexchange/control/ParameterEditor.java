@@ -12,6 +12,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
@@ -51,12 +52,15 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     @FXML
     private TextArea descriptionText;
 
+    @FXML
+    private HBox referenceSelectorGroup;
+
     private ParameterModel parameterModel;
 
     private Project project;
 
     public ParameterEditor() {
-        FXMLLoader fxmlLoader = new FXMLLoader(ParameterEditor.class.getResource("parameter_editor.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("parameter_editor.fxml"));
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
 
@@ -72,6 +76,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         propertyPane.setVisible(false);
         natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
+        referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
     }
 
     public ParameterModel getParameterModel() {
@@ -107,8 +112,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void applyChanges(ActionEvent actionEvent) {
         if (parameterModel != null) {
-            boolean modified = false;
-            modified |= nameText.getText().equals(parameterModel.getName());
+            boolean modified = nameText.getText().equals(parameterModel.getName());
             parameterModel.setName(nameText.getText());
             modified |= Double.valueOf(valueText.getText()).equals(parameterModel.getValue());
             parameterModel.setValue(Double.valueOf(valueText.getText()));
@@ -128,5 +132,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void revertChanges(ActionEvent actionEvent) {
         updateView();
+    }
+
+    public void chooseSource(ActionEvent actionEvent) {
+
     }
 }

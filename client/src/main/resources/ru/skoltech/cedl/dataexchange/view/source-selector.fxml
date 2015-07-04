@@ -3,24 +3,22 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0"
-            prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1"
+            prefHeight="480.0" prefWidth="800.0"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.SpreadsheetController">
     <children>
         <BorderPane prefHeight="480.0" prefWidth="640.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                     AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <top>
-                <HBox BorderPane.alignment="CENTER_LEFT" spacing="12.0">
+                <HBox spacing="24.0" BorderPane.alignment="CENTER_LEFT">
                     <children>
-                        <TextField fx:id="chosenCellsText" editable="false" prefWidth="400.0"/>
-                        <Button fx:id="selectButton" layoutX="422.0" layoutY="10.0" mnemonicParsing="false"
-                                onAction="#selectFile" text="Select"/>
+                        <ChoiceBox fx:id="attachmentChooser" prefWidth="200.0" fx:factory=""/>
                         <Button fx:id="openButton" mnemonicParsing="false" onAction="#openSpreadsheet" text="Open"/>
-                        <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveSpreadsheet" text="Save"/>
+                        <TextField fx:id="chosenCellsText" editable="false" prefWidth="200.0" promptText="cellName"/>
                         <Button fx:id="chooseCellButton" mnemonicParsing="false" onAction="#chooseSelectedCell"
                                 text="Choose Cell"/>
-                        <Button fx:id="refreshButton" defaultButton="true" mnemonicParsing="false"
-                                onAction="#refreshTable" text="Refresh"/>
+                        <Button fx:id="acceptAndCloseButton" mnemonicParsing="false" onAction="#acceptAndClose"
+                                text="Accept &amp; Close"/>
                     </children>
                 </HBox>
             </top>

@@ -4,6 +4,8 @@ import org.hibernate.envers.Audited;
 import ru.skoltech.cedl.dataexchange.structure.model.ModificationTimestamped;
 
 import javax.persistence.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 
 /**
@@ -57,6 +59,11 @@ public class ExternalModel implements ModificationTimestamped {
     @Override
     public void setLastModification(Long lastModification) {
         this.lastModification = lastModification;
+    }
+
+    @Transient
+    public InputStream getAttachmentAsStream() {
+        return new ByteArrayInputStream(attachment);
     }
 
     @Override
