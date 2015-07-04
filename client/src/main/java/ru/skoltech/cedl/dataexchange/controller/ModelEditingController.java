@@ -76,7 +76,7 @@ public class ModelEditingController implements Initializable {
     private TableColumn parameterTypeColumn;
 
     @FXML
-    private TableColumn parameterSharedColumn;
+    private TableColumn parameterNatureColumn;
 
     @FXML
     private TableColumn parameterDescriptionColumn;
@@ -160,10 +160,6 @@ public class ModelEditingController implements Initializable {
                 }
             }
         });
-
-        Callback cellFactory = CheckBoxTableCell.forTableColumn(parameterSharedColumn);
-        parameterSharedColumn.setCellFactory(cellFactory);
-        // TODO: handle checkbox change to change on parameter model
 
         parameterDescriptionColumn.setCellFactory(textFieldFactory);
         //parameterDescriptionColumn.setOnEditCommit(new ParameterModelEditListener(ParameterModel::setDescription));
