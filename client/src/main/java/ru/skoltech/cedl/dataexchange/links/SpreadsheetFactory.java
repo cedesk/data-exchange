@@ -10,10 +10,7 @@ import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 /**
@@ -23,7 +20,11 @@ public class SpreadsheetFactory {
 
     public static Grid getGrid(File spreadsheetFile, int sheetIndex) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(spreadsheetFile);
-        NPOIFSFileSystem fs = new NPOIFSFileSystem(fileInputStream);
+        return getGrid(fileInputStream, sheetIndex);
+    }
+
+    public static Grid getGrid(InputStream inputStream, int sheetIndex) throws IOException {
+        NPOIFSFileSystem fs = new NPOIFSFileSystem(inputStream);
         HSSFWorkbook wb = new HSSFWorkbook(fs.getRoot(), true);
         Sheet sheet = wb.getSheetAt(sheetIndex);
         Grid grid = getGrid(sheet);
