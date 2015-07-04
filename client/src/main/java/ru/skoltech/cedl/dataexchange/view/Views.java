@@ -17,5 +17,7 @@ public class Views {
 
     public static final URL ABOUT = Views.class.getResource("about.fxml");
 
+    public static final URL SOURCE_SELECTOR = Views.class.getResource("source-selector.fxml");
+
     public static final URL SPREADSHEET_VIEW = Views.class.getResource("spreadsheet.fxml");
 }

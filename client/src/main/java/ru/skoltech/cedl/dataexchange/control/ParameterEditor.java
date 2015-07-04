@@ -6,18 +6,27 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
+import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
 import java.net.URL;
@@ -55,9 +64,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     @FXML
     private HBox referenceSelectorGroup;
 
-    private ParameterModel parameterModel;
-
     private Project project;
+
+    private ModelNode modelNode;
+
+    private ParameterModel parameterModel;
 
     public ParameterEditor() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("parameter_editor.fxml"));
@@ -79,6 +90,22 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
     }
 
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public ModelNode getModelNode() {
+        return modelNode;
+    }
+
+    public void setModelNode(ModelNode modelNode) {
+        this.modelNode = modelNode;
+    }
+
     public ParameterModel getParameterModel() {
         return parameterModel;
     }
@@ -88,25 +115,26 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         Platform.runLater(this::updateView);
     }
 
-    public Project getProject() {
-        return project;
-    }
+    public void chooseSource(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.SOURCE_SELECTOR);
+            Parent root = loader.load();
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Source Selector");
+            stage.getIcons().add(new Image("/icons/app-icon.png"));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(nameText.getScene().getWindow());
+            SourceSelectorController controller = loader.getController();
+            controller.setModelNode(modelNode);
+            controller.setParameterModel(parameterModel);
+            controller.updateView();
 
-    private void updateView() {
-        if (parameterModel != null) {
-            nameText.setText(parameterModel.getName());
-            valueText.setText(String.valueOf(parameterModel.getValue()));
-            natureChoiceBox.setValue(parameterModel.getNature());
-            valueSourceChoiceBox.setValue(parameterModel.getValueSource());
-            isExportedCheckbox.setSelected(parameterModel.getIsExported());
-            descriptionText.setText(parameterModel.getDescription());
-            propertyPane.setVisible(true);
-        } else {
-            propertyPane.setVisible(false);
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
         }
     }
 
@@ -134,7 +162,17 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         updateView();
     }
 
-    public void chooseSource(ActionEvent actionEvent) {
-
+    private void updateView() {
+        if (parameterModel != null) {
+            nameText.setText(parameterModel.getName());
+            valueText.setText(String.valueOf(parameterModel.getValue()));
+            natureChoiceBox.setValue(parameterModel.getNature());
+            valueSourceChoiceBox.setValue(parameterModel.getValueSource());
+            isExportedCheckbox.setSelected(parameterModel.getIsExported());
+            descriptionText.setText(parameterModel.getDescription());
+            propertyPane.setVisible(true);
+        } else {
+            propertyPane.setVisible(false);
+        }
     }
 }

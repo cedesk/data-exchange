@@ -405,9 +405,18 @@ public class ModelEditingController implements Initializable {
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
-            parameterEditor.setProject(project);
-            parameterEditor.setParameterModel(newValue);
+            if (newValue != null) {
+                parameterEditor.setProject(project);
+                parameterEditor.setModelNode(getSelectedTreeItem().getValue());
+                parameterEditor.setParameterModel(newValue);
+            } else {
+                parameterEditor.setVisible(false);
+            }
         }
+    }
+
+    private TreeItem<ModelNode> getSelectedTreeItem() {
+        return structureTree.getSelectionModel().getSelectedItem();
     }
 
     private class TreeItemSelectionListener implements ChangeListener<TreeItem<ModelNode>> {

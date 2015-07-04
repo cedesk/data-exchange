@@ -84,4 +84,12 @@ public class ExternalModel implements ModificationTimestamped {
         result = 31 * result + (attachment != null ? Arrays.hashCode(attachment) : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ExternalModel{");
+        sb.append("name='").append(name).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }
