@@ -73,12 +73,6 @@ public class ModelEditingController implements Initializable {
     private TableColumn parameterValueColumn;
 
     @FXML
-    private TableColumn parameterTypeColumn;
-
-    @FXML
-    private TableColumn parameterNatureColumn;
-
-    @FXML
     private TableColumn parameterDescriptionColumn;
 
     @FXML
@@ -397,6 +391,7 @@ public class ModelEditingController implements Initializable {
     public void detachExternalModel(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
         Objects.requireNonNull(selectedItem);
+        // TODO: check if external model ist not referenced
         selectedItem.getValue().setExternalModels(null);
         externalModelFilePath.setText(null);
         project.markStudyModified();

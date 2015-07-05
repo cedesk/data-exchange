@@ -34,31 +34,32 @@
                                 <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                     <children>
-                                        <TableView fx:id="parameterTable" prefHeight="444.0" prefWidth="593.0">
+                                        <TableView fx:id="parameterTable">
                                             <columns>
-                                                <TableColumn fx:id="parameterNameColumn" minWidth="150.0" text="Name"
+                                                <TableColumn fx:id="parameterNameColumn" prefWidth="150.0" text="Name"
                                                              editable="false">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="name"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
-                                                <TableColumn fx:id="parameterValueColumn" minWidth="50.0" text="Value">
+                                                <TableColumn fx:id="parameterValueColumn" prefWidth="60.0" text="Value">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="value"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
-                                                <TableColumn fx:id="parameterTypeColumn" minWidth="50.0" text="Type">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="valueSource"/>
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                                <TableColumn fx:id="parameterNatureColumn" minWidth="30.0"
+                                                <TableColumn fx:id="parameterNatureColumn" prefWidth="60.0"
                                                              text="Nature" editable="false">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="nature"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
-                                                <TableColumn fx:id="parameterDescriptionColumn" minWidth="150.0"
+                                                <TableColumn fx:id="parameterValueSourceColumn" prefWidth="100.0"
+                                                             text="Value Source">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="valueSource"/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn fx:id="parameterDescriptionColumn" prefWidth="150.0"
                                                              text="Description" editable="false">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="description"/>
@@ -74,7 +75,8 @@
                                                         onAction="#deleteParameter" text="Delete"/>
                                             </items>
                                         </ToolBar>
-                                        <TitledPane fx:id="externalModelPane" animated="false" text="External Model" expanded="false">
+                                        <TitledPane fx:id="externalModelPane" animated="false" text="External Model"
+                                                    expanded="false">
                                             <content>
                                                 <FlowPane prefHeight="200.0" prefWidth="200.0">
                                                     <children>
