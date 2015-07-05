@@ -19,9 +19,9 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public static final ParameterValueSource DEFAULT_VALUE_SOURCE = ParameterValueSource.MANUAL;
 
-    public static final Boolean DEFAULT_EXPORTED = Boolean.FALSE;
+    public static final boolean DEFAULT_EXPORTED = false;
 
-    public static final Boolean DEFAULT_OVERRIDDEN = Boolean.FALSE;
+    public static final boolean DEFAULT_OVERRIDDEN = false;
 
     @XmlTransient
     private long id;
@@ -44,13 +44,13 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     private String valueReference;
 
     @XmlAttribute
-    private Boolean isReferenceValueOverridden = DEFAULT_OVERRIDDEN;
+    private boolean isReferenceValueOverridden = DEFAULT_OVERRIDDEN;
 
     @XmlAttribute
     private Double overrideValue;
 
     @XmlAttribute
-    private Boolean isExported = DEFAULT_EXPORTED;
+    private boolean isExported = DEFAULT_EXPORTED;
 
     private String exportReference;
 
@@ -70,12 +70,17 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.value = value;
     }
 
-    public ParameterModel(String name, Double value, ParameterValueSource valueSource, Boolean isExported, String description) {
+    public ParameterModel(String name, Double value, ParameterValueSource valueSource, boolean isExported, String description) {
         this.name = name;
         this.value = value;
         this.valueSource = valueSource;
         this.isExported = isExported;
         this.description = description;
+    }
+
+    @Transient
+    public Double getEffectiveValue() {
+        return isReferenceValueOverridden ? overrideValue : value;
     }
 
     @Version()
@@ -156,11 +161,11 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.valueReference = valueReference;
     }
 
-    public Boolean getIsReferenceValueOverridden() {
-        return isReferenceValueOverridden == null ? DEFAULT_OVERRIDDEN : isReferenceValueOverridden;
+    public boolean getIsReferenceValueOverridden() {
+        return isReferenceValueOverridden;
     }
 
-    public void setIsReferenceValueOverridden(Boolean isReferenceValueOverridden) {
+    public void setIsReferenceValueOverridden(boolean isReferenceValueOverridden) {
         this.isReferenceValueOverridden = isReferenceValueOverridden;
     }
 
@@ -172,11 +177,11 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.overrideValue = overrideValue;
     }
 
-    public Boolean getIsExported() {
-        return isExported == null ? DEFAULT_EXPORTED : isExported;
+    public boolean getIsExported() {
+        return isExported;
     }
 
-    public void setIsExported(Boolean isExported) {
+    public void setIsExported(boolean isExported) {
         this.isExported = isExported;
     }
 
@@ -220,19 +225,18 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
         ParameterModel that = (ParameterModel) o;
 
+        if (isReferenceValueOverridden != that.isReferenceValueOverridden) return false;
+        if (isExported != that.isExported) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
-        if (serverValue != null ? !serverValue.equals(that.serverValue) : that.serverValue != null) return false;
         if (nature != that.nature) return false;
         if (valueSource != that.valueSource) return false;
         if (valueReference != null ? !valueReference.equals(that.valueReference) : that.valueReference != null)
             return false;
-        if (isReferenceValueOverridden != null ? !isReferenceValueOverridden.equals(that.isReferenceValueOverridden) : that.isReferenceValueOverridden != null)
-            return false;
         if (overrideValue != null ? !overrideValue.equals(that.overrideValue) : that.overrideValue != null)
             return false;
-        if (isExported != null ? !isExported.equals(that.isExported) : that.isExported != null) return false;
-        if (exportReference != null ? !exportReference.equals(that.exportReference) : that.exportReference != null) return false;
+        if (exportReference != null ? !exportReference.equals(that.exportReference) : that.exportReference != null)
+            return false;
         return !(description != null ? !description.equals(that.description) : that.description != null);
     }
 
@@ -240,13 +244,12 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (serverValue != null ? serverValue.hashCode() : 0);
         result = 31 * result + (nature != null ? nature.hashCode() : 0);
         result = 31 * result + (valueSource != null ? valueSource.hashCode() : 0);
         result = 31 * result + (valueReference != null ? valueReference.hashCode() : 0);
-        result = 31 * result + (isReferenceValueOverridden != null ? isReferenceValueOverridden.hashCode() : 0);
+        result = 31 * result + (isReferenceValueOverridden ? 1 : 0);
         result = 31 * result + (overrideValue != null ? overrideValue.hashCode() : 0);
-        result = 31 * result + (isExported != null ? isExported.hashCode() : 0);
+        result = 31 * result + (isExported ? 1 : 0);
         result = 31 * result + (exportReference != null ? exportReference.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         return result;

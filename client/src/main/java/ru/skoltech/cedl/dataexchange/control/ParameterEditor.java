@@ -103,6 +103,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
         valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
+        isReferenceValueOverriddenCheckbox.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
         valueOverrideText.visibleProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty());
         exportSelectorGroup.visibleProperty().bind(isExportedCheckbox.selectedProperty());
     }
@@ -150,7 +151,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             controller.updateView();
 
             stage.showAndWait();
-            updateView();
+            updateReferencesViews();
         } catch (IOException e) {
             logger.error(e);
         }
@@ -182,6 +183,13 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         }
     }
 
+    private void updateReferencesViews() {
+        if (parameterModel != null) {
+            valueReferenceText.setText(parameterModel.getValueReference());
+            exportReferenceText.setText(parameterModel.getExportReference());
+        }
+    }
+
     private void updateModel() {
         if (parameterModel != null) {
             boolean modified = nameText.getText().equals(parameterModel.getName());
@@ -192,14 +200,34 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             parameterModel.setNature(natureChoiceBox.getValue());
             modified |= valueSourceChoiceBox.getValue().equals(parameterModel.getValueSource());
             parameterModel.setValueSource(valueSourceChoiceBox.getValue());
-            modified |= valueReferenceText.getText() != null && valueReferenceText.getText().equals(parameterModel.getValueReference());
-            parameterModel.setValueReference(valueReferenceText.getText());
+            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+                modified |= valueReferenceText.getText() != null && valueReferenceText.getText().equals(parameterModel.getValueReference());
+                parameterModel.setValueReference(valueReferenceText.getText());
+            } else {
+                modified |= parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty();
+                parameterModel.setValueReference("");
+                valueReferenceText.setText("");
+            }
             modified |= isReferenceValueOverriddenCheckbox.isSelected() == parameterModel.getIsReferenceValueOverridden();
             parameterModel.setIsReferenceValueOverridden(isReferenceValueOverriddenCheckbox.isSelected());
+            if (parameterModel.getIsReferenceValueOverridden()) {
+                modified |= valueOverrideText.getText() != null && Double.valueOf(valueOverrideText.getText()).equals(parameterModel.getOverrideValue());
+                parameterModel.setOverrideValue(Double.valueOf(valueOverrideText.getText()));
+            } else {
+                modified |= parameterModel.getOverrideValue() != null;
+                parameterModel.setOverrideValue(null);
+                valueOverrideText.setText("");
+            }
             modified |= isExportedCheckbox.isSelected() == parameterModel.getIsExported();
             parameterModel.setIsExported(isExportedCheckbox.isSelected());
-            modified |= exportReferenceText.getText() != null && exportReferenceText.getText().equals(parameterModel.getExportReference());
-            parameterModel.setExportReference(exportReferenceText.getText());
+            if (parameterModel.getIsExported()) {
+                modified |= exportReferenceText.getText() != null && exportReferenceText.getText().equals(parameterModel.getExportReference());
+                parameterModel.setExportReference(exportReferenceText.getText());
+            } else {
+                modified |= parameterModel.getExportReference() != null && !parameterModel.getExportReference().isEmpty();
+                parameterModel.setExportReference("");
+                parameterModel.setExportReference("");
+            }
             modified |= descriptionText.getText() != null && descriptionText.getText().equals(parameterModel.getDescription());
             parameterModel.setDescription(descriptionText.getText());
             if (project != null && modified) {
