@@ -9,4 +9,4 @@ Concurrent Engineering Data Exchange Skoltech is a software made for our our Con
 
 * 3 Tier client server application: rich client, server application, database
 * Rich Client based on JavaFX
-* Server application and database are now mimicked by an off-the-shelf file versioning system, eg. Subversion
+* Server part is an SQL database, accessed via Hibernate ORM
