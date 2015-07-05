@@ -91,7 +91,7 @@ public class SourceSelectorController implements Initializable {
     public void chooseSelectedCell(ActionEvent actionEvent) {
         TablePosition focusedCell = spreadsheetView.getSelectionModel().getFocusedCell();
         if (focusedCell != null) {
-            System.out.println(getCellCoordinates(focusedCell));
+            chosenCellsText.setText(getCellCoordinates(focusedCell));
         }
     }
 
@@ -117,7 +117,7 @@ public class SourceSelectorController implements Initializable {
     }
 
     public void acceptAndClose(ActionEvent actionEvent) {
-        parameterModel.setDescription(chosenCellsText.getText());
+        parameterModel.setValueReference(externalModel.toString() + ":" + chosenCellsText.getText());
 
         Node source = (Node) actionEvent.getSource();
         Stage stage = (Stage) source.getScene().getWindow();

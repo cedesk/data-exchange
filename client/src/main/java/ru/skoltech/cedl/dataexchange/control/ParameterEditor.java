@@ -19,7 +19,6 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
 import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
@@ -51,6 +50,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     @FXML
     private ChoiceBox<ParameterValueSource> valueSourceChoiceBox;
+
+    @FXML
+    private TextField valueReferenceText;
 
     @FXML
     private TextField valueText;
@@ -88,6 +90,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
+        valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
     }
 
     public Project getProject() {
@@ -132,30 +135,15 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             controller.setParameterModel(parameterModel);
             controller.updateView();
 
-            stage.show();
+            stage.showAndWait();
+            updateView();
         } catch (IOException e) {
             logger.error(e);
         }
     }
 
     public void applyChanges(ActionEvent actionEvent) {
-        if (parameterModel != null) {
-            boolean modified = nameText.getText().equals(parameterModel.getName());
-            parameterModel.setName(nameText.getText());
-            modified |= Double.valueOf(valueText.getText()).equals(parameterModel.getValue());
-            parameterModel.setValue(Double.valueOf(valueText.getText()));
-            modified |= natureChoiceBox.getValue().equals(parameterModel.getNature());
-            parameterModel.setNature(natureChoiceBox.getValue());
-            modified |= valueSourceChoiceBox.getValue().equals(parameterModel.getValueSource());
-            parameterModel.setValueSource(valueSourceChoiceBox.getValue());
-            modified |= isExportedCheckbox.isSelected() == parameterModel.getIsExported();
-            parameterModel.setIsExported(isExportedCheckbox.isSelected());
-            modified |= descriptionText.getText() != null && descriptionText.getText().equals(parameterModel.getDescription());
-            parameterModel.setDescription(descriptionText.getText());
-            if (project != null && modified) {
-                project.markStudyModified();
-            }
-        }
+        updateModel();
     }
 
     public void revertChanges(ActionEvent actionEvent) {
@@ -168,11 +156,34 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             valueText.setText(String.valueOf(parameterModel.getValue()));
             natureChoiceBox.setValue(parameterModel.getNature());
             valueSourceChoiceBox.setValue(parameterModel.getValueSource());
+            valueReferenceText.setText(parameterModel.getValueReference());
             isExportedCheckbox.setSelected(parameterModel.getIsExported());
             descriptionText.setText(parameterModel.getDescription());
             propertyPane.setVisible(true);
         } else {
             propertyPane.setVisible(false);
+        }
+    }
+
+    private void updateModel() {
+        if (parameterModel != null) {
+            boolean modified = nameText.getText().equals(parameterModel.getName());
+            parameterModel.setName(nameText.getText());
+            modified |= Double.valueOf(valueText.getText()).equals(parameterModel.getValue());
+            parameterModel.setValue(Double.valueOf(valueText.getText()));
+            modified |= natureChoiceBox.getValue().equals(parameterModel.getNature());
+            parameterModel.setNature(natureChoiceBox.getValue());
+            modified |= valueSourceChoiceBox.getValue().equals(parameterModel.getValueSource());
+            parameterModel.setValueSource(valueSourceChoiceBox.getValue());
+            modified |= valueReferenceText.getText().equals(parameterModel.getValueReference());
+            parameterModel.setValueReference(valueReferenceText.getText());
+            modified |= isExportedCheckbox.isSelected() == parameterModel.getIsExported();
+            parameterModel.setIsExported(isExportedCheckbox.isSelected());
+            modified |= descriptionText.getText() != null && descriptionText.getText().equals(parameterModel.getDescription());
+            parameterModel.setDescription(descriptionText.getText());
+            if (project != null && modified) {
+                project.markStudyModified();
+            }
         }
     }
 }

@@ -34,7 +34,7 @@
                       <ChoiceBox fx:id="valueSourceChoiceBox" prefWidth="200.0" />
                   <HBox fx:id="referenceSelectorGroup" prefWidth="200.0">
                      <children>
-                        <TextField editable="false" prefWidth="200.0" promptText="reference" />
+                        <TextField fx:id="valueReferenceText" editable="false" prefWidth="200.0" promptText="reference" />
                         <Button onAction="#chooseSource" mnemonicParsing="false" text="Link" />
                      </children>
                   </HBox>
