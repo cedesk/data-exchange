@@ -75,7 +75,6 @@ public class ExternalModel implements ModificationTimestamped {
 
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         return Arrays.equals(attachment, that.attachment);
-
     }
 
     @Override
@@ -87,9 +86,6 @@ public class ExternalModel implements ModificationTimestamped {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ExternalModel{");
-        sb.append("name='").append(name).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return id + ":" + name;
     }
 }

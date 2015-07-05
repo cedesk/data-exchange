@@ -409,6 +409,7 @@ public class ModelEditingController implements Initializable {
                 parameterEditor.setProject(project);
                 parameterEditor.setModelNode(getSelectedTreeItem().getValue());
                 parameterEditor.setParameterModel(newValue);
+                parameterEditor.setVisible(true);
             } else {
                 parameterEditor.setVisible(false);
             }

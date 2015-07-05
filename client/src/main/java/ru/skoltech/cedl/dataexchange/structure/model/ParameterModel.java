@@ -39,6 +39,8 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @XmlAttribute
     private ParameterValueSource valueSource = DEFAULT_VALUE_SOURCE;
 
+    private String valueReference;
+
     @XmlAttribute
     private Boolean isExported = DEFAULT_EXPORTED;
 
@@ -134,6 +136,14 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public void setValueSource(ParameterValueSource valueSource) {
         this.valueSource = valueSource;
+    }
+
+    public String getValueReference() {
+        return valueReference;
+    }
+
+    public void setValueReference(String valueReference) {
+        this.valueReference = valueReference;
     }
 
     public Boolean getIsExported() {
