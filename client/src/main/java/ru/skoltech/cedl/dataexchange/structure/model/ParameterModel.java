@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.*;
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-@XmlType(propOrder = {"name", "value", "nature", "valueSource", "isExported", "lastModification", "description"})
+@XmlType(propOrder = {"name", "value", "nature", "valueSource", "valueReference", "isExported", "lastModification", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
@@ -162,6 +162,15 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.description = description;
     }
 
+    public boolean hasServerChange() {
+        if (getServerValue() != null) {
+            // TODO: account for floating point comparison with imprecision
+            return !getValue().equals(getServerValue());
+        } else {
+            return false;
+        }
+    }
+
     /*
      * The comparison is done only based on the name, so it enables sorting of parameters by name and identifying changes to values of parameters.
      */
@@ -171,26 +180,34 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof ParameterModel) {
-            ParameterModel paramObj = (ParameterModel) obj;
-            return name.equals(paramObj.name) &&
-                    value != null && value.equals(paramObj.value) &&
-                    nature != null && nature.equals(paramObj.nature) &&
-                    valueSource != null && valueSource.equals(paramObj.valueSource) &&
-                    isExported.equals(paramObj.isExported);
-        } else {
-            return super.equals(obj);
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ParameterModel that = (ParameterModel) o;
+
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        if (serverValue != null ? !serverValue.equals(that.serverValue) : that.serverValue != null) return false;
+        if (nature != that.nature) return false;
+        if (valueSource != that.valueSource) return false;
+        if (valueReference != null ? !valueReference.equals(that.valueReference) : that.valueReference != null)
+            return false;
+        if (isExported != null ? !isExported.equals(that.isExported) : that.isExported != null) return false;
+        return !(description != null ? !description.equals(that.description) : that.description != null);
     }
 
-    public boolean hasServerChange() {
-        if (getServerValue() != null) {
-            // TODO: account for floating point comparison with imprecision
-            return !getValue().equals(getServerValue());
-        } else {
-            return false;
-        }
+    @Override
+    public int hashCode() {
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (value != null ? value.hashCode() : 0);
+        result = 31 * result + (serverValue != null ? serverValue.hashCode() : 0);
+        result = 31 * result + (nature != null ? nature.hashCode() : 0);
+        result = 31 * result + (valueSource != null ? valueSource.hashCode() : 0);
+        result = 31 * result + (valueReference != null ? valueReference.hashCode() : 0);
+        result = 31 * result + (isExported != null ? isExported.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        return result;
     }
 
     @Override
@@ -201,6 +218,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         sb.append(", serverValue=").append(serverValue);
         sb.append(", nature=").append(nature);
         sb.append(", valueSource=").append(valueSource);
+        sb.append(", valueReference=").append(valueReference);
         sb.append(", isExported=").append(isExported);
         sb.append(", version=").append(version);
         sb.append(", description='").append(description).append('\'');
