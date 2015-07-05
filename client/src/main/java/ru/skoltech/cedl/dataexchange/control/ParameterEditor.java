@@ -58,13 +58,25 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private TextField valueText;
 
     @FXML
+    private CheckBox isReferenceValueOverriddenCheckbox;
+
+    @FXML
+    private TextField valueOverrideText;
+
+    @FXML
     private CheckBox isExportedCheckbox;
+
+    @FXML
+    private TextField exportReferenceText;
 
     @FXML
     private TextArea descriptionText;
 
     @FXML
     private HBox referenceSelectorGroup;
+
+    @FXML
+    private HBox exportSelectorGroup;
 
     private Project project;
 
@@ -91,6 +103,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
         valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
+        valueOverrideText.visibleProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty());
+        exportSelectorGroup.visibleProperty().bind(isExportedCheckbox.selectedProperty());
     }
 
     public Project getProject() {
@@ -157,7 +171,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             natureChoiceBox.setValue(parameterModel.getNature());
             valueSourceChoiceBox.setValue(parameterModel.getValueSource());
             valueReferenceText.setText(parameterModel.getValueReference());
+            isReferenceValueOverriddenCheckbox.setSelected(parameterModel.getIsReferenceValueOverridden());
+            valueOverrideText.setText(String.valueOf(parameterModel.getOverrideValue()));
             isExportedCheckbox.setSelected(parameterModel.getIsExported());
+            exportReferenceText.setText(parameterModel.getExportReference());
             descriptionText.setText(parameterModel.getDescription());
             propertyPane.setVisible(true);
         } else {
@@ -175,10 +192,14 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             parameterModel.setNature(natureChoiceBox.getValue());
             modified |= valueSourceChoiceBox.getValue().equals(parameterModel.getValueSource());
             parameterModel.setValueSource(valueSourceChoiceBox.getValue());
-            modified |= valueReferenceText.getText().equals(parameterModel.getValueReference());
+            modified |= valueReferenceText.getText() != null && valueReferenceText.getText().equals(parameterModel.getValueReference());
             parameterModel.setValueReference(valueReferenceText.getText());
+            modified |= isReferenceValueOverriddenCheckbox.isSelected() == parameterModel.getIsReferenceValueOverridden();
+            parameterModel.setIsReferenceValueOverridden(isReferenceValueOverriddenCheckbox.isSelected());
             modified |= isExportedCheckbox.isSelected() == parameterModel.getIsExported();
             parameterModel.setIsExported(isExportedCheckbox.isSelected());
+            modified |= exportReferenceText.getText() != null && exportReferenceText.getText().equals(parameterModel.getExportReference());
+            parameterModel.setExportReference(exportReferenceText.getText());
             modified |= descriptionText.getText() != null && descriptionText.getText().equals(parameterModel.getDescription());
             parameterModel.setDescription(descriptionText.getText());
             if (project != null && modified) {

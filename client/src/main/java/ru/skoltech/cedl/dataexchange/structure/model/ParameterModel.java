@@ -21,6 +21,8 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public static final Boolean DEFAULT_EXPORTED = Boolean.FALSE;
 
+    public static final Boolean DEFAULT_OVERRIDDEN = Boolean.FALSE;
+
     @XmlTransient
     private long id;
 
@@ -42,7 +44,15 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     private String valueReference;
 
     @XmlAttribute
+    private Boolean isReferenceValueOverridden = DEFAULT_OVERRIDDEN;
+
+    @XmlAttribute
+    private Double overrideValue;
+
+    @XmlAttribute
     private Boolean isExported = DEFAULT_EXPORTED;
+
+    private String exportReference;
 
     private String description;
 
@@ -146,12 +156,36 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.valueReference = valueReference;
     }
 
+    public Boolean getIsReferenceValueOverridden() {
+        return isReferenceValueOverridden == null ? DEFAULT_OVERRIDDEN : isReferenceValueOverridden;
+    }
+
+    public void setIsReferenceValueOverridden(Boolean isReferenceValueOverridden) {
+        this.isReferenceValueOverridden = isReferenceValueOverridden;
+    }
+
+    public Double getOverrideValue() {
+        return overrideValue;
+    }
+
+    public void setOverrideValue(Double overrideValue) {
+        this.overrideValue = overrideValue;
+    }
+
     public Boolean getIsExported() {
         return isExported == null ? DEFAULT_EXPORTED : isExported;
     }
 
     public void setIsExported(Boolean isExported) {
         this.isExported = isExported;
+    }
+
+    public String getExportReference() {
+        return exportReference;
+    }
+
+    public void setExportReference(String exportReference) {
+        this.exportReference = exportReference;
     }
 
     public String getDescription() {
@@ -193,7 +227,12 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         if (valueSource != that.valueSource) return false;
         if (valueReference != null ? !valueReference.equals(that.valueReference) : that.valueReference != null)
             return false;
+        if (isReferenceValueOverridden != null ? !isReferenceValueOverridden.equals(that.isReferenceValueOverridden) : that.isReferenceValueOverridden != null)
+            return false;
+        if (overrideValue != null ? !overrideValue.equals(that.overrideValue) : that.overrideValue != null)
+            return false;
         if (isExported != null ? !isExported.equals(that.isExported) : that.isExported != null) return false;
+        if (exportReference != null ? !exportReference.equals(that.exportReference) : that.exportReference != null) return false;
         return !(description != null ? !description.equals(that.description) : that.description != null);
     }
 
@@ -205,7 +244,10 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         result = 31 * result + (nature != null ? nature.hashCode() : 0);
         result = 31 * result + (valueSource != null ? valueSource.hashCode() : 0);
         result = 31 * result + (valueReference != null ? valueReference.hashCode() : 0);
+        result = 31 * result + (isReferenceValueOverridden != null ? isReferenceValueOverridden.hashCode() : 0);
+        result = 31 * result + (overrideValue != null ? overrideValue.hashCode() : 0);
         result = 31 * result + (isExported != null ? isExported.hashCode() : 0);
+        result = 31 * result + (exportReference != null ? exportReference.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         return result;
     }
@@ -219,7 +261,10 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         sb.append(", nature=").append(nature);
         sb.append(", valueSource=").append(valueSource);
         sb.append(", valueReference=").append(valueReference);
+        sb.append(", isReferenceValueOverridden=").append(isReferenceValueOverridden);
+        sb.append(", overrideValue=").append(overrideValue);
         sb.append(", isExported=").append(isExported);
+        sb.append(", exportReference=").append(exportReference);
         sb.append(", version=").append(version);
         sb.append(", description='").append(description).append('\'');
         sb.append(", lastModification='").append(lastModification).append('\'');
