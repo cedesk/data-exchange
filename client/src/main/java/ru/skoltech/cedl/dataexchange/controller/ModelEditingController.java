@@ -12,8 +12,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
@@ -24,19 +26,20 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
+import ru.skoltech.cedl.dataexchange.links.SpreadsheetAccessor;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNodeFactory;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
@@ -56,12 +59,6 @@ public class ModelEditingController implements Initializable {
 
     @FXML
     private ParameterEditor parameterEditor;
-
-    @FXML
-    private Button attachButton;
-
-    @FXML
-    private Button detachButton;
 
     @FXML
     private TextField externalModelFilePath;
@@ -125,8 +122,7 @@ public class ModelEditingController implements Initializable {
         structureTree.setContextMenu(makeStructureTreeContextMenu());
 
         // EXTERNAL MODEL ATTACHMENT
-        attachButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
-        detachButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
+        externalModelPane.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
 
         // NODE PARAMETERS
         addParameterButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
@@ -397,6 +393,58 @@ public class ModelEditingController implements Initializable {
         project.markStudyModified();
     }
 
+    public void openExternalModel(ActionEvent actionEvent) {
+        File spreadsheetFile = null;
+        try {
+            // TODO: store to a project directory
+            // TODO: check whether file needs to be overwritten
+            // TODO: check whether file is open
+            spreadsheetFile = ExternalModelUtil.toFile(getSelectedTreeItem().getValue().getExternalModels(), StorageUtils.getAppDir());
+        } catch (IOException ioe) {
+            logger.error("Error saving external model to spreadsheet.", ioe);
+            return;
+        }
+        if (spreadsheetFile != null) {
+            try {
+                Desktop.getDesktop().edit(spreadsheetFile);
+            } catch (Exception e) {
+                logger.error("Error opening spreadsheet with default editor.", e);
+            }
+        }
+    }
+
+    public void reloadExternalModel(ActionEvent actionEvent) {
+        ModelNode modelNode = getSelectedTreeItem().getValue();
+        updateParameterValuesFromExternalModel(modelNode);
+    }
+
+    private void updateParameterValuesFromExternalModel(ModelNode modelNode) {
+        InputStream inputStream = modelNode.getExternalModels().getAttachmentAsStream();
+        try (SpreadsheetAccessor spreadsheetAccessor = new SpreadsheetAccessor(inputStream, 0)) {
+            for (ParameterModel parameterModel : modelNode.getParameters()) {
+                if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+                    if (parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty()) {
+                        String[] components = parameterModel.getValueReference().split(":");
+                        Double value = spreadsheetAccessor.getNumericValue(components[2]);
+                        if (value != null) {
+                            parameterModel.setValue(value);
+                        } else {
+                            logger.error("invalid value from: " + parameterModel.getValueReference());
+                        }
+                    } else {
+                        logger.warn("parameter " + modelNode.getNodePath() + "\\" + parameterModel.getName() + " has empty valueReference");
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.error("error opening spreadsheet.", e);
+        }
+    }
+
+    private TreeItem<ModelNode> getSelectedTreeItem() {
+        return structureTree.getSelectionModel().getSelectedItem();
+    }
+
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
@@ -409,10 +457,6 @@ public class ModelEditingController implements Initializable {
                 parameterEditor.setVisible(false);
             }
         }
-    }
-
-    private TreeItem<ModelNode> getSelectedTreeItem() {
-        return structureTree.getSelectionModel().getSelectedItem();
     }
 
     private class TreeItemSelectionListener implements ChangeListener<TreeItem<ModelNode>> {
