@@ -78,17 +78,29 @@
                                         <TitledPane fx:id="externalModelPane" animated="false" text="External Model"
                                                     expanded="false">
                                             <content>
-                                                <FlowPane prefHeight="200.0" prefWidth="200.0">
+                                                <FlowPane>
                                                     <children>
                                                         <TextField fx:id="externalModelFilePath" editable="false"
-                                                                   prefWidth="400.0" promptText="File"/>
-                                                        <Button fx:id="attachButton" mnemonicParsing="false"
+                                                                   prefWidth="300.0" promptText="File"/>
+                                                        <Button mnemonicParsing="false"
                                                                 onAction="#attachExternalModel" text="Attach">
                                                             <FlowPane.margin>
                                                                 <Insets left="8.0"/>
                                                             </FlowPane.margin>
                                                         </Button>
-                                                        <Button fx:id="detachButton" layoutX="428.0" layoutY="20.0"
+                                                        <Button mnemonicParsing="false"
+                                                                onAction="#openExternalModel" text="Open">
+                                                            <FlowPane.margin>
+                                                                <Insets left="8.0"/>
+                                                            </FlowPane.margin>
+                                                        </Button>
+                                                        <Button mnemonicParsing="false"
+                                                                onAction="#reloadExternalModel" text="Reload">
+                                                            <FlowPane.margin>
+                                                                <Insets left="8.0"/>
+                                                            </FlowPane.margin>
+                                                        </Button>
+                                                        <Button layoutX="428.0" layoutY="20.0"
                                                                 mnemonicParsing="false" onAction="#detachExternalModel"
                                                                 text="Detach">
                                                             <FlowPane.margin>

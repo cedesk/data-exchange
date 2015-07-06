@@ -7,20 +7,19 @@ import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
+import java.io.Closeable;
 import java.util.List;
 
 /**
  * Created by D.Knoll on 25.05.2015.
  */
-public interface Repository {
+public interface Repository extends Closeable {
 
     SystemModel loadSystemModel(long studyId) throws RepositoryException;
 
     UserRoleManagement loadUserRoleManagement(long studyId) throws RepositoryException;
 
     SystemModel storeSystemModel(SystemModel systemModel) throws RepositoryException;
-
-    void close();
 
     Study loadStudy(String name) throws RepositoryException;
 
