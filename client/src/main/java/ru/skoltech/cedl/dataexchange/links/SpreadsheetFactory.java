@@ -18,11 +18,25 @@ import java.util.ArrayList;
  */
 public class SpreadsheetFactory {
 
+    /**
+     * Opens a XLS file and reads the cells of the given sheet for visualization in a <code>org.conrolsfx.spearsheet.SpreadSheetView</code>
+     * @param spreadsheetFile the XLS workbook file
+     * @param sheetIndex the spreadheet within the workbook
+     * @return a grid of cell values
+     * @throws IOException in case of problems reading the file
+     */
     public static Grid getGrid(File spreadsheetFile, int sheetIndex) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(spreadsheetFile);
         return getGrid(fileInputStream, sheetIndex);
     }
 
+    /**
+     * Opens a XLS file and reads the cells of the given sheet for visualization in a <code>org.conrolsfx.spearsheet.SpreadSheetView</code>
+     * @param inputStream the stream from which to read the XLS workbook file
+     * @param sheetIndex the spreadheet within the workbook
+     * @return a grid of cell values
+     * @throws IOException in case of problems reading the stream
+     */
     public static Grid getGrid(InputStream inputStream, int sheetIndex) throws IOException {
         NPOIFSFileSystem fs = new NPOIFSFileSystem(inputStream);
         HSSFWorkbook wb = new HSSFWorkbook(fs.getRoot(), true);
