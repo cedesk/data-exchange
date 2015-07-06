@@ -57,7 +57,7 @@ public class SpreadsheetFactory {
             for (Cell dataCell : dataRow) {
                 int columnIndex = dataCell.getColumnIndex();
                 paddingMissingCells(viewRow, lastColumnIndex, rowIndex, columnIndex);
-                String value = getValue(dataCell);
+                String value = SpreadsheetAccessor.getValueAsString(dataCell);
                 SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(
                         rowIndex, columnIndex, 1, 1, value);
                 viewRow.add(viewCell);
@@ -79,26 +79,6 @@ public class SpreadsheetFactory {
                 viewRow.add(padCell);
             }
         }
-    }
-
-    private static String getValue(Cell cell) {
-        String result = "";
-        if (cell != null) {
-            switch (cell.getCellType()) {
-                case Cell.CELL_TYPE_STRING:
-                    result = cell.getStringCellValue();
-                    break;
-                case Cell.CELL_TYPE_NUMERIC:
-                    result = String.valueOf(cell.getNumericCellValue());
-                    break;
-                case Cell.CELL_TYPE_FORMULA:
-                    result = String.valueOf(cell.getNumericCellValue());
-                    break;
-                default:
-                    result = "<unknown>";
-            }
-        }
-        return result;
     }
 
     private static int extractColumns(Sheet sheet) {

@@ -10,6 +10,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 import ru.skoltech.cedl.dataexchange.SpreadsheetCoordinates;
@@ -30,6 +31,8 @@ import java.util.ResourceBundle;
  * Created by dknoll on 01/07/15.
  */
 public class SourceSelectorController implements Initializable {
+
+    private static final Logger logger = Logger.getLogger(SourceSelectorController.class);
 
     @FXML
     private ComboBox<ExternalModel> attachmentChooser;
@@ -85,7 +88,7 @@ public class SourceSelectorController implements Initializable {
                 spreadsheetView.setGrid(grid);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("Error reading external model spreadsheet.", ex);
         }
     }
 
@@ -99,16 +102,19 @@ public class SourceSelectorController implements Initializable {
     public void openSpreadsheet(ActionEvent actionEvent) {
         File spreadsheetFile = null;
         try {
+            // TODO: store to a project directory
+            // TODO: check whether file needs to be overwritten
+            // TODO: check whether file is open
             spreadsheetFile = ExternalModelUtil.toFile(externalModel, StorageUtils.getAppDir());
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ioe) {
+            logger.error("Error saving external model to spreadsheet.", ioe);
             return;
         }
         if (spreadsheetFile != null) {
             try {
                 Desktop.getDesktop().edit(spreadsheetFile);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error opening spreadsheet with default editor.", e);
             }
         }
     }
