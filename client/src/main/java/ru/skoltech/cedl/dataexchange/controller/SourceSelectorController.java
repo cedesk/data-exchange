@@ -12,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
+import ru.skoltech.cedl.dataexchange.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.links.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
@@ -91,12 +92,8 @@ public class SourceSelectorController implements Initializable {
     public void chooseSelectedCell(ActionEvent actionEvent) {
         TablePosition focusedCell = spreadsheetView.getSelectionModel().getFocusedCell();
         if (focusedCell != null) {
-            chosenCellsText.setText(getCellCoordinates(focusedCell));
+            chosenCellsText.setText(SpreadsheetCoordinates.fromPosition(focusedCell));
         }
-    }
-
-    private String getCellCoordinates(TablePosition tablePosition) {
-        return tablePosition.getTableColumn().getText() + String.valueOf(tablePosition.getRow() + 1);
     }
 
     public void openSpreadsheet(ActionEvent actionEvent) {
