@@ -23,6 +23,7 @@ import java.util.ResourceBundle;
 /**
  * Created by dknoll on 01/07/15.
  */
+@Deprecated
 public class SpreadsheetController implements Initializable {
 
     @FXML
