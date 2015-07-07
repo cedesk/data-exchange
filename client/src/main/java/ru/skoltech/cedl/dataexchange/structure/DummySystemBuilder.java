@@ -15,8 +15,8 @@ public class DummySystemBuilder {
 
     public static SystemModel getSystemModel(int level) {
         SystemModel system = new SystemModel("Spacecraft " + getRandomInt());
-        system.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
-        system.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
+        system.addParameter(getParameter());
+        system.addParameter(getParameter());
 
         if (level < 2) return system;
         system.addSubNode(getSubystem("Power", level - 1, system));
@@ -28,41 +28,73 @@ public class DummySystemBuilder {
         return system;
     }
 
-    private static int getRandomInt() {
-        return (int) (Math.random() * 100);
+    private static SubSystemModel getSubystem(String name, int level, ModelNode parent) {
+        SubSystemModel subSystem = new SubSystemModel(name);
+        subSystem.addParameter(getParameter());
+        subSystem.addParameter(getParameter());
+        subSystem.setParent(parent);
+
+        if (level < 2) return subSystem;
+        subSystem.addSubNode(getElement("element" + elementCnt++, level - 1, subSystem));
+        return subSystem;
+    }
+
+    private static ElementModel getElement(String name, int level, ModelNode parent) {
+        ElementModel element = new ElementModel(name);
+        element.addParameter(getParameter());
+        element.addParameter(getParameter());
+        element.setParent(parent);
+
+        if (level < 2) return element;
+        element.addSubNode(getInstrument("instrument" + elementCnt + "/" + instrumentCnt++, element));
+        return element;
+    }
+
+    private static InstrumentModel getInstrument(String name, ModelNode parent) {
+        InstrumentModel instrument = new InstrumentModel(name);
+        instrument.addParameter(getParameter());
+        instrument.addParameter(getParameter());
+        instrument.setParent(parent);
+        return instrument;
+    }
+
+    private static ParameterModel getParameter() {
+        ParameterModel parameterModel = new ParameterModel("parameter" + parameterCnt++, getRandomDouble());
+        parameterModel.setDescription("");
+        double sh = Math.random();
+        if (sh > 0.33) {
+            parameterModel.setNature(ParameterNature.INPUT);
+        } else if (sh > 0.66) {
+            parameterModel.setNature(ParameterNature.INTERNAL);
+        } else {
+            parameterModel.setNature(ParameterNature.OUTPUT);
+        }
+        if (Math.random() > .5) {
+            parameterModel.setValueSource(ParameterValueSource.REFERENCE);
+            parameterModel.setValueReference("");
+            if (Math.random() > .5) {
+                parameterModel.setIsReferenceValueOverridden(true);
+                parameterModel.setOverrideValue(getRandomDouble());
+            } else {
+                parameterModel.setIsReferenceValueOverridden(false);
+            }
+        } else {
+            parameterModel.setValueSource(ParameterValueSource.MANUAL);
+        }
+        if (Math.random() > .5) {
+            parameterModel.setIsExported(true);
+            parameterModel.setExportReference("");
+        } else {
+            parameterModel.setIsExported(false);
+        }
+        return parameterModel;
     }
 
     private static double getRandomDouble() {
         return Math.round(Math.random() * 1000) / 10;
     }
 
-    private static SubSystemModel getSubystem(String name, int level, ModelNode parent) {
-        SubSystemModel subSystem = new SubSystemModel(name);
-        subSystem.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
-        subSystem.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
-        subSystem.setParent(parent);
-
-        if (level < 2) return subSystem;
-        subSystem.addSubNode(getElement("element " + elementCnt++, level - 1, subSystem));
-        return subSystem;
-    }
-
-    private static ElementModel getElement(String name, int level, ModelNode parent) {
-        ElementModel element = new ElementModel(name);
-        element.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
-        element.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
-        element.setParent(parent);
-
-        if (level < 2) return element;
-        element.addSubNode(getInstrument("instrument " + elementCnt + "/" + instrumentCnt++, element));
-        return element;
-    }
-
-    private static InstrumentModel getInstrument(String name, ModelNode parent) {
-        InstrumentModel instrument = new InstrumentModel(name);
-        instrument.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
-        instrument.addParameter(new ParameterModel("parameter " + parameterCnt++, getRandomDouble()));
-        instrument.setParent(parent);
-        return instrument;
+    private static int getRandomInt() {
+        return (int) (Math.random() * 100);
     }
 }

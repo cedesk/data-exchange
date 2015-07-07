@@ -421,25 +421,30 @@ public class ModelEditingController implements Initializable {
     }
 
     private void updateParameterValuesFromExternalModel(ModelNode modelNode) {
-        InputStream inputStream = modelNode.getExternalModels().getAttachmentAsStream();
-        try (SpreadsheetAccessor spreadsheetAccessor = new SpreadsheetAccessor(inputStream, 0)) {
-            for (ParameterModel parameterModel : modelNode.getParameters()) {
-                if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                    if (parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty()) {
-                        String[] components = parameterModel.getValueReference().split(":");
-                        Double value = spreadsheetAccessor.getNumericValue(components[2]);
-                        if (value != null) {
-                            parameterModel.setValue(value);
+        ExternalModel externalModel = modelNode.getExternalModels();
+        if (externalModel != null) {
+            InputStream inputStream = externalModel.getAttachmentAsStream();
+            try (SpreadsheetAccessor spreadsheetAccessor = new SpreadsheetAccessor(inputStream, 0)) {
+                for (ParameterModel parameterModel : modelNode.getParameters()) {
+                    if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+                        if (parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty()) {
+                            String[] components = parameterModel.getValueReference().split(":");
+                            if(externalModel.getName().equals(components[1])) {
+                                Double value = spreadsheetAccessor.getNumericValue(components[2]);
+                                if (value != null) {
+                                    parameterModel.setValue(value);
+                                } else {
+                                    logger.error("invalid value from: " + parameterModel.getValueReference());
+                                }
+                            }
                         } else {
-                            logger.error("invalid value from: " + parameterModel.getValueReference());
+                            logger.warn("parameter " + modelNode.getNodePath() + "\\" + parameterModel.getName() + " has empty valueReference");
                         }
-                    } else {
-                        logger.warn("parameter " + modelNode.getNodePath() + "\\" + parameterModel.getName() + " has empty valueReference");
                     }
                 }
+            } catch (IOException e) {
+                logger.error("error opening spreadsheet.", e);
             }
-        } catch (IOException e) {
-            logger.error("error opening spreadsheet.", e);
         }
     }
 
