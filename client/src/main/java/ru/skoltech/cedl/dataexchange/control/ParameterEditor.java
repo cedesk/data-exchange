@@ -83,8 +83,6 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private Project project;
 
-    private ModelNode modelNode;
-
     private BeanPathAdapter<ParameterModel> parameterBean = new BeanPathAdapter<>(new ParameterModel());
 
     public ParameterEditor() {
@@ -131,14 +129,6 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         this.project = project;
     }
 
-    public ModelNode getModelNode() {
-        return modelNode;
-    }
-
-    public void setModelNode(ModelNode modelNode) {
-        this.modelNode = modelNode;
-    }
-
     public ParameterModel getParameterModel() {
         return parameterBean.getBean();
     }
@@ -164,7 +154,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(nameText.getScene().getWindow());
             SourceSelectorController controller = loader.getController();
-            controller.setModelNode(modelNode);
+            controller.setModelNode(parameterBean.getBean().getParent());
             controller.setParameterBean(parameterBean);
             controller.updateView();
             stage.showAndWait();

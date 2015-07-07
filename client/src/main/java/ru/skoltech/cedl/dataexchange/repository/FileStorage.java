@@ -54,6 +54,9 @@ public class FileStorage {
 
     private void postProcessSystemModel(ModelNode modelNode, ModelNode parent) {
         modelNode.setParent(parent);
+        for (ParameterModel parameterModel : modelNode.getParameters()) {
+            parameterModel.setParent(modelNode);
+        }
         if (modelNode instanceof CompositeModelNode) {
             CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
             for (Object node : compositeModelNode.getSubNodes()) {

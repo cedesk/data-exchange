@@ -457,7 +457,6 @@ public class ModelEditingController implements Initializable {
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
             if (newValue != null) {
                 parameterEditor.setProject(project);
-                parameterEditor.setModelNode(getSelectedTreeItem().getValue());
                 parameterEditor.setParameterModel(newValue);
                 parameterEditor.setVisible(true);
             } else {

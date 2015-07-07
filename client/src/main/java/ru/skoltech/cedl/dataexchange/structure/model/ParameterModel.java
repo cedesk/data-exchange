@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -61,6 +62,9 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @XmlAttribute
     private Long lastModification;
+
+    @XmlTransient
+    private ModelNode parent;
 
     public ParameterModel() {
     }
@@ -200,6 +204,16 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @ManyToOne(targetEntity = ModelNode.class)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+    public ModelNode getParent() {
+        return parent;
+    }
+
+    public void setParent(ModelNode parent) {
+        this.parent = parent;
     }
 
     public boolean hasServerChange() {

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  */
 @XmlType(propOrder = {"name", "lastModification", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
-@MappedSuperclass
+@Entity
 public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped {
 
     @XmlAttribute

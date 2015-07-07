@@ -15,8 +15,8 @@ public class DummySystemBuilder {
 
     public static SystemModel getSystemModel(int level) {
         SystemModel system = new SystemModel("Spacecraft " + getRandomInt());
-        system.addParameter(getParameter());
-        system.addParameter(getParameter());
+        system.addParameter(getParameter(system));
+        system.addParameter(getParameter(system));
 
         if (level < 2) return system;
         system.addSubNode(getSubystem("Power", level - 1, system));
@@ -30,8 +30,8 @@ public class DummySystemBuilder {
 
     private static SubSystemModel getSubystem(String name, int level, ModelNode parent) {
         SubSystemModel subSystem = new SubSystemModel(name);
-        subSystem.addParameter(getParameter());
-        subSystem.addParameter(getParameter());
+        subSystem.addParameter(getParameter(subSystem));
+        subSystem.addParameter(getParameter(subSystem));
         subSystem.setParent(parent);
 
         if (level < 2) return subSystem;
@@ -41,8 +41,8 @@ public class DummySystemBuilder {
 
     private static ElementModel getElement(String name, int level, ModelNode parent) {
         ElementModel element = new ElementModel(name);
-        element.addParameter(getParameter());
-        element.addParameter(getParameter());
+        element.addParameter(getParameter(element));
+        element.addParameter(getParameter(element));
         element.setParent(parent);
 
         if (level < 2) return element;
@@ -52,13 +52,13 @@ public class DummySystemBuilder {
 
     private static InstrumentModel getInstrument(String name, ModelNode parent) {
         InstrumentModel instrument = new InstrumentModel(name);
-        instrument.addParameter(getParameter());
-        instrument.addParameter(getParameter());
+        instrument.addParameter(getParameter(instrument));
+        instrument.addParameter(getParameter(instrument));
         instrument.setParent(parent);
         return instrument;
     }
 
-    private static ParameterModel getParameter() {
+    private static ParameterModel getParameter(ModelNode parent) {
         ParameterModel parameterModel = new ParameterModel("parameter" + parameterCnt++, getRandomDouble());
         parameterModel.setDescription("");
         double sh = Math.random();
@@ -87,6 +87,7 @@ public class DummySystemBuilder {
         } else {
             parameterModel.setIsExported(false);
         }
+        parameterModel.setParent(parent);
         return parameterModel;
     }
 
