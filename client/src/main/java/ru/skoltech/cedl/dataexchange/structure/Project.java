@@ -238,6 +238,7 @@ public class Project {
         study = StudyFactory.makeStudy(projectName, userManagement);
         study.setSystemModel(systemModel);
         study.setName(systemModel.getName());
+        setRepositoryStudy(null);
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
 
         UserRoleManagement userRoleManagement;
