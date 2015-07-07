@@ -14,7 +14,7 @@
                     <children>
                         <ComboBox fx:id="attachmentChooser" prefWidth="200.0"/>
                         <Button fx:id="openButton" mnemonicParsing="false" onAction="#openSpreadsheet" text="Open"/>
-                        <TextField fx:id="chosenCellsText" editable="false" prefWidth="200.0" promptText="cellName"/>
+                        <TextField fx:id="referenceText" editable="false" prefWidth="200.0" promptText="cellName"/>
                         <Button fx:id="chooseCellButton" mnemonicParsing="false" onAction="#chooseSelectedCell"
                                 text="Choose Cell"/>
                         <Button fx:id="acceptAndCloseButton" mnemonicParsing="false" onAction="#acceptAndClose"
