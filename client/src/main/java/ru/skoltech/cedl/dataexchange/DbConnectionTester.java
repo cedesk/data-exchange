@@ -16,6 +16,7 @@ import java.util.Map;
 /**
  * Created by D.Knoll on 24.06.2015.
  */
+@Deprecated
 public class DbConnectionTester {
     public static final String PERSISTENCE_URL_PROPERTY = "javax.persistence.jdbc.url";
     public static final String PERSISTENCE_USER_PROPERTY = "javax.persistence.jdbc.user";
