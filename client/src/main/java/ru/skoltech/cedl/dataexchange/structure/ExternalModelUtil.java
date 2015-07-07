@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
+import ru.skoltech.cedl.dataexchange.ProjectContext;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,6 +19,7 @@ public class ExternalModelUtil {
         ExternalModel externalModel = new ExternalModel();
         externalModel.setName(fileName);
         externalModel.setAttachment(Files.readAllBytes(path));
+        // TODO: must store to DB
         return externalModel;
     }
 
@@ -28,4 +31,23 @@ public class ExternalModelUtil {
         return file;
     }
 
+    public static File cacheFile(ExternalModel externalModel) throws IOException {
+        Objects.requireNonNull(externalModel);
+        File file = getExternalModelFile(externalModel);
+        boolean newerOnDisk = file.lastModified() > externalModel.getLastModification(); // FIX: imprecise
+        Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
+        return file;
+    }
+
+    public static boolean isCached(ExternalModel externalModel) {
+        Objects.requireNonNull(externalModel);
+        File file = getExternalModelFile(externalModel);
+        return file.exists() && file.canRead() && file.canWrite();
+
+    }
+
+    private static File getExternalModelFile(ExternalModel externalModel) {
+        File folder = ProjectContext.getINSTANCE().getProjectDataDir(); // TODO: maybe include owningModel.NodePath
+        return new File(folder, externalModel.getName());
+    }
 }

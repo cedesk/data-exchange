@@ -475,9 +475,11 @@ public class ModelEditingController implements Initializable {
                 ModelEditingController.this.updateParameterTable(newValue);
                 selectedNodeCanHaveChildren.setValue(!(newValue.getValue() instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(newValue.getValue().isRootNode());
-                if (newValue.getValue().getExternalModels() != null) {
-                    externalModelFilePath.setText(newValue.getValue().getExternalModels().getName());
+                ExternalModel externalModel = newValue.getValue().getExternalModels();
+                if (externalModel != null) {
+                    externalModelFilePath.setText(externalModel.getName());
                     externalModelPane.setExpanded(true);
+                    watchForChanges(externalModel);
                 } else {
                     externalModelFilePath.setText(null);
                     externalModelPane.setExpanded(false);
@@ -489,6 +491,10 @@ public class ModelEditingController implements Initializable {
                 externalModelFilePath.setText(null);
             }
         }
+    }
+
+    private void watchForChanges(ExternalModel externalModel) {
+
     }
 
     private class ParameterModelEditListener implements EventHandler<TableColumn.CellEditEvent<ParameterModel, String>> {
