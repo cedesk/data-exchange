@@ -46,6 +46,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         this.name = name;
     }
 
+    @Column(nullable = false)
     public String getName() {
         return name;
     }

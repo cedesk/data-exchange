@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.*;
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-@XmlType(propOrder = {"name", "value", "nature", "valueSource", "valueReference", "isExported", "lastModification", "description"})
+@XmlType(propOrder = {"name", "value", "nature", "valueSource", "valueReference", "isExported", "exportReference", "lastModification", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
@@ -112,6 +112,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.id = id;
     }
 
+    @Column(nullable = false)
     public String getName() {
         return name;
     }
