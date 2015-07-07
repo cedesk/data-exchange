@@ -1,6 +1,8 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModificationTimestamped;
 
 import javax.persistence.*;
@@ -14,7 +16,7 @@ import java.util.Arrays;
 @Entity
 @Access(AccessType.PROPERTY)
 @Audited
-public class ExternalModel implements ModificationTimestamped {
+public class ExternalModel implements Comparable<ExternalModel>, ModificationTimestamped {
 
     private long id;
 
@@ -22,7 +24,14 @@ public class ExternalModel implements ModificationTimestamped {
 
     private byte[] attachment;
 
+    private long version;
+
     private Long lastModification;
+
+    private ModelNode parent;
+
+    public ExternalModel(){
+    }
 
     @Id
     @GeneratedValue
@@ -51,6 +60,15 @@ public class ExternalModel implements ModificationTimestamped {
         this.attachment = attachment;
     }
 
+    @Version()
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+    }
+
     @Override
     public Long getLastModification() {
         return lastModification;
@@ -61,9 +79,27 @@ public class ExternalModel implements ModificationTimestamped {
         this.lastModification = lastModification;
     }
 
+    @ManyToOne(targetEntity = ModelNode.class)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+    public ModelNode getParent() {
+        return parent;
+    }
+
+    public void setParent(ModelNode parent) {
+        this.parent = parent;
+    }
+
     @Transient
     public InputStream getAttachmentAsStream() {
         return new ByteArrayInputStream(attachment);
+    }
+
+    /*
+     * The comparison is done only based on the name, so it enables sorting of external models parameters by name.
+     */
+    @Override
+    public int compareTo(ExternalModel o) {
+        return name.compareTo(o.name);
     }
 
     @Override

@@ -4,6 +4,7 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
@@ -59,6 +60,7 @@ public class Project {
     private void initialize(String projectName) {
         this.projectName = projectName;
         this.repositoryStateMachine.reset();
+        ProjectContext.getINSTANCE().setProjectName(projectName);
     }
 
     public User getUser() {

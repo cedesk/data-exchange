@@ -86,7 +86,7 @@ public class SpreadsheetController implements Initializable {
     public void saveSpreadsheet(ActionEvent actionEvent) {
         DatabaseStorage databaseStorage = null;
         try {
-            ExternalModel externalModel = ExternalModelUtil.fromFile(spreadsheetFile);
+            ExternalModel externalModel = ExternalModelUtil.fromFile(spreadsheetFile, null);
             databaseStorage = (DatabaseStorage) RepositoryFactory.getDatabaseRepository();
             databaseStorage.storeExternalModel(externalModel);
         } catch (Exception ex) {
