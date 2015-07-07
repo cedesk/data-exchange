@@ -135,4 +135,11 @@ public class Dialogues {
         alert.setContentText(text);
         alert.showAndWait();
     }
+
+    public static void showWarning(String title, String text) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setContentText(text);
+        alert.showAndWait();
+    }
 }

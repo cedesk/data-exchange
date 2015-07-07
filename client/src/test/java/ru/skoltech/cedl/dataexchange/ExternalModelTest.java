@@ -9,6 +9,7 @@ import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +37,10 @@ public class ExternalModelTest {
     public void storeAndRetrieveAttachment() throws URISyntaxException, IOException, RepositoryException {
         File file = new File(this.getClass().getResource("/attachment.xls").toURI());
 
-        ExternalModel externalModel = ExternalModelUtil.fromFile(file);
+//        SystemModel testSat = new SystemModel("testSat");
+//        databaseStorage.storeSystemModel(testSat);
+
+        ExternalModel externalModel = ExternalModelUtil.fromFile(file, null);
 
         System.err.println("before: " + externalModel.getId());
         ExternalModel externalModel1 = databaseStorage.storeExternalModel(externalModel);

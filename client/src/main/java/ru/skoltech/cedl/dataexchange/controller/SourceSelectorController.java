@@ -57,11 +57,13 @@ public class SourceSelectorController implements Initializable {
     public void setModelNode(ModelNode modelNode) {
         this.modelNode = modelNode;
         attachmentChooser.setItems(FXCollections.observableArrayList(modelNode.getExternalModels()));
-        attachmentChooser.setValue(modelNode.getExternalModels());
     }
 
     public void setParameterBean(BeanPathAdapter<ParameterModel> parameterBean) {
         this.parameterModel = parameterBean;
+        java.util.List<ExternalModel> externalModels = parameterBean.getBean().getParent().getExternalModels();
+        ExternalModel externalModel = externalModels.get(0);        // FIX: find external model used by the parameter
+        attachmentChooser.setValue(externalModel);
         parameterBean.bindBidirectional("valueReference", referenceText.textProperty());
     }
 
@@ -74,7 +76,6 @@ public class SourceSelectorController implements Initializable {
             }
         });
         spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-
     }
 
     public void close() {

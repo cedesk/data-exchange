@@ -27,7 +27,6 @@ import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.links.SpreadsheetAccessor;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -41,10 +40,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
@@ -376,8 +373,9 @@ public class ModelEditingController implements Initializable {
             } else {
                 externalModelFilePath.setText(externalModelFile.getAbsolutePath());
                 try {
-                    ExternalModel externalModel = ExternalModelUtil.fromFile(externalModelFile);
-                    selectedItem.getValue().setExternalModels(externalModel);
+                    ExternalModel externalModel = ExternalModelUtil.fromFile(externalModelFile, selectedItem.getValue());
+                    selectedItem.getValue().addExternalModel(externalModel);
+                    Dialogues.showWarning("The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!", "The file is now under CEDESK version control.");
                     project.markStudyModified();
                 } catch (IOException e) {
                     logger.warn("Unable to import model file.", e);
@@ -401,7 +399,10 @@ public class ModelEditingController implements Initializable {
             // TODO: store to a project directory
             // TODO: check whether file needs to be overwritten
             // TODO: check whether file is open
-            spreadsheetFile = ExternalModelUtil.toFile(getSelectedTreeItem().getValue().getExternalModels(), StorageUtils.getAppDir());
+            List<ExternalModel> externalModels = getSelectedTreeItem().getValue().getExternalModels();
+            if (externalModels.size() > 0) { // FIX
+                spreadsheetFile = ExternalModelUtil.cacheFile(externalModels.get(0));
+            }
         } catch (IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);
             return;
@@ -421,15 +422,14 @@ public class ModelEditingController implements Initializable {
     }
 
     private void updateParameterValuesFromExternalModel(ModelNode modelNode) {
-        ExternalModel externalModel = modelNode.getExternalModels();
-        if (externalModel != null) {
+        for (ExternalModel externalModel : modelNode.getExternalModels()) {
             InputStream inputStream = externalModel.getAttachmentAsStream();
             try (SpreadsheetAccessor spreadsheetAccessor = new SpreadsheetAccessor(inputStream, 0)) {
                 for (ParameterModel parameterModel : modelNode.getParameters()) {
                     if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
                         if (parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty()) {
                             String[] components = parameterModel.getValueReference().split(":");
-                            if(externalModel.getName().equals(components[1])) {
+                            if (externalModel.getName().equals(components[1])) {
                                 Double value = spreadsheetAccessor.getNumericValue(components[2]);
                                 if (value != null) {
                                     parameterModel.setValue(value);
@@ -450,6 +450,10 @@ public class ModelEditingController implements Initializable {
 
     private TreeItem<ModelNode> getSelectedTreeItem() {
         return structureTree.getSelectionModel().getSelectedItem();
+    }
+
+    private void watchForChanges(ExternalModel externalModel) {
+
     }
 
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
@@ -474,8 +478,9 @@ public class ModelEditingController implements Initializable {
                 ModelEditingController.this.updateParameterTable(newValue);
                 selectedNodeCanHaveChildren.setValue(!(newValue.getValue() instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(newValue.getValue().isRootNode());
-                ExternalModel externalModel = newValue.getValue().getExternalModels();
-                if (externalModel != null) {
+                List<ExternalModel> externalModels = newValue.getValue().getExternalModels();
+                if (externalModels.size() > 0) { // FIX show all
+                    ExternalModel externalModel = externalModels.get(0);
                     externalModelFilePath.setText(externalModel.getName());
                     externalModelPane.setExpanded(true);
                     watchForChanges(externalModel);
@@ -490,10 +495,6 @@ public class ModelEditingController implements Initializable {
                 externalModelFilePath.setText(null);
             }
         }
-    }
-
-    private void watchForChanges(ExternalModel externalModel) {
-
     }
 
     private class ParameterModelEditListener implements EventHandler<TableColumn.CellEditEvent<ParameterModel, String>> {

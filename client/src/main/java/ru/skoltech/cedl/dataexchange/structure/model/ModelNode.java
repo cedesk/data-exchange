@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 @Entity
 public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped {
 
+    public static final String NODE_SEPARATOR = "\\";
+
     @XmlAttribute
     protected String name;
 
@@ -34,7 +36,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     protected long id;
 
     @XmlTransient
-    protected ExternalModel externalModels;
+    protected List<ExternalModel> externalModels = new LinkedList<>();
 
     @XmlAttribute
     private Long lastModification;
@@ -88,12 +90,16 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     //TODO: fix EAGER
     @OneToOne(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    public ExternalModel getExternalModels() {
+    public List<ExternalModel> getExternalModels() {
         return externalModels;
     }
 
-    public void setExternalModels(ExternalModel externalModels) {
+    public void setExternalModels(List<ExternalModel> externalModels) {
         this.externalModels = externalModels;
+    }
+
+    public void addExternalModel(ExternalModel externalModel) {
+        externalModels.add(externalModel);
     }
 
     @Id
@@ -157,7 +163,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     @Transient
     public String getNodePath() {
-        return isRootNode() ? name : parent.getNodePath() + "\\" + name;
+        return isRootNode() ? name : parent.getNodePath() + NODE_SEPARATOR + name;
     }
 
     @Override
