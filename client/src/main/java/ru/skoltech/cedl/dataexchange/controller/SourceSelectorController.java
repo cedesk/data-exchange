@@ -10,6 +10,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
@@ -38,14 +39,14 @@ public class SourceSelectorController implements Initializable {
     private ComboBox<ExternalModel> attachmentChooser;
 
     @FXML
-    private TextField chosenCellsText;
+    private TextField referenceText;
 
     @FXML
     private SpreadsheetView spreadsheetView;
 
     private ModelNode modelNode;
 
-    private ParameterModel parameterModel;
+    private BeanPathAdapter<ParameterModel> parameterModel;
 
     private ExternalModel externalModel;
 
@@ -59,12 +60,9 @@ public class SourceSelectorController implements Initializable {
         attachmentChooser.setValue(modelNode.getExternalModels());
     }
 
-    public ParameterModel getParameterModel() {
-        return parameterModel;
-    }
-
-    public void setParameterModel(ParameterModel parameterModel) {
-        this.parameterModel = parameterModel;
+    public void setParameterBean(BeanPathAdapter<ParameterModel> parameterBean) {
+        this.parameterModel = parameterBean;
+        parameterBean.bindBidirectional("valueReference", referenceText.textProperty());
     }
 
     @Override
@@ -76,6 +74,7 @@ public class SourceSelectorController implements Initializable {
             }
         });
         spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
     }
 
     public void close() {
@@ -95,7 +94,7 @@ public class SourceSelectorController implements Initializable {
     public void chooseSelectedCell(ActionEvent actionEvent) {
         TablePosition focusedCell = spreadsheetView.getSelectionModel().getFocusedCell();
         if (focusedCell != null) {
-            chosenCellsText.setText(SpreadsheetCoordinates.fromPosition(focusedCell));
+            referenceText.setText(externalModel.toString() + ":" + SpreadsheetCoordinates.fromPosition(focusedCell));
         }
     }
 
@@ -120,8 +119,6 @@ public class SourceSelectorController implements Initializable {
     }
 
     public void acceptAndClose(ActionEvent actionEvent) {
-        parameterModel.setValueReference(externalModel.toString() + ":" + chosenCellsText.getText());
-
         Node source = (Node) actionEvent.getSource();
         Stage stage = (Stage) source.getScene().getWindow();
         stage.close();

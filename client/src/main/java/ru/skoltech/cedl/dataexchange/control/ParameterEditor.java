@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.control;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -13,11 +14,13 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -82,7 +85,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private ModelNode modelNode;
 
-    private ParameterModel parameterModel;
+    private BeanPathAdapter<ParameterModel> parameterBean = new BeanPathAdapter<>(new ParameterModel());
 
     public ParameterEditor() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("parameter_editor.fxml"));
@@ -98,7 +101,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        propertyPane.setVisible(false);
+        valueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
+        valueOverrideText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
         natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
@@ -106,6 +110,17 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         isReferenceValueOverriddenCheckbox.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
         valueOverrideText.visibleProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty());
         exportSelectorGroup.visibleProperty().bind(isExportedCheckbox.selectedProperty());
+
+        parameterBean.bindBidirectional("name", nameText.textProperty());
+        parameterBean.bindBidirectional("value", valueText.textProperty());
+        parameterBean.bindBidirectional("nature", natureChoiceBox.valueProperty(), ParameterNature.class);
+        parameterBean.bindBidirectional("valueSource", valueSourceChoiceBox.valueProperty(), ParameterValueSource.class);
+        parameterBean.bindBidirectional("valueReference", valueReferenceText.textProperty());
+        parameterBean.bindBidirectional("isReferenceValueOverridden", isReferenceValueOverriddenCheckbox.selectedProperty());
+        parameterBean.bindBidirectional("overrideValue", valueOverrideText.textProperty());
+        parameterBean.bindBidirectional("isExported", isExportedCheckbox.selectedProperty());
+        parameterBean.bindBidirectional("exportReference", exportReferenceText.textProperty());
+        parameterBean.bindBidirectional("description", descriptionText.textProperty());
     }
 
     public Project getProject() {
@@ -125,12 +140,15 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     public ParameterModel getParameterModel() {
-        return parameterModel;
+        return parameterBean.getBean();
     }
 
     public void setParameterModel(ParameterModel parameterModel) {
-        this.parameterModel = parameterModel;
-        Platform.runLater(this::updateView);
+        if (parameterBean == null) {
+            parameterBean = new BeanPathAdapter<>(parameterModel);
+        } else {
+            parameterBean.setBean(parameterModel);
+        }
     }
 
     public void chooseSource(ActionEvent actionEvent) {
@@ -147,11 +165,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             stage.initOwner(nameText.getScene().getWindow());
             SourceSelectorController controller = loader.getController();
             controller.setModelNode(modelNode);
-            controller.setParameterModel(parameterModel);
+            controller.setParameterBean(parameterBean);
             controller.updateView();
-
             stage.showAndWait();
-            updateReferencesViews();
         } catch (IOException e) {
             logger.error(e);
         }
@@ -162,76 +178,38 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     public void revertChanges(ActionEvent actionEvent) {
-        updateView();
-    }
-
-    private void updateView() {
-        if (parameterModel != null) {
-            nameText.setText(parameterModel.getName());
-            valueText.setText(String.valueOf(parameterModel.getValue()));
-            natureChoiceBox.setValue(parameterModel.getNature());
-            valueSourceChoiceBox.setValue(parameterModel.getValueSource());
-            valueReferenceText.setText(parameterModel.getValueReference());
-            isReferenceValueOverriddenCheckbox.setSelected(parameterModel.getIsReferenceValueOverridden());
-            valueOverrideText.setText(String.valueOf(parameterModel.getOverrideValue()));
-            isExportedCheckbox.setSelected(parameterModel.getIsExported());
-            exportReferenceText.setText(parameterModel.getExportReference());
-            descriptionText.setText(parameterModel.getDescription());
-            propertyPane.setVisible(true);
-        } else {
-            propertyPane.setVisible(false);
-        }
-    }
-
-    private void updateReferencesViews() {
-        if (parameterModel != null) {
-            valueReferenceText.setText(parameterModel.getValueReference());
-            exportReferenceText.setText(parameterModel.getExportReference());
-        }
+        // TODO: reload model from repository
     }
 
     private void updateModel() {
-        if (parameterModel != null) {
-            boolean modified = nameText.getText().equals(parameterModel.getName());
-            parameterModel.setName(nameText.getText());
-            modified |= Double.valueOf(valueText.getText()).equals(parameterModel.getValue());
-            parameterModel.setValue(Double.valueOf(valueText.getText()));
-            modified |= natureChoiceBox.getValue().equals(parameterModel.getNature());
-            parameterModel.setNature(natureChoiceBox.getValue());
-            modified |= valueSourceChoiceBox.getValue().equals(parameterModel.getValueSource());
-            parameterModel.setValueSource(valueSourceChoiceBox.getValue());
-            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                modified |= valueReferenceText.getText() != null && valueReferenceText.getText().equals(parameterModel.getValueReference());
-                parameterModel.setValueReference(valueReferenceText.getText());
-            } else {
-                modified |= parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty();
-                parameterModel.setValueReference("");
-                valueReferenceText.setText("");
+        if (parameterBean != null && project != null) {
+            // TODO: check whether modification were done
+            project.markStudyModified();
+        }
+    }
+
+    //TODO: add possibility for negative values
+    public class NumericTextFieldValidator implements EventHandler<KeyEvent> {
+        final Integer maxLength;
+
+        public NumericTextFieldValidator(Integer maxLength) {
+            this.maxLength = maxLength;
+        }
+
+        @Override
+        public void handle(KeyEvent e) {
+            TextField txt_TextField = (TextField) e.getSource();
+            if (txt_TextField.getText().length() >= maxLength) {
+                e.consume();
             }
-            modified |= isReferenceValueOverriddenCheckbox.isSelected() == parameterModel.getIsReferenceValueOverridden();
-            parameterModel.setIsReferenceValueOverridden(isReferenceValueOverriddenCheckbox.isSelected());
-            if (parameterModel.getIsReferenceValueOverridden()) {
-                modified |= valueOverrideText.getText() != null && Double.valueOf(valueOverrideText.getText()).equals(parameterModel.getOverrideValue());
-                parameterModel.setOverrideValue(Double.valueOf(valueOverrideText.getText()));
+            if (e.getCharacter().matches("[0-9.]")) {
+                if (txt_TextField.getText().contains(".") && e.getCharacter().matches("[.]")) {
+                    e.consume();
+                } else if (txt_TextField.getText().length() == 0 && e.getCharacter().matches("[.]")) {
+                    e.consume();
+                }
             } else {
-                modified |= parameterModel.getOverrideValue() != null;
-                parameterModel.setOverrideValue(null);
-                valueOverrideText.setText("");
-            }
-            modified |= isExportedCheckbox.isSelected() == parameterModel.getIsExported();
-            parameterModel.setIsExported(isExportedCheckbox.isSelected());
-            if (parameterModel.getIsExported()) {
-                modified |= exportReferenceText.getText() != null && exportReferenceText.getText().equals(parameterModel.getExportReference());
-                parameterModel.setExportReference(exportReferenceText.getText());
-            } else {
-                modified |= parameterModel.getExportReference() != null && !parameterModel.getExportReference().isEmpty();
-                parameterModel.setExportReference("");
-                parameterModel.setExportReference("");
-            }
-            modified |= descriptionText.getText() != null && descriptionText.getText().equals(parameterModel.getDescription());
-            parameterModel.setDescription(descriptionText.getText());
-            if (project != null && modified) {
-                project.markStudyModified();
+                e.consume();
             }
         }
     }

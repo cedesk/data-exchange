@@ -163,6 +163,8 @@ public class ModelEditingController implements Initializable {
         addNodeMenuItem.setOnAction(ModelEditingController.this::openParameterHistoryDialog);
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
+
+        parameterEditor.setVisible(false);
     }
 
     private ContextMenu makeStructureTreeContextMenu() {
