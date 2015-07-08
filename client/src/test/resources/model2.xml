@@ -1,68 +1,255 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<systemModel name="SkoltechSat">
+<systemModel name="Spacecraft 28">
     <parameters>
-        <parameter name="parameter 1" value="47.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
-        <parameter name="parameter 2" value="23.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
+        <parameter name="parameter1" value="85.0" nature="INPUT" valueSource="REFERENCE" isExported="true" isReferenceValueOverridden="true" overrideValue="68.0">
+            <valueReference></valueReference>
+            <exportReference></exportReference>
+            <description></description>
+        </parameter>
+        <parameter name="parameter2" value="24.0" nature="INPUT" valueSource="MANUAL" isExported="true" isReferenceValueOverridden="false">
+            <exportReference></exportReference>
+            <description></description>
+        </parameter>
     </parameters>
     <subNodes>
         <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Power">
             <parameters>
-                <parameter name="parameter 3" value="46.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
-                <parameter name="parameter 4" value="71.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
+                <parameter name="parameter3" value="65.0" nature="INPUT" valueSource="MANUAL" isExported="false" isReferenceValueOverridden="false">
+                    <description></description>
+                </parameter>
+                <parameter name="parameter4" value="76.0" nature="OUTPUT" valueSource="MANUAL" isExported="false" isReferenceValueOverridden="false">
+                    <description></description>
+                </parameter>
             </parameters>
-            <subNodes/>
+            <subNodes>
+                <subNode xsi:type="elementModel" name="element1">
+                    <parameters>
+                        <parameter name="parameter5" value="7.0" nature="INPUT" valueSource="REFERENCE" isExported="true" isReferenceValueOverridden="true" overrideValue="3.0">
+                            <valueReference></valueReference>
+                            <exportReference></exportReference>
+                            <description></description>
+                        </parameter>
+                        <parameter name="parameter6" value="83.0" nature="INPUT" valueSource="MANUAL" isExported="true" isReferenceValueOverridden="false">
+                            <exportReference></exportReference>
+                            <description></description>
+                        </parameter>
+                    </parameters>
+                    <subNodes>
+                        <subNode xsi:type="instrumentModel" name="instrument2/1">
+                            <parameters>
+                                <parameter name="parameter7" value="95.0" nature="INPUT" valueSource="MANUAL" isExported="true" isReferenceValueOverridden="false">
+                                    <exportReference></exportReference>
+                                    <description></description>
+                                </parameter>
+                                <parameter name="parameter8" value="42.0" nature="INPUT" valueSource="MANUAL" isExported="true" isReferenceValueOverridden="false">
+                                    <exportReference></exportReference>
+                                    <description></description>
+                                </parameter>
+                            </parameters>
+                        </subNode>
+                    </subNodes>
+                </subNode>
+            </subNodes>
         </subNode>
         <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="AOCS">
             <parameters>
-                <parameter name="parameter 9" value="83.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
-                <parameter name="parameter 10" value="75.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
+                <parameter name="parameter9" value="60.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="true" overrideValue="32.0">
+                    <valueReference></valueReference>
+                    <description></description>
+                </parameter>
+                <parameter name="parameter10" value="0.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="true" overrideValue="80.0">
+                    <valueReference></valueReference>
+                    <description></description>
+                </parameter>
             </parameters>
             <subNodes>
-                <subNode xsi:type="elementModel" name="MagneticTorquer">
+                <subNode xsi:type="elementModel" name="element2">
                     <parameters>
-                        <parameter name="powerConsumption" value="0.04" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
+                        <parameter name="parameter11" value="99.0" nature="OUTPUT" valueSource="MANUAL" isExported="false" isReferenceValueOverridden="false">
+                            <description></description>
+                        </parameter>
+                        <parameter name="parameter12" value="64.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="false">
+                            <valueReference></valueReference>
+                            <description></description>
+                        </parameter>
                     </parameters>
-                    <subNodes/>
-                </subNode>
-                <subNode xsi:type="elementModel" name="ReactionWheel">
-                    <parameters>
-                        <parameter name="powerConsumption" value="0.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
-                    </parameters>
-                    <subNodes/>
+                    <subNodes>
+                        <subNode xsi:type="instrumentModel" name="instrument3/2">
+                            <parameters>
+                                <parameter name="parameter13" value="6.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="true" overrideValue="62.0">
+                                    <valueReference></valueReference>
+                                    <description></description>
+                                </parameter>
+                                <parameter name="parameter14" value="88.0" nature="OUTPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="false">
+                                    <valueReference></valueReference>
+                                    <description></description>
+                                </parameter>
+                            </parameters>
+                        </subNode>
+                    </subNodes>
                 </subNode>
             </subNodes>
         </subNode>
         <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Thermal">
             <parameters>
-                <parameter name="parameter 15" value="78.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
-                <parameter name="parameter 16" value="49.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
+                <parameter name="parameter15" value="64.0" nature="INPUT" valueSource="MANUAL" isExported="true" isReferenceValueOverridden="false">
+                    <exportReference></exportReference>
+                    <description></description>
+                </parameter>
+                <parameter name="parameter16" value="19.0" nature="OUTPUT" valueSource="MANUAL" isExported="false" isReferenceValueOverridden="false">
+                    <description></description>
+                </parameter>
             </parameters>
-            <subNodes/>
+            <subNodes>
+                <subNode xsi:type="elementModel" name="element3">
+                    <parameters>
+                        <parameter name="parameter17" value="59.0" nature="OUTPUT" valueSource="REFERENCE" isExported="true" isReferenceValueOverridden="true" overrideValue="29.0">
+                            <valueReference></valueReference>
+                            <exportReference></exportReference>
+                            <description></description>
+                        </parameter>
+                        <parameter name="parameter18" value="35.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="true" overrideValue="11.0">
+                            <valueReference></valueReference>
+                            <description></description>
+                        </parameter>
+                    </parameters>
+                    <subNodes>
+                        <subNode xsi:type="instrumentModel" name="instrument4/3">
+                            <parameters>
+                                <parameter name="parameter19" value="26.0" nature="INPUT" valueSource="MANUAL" isExported="false" isReferenceValueOverridden="false">
+                                    <description></description>
+                                </parameter>
+                                <parameter name="parameter20" value="78.0" nature="INPUT" valueSource="MANUAL" isExported="false" isReferenceValueOverridden="false">
+                                    <description></description>
+                                </parameter>
+                            </parameters>
+                        </subNode>
+                    </subNodes>
+                </subNode>
+            </subNodes>
         </subNode>
         <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Orbit">
             <parameters>
-                <parameter name="parameter 21" value="23.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
-                <parameter name="parameter 22" value="96.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
+                <parameter name="parameter21" value="5.0" nature="INPUT" valueSource="REFERENCE" isExported="true" isReferenceValueOverridden="true" overrideValue="19.0">
+                    <valueReference></valueReference>
+                    <exportReference></exportReference>
+                    <description></description>
+                </parameter>
+                <parameter name="parameter22" value="85.0" nature="INPUT" valueSource="MANUAL" isExported="false" isReferenceValueOverridden="false">
+                    <description></description>
+                </parameter>
             </parameters>
-            <subNodes/>
+            <subNodes>
+                <subNode xsi:type="elementModel" name="element4">
+                    <parameters>
+                        <parameter name="parameter23" value="68.0" nature="OUTPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="false">
+                            <valueReference></valueReference>
+                            <description></description>
+                        </parameter>
+                        <parameter name="parameter24" value="39.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="true" overrideValue="87.0">
+                            <valueReference></valueReference>
+                            <description></description>
+                        </parameter>
+                    </parameters>
+                    <subNodes>
+                        <subNode xsi:type="instrumentModel" name="instrument5/4">
+                            <parameters>
+                                <parameter name="parameter25" value="3.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="false">
+                                    <valueReference></valueReference>
+                                    <description></description>
+                                </parameter>
+                                <parameter name="parameter26" value="47.0" nature="INPUT" valueSource="MANUAL" isExported="false" isReferenceValueOverridden="false">
+                                    <description></description>
+                                </parameter>
+                            </parameters>
+                        </subNode>
+                    </subNodes>
+                </subNode>
+            </subNodes>
         </subNode>
         <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Payload">
             <parameters>
-                <parameter name="parameter 27" value="6.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
-                <parameter name="parameter 28" value="14.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
+                <parameter name="parameter27" value="25.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="true" overrideValue="78.0">
+                    <valueReference></valueReference>
+                    <description></description>
+                </parameter>
+                <parameter name="parameter28" value="26.0" nature="INPUT" valueSource="REFERENCE" isExported="true" isReferenceValueOverridden="true" overrideValue="85.0">
+                    <valueReference></valueReference>
+                    <exportReference></exportReference>
+                    <description></description>
+                </parameter>
             </parameters>
-            <subNodes/>
+            <subNodes>
+                <subNode xsi:type="elementModel" name="element5">
+                    <parameters>
+                        <parameter name="parameter29" value="74.0" nature="OUTPUT" valueSource="REFERENCE" isExported="true" isReferenceValueOverridden="true" overrideValue="80.0">
+                            <valueReference></valueReference>
+                            <exportReference></exportReference>
+                            <description></description>
+                        </parameter>
+                        <parameter name="parameter30" value="24.0" nature="INPUT" valueSource="MANUAL" isExported="false" isReferenceValueOverridden="false">
+                            <description></description>
+                        </parameter>
+                    </parameters>
+                    <subNodes>
+                        <subNode xsi:type="instrumentModel" name="instrument6/5">
+                            <parameters>
+                                <parameter name="parameter31" value="76.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="false">
+                                    <valueReference></valueReference>
+                                    <description></description>
+                                </parameter>
+                                <parameter name="parameter32" value="87.0" nature="INPUT" valueSource="MANUAL" isExported="true" isReferenceValueOverridden="false">
+                                    <exportReference></exportReference>
+                                    <description></description>
+                                </parameter>
+                            </parameters>
+                        </subNode>
+                    </subNodes>
+                </subNode>
+            </subNodes>
         </subNode>
-        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Communication">
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Communication2">
             <parameters>
-                <parameter name="parameter 33" value="61.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
-                <parameter name="parameter 34" value="71.0" valueSource="MANUAL" nature="INTERNAL" isExported="false"/>
+                <parameter name="parameter33" value="37.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="false">
+                    <valueReference></valueReference>
+                    <description></description>
+                </parameter>
+                <parameter name="parameter34" value="36.0" nature="INPUT" valueSource="REFERENCE" isExported="true" isReferenceValueOverridden="true" overrideValue="93.0">
+                    <valueReference></valueReference>
+                    <exportReference></exportReference>
+                    <description></description>
+                </parameter>
             </parameters>
-            <subNodes/>
-        </subNode>
-        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Mission2">
-            <parameters/>
-            <subNodes/>
+            <subNodes>
+                <subNode xsi:type="elementModel" name="element6">
+                    <parameters>
+                        <parameter name="parameter35" value="15.0" nature="INPUT" valueSource="REFERENCE" isExported="true" isReferenceValueOverridden="false">
+                            <valueReference></valueReference>
+                            <exportReference></exportReference>
+                            <description></description>
+                        </parameter>
+                        <parameter name="parameter36" value="5.0" nature="INPUT" valueSource="REFERENCE" isExported="false" isReferenceValueOverridden="false">
+                            <valueReference></valueReference>
+                            <description></description>
+                        </parameter>
+                    </parameters>
+                    <subNodes>
+                        <subNode xsi:type="instrumentModel" name="instrument7/6">
+                            <parameters>
+                                <parameter name="parameter37" value="60.0" nature="INPUT" valueSource="REFERENCE" isExported="true" isReferenceValueOverridden="false">
+                                    <valueReference></valueReference>
+                                    <exportReference></exportReference>
+                                    <description></description>
+                                </parameter>
+                                <parameter name="parameter38" value="13.0" nature="INPUT" valueSource="MANUAL" isExported="true" isReferenceValueOverridden="false">
+                                    <exportReference></exportReference>
+                                    <description></description>
+                                </parameter>
+                            </parameters>
+                        </subNode>
+                    </subNodes>
+                </subNode>
+            </subNodes>
         </subNode>
     </subNodes>
 </systemModel>
