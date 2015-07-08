@@ -71,7 +71,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         parameters.add(parameter);
     }
 
-    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent")
     public List<ParameterModel> getParameters() {
         return parameters;
     }
@@ -81,7 +81,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     }
 
     @Transient
-    private Map<String, ParameterModel> getParameterMap() {
+    public Map<String, ParameterModel> getParameterMap() {
         Map<String, ParameterModel> parameterModelMap = getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getName, Function.identity())
         );
