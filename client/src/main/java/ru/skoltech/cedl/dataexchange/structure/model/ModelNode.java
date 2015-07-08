@@ -89,7 +89,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     }
 
     //TODO: fix EAGER
-    @OneToMany(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent")
     public List<ExternalModel> getExternalModels() {
         return externalModels;
     }
