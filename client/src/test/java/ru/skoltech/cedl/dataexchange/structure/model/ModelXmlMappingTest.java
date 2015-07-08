@@ -1,21 +1,21 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Created by D.Knoll on 13.05.2015.
  */
-public class ModelCompareTest {
-
+public class ModelXmlMappingTest {
 
     private SystemModel m1;
 
@@ -38,28 +38,39 @@ public class ModelCompareTest {
         URL url2 = this.getClass().getResource("/model2.xml");
         File file2 = new File(url2.getFile());
         m2 = fs.loadSystemModel(file2);
-
     }
 
     @Test
     public void compareModelsLoadedFromSameFile() {
-        assertTrue(m1.equals(m3));
+        Assert.assertTrue(m1.equals(m3));
     }
 
     @Test
     public void compareModelsLoadedFromSimilarFiles() {
-        assertTrue(m1.equals(m3));
+        Assert.assertTrue(m1.equals(m3));
 
         boolean equals = m1.equals(m2);
         assertFalse(equals);
 
-        ModelNode missionNode1 = m1.getSubNodesMap().get("Mission");
-        ModelNode missionNode2 = m2.getSubNodesMap().get("Mission2");
+        ModelNode missionNode1 = m1.getSubNodesMap().get("Communication");
+        ModelNode missionNode2 = m2.getSubNodesMap().get("Communication2");
 
         m1.removeSubNode(missionNode1);
         m2.removeSubNode(missionNode2);
 
-        assertTrue(m1.equals(m2));
+        Assert.assertTrue(m1.equals(m2));
     }
 
+    @Test
+    public void exportXmlAndReimport() throws IOException {
+        SystemModel s1 = DummySystemBuilder.getSystemModel(4);
+        FileStorage fs = new FileStorage();
+
+        File file = new File("target", "DummySystemModel.xml");
+        fs.storeSystemModel(s1, file);
+
+        SystemModel s2 = fs.loadSystemModel(file);
+
+        Assert.assertEquals(s1, s2);
+    }
 }

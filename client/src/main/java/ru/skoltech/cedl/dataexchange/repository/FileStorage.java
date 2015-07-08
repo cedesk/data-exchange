@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
@@ -56,6 +57,9 @@ public class FileStorage {
         modelNode.setParent(parent);
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             parameterModel.setParent(modelNode);
+        }
+        for (ExternalModel externalModel : modelNode.getExternalModels()) {
+            externalModel.setParent(modelNode);
         }
         if (modelNode instanceof CompositeModelNode) {
             CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
