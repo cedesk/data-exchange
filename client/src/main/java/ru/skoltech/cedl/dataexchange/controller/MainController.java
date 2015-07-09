@@ -64,12 +64,6 @@ public class MainController implements Initializable {
     public Label statusbarLabel;
 
     @FXML
-    public CheckBox statusbarRepositoryNewer;
-
-    @FXML
-    public CheckBox workingCopyModified;
-
-    @FXML
     public Label studyNameLabel;
 
     @FXML
@@ -199,7 +193,6 @@ public class MainController implements Initializable {
             }
         });
         BooleanBinding repositoryNewer = Bindings.greaterThan(project.latestRepositoryModificationProperty(), project.latestLoadedModificationProperty());
-        statusbarRepositoryNewer.selectedProperty().bind(repositoryNewer);
         repositoryNewerIndicator.activeStateProperty().bind(repositoryNewer);
 
         project.addRepositoryStateObserver(new Observer() {
