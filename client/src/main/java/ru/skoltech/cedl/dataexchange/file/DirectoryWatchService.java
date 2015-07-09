@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.file;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -33,25 +34,25 @@ public interface DirectoryWatchService {
         /**
          * Called when the file is created.
          *
-         * @param filePath The file path.
+         * @param createdFile The file path.
          */
-        default void onFileCreate(String filePath) {
+        default void onFileCreate(File createdFile) {
         }
 
         /**
          * Called when the file is modified.
          *
-         * @param filePath The file path.
+         * @param modifiedFile The file path.
          */
-        default void onFileModify(String filePath) {
+        default void onFileModify(File modifiedFile) {
         }
 
         /**
          * Called when the file is deleted.
          *
-         * @param filePath The file path.
+         * @param deletedFile The file path.
          */
-        default void onFileDelete(String filePath) {
+        default void onFileDelete(File deletedFile) {
         }
     }
 }
