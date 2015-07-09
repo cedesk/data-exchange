@@ -5,6 +5,8 @@ import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
 
 import java.awt.*;
 import java.io.File;
@@ -13,6 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -89,7 +93,8 @@ public class ExternalModelFileUtil {
         String nodePath = makePath(externalModel);
         File projectDataDir = ProjectContext.getINSTANCE().getProjectDataDir();
         File nodeDir = new File(projectDataDir, nodePath);
-        return new File(nodeDir, externalModel.getName());
+        String rectifiedFileName = externalModel.getName().replace(' ', '_');
+        return new File(nodeDir, rectifiedFileName);
     }
 
     private static String makePath(ExternalModel externalModel) {
@@ -114,5 +119,32 @@ public class ExternalModelFileUtil {
                 logger.error("Error opening spreadsheet with default editor.", e);
             }
         }
+    }
+
+    public static List<ParameterUpdate> retrieveParameterUpdates(ExternalModel externalModel) {
+        ModelNode modelNode = externalModel.getParent();
+        List<ParameterUpdate> updates = new LinkedList<>();
+        ExternalModelEvaluator evaluator = ExternalModelEvaluatorFactory.getEvaluator(externalModel);
+        for (ParameterModel parameterModel : modelNode.getParameters()) {
+            // check whether parameter references external model
+            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+                if (parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty()) {
+                    String[] components = parameterModel.getValueReference().split(":");
+                    if (externalModel.getName().equals(components[1])) {
+                        try {
+                            Double value = evaluator.getValue(components[2]);
+                            //TODO: if(parameterModel.getValue() notEqual value)
+                            ParameterUpdate parameterUpdate = new ParameterUpdate(parameterModel, value);
+                            updates.add(parameterUpdate);
+                        } catch (ExternalModelException e) {
+                            logger.error("unable to evaluate from: " + parameterModel.getValueReference());
+                        }
+                    }
+                } else {
+                    logger.warn("parameter " + modelNode.getNodePath() + "\\" + parameterModel.getName() + " has empty valueReference");
+                }
+            }
+        }
+        return updates;
     }
 }
