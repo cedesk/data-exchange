@@ -17,9 +17,12 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import javafx.util.converter.DoubleStringConverter;
 import org.apache.log4j.Logger;
+import org.controlsfx.control.Notifications;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
@@ -93,6 +96,8 @@ public class ModelEditingController implements Initializable {
     private BooleanProperty selectedNodeCanHaveChildren = new SimpleBooleanProperty(true);
 
     private Project project;
+
+    private Window appWindow;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -421,6 +426,13 @@ public class ModelEditingController implements Initializable {
         return structureTree.getSelectionModel().getSelectedItem();
     }
 
+    public Window getAppWindow() {
+        if (appWindow == null) {
+            appWindow = structureTree.getScene().getWindow();
+        }
+        return appWindow;
+    }
+
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
@@ -485,7 +497,9 @@ public class ModelEditingController implements Initializable {
             //TODO: update view
             Double value = parameterUpdate.getValue();
             String nodePath = parameterModel.getParent().getNodePath() + "\\" + parameterModel.getName();
-            StatusLogger.getInstance().log(nodePath + " has been updated! (" + String.valueOf(value) + ")");
+            String message = nodePath + " has been updated! (" + String.valueOf(value) + ")";
+            logger.info(message);
+            UserNotifications.showNotification(getAppWindow(), "Parameter Updated", message);
         }
     }
 }
