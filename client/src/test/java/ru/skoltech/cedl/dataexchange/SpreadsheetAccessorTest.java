@@ -3,7 +3,7 @@ package ru.skoltech.cedl.dataexchange;
 import org.apache.poi.ss.usermodel.Cell;
 import org.junit.Assert;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetAccessor;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetAccessor;
 
 import java.io.IOException;
 import java.io.InputStream;

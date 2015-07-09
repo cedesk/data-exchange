@@ -42,14 +42,15 @@ public class ExternalModelFileUtil {
 
     public static File cacheFile(ExternalModel externalModel) throws IOException {
         Objects.requireNonNull(externalModel);
-        File file = getExternalModelFile(externalModel);
+        File file = getFilePathInCache(externalModel);
         StorageUtils.makeDirectory(file.getParentFile());
         ExternalModelCacheState state = getCacheState(externalModel);
         switch (state) {
             case NOT_CACHED:
             case CACHED_OUTDATED: {
-                // TODO: handle file opend by other process
+                // TODO: handle file opened by other process
                 if (file.canWrite() || !file.exists()) {
+                    logger.debug("caching: " + file.getAbsolutePath());
                     Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
                 } else {
                     logger.error("file in local cache (" + file.getPath() + ") is not writable!");
@@ -57,18 +58,14 @@ public class ExternalModelFileUtil {
                 break;
             }
             case CACHED_UP_TO_DATE:
-                // nothing to do
+                logger.debug("using cached file: " + file.getAbsolutePath());
         }
         return file;
     }
 
-    public static File getCachedFile(ExternalModel externalModel) {
-        return getExternalModelFile(externalModel);
-    }
-
     public static ExternalModelCacheState getCacheState(ExternalModel externalModel) {
         Objects.requireNonNull(externalModel);
-        File file = getExternalModelFile(externalModel);
+        File file = getFilePathInCache(externalModel);
         if (file.exists() && externalModel.getLastModification() != null) {
             boolean newerInRepository = file.lastModified() < externalModel.getLastModification(); // FIX: imprecise
             if (newerInRepository) {
@@ -80,7 +77,14 @@ public class ExternalModelFileUtil {
         return ExternalModelCacheState.NOT_CACHED;
     }
 
-    private static File getExternalModelFile(ExternalModel externalModel) {
+    /**
+     * This method only forms the full path where the external model would be cached.<br/>
+     * It does not actually assure the file nor the folder exist.
+     *
+     * @param externalModel
+     * @return a file of the location where the external model would be stored.
+     */
+    public static File getFilePathInCache(ExternalModel externalModel) {
         String nodePath = makePath(externalModel);
         File projectDataDir = ProjectContext.getINSTANCE().getProjectDataDir();
         File nodeDir = new File(projectDataDir, nodePath);

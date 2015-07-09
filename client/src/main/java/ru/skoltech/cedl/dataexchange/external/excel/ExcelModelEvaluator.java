@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelEvaluator;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetAccessor;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
 import java.io.File;
@@ -63,7 +62,7 @@ public class ExcelModelEvaluator implements ExternalModelEvaluator {
     private InputStream getAttachmentAsStream() throws IOException {
         switch (ExternalModelFileUtil.getCacheState(externalModel)) {
             case CACHED_UP_TO_DATE:
-                File cachedFile = ExternalModelFileUtil.getCachedFile(externalModel);
+                File cachedFile = ExternalModelFileUtil.getFilePathInCache(externalModel);
                 return new FileInputStream(cachedFile);
             case CACHED_OUTDATED:
                 File writtenFile = ExternalModelFileUtil.cacheFile(externalModel); // FIX: potentially we overwrite local modifications made between caching and a concurrent update in the repository.

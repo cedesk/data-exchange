@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.external;
 
+import ru.skoltech.cedl.dataexchange.external.excel.ExcelModelEvaluator;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
 /**
