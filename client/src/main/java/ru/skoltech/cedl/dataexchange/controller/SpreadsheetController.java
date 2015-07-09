@@ -10,7 +10,7 @@ import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetFactory;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 

@@ -16,7 +16,7 @@ import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 import ru.skoltech.cedl.dataexchange.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetFactory;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;

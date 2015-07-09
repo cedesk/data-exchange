@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange.external;
+package ru.skoltech.cedl.dataexchange.external.excel;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
