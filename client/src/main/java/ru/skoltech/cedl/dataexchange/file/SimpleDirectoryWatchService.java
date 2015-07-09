@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.file;
 
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
@@ -9,6 +10,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -109,17 +111,20 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
             }
 
             WatchEvent<Path> pathEvent = cast(event);
-            Path file = pathEvent.context();
+            Path filePath = pathEvent.context();
+            Path dirPath = getDirPath(key);
+
+            File file = new File(dirPath.toFile(), filePath.toString());
 
             if (eventKind.equals(ENTRY_CREATE)) {
-                matchedListeners(getDirPath(key), file)
-                        .forEach(listener -> listener.onFileCreate(file.toString()));
+                matchedListeners(dirPath, filePath)
+                        .forEach(listener -> listener.onFileCreate(file));
             } else if (eventKind.equals(ENTRY_MODIFY)) {
-                matchedListeners(getDirPath(key), file)
-                        .forEach(listener -> listener.onFileModify(file.toString()));
+                matchedListeners(dirPath, filePath)
+                        .forEach(listener -> listener.onFileModify(file));
             } else if (eventKind.equals(ENTRY_DELETE)) {
-                matchedListeners(getDirPath(key), file)
-                        .forEach(listener -> listener.onFileDelete(file.toString()));
+                matchedListeners(dirPath, filePath)
+                        .forEach(listener -> listener.onFileDelete(file));
             }
         }
     }
@@ -198,7 +203,12 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
         while (mIsRunning.get()) {
             WatchKey key;
             try {
-                key = mWatchService.take();
+                key = mWatchService.poll(100, TimeUnit.MICROSECONDS);
+                if (key == null && mIsRunning.get()) {
+                    continue;
+                } else if (!mIsRunning.get()) {
+                    break;
+                }
             } catch (InterruptedException e) {
                 logger.info(
                         DirectoryWatchService.class.getSimpleName()
