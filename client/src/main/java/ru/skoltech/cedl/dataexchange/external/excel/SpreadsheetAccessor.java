@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange.links;
+package ru.skoltech.cedl.dataexchange.external.excel;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;

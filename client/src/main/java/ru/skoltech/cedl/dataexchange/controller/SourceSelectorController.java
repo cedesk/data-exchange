@@ -15,10 +15,9 @@ import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 import ru.skoltech.cedl.dataexchange.SpreadsheetCoordinates;
-import ru.skoltech.cedl.dataexchange.links.SpreadsheetFactory;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.external.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
@@ -105,7 +104,7 @@ public class SourceSelectorController implements Initializable {
             // TODO: store to a project directory
             // TODO: check whether file needs to be overwritten
             // TODO: check whether file is open
-            spreadsheetFile = ExternalModelUtil.toFile(externalModel, StorageUtils.getAppDir());
+            spreadsheetFile = ExternalModelFileUtil.cacheFile(externalModel);
         } catch (IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);
             return;

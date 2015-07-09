@@ -26,9 +26,11 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
-import ru.skoltech.cedl.dataexchange.links.SpreadsheetAccessor;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelEvaluator;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelEvaluatorFactory;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
@@ -38,7 +40,6 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -373,7 +374,7 @@ public class ModelEditingController implements Initializable {
             } else {
                 externalModelFilePath.setText(externalModelFile.getAbsolutePath());
                 try {
-                    ExternalModel externalModel = ExternalModelUtil.fromFile(externalModelFile, selectedItem.getValue());
+                    ExternalModel externalModel = ExternalModelFileUtil.fromFile(externalModelFile, selectedItem.getValue());
                     selectedItem.getValue().addExternalModel(externalModel);
                     Dialogues.showWarning("The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!", "The file is now under CEDESK version control.");
                     project.markStudyModified();
@@ -401,7 +402,7 @@ public class ModelEditingController implements Initializable {
             // TODO: check whether file is open
             List<ExternalModel> externalModels = getSelectedTreeItem().getValue().getExternalModels();
             if (externalModels.size() > 0) { // FIX
-                spreadsheetFile = ExternalModelUtil.cacheFile(externalModels.get(0));
+                spreadsheetFile = ExternalModelFileUtil.cacheFile(externalModels.get(0));
             }
         } catch (IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);
@@ -423,27 +424,23 @@ public class ModelEditingController implements Initializable {
 
     private void updateParameterValuesFromExternalModel(ModelNode modelNode) {
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
-            InputStream inputStream = externalModel.getAttachmentAsStream();
-            try (SpreadsheetAccessor spreadsheetAccessor = new SpreadsheetAccessor(inputStream, 0)) {
-                for (ParameterModel parameterModel : modelNode.getParameters()) {
-                    if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                        if (parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty()) {
-                            String[] components = parameterModel.getValueReference().split(":");
-                            if (externalModel.getName().equals(components[1])) {
-                                Double value = spreadsheetAccessor.getNumericValue(components[2]);
-                                if (value != null) {
-                                    parameterModel.setValue(value);
-                                } else {
-                                    logger.error("invalid value from: " + parameterModel.getValueReference());
-                                }
+            ExternalModelEvaluator evaluator = ExternalModelEvaluatorFactory.getEvaluator(externalModel);
+            for (ParameterModel parameterModel : modelNode.getParameters()) {
+                if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+                    if (parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty()) {
+                        String[] components = parameterModel.getValueReference().split(":");
+                        if (externalModel.getName().equals(components[1])) {
+                            try {
+                                Double value = evaluator.getValue(components[2]);
+                                parameterModel.setValue(value);
+                            } catch (ExternalModelException e) {
+                                logger.error("unable to evaluate from: " + parameterModel.getValueReference());
                             }
-                        } else {
-                            logger.warn("parameter " + modelNode.getNodePath() + "\\" + parameterModel.getName() + " has empty valueReference");
                         }
+                    } else {
+                        logger.warn("parameter " + modelNode.getNodePath() + "\\" + parameterModel.getName() + " has empty valueReference");
                     }
                 }
-            } catch (IOException e) {
-                logger.error("error opening spreadsheet.", e);
             }
         }
     }

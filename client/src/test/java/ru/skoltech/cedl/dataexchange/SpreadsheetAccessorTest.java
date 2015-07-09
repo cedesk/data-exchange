@@ -3,7 +3,7 @@ package ru.skoltech.cedl.dataexchange;
 import org.apache.poi.ss.usermodel.Cell;
 import org.junit.Assert;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.links.SpreadsheetAccessor;
+import ru.skoltech.cedl.dataexchange.external.SpreadsheetAccessor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +15,7 @@ public class SpreadsheetAccessorTest {
 
     @Test
     public void readCells() throws IOException {
-        InputStream inputStream = this.getClass().getResourceAsStream("/testsheet.xls");
+        InputStream inputStream = this.getClass().getResourceAsStream("/attachment.xls");
 
         SpreadsheetAccessor spreadsheetAccessor = new SpreadsheetAccessor(inputStream, 0);
 

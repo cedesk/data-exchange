@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange.links;
+package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.poi.ss.usermodel.Cell;
 

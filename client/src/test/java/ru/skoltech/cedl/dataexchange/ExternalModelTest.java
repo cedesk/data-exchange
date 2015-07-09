@@ -5,10 +5,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModelUtil;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.File;
@@ -40,7 +40,7 @@ public class ExternalModelTest {
         SystemModel testSat = new SystemModel("testSat");
         databaseStorage.storeSystemModel(testSat);
 
-        ExternalModel externalModel = ExternalModelUtil.fromFile(file, testSat);
+        ExternalModel externalModel = ExternalModelFileUtil.fromFile(file, testSat);
 
         System.err.println("before: " + externalModel.getId());
         ExternalModel externalModel1 = databaseStorage.storeExternalModel(externalModel);

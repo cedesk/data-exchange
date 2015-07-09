@@ -1,7 +1,9 @@
-package ru.skoltech.cedl.dataexchange.structure;
+package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 
 import java.io.File;
@@ -15,9 +17,9 @@ import java.util.Objects;
 /**
  * Created by dknoll on 02/07/15.
  */
-public class ExternalModelUtil {
+public class ExternalModelFileUtil {
 
-    private static Logger logger = Logger.getLogger(ExternalModelUtil.class);
+    private static Logger logger = Logger.getLogger(ExternalModelFileUtil.class);
 
     public static ExternalModel fromFile(File file, ModelNode parent) throws IOException {
         Path path = Paths.get(file.getAbsolutePath());
@@ -41,36 +43,46 @@ public class ExternalModelUtil {
     public static File cacheFile(ExternalModel externalModel) throws IOException {
         Objects.requireNonNull(externalModel);
         File file = getExternalModelFile(externalModel);
-        if (file.exists()) {
-            boolean newerInRepository = file.lastModified() < externalModel.getLastModification(); // FIX: imprecise
-            if (newerInRepository) {
-                if (file.canWrite()) {
+        StorageUtils.makeDirectory(file.getParentFile());
+        ExternalModelCacheState state = getCacheState(externalModel);
+        switch (state) {
+            case NOT_CACHED:
+            case CACHED_OUTDATED: {
+                // TODO: handle file opend by other process
+                if (file.canWrite() || !file.exists()) {
                     Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
                 } else {
                     logger.error("file in local cache (" + file.getPath() + ") is not writable!");
                 }
-            } else {
-                logger.error("file in local cache (" + file.getPath() + ") is newer than in the repository!");
+                break;
             }
-        } else {
-            if (file.canWrite()) {
-                Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
-            } else {
-                logger.error("file in local cache (" + file.getPath() + ") is not writable!");
-            }
+            case CACHED_UP_TO_DATE:
+                // nothing to do
         }
         return file;
     }
 
-    public static boolean isCached(ExternalModel externalModel, boolean readOnly) {
+    public static File getCachedFile(ExternalModel externalModel) {
+        return getExternalModelFile(externalModel);
+    }
+
+    public static ExternalModelCacheState getCacheState(ExternalModel externalModel) {
         Objects.requireNonNull(externalModel);
         File file = getExternalModelFile(externalModel);
-        return file.exists() && file.canRead() && (readOnly || file.canWrite());
+        if (file.exists() && externalModel.getLastModification() != null) {
+            boolean newerInRepository = file.lastModified() < externalModel.getLastModification(); // FIX: imprecise
+            if (newerInRepository) {
+                return ExternalModelCacheState.CACHED_OUTDATED;
+            } else {
+                return ExternalModelCacheState.CACHED_UP_TO_DATE;
+            }
+        }
+        return ExternalModelCacheState.NOT_CACHED;
     }
 
     private static File getExternalModelFile(ExternalModel externalModel) {
         String nodePath = makePath(externalModel);
-        File projectDataDir = ProjectContext.getINSTANCE().getProjectDataDir(); // TODO: maybe include owningModel.NodePath
+        File projectDataDir = ProjectContext.getINSTANCE().getProjectDataDir();
         File nodeDir = new File(projectDataDir, nodePath);
         return new File(nodeDir, externalModel.getName());
     }
