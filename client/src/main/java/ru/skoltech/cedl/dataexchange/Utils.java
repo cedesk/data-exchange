@@ -9,6 +9,10 @@ import java.util.*;
  */
 public class Utils {
 
+    public static final DateFormat TIME_AND_DATE_FOR_FILENAMES = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+
+    public static final DateFormat TIME_AND_DATE_FOR_USER_INTERFACE = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     public static String getUserName() {
         String userName = System.getProperty("user.name");
         return userName.toLowerCase();
@@ -16,8 +20,7 @@ public class Utils {
 
     public static String getFormattedDateAndTime() {
         Date now = new Date();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
-        return dateFormat.format(now);
+        return TIME_AND_DATE_FOR_FILENAMES.format(now);
     }
 
     public static <T extends Comparable<T>> Set<T> symmetricDiffTwoLists(List<T> l1,
