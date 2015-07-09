@@ -6,20 +6,21 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.StudyFactory;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.sql.Timestamp;
+import java.util.Iterator;
 import java.util.Observer;
+import java.util.function.Predicate;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -47,6 +48,8 @@ public class Project {
     private UserManagement userManagement;
 
     private User currentUser;
+
+    private ExternalModelFileWatcher externalModelFileWatcher = new ExternalModelFileWatcher();
 
     public Project() {
         this(DEFAULT_PROJECT_NAME);
@@ -175,8 +178,6 @@ public class Project {
         Study study = null;
         try {
             study = repository.loadStudy(projectName);
-            Timestamp latestMod = study.getSystemModel().findLatestModification();
-            latestLoadedModification.setValue(latestMod.getTime());
         } catch (RepositoryException e) {
             logger.error("Study not found!");
         } catch (Exception e) {
@@ -184,6 +185,9 @@ public class Project {
         }
         if (study != null) {
             setStudy(study);
+            Timestamp latestMod = getSystemModel().findLatestModification();
+            latestLoadedModification.setValue(latestMod.getTime());
+            initializeWatchedExternalModels();
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         }
         return study != null;
@@ -222,6 +226,7 @@ public class Project {
     @Override
     public void finalize() throws Throwable {
         repository.close();
+        externalModelFileWatcher.close();
         super.finalize();
     }
 
@@ -233,6 +238,7 @@ public class Project {
 
     public void importSystemModel(SystemModel systemModel) {
         reinitializeProject(systemModel);
+        initializeWatchedExternalModels();
     }
 
     private void reinitializeProject(SystemModel systemModel) {
@@ -241,6 +247,7 @@ public class Project {
         study.setSystemModel(systemModel);
         study.setName(systemModel.getName());
         setRepositoryStudy(null);
+        externalModelFileWatcher.clear();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
 
         UserRoleManagement userRoleManagement;
@@ -267,5 +274,24 @@ public class Project {
 
     public Repository getRepository() {
         return repository;
+    }
+
+    public void addExternalModelFileWatcher(ExternalModel externalModel) {
+        externalModelFileWatcher.add(externalModel);
+    }
+
+    private void initializeWatchedExternalModels() {
+        Predicate<ModelNode> accessChecker = new Predicate<ModelNode>() {
+            @Override
+            public boolean test(ModelNode modelNode) {
+                return true;
+                //TODO: change to UserRoleUtil.checkAccess(modelNode, getUser(), getUserRoleManagement());
+            }
+        };
+        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), accessChecker);
+        while (iterator.hasNext()) {
+            ExternalModel externalModel = iterator.next();
+            addExternalModelFileWatcher(externalModel);
+        }
     }
 }
