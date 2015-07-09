@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.apache.log4j.Logger;
@@ -36,11 +37,12 @@ public class StatusLogger {
         } else {
             logger.info(msg);
         }
-        try {
-            lastMessage.setValue(msg);
-        } catch (Exception e) {
-            // ignore
-        }
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                lastMessage.setValue(msg);
+            }
+        });
     }
 
     public void log(String msg) {

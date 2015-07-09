@@ -23,10 +23,15 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
-import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
+import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNodeFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
@@ -36,6 +41,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Created by D.Knoll on 20.03.2015.
@@ -155,22 +161,6 @@ public class ModelEditingController implements Initializable {
         parameterTable.setContextMenu(parameterContextMenu);
 
         parameterEditor.setVisible(false);
-
-        project.addExternalModelChangeObserver(new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                ExternalModel externalModel = (ExternalModel) arg;
-                List<ParameterUpdate> parameterUpdates = ExternalModelFileUtil.retrieveParameterUpdates(externalModel);
-                for (ParameterUpdate parameterUpdate : parameterUpdates) {
-                    parameterUpdate.apply();
-                    //TODO: update view
-                    ParameterModel parameterModel = parameterUpdate.getParameterModel();
-                    Double value = parameterUpdate.getValue();
-                    String nodePath = parameterModel.getParent().getNodePath() + "\\" + parameterModel.getName();
-                    StatusLogger.getInstance().log(nodePath + " has been updated! (" + String.valueOf(value) + ")");
-                }
-            }
-        });
     }
 
     private ContextMenu makeStructureTreeContextMenu() {
@@ -189,6 +179,14 @@ public class ModelEditingController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
+
+        project.addExternalModelChangeObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                ExternalModel externalModel = (ExternalModel) arg;
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, new ParameterUpdateListener());
+            }
+        });
     }
 
     private void updateParameterTable(TreeItem<ModelNode> treeItem) {
@@ -414,20 +412,8 @@ public class ModelEditingController implements Initializable {
 
     public void reloadExternalModel(ActionEvent actionEvent) {
         ModelNode modelNode = getSelectedTreeItem().getValue();
-        updateParameterValuesFromExternalModel(modelNode);
-    }
-
-    private void updateParameterValuesFromExternalModel(ModelNode modelNode) {
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
-            List<ParameterUpdate> parameterUpdates = ExternalModelFileUtil.retrieveParameterUpdates(externalModel);
-            for(ParameterUpdate parameterUpdate: parameterUpdates) {
-                parameterUpdate.apply();
-                //TODO: update view
-                ParameterModel parameterModel = parameterUpdate.getParameterModel();
-                Double value = parameterUpdate.getValue();
-                String nodePath = parameterModel.getParent().getNodePath() + "\\" + parameterModel.getName();
-                StatusLogger.getInstance().log(nodePath + " has been updated! (" + String.valueOf(value) + ")");
-            }
+            ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, new ParameterUpdateListener());
         }
     }
 
@@ -489,6 +475,17 @@ public class ModelEditingController implements Initializable {
                     event.getTablePosition().getRow());
             setterMethod.accept(parameterModel, event.getNewValue());
             project.markStudyModified();
+        }
+    }
+
+    private class ParameterUpdateListener implements Consumer<ParameterUpdate> {
+        @Override
+        public void accept(ParameterUpdate parameterUpdate) {
+            ParameterModel parameterModel = parameterUpdate.getParameterModel();
+            //TODO: update view
+            Double value = parameterUpdate.getValue();
+            String nodePath = parameterModel.getParent().getNodePath() + "\\" + parameterModel.getName();
+            StatusLogger.getInstance().log(nodePath + " has been updated! (" + String.valueOf(value) + ")");
         }
     }
 }
