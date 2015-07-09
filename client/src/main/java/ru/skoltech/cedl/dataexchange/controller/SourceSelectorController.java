@@ -25,6 +25,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
@@ -77,9 +78,6 @@ public class SourceSelectorController implements Initializable {
         spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
     }
 
-    public void close() {
-    }
-
     public void refreshTable(ActionEvent actionEvent) {
         try {
             if (externalModel.getAttachment() != null) {
@@ -99,26 +97,12 @@ public class SourceSelectorController implements Initializable {
     }
 
     public void openSpreadsheet(ActionEvent actionEvent) {
-        File spreadsheetFile = null;
-        try {
-            // TODO: store to a project directory
-            // TODO: check whether file needs to be overwritten
-            // TODO: check whether file is open
-            spreadsheetFile = ExternalModelFileUtil.cacheFile(externalModel);
-        } catch (IOException ioe) {
-            logger.error("Error saving external model to spreadsheet.", ioe);
-            return;
-        }
-        if (spreadsheetFile != null) {
-            try {
-                Desktop.getDesktop().edit(spreadsheetFile);
-            } catch (Exception e) {
-                logger.error("Error opening spreadsheet with default editor.", e);
-            }
-        }
+        Objects.requireNonNull(externalModel);
+        ExternalModelFileUtil.openOnDesktop(externalModel);
     }
 
     public void acceptAndClose(ActionEvent actionEvent) {
+        chooseSelectedCell(actionEvent);
         Node source = (Node) actionEvent.getSource();
         Stage stage = (Stage) source.getScene().getWindow();
         stage.close();

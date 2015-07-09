@@ -367,6 +367,7 @@ public class DatabaseStorage implements Repository {
                 '}';
     }
 
+    @Override
     public ExternalModel storeExternalModel(ExternalModel externalModel) throws RepositoryException {
         EntityManager entityManager = null;
         try {
@@ -391,6 +392,7 @@ public class DatabaseStorage implements Repository {
         return externalModel;
     }
 
+    @Override
     public ExternalModel loadExternalModel(long externalModelId) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         ExternalModel externalModel = null;
