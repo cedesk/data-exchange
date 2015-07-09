@@ -120,31 +120,4 @@ public class ExternalModelFileUtil {
             }
         }
     }
-
-    public static List<ParameterUpdate> retrieveParameterUpdates(ExternalModel externalModel) {
-        ModelNode modelNode = externalModel.getParent();
-        List<ParameterUpdate> updates = new LinkedList<>();
-        ExternalModelEvaluator evaluator = ExternalModelEvaluatorFactory.getEvaluator(externalModel);
-        for (ParameterModel parameterModel : modelNode.getParameters()) {
-            // check whether parameter references external model
-            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                if (parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty()) {
-                    String[] components = parameterModel.getValueReference().split(":");
-                    if (externalModel.getName().equals(components[1])) {
-                        try {
-                            Double value = evaluator.getValue(components[2]);
-                            //TODO: if(parameterModel.getValue() notEqual value)
-                            ParameterUpdate parameterUpdate = new ParameterUpdate(parameterModel, value);
-                            updates.add(parameterUpdate);
-                        } catch (ExternalModelException e) {
-                            logger.error("unable to evaluate from: " + parameterModel.getValueReference());
-                        }
-                    }
-                } else {
-                    logger.warn("parameter " + modelNode.getNodePath() + "\\" + parameterModel.getName() + " has empty valueReference");
-                }
-            }
-        }
-        return updates;
-    }
 }
