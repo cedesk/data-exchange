@@ -6,6 +6,7 @@ import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -94,7 +95,24 @@ public class ExternalModelFileUtil {
     private static String makePath(ExternalModel externalModel) {
         String path = externalModel.getParent().getNodePath();
         path = path.replace(' ', '_');
-        path = path.replace(ModelNode.NODE_SEPARATOR, File.pathSeparator);
+        path = path.replace(ModelNode.NODE_SEPARATOR, File.separator);
         return path;
+    }
+
+    public static void openOnDesktop(ExternalModel externalModel) {
+        File spreadsheetFile = null;
+        try {
+            spreadsheetFile = ExternalModelFileUtil.cacheFile(externalModel);
+        } catch (IOException ioe) {
+            logger.error("Error saving external model to spreadsheet.", ioe);
+            return;
+        }
+        if (spreadsheetFile != null) {
+            try {
+                Desktop.getDesktop().edit(spreadsheetFile);
+            } catch (Exception e) {
+                logger.error("Error opening spreadsheet with default editor.", e);
+            }
+        }
     }
 }
