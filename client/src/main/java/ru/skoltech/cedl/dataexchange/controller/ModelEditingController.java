@@ -12,10 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.*;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
@@ -37,11 +34,9 @@ import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -245,7 +240,7 @@ public class ModelEditingController implements Initializable {
     }
 
     public void addNode(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem, "no item selected in tree view");
 
         if (selectedItem.getValue() instanceof CompositeModelNode) {
@@ -275,7 +270,7 @@ public class ModelEditingController implements Initializable {
     }
 
     public void deleteNode(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem, "no item selected in tree view");
         if (selectedItem.getParent() == null) { // is ROOT
             StatusLogger.getInstance().log("Node can not be deleted!", true);
@@ -295,7 +290,7 @@ public class ModelEditingController implements Initializable {
     }
 
     public void renameNode(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem, "no item selected in tree view");
         ModelNode modelNode = selectedItem.getValue();
         String oldNodeName = modelNode.getName();
@@ -326,7 +321,7 @@ public class ModelEditingController implements Initializable {
     }
 
     public void addParameter(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem, "no item selected in tree view");
 
         Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
@@ -350,7 +345,7 @@ public class ModelEditingController implements Initializable {
     }
 
     public void deleteParameter(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         int selectedParameterIndex = parameterTable.getSelectionModel().getSelectedIndex();
 
         Optional<ButtonType> parameterNameChoice = Dialogues.chooseYesNo("Parameter deletion", "Are you sure you want to delete this parameter?");
@@ -365,18 +360,20 @@ public class ModelEditingController implements Initializable {
     }
 
     public void attachExternalModel(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem);
         File externalModelFile = Dialogues.chooseExternalModelFile();
         if (externalModelFile != null) {
             if (!externalModelFile.isFile() || !externalModelFile.getName().endsWith(".xls")) {
                 Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
             } else {
-                externalModelFilePath.setText(externalModelFile.getAbsolutePath());
                 try {
                     ExternalModel externalModel = ExternalModelFileUtil.fromFile(externalModelFile, selectedItem.getValue());
                     selectedItem.getValue().addExternalModel(externalModel);
-                    Dialogues.showWarning("The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!", "The file is now under CEDESK version control.");
+                    project.storeExternalModel(externalModel);
+                    externalModelFilePath.setText(externalModel.getName());
+                    project.addExternalModelFileWatcher(externalModel);
+                    Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
                     project.markStudyModified();
                 } catch (IOException e) {
                     logger.warn("Unable to import model file.", e);
@@ -386,7 +383,7 @@ public class ModelEditingController implements Initializable {
     }
 
     public void detachExternalModel(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = structureTree.getSelectionModel().getSelectedItem();
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem);
         // TODO: check if external model ist not referenced
         selectedItem.getValue().setExternalModels(null);
@@ -395,25 +392,10 @@ public class ModelEditingController implements Initializable {
     }
 
     public void openExternalModel(ActionEvent actionEvent) {
-        File spreadsheetFile = null;
-        try {
-            // TODO: store to a project directory
-            // TODO: check whether file needs to be overwritten
-            // TODO: check whether file is open
-            List<ExternalModel> externalModels = getSelectedTreeItem().getValue().getExternalModels();
-            if (externalModels.size() > 0) { // FIX
-                spreadsheetFile = ExternalModelFileUtil.cacheFile(externalModels.get(0));
-            }
-        } catch (IOException ioe) {
-            logger.error("Error saving external model to spreadsheet.", ioe);
-            return;
-        }
-        if (spreadsheetFile != null) {
-            try {
-                Desktop.getDesktop().edit(spreadsheetFile);
-            } catch (Exception e) {
-                logger.error("Error opening spreadsheet with default editor.", e);
-            }
+        List<ExternalModel> externalModels = getSelectedTreeItem().getValue().getExternalModels();
+        if (externalModels.size() > 0) { // FIX
+            ExternalModel externalModel = externalModels.get(0);
+            ExternalModelFileUtil.openOnDesktop(externalModel);
         }
     }
 
@@ -449,10 +431,6 @@ public class ModelEditingController implements Initializable {
         return structureTree.getSelectionModel().getSelectedItem();
     }
 
-    private void watchForChanges(ExternalModel externalModel) {
-
-    }
-
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
@@ -480,7 +458,6 @@ public class ModelEditingController implements Initializable {
                     ExternalModel externalModel = externalModels.get(0);
                     externalModelFilePath.setText(externalModel.getName());
                     externalModelPane.setExpanded(true);
-                    watchForChanges(externalModel);
                 } else {
                     externalModelFilePath.setText(null);
                     externalModelPane.setExpanded(false);

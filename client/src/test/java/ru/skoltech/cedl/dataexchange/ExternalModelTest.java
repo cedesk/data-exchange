@@ -4,8 +4,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
@@ -21,16 +21,19 @@ import java.net.URISyntaxException;
  */
 public class ExternalModelTest {
 
-    private DatabaseStorage databaseStorage;
+    private Repository repository;
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        databaseStorage = RepositoryFactory.getTempRepository();
+        repository = RepositoryFactory.getTempRepository();
     }
 
     @After
     public void cleanup() {
-        databaseStorage.close();
+        try {
+            repository.close();
+        } catch (IOException ignore) {
+        }
     }
 
     @Test()
@@ -38,17 +41,17 @@ public class ExternalModelTest {
         File file = new File(this.getClass().getResource("/attachment.xls").toURI());
 
         SystemModel testSat = new SystemModel("testSat");
-        databaseStorage.storeSystemModel(testSat);
+        repository.storeSystemModel(testSat);
 
         ExternalModel externalModel = ExternalModelFileUtil.fromFile(file, testSat);
 
         System.err.println("before: " + externalModel.getId());
-        ExternalModel externalModel1 = databaseStorage.storeExternalModel(externalModel);
+        ExternalModel externalModel1 = repository.storeExternalModel(externalModel);
         long pk = externalModel.getId();
         System.err.println("after: " + pk);
         System.err.println("second: " + externalModel1.getId());
 
-        ExternalModel externalModel2 = databaseStorage.loadExternalModel(pk);
+        ExternalModel externalModel2 = repository.loadExternalModel(pk);
 
         Assert.assertArrayEquals(externalModel1.getAttachment(), externalModel2.getAttachment());
     }

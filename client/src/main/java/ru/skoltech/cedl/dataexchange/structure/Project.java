@@ -294,4 +294,15 @@ public class Project {
             addExternalModelFileWatcher(externalModel);
         }
     }
+
+    public boolean storeExternalModel(ExternalModel externalModel) {
+        try {
+            repository.storeExternalModel(externalModel);
+            // TODO: confirm repo url is wowrking
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error storing external model.");
+        }
+        return false;
+    }
 }

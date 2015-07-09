@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
@@ -36,4 +37,8 @@ public interface Repository extends Closeable {
     String getUrl();
 
     long getLatestVersion(Study study) throws RepositoryException;
+
+    ExternalModel storeExternalModel(ExternalModel externalModel) throws RepositoryException;
+
+    ExternalModel loadExternalModel(long externalModelId) throws RepositoryException;
 }
