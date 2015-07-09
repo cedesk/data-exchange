@@ -25,10 +25,14 @@ import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
@@ -201,9 +205,10 @@ public class MainController implements Initializable {
         project.addRepositoryStateObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
-                newButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
-                loadButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
-                saveButton.setDisable(!project.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE));
+                RepositoryStateMachine stateMachine = (RepositoryStateMachine) o;
+                newButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
+                loadButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
+                saveButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE));
             }
         });
 
@@ -328,5 +333,4 @@ public class MainController implements Initializable {
     public void quit(ActionEvent actionEvent) {
         Platform.exit();
     }
-
 }

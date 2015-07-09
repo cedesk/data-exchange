@@ -23,10 +23,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelEvaluator;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelEvaluatorFactory;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -158,6 +155,22 @@ public class ModelEditingController implements Initializable {
         parameterTable.setContextMenu(parameterContextMenu);
 
         parameterEditor.setVisible(false);
+
+        project.addExternalModelChangeObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                ExternalModel externalModel = (ExternalModel) arg;
+                List<ParameterUpdate> parameterUpdates = ExternalModelFileUtil.retrieveParameterUpdates(externalModel);
+                for (ParameterUpdate parameterUpdate : parameterUpdates) {
+                    parameterUpdate.apply();
+                    //TODO: update view
+                    ParameterModel parameterModel = parameterUpdate.getParameterModel();
+                    Double value = parameterUpdate.getValue();
+                    String nodePath = parameterModel.getParent().getNodePath() + "\\" + parameterModel.getName();
+                    StatusLogger.getInstance().log(nodePath + " has been updated! (" + String.valueOf(value) + ")");
+                }
+            }
+        });
     }
 
     private ContextMenu makeStructureTreeContextMenu() {
@@ -406,23 +419,14 @@ public class ModelEditingController implements Initializable {
 
     private void updateParameterValuesFromExternalModel(ModelNode modelNode) {
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
-            ExternalModelEvaluator evaluator = ExternalModelEvaluatorFactory.getEvaluator(externalModel);
-            for (ParameterModel parameterModel : modelNode.getParameters()) {
-                if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                    if (parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty()) {
-                        String[] components = parameterModel.getValueReference().split(":");
-                        if (externalModel.getName().equals(components[1])) {
-                            try {
-                                Double value = evaluator.getValue(components[2]);
-                                parameterModel.setValue(value);
-                            } catch (ExternalModelException e) {
-                                logger.error("unable to evaluate from: " + parameterModel.getValueReference());
-                            }
-                        }
-                    } else {
-                        logger.warn("parameter " + modelNode.getNodePath() + "\\" + parameterModel.getName() + " has empty valueReference");
-                    }
-                }
+            List<ParameterUpdate> parameterUpdates = ExternalModelFileUtil.retrieveParameterUpdates(externalModel);
+            for(ParameterUpdate parameterUpdate: parameterUpdates) {
+                parameterUpdate.apply();
+                //TODO: update view
+                ParameterModel parameterModel = parameterUpdate.getParameterModel();
+                Double value = parameterUpdate.getValue();
+                String nodePath = parameterModel.getParent().getNodePath() + "\\" + parameterModel.getName();
+                StatusLogger.getInstance().log(nodePath + " has been updated! (" + String.valueOf(value) + ")");
             }
         }
     }

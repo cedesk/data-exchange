@@ -211,12 +211,12 @@ public class Project {
         return repositoryStudy != null;
     }
 
-    public boolean isActionPossible(RepositoryStateMachine.RepositoryActions action) {
-        return repositoryStateMachine.isActionPossible(action);
-    }
-
     public void addRepositoryStateObserver(Observer o) {
         repositoryStateMachine.addObserver(o);
+    }
+
+    public void addExternalModelChangeObserver(Observer o) {
+        externalModelFileWatcher.addObserver(o);
     }
 
     public void markStudyModified() {
