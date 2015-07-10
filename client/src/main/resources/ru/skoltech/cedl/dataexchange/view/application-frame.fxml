@@ -158,11 +158,6 @@
                     <children>
                         <Label fx:id="statusbarLabel" prefHeight="20.0" prefWidth="703.0" text="Statusbar"
                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-                        <CheckBox fx:id="statusbarRepositoryNewer" disable="true" layoutX="713.0" layoutY="2.0"
-                                  mnemonicParsing="false" text="Repository Newer" AnchorPane.bottomAnchor="0.0"
-                                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-                        <CheckBox fx:id="workingCopyModified" disable="true" layoutX="553.0" mnemonicParsing="false"
-                                  text="Local modification" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
                     </children>
                 </AnchorPane>
             </bottom>
