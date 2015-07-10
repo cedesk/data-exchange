@@ -19,14 +19,13 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
-import javafx.util.Duration;
 import javafx.util.converter.DoubleStringConverter;
 import org.apache.log4j.Logger;
-import org.controlsfx.control.Notifications;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.external.ModelUpdate;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
@@ -189,7 +188,7 @@ public class ModelEditingController implements Initializable {
             @Override
             public void update(Observable o, Object arg) {
                 ExternalModel externalModel = (ExternalModel) arg;
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, new ParameterUpdateListener());
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, new ExternalModelUpdateListener(), new ParameterUpdateListener());
             }
         });
     }
@@ -418,7 +417,7 @@ public class ModelEditingController implements Initializable {
     public void reloadExternalModel(ActionEvent actionEvent) {
         ModelNode modelNode = getSelectedTreeItem().getValue();
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
-            ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, new ParameterUpdateListener());
+            ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, new ExternalModelUpdateListener(), new ParameterUpdateListener());
         }
     }
 
@@ -487,6 +486,17 @@ public class ModelEditingController implements Initializable {
                     event.getTablePosition().getRow());
             setterMethod.accept(parameterModel, event.getNewValue());
             project.markStudyModified();
+        }
+    }
+
+    private class ExternalModelUpdateListener implements Consumer<ModelUpdate> {
+        @Override
+        public void accept(ModelUpdate modelUpdate) {
+            ExternalModel externalModel = modelUpdate.getExternalModel();
+            //TODO: update view
+            String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
+            logger.info(message);
+            UserNotifications.showNotification(getAppWindow(), "External model modified", message);
         }
     }
 

@@ -17,8 +17,12 @@ public class ModelUpdateUtil {
 
     private static final Logger logger = Logger.getLogger(ModelUpdateUtil.class);
 
-    public static void applyParameterChangesFromExternalModel(ExternalModel externalModel, Consumer<ParameterUpdate> consumer) {
+    public static void applyParameterChangesFromExternalModel(ExternalModel externalModel, Consumer<ModelUpdate> modelUpdateListener, Consumer<ParameterUpdate> parameterUpdateListener) {
         ModelNode modelNode = externalModel.getParent();
+
+        ModelUpdate modelUpdate = new ModelUpdate(externalModel);
+        modelUpdateListener.accept(modelUpdate);
+
         List<ParameterUpdate> updates = new LinkedList<>();
         ExternalModelEvaluator evaluator = ExternalModelEvaluatorFactory.getEvaluator(externalModel);
         for (ParameterModel parameterModel : modelNode.getParameters()) {
@@ -44,7 +48,7 @@ public class ModelUpdateUtil {
         // APPLY CHANGES
         for (ParameterUpdate parameterUpdate : updates) {
             parameterUpdate.apply();
-            consumer.accept(parameterUpdate);
+            parameterUpdateListener.accept(parameterUpdate);
         }
     }
 }

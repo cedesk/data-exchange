@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.application.Platform;
 import javafx.stage.Window;
 import javafx.util.Duration;
 import org.controlsfx.control.Notifications;
@@ -10,9 +11,11 @@ import org.controlsfx.control.Notifications;
 public class UserNotifications {
 
     public static void showNotification(Window window, String title, String text) {
-        Notifications notifications = Notifications.create();
-        notifications.owner(window).hideAfter(Duration.seconds(5));
-        notifications.title(title).text(text);
-        notifications.showInformation();
+        Platform.runLater(() -> {
+            Notifications notifications = Notifications.create();
+            notifications.owner(window).hideAfter(Duration.seconds(5));
+            notifications.title(title).text(text);
+            notifications.showInformation();
+        });
     }
 }
