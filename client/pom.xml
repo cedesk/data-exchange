@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.skoltech.cedl</groupId>
     <artifactId>dataexchange-client</artifactId>
-    <version>1.4</version>
+    <version>1.5-Snapshot</version>
     <properties>
         <jar.final.name>cedesk-client</jar.final.name>
         <main.class>ru.skoltech.cedl.dataexchange.ClientApplication</main.class>
@@ -16,6 +16,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -51,6 +52,7 @@
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
             <version>2.3.2</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -152,9 +154,10 @@
                         <configuration>
                             <target name="copy native installer to external output directory">
                                 <tstamp>
-                                    <format property="timestamp" pattern="yyyy-MM-dd_HH-mm" />
+                                    <format property="timestamp" pattern="yyyy-MM-dd_HH-mm"/>
                                 </tstamp>
-                                <copy file="${project.build.directory}/jfx/native/CEDESK-${project.version}.exe" tofile="${package.output.dir}/CEDESK-${project.version}_${timestamp}.exe" />
+                                <copy file="${project.build.directory}/jfx/native/CEDESK-${project.version}.exe"
+                                      tofile="${package.output.dir}/CEDESK-${project.version}_${timestamp}.exe"/>
                             </target>
                         </configuration>
                     </execution>
