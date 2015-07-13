@@ -194,16 +194,22 @@ public class ModelEditingController implements Initializable {
     }
 
     private void updateParameterTable(TreeItem<ModelNode> treeItem) {
+        int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
+
         StructureTreeItem item = (StructureTreeItem) treeItem;
         ModelNode modelNode = item.getValue();
         // TODO: fix preparation of remote parameters for display
         modelNode.diffParameters(item.getRemoteValue());
-        viewParameters.displayParameters(modelNode.getParameters());
-
         boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
+        viewParameters.displayParameters(modelNode.getParameters(), !editable);
+
         logger.debug("selected node: " + treeItem.getValue().getNodePath() + ", editable: " + editable);
         parameterTable.setEditable(editable);
         parameterTable.autosize();
+        // TODO: maybe redo selection only if same node
+        if (selectedIndex < parameterTable.getItems().size()) {
+            parameterTable.getSelectionModel().select(selectedIndex);
+        }
     }
 
     private void clearParameterTable() {
@@ -504,7 +510,15 @@ public class ModelEditingController implements Initializable {
         @Override
         public void accept(ParameterUpdate parameterUpdate) {
             ParameterModel parameterModel = parameterUpdate.getParameterModel();
-            //TODO: update view
+            if (parameterTable.getSelectionModel().getSelectedItem() != null &&
+                    parameterTable.getSelectionModel().getSelectedItem().equals(parameterModel)) {
+                parameterEditor.setParameterModel(parameterModel);
+            }
+            if (getSelectedTreeItem() != null &&
+                    getSelectedTreeItem().getValue().equals(parameterModel.getParent())) {
+                updateParameterTable(getSelectedTreeItem());
+            }
+
             Double value = parameterUpdate.getValue();
             String nodePath = parameterModel.getParent().getNodePath() + "\\" + parameterModel.getName();
             String message = nodePath + " has been updated! (" + String.valueOf(value) + ")";

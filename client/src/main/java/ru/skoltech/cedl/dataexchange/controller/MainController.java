@@ -185,7 +185,9 @@ public class MainController implements Initializable {
                     long timeOfModificationInRepository = newValue.longValue();
                     long timeOfModificationLoaded = project.getLatestLoadedModification();
                     boolean repoNewer = timeOfModificationInRepository > timeOfModificationLoaded;
-                    logger.info(timeOfModificationInRepository + " > " + timeOfModificationLoaded + " = " + repoNewer);
+                    String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
+                    String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
+                    logger.info(repoTime + " > " + loadedTime + " = " + repoNewer);
                     if (repoNewer) {
                         updateRemoteModel();
                     }
