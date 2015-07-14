@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure.view;
 
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
@@ -25,11 +26,13 @@ public class ParameterFieldCell extends TextFieldTableCell<ParameterModel, Objec
     @Override
     public void updateItem(Object item, boolean empty) {
         super.updateItem(item, empty);
+        setContentDisplay(ContentDisplay.RIGHT);
+        setGraphicTextGap(4.0);
 
         if (item != null && !empty) {
             setText(item.toString());
             ParameterModel parameterModel = (ParameterModel) getTableRow().getItem();
-            setEditable(parameterModel == null ? false : parameterModel.getValueSource() == ParameterValueSource.MANUAL);
+            setEditable(parameterModel != null && parameterModel.getValueSource() == ParameterValueSource.MANUAL);
             if (parameterModel != null && parameterModel.hasServerChange()) {
                 // set graphical hint
                 ImageView imageView = new ImageView(FLASH_ICON);
@@ -38,9 +41,10 @@ public class ParameterFieldCell extends TextFieldTableCell<ParameterModel, Objec
                 imageView.setSmooth(true);
                 setGraphic(imageView);
                 setGraphicTextGap(8);
+
                 // set tooltip
                 Tooltip tooltip = new Tooltip();
-                tooltip.setText("Server value: " + parameterModel.getServerValue().toString());
+                tooltip.setText("Newer value in repository: " + parameterModel.getServerValue().toString());
                 setTooltip(tooltip);
             } else {
                 setGraphic(null);
