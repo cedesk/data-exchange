@@ -1,10 +1,13 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import org.apache.commons.math3.util.Precision;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by D.Knoll on 12.03.2015.
@@ -217,12 +220,39 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     }
 
     public boolean hasServerChange() {
-        if (getServerValue() != null) {
-            // TODO: account for floating point comparison with imprecision
-            return !getValue().equals(getServerValue());
-        } else {
-            return false;
+        return getServerValue() != null && !Precision.equals(getValue(), getServerValue(), 2);
+    }
+
+    public Map<String, String> diff(ParameterModel p1, ParameterModel p2) {
+        Map<String, String> diff = new HashMap<>();
+        if (!p1.getName().equals(p2.getName())) {
+            diff.put("name", p2.getName());
         }
+        if (!p1.getNature().equals(p2.getNature())) {
+            diff.put("nature", p2.getNature().toString());
+        }
+        if (!p1.getIsExported() == p2.getIsExported()) {
+            diff.put("isExported", String.valueOf(p2.getIsExported()));
+        }
+        if (!p1.getIsReferenceValueOverridden() == p2.getIsReferenceValueOverridden()) {
+            diff.put("isReferenceValueOverridden", String.valueOf(p2.getIsReferenceValueOverridden()));
+        }
+        if (!p1.getValue().equals(p2.getValue())) {
+            diff.put("value", String.valueOf(p2.getValue()));
+        }
+        if (!p1.getOverrideValue().equals(p2.getOverrideValue())) {
+            diff.put("overrideValue", String.valueOf(p2.getOverrideValue()));
+        }
+        if (!p1.getValueSource().equals(p2.getValueSource())) {
+            diff.put("valueSource", String.valueOf(p2.getValueSource()));
+        }
+        if (!p1.getExportReference().equals(p2.getExportReference())) {
+            diff.put("exportReference", String.valueOf(p2.getExportReference()));
+        }
+        if (!p1.getDescription().equals(p2.getDescription())) {
+            diff.put("description", String.valueOf(p2.getDescription()));
+        }
+        return diff;
     }
 
     /*

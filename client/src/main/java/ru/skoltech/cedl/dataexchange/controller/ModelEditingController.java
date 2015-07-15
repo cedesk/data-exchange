@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
+import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -142,9 +143,8 @@ public class ModelEditingController implements Initializable {
         parameterValueColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ParameterModel, Double>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<ParameterModel, Double> event) {
-                ParameterModel parameterModel = event.getTableView().getItems().get(
-                        event.getTablePosition().getRow());
-                if (!event.getOldValue().equals(event.getNewValue())) {
+                ParameterModel parameterModel = event.getRowValue();
+                if (!Precision.equals(event.getOldValue(), event.getNewValue(), 2)) {
                     parameterModel.setValue(event.getNewValue());
                     project.markStudyModified();
                 }
@@ -488,8 +488,7 @@ public class ModelEditingController implements Initializable {
 
         @Override
         public void handle(TableColumn.CellEditEvent<ParameterModel, String> event) {
-            ParameterModel parameterModel = event.getTableView().getItems().get(
-                    event.getTablePosition().getRow());
+            ParameterModel parameterModel = event.getRowValue();
             setterMethod.accept(parameterModel, event.getNewValue());
             project.markStudyModified();
         }
