@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
 
@@ -14,25 +15,28 @@ public class ProjectContext {
 
     private static ProjectContext INSTANCE = new ProjectContext();
 
-    private String projectName;
+    private Project project;
 
     private ProjectContext() {
     }
 
-    public static ProjectContext getINSTANCE() {
+    public static ProjectContext getInstance() {
         return INSTANCE;
     }
 
     public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        logger.debug("SET PROJECT NAME: " + projectName);
-        this.projectName = projectName;
+        return project.getProjectName();
     }
 
     public File getProjectDataDir() {
-        return StorageUtils.getDataDir(projectName);
+        return StorageUtils.getDataDir(getProjectName());
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 }

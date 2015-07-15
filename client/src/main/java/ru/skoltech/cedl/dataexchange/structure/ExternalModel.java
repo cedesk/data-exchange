@@ -89,11 +89,6 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
         this.parent = parent;
     }
 
-    @Transient
-    public InputStream getAttachmentAsStream() {
-        return new ByteArrayInputStream(attachment);
-    }
-
     /*
      * The comparison is done only based on the name, so it enables sorting of external models parameters by name.
      */

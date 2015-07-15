@@ -6,6 +6,8 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
@@ -19,6 +21,7 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Observer;
 import java.util.function.Predicate;
 
@@ -51,6 +54,8 @@ public class Project {
 
     private ExternalModelFileWatcher externalModelFileWatcher = new ExternalModelFileWatcher();
 
+    private ExternalModelFileHandler externalModelFileHandler;
+
     public Project() {
         this(DEFAULT_PROJECT_NAME);
     }
@@ -58,12 +63,13 @@ public class Project {
     public Project(String projectName) {
         this.repository = RepositoryFactory.getDatabaseRepository();
         initialize(projectName);
+        externalModelFileHandler = new ExternalModelFileHandler(this);
     }
 
     private void initialize(String projectName) {
         this.projectName = projectName;
         this.repositoryStateMachine.reset();
-        ProjectContext.getINSTANCE().setProjectName(projectName);
+        ProjectContext.getInstance().setProject(this);
     }
 
     public User getUser() {
@@ -74,6 +80,11 @@ public class Project {
                 logger.warn("No user in application settings found. Assuming admin!");
             }
             currentUser = getUserManagement().findUser(userName);
+            if (currentUser == null) {
+                logger.warn("User not found in user management. Assuming admin!");
+                currentUser = getUserManagement().findUser(UserManagementFactory.ADMIN);
+                Objects.requireNonNull(currentUser);
+            }
         }
         return currentUser;
     }
@@ -162,6 +173,7 @@ public class Project {
             Timestamp latestMod = study.getSystemModel().findLatestModification();
             latestLoadedModification.setValue(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+            storeChangedExternalModels();
             ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException re) {
@@ -172,6 +184,21 @@ public class Project {
             logger.error("Error storing study!", e);
         }
         return false;
+    }
+
+    private void storeChangedExternalModels() {
+        for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
+            ModelNode modelNode = externalModel.getParent();
+            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+            if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
+                logger.debug("storing '" + modelNode.getNodePath() + "' external model '" + externalModel.getName() + "'");
+                storeExternalModel(externalModel);
+            } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
+                // TODO: WARN USER
+                logger.warn(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
+            }
+        }
+        externalModelFileHandler.getChangedExternalModels().clear();
     }
 
     public boolean loadLocalStudy() {
@@ -189,8 +216,27 @@ public class Project {
             latestLoadedModification.setValue(latestMod.getTime());
             initializeWatchedExternalModels();
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+            initializeChangedExternalModels();
         }
         return study != null;
+    }
+
+    private void initializeChangedExternalModels() {
+        externalModelFileHandler.getChangedExternalModels().clear();
+        Iterator<ModelNode> it = getSystemModel().treeIterator();
+        while (it.hasNext()) {
+            ModelNode modelNode = it.next();
+            for (ExternalModel externalModel : modelNode.getExternalModels()) {
+                ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
+                if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
+                    addChangedExternalModel(externalModel);
+                    logger.debug(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has been changed since last store to repository");
+                } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
+                    // TODO: WARN USER
+                    logger.warn(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
+                }
+            }
+        }
     }
 
     public boolean loadRepositoryStudy() {
@@ -291,18 +337,30 @@ public class Project {
         Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), accessChecker);
         while (iterator.hasNext()) {
             ExternalModel externalModel = iterator.next();
-            addExternalModelFileWatcher(externalModel);
+            ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
+            if (cacheState != ExternalModelCacheState.NOT_CACHED) {
+                addExternalModelFileWatcher(externalModel);
+            }
         }
     }
 
     public boolean storeExternalModel(ExternalModel externalModel) {
         try {
             repository.storeExternalModel(externalModel);
-            // TODO: confirm repo url is wowrking
+            // TODO: confirm repo url is working
             return true;
         } catch (RepositoryException e) {
-            logger.error("Error storing external model.");
+            logger.error("Error storing external model: " + externalModel.getParent().getNodePath() + "\\" + externalModel.getName());
         }
         return false;
+    }
+
+    public ExternalModelFileHandler getExternalModelFileHandler() {
+        return externalModelFileHandler;
+    }
+
+    public void addChangedExternalModel(ExternalModel externalModel) {
+        externalModelFileHandler.addChangedExternalModel(externalModel);
+        markStudyModified();
     }
 }

@@ -5,7 +5,6 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.file.DirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.file.SimpleDirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +25,7 @@ public class ExternalModelFileWatcher extends Observable {
     }
 
     public void add(ExternalModel externalModel) {
-        File file = ExternalModelFileUtil.getFilePathInCache(externalModel);
+        File file = ExternalModelFileHandler.getFilePathInCache(externalModel);
         watchedExternalModels.put(file, externalModel);
         String filePattern = file.getName();
         try {

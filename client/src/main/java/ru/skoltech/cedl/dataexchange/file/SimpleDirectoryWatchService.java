@@ -26,11 +26,11 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class SimpleDirectoryWatchService implements DirectoryWatchService, Runnable {
 
     private static final Logger logger = Logger.getLogger(SimpleDirectoryWatchService.class);
-    private final WatchService mWatchService;
-    private final AtomicBoolean mIsRunning;
-    private final ConcurrentMap<WatchKey, Path> mWatchKeyToDirPathMap;
-    private final ConcurrentMap<Path, Set<OnFileChangeListener>> mDirPathToListenersMap;
-    private final ConcurrentMap<OnFileChangeListener, Set<PathMatcher>> mListenerToFilePatternsMap;
+    private final WatchService watchService;
+    private final AtomicBoolean isRunning;
+    private final ConcurrentMap<WatchKey, Path> watchKeyToDirPathMap;
+    private final ConcurrentMap<Path, Set<OnFileChangeListener>> dirPathToListenersMap;
+    private final ConcurrentMap<OnFileChangeListener, Set<PathMatcher>> listenerToFilePatternsMap;
 
     /**
      * A simple no argument constructor for creating a <code>SimpleDirectoryWatchService</code>.
@@ -38,11 +38,11 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
      * @throws IOException If an I/O error occurs.
      */
     private SimpleDirectoryWatchService() throws IOException {
-        mWatchService = FileSystems.getDefault().newWatchService();
-        mIsRunning = new AtomicBoolean(false);
-        mWatchKeyToDirPathMap = newConcurrentMap();
-        mDirPathToListenersMap = newConcurrentMap();
-        mListenerToFilePatternsMap = newConcurrentMap();
+        watchService = FileSystems.getDefault().newWatchService();
+        isRunning = new AtomicBoolean(false);
+        watchKeyToDirPathMap = newConcurrentMap();
+        dirPathToListenersMap = newConcurrentMap();
+        listenerToFilePatternsMap = newConcurrentMap();
     }
 
     public static SimpleDirectoryWatchService getInstance() {
@@ -81,15 +81,15 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
     }
 
     private Path getDirPath(WatchKey key) {
-        return mWatchKeyToDirPathMap.get(key);
+        return watchKeyToDirPathMap.get(key);
     }
 
     private Set<OnFileChangeListener> getListeners(Path dir) {
-        return mDirPathToListenersMap.get(dir);
+        return dirPathToListenersMap.get(dir);
     }
 
     private Set<PathMatcher> getPatterns(OnFileChangeListener listener) {
-        return mListenerToFilePatternsMap.get(listener);
+        return listenerToFilePatternsMap.get(listener);
     }
 
     private Set<OnFileChangeListener> matchedListeners(Path dir, Path file) {
@@ -141,14 +141,14 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
             throw new IllegalArgumentException(dirPath + " is not a directory.");
         }
 
-        if (!mDirPathToListenersMap.containsKey(dir)) {
+        if (!dirPathToListenersMap.containsKey(dir)) {
             // May throw
             WatchKey key = dir.register(
-                    mWatchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE
+                    watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE
             );
 
-            mWatchKeyToDirPathMap.put(key, dir);
-            mDirPathToListenersMap.put(dir, newConcurrentSet());
+            watchKeyToDirPathMap.put(key, dir);
+            dirPathToListenersMap.put(dir, newConcurrentSet());
         }
 
         getListeners(dir).add(listener);
@@ -163,7 +163,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
             patterns.add(matcherForGlobExpression("*")); // Match everything if no filter is found
         }
 
-        mListenerToFilePatternsMap.put(listener, patterns);
+        listenerToFilePatternsMap.put(listener, patterns);
 
         logger.info("Watching files matching " + Arrays.toString(globPatterns)
                 + " under " + dirPath + " for changes.");
@@ -175,7 +175,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
      * @see #stop()
      */
     public void start() {
-        if (mIsRunning.compareAndSet(false, true)) {
+        if (isRunning.compareAndSet(false, true)) {
             Thread runnerThread = new Thread(this, DirectoryWatchService.class.getSimpleName());
             runnerThread.start();
         }
@@ -189,8 +189,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
      * @see #start()
      */
     public void stop() {
-        // Kill thread lazily
-        mIsRunning.set(false);
+        isRunning.set(false);
     }
 
     /**
@@ -200,13 +199,13 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
     public void run() {
         logger.info("Starting file watcher service.");
 
-        while (mIsRunning.get()) {
+        while (isRunning.get()) {
             WatchKey key;
             try {
-                key = mWatchService.poll(100, TimeUnit.MICROSECONDS);
-                if (key == null && mIsRunning.get()) {
+                key = watchService.poll(100, TimeUnit.MICROSECONDS);
+                if (key == null && isRunning.get()) {
                     continue;
-                } else if (!mIsRunning.get()) {
+                } else if (!isRunning.get()) {
                     break;
                 }
             } catch (InterruptedException e) {
@@ -227,14 +226,14 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
             // Reset key to allow further events for this key to be processed.
             boolean valid = key.reset();
             if (!valid) {
-                mWatchKeyToDirPathMap.remove(key);
-                if (mWatchKeyToDirPathMap.isEmpty()) {
+                watchKeyToDirPathMap.remove(key);
+                if (watchKeyToDirPathMap.isEmpty()) {
                     break;
                 }
             }
         }
 
-        mIsRunning.set(false);
+        isRunning.set(false);
         logger.info("Stopping file watcher service.");
     }
 

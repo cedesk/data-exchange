@@ -1,13 +1,12 @@
 package ru.skoltech.cedl.dataexchange.external.excel;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelEvaluator;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -49,7 +48,8 @@ public class ExcelModelEvaluator implements ExternalModelEvaluator {
     private SpreadsheetAccessor getSpreadsheetAccessor() throws ExternalModelException {
         if (spreadsheetAccessor == null) {
             try {
-                InputStream inputStream = getAttachmentAsStream();
+                ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 spreadsheetAccessor = new SpreadsheetAccessor(inputStream, 0);
             } catch (IOException e) {
                 logger.error("unable to open spreadsheet");
@@ -57,18 +57,5 @@ public class ExcelModelEvaluator implements ExternalModelEvaluator {
             }
         }
         return spreadsheetAccessor;
-    }
-
-    private InputStream getAttachmentAsStream() throws IOException {
-        switch (ExternalModelFileUtil.getCacheState(externalModel)) {
-            case CACHED_UP_TO_DATE:
-                File cachedFile = ExternalModelFileUtil.getFilePathInCache(externalModel);
-                return new FileInputStream(cachedFile);
-            case CACHED_OUTDATED:
-                File writtenFile = ExternalModelFileUtil.cacheFile(externalModel); // FIX: potentially we overwrite local modifications made between caching and a concurrent update in the repository.
-                return new FileInputStream(writtenFile);
-            default:
-                return externalModel.getAttachmentAsStream();
-        }
     }
 }
