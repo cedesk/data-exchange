@@ -5,6 +5,8 @@ package ru.skoltech.cedl.dataexchange.external;
  */
 public enum ExternalModelCacheState {
     NOT_CACHED,
-    CACHED_UP_TO_DATE,
-    CACHED_OUTDATED
+    CACHED_CONFLICTING_CHANGES,
+    CACHED_MODIFIED_AFTER_CHECKOUT,
+    CACHED_OUTDATED,
+    CACHED_UP_TO_DATE
 }

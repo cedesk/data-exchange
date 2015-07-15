@@ -4,7 +4,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
@@ -43,7 +43,7 @@ public class ExternalModelTest {
         SystemModel testSat = new SystemModel("testSat");
         repository.storeSystemModel(testSat);
 
-        ExternalModel externalModel = ExternalModelFileUtil.fromFile(file, testSat);
+        ExternalModel externalModel = ExternalModelFileHandler.fromFile(file, testSat);
 
         System.err.println("before: " + externalModel.getId());
         ExternalModel externalModel1 = repository.storeExternalModel(externalModel);

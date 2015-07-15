@@ -9,7 +9,7 @@ import javafx.scene.control.TextField;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
@@ -86,7 +86,7 @@ public class SpreadsheetController implements Initializable {
     public void saveSpreadsheet(ActionEvent actionEvent) {
         DatabaseStorage databaseStorage = null;
         try {
-            ExternalModel externalModel = ExternalModelFileUtil.fromFile(spreadsheetFile, null);
+            ExternalModel externalModel = ExternalModelFileHandler.fromFile(spreadsheetFile, null);
             databaseStorage = (DatabaseStorage) RepositoryFactory.getDatabaseRepository();
             databaseStorage.storeExternalModel(externalModel);
         } catch (Exception ex) {

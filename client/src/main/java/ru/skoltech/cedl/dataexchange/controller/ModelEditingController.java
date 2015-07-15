@@ -23,9 +23,10 @@ import javafx.util.converter.DoubleStringConverter;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdate;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
@@ -389,7 +390,7 @@ public class ModelEditingController implements Initializable {
                 Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
             } else {
                 try {
-                    ExternalModel externalModel = ExternalModelFileUtil.fromFile(externalModelFile, selectedItem.getValue());
+                    ExternalModel externalModel = ExternalModelFileHandler.fromFile(externalModelFile, selectedItem.getValue());
                     selectedItem.getValue().addExternalModel(externalModel);
                     project.storeExternalModel(externalModel);
                     externalModelFilePath.setText(externalModel.getName());
@@ -416,7 +417,8 @@ public class ModelEditingController implements Initializable {
         List<ExternalModel> externalModels = getSelectedTreeItem().getValue().getExternalModels();
         if (externalModels.size() > 0) { // FIX
             ExternalModel externalModel = externalModels.get(0);
-            ExternalModelFileUtil.openOnDesktop(externalModel);
+            ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+            externalModelFileHandler.openOnDesktop(externalModel);
         }
     }
 
@@ -498,6 +500,7 @@ public class ModelEditingController implements Initializable {
         @Override
         public void accept(ModelUpdate modelUpdate) {
             ExternalModel externalModel = modelUpdate.getExternalModel();
+            project.addChangedExternalModel(externalModel);
             //TODO: update view
             String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
             logger.info(message);

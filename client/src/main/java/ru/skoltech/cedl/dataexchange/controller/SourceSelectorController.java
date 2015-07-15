@@ -14,16 +14,15 @@ import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.SpreadsheetCoordinates;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileUtil;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -81,7 +80,9 @@ public class SourceSelectorController implements Initializable {
     public void refreshTable(ActionEvent actionEvent) {
         try {
             if (externalModel.getAttachment() != null) {
-                Grid grid = SpreadsheetFactory.getGrid(externalModel.getAttachmentAsStream(), 0);
+                ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+                Grid grid = SpreadsheetFactory.getGrid(inputStream, 0);
                 spreadsheetView.setGrid(grid);
             }
         } catch (Exception ex) {
@@ -98,7 +99,8 @@ public class SourceSelectorController implements Initializable {
 
     public void openSpreadsheet(ActionEvent actionEvent) {
         Objects.requireNonNull(externalModel);
-        ExternalModelFileUtil.openOnDesktop(externalModel);
+        ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+        externalModelFileHandler.openOnDesktop(externalModel);
     }
 
     public void acceptAndClose(ActionEvent actionEvent) {
