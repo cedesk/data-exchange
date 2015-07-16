@@ -19,6 +19,7 @@ import ru.skoltech.cedl.dataexchange.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
@@ -43,27 +44,30 @@ public class SourceSelectorController implements Initializable {
     @FXML
     private SpreadsheetView spreadsheetView;
 
-    private ModelNode modelNode;
-
-    private BeanPathAdapter<ParameterModel> parameterModel;
+    private BeanPathAdapter<ParameterModel> parameterBean;
 
     private ExternalModel externalModel;
 
-    public ModelNode getModelNode() {
-        return modelNode;
-    }
-
-    public void setModelNode(ModelNode modelNode) {
-        this.modelNode = modelNode;
-        attachmentChooser.setItems(FXCollections.observableArrayList(modelNode.getExternalModels()));
-    }
-
     public void setParameterBean(BeanPathAdapter<ParameterModel> parameterBean) {
-        this.parameterModel = parameterBean;
-        java.util.List<ExternalModel> externalModels = parameterBean.getBean().getParent().getExternalModels();
-        ExternalModel externalModel = externalModels.get(0);        // FIX: find external model used by the parameter
-        attachmentChooser.setValue(externalModel);
-        parameterBean.bindBidirectional("valueReference", referenceText.textProperty());
+        this.parameterBean = parameterBean;
+        ParameterModel parameterModel = parameterBean.getBean();
+        ModelNode modelNode = parameterModel.getParent();
+
+        ExternalModel externalModel = null;
+        if (parameterModel.getValueReference() != null && parameterModel.getValueReference().getExternalModel() != null) {
+            externalModel = parameterModel.getValueReference().getExternalModel();
+        } else if (modelNode.getExternalModels().size() > 0) {
+            externalModel = modelNode.getExternalModels().get(0);
+            attachmentChooser.setItems(FXCollections.observableArrayList(modelNode.getExternalModels()));
+        }
+        if (externalModel == null) {
+            Dialogues.showWarning("No external models available.", "This system node does not have externals models attached, which could be referenced.");
+            referenceText.getScene().getWindow().hide();
+        } else {
+            attachmentChooser.setValue(externalModel);
+            parameterBean.bindBidirectional("valueReference", referenceText.textProperty());
+            updateView();
+        }
     }
 
     @Override
@@ -92,8 +96,12 @@ public class SourceSelectorController implements Initializable {
 
     public void chooseSelectedCell(ActionEvent actionEvent) {
         TablePosition focusedCell = spreadsheetView.getSelectionModel().getFocusedCell();
-        if (focusedCell != null) {
-            referenceText.setText(externalModel.toString() + ":" + SpreadsheetCoordinates.fromPosition(focusedCell));
+        if (focusedCell != null && focusedCell.getRow() >= 0) {
+            String coordinates = SpreadsheetCoordinates.fromPosition(focusedCell);
+            ExternalModelReference emr = new ExternalModelReference(externalModel, coordinates);
+            parameterBean.unBindBidirectional("valueReference", referenceText.textProperty());
+            parameterBean.getBean().setValueReference(emr);
+            parameterBean.bindBidirectional("valueReference", referenceText.textProperty());
         }
     }
 
@@ -112,5 +120,9 @@ public class SourceSelectorController implements Initializable {
 
     public void updateView() {
         this.refreshTable(null);
+    }
+
+    public boolean canShow() {
+        return externalModel != null;
     }
 }

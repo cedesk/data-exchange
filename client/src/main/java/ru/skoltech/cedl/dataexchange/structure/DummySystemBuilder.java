@@ -71,7 +71,10 @@ public class DummySystemBuilder {
         }
         if (Math.random() > .5) {
             parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-            parameterModel.setValueReference("");
+            ExternalModelReference valueReference = new ExternalModelReference();
+            valueReference.setExternalModel(null);
+            valueReference.setTarget("A1");
+            parameterModel.setValueReference(valueReference);
             if (Math.random() > .5) {
                 parameterModel.setIsReferenceValueOverridden(true);
                 parameterModel.setOverrideValue(getRandomDouble());
