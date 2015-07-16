@@ -154,10 +154,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(nameText.getScene().getWindow());
             SourceSelectorController controller = loader.getController();
-            controller.setModelNode(parameterBean.getBean().getParent());
             controller.setParameterBean(parameterBean);
-            controller.updateView();
-            stage.showAndWait();
+            if(controller.canShow()) {
+                stage.showAndWait();
+            }
         } catch (IOException e) {
             logger.error(e);
         }

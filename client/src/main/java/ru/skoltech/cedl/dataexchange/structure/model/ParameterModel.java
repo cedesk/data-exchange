@@ -45,7 +45,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @XmlAttribute
     private ParameterValueSource valueSource = DEFAULT_VALUE_SOURCE;
 
-    private String valueReference;
+    private ExternalModelReference valueReference;
 
     @XmlAttribute
     private boolean isReferenceValueOverridden = DEFAULT_OVERRIDDEN;
@@ -161,11 +161,16 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.valueSource = valueSource;
     }
 
-    public String getValueReference() {
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "externalModel", column = @Column(nullable = true)),
+            @AttributeOverride(name = "target", column = @Column(nullable = true))
+    })
+    public ExternalModelReference getValueReference() {
         return valueReference;
     }
 
-    public void setValueReference(String valueReference) {
+    public void setValueReference(ExternalModelReference valueReference) {
         this.valueReference = valueReference;
     }
 

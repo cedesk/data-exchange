@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
@@ -28,16 +29,16 @@ public class ModelUpdateUtil {
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             // check whether parameter references external model
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                if (parameterModel.getValueReference() != null && !parameterModel.getValueReference().isEmpty()) {
-                    String[] components = parameterModel.getValueReference().split(":");
-                    if (externalModel.getName().equals(components[1])) {
+                ExternalModelReference valueReference = parameterModel.getValueReference();
+                if (valueReference != null) {
+                    if (externalModel.equals(valueReference.getExternalModel())) {
                         try {
-                            Double value = evaluator.getValue(components[2]);
+                            Double value = evaluator.getValue(valueReference.getTarget());
                             //TODO: if(parameterModel.getValue() notEqual value)
                             ParameterUpdate parameterUpdate = new ParameterUpdate(parameterModel, value);
                             updates.add(parameterUpdate);
                         } catch (ExternalModelException e) {
-                            logger.error("unable to evaluate from: " + parameterModel.getValueReference());
+                            logger.error("unable to evaluate from: " + valueReference);
                         }
                     }
                 } else {
