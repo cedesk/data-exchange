@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
@@ -19,7 +20,9 @@ import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
+import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Observer;
@@ -227,7 +230,7 @@ public class Project {
         while (it.hasNext()) {
             ModelNode modelNode = it.next();
             for (ExternalModel externalModel : modelNode.getExternalModels()) {
-                ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
+                ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
                 if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
                     addChangedExternalModel(externalModel);
                     logger.debug(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has been changed since last store to repository");
@@ -346,10 +349,17 @@ public class Project {
 
     public boolean storeExternalModel(ExternalModel externalModel) {
         try {
+            ExternalModelFileHandler.updateFromFile(externalModel);
             repository.storeExternalModel(externalModel);
+            String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
+            ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
+            long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
+            String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
+            logger.debug("stored external model '" + externalModel.getName() +
+                    "' (model: " + modelModification + ", " + fileModification + ")");
             // TODO: confirm repo url is working
             return true;
-        } catch (RepositoryException e) {
+        } catch (RepositoryException | IOException e) {
             logger.error("Error storing external model: " + externalModel.getParent().getNodePath() + "\\" + externalModel.getName());
         }
         return false;

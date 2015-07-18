@@ -33,7 +33,6 @@ public class ExternalModelReference {
         this.externalModel = externalModel;
     }
 
-    @Column(nullable = false)
     public String getTarget() {
         return target;
     }

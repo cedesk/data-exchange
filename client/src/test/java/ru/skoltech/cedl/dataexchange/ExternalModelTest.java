@@ -43,7 +43,7 @@ public class ExternalModelTest {
         SystemModel testSat = new SystemModel("testSat");
         repository.storeSystemModel(testSat);
 
-        ExternalModel externalModel = ExternalModelFileHandler.fromFile(file, testSat);
+        ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
 
         System.err.println("before: " + externalModel.getId());
         ExternalModel externalModel1 = repository.storeExternalModel(externalModel);
@@ -54,5 +54,14 @@ public class ExternalModelTest {
         ExternalModel externalModel2 = repository.loadExternalModel(pk);
 
         Assert.assertArrayEquals(externalModel1.getAttachment(), externalModel2.getAttachment());
+    }
+
+    @Test
+    public void testSetLastModified() throws IOException {
+        long time = 1316137362000L;
+        File file = new File("foo.test");
+        file.createNewFile();
+        file.setLastModified(time);
+        Assert.assertEquals(time, file.lastModified());
     }
 }
