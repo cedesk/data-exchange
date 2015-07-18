@@ -25,7 +25,7 @@
                                         <Menu mnemonicParsing="false" text="Project">
                                             <items>
                                                 <MenuItem mnemonicParsing="false" onAction="#newProject" text="New..."/>
-                                                <MenuItem mnemonicParsing="false" onAction="#loadProject" text="Load"/>
+                                                <MenuItem mnemonicParsing="false" onAction="#loadProject" text="Load..."/>
                                                 <MenuItem mnemonicParsing="false" onAction="#saveProject" text="Save"/>
                                                 <SeparatorMenuItem mnemonicParsing="false"/>
                                                 <MenuItem mnemonicParsing="false" onAction="#importProject"
@@ -57,8 +57,8 @@
                                         <Button fx:id="newButton" mnemonicParsing="true" onAction="#newProject"
                                                 text="New"/>
                                         <Separator orientation="VERTICAL"/>
-                                        <Button fx:id="loadButton" mnemonicParsing="true" onAction="#loadProject"
-                                                text="Load"/>
+                                        <Button fx:id="loadButton" mnemonicParsing="true" onAction="#reloadProject"
+                                                text="Reload"/>
                                         <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="true"
                                                 onAction="#saveProject" text="Save"/>
                                     </items>

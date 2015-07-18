@@ -2,12 +2,15 @@ package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 
 import java.io.File;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -141,5 +144,14 @@ public class Dialogues {
         alert.setTitle(title);
         alert.setContentText(text);
         alert.showAndWait();
+    }
+
+    public static Optional<String> chooseStudy(List<String> studyNames) {
+        Objects.requireNonNull(studyNames);
+        ChoiceDialog<String> dlg = new ChoiceDialog<>(studyNames.get(0), studyNames);
+        dlg.setTitle("Choose a Study");
+        dlg.setHeaderText("Choose from available studies");
+        dlg.setContentText("Choose");
+        return dlg.showAndWait();
     }
 }
