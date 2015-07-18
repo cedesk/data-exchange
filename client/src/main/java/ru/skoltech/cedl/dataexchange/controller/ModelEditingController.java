@@ -32,10 +32,7 @@ import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNodeFactory;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
@@ -390,7 +387,7 @@ public class ModelEditingController implements Initializable {
                 Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
             } else {
                 try {
-                    ExternalModel externalModel = ExternalModelFileHandler.fromFile(externalModelFile, selectedItem.getValue());
+                    ExternalModel externalModel = ExternalModelFileHandler.newFromFile(externalModelFile, selectedItem.getValue());
                     selectedItem.getValue().addExternalModel(externalModel);
                     project.storeExternalModel(externalModel);
                     externalModelFilePath.setText(externalModel.getName());
@@ -407,15 +404,28 @@ public class ModelEditingController implements Initializable {
     public void detachExternalModel(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem);
-        // TODO: check if external model ist not referenced
-        selectedItem.getValue().setExternalModels(null);
-        externalModelFilePath.setText(null);
-        project.markStudyModified();
+        ModelNode modelNode = selectedItem.getValue();
+        ExternalModel externalModel = modelNode.getExternalModels().get(0); // TODO: allow more external models
+        boolean isReferenced = false;
+        for (ParameterModel parameterModel : modelNode.getParameters()) {
+            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE &&
+                    parameterModel.getValueReference() != null &&
+                    parameterModel.getValueReference().getExternalModel() == externalModel) {
+                isReferenced = true;
+            }
+        }
+        if (!isReferenced) {
+            modelNode.getExternalModels().remove(0);
+            externalModelFilePath.setText(null);
+            project.markStudyModified();
+        } else {
+            Dialogues.showError("External Model is not removable.", "The given external model is referenced by a parameter, therefor it can not be removed.");
+        }
     }
 
     public void openExternalModel(ActionEvent actionEvent) {
         List<ExternalModel> externalModels = getSelectedTreeItem().getValue().getExternalModels();
-        if (externalModels.size() > 0) { // FIX
+        if (externalModels.size() > 0) { // TODO: allow more external models
             ExternalModel externalModel = externalModels.get(0);
             ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
             externalModelFileHandler.openOnDesktop(externalModel);
@@ -463,7 +473,7 @@ public class ModelEditingController implements Initializable {
                 selectedNodeCanHaveChildren.setValue(!(newValue.getValue() instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(newValue.getValue().isRootNode());
                 List<ExternalModel> externalModels = newValue.getValue().getExternalModels();
-                if (externalModels.size() > 0) { // FIX show all
+                if (externalModels.size() > 0) { // TODO: allow more external models
                     ExternalModel externalModel = externalModels.get(0);
                     externalModelFilePath.setText(externalModel.getName());
                     externalModelPane.setExpanded(true);

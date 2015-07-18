@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -13,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -32,14 +34,21 @@ public class ExternalModelFileHandler {
         this.project = project;
     }
 
-    public static ExternalModel fromFile(File file, ModelNode parent) throws IOException {
+    public static ExternalModel newFromFile(File file, ModelNode parent) throws IOException {
         Path path = Paths.get(file.getAbsolutePath());
         String fileName = file.getName();
         ExternalModel externalModel = new ExternalModel();
         externalModel.setName(fileName);
         externalModel.setAttachment(Files.readAllBytes(path));
         externalModel.setParent(parent);
-        // TODO: must store to DB
+        return externalModel;
+    }
+
+    public static ExternalModel updateFromFile(ExternalModel externalModel) throws IOException {
+        File file = getFilePathInCache(externalModel);
+        Path path = Paths.get(file.getAbsolutePath());
+        String fileName = file.getName();
+        externalModel.setAttachment(Files.readAllBytes(path));
         return externalModel;
     }
 
@@ -57,13 +66,7 @@ public class ExternalModelFileHandler {
         File file = getFilePathInCache(externalModel);
         Long modelLastStored = externalModel.getLastModification();
         if (file.exists() && modelLastStored != null) {
-            File tsFile = getTimestampFile(file);
-            long checkoutTime = 0;
-            if (tsFile.exists()) {
-                checkoutTime = tsFile.lastModified();
-            } else {
-                logger.error("external model is missing checkout timestamp");
-            }
+            long checkoutTime = getCheckoutTime(file);
             long fileLastModified = file.lastModified();
             boolean newerInRepository = modelLastStored > checkoutTime;
             boolean locallyModified = checkoutTime < fileLastModified;
@@ -82,6 +85,14 @@ public class ExternalModelFileHandler {
             }
         }
         return cacheState;
+    }
+
+    public static long getCheckoutTime(File file) {
+        File tsFile = getTimestampFile(file);
+        if (!tsFile.exists()) {
+            logger.error("external model is missing checkout timestamp");
+        }
+        return tsFile.lastModified();
     }
 
     private static File getTimestampFile(File file) {
@@ -122,8 +133,7 @@ public class ExternalModelFileHandler {
                 if (file.canWrite() || !file.exists()) {
                     logger.debug("caching: " + file.getAbsolutePath());
                     Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
-                    File tsFile = getTimestampFile(file);
-                    tsFile.createNewFile(); // create file marking the checkout time of the ExternalModel file
+                    updateCheckoutTimestamp(externalModel);
                     project.addExternalModelFileWatcher(externalModel);
                 } else {
                     logger.error("file in local cache (" + file.getPath() + ") is not writable!");
@@ -179,5 +189,25 @@ public class ExternalModelFileHandler {
                 logger.error("Error opening spreadsheet with default editor.", e);
             }
         }
+    }
+
+    public static void updateCheckoutTimestamp(ExternalModel externalModel) {
+        File file = getFilePathInCache(externalModel);
+        File tsFile = getTimestampFile(file);
+        try {
+            if (!tsFile.exists()) {
+                tsFile.createNewFile(); // create file marking the checkout time of the ExternalModel file
+            }
+            boolean modified = tsFile.setLastModified(System.currentTimeMillis());
+            logger.debug(tsFile.getAbsolutePath() +
+                    " (" + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(tsFile.lastModified())) + ") " +
+                    modified);
+        } catch (IOException e) {
+            logger.warn("problem setting the external model checkout timestamp.");
+        }
+    }
+
+    public static long getCheckoutTime(ExternalModel externalModel) {
+        return getCheckoutTime(getFilePathInCache(externalModel));
     }
 }
