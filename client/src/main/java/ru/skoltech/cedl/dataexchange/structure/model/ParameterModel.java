@@ -224,6 +224,11 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.parent = parent;
     }
 
+    @Transient
+    public String getNodePath() {
+        return parent.getNodePath() + "::" + name;
+    }
+
     public boolean hasServerChange() {
         return getServerValue() != null && !Precision.equals(getValue(), getServerValue(), 2);
     }

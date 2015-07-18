@@ -42,7 +42,7 @@ public class ModelUpdateUtil {
                         }
                     }
                 } else {
-                    logger.warn("parameter " + modelNode.getNodePath() + "\\" + parameterModel.getName() + " has empty valueReference");
+                    logger.warn("parameter " + parameterModel.getNodePath() + " has empty valueReference");
                 }
             }
         }

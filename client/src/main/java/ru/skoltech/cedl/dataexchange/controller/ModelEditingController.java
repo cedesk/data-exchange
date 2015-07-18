@@ -532,8 +532,7 @@ public class ModelEditingController implements Initializable {
             }
 
             Double value = parameterUpdate.getValue();
-            String nodePath = parameterModel.getParent().getNodePath() + "\\" + parameterModel.getName();
-            String message = nodePath + " has been updated! (" + String.valueOf(value) + ")";
+            String message = parameterModel.getNodePath() + " has been updated! (" + String.valueOf(value) + ")";
             logger.info(message);
             UserNotifications.showNotification(getAppWindow(), "Parameter Updated", message);
         }
