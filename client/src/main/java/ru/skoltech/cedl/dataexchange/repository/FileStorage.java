@@ -1,6 +1,6 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
-import ru.skoltech.cedl.dataexchange.ProjectContext;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -26,6 +26,7 @@ public class FileStorage {
     public static final Class[] MODEL_CLASSES = new Class[]{
             SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class,
             ParameterModel.class, ExternalModel.class, ExternalModelReference.class};
+    private static Logger logger = Logger.getLogger(FileStorage.class);
 
     public FileStorage() {
     }
@@ -63,25 +64,39 @@ public class FileStorage {
             Unmarshaller u = ct.createUnmarshaller();
             SystemModel systemModel = (SystemModel) u.unmarshal(inp);
 
-            postProcessSystemModel(systemModel, null);
+            File inputFolder = inputFile.getParentFile();
+
+            postProcessSystemModel(systemModel, null, inputFolder);
             return systemModel;
         } catch (JAXBException e) {
             throw new IOException("Error reading system model from XML file.", e);
         }
     }
 
-    private void postProcessSystemModel(ModelNode modelNode, ModelNode parent) {
+    private void postProcessSystemModel(ModelNode modelNode, ModelNode parent, File inputFolder) {
         modelNode.setParent(parent);
-        for (ParameterModel parameterModel : modelNode.getParameters()) {
-            parameterModel.setParent(modelNode);
-        }
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
             externalModel.setParent(modelNode);
+            try {
+                String nodePath = ExternalModelFileHandler.makePath(externalModel);
+                File nodeDir = new File(inputFolder, nodePath);
+                File file = new File(nodeDir, externalModel.getName());
+                if (file.exists()) {
+                    ExternalModelFileHandler.updateFromFile(externalModel, file);
+                } else {
+                    logger.error("external model file not found!");
+                }
+            } catch (Exception e) {
+                logger.error("external model file import failed!", e);
+            }
+        }
+        for (ParameterModel parameterModel : modelNode.getParameters()) {
+            parameterModel.setParent(modelNode);
         }
         if (modelNode instanceof CompositeModelNode) {
             CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
             for (Object node : compositeModelNode.getSubNodes()) {
-                postProcessSystemModel((ModelNode) node, modelNode);
+                postProcessSystemModel((ModelNode) node, modelNode, inputFolder);
             }
         }
     }
