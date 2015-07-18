@@ -20,6 +20,6 @@ public class AboutController implements Initializable {
         String version = AboutController.class.getPackage().getImplementationVersion();
         versionInfoLabel.setText(version);
         authorsInfoLabel.setText("Dominik J. Knoll, d.knoll@skoltech.ru");
-        librariesInfoLabel.setText("hibernate,\nmysql,\nslf4j");
+        librariesInfoLabel.setText("Hibernate,\nMySQL,\nslf4j,\nApache POI,\n, Apache Commons Math 3,\nControlsFX - FX Experience,\nJFXtras");
     }
 }
