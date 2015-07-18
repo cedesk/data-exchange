@@ -47,7 +47,12 @@ public class ExternalModelFileHandler {
     public static ExternalModel updateFromFile(ExternalModel externalModel) throws IOException {
         File file = getFilePathInCache(externalModel);
         Path path = Paths.get(file.getAbsolutePath());
-        String fileName = file.getName();
+        externalModel.setAttachment(Files.readAllBytes(path));
+        return externalModel;
+    }
+
+    public static ExternalModel updateFromFile(ExternalModel externalModel, File file) throws IOException {
+        Path path = Paths.get(file.getAbsolutePath());
         externalModel.setAttachment(Files.readAllBytes(path));
         return externalModel;
     }
