@@ -31,6 +31,5 @@ public class ParameterModelTest {
         ParameterModel p7 = new ParameterModel("power CONSUMPTION", 40.10, ParameterValueSource.REFERENCE, true, "desc");
         ParameterModel p8 = new ParameterModel("power CONSUMPTION", 40.10, ParameterValueSource.REFERENCE, false, "desc");
         Assert.assertNotEquals("different shared, but equal", p7, p8);
-
     }
 }

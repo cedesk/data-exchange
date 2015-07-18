@@ -67,6 +67,5 @@ public class UserRoleUtilTest {
                 UserRoleUtil.checkAccess(firstSubsystemNode, testUser, userRoleManagement));
         Assert.assertTrue(
                 UserRoleUtil.checkAccess(firstElementSubsystemNode, testUser, userRoleManagement));
-
     }
 }

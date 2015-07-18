@@ -10,7 +10,6 @@ import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -39,6 +38,5 @@ public class UserManagementStorageTest {
         UserManagement userManagement1 = databaseStorage.loadUserManagement();
 
         Assert.assertEquals(userManagement, userManagement1);
-
     }
 }

@@ -18,6 +18,11 @@ public class NodeIdentifiersTest {
     private final String sample;
     private final boolean expectedResult;
 
+    public NodeIdentifiersTest(String sample, boolean expectedResult) {
+        this.sample = sample;
+        this.expectedResult = expectedResult;
+    }
+
     @Parameterized.Parameters
     public static Collection<Object[]> getSamplesAndExpectedResults() {
         List<Object[]> params = new LinkedList<>();
@@ -33,11 +38,6 @@ public class NodeIdentifiersTest {
         return params;
     }
 
-    public NodeIdentifiersTest(String sample, boolean expectedResult) {
-        this.sample = sample;
-        this.expectedResult = expectedResult;
-    }
-
     @Test
     public void testNodeNameIdentifier() {
         if (expectedResult) {
@@ -46,5 +46,4 @@ public class NodeIdentifiersTest {
             Assert.assertFalse(sample, Identifiers.validateNodeName(sample));
         }
     }
-
 }

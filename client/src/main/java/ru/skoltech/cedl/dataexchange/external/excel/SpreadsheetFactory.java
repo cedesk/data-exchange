@@ -20,8 +20,9 @@ public class SpreadsheetFactory {
 
     /**
      * Opens a XLS file and reads the cells of the given sheet for visualization in a <code>org.conrolsfx.spearsheet.SpreadSheetView</code>
+     *
      * @param spreadsheetFile the XLS workbook file
-     * @param sheetIndex the spreadheet within the workbook
+     * @param sheetIndex      the spreadheet within the workbook
      * @return a grid of cell values
      * @throws IOException in case of problems reading the file
      */
@@ -32,8 +33,9 @@ public class SpreadsheetFactory {
 
     /**
      * Opens a XLS file and reads the cells of the given sheet for visualization in a <code>org.conrolsfx.spearsheet.SpreadSheetView</code>
+     *
      * @param inputStream the stream from which to read the XLS workbook file
-     * @param sheetIndex the spreadheet within the workbook
+     * @param sheetIndex  the spreadheet within the workbook
      * @return a grid of cell values
      * @throws IOException in case of problems reading the stream
      */

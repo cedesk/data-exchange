@@ -12,13 +12,11 @@ public enum ParameterNature {
     INTERNAL {
         public String toString() {
             return "internal";
-
         }
     },
     OUTPUT {
         public String toString() {
             return "output";
         }
-
     }
 }

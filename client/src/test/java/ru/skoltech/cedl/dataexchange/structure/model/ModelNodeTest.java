@@ -100,6 +100,4 @@ public class ModelNodeTest {
         m2 = new InstrumentModel("instrument 2");
         assertFalse(m1.equals(m2));
     }
-
-
 }
