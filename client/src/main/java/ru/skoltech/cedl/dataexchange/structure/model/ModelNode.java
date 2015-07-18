@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 11.03.2015.
  */
-@XmlType(propOrder = {"name", "lastModification", "parameters"})
+@XmlType(propOrder = {"name", "lastModification", "externalModels", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped {
@@ -35,7 +35,8 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     @XmlTransient
     protected long id;
 
-    @XmlTransient
+    @XmlElementWrapper(name = "externalModels")
+    @XmlElement(name = "externalModel")
     protected List<ExternalModel> externalModels = new LinkedList<>();
 
     @XmlAttribute

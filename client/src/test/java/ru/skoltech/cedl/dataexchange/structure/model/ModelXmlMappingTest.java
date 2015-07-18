@@ -3,8 +3,10 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +65,13 @@ public class ModelXmlMappingTest {
 
     @Test
     public void exportXmlAndReimport() throws IOException {
+        URL url = this.getClass().getResource("/attachment.xls");
+        File excelFile = new File(url.getFile());
+
         SystemModel s1 = DummySystemBuilder.getSystemModel(4);
+        ExternalModel externalModel = ExternalModelFileHandler.newFromFile(excelFile,s1);
+        s1.addExternalModel(externalModel);
+
         FileStorage fs = new FileStorage();
 
         File file = new File("target", "DummySystemModel.xml");

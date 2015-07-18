@@ -6,31 +6,39 @@ import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModificationTimestamped;
 
 import javax.persistence.*;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import javax.xml.bind.annotation.*;
 import java.util.Arrays;
 
 /**
  * Created by D.Knoll on 02.07.2015.
  */
+@XmlType(propOrder = {"name", "lastModification"})
+@XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
 @Audited
 public class ExternalModel implements Comparable<ExternalModel>, ModificationTimestamped {
 
+    @XmlTransient
     private long id;
 
+    @XmlID
+    @XmlAttribute
     private String name;
 
+    @XmlTransient
     private byte[] attachment;
 
+    @XmlTransient
     private long version;
 
+    @XmlAttribute
     private Long lastModification;
 
+    @XmlTransient
     private ModelNode parent;
 
-    public ExternalModel(){
+    public ExternalModel() {
     }
 
     @Id
