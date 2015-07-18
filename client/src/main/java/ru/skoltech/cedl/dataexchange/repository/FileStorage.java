@@ -20,6 +20,10 @@ import java.io.IOException;
  */
 public class FileStorage {
 
+    public static final Class[] MODEL_CLASSES = new Class[]{
+            SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class,
+            ParameterModel.class, ExternalModel.class, ExternalModelReference.class};
+
     public FileStorage() {
     }
 
@@ -29,7 +33,7 @@ public class FileStorage {
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 
-            JAXBContext jc = JAXBContext.newInstance(SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class);
+            JAXBContext jc = JAXBContext.newInstance(MODEL_CLASSES);
 
             Marshaller m = jc.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -41,7 +45,7 @@ public class FileStorage {
 
     public SystemModel loadSystemModel(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
-            JAXBContext ct = JAXBContext.newInstance(SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class);
+            JAXBContext ct = JAXBContext.newInstance(MODEL_CLASSES);
 
             Unmarshaller u = ct.createUnmarshaller();
             SystemModel systemModel = (SystemModel) u.unmarshal(inp);

@@ -2,18 +2,23 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
-import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.*;
 
 /**
  * Created by D.Knoll on 08.07.2015.
  */
+@XmlType(propOrder = {"externalModel", "target"})
+@XmlAccessorType(XmlAccessType.FIELD)
 @Embeddable
 public class ExternalModelReference {
 
+    @XmlIDREF
+    @XmlAttribute
     private ExternalModel externalModel;
 
+    @XmlAttribute
     private String target;
 
     public ExternalModelReference() {
