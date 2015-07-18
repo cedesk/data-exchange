@@ -59,7 +59,7 @@ public class ExternalModelTest {
     @Test
     public void testSetLastModified() throws IOException {
         long time = 1316137362000L;
-        File file = new File("foo.test");
+        File file = new File("target/foo.test");
         file.createNewFile();
         file.setLastModified(time);
         Assert.assertEquals(time, file.lastModified());
