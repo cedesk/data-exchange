@@ -20,10 +20,12 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.io.Closeable;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dknoll on 24/05/15.
@@ -222,28 +224,6 @@ public class DatabaseStorage implements Repository {
     @Override
     public String getUrl() {
         return hostName;
-    }
-
-    @Override
-    public long getLatestVersion(Study study) throws RepositoryException {
-        EntityManager entityManager = null;
-        try {
-            entityManager = getEntityManager();
-            final AuditReader reader = AuditReaderFactory.get(entityManager);
-            final long pk = study.getId();
-
-            List<Number> revisions = reader.getRevisions(Study.class, pk);
-            Number max = Collections.max(revisions, Comparator.comparingLong(value -> value.longValue()));
-            return max.longValue();
-        } catch (Exception e) {
-            throw new RepositoryException("Getting study versions failed.", e);
-        } finally {
-            try {
-                if (entityManager != null)
-                    entityManager.close();
-            } catch (Exception ignore) {
-            }
-        }
     }
 
     @Override
