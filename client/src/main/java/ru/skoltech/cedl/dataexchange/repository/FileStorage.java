@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
+import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
@@ -14,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -29,7 +32,8 @@ public class FileStorage {
 
     public void storeSystemModel(SystemModel systemModel, File outputFile) throws IOException {
 
-        StorageUtils.makeDirectory(outputFile.getParentFile());
+        File outputFolder = outputFile.getParentFile();
+        StorageUtils.makeDirectory(outputFolder);
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 
@@ -40,6 +44,15 @@ public class FileStorage {
             m.marshal(systemModel, fos);
         } catch (JAXBException e) {
             throw new IOException("Error writing system model to XML file.", e);
+        }
+
+        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(systemModel);
+        while (iterator.hasNext()) {
+            ExternalModel externalModel = iterator.next();
+            String nodePath = ExternalModelFileHandler.makePath(externalModel);
+            File nodeDir = new File(outputFolder, nodePath);
+            StorageUtils.makeDirectory(nodeDir);
+            ExternalModelFileHandler.toFile(externalModel, nodeDir);
         }
     }
 

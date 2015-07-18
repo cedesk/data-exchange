@@ -114,7 +114,7 @@ public class ExternalModelFileHandler {
         return new File(nodeDir, rectifiedFileName);
     }
 
-    private static String makePath(ExternalModel externalModel) {
+    public static String makePath(ExternalModel externalModel) {
         String path = externalModel.getParent().getNodePath();
         path = path.replace(' ', '_');
         path = path.replace(ModelNode.NODE_SEPARATOR, File.separator);
