@@ -3,8 +3,8 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="280.0"
-            prefWidth="420.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="280.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/8"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController">
     <children>
         <TableView fx:id="revisionHistoryTable" layoutX="224.0" layoutY="31.0" prefHeight="280.0" prefWidth="400.0"

@@ -5,7 +5,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
  */
 public interface ModificationTimestamped {
 
-    void setLastModification(Long timestamp);
-
     Long getLastModification();
+
+    void setLastModification(Long timestamp);
 }

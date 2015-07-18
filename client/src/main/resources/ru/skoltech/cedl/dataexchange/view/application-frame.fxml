@@ -7,8 +7,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <?import ru.skoltech.cedl.dataexchange.view.ToggleImageView?>
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0"
-            prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
         <BorderPane fx:id="layout" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0"
@@ -25,7 +25,8 @@
                                         <Menu mnemonicParsing="false" text="Project">
                                             <items>
                                                 <MenuItem mnemonicParsing="false" onAction="#newProject" text="New..."/>
-                                                <MenuItem mnemonicParsing="false" onAction="#loadProject" text="Load..."/>
+                                                <MenuItem mnemonicParsing="false" onAction="#loadProject"
+                                                          text="Load..."/>
                                                 <MenuItem mnemonicParsing="false" onAction="#saveProject" text="Save"/>
                                                 <SeparatorMenuItem mnemonicParsing="false"/>
                                                 <MenuItem mnemonicParsing="false" onAction="#importProject"

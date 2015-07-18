@@ -4,8 +4,6 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlTransient;
-import java.sql.Timestamp;
-import java.util.Iterator;
 
 /**
  * Created by dknoll on 23/05/15.

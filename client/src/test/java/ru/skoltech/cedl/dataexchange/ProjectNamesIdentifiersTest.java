@@ -18,6 +18,11 @@ public class ProjectNamesIdentifiersTest {
     private final String sample;
     private final boolean expectedResult;
 
+    public ProjectNamesIdentifiersTest(String sample, boolean expectedResult) {
+        this.sample = sample;
+        this.expectedResult = expectedResult;
+    }
+
     @Parameterized.Parameters
     public static Collection<Object[]> getSamplesAndExpectedResults() {
         List<Object[]> params = new LinkedList<>();
@@ -36,11 +41,6 @@ public class ProjectNamesIdentifiersTest {
         params.add(new Object[]{"abcd-", false});
 
         return params;
-    }
-
-    public ProjectNamesIdentifiersTest(String sample, boolean expectedResult) {
-        this.sample = sample;
-        this.expectedResult = expectedResult;
     }
 
     @Test

@@ -1,6 +1,5 @@
 package ru.skoltech.cedl.dataexchange.control;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -24,7 +23,6 @@ import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
@@ -155,7 +153,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             stage.initOwner(nameText.getScene().getWindow());
             SourceSelectorController controller = loader.getController();
             controller.setParameterBean(parameterBean);
-            if(controller.canShow()) {
+            if (controller.canShow()) {
                 stage.showAndWait();
             }
         } catch (IOException e) {

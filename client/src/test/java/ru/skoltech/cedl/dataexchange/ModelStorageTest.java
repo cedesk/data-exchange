@@ -74,7 +74,7 @@ public class ModelStorageTest {
         System.out.println(parameterModel1.toString());
         Assert.assertEquals(parameterModel.getId(), parameterModel1.getId());
         Assert.assertEquals(parameterModel.getName(), parameterModel1.getName());
-        Assert.assertEquals("initial: "+initial, newValue, storedValue);
+        Assert.assertEquals("initial: " + initial, newValue, storedValue);
     }
 
     @Test

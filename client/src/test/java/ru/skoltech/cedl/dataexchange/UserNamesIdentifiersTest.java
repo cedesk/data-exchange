@@ -18,6 +18,11 @@ public class UserNamesIdentifiersTest {
     private final String sample;
     private final boolean expectedResult;
 
+    public UserNamesIdentifiersTest(String sample, boolean expectedResult) {
+        this.sample = sample;
+        this.expectedResult = expectedResult;
+    }
+
     @Parameterized.Parameters
     public static Collection<Object[]> getSamplesAndExpectedResults() {
         List<Object[]> params = new LinkedList<>();
@@ -40,11 +45,6 @@ public class UserNamesIdentifiersTest {
         params.add(new Object[]{".kkk", false});
 
         return params;
-    }
-
-    public UserNamesIdentifiersTest(String sample, boolean expectedResult) {
-        this.sample = sample;
-        this.expectedResult = expectedResult;
     }
 
     @Test

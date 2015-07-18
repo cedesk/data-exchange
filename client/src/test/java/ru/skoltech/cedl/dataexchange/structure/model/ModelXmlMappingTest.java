@@ -69,7 +69,7 @@ public class ModelXmlMappingTest {
         File excelFile = new File(url.getFile());
 
         SystemModel s1 = DummySystemBuilder.getSystemModel(4);
-        ExternalModel externalModel = ExternalModelFileHandler.newFromFile(excelFile,s1);
+        ExternalModel externalModel = ExternalModelFileHandler.newFromFile(excelFile, s1);
         s1.addExternalModel(externalModel);
 
         FileStorage fs = new FileStorage();

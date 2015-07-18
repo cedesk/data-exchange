@@ -126,6 +126,26 @@ public class ExternalModelFileHandler {
         return path;
     }
 
+    public static void updateCheckoutTimestamp(ExternalModel externalModel) {
+        File file = getFilePathInCache(externalModel);
+        File tsFile = getTimestampFile(file);
+        try {
+            if (!tsFile.exists()) {
+                tsFile.createNewFile(); // create file marking the checkout time of the ExternalModel file
+            }
+            boolean modified = tsFile.setLastModified(System.currentTimeMillis());
+            logger.debug(tsFile.getAbsolutePath() +
+                    " (" + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(tsFile.lastModified())) + ") " +
+                    modified);
+        } catch (IOException e) {
+            logger.warn("problem setting the external model checkout timestamp.");
+        }
+    }
+
+    public static long getCheckoutTime(ExternalModel externalModel) {
+        return getCheckoutTime(getFilePathInCache(externalModel));
+    }
+
     public File cacheFile(ExternalModel externalModel) throws IOException {
         Objects.requireNonNull(externalModel);
         File file = getFilePathInCache(externalModel);
@@ -194,25 +214,5 @@ public class ExternalModelFileHandler {
                 logger.error("Error opening spreadsheet with default editor.", e);
             }
         }
-    }
-
-    public static void updateCheckoutTimestamp(ExternalModel externalModel) {
-        File file = getFilePathInCache(externalModel);
-        File tsFile = getTimestampFile(file);
-        try {
-            if (!tsFile.exists()) {
-                tsFile.createNewFile(); // create file marking the checkout time of the ExternalModel file
-            }
-            boolean modified = tsFile.setLastModified(System.currentTimeMillis());
-            logger.debug(tsFile.getAbsolutePath() +
-                    " (" + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(tsFile.lastModified())) + ") " +
-                    modified);
-        } catch (IOException e) {
-            logger.warn("problem setting the external model checkout timestamp.");
-        }
-    }
-
-    public static long getCheckoutTime(ExternalModel externalModel) {
-        return getCheckoutTime(getFilePathInCache(externalModel));
     }
 }

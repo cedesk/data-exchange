@@ -24,7 +24,6 @@ public class UtilsTest {
         Assert.assertTrue("symmetric difference incorrect size", rs.size() == 2);
         Assert.assertTrue("symmetric difference must contain 'uno'", rs.contains("uno"));
         Assert.assertTrue("symmetric difference must contain 'quattro'", rs.contains("quattro"));
-
     }
 
     @Test
@@ -37,13 +36,10 @@ public class UtilsTest {
 
         //Assert.fail("What is actually the expected result?");
         Assert.assertTrue("symmetric difference incorrect size", rs.size() == 3);
-
     }
 
     @Test
     public void testDate() {
         System.out.println(Utils.getFormattedDateAndTime());
     }
-
-
 }
