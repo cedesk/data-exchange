@@ -25,6 +25,7 @@ import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -99,6 +100,22 @@ public class MainController implements Initializable {
     }
 
     public void loadProject(ActionEvent actionEvent) {
+        List<String> studyNames = null;
+        try {
+            studyNames = project.getRepository().listStudies();
+        } catch (RepositoryException e) {
+            logger.error("error retrieving list of available studies");
+            return;
+        }
+        Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
+        if (studyChoice.isPresent()) {
+            String studyName = studyChoice.get();
+            project.setProjectName(studyName);
+            reloadProject(null);
+        }
+    }
+
+    public void reloadProject(ActionEvent actionEvent) {
         try {
             boolean success = project.loadLocalStudy();
             if (success) {
@@ -209,8 +226,12 @@ public class MainController implements Initializable {
                     String projectName = ApplicationSettings.getLastUsedProject(null);
                     if (projectName != null) {
                         project.setProjectName(projectName);
+                        reloadProject(null);
+                    } else {
+                        // TODO: ask to create a new study or start from an existing one
                         loadProject(null);
                     }
+                    // TODO: only on successful loading
                     makeRepositoryWatcher();
                 }
             });
