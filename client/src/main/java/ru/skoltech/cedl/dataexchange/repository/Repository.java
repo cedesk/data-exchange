@@ -36,8 +36,6 @@ public interface Repository extends Closeable {
 
     String getUrl();
 
-    long getLatestVersion(Study study) throws RepositoryException;
-
     ExternalModel storeExternalModel(ExternalModel externalModel) throws RepositoryException;
 
     ExternalModel loadExternalModel(long externalModelId) throws RepositoryException;
