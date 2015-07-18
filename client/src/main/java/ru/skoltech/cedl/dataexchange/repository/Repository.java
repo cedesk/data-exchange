@@ -22,6 +22,8 @@ public interface Repository extends Closeable {
 
     SystemModel storeSystemModel(SystemModel systemModel) throws RepositoryException;
 
+    List<String> listStudies() throws RepositoryException;
+
     Study loadStudy(String name) throws RepositoryException;
 
     Study storeStudy(Study study) throws RepositoryException;
