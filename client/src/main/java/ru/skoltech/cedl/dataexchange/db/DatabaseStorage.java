@@ -91,6 +91,28 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
+    public List<String> listStudies() throws RepositoryException {
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<String> criteria = builder.createQuery(String.class);
+            Root<Study> personRoot = criteria.from(Study.class);
+            criteria.select(personRoot.get("name"));
+            List<String> studyNamesList = entityManager.createQuery(criteria).getResultList();
+            return studyNamesList;
+        } catch (Exception e) {
+            throw new RepositoryException("Study loading failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    @Override
     public Study loadStudy(String name) throws RepositoryException {
         EntityManager entityManager = null;
         try {
@@ -118,7 +140,8 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public UserRoleManagement storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException {
+    public UserRoleManagement storeUserRoleManagement(UserRoleManagement userRoleManagement) throws
+            RepositoryException {
         EntityManager entityManager = null;
         try {
             entityManager = getEntityManager();

@@ -12,6 +12,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.StudyFactory;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * Created by dknoll on 23/05/15.
@@ -52,19 +53,24 @@ public class StudyStorageTest {
         Assert.assertEquals(urm1, urm2);
         Assert.assertEquals(study, study1);
     }
-/*
+
     @Test
-    public void storeModifyAndStore() throws RepositoryException {
-        String name = "testStudy";
-        Study study = StudyFactory.makeStudy(name, null);
-        System.out.println(study);
+    public void storeAndListStudies() throws RepositoryException {
+        String name1 = "testStudy-1";
+        Study study1 = StudyFactory.makeStudy(name1, null);
+        databaseStorage.storeStudy(study1);
 
-        Study study0 = databaseStorage.storeLocalStudy(study);
+        String name2 = "testStudy-2";
+        Study study2 = StudyFactory.makeStudy(name2, null);
+        databaseStorage.storeStudy(study2);
 
-        Study study1 = databaseStorage.loadLocalStudy(name);
-        System.out.println(study1);
+        String name3 = "testStudy-3";
+        Study study3 = StudyFactory.makeStudy(name3, null);
+        databaseStorage.storeStudy(study3);
 
-        Assert.assertEquals(study, study1);
+        String[] createdStudies = new String[]{name1, name2, name3};
+        List<String> storedStudies = databaseStorage.listStudies();
+
+        Assert.assertArrayEquals(createdStudies, storedStudies.toArray());
     }
-*/
 }
