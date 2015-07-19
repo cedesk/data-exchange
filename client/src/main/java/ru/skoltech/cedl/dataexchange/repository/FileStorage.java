@@ -47,7 +47,7 @@ public class FileStorage {
             throw new IOException("Error writing system model to XML file.", e);
         }
 
-        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(systemModel);
+        Iterator<ExternalModel> iterator = systemModel.externalModelsIterator();
         while (iterator.hasNext()) {
             ExternalModel externalModel = iterator.next();
             String nodePath = ExternalModelFileHandler.makePath(externalModel);
