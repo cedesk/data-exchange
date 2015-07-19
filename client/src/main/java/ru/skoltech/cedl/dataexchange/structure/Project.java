@@ -10,6 +10,7 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
+import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
@@ -229,28 +230,36 @@ public class Project {
             setStudy(study);
             Timestamp latestMod = getSystemModel().findLatestModification();
             latestLoadedModification.setValue(latestMod.getTime());
-            initializeWatchedExternalModels();
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
-            initializeChangedExternalModels();
+            initializeStateOfExternalModels();
         }
         return study != null;
     }
 
-    private void initializeChangedExternalModels() {
+    private void initializeStateOfExternalModels() {
         externalModelFileHandler.getChangedExternalModels().clear();
-        Iterator<ModelNode> it = getSystemModel().treeIterator();
-        while (it.hasNext()) {
-            ModelNode modelNode = it.next();
-            for (ExternalModel externalModel : modelNode.getExternalModels()) {
-                ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
-                if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
-                    addChangedExternalModel(externalModel);
-                    logger.debug(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has been changed since last store to repository");
-                } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
-                    // TODO: WARN USER
-                    logger.warn(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
-                }
+        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), new AccessChecker());
+        while (iterator.hasNext()) {
+            ExternalModel externalModel = iterator.next();
+            ModelNode modelNode = externalModel.getParent();
+
+            // check cache state and add file watcher if cached
+            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+            if (cacheState != ExternalModelCacheState.NOT_CACHED) {
+                addExternalModelFileWatcher(externalModel);
             }
+
+            // keep track of changed files
+            if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
+                addChangedExternalModel(externalModel);
+                logger.debug(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has been changed since last store to repository");
+            } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
+                // TODO: WARN USER
+                logger.warn(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
+            }
+
+            // silently update model from external model
+            ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, null, null);
         }
     }
 
@@ -299,7 +308,7 @@ public class Project {
 
     public void importSystemModel(SystemModel systemModel) {
         reinitializeProject(systemModel);
-        initializeWatchedExternalModels();
+        initializeStateOfExternalModels();
     }
 
     private void reinitializeProject(SystemModel systemModel) {
@@ -341,23 +350,6 @@ public class Project {
         externalModelFileWatcher.add(externalModel);
     }
 
-    private void initializeWatchedExternalModels() {
-        Predicate<ModelNode> accessChecker = new Predicate<ModelNode>() {
-            @Override
-            public boolean test(ModelNode modelNode) {
-                return UserRoleUtil.checkAccess(modelNode, getUser(), getUserRoleManagement());
-            }
-        };
-        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), accessChecker);
-        while (iterator.hasNext()) {
-            ExternalModel externalModel = iterator.next();
-            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
-            if (cacheState != ExternalModelCacheState.NOT_CACHED) {
-                addExternalModelFileWatcher(externalModel);
-            }
-        }
-    }
-
     public boolean storeExternalModel(ExternalModel externalModel) {
         try {
             repository.storeExternalModel(externalModel);
@@ -376,5 +368,12 @@ public class Project {
     public void addChangedExternalModel(ExternalModel externalModel) {
         externalModelFileHandler.addChangedExternalModel(externalModel);
         markStudyModified();
+    }
+
+    private class AccessChecker implements Predicate<ModelNode> {
+        @Override
+        public boolean test(ModelNode modelNode) {
+            return UserRoleUtil.checkAccess(modelNode, getUser(), getUserRoleManagement());
+        }
     }
 }

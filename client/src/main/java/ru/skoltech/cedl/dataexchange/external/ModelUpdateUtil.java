@@ -23,7 +23,9 @@ public class ModelUpdateUtil {
         ModelNode modelNode = externalModel.getParent();
 
         ModelUpdate modelUpdate = new ModelUpdate(externalModel);
-        modelUpdateListener.accept(modelUpdate);
+        if (modelUpdateListener != null) {
+            modelUpdateListener.accept(modelUpdate);
+        }
 
         List<ParameterUpdate> updates = new LinkedList<>();
         ExternalModelEvaluator evaluator = ExternalModelEvaluatorFactory.getEvaluator(externalModel);
@@ -51,7 +53,39 @@ public class ModelUpdateUtil {
         // APPLY CHANGES
         for (ParameterUpdate parameterUpdate : updates) {
             parameterUpdate.apply();
-            parameterUpdateListener.accept(parameterUpdate);
+            if (parameterUpdateListener != null) {
+                parameterUpdateListener.accept(parameterUpdate);
+            }
+        }
+    }
+
+    public static void applyParameterChangesFromExternalModel(ParameterModel parameterModel, Consumer<ParameterUpdate> parameterUpdateListener) {
+
+        ParameterUpdate parameterUpdate = null;
+        // check whether parameter references external model
+        if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+            ExternalModelReference valueReference = parameterModel.getValueReference();
+            if (valueReference != null && valueReference.getExternalModel() != null) {
+                ExternalModel externalModel = valueReference.getExternalModel();
+                ExternalModelEvaluator evaluator = ExternalModelEvaluatorFactory.getEvaluator(externalModel);
+                try {
+                    Double value = evaluator.getValue(valueReference.getTarget());
+                    if (!Precision.equals(parameterModel.getValue(), value, 2)) {
+                        parameterUpdate = new ParameterUpdate(parameterModel, value);
+                    }
+                } catch (ExternalModelException e) {
+                    logger.error("unable to evaluate from: " + valueReference);
+                }
+            }
+        } else {
+            logger.warn("parameter " + parameterModel.getNodePath() + " has empty valueReference");
+        }
+        // APPLY CHANGES
+        if (parameterUpdate == null) {
+            parameterUpdate.apply();
+            if (parameterUpdateListener != null) {
+                parameterUpdateListener.accept(parameterUpdate);
+            }
         }
     }
 }
