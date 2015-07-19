@@ -44,16 +44,13 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
         this.subNodes = subNodes;
     }
 
-    public boolean addSubNode(SUBNODES subnodes) {
-        return subNodes.add(subnodes);
+    public void addSubNode(SUBNODES subnode) {
+        subnode.setParent(this);
+        subNodes.add(subnode);
     }
 
     public boolean removeSubNode(Object o) {
         return subNodes.remove(o);
-    }
-
-    public boolean containsSubNode(Object o) {
-        return subNodes.contains(o);
     }
 
     public Iterator<SUBNODES> iterator() {

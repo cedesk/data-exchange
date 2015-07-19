@@ -15,35 +15,33 @@ public class DummySystemBuilder {
 
     public static SystemModel getSystemModel(int level) {
         SystemModel system = new SystemModel("Spacecraft " + getRandomInt());
-        system.addParameter(getParameter(system));
-        system.addParameter(getParameter(system));
+        system.addParameter(getParameter());
+        system.addParameter(getParameter());
 
         if (level < 2) return system;
-        system.addSubNode(getSubystem("Power", level - 1, system));
-        system.addSubNode(getSubystem("AOCS", level - 1, system));
-        system.addSubNode(getSubystem("Thermal", level - 1, system));
-        system.addSubNode(getSubystem("Orbit", level - 1, system));
-        system.addSubNode(getSubystem("Payload", level - 1, system));
-        system.addSubNode(getSubystem("Communication", level - 1, system));
+        system.addSubNode(getSubSystem("Power", level - 1));
+        system.addSubNode(getSubSystem("AOCS", level - 1));
+        system.addSubNode(getSubSystem("Thermal", level - 1));
+        system.addSubNode(getSubSystem("Orbit", level - 1));
+        system.addSubNode(getSubSystem("Payload", level - 1));
+        system.addSubNode(getSubSystem("Communication", level - 1));
         return system;
     }
 
-    private static SubSystemModel getSubystem(String name, int level, ModelNode parent) {
+    private static SubSystemModel getSubSystem(String name, int level) {
         SubSystemModel subSystem = new SubSystemModel(name);
-        subSystem.addParameter(getParameter(subSystem));
-        subSystem.addParameter(getParameter(subSystem));
-        subSystem.setParent(parent);
+        subSystem.addParameter(getParameter());
+        subSystem.addParameter(getParameter());
 
         if (level < 2) return subSystem;
-        subSystem.addSubNode(getElement("element" + elementCnt++, level - 1, subSystem));
+        subSystem.addSubNode(getElement("element" + elementCnt++, level - 1));
         return subSystem;
     }
 
-    private static ElementModel getElement(String name, int level, ModelNode parent) {
+    private static ElementModel getElement(String name, int level) {
         ElementModel element = new ElementModel(name);
-        element.addParameter(getParameter(element));
-        element.addParameter(getParameter(element));
-        element.setParent(parent);
+        element.addParameter(getParameter());
+        element.addParameter(getParameter());
 
         if (level < 2) return element;
         element.addSubNode(getInstrument("instrument" + elementCnt + "/" + instrumentCnt++, element));
@@ -52,13 +50,12 @@ public class DummySystemBuilder {
 
     private static InstrumentModel getInstrument(String name, ModelNode parent) {
         InstrumentModel instrument = new InstrumentModel(name);
-        instrument.addParameter(getParameter(instrument));
-        instrument.addParameter(getParameter(instrument));
-        instrument.setParent(parent);
+        instrument.addParameter(getParameter());
+        instrument.addParameter(getParameter());
         return instrument;
     }
 
-    private static ParameterModel getParameter(ModelNode parent) {
+    private static ParameterModel getParameter() {
         ParameterModel parameterModel = new ParameterModel("parameter" + parameterCnt++, getRandomDouble());
         parameterModel.setDescription("");
         double sh = Math.random();
@@ -90,7 +87,6 @@ public class DummySystemBuilder {
         } else {
             parameterModel.setIsExported(false);
         }
-        parameterModel.setParent(parent);
         return parameterModel;
     }
 
