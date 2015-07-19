@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<systemModel name="Spacecraft 28">
+<systemModel name="TestSpacecraft">
     <externalModels>
-        <externalModel name="MyExcel.xls" lastModification="1437214955031"/>
+        <externalModel name="sysmodel.xls" lastModification="1437214955031"/>
     </externalModels>
     <parameters>
         <parameter name="parameter1" value="85.0" nature="INPUT" valueSource="REFERENCE" isExported="true"
                    isReferenceValueOverridden="true" overrideValue="68.0">
-            <valueReference externalModel="MyExcel.xls" target="B3"/>
+            <valueReference externalModel="sysmodel.xls" target="B3"/>
             <exportReference></exportReference>
             <description></description>
         </parameter>
