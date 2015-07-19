@@ -2,9 +2,11 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.*;
+import java.util.Objects;
 
 /**
  * Created by D.Knoll on 08.07.2015.
@@ -29,7 +31,26 @@ public class ExternalModelReference {
         this.target = target;
     }
 
-    @ManyToOne(targetEntity = ExternalModel.class)
+    public static ExternalModelReference valueOf(String string, ModelNode modelNode) {
+        Objects.requireNonNull(string);
+        String[] parts = string.split(":");
+        if (parts.length != 2)
+            throw new IllegalArgumentException("argument must be of format '<name>:<coordinates>'");
+        String externalModelName = parts[0];
+        String target = parts[1];
+        ExternalModel externalModel = findExternalModel(externalModelName, modelNode);
+        return new ExternalModelReference(externalModel, target);
+    }
+
+    private static ExternalModel findExternalModel(String externalModelName, ModelNode parent) {
+        for (ExternalModel externalModel : parent.getExternalModels()) {
+            if (externalModel.getName().equals(externalModelName))
+                return externalModel;
+        }
+        throw new IllegalArgumentException("invalid external model name");
+    }
+
+    @ManyToOne(targetEntity = ExternalModel.class, optional = true)
     public ExternalModel getExternalModel() {
         return externalModel;
     }
@@ -38,6 +59,7 @@ public class ExternalModelReference {
         this.externalModel = externalModel;
     }
 
+    @Column(nullable = true)
     public String getTarget() {
         return target;
     }
