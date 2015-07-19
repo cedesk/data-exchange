@@ -140,13 +140,13 @@
                                             <children>
                                                 <TableView fx:id="userTable" BorderPane.alignment="CENTER">
                                                     <columns>
-                                                        <TableColumn fx:id="userNameColumn" minWidth="100.0"
+                                                        <TableColumn fx:id="userNameColumn" minWidth="80.0"
                                                                      prefWidth="-1.0" text="Name">
                                                             <cellValueFactory>
                                                                 <PropertyValueFactory property="userName"/>
                                                             </cellValueFactory>
                                                         </TableColumn>
-                                                        <TableColumn fx:id="userFullNameColumn" minWidth="100.0"
+                                                        <TableColumn fx:id="userFullNameColumn" minWidth="160.0"
                                                                      prefWidth="-1.0" text="Full Name">
                                                             <cellValueFactory>
                                                                 <PropertyValueFactory property="fullName"/>

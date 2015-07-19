@@ -136,7 +136,7 @@ public class UserRoleManagementController implements Initializable {
         userRolesAssignedList.disableProperty().bind(noSelectionOnDisciplinesTable);
         userRolesAssignedList.setCellFactory(new UserDisciplineViewCellFactory());
         BooleanBinding noSelectionOnUserTable = userTable.getSelectionModel().selectedItemProperty().isNull();
-        addUserRoleButton.disableProperty().bind(Bindings.and(noSelectionOnUserTable, noSelectionOnDisciplinesTable));
+        addUserRoleButton.disableProperty().bind(Bindings.or(noSelectionOnUserTable, noSelectionOnDisciplinesTable));
         BooleanBinding noSelectionOnAssignedUsers = userRolesAssignedList.getSelectionModel().selectedItemProperty().isNull();
         deleteUserRoleButton.disableProperty().bind(noSelectionOnAssignedUsers);
 
@@ -185,26 +185,22 @@ public class UserRoleManagementController implements Initializable {
     }
 
     private void updateUserDisciplines(Discipline discipline) {
-        if (project.getUserManagement() != null) {
-            if (project.getUserManagement() != null && discipline != null) {
-                // assigned Users
-                List<UserDiscipline> userDisciplineList = project.getUserRoleManagement().getUserDisciplines();
-                ObservableList allUserDisciplines = FXCollections.observableArrayList(userDisciplineList);
-                ObservableList assignedUsersList = new FilteredList<UserDiscipline>(allUserDisciplines, new UserDisciplineFilter(discipline));
-                userRolesAssignedList.setItems(assignedUsersList);
-            }
+        if (project.getUserRoleManagement() != null && discipline != null) {
+            // assigned Users
+            List<UserDiscipline> userDisciplineList = project.getUserRoleManagement().getUserDisciplines();
+            ObservableList allUserDisciplines = FXCollections.observableArrayList(userDisciplineList);
+            ObservableList assignedUsersList = new FilteredList<UserDiscipline>(allUserDisciplines, new UserDisciplineFilter(discipline));
+            userRolesAssignedList.setItems(assignedUsersList);
         }
     }
 
     private void updateUsers() {
         if (project.getUserManagement() != null) {
-            if (project.getUserManagement() != null) {
-                // all Users
-                List<User> allUsers = project.getUserManagement().getUsers();
-                ObservableList<User> allUserList = FXCollections.observableList(allUsers);
-                allUserList.sort(Comparator.<User>naturalOrder());
-                userTable.setItems(allUserList);
-            }
+            // all Users
+            List<User> allUsers = project.getUserManagement().getUsers();
+            ObservableList<User> allUserList = FXCollections.observableList(allUsers);
+            allUserList.sort(Comparator.<User>naturalOrder());
+            userTable.setItems(allUserList);
         }
     }
 
