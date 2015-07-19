@@ -70,6 +70,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     public void addParameter(ParameterModel parameter) {
         parameters.add(parameter);
+        parameter.setParent(this);
     }
 
     @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
@@ -101,6 +102,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     public void addExternalModel(ExternalModel externalModel) {
         externalModels.add(externalModel);
+        externalModel.setParent(this);
     }
 
     @Id
