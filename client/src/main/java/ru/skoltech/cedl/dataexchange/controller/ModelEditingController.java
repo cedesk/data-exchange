@@ -391,7 +391,6 @@ public class ModelEditingController implements Initializable {
                     selectedItem.getValue().addExternalModel(externalModel);
                     project.storeExternalModel(externalModel);
                     externalModelFilePath.setText(externalModel.getName());
-                    project.addExternalModelFileWatcher(externalModel);
                     Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
                     project.markStudyModified();
                 } catch (IOException e) {
