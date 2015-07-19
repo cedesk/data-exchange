@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.MappedSuperclass;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 @XmlAccessorType(XmlAccessType.FIELD)
 @MappedSuperclass
 @Access(AccessType.PROPERTY)
-public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode implements Iterable<SUBNODES> {
+public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
 
     @XmlElementWrapper(name = "subNodes")
     @XmlElement(name = "subNode")
@@ -51,10 +53,6 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode im
 
     public boolean removeSubNode(Object o) {
         return subNodes.remove(o);
-    }
-
-    public Iterator<SUBNODES> iterator() {
-        return subNodes.iterator();
     }
 
     public Iterator<ModelNode> treeIterator() {

@@ -5,10 +5,7 @@ import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -127,6 +124,10 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     @Transient
     public boolean isRootNode() {
         return parent == null;
+    }
+
+    public Iterator<ExternalModel> externalModelsIterator() {
+        return new ExternalModelTreeIterator(this);
     }
 
     @Transient

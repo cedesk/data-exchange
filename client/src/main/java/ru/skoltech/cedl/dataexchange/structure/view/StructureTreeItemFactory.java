@@ -8,6 +8,7 @@ import javafx.scene.image.ImageView;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,7 +27,7 @@ public class StructureTreeItemFactory {
     public static StructureTreeItem getTreeView(CompositeModelNode modelNode) {
         StructureTreeItem node = getTreeNodeView(modelNode);
         node.setExpanded(true);
-        for (ModelNode subNode : (Iterable<ModelNode>) modelNode) {
+        for (ModelNode subNode : (List<ModelNode>) modelNode.getSubNodes()) {
             if (subNode instanceof CompositeModelNode) {
                 StructureTreeItem childNode = getTreeView((CompositeModelNode) subNode);
                 if (childNode != null) {
@@ -45,7 +46,7 @@ public class StructureTreeItemFactory {
     public static StructureTreeItem getTreeView(CompositeModelNode localModel, CompositeModelNode remoteModel) {
         StructureTreeItem node = getTreeNodeView(localModel, remoteModel);
         node.setExpanded(true);
-        for (ModelNode subNode : (Iterable<ModelNode>) localModel) {
+        for (ModelNode subNode : (List<ModelNode>) localModel.getSubNodes()) {
             Map<String, ModelNode> remoteModelSubNodesMap = remoteModel.getSubNodesMap();
             ModelNode remoteSubNode = remoteModelSubNodesMap.get(subNode.getName());
             if (subNode instanceof CompositeModelNode) {
