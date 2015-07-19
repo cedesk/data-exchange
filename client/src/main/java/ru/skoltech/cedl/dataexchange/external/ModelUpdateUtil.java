@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.external;
 
+import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
@@ -30,13 +31,14 @@ public class ModelUpdateUtil {
             // check whether parameter references external model
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
                 ExternalModelReference valueReference = parameterModel.getValueReference();
-                if (valueReference != null) {
+                if (valueReference != null && valueReference.getExternalModel() != null) {
                     if (externalModel.equals(valueReference.getExternalModel())) {
                         try {
                             Double value = evaluator.getValue(valueReference.getTarget());
-                            //TODO: if(parameterModel.getValue() notEqual value)
-                            ParameterUpdate parameterUpdate = new ParameterUpdate(parameterModel, value);
-                            updates.add(parameterUpdate);
+                            if (!Precision.equals(parameterModel.getValue(), value, 2)) {
+                                ParameterUpdate parameterUpdate = new ParameterUpdate(parameterModel, value);
+                                updates.add(parameterUpdate);
+                            }
                         } catch (ExternalModelException e) {
                             logger.error("unable to evaluate from: " + valueReference);
                         }
