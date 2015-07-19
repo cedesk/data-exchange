@@ -16,6 +16,7 @@ import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
+import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -195,7 +196,18 @@ public class Project {
             ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
             if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
                 logger.debug("storing '" + modelNode.getNodePath() + "' external model '" + externalModel.getName() + "'");
-                storeExternalModel(externalModel);
+                try {
+                    ExternalModelFileHandler.updateFromFile(externalModel);
+                    storeExternalModel(externalModel);
+                    String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
+                    ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
+                    long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
+                    String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
+                    logger.debug("stored external model '" + externalModel.getName() +
+                            "' (model: " + modelModification + ", " + fileModification + ")");
+                } catch (IOException e) {
+                    logger.error("error updating external model from file!");
+                }
             } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
                 // TODO: WARN USER
                 logger.warn(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
@@ -333,14 +345,13 @@ public class Project {
         Predicate<ModelNode> accessChecker = new Predicate<ModelNode>() {
             @Override
             public boolean test(ModelNode modelNode) {
-                return true;
-                //TODO: change to UserRoleUtil.checkAccess(modelNode, getUser(), getUserRoleManagement());
+                return UserRoleUtil.checkAccess(modelNode, getUser(), getUserRoleManagement());
             }
         };
         Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), accessChecker);
         while (iterator.hasNext()) {
             ExternalModel externalModel = iterator.next();
-            ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
+            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
             if (cacheState != ExternalModelCacheState.NOT_CACHED) {
                 addExternalModelFileWatcher(externalModel);
             }
@@ -349,17 +360,10 @@ public class Project {
 
     public boolean storeExternalModel(ExternalModel externalModel) {
         try {
-            ExternalModelFileHandler.updateFromFile(externalModel);
             repository.storeExternalModel(externalModel);
-            String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
-            ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
-            long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
-            String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
-            logger.debug("stored external model '" + externalModel.getName() +
-                    "' (model: " + modelModification + ", " + fileModification + ")");
             // TODO: confirm repo url is working
             return true;
-        } catch (RepositoryException | IOException e) {
+        } catch (RepositoryException e) {
             logger.error("Error storing external model: " + externalModel.getParent().getNodePath() + "\\" + externalModel.getName());
         }
         return false;
