@@ -93,6 +93,8 @@ public class ModelEditingController implements Initializable {
 
     private BooleanProperty selectedNodeCanHaveChildren = new SimpleBooleanProperty(true);
 
+    private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(true);
+
     private Project project;
 
     private Window appWindow;
@@ -121,13 +123,14 @@ public class ModelEditingController implements Initializable {
         structureTree.setContextMenu(makeStructureTreeContextMenu());
 
         // EXTERNAL MODEL ATTACHMENT
-        externalModelPane.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
+        externalModelPane.disableProperty().bind(selectedNodeIsEditable.not());
 
         // NODE PARAMETERS
         addParameterButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
         deleteParameterButton.disableProperty().bind(parameterTable.getSelectionModel().selectedIndexProperty().lessThan(0));
 
         // NODE PARAMETER TABLE
+        parameterTable.editableProperty().bind(selectedNodeIsEditable);
         Callback<TableColumn<Object, String>, TableCell<Object, String>> textFieldFactory = TextFieldTableCell.forTableColumn();
         parameterNameColumn.setCellFactory(textFieldFactory);
         //parameterNameColumn.setOnEditCommit(new ParameterModelEditListener(ParameterModel::setName));
@@ -202,7 +205,6 @@ public class ModelEditingController implements Initializable {
         viewParameters.displayParameters(modelNode.getParameters(), !editable);
 
         logger.debug("selected node: " + treeItem.getValue().getNodePath() + ", editable: " + editable);
-        parameterTable.setEditable(editable);
         parameterTable.autosize();
         // TODO: maybe redo selection only if same node
         if (selectedIndex < parameterTable.getItems().size()) {
@@ -469,9 +471,11 @@ public class ModelEditingController implements Initializable {
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
                 ModelEditingController.this.updateParameterTable(newValue);
-                selectedNodeCanHaveChildren.setValue(!(newValue.getValue() instanceof CompositeModelNode));
-                selectedNodeIsRoot.setValue(newValue.getValue().isRootNode());
-                List<ExternalModel> externalModels = newValue.getValue().getExternalModels();
+                ModelNode modelNode = newValue.getValue();
+                selectedNodeCanHaveChildren.setValue(!(modelNode instanceof CompositeModelNode));
+                selectedNodeIsRoot.setValue(modelNode.isRootNode());
+                selectedNodeIsEditable.setValue(UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement()));
+                List<ExternalModel> externalModels = modelNode.getExternalModels();
                 if (externalModels.size() > 0) { // TODO: allow more external models
                     ExternalModel externalModel = externalModels.get(0);
                     externalModelFilePath.setText(externalModel.getName());
@@ -484,6 +488,7 @@ public class ModelEditingController implements Initializable {
                 ModelEditingController.this.clearParameterTable();
                 selectedNodeCanHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
+                selectedNodeIsEditable.setValue(false);
                 externalModelFilePath.setText(null);
             }
         }
