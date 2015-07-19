@@ -175,8 +175,8 @@ public class UserRoleManagement {
 
     @Transient
     public boolean isAdmin(User user) {
-        for (UserDiscipline userDiscipline : userDisciplines) {
-            if (userDiscipline.getDiscipline().isBuiltIn()) return true;
+        for (Discipline discipline : getDisciplinesOfUser(user)) {
+            if (discipline.isBuiltIn()) return true;
         }
         return false;
     }
