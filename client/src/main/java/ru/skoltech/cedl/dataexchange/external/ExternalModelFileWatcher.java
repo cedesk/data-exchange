@@ -38,8 +38,8 @@ public class ExternalModelFileWatcher extends Observable {
     }
 
     public void clear() {
+        SimpleDirectoryWatchService.getInstance().clear();
         watchedExternalModels.clear();
-        // TODO: remove FileChangeListeners from SimpleDirectoryWatchService
     }
 
     public void close() {
@@ -56,8 +56,8 @@ public class ExternalModelFileWatcher extends Observable {
                 String dateAndTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(lastModified));
                 logger.debug("file " + changedFilePath + " has been modified (" + dateAndTime + ")");
                 // TODO: iif necessary
-                setChanged();
-                notifyObservers(externalModel);
+                ExternalModelFileWatcher.this.setChanged();
+                ExternalModelFileWatcher.this.notifyObservers(externalModel);
             } else {
                 logger.debug("ignoring change on file: " + changedFilePath);
             }

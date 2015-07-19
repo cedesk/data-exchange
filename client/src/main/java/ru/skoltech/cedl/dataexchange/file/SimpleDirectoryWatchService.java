@@ -170,6 +170,15 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
     }
 
     /**
+     * Empty the list of registered directory watchers.
+     */
+    public void clear(){
+        dirPathToListenersMap.clear();
+        watchKeyToDirPathMap.clear();
+        listenerToFilePatternsMap.clear();
+    }
+
+    /**
      * Start this <code>SimpleDirectoryWatchService</code> instance by spawning a new thread.
      *
      * @see #stop()
