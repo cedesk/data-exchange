@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -103,8 +104,10 @@ public class ModelEditingController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // STRUCTURE TREE VIEW
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
-        addNodeButton.disableProperty().bind(Bindings.and(structureTree.getSelectionModel().selectedItemProperty().isNull(), selectedNodeCanHaveChildren));
-        deleteNodeButton.disableProperty().bind(Bindings.or(structureTree.getSelectionModel().selectedItemProperty().isNull(), selectedNodeIsRoot));
+        BooleanBinding noSelectionOnStructureTreeView = structureTree.getSelectionModel().selectedItemProperty().isNull();
+        BooleanBinding structureNotEditable = structureTree.editableProperty().not();
+        addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCanHaveChildren.or(structureNotEditable)));
+        deleteNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
 
         structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
             @Override
@@ -126,7 +129,7 @@ public class ModelEditingController implements Initializable {
         externalModelPane.disableProperty().bind(selectedNodeIsEditable.not());
 
         // NODE PARAMETERS
-        addParameterButton.disableProperty().bind(structureTree.getSelectionModel().selectedItemProperty().isNull());
+        addParameterButton.disableProperty().bind(noSelectionOnStructureTreeView);
         deleteParameterButton.disableProperty().bind(parameterTable.getSelectionModel().selectedIndexProperty().lessThan(0));
 
         // NODE PARAMETER TABLE
@@ -201,10 +204,9 @@ public class ModelEditingController implements Initializable {
         ModelNode modelNode = item.getValue();
         // TODO: fix preparation of remote parameters for display
         modelNode.diffParameters(item.getRemoteValue());
-        boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
-        viewParameters.displayParameters(modelNode.getParameters(), !editable);
+        boolean showOnlyOutputParameters = !selectedNodeIsEditable.getValue();
+        viewParameters.displayParameters(modelNode.getParameters(), showOnlyOutputParameters);
 
-        logger.debug("selected node: " + treeItem.getValue().getNodePath() + ", editable: " + editable);
         parameterTable.autosize();
         // TODO: maybe redo selection only if same node
         if (selectedIndex < parameterTable.getItems().size()) {
@@ -470,11 +472,14 @@ public class ModelEditingController implements Initializable {
         public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable,
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
-                ModelEditingController.this.updateParameterTable(newValue);
                 ModelNode modelNode = newValue.getValue();
+                boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
+                logger.debug("selected node: " + modelNode.getNodePath() + ", editable: " + editable);
+
+                ModelEditingController.this.updateParameterTable(newValue);
                 selectedNodeCanHaveChildren.setValue(!(modelNode instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(modelNode.isRootNode());
-                selectedNodeIsEditable.setValue(UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement()));
+                selectedNodeIsEditable.setValue(editable);
                 List<ExternalModel> externalModels = modelNode.getExternalModels();
                 if (externalModels.size() > 0) { // TODO: allow more external models
                     ExternalModel externalModel = externalModels.get(0);
