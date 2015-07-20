@@ -127,4 +127,9 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
     public String toString() {
         return id + ":" + name;
     }
+
+    @Transient
+    public String getNodePath() {
+        return parent.getNodePath() + "#" + name;
+    }
 }
