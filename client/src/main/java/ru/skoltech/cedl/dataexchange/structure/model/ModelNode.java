@@ -87,6 +87,14 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         return parameterModelMap;
     }
 
+    @Transient
+    public Map<String, ExternalModel> getExternalModelMap() {
+        Map<String, ExternalModel> externalModelMap = getExternalModels().stream().collect(
+                Collectors.toMap(ExternalModel::getName, Function.identity())
+        );
+        return externalModelMap;
+    }
+
     //TODO: fix EAGER
     @OneToMany(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
     public List<ExternalModel> getExternalModels() {

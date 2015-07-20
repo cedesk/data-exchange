@@ -233,34 +233,41 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         return getServerValue() != null && !Precision.equals(getValue(), getServerValue(), 2);
     }
 
-    public Map<String, String> diff(ParameterModel p1, ParameterModel p2) {
+    public Map<String, String> diff(ParameterModel other) {
         Map<String, String> diff = new HashMap<>();
-        if (!p1.getName().equals(p2.getName())) {
-            diff.put("name", p2.getName());
+        if ((this.name == null && other.name != null) || (this.name != null && other.name == null)
+                || (this.name != null && !this.name.equals(other.name))) {
+            diff.put("name", other.name);
         }
-        if (!p1.getNature().equals(p2.getNature())) {
-            diff.put("nature", p2.getNature().toString());
+        if ((this.nature == null && other.nature != null) || (this.nature != null && other.nature == null)
+                || (this.nature != null && !this.nature.equals(other.nature))) {
+            diff.put("nature", String.valueOf(other.nature));
         }
-        if (!p1.getIsExported() == p2.getIsExported()) {
-            diff.put("isExported", String.valueOf(p2.getIsExported()));
+        if (!this.isExported == other.isExported) {
+            diff.put("isExported", String.valueOf(other.isExported));
         }
-        if (!p1.getIsReferenceValueOverridden() == p2.getIsReferenceValueOverridden()) {
-            diff.put("isReferenceValueOverridden", String.valueOf(p2.getIsReferenceValueOverridden()));
+        if (!this.isReferenceValueOverridden == other.isReferenceValueOverridden) {
+            diff.put("isReferenceValueOverridden", String.valueOf(other.isReferenceValueOverridden));
         }
-        if (!p1.getValue().equals(p2.getValue())) {
-            diff.put("value", String.valueOf(p2.getValue()));
+        if ((this.value == null && other.value != null) || (this.value != null && other.value == null)
+                || (this.value != null && !this.value.equals(other.value))) {
+            diff.put("value", String.valueOf(other.getValue()));
         }
-        if (!p1.getOverrideValue().equals(p2.getOverrideValue())) {
-            diff.put("overrideValue", String.valueOf(p2.getOverrideValue()));
+        if ((this.overrideValue == null && other.overrideValue != null) || (this.overrideValue != null && other.overrideValue == null)
+                || (this.overrideValue != null && !this.overrideValue.equals(other.overrideValue))) {
+            diff.put("overrideValue", String.valueOf(other.overrideValue));
         }
-        if (!p1.getValueSource().equals(p2.getValueSource())) {
-            diff.put("valueSource", String.valueOf(p2.getValueSource()));
+        if ((this.valueSource == null && other.valueSource != null) || (this.valueSource != null && other.valueSource == null)
+                || (this.valueSource != null && !this.valueSource.equals(other.valueSource))) {
+            diff.put("valueSource", String.valueOf(other.valueSource));
         }
-        if (!p1.getExportReference().equals(p2.getExportReference())) {
-            diff.put("exportReference", String.valueOf(p2.getExportReference()));
+        if ((this.exportReference == null && other.exportReference != null) || (this.exportReference != null && other.exportReference == null)
+                || (this.exportReference != null && !this.exportReference.equals(other.exportReference))) {
+            diff.put("exportReference", String.valueOf(other.exportReference));
         }
-        if (!p1.getDescription().equals(p2.getDescription())) {
-            diff.put("description", String.valueOf(p2.getDescription()));
+        if ((this.description == null && other.description != null) || (this.description != null && other.description == null)
+                || (this.description != null && !this.description.equals(other.description))) {
+            diff.put("description", other.description);
         }
         return diff;
     }
