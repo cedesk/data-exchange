@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
+import javafx.application.Platform;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
@@ -125,12 +126,24 @@ public class Project {
         return latestLoadedModification.get();
     }
 
+    private void setLatestLoadedModification(long latestLoadedModification) {
+        Platform.runLater(() -> {
+            this.latestLoadedModification.set(latestLoadedModification);
+        });
+    }
+
     public LongProperty latestLoadedModificationProperty() {
         return latestLoadedModification;
     }
 
     public long getLatestRepositoryModification() {
         return latestRepositoryModification.get();
+    }
+
+    public void setLatestRepositoryModification(long latestRepositoryModification) {
+        Platform.runLater(() -> {
+            this.latestRepositoryModification.set(latestRepositoryModification);
+        });
     }
 
     public LongProperty latestRepositoryModificationProperty() {
@@ -229,7 +242,7 @@ public class Project {
         if (study != null) {
             setStudy(study);
             Timestamp latestMod = getSystemModel().findLatestModification();
-            latestLoadedModification.setValue(latestMod.getTime());
+            setLatestLoadedModification(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
             initializeStateOfExternalModels();
         }
@@ -269,7 +282,7 @@ public class Project {
             // TODO: make more efficient, not to load the entire model, if it is not newer
             repositoryStudy = repository.loadStudy(projectName);
             Timestamp latestMod = repositoryStudy.getSystemModel().findLatestModification();
-            latestRepositoryModification.setValue(latestMod.getTime());
+            setLatestRepositoryModification(latestMod.getTime());
         } catch (RepositoryException e) {
             logger.error("Study not found!");
         } catch (Exception e) {

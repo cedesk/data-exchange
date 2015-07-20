@@ -62,6 +62,9 @@
                                                 text="Reload"/>
                                         <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="true"
                                                 onAction="#saveProject" text="Save"/>
+                                        <Separator orientation="VERTICAL"/>
+                                        <Button fx:id="diffButton" mnemonicParsing="true" onAction="#openDiffView"
+                                                text="View Changes"/>
                                     </items>
                                     <VBox.margin>
                                         <Insets/>
@@ -126,19 +129,6 @@
                                                 </Label>
                                             </children>
                                         </HBox>
-                                        <ToggleImageView fx:id="repositoryNewerIndicator" disable="true"
-                                                         fitHeight="24.0" fitWidth="24.0" pickOnBounds="true"
-                                                         preserveRatio="true" AnchorPane.rightAnchor="0.0">
-                                            <activeImage>
-                                                <Image url="@/icons/flash-orange.png"/>
-                                            </activeImage>
-                                            <inactiveImage>
-                                                <Image url="@/icons/flash-grey.png"/>
-                                            </inactiveImage>
-                                            <HBox.margin>
-                                                <Insets right="8"/>
-                                            </HBox.margin>
-                                        </ToggleImageView>
                                     </children>
                                 </AnchorPane>
                             </children>
