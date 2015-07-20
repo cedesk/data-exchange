@@ -17,6 +17,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
@@ -32,7 +33,6 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.view.ToggleImageView;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
@@ -45,6 +45,8 @@ public class MainController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(MainController.class);
 
+    private final static Image FLASH_ICON = new Image("/icons/flash-orange.png");
+
     private final Project project = new Project();
 
     @FXML
@@ -55,6 +57,9 @@ public class MainController implements Initializable {
 
     @FXML
     public Button saveButton;
+
+    @FXML
+    public Button diffButton;
 
     @FXML
     public Label statusbarLabel;
@@ -73,9 +78,6 @@ public class MainController implements Initializable {
 
     @FXML
     public Tab userRolesTab;
-
-    @FXML
-    public ToggleImageView repositoryNewerIndicator;
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
@@ -190,24 +192,35 @@ public class MainController implements Initializable {
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
 
         // TOOLBAR
-        project.latestRepositoryModificationProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if (newValue != null) {
-                    long timeOfModificationInRepository = newValue.longValue();
-                    long timeOfModificationLoaded = project.getLatestLoadedModification();
-                    boolean repoNewer = timeOfModificationInRepository > timeOfModificationLoaded;
-                    String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
-                    String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
-                    logger.info(repoTime + " > " + loadedTime + " = " + repoNewer);
-                    if (repoNewer) {
-                        updateRemoteModel();
-                    }
+        BooleanBinding repositoryNewer = Bindings.greaterThan(project.latestRepositoryModificationProperty(), project.latestLoadedModificationProperty());
+        diffButton.disableProperty().bind(repositoryNewer.not());
+        repositoryNewer.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                if (newValue) {
+                    ImageView imageView = new ImageView(FLASH_ICON);
+                    imageView.setFitWidth(8);
+                    imageView.setPreserveRatio(true);
+                    imageView.setSmooth(true);
+                    diffButton.setGraphic(imageView);
+                    diffButton.setGraphicTextGap(8);
+                } else {
+                    diffButton.setGraphic(null);
                 }
             }
         });
-        BooleanBinding repositoryNewer = Bindings.greaterThan(project.latestRepositoryModificationProperty(), project.latestLoadedModificationProperty());
-        repositoryNewerIndicator.activeStateProperty().bind(repositoryNewer);
+        project.latestRepositoryModificationProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                if (newValue != null && oldValue != null && oldValue.longValue() > 0) {
+                    long timeOfModificationInRepository = newValue.longValue();
+                    long timeOfModificationLoaded = project.getLatestLoadedModification();
+                    String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
+                    String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
+                    logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
+                    updateRemoteModel();
+                }
+            }
+        });
 
         project.addRepositoryStateObserver(new Observer() {
             @Override
@@ -243,9 +256,11 @@ public class MainController implements Initializable {
             studyNameLabel.setText(project.getStudy().getName());
             userNameLabel.setText(project.getUser().getName());
             userRoleLabel.setText(getDisciplineNames(project.getUser()));
-            // TODO: improve: update only visible tab
-            modelEditingController.updateView();
-            userRoleManagementController.updateView();
+            if (modelTab.isSelected()) {
+                modelEditingController.updateView();
+            } else if (userRolesTab.isSelected()) {
+                userRoleManagementController.updateView();
+            }
         } else {
             studyNameLabel.setText(project.getProjectName());
             userNameLabel.setText("--");
@@ -335,6 +350,27 @@ public class MainController implements Initializable {
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(this.statusbarLabel.getScene().getWindow());
 
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void openDiffView(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.MODEL_DIFF_VIEW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Model differences");
+            stage.getIcons().add(new Image("/icons/app-icon.png"));
+            stage.initModality(Modality.NONE);
+            stage.initOwner(this.statusbarLabel.getScene().getWindow());
+
+            DiffController controller = loader.getController();
+            controller.setSystemModels(project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
             stage.show();
         } catch (IOException e) {
             logger.error(e);
