@@ -61,21 +61,21 @@ public class Dialogues {
         }
     */
 
-    static File chooseExportPath() {
+    public static File chooseExportPath() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setInitialDirectory(StorageUtils.getAppDir());
         directoryChooser.setTitle("Select export path.");
         return directoryChooser.showDialog(null);
     }
 
-    static File chooseImportFile() {
+    public static File chooseImportFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(StorageUtils.getAppDir());
         fileChooser.setTitle("Select import file.");
         return fileChooser.showOpenDialog(null);
     }
 
-    static File chooseExternalModelFile() {
+    public static File chooseExternalModelFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(StorageUtils.getAppDir());
         fileChooser.setTitle("Select model file.");
@@ -83,7 +83,7 @@ public class Dialogues {
         return fileChooser.showOpenDialog(null);
     }
 
-    static Optional<String> inputModelNodeName(String defaultValue) {
+    public static Optional<String> inputModelNodeName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Node Name");
         dialog.setHeaderText("Please insert a name for the new node.");
@@ -91,7 +91,7 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
-    static Optional<String> inputDisciplineName(String defaultValue) {
+    public static Optional<String> inputDisciplineName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Discipline Name");
         dialog.setHeaderText("Please insert a name for the discipline.");
@@ -99,7 +99,7 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
-    static Optional<String> inputStudyName(String defaultValue) {
+    public static Optional<String> inputStudyName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Study Name");
         dialog.setHeaderText("Please insert a name for the new Study.");
@@ -107,7 +107,7 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
-    static Optional<String> inputParameterName(String defaultValue) {
+    public static Optional<String> inputParameterName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Parameter Name");
         dialog.setHeaderText("Please insert a name for the new parameter.");
@@ -115,7 +115,7 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
-    static Optional<String> inputUserName() {
+    public static Optional<String> inputUserName() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("User Name");
         dialog.setHeaderText("Please insert a name for the new user.");

@@ -218,6 +218,7 @@ public class MainController implements Initializable {
                     String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
                     logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
                     updateRemoteModel();
+                    UserNotifications.showActionableNotification(newButton.getScene().getWindow(), "Updates on study", "New version of study in repository!", MainController.this::openDiffView);
                 }
             }
         });
