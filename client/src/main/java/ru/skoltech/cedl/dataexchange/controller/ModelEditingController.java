@@ -53,6 +53,9 @@ public class ModelEditingController implements Initializable {
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
 
     @FXML
+    private SplitPane viewPane;
+
+    @FXML
     private TitledPane externalModelPane;
 
     @FXML
@@ -250,7 +253,7 @@ public class ModelEditingController implements Initializable {
             stage.setTitle("Revision History");
             stage.getIcons().add(new Image("/icons/app-icon.png"));
             stage.initModality(Modality.WINDOW_MODAL);
-            stage.initOwner(parameterTable.getScene().getWindow());
+            stage.initOwner(getAppWindow());
             RevisionHistoryController controller = loader.getController();
             controller.setRepository(project.getRepository());
             controller.setParameter(selectedParameter);
@@ -448,7 +451,7 @@ public class ModelEditingController implements Initializable {
 
     public Window getAppWindow() {
         if (appWindow == null) {
-            appWindow = structureTree.getScene().getWindow();
+            appWindow = viewPane.getScene().getWindow();
         }
         return appWindow;
     }

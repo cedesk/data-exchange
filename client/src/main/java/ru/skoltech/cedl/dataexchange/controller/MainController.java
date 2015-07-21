@@ -18,8 +18,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -50,34 +52,37 @@ public class MainController implements Initializable {
     private final Project project = new Project();
 
     @FXML
-    public Button newButton;
+    private Button newButton;
 
     @FXML
-    public Button loadButton;
+    private Button loadButton;
 
     @FXML
-    public Button saveButton;
+    private Button saveButton;
 
     @FXML
-    public Button diffButton;
+    private Button diffButton;
 
     @FXML
-    public Label statusbarLabel;
+    private Label statusbarLabel;
 
     @FXML
-    public Label studyNameLabel;
+    private Label studyNameLabel;
 
     @FXML
-    public Label userNameLabel;
+    private Label userNameLabel;
 
     @FXML
-    public Label userRoleLabel;
+    private Label userRoleLabel;
 
     @FXML
-    public Tab modelTab;
+    private Tab modelTab;
 
     @FXML
-    public Tab userRolesTab;
+    private Tab userRolesTab;
+
+    @FXML
+    private AnchorPane applicationPane;
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
@@ -218,7 +223,7 @@ public class MainController implements Initializable {
                     String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
                     logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
                     updateRemoteModel();
-                    UserNotifications.showActionableNotification(newButton.getScene().getWindow(), "Updates on study", "New version of study in repository!", MainController.this::openDiffView);
+                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", MainController.this::openDiffView);
                 }
             }
         });
@@ -250,6 +255,10 @@ public class MainController implements Initializable {
                 }
             });
         }
+    }
+
+    public Window getAppWindow() {
+        return applicationPane.getScene().getWindow();
     }
 
     private void updateView() {
@@ -349,7 +358,7 @@ public class MainController implements Initializable {
             stage.setTitle("Revision History");
             stage.getIcons().add(new Image("/icons/app-icon.png"));
             stage.initModality(Modality.WINDOW_MODAL);
-            stage.initOwner(this.statusbarLabel.getScene().getWindow());
+            stage.initOwner(getAppWindow());
 
             stage.show();
         } catch (IOException e) {
@@ -368,10 +377,30 @@ public class MainController implements Initializable {
             stage.setTitle("Model differences");
             stage.getIcons().add(new Image("/icons/app-icon.png"));
             stage.initModality(Modality.NONE);
-            stage.initOwner(this.statusbarLabel.getScene().getWindow());
+            stage.initOwner(getAppWindow());
 
             DiffController controller = loader.getController();
             controller.setSystemModels(project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void openSettingsDialog(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.SETTINGS_VIEW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Application settings");
+            stage.getIcons().add(new Image("/icons/app-icon.png"));
+            stage.initModality(Modality.NONE);
+            stage.initOwner(getAppWindow());
+
+            SettingsController controller = loader.getController();
             stage.show();
         } catch (IOException e) {
             logger.error(e);
