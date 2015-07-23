@@ -67,9 +67,19 @@ public class Project {
     }
 
     public Project(String projectName) {
-        this.repository = RepositoryFactory.getDatabaseRepository();
+        connectRepository();
         initialize(projectName);
         externalModelFileHandler = new ExternalModelFileHandler(this);
+    }
+
+    public void connectRepository() {
+        if (repository != null) {
+            try {
+                repository.close();
+            } catch (IOException ignore) {
+            }
+        }
+        this.repository = RepositoryFactory.getDatabaseRepository();
     }
 
     private void initialize(String projectName) {
