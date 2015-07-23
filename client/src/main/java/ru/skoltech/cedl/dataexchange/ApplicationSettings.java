@@ -106,6 +106,7 @@ public class ApplicationSettings {
     }
 
     public static void setRepositoryServerHostname(String repository) {
+        if (repository == null) return;
         String previousRepository = properties.getProperty(REPOSITORY_HOST);
         if (previousRepository == null || !previousRepository.equals(repository)) {
             properties.setProperty(REPOSITORY_HOST, repository);
@@ -123,6 +124,7 @@ public class ApplicationSettings {
     }
 
     public static void setRepositoryUserName(String userName) {
+        if (userName == null) return;
         String previousUser = properties.getProperty(REPOSITORY_USER);
         if (previousUser == null || !previousUser.equals(userName)) {
             properties.setProperty(REPOSITORY_USER, userName);
@@ -140,6 +142,7 @@ public class ApplicationSettings {
     }
 
     public static void setRepositoryPassword(String password) {
+        if (password == null) return;
         String previousPassword = properties.getProperty(REPOSITORY_PASSWORD);
         if (previousPassword == null || !previousPassword.equals(password)) {
             properties.setProperty(REPOSITORY_PASSWORD, password);

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
-<DialogPane xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1"
-        fx:controller="ru.skoltech.cedl.dataexchange.controller.SettingsController">
-    <content>
+<AnchorPane xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.SettingsController">
+    <children>
         <VBox>
             <children>
                 <TitledPane animated="false" text="Project">
@@ -32,23 +31,25 @@
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                             </rowConstraints>
                             <children>
-                                <TextField fx:id="dbHostnameText" GridPane.columnIndex="1"/>
-                                <TextField fx:id="dbUsernameText" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                <TextField fx:id="dbHostnameText" promptText="hostname (leave empty to use default)" GridPane.columnIndex="1"/>
+                                <TextField fx:id="dbUsernameText" promptText="username (leave empty to use default)" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="DB hostname"/>
+                                <PasswordField fx:id="dbPasswordText" promptText="password (leave empty to use default)" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                                 <Text layoutX="20.0" layoutY="40.0" strokeType="OUTSIDE" strokeWidth="0.0"
                                       text="DB username" GridPane.rowIndex="1"/>
                                 <Text layoutX="20.0" layoutY="70.0" strokeType="OUTSIDE" strokeWidth="0.0"
                                       text="DB password" GridPane.rowIndex="2"/>
-                                <PasswordField fx:id="dbPasswordText" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                             </children>
                         </GridPane>
                     </content>
                 </TitledPane>
+                <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+                    <items>
+                        <Button mnemonicParsing="false" text="Apply" onAction="#apply"/>
+                        <Button mnemonicParsing="false" text="Cancel" onAction="#cancel"/>
+                    </items>
+                </ToolBar>
             </children>
         </VBox>
-    </content>
-    <buttonTypes>
-        <ButtonType fx:constant="APPLY"  />
-        <ButtonType fx:constant="CANCEL"/>
-    </buttonTypes>
-</DialogPane>
+    </children>
+</AnchorPane>
