@@ -229,10 +229,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         return parent.getNodePath() + "::" + name;
     }
 
-    public boolean hasServerChange() {
-        return getServerValue() != null && !Precision.equals(getValue(), getServerValue(), 2);
-    }
-
     public Map<String, String> diff(ParameterModel other) {
         Map<String, String> diff = new HashMap<>();
         if ((this.name == null && other.name != null) || (this.name != null && other.name == null)
