@@ -54,7 +54,7 @@
                             <children>
                                 <TextField fx:id="exportReferenceText" editable="false" prefWidth="200.0"
                                            promptText="reference"/>
-                                <Button mnemonicParsing="false" text="Link"/>
+                                <Button mnemonicParsing="false" onAction="#chooseTarget" text="Link"/>
                             </children>
                         </HBox>
                     </children>

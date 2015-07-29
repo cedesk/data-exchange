@@ -140,6 +140,14 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     public void chooseSource(ActionEvent actionEvent) {
+        openChooser("valueReference");
+    }
+
+    public void chooseTarget(ActionEvent actionEvent) {
+        openChooser("exportReference");
+    }
+
+    public void openChooser(String fieldName) {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.SOURCE_SELECTOR);
@@ -152,7 +160,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(nameText.getScene().getWindow());
             SourceSelectorController controller = loader.getController();
-            controller.setParameterBean(parameterBean);
+            controller.setupBinding(parameterBean, fieldName);
             if (controller.canShow()) {
                 stage.showAndWait();
             }
