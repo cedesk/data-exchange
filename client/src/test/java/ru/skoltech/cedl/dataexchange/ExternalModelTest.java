@@ -79,12 +79,20 @@ public class ExternalModelTest {
         SystemModel systemModel = repository.storeSystemModel(testSat);
 
         ExternalModelReference valueReference = systemModel.getParameters().get(0).getValueReference();
+        Assert.assertEquals(externalModelReference, valueReference);
 
         ExternalModel extMo = ExternalModelFileHandler.newFromFile(file, testSat);
         valueReference.setExternalModel(extMo);
 
-        //ExternalModel externalModel1 = repository.storeExternalModel(externalModel);
+        repository.storeSystemModel(systemModel);
 
+        SystemModel systemModel1 = repository.loadSystemModel(testSat.getId());
+
+        ExternalModelReference reference = systemModel1.getParameters().get(0).getValueReference();
+        Assert.assertEquals(valueReference, reference);
+        ExternalModelReference exportReference = systemModel1.getParameters().get(0).getExportReference();
+        Assert.assertNotEquals(reference.getExternalModel(), exportReference.getExternalModel());
+        Assert.assertNotEquals(reference, exportReference);
     }
 
     @Test

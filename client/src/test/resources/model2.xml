@@ -12,7 +12,7 @@
         </parameter>
         <parameter name="parameter2" value="24.0" nature="INPUT" valueSource="MANUAL" isExported="true"
                    isReferenceValueOverridden="false">
-            <exportReference></exportReference>
+            <exportReference externalModel="sysmodel.xls" target="C8"/>
             <description></description>
         </parameter>
     </parameters>
