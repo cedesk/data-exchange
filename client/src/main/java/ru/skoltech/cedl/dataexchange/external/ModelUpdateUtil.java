@@ -28,7 +28,7 @@ public class ModelUpdateUtil {
         }
 
         List<ParameterUpdate> updates = new LinkedList<>();
-        ExternalModelEvaluator evaluator = ExternalModelEvaluatorFactory.getEvaluator(externalModel);
+        ExternalModelEvaluator evaluator = ExternalModelAccessorFactory.getEvaluator(externalModel);
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             // check whether parameter references external model
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
@@ -59,32 +59,26 @@ public class ModelUpdateUtil {
         }
     }
 
-    public static void applyParameterChangesFromExternalModel(ParameterModel parameterModel, Consumer<ParameterUpdate> parameterUpdateListener) {
+    public static void applyParameterChangesToExternalModel(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
+        ModelNode modelNode = externalModel.getParent();
 
-        ParameterUpdate parameterUpdate = null;
-        // check whether parameter references external model
-        if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-            ExternalModelReference valueReference = parameterModel.getValueReference();
-            if (valueReference != null && valueReference.getExternalModel() != null) {
-                ExternalModel externalModel = valueReference.getExternalModel();
-                ExternalModelEvaluator evaluator = ExternalModelEvaluatorFactory.getEvaluator(externalModel);
-                try {
-                    Double value = evaluator.getValue(valueReference.getTarget());
-                    if (!Precision.equals(parameterModel.getValue(), value, 2)) {
-                        parameterUpdate = new ParameterUpdate(parameterModel, value);
+        ExternalModelExporter exporter = ExternalModelAccessorFactory.getExporter(externalModel, externalModelFileHandler);
+        for (ParameterModel parameterModel : modelNode.getParameters()) {
+            // check whether parameter references external model
+            if (parameterModel.getIsExported() &&
+                    parameterModel.getExportReference() != null && !parameterModel.getExportReference().isEmpty()) {
+                String exportReference = parameterModel.getExportReference();
+                if (exportReference != null && !exportReference.isEmpty()) {
+                    // TODO: make sense of the reference and update value
+                    String target = null;
+                    try {
+                        exporter.setValue(target, parameterModel.getEffectiveValue()); // TODO: document behavior
+                    } catch (ExternalModelException e) {
+                        logger.warn("failed to export parameter " + parameterModel.getNodePath());
                     }
-                } catch (ExternalModelException e) {
-                    logger.error("unable to evaluate from: " + valueReference);
+                } else {
+                    logger.warn("parameter " + parameterModel.getNodePath() + " has empty exportReference");
                 }
-            }
-        } else {
-            logger.warn("parameter " + parameterModel.getNodePath() + " has empty valueReference");
-        }
-        // APPLY CHANGES
-        if (parameterUpdate == null) {
-            parameterUpdate.apply();
-            if (parameterUpdateListener != null) {
-                parameterUpdateListener.accept(parameterUpdate);
             }
         }
     }
