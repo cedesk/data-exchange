@@ -45,11 +45,13 @@ public class SourceSelectorController implements Initializable {
     private SpreadsheetView spreadsheetView;
 
     private BeanPathAdapter<ParameterModel> parameterBean;
+    private String fieldName;
 
     private ExternalModel externalModel;
 
-    public void setParameterBean(BeanPathAdapter<ParameterModel> parameterBean) {
+    public void setupBinding(BeanPathAdapter<ParameterModel> parameterBean, String fieldName) {
         this.parameterBean = parameterBean;
+        this.fieldName = fieldName;
         ParameterModel parameterModel = parameterBean.getBean();
         ModelNode modelNode = parameterModel.getParent();
 
@@ -65,7 +67,7 @@ public class SourceSelectorController implements Initializable {
             referenceText.getScene().getWindow().hide();
         } else {
             attachmentChooser.setValue(externalModel);
-            parameterBean.bindBidirectional("valueReference", referenceText.textProperty());
+            parameterBean.bindBidirectional(fieldName, referenceText.textProperty());
             updateView();
         }
     }
@@ -99,9 +101,9 @@ public class SourceSelectorController implements Initializable {
         if (focusedCell != null && focusedCell.getRow() >= 0) {
             String coordinates = SpreadsheetCoordinates.fromPosition(focusedCell);
             ExternalModelReference emr = new ExternalModelReference(externalModel, coordinates);
-            parameterBean.unBindBidirectional("valueReference", referenceText.textProperty());
+            parameterBean.unBindBidirectional(fieldName, referenceText.textProperty());
             parameterBean.getBean().setValueReference(emr);
-            parameterBean.bindBidirectional("valueReference", referenceText.textProperty());
+            parameterBean.bindBidirectional(fieldName, referenceText.textProperty());
         }
     }
 
