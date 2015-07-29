@@ -1,6 +1,5 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import org.apache.commons.math3.util.Precision;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
@@ -56,7 +55,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @XmlAttribute
     private boolean isExported = DEFAULT_EXPORTED;
 
-    private String exportReference;
+    private ExternalModelReference exportReference;
 
     private String description;
 
@@ -163,8 +162,8 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "externalModel", column = @Column(nullable = true)),
-            @AttributeOverride(name = "target", column = @Column(nullable = true))
+            @AttributeOverride(name = "externalModel_id", column = @Column(name = "importLinkModel_id", nullable = true)),
+            @AttributeOverride(name = "target", column = @Column(name = "importLinkField", nullable = true))
     })
     public ExternalModelReference getValueReference() {
         return valueReference;
@@ -198,11 +197,16 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.isExported = isExported;
     }
 
-    public String getExportReference() {
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "externalModel_id", column = @Column(name = "exportLinkModel_id", nullable = true)),
+            @AttributeOverride(name = "target", column = @Column(name = "exportLinkField", nullable = true))
+    })
+    public ExternalModelReference getExportReference() {
         return exportReference;
     }
 
-    public void setExportReference(String exportReference) {
+    public void setExportReference(ExternalModelReference exportReference) {
         this.exportReference = exportReference;
     }
 

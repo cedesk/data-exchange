@@ -2,9 +2,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import java.util.Objects;
 
@@ -51,6 +49,8 @@ public class ExternalModelReference {
     }
 
     @ManyToOne(targetEntity = ExternalModel.class, optional = true)
+    @JoinColumns({
+            @JoinColumn(name = "externalModel_id", referencedColumnName = "id", insertable = false, updatable = false)})
     public ExternalModel getExternalModel() {
         return externalModel;
     }

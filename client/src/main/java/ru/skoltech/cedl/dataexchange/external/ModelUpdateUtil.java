@@ -66,8 +66,8 @@ public class ModelUpdateUtil {
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             // check whether parameter references external model
             if (parameterModel.getIsExported() &&
-                    parameterModel.getExportReference() != null && !parameterModel.getExportReference().isEmpty()) {
-                String exportReference = parameterModel.getExportReference();
+                    parameterModel.getExportReference() != null && parameterModel.getExportReference().getExternalModel() != null) {
+                String exportReference = parameterModel.getExportReference().getTarget();
                 if (exportReference != null && !exportReference.isEmpty()) {
                     // TODO: make sense of the reference and update value
                     String target = null;
