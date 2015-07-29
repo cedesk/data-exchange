@@ -20,6 +20,8 @@ public class SpreadsheetAccessor implements Closeable {
     private Sheet sheet;
     private HSSFWorkbook wb;
 
+    private boolean modified = false;
+
     /**
      * Opens a XLS file and reads the cells of the given sheet for evaluation
      *
@@ -79,12 +81,32 @@ public class SpreadsheetAccessor implements Closeable {
         return result;
     }
 
+    private void setNumericValue(Cell cell, Double value) {
+        if (cell != null) {
+            markModified();
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(value);
+        }
+    }
+
+    private void markModified() {
+        this.modified = true;
+    }
+
+    public boolean isModified() {
+        return modified;
+    }
+
     public String getValueAsString(String coordinates) {
         return getValueAsString(getCell(coordinates));
     }
 
     public Double getNumericValue(String coordinates) {
         return getNumericValue(getCell(coordinates));
+    }
+
+    public void setNumericValue(String coordinates, Double value) {
+        setNumericValue(getCell(coordinates), value);
     }
 
     public Cell getCell(String coordinates) {
@@ -103,5 +125,9 @@ public class SpreadsheetAccessor implements Closeable {
     @Override
     public void close() throws IOException {
         wb.close();
+    }
+
+    public void saveChanges(OutputStream outputStream) throws IOException {
+        wb.write(outputStream);
     }
 }
