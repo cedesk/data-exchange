@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
+import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -46,6 +47,12 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     private ExternalModelReference valueReference;
 
+    @XmlTransient
+    private ExternalModel importModel;
+
+    @XmlTransient
+    private String importField;
+
     @XmlAttribute
     private boolean isReferenceValueOverridden = DEFAULT_OVERRIDDEN;
 
@@ -56,6 +63,12 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     private boolean isExported = DEFAULT_EXPORTED;
 
     private ExternalModelReference exportReference;
+
+    @XmlTransient
+    private ExternalModel exportModel;
+
+    @XmlTransient
+    private String exportField;
 
     private String description;
 
@@ -160,17 +173,41 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.valueSource = valueSource;
     }
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "externalModel_id", column = @Column(name = "importLinkModel_id", nullable = true)),
-            @AttributeOverride(name = "target", column = @Column(name = "importLinkField", nullable = true))
-    })
+    @Transient
     public ExternalModelReference getValueReference() {
+        if (importModel == null && importField == null)
+            return null;
+        if (valueReference == null) {
+            valueReference = new ExternalModelReference();
+        }
+        valueReference.setExternalModel(importModel);
+        valueReference.setTarget(importField);
         return valueReference;
     }
 
     public void setValueReference(ExternalModelReference valueReference) {
         this.valueReference = valueReference;
+        if (valueReference != null) {
+            this.importModel = valueReference.getExternalModel();
+            this.importField = valueReference.getTarget();
+        }
+    }
+
+    @ManyToOne(targetEntity = ExternalModel.class, optional = true, cascade = CascadeType.ALL)
+    public ExternalModel getImportModel() {
+        return importModel;
+    }
+
+    public void setImportModel(ExternalModel importModel) {
+        this.importModel = importModel;
+    }
+
+    public String getImportField() {
+        return importField;
+    }
+
+    public void setImportField(String importField) {
+        this.importField = importField;
     }
 
     public boolean getIsReferenceValueOverridden() {
@@ -197,17 +234,41 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.isExported = isExported;
     }
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "externalModel_id", column = @Column(name = "exportLinkModel_id", nullable = true)),
-            @AttributeOverride(name = "target", column = @Column(name = "exportLinkField", nullable = true))
-    })
+    @Transient
     public ExternalModelReference getExportReference() {
+        if (exportModel == null && exportField == null)
+            return null;
+        if (exportReference == null) {
+            exportReference = new ExternalModelReference();
+        }
+        exportReference.setExternalModel(exportModel);
+        exportReference.setTarget(exportField);
         return exportReference;
     }
 
     public void setExportReference(ExternalModelReference exportReference) {
         this.exportReference = exportReference;
+        if (exportReference != null) {
+            this.exportModel = exportReference.getExternalModel();
+            this.exportField = exportReference.getTarget();
+        }
+    }
+
+    @ManyToOne(targetEntity = ExternalModel.class, optional = true, cascade = CascadeType.ALL)
+    public ExternalModel getExportModel() {
+        return exportModel;
+    }
+
+    public void setExportModel(ExternalModel exportModel) {
+        this.exportModel = exportModel;
+    }
+
+    public String getExportField() {
+        return exportField;
+    }
+
+    public void setExportField(String exportField) {
+        this.exportField = exportField;
     }
 
     public String getDescription() {

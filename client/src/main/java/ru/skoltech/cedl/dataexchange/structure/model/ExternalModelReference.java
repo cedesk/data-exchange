@@ -11,7 +11,6 @@ import java.util.Objects;
  */
 @XmlType(propOrder = {"externalModel", "target"})
 @XmlAccessorType(XmlAccessType.FIELD)
-@Embeddable
 public class ExternalModelReference {
 
     @XmlIDREF
@@ -48,9 +47,6 @@ public class ExternalModelReference {
         throw new IllegalArgumentException("invalid external model name");
     }
 
-    @ManyToOne(targetEntity = ExternalModel.class, optional = true)
-    @JoinColumns({
-            @JoinColumn(name = "externalModel_id", referencedColumnName = "id", insertable = false, updatable = false)})
     public ExternalModel getExternalModel() {
         return externalModel;
     }
