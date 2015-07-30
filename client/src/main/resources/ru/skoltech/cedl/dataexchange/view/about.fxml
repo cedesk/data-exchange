@@ -1,73 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import org.controlsfx.control.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="280.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/8"
-            fx:controller="ru.skoltech.cedl.dataexchange.controller.AboutController">
+<?import org.controlsfx.control.HyperlinkLabel?>
+
+<AnchorPane prefHeight="280.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.AboutController">
     <children>
-        <VBox layoutX="287.0" layoutY="4.0" prefHeight="280.0" prefWidth="420.0" AnchorPane.bottomAnchor="0.0"
-              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <VBox layoutX="287.0" layoutY="4.0" prefHeight="280.0" prefWidth="420.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
                 <HBox>
                     <children>
-                        <Label maxWidth="1.7976931348623157E308" text="CEDESK" textAlignment="CENTER"
-                               HBox.hgrow="ALWAYS">
+                        <Label maxWidth="1.7976931348623157E308" text="CEDESK" textAlignment="CENTER" HBox.hgrow="ALWAYS">
                             <font>
-                                <Font name="Arial Black" size="22.0"/>
+                                <Font name="Arial Black" size="22.0" />
                             </font>
                             <HBox.margin>
-                                <Insets bottom="8.0" left="12.0" right="8.0" top="12.0"/>
+                                <Insets bottom="8.0" left="12.0" right="8.0" top="12.0" />
                             </HBox.margin>
                         </Label>
-                        <ImageView fitHeight="85.0" fitWidth="129.0" AnchorPane.rightAnchor="4.0"
-                                   AnchorPane.topAnchor="4.0">
+                        <ImageView fitHeight="85.0" fitWidth="129.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0">
                             <image>
-                                <Image url="@/Logo0.png"/>
+                                <Image url="@/Logo0.png" />
                             </image>
                             <HBox.margin>
-                                <Insets bottom="4" right="4" top="4"/>
+                                <Insets bottom="4" right="4" top="4" />
                             </HBox.margin>
                         </ImageView>
                     </children>
                 </HBox>
-                <GridPane prefHeight="233.0" prefWidth="420.0">
+                <GridPane prefHeight="182.0" prefWidth="420.0">
                     <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="100.0"/>
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                     </columnConstraints>
                     <rowConstraints>
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                        <RowConstraints/>
+                        <RowConstraints maxHeight="Infinity" minHeight="10.0" prefHeight="12.0" vgrow="ALWAYS" />
+                        <RowConstraints maxHeight="Infinity" minHeight="10.0" prefHeight="12.0" vgrow="ALWAYS" />
+                        <RowConstraints maxHeight="Infinity" minHeight="10.0" vgrow="ALWAYS" />
+                        <RowConstraints maxHeight="0.0" minHeight="0.0" prefHeight="0.0" />
                     </rowConstraints>
                     <children>
+                        <Label text="Version Info" GridPane.halignment="RIGHT">
+                            <GridPane.margin>
+                                <Insets right="8.0" />
+                            </GridPane.margin>
+                        </Label>
                         <Label text="Authors" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
                             <GridPane.margin>
-                                <Insets right="8.0"/>
+                                <Insets right="8.0" />
                             </GridPane.margin>
                         </Label>
                         <Label text="Libraries" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
                             <GridPane.margin>
-                                <Insets right="8.0"/>
+                                <Insets right="8.0" />
                             </GridPane.margin>
                         </Label>
-                        <Label text="Version Info" GridPane.halignment="RIGHT">
-                            <GridPane.margin>
-                                <Insets right="8.0"/>
-                            </GridPane.margin>
-                        </Label>
-                        <Label fx:id="versionInfoLabel" maxWidth="1.7976931348623157E308" text="&lt;&gt;"
-                               GridPane.columnIndex="1"/>
-                        <Label fx:id="authorsInfoLabel" maxWidth="1.7976931348623157E308" text="&lt;&gt;"
-                               GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                        <Label fx:id="librariesInfoLabel" maxWidth="1.7976931348623157E308" text="&lt;&gt;"
-                               GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                        <Label fx:id="versionInfoLabel" maxWidth="-Infinity" text="&lt;&gt;" GridPane.columnIndex="1" />
+                        <HyperlinkLabel fx:id="authorsInfoLabel" text="--" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <HyperlinkLabel fx:id="librariesInfoLabel" text="--" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                     </children>
                 </GridPane>
             </children>
