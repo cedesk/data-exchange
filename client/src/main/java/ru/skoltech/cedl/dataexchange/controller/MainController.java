@@ -355,7 +355,7 @@ public class MainController implements Initializable {
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.setTitle("Revision History");
+            stage.setTitle("About CEDESK");
             stage.getIcons().add(new Image("/icons/app-icon.png"));
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(getAppWindow());
