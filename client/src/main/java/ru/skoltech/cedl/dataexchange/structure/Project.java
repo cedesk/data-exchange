@@ -404,6 +404,10 @@ public class Project {
         markStudyModified();
     }
 
+    public boolean isStudyInRepository() {
+        return repositoryStateMachine.wasLoadedOrSaved();
+    }
+
     private class AccessChecker implements Predicate<ModelNode> {
         @Override
         public boolean test(ModelNode modelNode) {
