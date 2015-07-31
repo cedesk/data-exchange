@@ -14,14 +14,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
-import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
@@ -42,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -444,9 +441,13 @@ public class ModelEditingController implements Initializable {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
             if (newValue != null) {
+                ModelNode modelNode = newValue.getParent();
+                boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
+                logger.debug("selected parameter: " + newValue.getNodePath() + ", editable: " + editable);
+
                 parameterEditor.setProject(project);
                 parameterEditor.setParameterModel(newValue);
-                parameterEditor.setVisible(true);
+                parameterEditor.setVisible(editable); // TODO: allow viewing
             } else {
                 parameterEditor.setVisible(false);
             }
