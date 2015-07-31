@@ -33,7 +33,7 @@ public class ParameterFieldCell extends TextFieldTableCell<ParameterModel, Objec
         if (item != null && !empty) {
             setText(item.toString());
             ParameterModel parameterModel = (ParameterModel) getTableRow().getItem();
-            setEditable(parameterModel != null && parameterModel.getValueSource() == ParameterValueSource.MANUAL);
+            setEditable(false);//parameterModel != null && parameterModel.getValueSource() == ParameterValueSource.MANUAL);
             if (parameterModel != null) {
                 boolean serverValueIsChanged = parameterModel.getServerValue() != null && !Precision.equals(parameterModel.getValue(), parameterModel.getServerValue(), 2);
                 if (serverValueIsChanged) {
