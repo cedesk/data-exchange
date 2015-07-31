@@ -106,12 +106,6 @@ public class ModelEditingController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // STRUCTURE TREE VIEW
-        structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
-        BooleanBinding noSelectionOnStructureTreeView = structureTree.getSelectionModel().selectedItemProperty().isNull();
-        BooleanBinding structureNotEditable = structureTree.editableProperty().not();
-        addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCanHaveChildren.or(structureNotEditable)));
-        deleteNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
-
         structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
             @Override
             public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
@@ -128,6 +122,13 @@ public class ModelEditingController implements Initializable {
         // STRUCTURE TREE CONTEXT MENU
         structureTree.setContextMenu(makeStructureTreeContextMenu());
 
+        // STRUCTURE MODIFICATION BUTTONS
+        structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
+        BooleanBinding noSelectionOnStructureTreeView = structureTree.getSelectionModel().selectedItemProperty().isNull();
+        BooleanBinding structureNotEditable = structureTree.editableProperty().not();
+        addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCanHaveChildren.or(structureNotEditable)));
+        deleteNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
+
         // EXTERNAL MODEL ATTACHMENT
         externalModelPane.disableProperty().bind(selectedNodeIsEditable.not());
 
@@ -137,40 +138,23 @@ public class ModelEditingController implements Initializable {
 
         // NODE PARAMETER TABLE
         parameterTable.editableProperty().bind(selectedNodeIsEditable);
-        Callback<TableColumn<Object, String>, TableCell<Object, String>> textFieldFactory = TextFieldTableCell.forTableColumn();
-        parameterNameColumn.setCellFactory(textFieldFactory);
-        //parameterNameColumn.setOnEditCommit(new ParameterModelEditListener(ParameterModel::setName));
-
         parameterValueColumn.setCellFactory(new Callback<TableColumn<ParameterModel, Object>, TableCell<ParameterModel, Object>>() {
             @Override
             public TableCell<ParameterModel, Object> call(TableColumn<ParameterModel, Object> param) {
                 return new ParameterFieldCell(new DoubleStringConverter());
             }
         });
-        parameterValueColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<ParameterModel, Double>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<ParameterModel, Double> event) {
-                ParameterModel parameterModel = event.getRowValue();
-                if (!Precision.equals(event.getOldValue(), event.getNewValue(), 2)) {
-                    parameterModel.setValue(event.getNewValue());
-                    project.markStudyModified();
-                }
-            }
-        });
-
-        parameterDescriptionColumn.setCellFactory(textFieldFactory);
-        //parameterDescriptionColumn.setOnEditCommit(new ParameterModelEditListener(ParameterModel::setDescription));
 
         viewParameters = new ViewParameters();
         parameterTable.setItems(viewParameters.getItems());
         parameterTable.getSelectionModel().selectedItemProperty().addListener(new ParameterModelSelectionListener());
 
+        // NODE PARAMETERS TABLE CONTEXT MENU
         ContextMenu parameterContextMenu = new ContextMenu();
         MenuItem addNodeMenuItem = new MenuItem("View history");
         addNodeMenuItem.setOnAction(ModelEditingController.this::openParameterHistoryDialog);
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
-
         parameterEditor.setVisible(false);
     }
 
@@ -499,22 +483,6 @@ public class ModelEditingController implements Initializable {
                 selectedNodeIsEditable.setValue(false);
                 externalModelFilePath.setText(null);
             }
-        }
-    }
-
-    private class ParameterModelEditListener implements EventHandler<TableColumn.CellEditEvent<ParameterModel, String>> {
-
-        private BiConsumer<ParameterModel, String> setterMethod;
-
-        public ParameterModelEditListener(BiConsumer<ParameterModel, String> setterMethod) {
-            this.setterMethod = setterMethod;
-        }
-
-        @Override
-        public void handle(TableColumn.CellEditEvent<ParameterModel, String> event) {
-            ParameterModel parameterModel = event.getRowValue();
-            setterMethod.accept(parameterModel, event.getNewValue());
-            project.markStudyModified();
         }
     }
 
