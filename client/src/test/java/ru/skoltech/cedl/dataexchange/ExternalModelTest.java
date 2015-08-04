@@ -91,7 +91,6 @@ public class ExternalModelTest {
         ExternalModelReference reference = systemModel1.getParameters().get(0).getValueReference();
         Assert.assertEquals(valueReference, reference);
         ExternalModelReference exportReference = systemModel1.getParameters().get(0).getExportReference();
-        Assert.assertNotEquals(reference.getExternalModel(), exportReference.getExternalModel());
         Assert.assertNotEquals(reference, exportReference);
     }
 
