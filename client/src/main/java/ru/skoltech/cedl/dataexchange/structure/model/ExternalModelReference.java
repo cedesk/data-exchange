@@ -86,7 +86,7 @@ public class ExternalModelReference {
     @Override
     public String toString() {
         if (externalModel == null) {
-            return "";
+            return "(empty)";
         } else {
             return externalModel.getName() + ":" + target;
         }

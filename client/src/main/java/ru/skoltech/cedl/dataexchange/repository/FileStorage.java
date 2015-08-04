@@ -92,6 +92,8 @@ public class FileStorage {
         }
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             parameterModel.setParent(modelNode);
+            parameterModel.setValueReference(new ExternalModelReference(parameterModel.getImportModel(), parameterModel.getImportField()));
+            parameterModel.setExportReference(new ExternalModelReference(parameterModel.getExportModel(), parameterModel.getExportField()));
         }
         if (modelNode instanceof CompositeModelNode) {
             CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
