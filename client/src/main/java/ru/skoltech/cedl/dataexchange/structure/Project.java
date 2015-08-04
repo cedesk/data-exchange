@@ -201,6 +201,7 @@ public class Project {
             Timestamp latestMod = study.getSystemModel().findLatestModification();
             latestLoadedModification.setValue(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+            runExportToExternalModels();
             storeChangedExternalModels();
             ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
@@ -212,6 +213,16 @@ public class Project {
             logger.error("Error storing study!", e);
         }
         return false;
+    }
+
+    private void runExportToExternalModels() {
+
+        SystemModel systemModel = getSystemModel();
+        Iterator<ExternalModel> externalModelsIterator = systemModel.externalModelsIterator();
+        while (externalModelsIterator.hasNext()) {
+            ExternalModel externalModel = externalModelsIterator.next();
+            ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler);
+        }
     }
 
     private void storeChangedExternalModels() {
@@ -391,6 +402,10 @@ public class Project {
     public void addChangedExternalModel(ExternalModel externalModel) {
         externalModelFileHandler.addChangedExternalModel(externalModel);
         markStudyModified();
+    }
+
+    public boolean isStudyInRepository() {
+        return repositoryStateMachine.wasLoadedOrSaved();
     }
 
     private class AccessChecker implements Predicate<ModelNode> {

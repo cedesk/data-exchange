@@ -83,7 +83,10 @@ public class DummySystemBuilder {
         }
         if (Math.random() > .5) {
             parameterModel.setIsExported(true);
-            parameterModel.setExportReference("");
+            ExternalModelReference exportLink = new ExternalModelReference();
+            exportLink.setExternalModel(null);
+            exportLink.setTarget("Z9");
+            parameterModel.setExportReference(exportLink);
         } else {
             parameterModel.setIsExported(false);
         }
