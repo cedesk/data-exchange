@@ -6,6 +6,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.StringConverter;
+import org.apache.commons.math3.util.Precision;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
 
@@ -32,27 +33,30 @@ public class ParameterFieldCell extends TextFieldTableCell<ParameterModel, Objec
         if (item != null && !empty) {
             setText(item.toString());
             ParameterModel parameterModel = (ParameterModel) getTableRow().getItem();
-            setEditable(parameterModel != null && parameterModel.getValueSource() == ParameterValueSource.MANUAL);
-            if (parameterModel != null && parameterModel.hasServerChange()) {
-                // set graphical hint
-                ImageView imageView = new ImageView(FLASH_ICON);
-                imageView.setFitWidth(8);
-                imageView.setPreserveRatio(true);
-                imageView.setSmooth(true);
-                setGraphic(imageView);
-                setGraphicTextGap(8);
+            setEditable(false);//parameterModel != null && parameterModel.getValueSource() == ParameterValueSource.MANUAL);
+            if (parameterModel != null) {
+                boolean serverValueIsChanged = parameterModel.getServerValue() != null && !Precision.equals(parameterModel.getValue(), parameterModel.getServerValue(), 2);
+                if (serverValueIsChanged) {
+                    // set graphical hint
+                    ImageView imageView = new ImageView(FLASH_ICON);
+                    imageView.setFitWidth(8);
+                    imageView.setPreserveRatio(true);
+                    imageView.setSmooth(true);
+                    setGraphic(imageView);
+                    setGraphicTextGap(8);
 
-                // set tooltip
-                Tooltip tooltip = new Tooltip();
-                tooltip.setText("Newer value in repository: " + parameterModel.getServerValue().toString());
-                setTooltip(tooltip);
+                    // set tooltip
+                    Tooltip tooltip = new Tooltip();
+                    tooltip.setText("Newer value in repository: " + parameterModel.getServerValue().toString());
+                    setTooltip(tooltip);
+                } else {
+                    setGraphic(null);
+                }
             } else {
+                setText(null);
                 setGraphic(null);
+                setEditable(false);
             }
-        } else {
-            setText(null);
-            setGraphic(null);
-            setEditable(false);
         }
     }
 }

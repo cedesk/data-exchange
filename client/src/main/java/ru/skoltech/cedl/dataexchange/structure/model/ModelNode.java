@@ -138,6 +138,10 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         return new ExternalModelTreeIterator(this);
     }
 
+    public Iterator<ParameterModel> parametersTreeIterator() {
+        return new ParameterTreeIterator(this);
+    }
+
     @Transient
     public boolean isLeafNode() {
         return true;

@@ -118,6 +118,7 @@ public class MainController implements Initializable {
         if (studyChoice.isPresent()) {
             String studyName = studyChoice.get();
             project.setProjectName(studyName);
+            project.setRepositoryStudy(null);
             reloadProject(null);
         }
     }
@@ -219,11 +220,13 @@ public class MainController implements Initializable {
                 if (newValue != null && oldValue != null && oldValue.longValue() > 0) {
                     long timeOfModificationInRepository = newValue.longValue();
                     long timeOfModificationLoaded = project.getLatestLoadedModification();
-                    String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
-                    String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
-                    logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
-                    updateRemoteModel();
-                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", MainController.this::openDiffView);
+                    if (timeOfModificationInRepository > timeOfModificationLoaded) {
+                        String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
+                        String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
+                        logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
+                        updateRemoteModel();
+                        UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", MainController.this::openDiffView);
+                    }
                 }
             }
         });

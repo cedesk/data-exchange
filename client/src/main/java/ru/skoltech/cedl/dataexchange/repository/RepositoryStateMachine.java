@@ -10,6 +10,8 @@ public class RepositoryStateMachine extends Observable {
 
     private RepositoryState state;
 
+    private boolean wasLoadedOrSaved = false;
+
     public RepositoryStateMachine() {
         state = RepositoryState.INITIAL;
     }
@@ -26,6 +28,14 @@ public class RepositoryStateMachine extends Observable {
     }
 
     private void setState(RepositoryState state) {
+        switch (state) {
+            case INITIAL:
+                wasLoadedOrSaved = false;
+                break;
+            case SAVED:
+                wasLoadedOrSaved = true;
+                break;
+        }
         if (this.state != state) {
             this.state = state;
             setChanged();
@@ -48,6 +58,10 @@ public class RepositoryStateMachine extends Observable {
 
     public void reset() {
         this.setState(RepositoryState.INITIAL);
+    }
+
+    public boolean wasLoadedOrSaved() {
+        return wasLoadedOrSaved;
     }
 
     public enum RepositoryState {

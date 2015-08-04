@@ -9,6 +9,9 @@ import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.File;
@@ -54,6 +57,42 @@ public class ExternalModelTest {
         ExternalModel externalModel2 = repository.loadExternalModel(pk);
 
         Assert.assertArrayEquals(externalModel1.getAttachment(), externalModel2.getAttachment());
+    }
+
+    @Test
+    public void testExternalModelReferences() throws URISyntaxException, IOException, RepositoryException {
+        File file = new File(this.getClass().getResource("/attachment.xls").toURI());
+
+        SystemModel testSat = new SystemModel("testSat");
+        repository.storeSystemModel(testSat);
+
+        ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
+        ExternalModelReference externalModelReference = new ExternalModelReference();
+        externalModelReference.setExternalModel(externalModel);
+        externalModelReference.setTarget("AA11");
+
+        ParameterModel parameterModel = new ParameterModel("testPar", 592.65);
+        parameterModel.setValueSource(ParameterValueSource.REFERENCE);
+        parameterModel.setValueReference(externalModelReference);
+
+        testSat.addParameter(parameterModel);
+        SystemModel systemModel = repository.storeSystemModel(testSat);
+
+        ExternalModelReference valueReference = systemModel.getParameters().get(0).getValueReference();
+        Assert.assertEquals(externalModelReference, valueReference);
+
+        ExternalModel extMo = ExternalModelFileHandler.newFromFile(file, testSat);
+        valueReference.setExternalModel(extMo);
+
+        repository.storeSystemModel(systemModel);
+
+        SystemModel systemModel1 = repository.loadSystemModel(testSat.getId());
+
+        ExternalModelReference reference = systemModel1.getParameters().get(0).getValueReference();
+        Assert.assertEquals(valueReference, reference);
+        ExternalModelReference exportReference = systemModel1.getParameters().get(0).getExportReference();
+        Assert.assertNotEquals(reference.getExternalModel(), exportReference.getExternalModel());
+        Assert.assertNotEquals(reference, exportReference);
     }
 
     @Test
