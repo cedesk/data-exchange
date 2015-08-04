@@ -190,11 +190,14 @@ public class ModelEditingController implements Initializable {
         modelNode.diffParameters(item.getRemoteValue());
         boolean showOnlyOutputParameters = !selectedNodeIsEditable.getValue();
         viewParameters.displayParameters(modelNode.getParameters(), showOnlyOutputParameters);
+        logger.debug("updateParameterTable " + showOnlyOutputParameters + " #" + viewParameters.getItems().size());
 
         parameterTable.autosize();
         // TODO: maybe redo selection only if same node
         if (selectedIndex < parameterTable.getItems().size()) {
             parameterTable.getSelectionModel().select(selectedIndex);
+        } else if (parameterTable.getItems().size() > 0) {
+            parameterTable.getSelectionModel().select(0);
         }
     }
 
@@ -464,10 +467,11 @@ public class ModelEditingController implements Initializable {
                 boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
                 logger.debug("selected node: " + modelNode.getNodePath() + ", editable: " + editable);
 
-                ModelEditingController.this.updateParameterTable(newValue);
                 selectedNodeCanHaveChildren.setValue(!(modelNode instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(modelNode.isRootNode());
                 selectedNodeIsEditable.setValue(editable);
+
+                ModelEditingController.this.updateParameterTable(newValue);
                 List<ExternalModel> externalModels = modelNode.getExternalModels();
                 if (externalModels.size() > 0) { // TODO: allow more external models
                     ExternalModel externalModel = externalModels.get(0);
