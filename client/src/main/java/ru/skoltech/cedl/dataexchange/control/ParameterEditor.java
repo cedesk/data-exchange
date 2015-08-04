@@ -132,11 +132,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     public void setParameterModel(ParameterModel parameterModel) {
-        if (parameterBean == null) {
-            parameterBean = new BeanPathAdapter<>(parameterModel);
-        } else {
-            parameterBean.setBean(parameterModel);
-        }
+        parameterBean.setBean(parameterModel);
     }
 
     public void chooseSource(ActionEvent actionEvent) {
