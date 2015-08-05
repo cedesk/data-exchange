@@ -18,11 +18,8 @@ public class StructureTreeItemFactory {
 
     public static final Image FLASH_OVERLAY = new Image("/icons/flash-ol.png");
     private static final Logger logger = Logger.getLogger(StructureTreeItemFactory.class);
-    private final static Image SYS_ICON = new Image("/icons/element_l1.png");
-    private final static Image SUBSYS_ICON = new Image("/icons/element_l2.png");
-    private final static Image ELEMENT_ICON = new Image("/icons/element_l3.png");
-    private final static Image INSTRUMENT_ICON = new Image("/icons/element_l4.png");
     private static final int ICON_SIZE = 24;
+    private static IconSet ICON_SET = new IconSet.Nodes();
 
     public static StructureTreeItem getTreeView(CompositeModelNode modelNode) {
         StructureTreeItem node = getTreeNodeView(modelNode);
@@ -78,21 +75,27 @@ public class StructureTreeItemFactory {
 
     private static void setGraphic(StructureTreeItem structureTreeItem, boolean overlayFlash) {
         ModelNode model = structureTreeItem.getValue();
+        IconType iconType = getIconTypeForModel(model);
+        structureTreeItem.setGraphic(getImageView(iconType, overlayFlash));
+    }
+
+    private static IconType getIconTypeForModel(ModelNode model) {
         if (model instanceof SystemModel) {
-            structureTreeItem.setGraphic(getImageView(SYS_ICON, overlayFlash));
+            return IconType.SYSTEM;
         } else if (model instanceof SubSystemModel) {
-            structureTreeItem.setGraphic(getImageView(SUBSYS_ICON, overlayFlash));
+            return IconType.SUBSYSTEM;
         } else if (model instanceof ElementModel) {
-            structureTreeItem.setGraphic(getImageView(ELEMENT_ICON, overlayFlash));
+            return IconType.ELEMENT;
         } else if (model instanceof InstrumentModel) {
-            structureTreeItem.setGraphic(getImageView(INSTRUMENT_ICON, overlayFlash));
+            return IconType.INSTRUMENT;
         } else {
             logger.error("UNKNOWN model encountered: " + model.getName() + " (" + model.getClass().getName() + "");
+            return null;
         }
     }
 
-    private static Node getImageView(Image image, boolean overlayFlash) {
-        ImageView icon = new ImageView(image);
+    private static Node getImageView(IconType iconType, boolean overlayFlash) {
+        ImageView icon = new ImageView(ICON_SET.getIcon(iconType));
         icon.setFitHeight(ICON_SIZE);
         icon.setFitWidth(ICON_SIZE);
 

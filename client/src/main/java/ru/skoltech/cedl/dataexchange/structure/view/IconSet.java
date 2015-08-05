@@ -1,0 +1,59 @@
+package ru.skoltech.cedl.dataexchange.structure.view;
+
+import javafx.scene.image.Image;
+
+/**
+ * Created by D.Knoll on 05.08.2015.
+ */
+public interface IconSet {
+
+    Image getIcon(IconType iconType);
+
+    class Elements implements IconSet {
+        private final static Image SYS_ICON = new Image("/icons/element_l1.png");
+        private final static Image SUBSYS_ICON = new Image("/icons/element_l2.png");
+        private final static Image ELEMENT_ICON = new Image("/icons/element_l3.png");
+        private final static Image INSTRUMENT_ICON = new Image("/icons/element_l4.png");
+
+        @Override
+        public Image getIcon(IconType iconType) {
+            switch (iconType) {
+                case SYSTEM:
+                    return SYS_ICON;
+                case SUBSYSTEM:
+                    return SUBSYS_ICON;
+                case ELEMENT:
+
+                    return ELEMENT_ICON;
+                case INSTRUMENT:
+                    return INSTRUMENT_ICON;
+                default:
+                    return null; // TODO:
+            }
+        }
+    }
+
+    class Nodes implements IconSet {
+        private final static Image SYS_ICON = new Image("/icons/node_l1.png");
+        private final static Image SUBSYS_ICON = new Image("/icons/node_l2.png");
+        private final static Image ELEMENT_ICON = new Image("/icons/node_l3.png");
+        private final static Image INSTRUMENT_ICON = new Image("/icons/node_l4.png");
+
+        @Override
+        public Image getIcon(IconType iconType) {
+            switch (iconType) {
+                case SYSTEM:
+                    return SYS_ICON;
+                case SUBSYSTEM:
+                    return SUBSYS_ICON;
+                case ELEMENT:
+
+                    return ELEMENT_ICON;
+                case INSTRUMENT:
+                    return INSTRUMENT_ICON;
+                default:
+                    return null; // TODO:
+            }
+        }
+    }
+}
