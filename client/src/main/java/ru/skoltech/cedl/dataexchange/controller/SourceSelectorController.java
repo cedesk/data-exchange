@@ -10,7 +10,9 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import jfxtras.labs.scene.control.BeanPathAdapter;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
@@ -24,6 +26,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -55,9 +58,11 @@ public class SourceSelectorController implements Initializable {
         ParameterModel parameterModel = parameterBean.getBean();
         ModelNode modelNode = parameterModel.getParent();
 
+        ExternalModelReference reference = getExternalModelReference();
+
         ExternalModel externalModel = null;
-        if (parameterModel.getValueReference() != null && parameterModel.getValueReference().getExternalModel() != null) {
-            externalModel = parameterModel.getValueReference().getExternalModel();
+        if (reference != null && reference.getExternalModel() != null) {
+            externalModel = reference.getExternalModel();
         } else if (modelNode.getExternalModels().size() > 0) {
             externalModel = modelNode.getExternalModels().get(0);
             attachmentChooser.setItems(FXCollections.observableArrayList(modelNode.getExternalModels()));
@@ -67,13 +72,37 @@ public class SourceSelectorController implements Initializable {
             referenceText.getScene().getWindow().hide();
         } else {
             attachmentChooser.setValue(externalModel);
-            parameterBean.bindBidirectional(fieldName, referenceText.textProperty());
             updateView();
         }
     }
 
+    public ExternalModelReference getExternalModelReference() {
+        ExternalModelReference reference = new ExternalModelReference();
+        try {
+            reference = (ExternalModelReference) PropertyUtils.getProperty(parameterBean.getBean(), fieldName);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            logger.error("error getting reference on model");
+        }
+        return reference;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        attachmentChooser.setConverter(new StringConverter<ExternalModel>() {
+            @Override
+            public String toString(ExternalModel externalModel) {
+                if (externalModel == null) {
+                    return null;
+                } else {
+                    return externalModel.getName();
+                }
+            }
+
+            @Override
+            public ExternalModel fromString(String string) {
+                return null;
+            }
+        });
         attachmentChooser.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 externalModel = newValue;
@@ -90,6 +119,7 @@ public class SourceSelectorController implements Initializable {
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 Grid grid = SpreadsheetFactory.getGrid(inputStream, 0);
                 spreadsheetView.setGrid(grid);
+                // TODO: select current coordinates
             }
         } catch (Exception ex) {
             logger.error("Error reading external model spreadsheet.", ex);
@@ -101,9 +131,11 @@ public class SourceSelectorController implements Initializable {
         if (focusedCell != null && focusedCell.getRow() >= 0) {
             String coordinates = SpreadsheetCoordinates.fromPosition(focusedCell);
             ExternalModelReference emr = new ExternalModelReference(externalModel, coordinates);
-            parameterBean.unBindBidirectional(fieldName, referenceText.textProperty());
-            parameterBean.getBean().setValueReference(emr);
-            parameterBean.bindBidirectional(fieldName, referenceText.textProperty());
+            try {
+                PropertyUtils.setProperty(parameterBean.getBean(), fieldName, emr);
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                logger.error("error setting parameter reference " + fieldName);
+            }
         }
     }
 
@@ -121,6 +153,7 @@ public class SourceSelectorController implements Initializable {
     }
 
     public void updateView() {
+        referenceText.textProperty().setValue(getExternalModelReference().toString());
         this.refreshTable(null);
     }
 

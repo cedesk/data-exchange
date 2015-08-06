@@ -125,7 +125,17 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
 
     @Override
     public String toString() {
-        return id + ":" + name;
+        final StringBuilder sb = new StringBuilder("ExternalModel{");
+        sb.append("id=").append(id);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", attachment-length=").append(attachment != null ? attachment.length : null);
+        sb.append(", version=").append(version);
+        sb.append(", lastModification=").append(lastModification);
+        if (parent != null) {
+            sb.append(", parent=").append(parent.getNodePath());
+        }
+        sb.append('}');
+        return sb.toString();
     }
 
     @Transient
