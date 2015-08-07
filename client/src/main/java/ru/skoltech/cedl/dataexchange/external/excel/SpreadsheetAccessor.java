@@ -50,6 +50,12 @@ public class SpreadsheetAccessor implements Closeable {
         String result = "";
         if (cell != null) {
             switch (cell.getCellType()) {
+                case Cell.CELL_TYPE_BLANK:
+                    result = "";
+                    break;
+                case Cell.CELL_TYPE_BOOLEAN:
+                    result = String.valueOf(cell.getBooleanCellValue());
+                    break;
                 case Cell.CELL_TYPE_STRING:
                     result = cell.getStringCellValue();
                     break;
