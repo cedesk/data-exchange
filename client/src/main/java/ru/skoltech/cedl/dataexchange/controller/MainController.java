@@ -33,6 +33,7 @@ import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
@@ -359,7 +360,7 @@ public class MainController implements Initializable {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("About CEDESK");
-            stage.getIcons().add(new Image("/icons/app-icon.png"));
+            stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(getAppWindow());
 
@@ -378,7 +379,7 @@ public class MainController implements Initializable {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Model differences");
-            stage.getIcons().add(new Image("/icons/app-icon.png"));
+            stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.NONE);
             stage.initOwner(getAppWindow());
 
@@ -399,7 +400,7 @@ public class MainController implements Initializable {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Application settings");
-            stage.getIcons().add(new Image("/icons/app-icon.png"));
+            stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.NONE);
             stage.initOwner(getAppWindow());
 
