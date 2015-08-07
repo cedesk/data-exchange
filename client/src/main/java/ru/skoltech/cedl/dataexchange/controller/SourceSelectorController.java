@@ -77,13 +77,13 @@ public class SourceSelectorController implements Initializable {
     }
 
     public ExternalModelReference getExternalModelReference() {
-        ExternalModelReference reference = new ExternalModelReference();
+        ExternalModelReference reference = null;
         try {
             reference = (ExternalModelReference) PropertyUtils.getProperty(parameterBean.getBean(), fieldName);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             logger.error("error getting reference on model");
         }
-        return reference;
+        return reference != null ? reference : new ExternalModelReference();
     }
 
     @Override
@@ -136,6 +136,7 @@ public class SourceSelectorController implements Initializable {
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 logger.error("error setting parameter reference " + fieldName);
             }
+            referenceText.textProperty().setValue(emr.toString());
         }
     }
 
@@ -154,7 +155,7 @@ public class SourceSelectorController implements Initializable {
 
     public void updateView() {
         referenceText.textProperty().setValue(getExternalModelReference().toString());
-        this.refreshTable(null);
+        refreshTable(null);
     }
 
     public boolean canShow() {
