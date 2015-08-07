@@ -29,6 +29,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
@@ -83,6 +84,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     @FXML
     private HBox exportSelectorGroup;
 
+    @FXML
+    private HBox overrideValueGroup;
+
     private Project project;
 
     private BeanPathAdapter<ParameterModel> parameterBean = new BeanPathAdapter<>(new ParameterModel());
@@ -107,7 +111,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
         valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
-        isReferenceValueOverriddenCheckbox.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
+        overrideValueGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.MANUAL));
         valueOverrideText.visibleProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty());
         exportSelectorGroup.visibleProperty().bind(isExportedCheckbox.selectedProperty());
 
@@ -142,11 +146,13 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     public void chooseSource(ActionEvent actionEvent) {
         ParameterModel parameterModel = parameterBean.getBean();
         ExternalModelReference oldValueReference = parameterModel.getValueReference();
+System.out.println("ParameterEditor.chooseSource before: " + oldValueReference);
         openChooser("valueReference");
 
         parameterBean.unBindBidirectional("valueReference", valueReferenceText.textProperty());
         parameterBean.bindBidirectional("valueReference", valueReferenceText.textProperty());
         ExternalModelReference newValueReference = parameterModel.getValueReference();
+System.out.println("ParameterEditor.chooseSource after: " + newValueReference);
         if (newValueReference != null && !newValueReference.equals(oldValueReference)) {
             logger.debug("update parameter value from model");
             ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
@@ -175,7 +181,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Source Selector");
-            stage.getIcons().add(new Image("/icons/app-icon.png"));
+            stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(nameText.getScene().getWindow());
             SourceSelectorController controller = loader.getController();
@@ -190,7 +196,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void applyChanges(ActionEvent actionEvent) {
         updateModel();
-        // TODO: write value to model?
+        // TODO: if(exported) export value to model?
         // TODO: update parameter table?
     }
 
@@ -200,6 +206,17 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private void updateModel() {
         if (parameterBean != null && project != null) {
+            ParameterModel parameterModel = getParameterModel();
+            if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
+                parameterModel.setValueReference(null);
+            }
+            if (!parameterModel.getIsExported()) {
+                parameterModel.setExportReference(null);
+            }
+            if (!parameterModel.getIsReferenceValueOverridden()) {
+                parameterModel.setOverrideValue(null);
+            }
+
             // TODO: check whether modification were done
             project.markStudyModified();
         }

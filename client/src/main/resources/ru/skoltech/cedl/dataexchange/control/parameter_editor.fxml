@@ -43,8 +43,14 @@
                 <HBox spacing="16.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                     <children>
                         <TextField fx:id="valueText" prefWidth="120.0" promptText="0123.45"/>
-                        <CheckBox fx:id="isReferenceValueOverriddenCheckbox" mnemonicParsing="false" text="Override"/>
-                        <TextField fx:id="valueOverrideText" editable="false" prefWidth="120.0" promptText="override"/>
+                        <HBox fx:id="overrideValueGroup" prefWidth="200.0">
+                            <children>
+                                <CheckBox fx:id="isReferenceValueOverriddenCheckbox" mnemonicParsing="false"
+                                          text="Override"/>
+                                <TextField fx:id="valueOverrideText" editable="false" prefWidth="120.0"
+                                           promptText="override"/>
+                            </children>
+                        </HBox>
                     </children>
                 </HBox>
                 <HBox spacing="16.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
@@ -63,7 +69,8 @@
                           GridPane.columnIndex="1" GridPane.rowIndex="5"/>
                 <Button mnemonicParsing="false" onAction="#applyChanges" text="Apply" GridPane.columnIndex="1"
                         GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
-                <Button mnemonicParsing="false" onAction="#revertChanges" disable="true" text="Revert" GridPane.columnIndex="1"
+                <Button mnemonicParsing="false" onAction="#revertChanges" disable="true" text="Revert"
+                        GridPane.columnIndex="1"
                         GridPane.halignment="CENTER" GridPane.rowIndex="6"/>
             </children>
         </GridPane>
