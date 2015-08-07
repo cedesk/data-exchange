@@ -85,7 +85,7 @@
                                                     </HBox.margin>
                                                 </Label>
                                                 <Label fx:id="studyNameLabel" layoutX="10.0" layoutY="10.0"
-                                                       text="SkoltechSat">
+                                                       text="--">
                                                     <font>
                                                         <Font size="14.0"/>
                                                     </font>
@@ -101,7 +101,7 @@
                                                         <Insets left="20.0" right="4.0"/>
                                                     </HBox.margin>
                                                 </Label>
-                                                <Label fx:id="userNameLabel" text="Dominik">
+                                                <Label fx:id="userNameLabel" text="--">
                                                     <font>
                                                         <Font size="14.0"/>
                                                     </font>
@@ -118,7 +118,7 @@
                                                     </HBox.margin>
                                                 </Label>
                                                 <Label fx:id="userRoleLabel" layoutX="211.0" layoutY="10.0"
-                                                       text="Team Leader">
+                                                       text="--">
                                                     <font>
                                                         <Font size="14.0"/>
                                                     </font>
