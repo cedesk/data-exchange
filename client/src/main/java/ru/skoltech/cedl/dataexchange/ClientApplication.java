@@ -35,8 +35,9 @@ public class ClientApplication extends Application {
         primaryStage.show();
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {
-                mainController.close();
                 logger.info("Closing CEDESK ...");
+                mainController.close();
+                logger.info("CEDESK terminated.");
             }
         });
     }
