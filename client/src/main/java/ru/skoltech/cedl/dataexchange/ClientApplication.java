@@ -8,12 +8,17 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 public class ClientApplication extends Application {
 
+    private static Logger logger = Logger.getLogger(ClientApplication.class);
+
     public static void main(String[] args) {
+        logger.info("----------------------------------------------------------------------------------------------------");
+        logger.info("Opening CEDESK ...");
         launch(args);
     }
 
@@ -31,6 +36,7 @@ public class ClientApplication extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {
                 mainController.close();
+                logger.info("Closing CEDESK ...");
             }
         });
     }
