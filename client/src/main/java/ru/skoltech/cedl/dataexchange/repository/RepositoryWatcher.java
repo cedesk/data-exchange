@@ -44,5 +44,9 @@ public class RepositoryWatcher extends Thread {
     public void finish() {
         continueRunning = false;
         super.interrupt();
+        try {
+            super.join();
+        } catch (InterruptedException ignore) {
+        }
     }
 }

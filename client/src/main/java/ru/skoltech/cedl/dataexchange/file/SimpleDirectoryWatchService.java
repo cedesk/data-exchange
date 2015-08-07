@@ -31,6 +31,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
     private final ConcurrentMap<WatchKey, Path> watchKeyToDirPathMap;
     private final ConcurrentMap<Path, Set<OnFileChangeListener>> dirPathToListenersMap;
     private final ConcurrentMap<OnFileChangeListener, Set<PathMatcher>> listenerToFilePatternsMap;
+    private Thread runnerThread;
 
     /**
      * A simple no argument constructor for creating a <code>SimpleDirectoryWatchService</code>.
@@ -172,7 +173,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
     /**
      * Empty the list of registered directory watchers.
      */
-    public void clear(){
+    public void clear() {
         dirPathToListenersMap.clear();
         watchKeyToDirPathMap.clear();
         listenerToFilePatternsMap.clear();
@@ -185,7 +186,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
      */
     public void start() {
         if (isRunning.compareAndSet(false, true)) {
-            Thread runnerThread = new Thread(this, DirectoryWatchService.class.getSimpleName());
+            runnerThread = new Thread(this, DirectoryWatchService.class.getSimpleName());
             runnerThread.start();
         }
     }
@@ -198,7 +199,12 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
      * @see #start()
      */
     public void stop() {
+        logger.info("Stopping file watcher service...");
         isRunning.set(false);
+        try {
+            runnerThread.join();
+        } catch (InterruptedException ignore) {
+        }
     }
 
     /**
@@ -243,7 +249,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
         }
 
         isRunning.set(false);
-        logger.info("Stopping file watcher service.");
+        logger.info("Stopped file watcher service.");
     }
 
     private static class SingletonHolder {
