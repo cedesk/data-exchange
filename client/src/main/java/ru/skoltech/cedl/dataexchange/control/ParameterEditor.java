@@ -22,7 +22,10 @@ import javafx.stage.Stage;
 import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
+import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
+import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
@@ -32,6 +35,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 /**
  * Created by D.Knoll on 03.07.2015.
@@ -136,11 +140,30 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     public void chooseSource(ActionEvent actionEvent) {
+        ParameterModel parameterModel = parameterBean.getBean();
+        ExternalModelReference oldValueReference = parameterModel.getValueReference();
         openChooser("valueReference");
+
+        parameterBean.unBindBidirectional("valueReference", valueReferenceText.textProperty());
+        parameterBean.bindBidirectional("valueReference", valueReferenceText.textProperty());
+        ExternalModelReference newValueReference = parameterModel.getValueReference();
+        if (newValueReference != null && !newValueReference.equals(oldValueReference)) {
+            logger.debug("update parameter value from model");
+            ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
+                @Override
+                public void accept(ParameterUpdate parameterUpdate) {
+                    parameterBean.unBindBidirectional("value", valueText.textProperty());
+                    parameterBean.bindBidirectional("value", valueText.textProperty());
+                    // TODO: update parameter table
+                }
+            });
+        }
     }
 
     public void chooseTarget(ActionEvent actionEvent) {
         openChooser("exportReference");
+        parameterBean.unBindBidirectional("exportReference", exportReferenceText.textProperty());
+        parameterBean.bindBidirectional("exportReference", exportReferenceText.textProperty());
     }
 
     public void openChooser(String fieldName) {
@@ -167,6 +190,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void applyChanges(ActionEvent actionEvent) {
         updateModel();
+        // TODO: write value to model?
+        // TODO: update parameter table?
     }
 
     public void revertChanges(ActionEvent actionEvent) {
