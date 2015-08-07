@@ -160,10 +160,10 @@ public class ModelEditingController implements Initializable {
         MenuItem addNodeMenuItem = new MenuItem("Add subnode");
         addNodeMenuItem.setOnAction(ModelEditingController.this::addNode);
         rootContextMenu.getItems().add(addNodeMenuItem);
-        MenuItem deleteNodeMenuItem = new MenuItem("Delete subnode");
+        MenuItem deleteNodeMenuItem = new MenuItem("Delete node");
         deleteNodeMenuItem.setOnAction(ModelEditingController.this::deleteNode);
         rootContextMenu.getItems().add(deleteNodeMenuItem);
-        MenuItem renameNodeMenuItem = new MenuItem("Rename subnode");
+        MenuItem renameNodeMenuItem = new MenuItem("Rename node");
         renameNodeMenuItem.setOnAction(ModelEditingController.this::renameNode);
         rootContextMenu.getItems().add(renameNodeMenuItem);
         return rootContextMenu;
