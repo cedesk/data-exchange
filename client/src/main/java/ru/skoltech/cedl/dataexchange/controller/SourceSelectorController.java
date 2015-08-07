@@ -48,6 +48,7 @@ public class SourceSelectorController implements Initializable {
     private SpreadsheetView spreadsheetView;
 
     private BeanPathAdapter<ParameterModel> parameterBean;
+
     private String fieldName;
 
     private ExternalModel externalModel;

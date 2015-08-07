@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
+import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 public class ClientApplication extends Application {
@@ -31,7 +32,7 @@ public class ClientApplication extends Application {
 
         primaryStage.setTitle("Concurrent Engineering Data Exchange Skoltech");
         primaryStage.setScene(new Scene(root, 800, 700));
-        primaryStage.getIcons().add(new Image("/icons/app-icon.png"));
+        primaryStage.getIcons().add(IconSet.APP_ICON);
         primaryStage.show();
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {

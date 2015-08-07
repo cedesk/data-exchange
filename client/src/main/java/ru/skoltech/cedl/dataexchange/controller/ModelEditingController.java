@@ -235,7 +235,7 @@ public class ModelEditingController implements Initializable {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Revision History");
-            stage.getIcons().add(new Image("/icons/app-icon.png"));
+            stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(getAppWindow());
             RevisionHistoryController controller = loader.getController();

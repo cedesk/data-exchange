@@ -7,6 +7,8 @@ import javafx.scene.image.Image;
  */
 public interface IconSet {
 
+    Image APP_ICON = new Image("/icons/app-icon.png");
+
     Image getIcon(IconType iconType);
 
     class Elements implements IconSet {
