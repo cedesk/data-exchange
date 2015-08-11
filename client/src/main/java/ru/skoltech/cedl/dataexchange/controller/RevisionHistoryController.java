@@ -9,7 +9,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 
@@ -24,7 +26,8 @@ import java.util.ResourceBundle;
  */
 public class RevisionHistoryController implements Initializable {
 
-    @FXML
+    private static final Logger logger = Logger.getLogger(RevisionHistoryController.class);
+
     public TableView<ParameterRevision> revisionHistoryTable;
 
     @FXML
@@ -43,6 +46,7 @@ public class RevisionHistoryController implements Initializable {
     public TableColumn revisionAuthorColumn;
 
     private ParameterModel parameter;
+
     private Repository repository;
 
     public Repository getRepository() {
@@ -81,9 +85,13 @@ public class RevisionHistoryController implements Initializable {
 
     public void updateView() {
         if (repository != null && parameter != null) {
-            List<ParameterRevision> revisionList = repository.getChangeHistory(parameter);
-            revisionHistoryTable.getItems().clear();
-            revisionHistoryTable.getItems().addAll(revisionList);
+            try {
+                List<ParameterRevision> revisionList = repository.getChangeHistory(parameter);
+                revisionHistoryTable.getItems().clear();
+                revisionHistoryTable.getItems().addAll(revisionList);
+            } catch (RepositoryException e) {
+                logger.error("unable to retrieve change history");
+            }
         }
     }
 }
