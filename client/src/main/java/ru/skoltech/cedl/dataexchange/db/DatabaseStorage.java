@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.db;
 
+import org.apache.log4j.Logger;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -22,6 +23,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +34,8 @@ import java.util.Map;
  * Created by dknoll on 24/05/15.
  */
 public class DatabaseStorage implements Repository {
+
+    private final static Logger logger = Logger.getLogger(DatabaseStorage.class);
 
     public static final String PERSISTENCE_URL_PROPERTY = "javax.persistence.jdbc.url";
     public static final String PERSISTENCE_USER_PROPERTY = "javax.persistence.jdbc.user";
@@ -44,22 +49,35 @@ public class DatabaseStorage implements Repository {
     private static final String HOST_NAME = "HOSTNAME";
     private String hostName;
     private EntityManagerFactory emf;
+    private String persistenceUnit;
+    private Map<String, Object> properties = new HashMap<>();
 
     /**
      * The default backend uses a DB on the localhost.
      */
     public DatabaseStorage(String persistenceUnit) {
-        emf = Persistence.createEntityManagerFactory(persistenceUnit);
+        this.persistenceUnit = persistenceUnit;
     }
 
     public DatabaseStorage(String persistenceUnit, String hostName, String userName, String password) {
+        this.persistenceUnit = persistenceUnit;
         this.hostName = hostName;
-        Map<String, Object> properties = new HashMap<>();
         String url = DEFAULT_JDBC_URL.replace(HOST_NAME, hostName);
         properties.put(PERSISTENCE_URL_PROPERTY, url);
         properties.put(PERSISTENCE_USER_PROPERTY, userName);
         properties.put(PERSISTENCE_PASSWORD_PROPERTY, password);
-        emf = Persistence.createEntityManagerFactory(persistenceUnit, properties);
+    }
+
+    public static boolean checkDatabaseConnection(String hostName, String user, String password) {
+        String url = DEFAULT_JDBC_URL.replace(HOST_NAME, hostName);
+        try {
+            DriverManager.getConnection(url, user, password).close();
+            logger.info("check of database connection succeeded!");
+            return true;
+        } catch (SQLException e) {
+            logger.warn("check of database connection failed!");
+            return false;
+        }
     }
 
     @Override
@@ -315,7 +333,7 @@ public class DatabaseStorage implements Repository {
         return systemModel;
     }
 
-    public List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) {
+    public List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException {
         final AuditReader reader = AuditReaderFactory.get(getEntityManager());
         final long pk = parameterModel.getId();
 
@@ -338,7 +356,15 @@ public class DatabaseStorage implements Repository {
         return revisionList;
     }
 
-    private EntityManager getEntityManager() {
+    private EntityManager getEntityManager() throws RepositoryException {
+        if (emf == null) {
+            try {
+                emf = Persistence.createEntityManagerFactory(persistenceUnit, properties);
+            } catch(Exception e) {
+                logger.fatal("connecting to database failed!");
+                throw new RepositoryException("database connection failed");
+            }
+        }
         return emf.createEntityManager();
     }
 

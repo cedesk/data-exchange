@@ -34,7 +34,7 @@ public interface Repository extends Closeable {
 
     UserManagement loadUserManagement() throws RepositoryException;
 
-    List<ParameterRevision> getChangeHistory(ParameterModel parameterModel);
+    List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException;
 
     String getUrl();
 

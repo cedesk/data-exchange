@@ -27,6 +27,7 @@ import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
@@ -242,7 +243,7 @@ public class MainController implements Initializable {
             }
         });
 
-        if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
+        if (databaseConnectionValid() && ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
@@ -259,6 +260,13 @@ public class MainController implements Initializable {
                 }
             });
         }
+    }
+
+    private boolean databaseConnectionValid() {
+        String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.LOCALHOST);
+        String repoUser = ApplicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
+        String repoPassword = ApplicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
+        return DatabaseStorage.checkDatabaseConnection(hostname, repoUser, repoPassword);
     }
 
     public Window getAppWindow() {
