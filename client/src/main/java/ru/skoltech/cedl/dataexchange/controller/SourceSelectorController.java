@@ -133,7 +133,7 @@ public class SourceSelectorController implements Initializable {
             String coordinates = SpreadsheetCoordinates.fromPosition(focusedCell);
             ExternalModelReference emr = new ExternalModelReference(externalModel, coordinates);
             try {
-                PropertyUtils.setProperty(parameterBean.getBean(), fieldName, emr);
+                PropertyUtils.setSimpleProperty(parameterBean.getBean(), fieldName, emr);
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 logger.error("error setting parameter reference " + fieldName);
             }
