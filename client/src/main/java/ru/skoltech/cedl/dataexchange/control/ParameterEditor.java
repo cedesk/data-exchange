@@ -89,7 +89,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private Project project;
 
-    private BeanPathAdapter<ParameterModel> parameterBean = new BeanPathAdapter<>(new ParameterModel());
+    private BeanPathAdapter<ParameterModel> parameterBean = new BeanPathAdapter<>(new ParameterModel("dummyParameter", 19.81));
 
     public ParameterEditor() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("parameter_editor.fxml"));
@@ -117,8 +117,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
         parameterBean.bindBidirectional("name", nameText.textProperty());
         parameterBean.bindBidirectional("value", valueText.textProperty());
-        parameterBean.bindBidirectional("nature", natureChoiceBox.valueProperty(), ParameterNature.class);
-        parameterBean.bindBidirectional("valueSource", valueSourceChoiceBox.valueProperty(), ParameterValueSource.class);
+        //parameterBean.bindBidirectional("nature", natureChoiceBox.valueProperty(), ParameterNature.class);
+        //parameterBean.bindBidirectional("valueSource", valueSourceChoiceBox.valueProperty(), ParameterValueSource.class);
+        natureChoiceBox.valueProperty().setValue(parameterBean.getBean().getNature());
+        valueSourceChoiceBox.valueProperty().setValue(parameterBean.getBean().getValueSource());
         parameterBean.bindBidirectional("valueReference", valueReferenceText.textProperty());
         parameterBean.bindBidirectional("isReferenceValueOverridden", isReferenceValueOverriddenCheckbox.selectedProperty());
         parameterBean.bindBidirectional("overrideValue", valueOverrideText.textProperty());
@@ -207,6 +209,10 @@ System.out.println("ParameterEditor.chooseSource after: " + newValueReference);
     private void updateModel() {
         if (parameterBean != null && project != null) {
             ParameterModel parameterModel = getParameterModel();
+
+            parameterModel.setNature(natureChoiceBox.getValue());
+            parameterModel.setValueSource(valueSourceChoiceBox.getValue());
+
             if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
                 parameterModel.setValueReference(null);
             }
