@@ -9,7 +9,7 @@ import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 public class RepositoryFactory {
 
     public static Repository getDatabaseRepository() {
-        String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.LOCALHOST);
+        String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
         String repoUser = ApplicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
         String repoPassword = ApplicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
         return new DatabaseStorage(DatabaseStorage.DB_PERSISTENCE_UNIT_NAME, hostname, repoUser, repoPassword);

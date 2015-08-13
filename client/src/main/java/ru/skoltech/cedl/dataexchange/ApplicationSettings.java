@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -19,7 +20,7 @@ public class ApplicationSettings {
     private static final String REPOSITORY_HOST = "repository.host";
 
     private static final String REPOSITORY_USER = "repository.user";
-    private static final String REPOSITORY_PASSWORD = "repository.passwor";
+    private static final String REPOSITORY_PASSWORD = "repository.password";
 
     private static final String PROJECT_LAST_AUTOLOAD = "project.last.autoload";
     private static final String LAST_PROJECT_NAME = "project.last.name";
@@ -127,7 +128,11 @@ public class ApplicationSettings {
         if (userName == null) return;
         String previousUser = properties.getProperty(REPOSITORY_USER);
         if (previousUser == null || !previousUser.equals(userName)) {
-            properties.setProperty(REPOSITORY_USER, userName);
+            if (userName.equals(DatabaseStorage.DEFAULT_USER_NAME)) {
+                properties.remove(REPOSITORY_USER);
+            } else {
+                properties.setProperty(REPOSITORY_USER, userName);
+            }
             save();
         }
     }
@@ -145,7 +150,11 @@ public class ApplicationSettings {
         if (password == null) return;
         String previousPassword = properties.getProperty(REPOSITORY_PASSWORD);
         if (previousPassword == null || !previousPassword.equals(password)) {
-            properties.setProperty(REPOSITORY_PASSWORD, password);
+            if (password.equals(DatabaseStorage.DEFAULT_PASSWORD)) {
+                properties.remove(REPOSITORY_PASSWORD);
+            } else {
+                properties.setProperty(REPOSITORY_PASSWORD, password);
+            }
             save();
         }
     }
