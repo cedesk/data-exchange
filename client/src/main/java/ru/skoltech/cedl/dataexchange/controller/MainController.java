@@ -118,12 +118,17 @@ public class MainController implements Initializable {
             logger.error("error retrieving list of available studies");
             return;
         }
-        Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
-        if (studyChoice.isPresent()) {
-            String studyName = studyChoice.get();
-            project.setProjectName(studyName);
-            project.setRepositoryStudy(null);
-            reloadProject(null);
+        if (studyNames.size() > 0) {
+            Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
+            if (studyChoice.isPresent()) {
+                String studyName = studyChoice.get();
+                project.setProjectName(studyName);
+                project.setRepositoryStudy(null);
+                reloadProject(null);
+            }
+        } else {
+            logger.warn("list of studies is empty!");
+            Dialogues.showWarning("Repository empty", "There are not studies available in the repository!");
         }
     }
 
