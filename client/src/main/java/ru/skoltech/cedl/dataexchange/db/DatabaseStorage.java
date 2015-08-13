@@ -42,7 +42,7 @@ public class DatabaseStorage implements Repository {
     public static final String PERSISTENCE_PASSWORD_PROPERTY = "javax.persistence.jdbc.password";
     public static final String DEFAULT_USER_NAME = "cedesk";
     public static final String DEFAULT_PASSWORD = "cedesk";
-    public static final String LOCALHOST = "localhost";
+    public static final String DEFAULT_HOST_NAME = "localhost";
     public static final String DB_PERSISTENCE_UNIT_NAME = "db";
     public final static String MEM_PERSISTENCE_UNIT_NAME = "mem";
     private static final String DEFAULT_JDBC_URL = "jdbc:mysql://HOSTNAME:3306/cedesk_dev";
@@ -72,6 +72,7 @@ public class DatabaseStorage implements Repository {
         String url = DEFAULT_JDBC_URL.replace(HOST_NAME, hostName);
         try {
             DriverManager.getConnection(url, user, password).close();
+            // TODO: check also existence of schema "cedesk"
             logger.info("check of database connection succeeded!");
             return true;
         } catch (SQLException e) {

@@ -5,7 +5,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
@@ -37,7 +36,7 @@ public class ClientApplication extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {
                 logger.info("Closing CEDESK ...");
-                mainController.close();
+                mainController.terminate();
                 logger.info("CEDESK terminated.");
             }
         });

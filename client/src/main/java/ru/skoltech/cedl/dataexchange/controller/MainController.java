@@ -8,6 +8,7 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -22,6 +23,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -243,10 +245,13 @@ public class MainController implements Initializable {
             }
         });
 
-        if (databaseConnectionValid() && ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                if (!validDatabaseConnection()) {
+                    openSettingsDialog(null);
+                }
+                if (validDatabaseConnection() && ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
                     String projectName = ApplicationSettings.getLastUsedProject(null);
                     if (projectName != null) {
                         project.setProjectName(projectName);
@@ -258,12 +263,12 @@ public class MainController implements Initializable {
                     // TODO: only on successful loading
                     makeRepositoryWatcher();
                 }
-            });
-        }
+            }
+        });
     }
 
-    private boolean databaseConnectionValid() {
-        String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.LOCALHOST);
+    private boolean validDatabaseConnection() {
+        String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
         String repoUser = ApplicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
         String repoPassword = ApplicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
         return DatabaseStorage.checkDatabaseConnection(hostname, repoUser, repoPassword);
@@ -313,7 +318,7 @@ public class MainController implements Initializable {
         });
     }
 
-    public void close() {
+    public void terminate() {
         if (repositoryWatcher != null) {
             repositoryWatcher.finish();
         }
@@ -409,17 +414,27 @@ public class MainController implements Initializable {
             stage.setScene(new Scene(root));
             stage.setTitle("Application settings");
             stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.NONE);
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
 
             SettingsController controller = loader.getController();
-            stage.show();
+            stage.showAndWait();
+            stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                @Override
+                public void handle(WindowEvent event) {
+                    if (!validDatabaseConnection()) {
+                        Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository");
+                        quit(null);
+                    }
+                }
+            });
         } catch (IOException e) {
             logger.error(e);
         }
     }
 
     public void quit(ActionEvent actionEvent) {
-        Platform.exit();
+        Stage stage = (Stage) applicationPane.getScene().getWindow();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 }

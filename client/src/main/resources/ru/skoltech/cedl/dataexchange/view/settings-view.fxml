@@ -45,7 +45,7 @@
                 </TitledPane>
                 <ToolBar nodeOrientation="RIGHT_TO_LEFT">
                     <items>
-                        <Button mnemonicParsing="false" text="Apply" onAction="#apply"/>
+                        <Button mnemonicParsing="false" text="Ok" onAction="#applyAndClose"/>
                         <Button mnemonicParsing="false" text="Cancel" onAction="#cancel"/>
                     </items>
                 </ToolBar>

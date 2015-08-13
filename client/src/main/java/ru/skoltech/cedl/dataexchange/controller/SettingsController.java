@@ -8,8 +8,11 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -44,30 +47,41 @@ public class SettingsController implements Initializable {
         dbPasswordText.setText(ApplicationSettings.getRepositoryPassword(""));
     }
 
-    public void apply(ActionEvent actionEvent) {
-        updateModel();
+    public void applyAndClose(ActionEvent actionEvent) {
+        boolean succcess = updateModel();
+        if (succcess) {
+            cancel(actionEvent);
+        }
     }
 
-    private void updateModel() {
+    private boolean updateModel() {
+        boolean success = false;
         ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
 
-        String hostname = dbHostnameText.getText();
-        ApplicationSettings.setRepositoryServerHostname(hostname.isEmpty() ? null : hostname);
-        String username = dbUsernameText.getText();
-        ApplicationSettings.setRepositoryUserName(username.isEmpty() ? null : username);
-        String password = dbPasswordText.getText();
-        ApplicationSettings.setRepositoryPassword(password.isEmpty() ? null : password);
-        // TODO: first verify credentials, then save them to the application settings
-        try {
-            ProjectContext.getInstance().getProject().connectRepository();
-        } catch (Exception e) {
-            Dialogues.showError("Repository connection failed!", "Please verify that the access credentials for the repository are correct.");
+        String hostname = dbHostnameText.getText().isEmpty() ? DatabaseStorage.DEFAULT_HOST_NAME : dbHostnameText.getText();
+        String username = dbUsernameText.getText().isEmpty() ? DatabaseStorage.DEFAULT_USER_NAME : dbUsernameText.getText();
+        String password = dbPasswordText.getText().isEmpty() ? DatabaseStorage.DEFAULT_PASSWORD : dbPasswordText.getText();
+        boolean validCredentials = DatabaseStorage.checkDatabaseConnection(hostname, username, password);
+        if (validCredentials) {
+            ApplicationSettings.setRepositoryServerHostname(hostname);
+            ApplicationSettings.setRepositoryUserName(username);
+            ApplicationSettings.setRepositoryPassword(password);
+            try {
+                ProjectContext.getInstance().getProject().connectRepository();
+                success = true;
+                StatusLogger.getInstance().log("Successfully configured repository settings!");
+            } catch (Exception e) {
+                Dialogues.showError("Repository connection failed!", "Please verify that the access credentials for the repository are correct.");
+            }
+        } else {
+            Dialogues.showError("Repository Connection Failed", "The given database access credentials did not work! Please verify they are correct, the database server is running and the connection is working.");
         }
+        return success;
     }
 
     public void cancel(ActionEvent actionEvent) {
         Node source = (Node) actionEvent.getSource();
         Stage stage = (Stage) source.getScene().getWindow();
-        stage.close();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 }
