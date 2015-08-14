@@ -80,7 +80,7 @@ public class SourceSelectorController implements Initializable {
     public ExternalModelReference getExternalModelReference() {
         ExternalModelReference reference = null;
         try {
-            reference = (ExternalModelReference) PropertyUtils.getProperty(parameterBean.getBean(), fieldName);
+            reference = (ExternalModelReference) PropertyUtils.getSimpleProperty(parameterBean.getBean(), fieldName);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             logger.error("error getting reference on model");
         }
