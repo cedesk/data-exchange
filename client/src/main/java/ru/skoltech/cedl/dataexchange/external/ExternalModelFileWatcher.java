@@ -56,8 +56,12 @@ public class ExternalModelFileWatcher extends Observable {
                 String dateAndTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(lastModified));
                 logger.debug("file " + changedFilePath + " has been modified (" + dateAndTime + ")");
                 // TODO: iif necessary
-                ExternalModelFileWatcher.this.setChanged();
-                ExternalModelFileWatcher.this.notifyObservers(externalModel);
+                try {
+                    ExternalModelFileWatcher.this.setChanged();
+                    ExternalModelFileWatcher.this.notifyObservers(externalModel);
+                } catch (Exception ex) {
+                    logger.error("error in notifying file change listeners", ex);
+                }
             } else {
                 logger.debug("ignoring change on file: " + changedFilePath);
             }

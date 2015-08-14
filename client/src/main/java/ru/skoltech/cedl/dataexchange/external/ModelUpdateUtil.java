@@ -89,7 +89,7 @@ public class ModelUpdateUtil {
         }
     }
 
-    public static ParameterUpdate getParameterUpdate(ParameterModel parameterModel, ExternalModelReference valueReference, ExternalModelEvaluator evaluator) {
+    private static ParameterUpdate getParameterUpdate(ParameterModel parameterModel, ExternalModelReference valueReference, ExternalModelEvaluator evaluator) {
         ParameterUpdate parameterUpdate = null;
         try {
             Double value = evaluator.getValue(valueReference.getTarget());
@@ -97,7 +97,7 @@ public class ModelUpdateUtil {
                 parameterUpdate = new ParameterUpdate(parameterModel, value);
             }
         } catch (ExternalModelException e) {
-            logger.error("unable to evaluate from: " + valueReference);
+            logger.error("unable to evaluate value for parameter '" + parameterModel.getNodePath() + "' from '" + valueReference.toString() + "'");
         }
         return parameterUpdate;
     }
