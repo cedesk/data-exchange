@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import ru.skoltech.cedl.dataexchange.SpreadsheetCoordinates;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 
 import java.io.*;
 import java.text.ParseException;
@@ -72,7 +73,7 @@ public class SpreadsheetAccessor implements Closeable {
         return result;
     }
 
-    private static Double getNumericValue(Cell cell) {
+    private static Double getNumericValue(Cell cell) throws ExternalModelException {
         Double result = null;
         if (cell != null) {
             switch (cell.getCellType()) {
@@ -81,7 +82,8 @@ public class SpreadsheetAccessor implements Closeable {
                     result = cell.getNumericCellValue();
                     break;
                 default:
-                    logger.warn("invalid cell type: " + cell.getCellType());
+                    throw new ExternalModelException("invalid cell type: " + cell.getCellType());
+
             }
         }
         return result;
@@ -107,7 +109,7 @@ public class SpreadsheetAccessor implements Closeable {
         return getValueAsString(getCell(coordinates));
     }
 
-    public Double getNumericValue(String coordinates) {
+    public Double getNumericValue(String coordinates) throws ExternalModelException {
         return getNumericValue(getCell(coordinates));
     }
 

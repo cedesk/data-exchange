@@ -223,11 +223,8 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
                 } else if (!isRunning.get()) {
                     break;
                 }
-            } catch (InterruptedException e) {
-                logger.info(
-                        DirectoryWatchService.class.getSimpleName()
-                                + " service interrupted."
-                );
+            } catch (InterruptedException | ClosedWatchServiceException e) {
+                logger.info("DirectoryWatchService service interrupted.");
                 break;
             }
 
@@ -242,10 +239,14 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
             boolean valid = key.reset();
             if (!valid) {
                 watchKeyToDirPathMap.remove(key);
-                if (watchKeyToDirPathMap.isEmpty()) {
-                    break;
-                }
+//                if (watchKeyToDirPathMap.isEmpty()) {
+//                    break;
+//                }
             }
+        }
+        try {
+            watchService.close();
+        } catch (IOException ignore) {
         }
 
         isRunning.set(false);
