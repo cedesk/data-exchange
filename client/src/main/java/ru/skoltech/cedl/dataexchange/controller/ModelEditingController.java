@@ -207,6 +207,7 @@ public class ModelEditingController implements Initializable {
 
     public void updateView() {
         if (project.getSystemModel() != null) {
+            int selectedIndex = structureTree.getSelectionModel().getSelectedIndex();
             if (project.getRepositoryStudy() == null || project.getRepositoryStudy().getSystemModel() == null) {
                 StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
                 structureTree.setRoot(rootNode);
@@ -217,6 +218,9 @@ public class ModelEditingController implements Initializable {
             }
             boolean isAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
             structureTree.setEditable(isAdmin);
+            if(structureTree.getTreeItem(selectedIndex) != null) {
+                structureTree.getSelectionModel().select(selectedIndex);
+            }
         } else {
             structureTree.setRoot(null);
             clearParameterTable();
@@ -438,6 +442,10 @@ public class ModelEditingController implements Initializable {
             appWindow = viewPane.getScene().getWindow();
         }
         return appWindow;
+    }
+
+    public void viewExternalModel(ActionEvent actionEvent) {
+        // TODO: open spreadsheet pane
     }
 
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
@@ -82,7 +82,7 @@
                                                 <FlowPane>
                                                     <children>
                                                         <TextField fx:id="externalModelFilePath" editable="false"
-                                                                   prefWidth="300.0" promptText="File"/>
+                                                                   prefWidth="200.0" promptText="File"/>
                                                         <Button mnemonicParsing="false"
                                                                 onAction="#attachExternalModel" text="Attach">
                                                             <FlowPane.margin>
@@ -90,7 +90,13 @@
                                                             </FlowPane.margin>
                                                         </Button>
                                                         <Button mnemonicParsing="false"
-                                                                onAction="#openExternalModel" text="Open">
+                                                                onAction="#openExternalModel" text="Open externally">
+                                                            <FlowPane.margin>
+                                                                <Insets left="8.0"/>
+                                                            </FlowPane.margin>
+                                                        </Button>
+                                                        <Button mnemonicParsing="false" disable="true"
+                                                                onAction="#viewExternalModel" text="View">
                                                             <FlowPane.margin>
                                                                 <Insets left="8.0"/>
                                                             </FlowPane.margin>
