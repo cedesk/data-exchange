@@ -1,10 +1,7 @@
 package ru.skoltech.cedl.dataexchange.external.excel;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelExporter;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 
 import java.io.*;
@@ -33,18 +30,24 @@ public class ExcelModelExporter implements ExternalModelExporter {
     public void setValue(String target, Double value) throws ExternalModelException {
         SpreadsheetAccessor spreadsheetAccessor = getSpreadsheetAccessor();
         spreadsheetAccessor.setNumericValue(target, value);
+System.out.println("ExcelModelExporter.setValue " + target + " " + value);
     }
 
+    /**
+     * Closes the excel spreadsheet discarding all changes.
+     *
+     * @see ExternalModelExporter#flushModifications(ExternalModelFileWatcher)
+     */
     @Override
-    public void close() throws IOException {
+    public void close() {
         try {
-            flushModifications();
-        } catch (ExternalModelException e) {
-            throw new IOException(e);
+            spreadsheetAccessor.close();
+        } catch (IOException e) {
+            logger.error("error closing excel model.");
         }
     }
 
-    public void flushModifications() throws ExternalModelException {
+    public void flushModifications(ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
         if (spreadsheetAccessor != null) {
             try {
                 if (spreadsheetAccessor.isModified()) {
@@ -59,20 +62,20 @@ public class ExcelModelExporter implements ExternalModelExporter {
                         }
                     } else {
                         File file = ExternalModelFileHandler.getFilePathInCache(externalModel);
+                        externalModelFileWatcher.maskChangesTo(file);
+                        logger.info("Updating " + file.getAbsolutePath() + " with changes from parameters");
                         try (FileOutputStream fos = new FileOutputStream(file)) {
                             spreadsheetAccessor.saveChanges(fos);
                         } catch (IOException e) {
                             logger.error("Error saving changes on spreadsheet to external model (on cache file).");
                             throw new ExternalModelException("error saving changes to external model");
+                        } finally {
+                            externalModelFileWatcher.unmaskChangesTo(file);
                         }
                     }
                 }
             } finally {
-                try {
-                    spreadsheetAccessor.close();
-                } catch (IOException e) {
-                    logger.error("error closing excel model.");
-                }
+                close();
             }
         }
     }

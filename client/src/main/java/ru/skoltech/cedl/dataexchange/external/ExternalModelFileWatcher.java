@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Created by D.Knoll on 09.07.2015.
@@ -21,6 +23,8 @@ public class ExternalModelFileWatcher extends Observable {
     private static Logger logger = Logger.getLogger(ExternalModelFileWatcher.class);
 
     private Map<File, ExternalModel> watchedExternalModels = new ConcurrentHashMap<>();
+
+    private Set<File> maskedFiles = new ConcurrentSkipListSet<>();
 
     public ExternalModelFileWatcher() {
         SimpleDirectoryWatchService.getInstance().start();
@@ -46,9 +50,20 @@ public class ExternalModelFileWatcher extends Observable {
         SimpleDirectoryWatchService.getInstance().stop();
     }
 
+    public void maskChangesTo(File file) {
+        this.maskedFiles.add(file);
+    }
+
+    public void unmaskChangesTo(File file) {
+        this.maskedFiles.remove(file);
+    }
+
     private class FileChangeListener implements DirectoryWatchService.OnFileChangeListener {
         @Override
         public void onFileModify(File changedFile) {
+            if (maskedFiles.contains(changedFile)) {
+                return;
+            }
             String changedFilePath = changedFile.getAbsolutePath();
             if (watchedExternalModels.containsKey(changedFile)) {
                 ExternalModel externalModel = watchedExternalModels.get(changedFile);

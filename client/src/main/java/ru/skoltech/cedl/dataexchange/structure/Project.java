@@ -222,7 +222,7 @@ public class Project {
         while (externalModelsIterator.hasNext()) {
             ExternalModel externalModel = externalModelsIterator.next();
             if (UserRoleUtil.checkAccess(externalModel.getParent(), getUser(), getUserRoleManagement())) {
-                ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler);
+                ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler, externalModelFileWatcher);
             }
         }
     }
