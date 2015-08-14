@@ -2,10 +2,19 @@ package ru.skoltech.cedl.dataexchange.structure;
 
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by D.Knoll on 12.03.2015.
  */
 public class DummySystemBuilder {
+
+    public static final int MIN_MODEL_DEPTH = 1;
+
+    public static final int MAX_MODEL_DEPTH = 4;
+
+    public static final int DEFAULT_MODEL_DEPTH = 2;
 
     private static int parameterCnt = 1;
 
@@ -13,18 +22,29 @@ public class DummySystemBuilder {
 
     private static int instrumentCnt = 1;
 
-    public static SystemModel getSystemModel(int level) {
+    public static List<Integer> getValidModelDepths() {
+        Integer[] values = new Integer[MAX_MODEL_DEPTH - MIN_MODEL_DEPTH + 1];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = MIN_MODEL_DEPTH + i;
+        }
+        return Arrays.asList(values);
+    }
+
+    public static SystemModel getSystemModel(int modelDepth) {
+        if (modelDepth < MIN_MODEL_DEPTH || modelDepth > MAX_MODEL_DEPTH)
+            throw new IllegalArgumentException("model depth must be >= " + MIN_MODEL_DEPTH + " and <=" + MAX_MODEL_DEPTH);
+
         SystemModel system = new SystemModel("Spacecraft " + getRandomInt());
         system.addParameter(getParameter());
         system.addParameter(getParameter());
 
-        if (level < 2) return system;
-        system.addSubNode(getSubSystem("Power", level - 1));
-        system.addSubNode(getSubSystem("AOCS", level - 1));
-        system.addSubNode(getSubSystem("Thermal", level - 1));
-        system.addSubNode(getSubSystem("Orbit", level - 1));
-        system.addSubNode(getSubSystem("Payload", level - 1));
-        system.addSubNode(getSubSystem("Communication", level - 1));
+        if (modelDepth < 2) return system;
+        system.addSubNode(getSubSystem("Power", modelDepth - 1));
+        system.addSubNode(getSubSystem("AOCS", modelDepth - 1));
+        system.addSubNode(getSubSystem("Thermal", modelDepth - 1));
+        system.addSubNode(getSubSystem("Orbit", modelDepth - 1));
+        system.addSubNode(getSubSystem("Payload", modelDepth - 1));
+        system.addSubNode(getSubSystem("Communication", modelDepth - 1));
         return system;
     }
 
