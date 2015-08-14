@@ -201,7 +201,7 @@ public class Project {
             Timestamp latestMod = study.getSystemModel().findLatestModification();
             latestLoadedModification.setValue(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
-            runExportToExternalModels();
+            exportValuesToExternalModels();
             storeChangedExternalModels();
             ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
@@ -215,13 +215,15 @@ public class Project {
         return false;
     }
 
-    private void runExportToExternalModels() {
+    private void exportValuesToExternalModels() {
 
         SystemModel systemModel = getSystemModel();
         Iterator<ExternalModel> externalModelsIterator = systemModel.externalModelsIterator();
         while (externalModelsIterator.hasNext()) {
             ExternalModel externalModel = externalModelsIterator.next();
-            ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler);
+            if (UserRoleUtil.checkAccess(externalModel.getParent(), getUser(), getUserRoleManagement())) {
+                ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler);
+            }
         }
     }
 
@@ -271,6 +273,7 @@ public class Project {
     }
 
     private void initializeStateOfExternalModels() {
+        externalModelFileWatcher.clear();
         externalModelFileHandler.getChangedExternalModels().clear();
         Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), new AccessChecker());
         while (iterator.hasNext()) {
@@ -335,7 +338,8 @@ public class Project {
     }
 
     public void newStudy(String studyName) {
-        SystemModel systemModel = DummySystemBuilder.getSystemModel(3);
+        int studyModelDepth = ApplicationSettings.getStudyModelDepth(DummySystemBuilder.DEFAULT_MODEL_DEPTH);
+        SystemModel systemModel = DummySystemBuilder.getSystemModel(studyModelDepth);
         systemModel.setName(studyName);
         reinitializeProject(systemModel);
     }

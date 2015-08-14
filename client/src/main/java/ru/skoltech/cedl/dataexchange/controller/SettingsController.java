@@ -1,10 +1,12 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -13,6 +15,7 @@ import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -24,7 +27,6 @@ public class SettingsController implements Initializable {
 
     @FXML
     private PasswordField dbPasswordText;
-
     @FXML
     private TextField dbUsernameText;
 
@@ -34,13 +36,18 @@ public class SettingsController implements Initializable {
     @FXML
     private CheckBox autoloadOnStartupCheckbox;
 
+    @FXML
+    private ComboBox<Integer> modelDepth;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        modelDepth.setItems(FXCollections.observableArrayList(DummySystemBuilder.getValidModelDepths()));
         updateView();
     }
 
     private void updateView() {
         autoloadOnStartupCheckbox.setSelected(ApplicationSettings.getAutoLoadLastProjectOnStartup());
+        modelDepth.setValue(ApplicationSettings.getStudyModelDepth(DummySystemBuilder.DEFAULT_MODEL_DEPTH));
 
         dbHostnameText.setText(ApplicationSettings.getRepositoryServerHostname(""));
         dbUsernameText.setText(ApplicationSettings.getRepositoryUserName(""));
@@ -57,6 +64,7 @@ public class SettingsController implements Initializable {
     private boolean updateModel() {
         boolean success = false;
         ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
+        ApplicationSettings.setStudyModelDepth(modelDepth.getValue());
 
         String hostname = dbHostnameText.getText().isEmpty() ? DatabaseStorage.DEFAULT_HOST_NAME : dbHostnameText.getText();
         String username = dbUsernameText.getText().isEmpty() ? DatabaseStorage.DEFAULT_USER_NAME : dbUsernameText.getText();

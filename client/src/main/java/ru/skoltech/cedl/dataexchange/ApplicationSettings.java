@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -17,14 +18,16 @@ public class ApplicationSettings {
 
     private static final String SETTINGS_FILE = "application.settings";
     private static final String SETTINGS_COMMENTS = "CEDESK application settings";
-    private static final String REPOSITORY_HOST = "repository.host";
 
+    private static final String REPOSITORY_HOST = "repository.host";
     private static final String REPOSITORY_USER = "repository.user";
     private static final String REPOSITORY_PASSWORD = "repository.password";
 
     private static final String PROJECT_LAST_AUTOLOAD = "project.last.autoload";
     private static final String LAST_PROJECT_NAME = "project.last.name";
     private static final String LAST_PROJECT_USER = "project.last.user";
+
+    private static final String STUDY_MODEL_DEPTH = "study.model.depth";
 
     private static Properties properties = new Properties();
 
@@ -100,7 +103,7 @@ public class ApplicationSettings {
     public static String getRepositoryServerHostname(String defaultRepositoryHostName) {
         String repo = properties.getProperty(REPOSITORY_HOST);
         if (repo == null) {
-            System.out.println("Warning: Empty repository url. Assuming: " + defaultRepositoryHostName);
+            logger.warn("Empty repository url. Assuming: " + defaultRepositoryHostName);
             repo = defaultRepositoryHostName;
         }
         return repo;
@@ -118,7 +121,7 @@ public class ApplicationSettings {
     public static String getRepositoryUserName(String defaultUserName) {
         String repositoryUser = properties.getProperty(REPOSITORY_USER);
         if (repositoryUser == null) {
-            System.out.println("Warning: Empty repository user. Assuming: " + defaultUserName);
+            logger.warn("Empty repository user. Assuming: " + defaultUserName);
             repositoryUser = defaultUserName;
         }
         return repositoryUser;
@@ -140,7 +143,7 @@ public class ApplicationSettings {
     public static String getRepositoryPassword(String defaultPassword) {
         String repositoryPassword = properties.getProperty(REPOSITORY_PASSWORD);
         if (repositoryPassword == null) {
-            System.out.println("Warning: Empty repository password. Assuming: " + defaultPassword);
+            logger.warn("Empty repository password. Assuming: " + defaultPassword);
             repositoryPassword = defaultPassword;
         }
         return repositoryPassword;
@@ -155,6 +158,31 @@ public class ApplicationSettings {
             } else {
                 properties.setProperty(REPOSITORY_PASSWORD, password);
             }
+            save();
+        }
+    }
+
+    public static int getStudyModelDepth(int defaultValue) {
+        String studyModelDepthStr = properties.getProperty(STUDY_MODEL_DEPTH);
+        int studyModelDepth = defaultValue;
+        if (studyModelDepthStr != null) {
+            try {
+                studyModelDepth = Integer.valueOf(studyModelDepthStr);
+                if (studyModelDepth < DummySystemBuilder.MIN_MODEL_DEPTH || studyModelDepth > DummySystemBuilder.MAX_MODEL_DEPTH) {
+                    logger.warn("Invalid value of setting " + STUDY_MODEL_DEPTH + ", it must be >= " + DummySystemBuilder.MIN_MODEL_DEPTH + " and <=" + DummySystemBuilder.MAX_MODEL_DEPTH);
+                }
+            } catch (NumberFormatException nfe) {
+                logger.warn("Not parseable value of setting " + STUDY_MODEL_DEPTH);
+            }
+        }
+        return studyModelDepth;
+    }
+
+    public static void setStudyModelDepth(Integer studyModelDepth) {
+        if (studyModelDepth == null) return;
+        String previousValue = properties.getProperty(STUDY_MODEL_DEPTH);
+        if (previousValue == null || !previousValue.equals(String.valueOf(studyModelDepth))) {
+            properties.setProperty(STUDY_MODEL_DEPTH, String.valueOf(studyModelDepth));
             save();
         }
     }
