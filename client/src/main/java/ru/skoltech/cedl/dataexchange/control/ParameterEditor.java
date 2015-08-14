@@ -241,6 +241,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             }
 
             // TODO: check whether modification were done
+            try {
+                PropertyUtils.copyProperties(originalParameterModel, parameterModel);
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                logger.error("error copying parameter model", e);
+            }
             project.markStudyModified();
         }
     }
