@@ -55,6 +55,8 @@ public class MainController implements Initializable {
 
     private final Project project = new Project();
 
+    private final RepositoryWatcher repositoryWatcher = new RepositoryWatcher(project);
+
     @FXML
     private Button newButton;
 
@@ -94,11 +96,10 @@ public class MainController implements Initializable {
 
     private UserRoleManagementController userRoleManagementController;
 
-    private RepositoryWatcher repositoryWatcher;
-
     public void newProject(ActionEvent actionEvent) {
         Optional<String> choice = Dialogues.inputStudyName(Project.DEFAULT_PROJECT_NAME);
         if (choice.isPresent()) {
+            repositoryWatcher.pause();
             String projectName = choice.get();
             if (!Identifiers.validateProjectName(projectName)) {
                 Dialogues.showError("Invalid name", Identifiers.getProjectNameValidationDescription());
@@ -137,6 +138,7 @@ public class MainController implements Initializable {
             boolean success = project.loadLocalStudy();
             if (success) {
                 ApplicationSettings.setLastUsedProject(project.getProjectName());
+                repositoryWatcher.unpause();
                 StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
             } else {
                 StatusLogger.getInstance().log("Loading study failed!", false);
@@ -240,6 +242,7 @@ public class MainController implements Initializable {
             }
         });
 
+        repositoryWatcher.start();
         project.addRepositoryStateObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
@@ -265,8 +268,6 @@ public class MainController implements Initializable {
                         // TODO: ask to create a new study or start from an existing one
                         loadProject(null);
                     }
-                    // TODO: only on successful loading
-                    makeRepositoryWatcher();
                 }
             }
         });
@@ -307,11 +308,6 @@ public class MainController implements Initializable {
                 .collect(Collectors.joining(", "));
     }
 
-    private void makeRepositoryWatcher() {
-        repositoryWatcher = new RepositoryWatcher(project);
-        repositoryWatcher.start();
-    }
-
     public void updateRemoteModel() {
         project.loadRepositoryStudy();
         Platform.runLater(new Runnable() {
@@ -338,6 +334,7 @@ public class MainController implements Initializable {
 
         File importFile = Dialogues.chooseImportFile();
         if (importFile != null) {
+            repositoryWatcher.pause();
             FileStorage fs = new FileStorage();
             try {
                 SystemModel systemModel = fs.loadSystemModel(importFile);
