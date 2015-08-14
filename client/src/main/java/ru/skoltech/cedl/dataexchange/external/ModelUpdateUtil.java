@@ -102,7 +102,7 @@ public class ModelUpdateUtil {
         return parameterUpdate;
     }
 
-    public static void applyParameterChangesToExternalModel(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
+    public static void applyParameterChangesToExternalModel(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler, ExternalModelFileWatcher externalModelFileWatcher) {
         ModelNode modelNode = externalModel.getParent();
 
         ExternalModelExporter exporter = ExternalModelAccessorFactory.getExporter(externalModel, externalModelFileHandler);
@@ -123,7 +123,7 @@ public class ModelUpdateUtil {
             }
         }
         try {
-            exporter.flushModifications();
+            exporter.flushModifications(externalModelFileWatcher);
         } catch (ExternalModelException e) {
             logger.warn("error flushing the external model: " + externalModel.getNodePath());
         }

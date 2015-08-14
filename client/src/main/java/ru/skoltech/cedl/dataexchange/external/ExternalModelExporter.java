@@ -9,5 +9,5 @@ public interface ExternalModelExporter extends Closeable {
 
     void setValue(String target, Double value) throws ExternalModelException;
 
-    void flushModifications() throws ExternalModelException;
+    void flushModifications(ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException;
 }
