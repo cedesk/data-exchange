@@ -158,7 +158,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     }
 
     public ParameterNature getNature() {
-        System.out.println("ParameterModel.getNature " + name + ": " + nature);
         return nature == null ? DEFAULT_NATURE : nature;
     }
 
@@ -167,7 +166,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     }
 
     public ParameterValueSource getValueSource() {
-        System.out.println("ParameterModel.getValueSource " + name + ": " + valueSource);
         return valueSource == null ? DEFAULT_VALUE_SOURCE : valueSource;
     }
 
@@ -253,6 +251,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public void setExportReference(ExternalModelReference exportReference) {
         this.exportReference = exportReference;
+
         if (exportReference != null) {
             this.exportModel = exportReference.getExternalModel();
             this.exportField = exportReference.getTarget();

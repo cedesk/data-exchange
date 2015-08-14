@@ -12,7 +12,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
@@ -20,6 +19,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import jfxtras.labs.scene.control.BeanPathAdapter;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
@@ -33,6 +33,7 @@ import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.ResourceBundle;
@@ -91,6 +92,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private BeanPathAdapter<ParameterModel> parameterBean = new BeanPathAdapter<>(new ParameterModel("dummyParameter", 19.81));
 
+    private ParameterModel originalParameterModel;
+
     public ParameterEditor() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("parameter_editor.fxml"));
         fxmlLoader.setRoot(this);
@@ -117,15 +120,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
         parameterBean.bindBidirectional("name", nameText.textProperty());
         parameterBean.bindBidirectional("value", valueText.textProperty());
-        //parameterBean.bindBidirectional("nature", natureChoiceBox.valueProperty(), ParameterNature.class);
-        //parameterBean.bindBidirectional("valueSource", valueSourceChoiceBox.valueProperty(), ParameterValueSource.class);
-        natureChoiceBox.valueProperty().setValue(parameterBean.getBean().getNature());
-        valueSourceChoiceBox.valueProperty().setValue(parameterBean.getBean().getValueSource());
-        parameterBean.bindBidirectional("valueReference", valueReferenceText.textProperty());
         parameterBean.bindBidirectional("isReferenceValueOverridden", isReferenceValueOverriddenCheckbox.selectedProperty());
         parameterBean.bindBidirectional("overrideValue", valueOverrideText.textProperty());
         parameterBean.bindBidirectional("isExported", isExportedCheckbox.selectedProperty());
-        parameterBean.bindBidirectional("exportReference", exportReferenceText.textProperty());
         parameterBean.bindBidirectional("description", descriptionText.textProperty());
     }
 
@@ -142,19 +139,33 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     public void setParameterModel(ParameterModel parameterModel) {
-        parameterBean.setBean(parameterModel);
+        this.originalParameterModel = parameterModel;
+
+        ParameterModel localParameterModel = new ParameterModel();
+        try {
+            PropertyUtils.copyProperties(localParameterModel, originalParameterModel);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            logger.error("error copying parameter model", e);
+        }
+        updateView(localParameterModel);
+    }
+
+    private void updateView(ParameterModel localParameterModel) {
+        parameterBean.setBean(localParameterModel);
+        natureChoiceBox.valueProperty().setValue(localParameterModel.getNature());
+        valueSourceChoiceBox.valueProperty().setValue(localParameterModel.getValueSource());
+        valueReferenceText.setText(localParameterModel.getValueReference() != null ? localParameterModel.getValueReference().toString() : "");
+        exportReferenceText.setText(localParameterModel.getExportReference() != null ? localParameterModel.getExportReference().toString() : "");
     }
 
     public void chooseSource(ActionEvent actionEvent) {
-        ParameterModel parameterModel = parameterBean.getBean();
+        ParameterModel parameterModel = getParameterModel();
         ExternalModelReference oldValueReference = parameterModel.getValueReference();
-System.out.println("ParameterEditor.chooseSource before: " + oldValueReference);
-        openChooser("valueReference");
 
-        parameterBean.unBindBidirectional("valueReference", valueReferenceText.textProperty());
-        parameterBean.bindBidirectional("valueReference", valueReferenceText.textProperty());
+        openChooser("valueReference");
         ExternalModelReference newValueReference = parameterModel.getValueReference();
-System.out.println("ParameterEditor.chooseSource after: " + newValueReference);
+        valueReferenceText.setText(newValueReference != null ? newValueReference.toString() : "");
+
         if (newValueReference != null && !newValueReference.equals(oldValueReference)) {
             logger.debug("update parameter value from model");
             ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
@@ -170,8 +181,8 @@ System.out.println("ParameterEditor.chooseSource after: " + newValueReference);
 
     public void chooseTarget(ActionEvent actionEvent) {
         openChooser("exportReference");
-        parameterBean.unBindBidirectional("exportReference", exportReferenceText.textProperty());
-        parameterBean.bindBidirectional("exportReference", exportReferenceText.textProperty());
+        ParameterModel parameterModel = getParameterModel();
+        exportReferenceText.setText(parameterModel.getExportReference() != null ? parameterModel.getExportReference().toString() : "");
     }
 
     public void openChooser(String fieldName) {
@@ -203,7 +214,13 @@ System.out.println("ParameterEditor.chooseSource after: " + newValueReference);
     }
 
     public void revertChanges(ActionEvent actionEvent) {
-        // TODO: reload model from repository
+        ParameterModel localParameterModel = new ParameterModel();
+        try {
+            PropertyUtils.copyProperties(localParameterModel, originalParameterModel);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            logger.error("error copying parameter model", e);
+        }
+        updateView(localParameterModel);
     }
 
     private void updateModel() {
