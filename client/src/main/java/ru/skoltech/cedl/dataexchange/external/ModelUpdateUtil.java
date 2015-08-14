@@ -123,9 +123,9 @@ public class ModelUpdateUtil {
             }
         }
         try {
-            exporter.close();
-        } catch (IOException e) {
-            logger.warn("error closing the external model: " + externalModel.getNodePath());
+            exporter.flushModifications();
+        } catch (ExternalModelException e) {
+            logger.warn("error flushing the external model: " + externalModel.getNodePath());
         }
     }
 }

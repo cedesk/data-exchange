@@ -8,4 +8,6 @@ import java.io.Closeable;
 public interface ExternalModelExporter extends Closeable {
 
     void setValue(String target, Double value) throws ExternalModelException;
+
+    void flushModifications() throws ExternalModelException;
 }

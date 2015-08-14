@@ -36,31 +36,43 @@ public class ExcelModelExporter implements ExternalModelExporter {
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
+        try {
+            flushModifications();
+        } catch (ExternalModelException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public void flushModifications() throws ExternalModelException {
         if (spreadsheetAccessor != null) {
-            if (spreadsheetAccessor.isModified()) {
-                ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
-                if (cacheState == ExternalModelCacheState.NOT_CACHED) {
-                    try (ByteArrayOutputStream bos = new ByteArrayOutputStream(externalModel.getAttachment().length)) {
-                        spreadsheetAccessor.saveChanges(bos);
-                        externalModel.setAttachment(bos.toByteArray());
-                    } catch (IOException e) {
-                        logger.error("Error saving changes on spreadsheet to external model (in memory).");
-                    }
-                } else {
-                    File file = ExternalModelFileHandler.getFilePathInCache(externalModel);
-                    try (FileOutputStream fos = new FileOutputStream(file)) {
-                        spreadsheetAccessor.saveChanges(fos);
-                    } catch (IOException e) {
-                        logger.error("Error saving changes on spreadsheet to external model (on cache file).");
+            try {
+                if (spreadsheetAccessor.isModified()) {
+                    ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+                    if (cacheState == ExternalModelCacheState.NOT_CACHED) {
+                        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(externalModel.getAttachment().length)) {
+                            spreadsheetAccessor.saveChanges(bos);
+                            externalModel.setAttachment(bos.toByteArray());
+                        } catch (IOException e) {
+                            logger.error("Error saving changes on spreadsheet to external model (in memory).");
+                            throw new ExternalModelException("error saving changes to external model");
+                        }
+                    } else {
+                        File file = ExternalModelFileHandler.getFilePathInCache(externalModel);
+                        try (FileOutputStream fos = new FileOutputStream(file)) {
+                            spreadsheetAccessor.saveChanges(fos);
+                        } catch (IOException e) {
+                            logger.error("Error saving changes on spreadsheet to external model (on cache file).");
+                            throw new ExternalModelException("error saving changes to external model");
+                        }
                     }
                 }
-            }
-
-            try {
-                spreadsheetAccessor.close();
-            } catch (IOException e) {
-                logger.error("error closing excel model.");
+            } finally {
+                try {
+                    spreadsheetAccessor.close();
+                } catch (IOException e) {
+                    logger.error("error closing excel model.");
+                }
             }
         }
     }

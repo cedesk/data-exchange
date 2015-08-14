@@ -89,11 +89,16 @@ public class SpreadsheetAccessor implements Closeable {
         return result;
     }
 
-    private void setNumericValue(Cell cell, Double value) {
+    private void setNumericValue(Cell cell, Double value) throws ExternalModelException {
         if (cell != null) {
+            // TODO: iif necessary
             markModified();
-            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-            cell.setCellValue(value);
+            try {
+                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                cell.setCellValue(value);
+            } catch (IllegalArgumentException | IllegalStateException e ){
+                throw new ExternalModelException("writing to cell failed!", e);
+            }
         }
     }
 
@@ -113,7 +118,7 @@ public class SpreadsheetAccessor implements Closeable {
         return getNumericValue(getCell(coordinates));
     }
 
-    public void setNumericValue(String coordinates, Double value) {
+    public void setNumericValue(String coordinates, Double value) throws ExternalModelException {
         setNumericValue(getCell(coordinates), value);
     }
 
@@ -125,7 +130,7 @@ public class SpreadsheetAccessor implements Closeable {
             Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1);
             return cell;
         } catch (ParseException e) {
-            logger.error("error parsing accessing spreadsheet. invalid coordinates: " + coordinates);
+            logger.error("error parsing coordinates: " + coordinates);
             return null;
         }
     }
