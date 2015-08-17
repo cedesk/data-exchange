@@ -158,7 +158,7 @@ public class MainController implements Initializable {
                 ApplicationSettings.setLastUsedProject(project.getProjectName());
                 StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
             } else {
-                StatusLogger.getInstance().log("Saving study failed!", false);
+                StatusLogger.getInstance().log("Saving study failed!", true);
             }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error saving project!", true);
