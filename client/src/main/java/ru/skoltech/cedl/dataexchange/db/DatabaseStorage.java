@@ -35,8 +35,6 @@ import java.util.Map;
  */
 public class DatabaseStorage implements Repository {
 
-    private final static Logger logger = Logger.getLogger(DatabaseStorage.class);
-
     public static final String PERSISTENCE_URL_PROPERTY = "javax.persistence.jdbc.url";
     public static final String PERSISTENCE_USER_PROPERTY = "javax.persistence.jdbc.user";
     public static final String PERSISTENCE_PASSWORD_PROPERTY = "javax.persistence.jdbc.password";
@@ -44,9 +42,10 @@ public class DatabaseStorage implements Repository {
     public static final String DEFAULT_PASSWORD = "cedesk";
     public static final String DEFAULT_HOST_NAME = "localhost";
     public static final String DB_PERSISTENCE_UNIT_NAME = "db";
-    public final static String MEM_PERSISTENCE_UNIT_NAME = "mem";
-    private static final String DEFAULT_JDBC_URL = "jdbc:mysql://HOSTNAME:3306/cedesk_dev";
+    public static final String MEM_PERSISTENCE_UNIT_NAME = "mem";
+    private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
     private static final String HOST_NAME = "HOSTNAME";
+    private static final String DEFAULT_JDBC_URL = "jdbc:mysql://" + HOST_NAME + ":3306/cedesk_dev";
     private String hostName;
     private EntityManagerFactory emf;
     private String persistenceUnit;
@@ -361,7 +360,7 @@ public class DatabaseStorage implements Repository {
         if (emf == null) {
             try {
                 emf = Persistence.createEntityManagerFactory(persistenceUnit, properties);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 logger.fatal("connecting to database failed!");
                 throw new RepositoryException("database connection failed");
             }
@@ -394,6 +393,8 @@ public class DatabaseStorage implements Repository {
     public String toString() {
         return "DatabaseStorage{" +
                 "hostName='" + hostName + '\'' +
+                "persistenceUnit='" + persistenceUnit + '\'' +
+                "properties=" + properties +
                 '}';
     }
 

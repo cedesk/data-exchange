@@ -165,7 +165,7 @@ public class Project {
             userManagement = repository.loadUserManagement();
             return true;
         } catch (RepositoryException e) {
-            logger.error("Error loading user management. recreating new user management.");
+            logger.error("Error loading user management. recreating new user management.", e);
             initializeUserManagement();
         }
         return false;
@@ -190,6 +190,9 @@ public class Project {
         final StringBuilder sb = new StringBuilder("Project{");
         sb.append("projectName='").append(projectName).append('\'');
         sb.append(", repository=").append(repository);
+        sb.append(", currentUser").append(currentUser);
+        sb.append(", latestLoadedModification").append(latestLoadedModification);
+        sb.append(", latestRepositoryModification").append(latestRepositoryModification);
         sb.append(", repositoryStateMachine=").append(repositoryStateMachine);
         sb.append('}');
         return sb.toString();
@@ -207,7 +210,7 @@ public class Project {
             return true;
         } catch (RepositoryException re) {
             StatusLogger.getInstance().log("Unable to store. Concurrent editing appeared!", true);
-            logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier());
+            logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
             StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
         } catch (Exception e) {
             logger.error("Error storing study!", e);
@@ -243,7 +246,7 @@ public class Project {
                     logger.debug("stored external model '" + externalModel.getName() +
                             "' (model: " + modelModification + ", " + fileModification + ")");
                 } catch (IOException e) {
-                    logger.error("error updating external model from file!");
+                    logger.error("error updating external model from file!", e);
                 }
             } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
                 // TODO: WARN USER
@@ -258,7 +261,7 @@ public class Project {
         try {
             study = repository.loadStudy(projectName);
         } catch (RepositoryException e) {
-            logger.error("Study not found!");
+            logger.error("Study not found!", e);
         } catch (Exception e) {
             logger.error("Error loading study!", e);
         }
@@ -308,7 +311,7 @@ public class Project {
             Timestamp latestMod = repositoryStudy.getSystemModel().findLatestModification();
             setLatestRepositoryModification(latestMod.getTime());
         } catch (RepositoryException e) {
-            logger.error("Study not found!");
+            logger.error("Study not found!", e);
         } catch (Exception e) {
             logger.error("Error loading repositoryStudy!", e);
         }
@@ -375,7 +378,7 @@ public class Project {
             ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException e) {
-            logger.error("Error storing user management.");
+            logger.error("Error storing user management.", e);
         }
         return false;
     }
@@ -394,7 +397,7 @@ public class Project {
             // TODO: confirm repo url is working
             return true;
         } catch (RepositoryException e) {
-            logger.error("Error storing external model: " + externalModel.getParent().getNodePath() + "\\" + externalModel.getName());
+            logger.error("Error storing external model: " + externalModel.getParent().getNodePath() + "\\" + externalModel.getName(), e);
         }
         return false;
     }
