@@ -418,9 +418,6 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-
-            SettingsController controller = loader.getController();
-            stage.showAndWait();
             stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                 @Override
                 public void handle(WindowEvent event) {
@@ -430,6 +427,7 @@ public class MainController implements Initializable {
                     }
                 }
             });
+            stage.showAndWait();
         } catch (IOException e) {
             logger.error(e);
         }
