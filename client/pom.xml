@@ -188,7 +188,7 @@
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <target name="copy native installer to external output directory">
+                                    <target name="copy JAR ro installation directory">
                                         <copy file="${project.build.directory}/cedesk-client.jar"
                                               tofile="${user.home}/AppData/Local/CEDESK/app/cedesk-client-jfx.jar"/>
                                     </target>
