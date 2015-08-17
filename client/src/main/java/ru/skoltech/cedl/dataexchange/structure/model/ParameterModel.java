@@ -331,7 +331,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         }
         if ((this.getExportReference() == null && other.getExportReference() != null) || (this.getExportReference() != null && other.getExportReference() == null)
                 || (this.getExportReference() != null && !this.getExportReference().equals(other.getExportReference()))) {
-            diff.put("exportReference", String.valueOf(other.getValueReference()));
+            diff.put("exportReference", String.valueOf(other.getExportReference()));
         }
         if ((this.description == null && other.description != null) || (this.description != null && other.description == null)
                 || (this.description != null && !this.description.equals(other.description))) {
