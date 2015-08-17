@@ -169,7 +169,7 @@
                 </property>
             </activation>
             <properties>
-                <package.output.dir>//srv-fs-01/Skoltech/documents/space center/sirg/CEDL-Software/CEDESK/automatic-builds</package.output.dir>
+                <package.output.dir>c:/data/cedesk-builds</package.output.dir>
             </properties>
         </profile>
         <profile>
