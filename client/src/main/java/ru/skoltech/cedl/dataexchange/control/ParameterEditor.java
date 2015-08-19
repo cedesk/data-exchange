@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
 import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
@@ -93,6 +94,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private BeanPathAdapter<ParameterModel> parameterBean = new BeanPathAdapter<>(new ParameterModel("dummyParameter", 19.81));
 
     private ParameterModel originalParameterModel;
+
+    private ModelEditingController.ParameterUpdateListener updateListener;
 
     public ParameterEditor() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("parameter_editor.fxml"));
@@ -176,6 +179,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                     // TODO: update parameter table
                 }
             });
+            if(updateListener != null) {
+                ParameterUpdate parameterUpdate = new ParameterUpdate(parameterModel, parameterModel.getValue());
+                updateListener.accept(parameterUpdate);
+            }
         }
     }
 
@@ -248,6 +255,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             }
             project.markStudyModified();
         }
+    }
+
+    public void setUpdateListener(ModelEditingController.ParameterUpdateListener updateListener) {
+        this.updateListener = updateListener;
     }
 
     //TODO: add possibility for negative values

@@ -47,8 +47,7 @@
                             <children>
                                 <CheckBox fx:id="isReferenceValueOverriddenCheckbox" mnemonicParsing="false"
                                           text="Override"/>
-                                <TextField fx:id="valueOverrideText" editable="false" prefWidth="120.0"
-                                           promptText="override"/>
+                                <TextField fx:id="valueOverrideText" prefWidth="120.0" promptText="0123.45"/>
                             </children>
                         </HBox>
                     </children>
