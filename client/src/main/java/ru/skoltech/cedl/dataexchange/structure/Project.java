@@ -200,12 +200,12 @@ public class Project {
 
     public boolean storeLocalStudy() {
         try {
+            exportValuesToExternalModels();
+            storeChangedExternalModels();
             study = repository.storeStudy(study);
             Timestamp latestMod = study.getSystemModel().findLatestModification();
             latestLoadedModification.setValue(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
-            exportValuesToExternalModels();
-            storeChangedExternalModels();
             ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException re) {
@@ -235,7 +235,7 @@ public class Project {
             ModelNode modelNode = externalModel.getParent();
             ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
             if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
-                logger.debug("storing '" + modelNode.getNodePath() + "' external model '" + externalModel.getName() + "'");
+                logger.debug("storing " + externalModel.getNodePath());
                 try {
                     ExternalModelFileHandler.updateFromFile(externalModel);
                     storeExternalModel(externalModel);
@@ -244,13 +244,15 @@ public class Project {
                     long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
                     String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
                     logger.debug("stored external model '" + externalModel.getName() +
-                            "' (model: " + modelModification + ", " + fileModification + ")");
+                            "' (model: " + modelModification + ", file: " + fileModification + ")");
                 } catch (IOException e) {
                     logger.error("error updating external model from file!", e);
                 }
             } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
-                // TODO: WARN USER
-                logger.warn(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
+                // TODO: WARN USER, PROVIDE WITH CHOICE TO REVERT OR FORCE CHECKIN
+                logger.warn(externalModel.getNodePath() +" has conflicting changes locally and in repository");
+            } else {
+                logger.warn(externalModel.getNodePath() + " is in state " + cacheState);
             }
         }
         externalModelFileHandler.getChangedExternalModels().clear();
