@@ -30,7 +30,7 @@ public class ExcelModelExporter implements ExternalModelExporter {
     public void setValue(String target, Double value) throws ExternalModelException {
         SpreadsheetAccessor spreadsheetAccessor = getSpreadsheetAccessor();
         spreadsheetAccessor.setNumericValue(target, value);
-System.out.println("ExcelModelExporter.setValue " + target + " " + value);
+        logger.debug("setting " + value + " on cell " + target + " in " + externalModel.getNodePath());
     }
 
     /**
