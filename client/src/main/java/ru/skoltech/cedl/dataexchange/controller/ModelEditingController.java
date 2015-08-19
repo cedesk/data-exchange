@@ -6,6 +6,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -153,6 +154,7 @@ public class ModelEditingController implements Initializable {
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
         parameterEditor.setVisible(false);
+        parameterEditor.setUpdateListener(new ParameterUpdateListener());
     }
 
     private ContextMenu makeStructureTreeContextMenu() {
@@ -511,7 +513,7 @@ public class ModelEditingController implements Initializable {
         }
     }
 
-    private class ParameterUpdateListener implements Consumer<ParameterUpdate> {
+    public class ParameterUpdateListener implements Consumer<ParameterUpdate> {
         @Override
         public void accept(ParameterUpdate parameterUpdate) {
             ParameterModel parameterModel = parameterUpdate.getParameterModel();
@@ -521,7 +523,15 @@ public class ModelEditingController implements Initializable {
             }
             if (getSelectedTreeItem() != null &&
                     getSelectedTreeItem().getValue().equals(parameterModel.getParent())) {
-                updateParameterTable(getSelectedTreeItem());
+                //updateParameterTable(getSelectedTreeItem());
+                int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
+                ObservableList<ParameterModel> items = viewParameters.getItems();
+                for (int i = 0; i < items.size(); i++) {
+                    if(items.get(i).getName().equals(parameterModel.getName())) {
+                        items.set(i, parameterModel);
+                    }
+                }
+                parameterTable.getSelectionModel().select(selectedIndex);
             }
 
             Double value = parameterUpdate.getValue();
