@@ -296,7 +296,7 @@ public class MainController implements Initializable {
 
         File importFile = null;
         if (actionEvent == null) { // invoked from startup
-            importFile = new File(StorageUtils.getAppDir(), "djSat21_2015-09-13_21-10_cedesk-system-model.xml");
+            importFile = new File(StorageUtils.getAppDir(), "djSat21_2015-09-17_14-53_cedesk-system-model.xml");
         } else {
             importFile = Dialogues.chooseImportFile();
         }
@@ -372,7 +372,8 @@ public class MainController implements Initializable {
 
             DiffController controller = loader.getController();
             controller.setSystemModels(project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
-            stage.show();
+            stage.showAndWait();
+            modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
         } catch (IOException e) {
             logger.error(e);
         }
