@@ -20,7 +20,9 @@ public class StorageUtils {
 
     public static File getAppDir() {
         File homeDir = new File(USER_HOME);
-        return new File(homeDir, APP_DIR);
+        File appDir = new File(homeDir, APP_DIR);
+        makeDirectory(appDir);
+        return appDir;
     }
 
     public static File getDataDir(String projectName) {
