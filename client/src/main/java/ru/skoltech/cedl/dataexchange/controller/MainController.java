@@ -124,7 +124,6 @@ public class MainController implements Initializable {
             if (studyChoice.isPresent()) {
                 String studyName = studyChoice.get();
                 project.setProjectName(studyName);
-                project.setRepositoryStudy(null);
                 reloadProject(null);
             }
         } else {
