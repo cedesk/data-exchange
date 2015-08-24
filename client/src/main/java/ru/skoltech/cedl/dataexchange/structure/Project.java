@@ -85,6 +85,7 @@ public class Project {
     private void initialize(String projectName) {
         this.projectName = projectName;
         this.repositoryStateMachine.reset();
+        this.repositoryStudy = null;
         ProjectContext.getInstance().setProject(this);
     }
 
@@ -165,7 +166,7 @@ public class Project {
             userManagement = repository.loadUserManagement();
             return true;
         } catch (RepositoryException e) {
-            logger.error("Error loading user management. recreating new user management.", e);
+            logger.error("Error loading user management. recreating new user management.");
             initializeUserManagement();
         }
         return false;
@@ -203,6 +204,7 @@ public class Project {
             exportValuesToExternalModels();
             storeChangedExternalModels();
             study = repository.storeStudy(study);
+            setRepositoryStudy(study);
             Timestamp latestMod = study.getSystemModel().findLatestModification();
             latestLoadedModification.setValue(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
@@ -250,7 +252,7 @@ public class Project {
                 }
             } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
                 // TODO: WARN USER, PROVIDE WITH CHOICE TO REVERT OR FORCE CHECKIN
-                logger.warn(externalModel.getNodePath() +" has conflicting changes locally and in repository");
+                logger.warn(externalModel.getNodePath() + " has conflicting changes locally and in repository");
             } else {
                 logger.warn(externalModel.getNodePath() + " is in state " + cacheState);
             }
@@ -269,6 +271,7 @@ public class Project {
         }
         if (study != null) {
             setStudy(study);
+            setRepositoryStudy(repositoryStudy);
             Timestamp latestMod = getSystemModel().findLatestModification();
             setLatestLoadedModification(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
