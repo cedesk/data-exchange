@@ -521,18 +521,12 @@ public class ModelEditingController implements Initializable {
                     parameterTable.getSelectionModel().getSelectedItem().equals(parameterModel)) {
                 parameterEditor.setParameterModel(parameterModel);
             }
-            if (getSelectedTreeItem() != null &&
-                    getSelectedTreeItem().getValue().equals(parameterModel.getParent())) {
-                //updateParameterTable(getSelectedTreeItem());
-                int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
-                ObservableList<ParameterModel> items = viewParameters.getItems();
-                for (int i = 0; i < items.size(); i++) {
-                    if(items.get(i).getName().equals(parameterModel.getName())) {
-                        items.set(i, parameterModel);
-                    }
-                }
-                parameterTable.getSelectionModel().select(selectedIndex);
-            }
+            /*
+            TreeItem<ModelNode> selectedTreeItem = getSelectedTreeItem();
+            if (selectedTreeItem != null &&
+                    selectedTreeItem.getValue().equals(parameterModel.getParent())) {
+                // update parameter table without refreshing the parameter editor
+            } */
 
             Double value = parameterUpdate.getValue();
             String message = parameterModel.getNodePath() + " has been updated! (" + String.valueOf(value) + ")";
