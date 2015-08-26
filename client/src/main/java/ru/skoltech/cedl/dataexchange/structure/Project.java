@@ -25,6 +25,7 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Objects;
@@ -116,6 +117,12 @@ public class Project {
 
     private void setStudy(Study study) {
         this.study = study;
+        if (study != null && study.getSystemModel() != null) {
+            Timestamp latestMod = getSystemModel().findLatestModification();
+            setLatestLoadedModification(latestMod.getTime());
+        } else {
+            setLatestLoadedModification(Timestamp.from(Instant.MIN).getTime());
+        }
     }
 
     public Study getRepositoryStudy() {
@@ -124,6 +131,12 @@ public class Project {
 
     public void setRepositoryStudy(Study repositoryStudy) {
         this.repositoryStudy = repositoryStudy;
+        if (repositoryStudy != null && repositoryStudy.getSystemModel() != null) {
+            Timestamp latestMod = repositoryStudy.getSystemModel().findLatestModification();
+            setLatestRepositoryModification(latestMod.getTime());
+        } else {
+            setLatestRepositoryModification(Timestamp.from(Instant.MIN).getTime());
+        }
     }
 
     public UserManagement getUserManagement() {
@@ -203,10 +216,9 @@ public class Project {
         try {
             exportValuesToExternalModels();
             storeChangedExternalModels();
-            study = repository.storeStudy(study);
+            Study study = repository.storeStudy(this.study);
+            setStudy(study);
             setRepositoryStudy(study);
-            Timestamp latestMod = study.getSystemModel().findLatestModification();
-            latestLoadedModification.setValue(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
             ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
@@ -313,16 +325,12 @@ public class Project {
         try {
             // TODO: make more efficient, not to load the entire model, if it is not newer
             repositoryStudy = repository.loadStudy(projectName);
-            Timestamp latestMod = repositoryStudy.getSystemModel().findLatestModification();
-            setLatestRepositoryModification(latestMod.getTime());
         } catch (RepositoryException e) {
             logger.error("Study not found!", e);
         } catch (Exception e) {
             logger.error("Error loading repositoryStudy!", e);
         }
-        if (repositoryStudy != null) {
-            setRepositoryStudy(repositoryStudy);
-        }
+        setRepositoryStudy(repositoryStudy);
         return repositoryStudy != null;
     }
 
