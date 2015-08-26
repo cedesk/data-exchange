@@ -66,6 +66,9 @@ public class ExcelModelExporter implements ExternalModelExporter {
                         logger.info("Updating " + file.getAbsolutePath() + " with changes from parameters");
                         try (FileOutputStream fos = new FileOutputStream(file)) {
                             spreadsheetAccessor.saveChanges(fos);
+                        } catch (FileNotFoundException e) {
+                            logger.error("Error saving changes on spreadsheet to external model (on cache file).");
+                            throw new ExternalModelException("external model is opened by other application");
                         } catch (IOException e) {
                             logger.error("Error saving changes on spreadsheet to external model (on cache file).");
                             throw new ExternalModelException("error saving changes to external model");
