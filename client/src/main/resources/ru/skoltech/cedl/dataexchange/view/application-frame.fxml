@@ -11,7 +11,7 @@
             prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController" fx:id="applicationPane">
     <children>
-        <BorderPane prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0"
+        <BorderPane fx:id="layoutPane" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0"
                     AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <center>
             </center>
@@ -41,6 +41,12 @@
                                             <items>
                                                 <MenuItem mnemonicParsing="false" onAction="#openSettingsDialog"
                                                           text="Settings"/>
+                                            </items>
+                                        </Menu>
+                                        <Menu mnemonicParsing="false" text="View">
+                                            <items>
+                                                <MenuItem mnemonicParsing="false" onAction="#openUserManagement"
+                                                          text="User Management"/>
                                             </items>
                                         </Menu>
                                         <Menu mnemonicParsing="false" text="Help">
