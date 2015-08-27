@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
 <SplitPane xmlns:fx="http://javafx.com/fxml/1" dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0"
-           BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.40"
+           BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.40" stylesheets="@styling.css"
            fx:controller="ru.skoltech.cedl.dataexchange.controller.ModelEditingController"
            fx:id="viewPane">
     <items>

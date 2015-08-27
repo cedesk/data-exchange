@@ -19,11 +19,8 @@
                                 text="Delete"/>
                     </items>
                 </ToolBar>
-                <Label text="Disciplines" underline="true" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                <Label text="Disciplines" styleClass="sectionTitle" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                        AnchorPane.topAnchor="0.0">
-                    <font>
-                        <Font size="16.0"/>
-                    </font>
                     <padding>
                         <Insets left="8.0" top="4.0"/>
                     </padding>
@@ -56,10 +53,7 @@
                     <items>
                         <BorderPane fx:id="subsystemsPane" prefHeight="200.0" prefWidth="200.0">
                             <top>
-                                <Label alignment="BASELINE_LEFT" text="Subsystems" underline="true">
-                                    <font>
-                                        <Font size="16.0"/>
-                                    </font>
+                                <Label alignment="BASELINE_LEFT" text="Subsystems" styleClass="sectionTitle">
                                     <padding>
                                         <Insets left="8.0" top="4.0"/>
                                     </padding>
@@ -68,10 +62,7 @@
                             <left>
                                 <VBox>
                                     <children>
-                                        <Label alignment="BASELINE_LEFT" text="assigned" underline="true">
-                                            <font>
-                                                <Font size="16.0"/>
-                                            </font>
+                                        <Label alignment="BASELINE_LEFT" text="assigned" styleClass="sectionTitle">
                                             <padding>
                                                 <Insets left="16.0"/>
                                             </padding>
@@ -84,10 +75,7 @@
                             <right>
                                 <VBox>
                                     <children>
-                                        <Label alignment="BASELINE_LEFT" text="unassigned" underline="true">
-                                            <font>
-                                                <Font size="16.0"/>
-                                            </font>
+                                        <Label alignment="BASELINE_LEFT" text="unassigned" styleClass="sectionTitle">
                                             <padding>
                                                 <Insets left="16.0"/>
                                             </padding>
@@ -116,10 +104,7 @@
                         </BorderPane>
                         <BorderPane fx:id="userRolePane" prefHeight="200.0" prefWidth="200.0">
                             <top>
-                                <Label styleClass="sectionTitle" text="Users" underline="true">
-                                    <font>
-                                        <Font size="16.0"/>
-                                    </font>
+                                <Label styleClass="sectionTitle" text="Users">
                                     <padding>
                                         <Insets left="8.0" top="4.0"/>
                                     </padding>
@@ -128,10 +113,7 @@
                             <right>
                                 <VBox>
                                     <children>
-                                        <Label styleClass="sectionTitle" text="available" underline="true">
-                                            <font>
-                                                <Font size="16.0"/>
-                                            </font>
+                                        <Label styleClass="sectionTitle" text="available">
                                             <padding>
                                                 <Insets left="16.0"/>
                                             </padding>
@@ -190,9 +172,6 @@
                                 <VBox>
                                     <children>
                                         <Label styleClass="sectionTitle" text="assigned" underline="true">
-                                            <font>
-                                                <Font size="16.0"/>
-                                            </font>
                                             <padding>
                                                 <Insets left="16.0"/>
                                             </padding>
