@@ -17,6 +17,8 @@ public class Views {
 
     public static final URL USER_EDITING_PANE = Views.class.getResource("user-editing.fxml");
 
+    public static final URL UNIT_EDITING_PANE = Views.class.getResource("unit-editing.fxml");
+
     public static final URL REVISION_HISTORY = Views.class.getResource("revision-history.fxml");
 
     public static final URL SETTINGS_VIEW = Views.class.getResource("settings-view.fxml");

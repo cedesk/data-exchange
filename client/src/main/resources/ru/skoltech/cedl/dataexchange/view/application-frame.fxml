@@ -48,6 +48,10 @@
                                                 <MenuItem mnemonicParsing="false" onAction="#openUserManagement"
                                                           text="User Management"/>
                                             </items>
+                                            <items>
+                                                <MenuItem mnemonicParsing="false" onAction="#openUnitManagement"
+                                                          text="Unit Management"/>
+                                            </items>
                                         </Menu>
                                         <Menu mnemonicParsing="false" text="Help">
                                             <items>
