@@ -5,10 +5,10 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.text.Font?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8"
+            prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" stylesheets="@styling.css"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController" fx:id="applicationPane">
     <children>
         <BorderPane fx:id="layoutPane" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0"
@@ -81,43 +81,23 @@
                                     <children>
                                         <HBox>
                                             <children>
-                                                <Label text="Design Study:">
-                                                    <font>
-                                                        <Font size="14.0"/>
-                                                    </font>
+                                                <Label text="Design Study:" styleClass="projectDetails">
                                                     <HBox.margin>
                                                         <Insets right="4.0"/>
                                                     </HBox.margin>
                                                 </Label>
                                                 <Label fx:id="studyNameLabel" layoutX="10.0" layoutY="10.0"
                                                        text="--">
-                                                    <font>
-                                                        <Font size="14.0"/>
-                                                    </font>
-                                                    <HBox.margin>
-                                                        <Insets/>
-                                                    </HBox.margin>
                                                 </Label>
-                                                <Label text="User:">
-                                                    <font>
-                                                        <Font size="14.0"/>
-                                                    </font>
+                                                <Label text="User:" styleClass="projectDetails">
                                                     <HBox.margin>
                                                         <Insets left="20.0" right="4.0"/>
                                                     </HBox.margin>
                                                 </Label>
                                                 <Label fx:id="userNameLabel" text="--">
-                                                    <font>
-                                                        <Font size="14.0"/>
-                                                    </font>
-                                                    <HBox.margin>
-                                                        <Insets/>
-                                                    </HBox.margin>
                                                 </Label>
-                                                <Label layoutX="97.0" layoutY="10.0" text="Roles:">
-                                                    <font>
-                                                        <Font size="14.0"/>
-                                                    </font>
+                                                <Label layoutX="97.0" layoutY="10.0" text="Roles:"
+                                                       styleClass="projectDetails">>
                                                     <HBox.margin>
                                                         <Insets left="20.0" right="4.0"/>
                                                     </HBox.margin>
@@ -127,9 +107,6 @@
                                                     <font>
                                                         <Font size="14.0"/>
                                                     </font>
-                                                    <HBox.margin>
-                                                        <Insets/>
-                                                    </HBox.margin>
                                                 </Label>
                                             </children>
                                         </HBox>

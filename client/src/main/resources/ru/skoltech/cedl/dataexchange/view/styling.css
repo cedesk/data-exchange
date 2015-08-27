@@ -1,3 +1,13 @@
+.applicationTitle {
+    -fx-font-family: serif;
+    -fx-font-size: 26px;
+    -fx-font-style: italic;
+    -fx-font-weight: bold;
+}
+
+.projectDetails,
 .sectionTitle {
-    font-size: 14px;
+    -fx-font-size: 16px;
+    -fx-font-style: italic;
+    -fx-underline: true;
 }
