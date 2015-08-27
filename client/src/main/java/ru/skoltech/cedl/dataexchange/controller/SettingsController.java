@@ -27,6 +27,7 @@ public class SettingsController implements Initializable {
 
     @FXML
     private PasswordField dbPasswordText;
+
     @FXML
     private TextField dbUsernameText;
 
