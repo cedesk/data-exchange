@@ -39,18 +39,13 @@
                                         </Menu>
                                         <Menu mnemonicParsing="false" text="Edit">
                                             <items>
+                                                <MenuItem mnemonicParsing="false" onAction="#openUserManagement"
+                                                          text="Users and Disciplines"/>
+                                                <MenuItem mnemonicParsing="false" onAction="#openUnitManagement"
+                                                          text="Units and Measures"/>
+                                                <SeparatorMenuItem mnemonicParsing="false"/>
                                                 <MenuItem mnemonicParsing="false" onAction="#openSettingsDialog"
                                                           text="Settings"/>
-                                            </items>
-                                        </Menu>
-                                        <Menu mnemonicParsing="false" text="View">
-                                            <items>
-                                                <MenuItem mnemonicParsing="false" onAction="#openUserManagement"
-                                                          text="User Management"/>
-                                            </items>
-                                            <items>
-                                                <MenuItem mnemonicParsing="false" onAction="#openUnitManagement"
-                                                          text="Unit Management"/>
                                             </items>
                                         </Menu>
                                         <Menu mnemonicParsing="false" text="Help">
@@ -162,17 +157,6 @@
                 </AnchorPane>
             </bottom>
             <center>
-                <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE"
-                         BorderPane.alignment="CENTER">
-                    <tabs>
-                        <Tab fx:id="modelTab" text="Model">
-                        </Tab>
-                        <Tab fx:id="userRolesTab" text="Users">
-                        </Tab>
-                        <Tab fx:id="unitsTab" disable="true" text="Units">
-                        </Tab>
-                    </tabs>
-                </TabPane>
             </center>
         </BorderPane>
     </children>
