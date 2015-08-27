@@ -283,7 +283,7 @@ public class Project {
         }
         if (study != null) {
             setStudy(study);
-            setRepositoryStudy(repositoryStudy);
+            setRepositoryStudy(study);
             Timestamp latestMod = getSystemModel().findLatestModification();
             setLatestLoadedModification(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);

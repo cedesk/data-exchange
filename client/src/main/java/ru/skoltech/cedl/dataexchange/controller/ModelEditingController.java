@@ -6,7 +6,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -15,7 +14,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -220,7 +218,7 @@ public class ModelEditingController implements Initializable {
             }
             boolean isAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
             structureTree.setEditable(isAdmin);
-            if(structureTree.getTreeItem(selectedIndex) != null) {
+            if (structureTree.getTreeItem(selectedIndex) != null) {
                 structureTree.getSelectionModel().select(selectedIndex);
             }
         } else {
@@ -376,6 +374,10 @@ public class ModelEditingController implements Initializable {
     }
 
     public void attachExternalModel(ActionEvent actionEvent) {
+        if (!project.isStudyInRepository()) {
+            Dialogues.showError("Save Project", "Unable to attach an external model, as long as the project has not been saved yet!");
+            return;
+        }
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem);
         File externalModelFile = Dialogues.chooseExternalModelFile();
