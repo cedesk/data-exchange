@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="800.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.40"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.UnitManagementController">
+    <children>
+        <TabPane prefHeight="600.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0"
+                 AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <tabs>
+                <Tab text="Units">
+                    <content>
+                        <SplitPane dividerPositions="0.4">
+                            <items>
+                                <AnchorPane>
+                                    <children>
+                                        <ListView fx:id="unitsListView" prefHeight="567.0" prefWidth="316.0"
+                                                  AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
+                                                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                                        <ToolBar layoutX="-11.0" layoutY="479.0" AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                            <items>
+                                                <Button fx:id="addUnitButton" mnemonicParsing="false"
+                                                        onAction="#addUnit" text="Add"/>
+                                                <Button fx:id="deleteUnitButton" mnemonicParsing="false"
+                                                        onAction="#deleteUnit" text="Delete"/>
+                                            </items>
+                                        </ToolBar>
+                                    </children>
+                                </AnchorPane>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0"/>
+                            </items>
+                        </SplitPane>
+                    </content>
+                </Tab>
+                <Tab text="Measures">
+                    <content>
+                        <SplitPane dividerPositions="0.5">
+                            <items>
+                                <AnchorPane>
+                                    <children>
+                                        <ListView fx:id="measuresListView" prefHeight="567.0" prefWidth="396.0"
+                                                  AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
+                                                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                                        <ToolBar layoutX="-11.0" layoutY="479.0" AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                            <items>
+                                                <Button fx:id="addMeasureButton" mnemonicParsing="false"
+                                                        onAction="#addMeasure" text="Add"/>
+                                                <Button fx:id="deleteMeasureButton" mnemonicParsing="false"
+                                                        onAction="#deleteMeasure" text="Delete"/>
+                                            </items>
+                                        </ToolBar>
+                                    </children>
+                                </AnchorPane>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="567.0" prefWidth="800.0"/>
+                            </items>
+                        </SplitPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </children>
+</AnchorPane>

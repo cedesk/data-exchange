@@ -422,6 +422,28 @@ public class MainController implements Initializable {
         }
     }
 
+    public void openUnitManagement(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.UNIT_EDITING_PANE);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Unit Management");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(getAppWindow());
+
+            UnitManagementController unitManagementController = loader.getController();
+            unitManagementController.setProject(project);
+            stage.show();
+            unitManagementController.updateView();
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
     public void quit(ActionEvent actionEvent) {
         Stage stage = (Stage) applicationPane.getScene().getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
