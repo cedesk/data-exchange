@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1" type="javafx.scene.layout.AnchorPane"
-         xmlns="http://javafx.com/javafx/null">
+         xmlns="http://javafx.com/javafx/8.0.40">
     <children>
         <GridPane fx:id="propertyPane" hgap="8.0" vgap="4.0">
             <columnConstraints>
@@ -35,7 +35,7 @@
                             <children>
                                 <TextField fx:id="valueReferenceText" editable="false" prefWidth="200.0"
                                            promptText="reference"/>
-                                <Button mnemonicParsing="false" onAction="#chooseSource" text="Link"/>
+                                <Button mnemonicParsing="false" onAction="#chooseSource" text="Ref"/>
                             </children>
                         </HBox>
                     </children>
@@ -59,16 +59,16 @@
                             <children>
                                 <TextField fx:id="exportReferenceText" editable="false" prefWidth="200.0"
                                            promptText="reference"/>
-                                <Button mnemonicParsing="false" onAction="#chooseTarget" text="Link"/>
+                                <Button mnemonicParsing="false" onAction="#chooseTarget" text="Ref"/>
                             </children>
                         </HBox>
                     </children>
                 </HBox>
                 <TextArea fx:id="descriptionText" prefHeight="50.0" prefWidth="200.0" promptText="description"
                           GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-                <Button mnemonicParsing="false" onAction="#applyChanges" text="Apply" GridPane.columnIndex="1"
+                <Button mnemonicParsing="true" onAction="#applyChanges" text="_Apply" GridPane.columnIndex="1"
                         GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
-                <Button mnemonicParsing="false" onAction="#revertChanges" text="Revert" GridPane.columnIndex="1"
+                <Button mnemonicParsing="true" onAction="#revertChanges" text="Rever_t" GridPane.columnIndex="1"
                         GridPane.halignment="CENTER" GridPane.rowIndex="6"/>
             </children>
         </GridPane>

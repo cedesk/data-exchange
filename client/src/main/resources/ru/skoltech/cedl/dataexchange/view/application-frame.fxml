@@ -22,36 +22,36 @@
                             <children>
                                 <MenuBar>
                                     <menus>
-                                        <Menu mnemonicParsing="false" text="Project">
+                                        <Menu mnemonicParsing="true" text="_Project">
                                             <items>
-                                                <MenuItem mnemonicParsing="false" onAction="#newProject" text="New..."/>
-                                                <MenuItem mnemonicParsing="false" onAction="#loadProject"
+                                                <MenuItem mnemonicParsing="true" onAction="#newProject" text="_New..."/>
+                                                <MenuItem mnemonicParsing="true" onAction="#loadProject"
                                                           text="Load..."/>
-                                                <MenuItem mnemonicParsing="false" onAction="#saveProject" text="Save"/>
-                                                <SeparatorMenuItem mnemonicParsing="false"/>
-                                                <MenuItem mnemonicParsing="false" onAction="#importProject"
-                                                          text="Import"/>
-                                                <MenuItem mnemonicParsing="false" onAction="#exportProject"
-                                                          text="Export"/>
-                                                <SeparatorMenuItem mnemonicParsing="false"/>
-                                                <MenuItem mnemonicParsing="false" onAction="#quit" text="Quit"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#saveProject" text="_Save"/>
+                                                <SeparatorMenuItem mnemonicParsing="true"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#importProject"
+                                                          text="_Import"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#exportProject"
+                                                          text="_Export"/>
+                                                <SeparatorMenuItem mnemonicParsing="true"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#quit" text="_Quit"/>
                                             </items>
                                         </Menu>
-                                        <Menu mnemonicParsing="false" text="Edit">
+                                        <Menu mnemonicParsing="true" text="_Edit">
                                             <items>
-                                                <MenuItem mnemonicParsing="false" onAction="#openUserManagement"
-                                                          text="Users and Disciplines"/>
-                                                <MenuItem mnemonicParsing="false" onAction="#openUnitManagement"
-                                                          text="Units and Measures"/>
-                                                <SeparatorMenuItem mnemonicParsing="false"/>
-                                                <MenuItem mnemonicParsing="false" onAction="#openSettingsDialog"
-                                                          text="Settings"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#openUserManagement"
+                                                          text="Users and _Disciplines"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#openUnitManagement"
+                                                          text="Units and _Measures"/>
+                                                <SeparatorMenuItem mnemonicParsing="true"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#openSettingsDialog"
+                                                          text="_Settings"/>
                                             </items>
                                         </Menu>
-                                        <Menu mnemonicParsing="false" text="Help">
+                                        <Menu mnemonicParsing="true" text="_Help">
                                             <items>
-                                                <MenuItem mnemonicParsing="false" onAction="#openAboutDialog"
-                                                          text="About"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#openAboutDialog"
+                                                          text="_About"/>
                                             </items>
                                         </Menu>
 
@@ -60,15 +60,15 @@
                                 <ToolBar>
                                     <items>
                                         <Button fx:id="newButton" mnemonicParsing="true" onAction="#newProject"
-                                                text="New"/>
+                                                text="_New"/>
                                         <Separator orientation="VERTICAL"/>
                                         <Button fx:id="loadButton" mnemonicParsing="true" onAction="#reloadProject"
-                                                text="Reload"/>
+                                                text="_Reload"/>
                                         <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="true"
-                                                onAction="#saveProject" text="Save"/>
+                                                onAction="#saveProject" text="_Save"/>
                                         <Separator orientation="VERTICAL"/>
                                         <Button fx:id="diffButton" mnemonicParsing="true" onAction="#openDiffView"
-                                                text="View Changes"/>
+                                                text="View _Changes"/>
                                     </items>
                                     <VBox.margin>
                                         <Insets/>
