@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleStringProperty;
@@ -9,21 +10,33 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Callback;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.DisciplineSubSystem;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserDiscipline;
+import ru.skoltech.cedl.dataexchange.view.Views;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Predicate;
@@ -33,6 +46,8 @@ import java.util.stream.Collectors;
  * Created by d.knoll on 10.06.2015.
  */
 public class UserRoleManagementController implements Initializable {
+
+    private static final Logger logger = Logger.getLogger(UserRoleManagementController.class);
 
     @FXML
     public TableView disciplinesTable;
@@ -142,6 +157,23 @@ public class UserRoleManagementController implements Initializable {
 
         // USERS
         deleteUserButton.disableProperty().bind(noSelectionOnUserTable);
+        userTable.setContextMenu(makeUsersContextMenu());
+        userTable.setOnMousePressed(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                    UserRoleManagementController.this.openUserEditingView(null);
+                }
+            }
+        });
+    }
+
+    private ContextMenu makeUsersContextMenu() {
+        ContextMenu rootContextMenu = new ContextMenu();
+        MenuItem editUserMenuItem = new MenuItem("Edit User");
+        editUserMenuItem.setOnAction(UserRoleManagementController.this::openUserEditingView);
+        rootContextMenu.getItems().add(editUserMenuItem);
+        return rootContextMenu;
     }
 
     public void updateView() {
@@ -304,6 +336,7 @@ public class UserRoleManagementController implements Initializable {
 
     public void reloadUsers(ActionEvent actionEvent) {
         boolean success = project.loadUserManagement();
+        updateUsers();
         updateUserDisciplines(getSelectedDiscipline());
         if (!success) {
             StatusLogger.getInstance().log("Error loading user list!", true);
@@ -315,6 +348,35 @@ public class UserRoleManagementController implements Initializable {
         if (!success) {
             StatusLogger.getInstance().log("Error saving user list!", true);
         }
+    }
+
+    public void openUserEditingView(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.USER_EDITING_PANE);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("User details");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(getAppWindow());
+
+            UserEditingController controller = loader.getController();
+            controller.setUserModel(getSelectedUser());
+            stage.showAndWait();
+            Platform.runLater(() -> {
+                updateUsers();
+            });
+
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public Window getAppWindow() {
+        return subsystemsPane.getScene().getWindow();
     }
 
     private class SubsystemsViewCellFactory implements Callback<ListView<SubSystemModel>, ListCell<SubSystemModel>> {
