@@ -60,8 +60,8 @@
                 </TitledPane>
                 <ToolBar nodeOrientation="RIGHT_TO_LEFT">
                     <items>
-                        <Button mnemonicParsing="false" onAction="#applyAndClose" text="Ok"/>
-                        <Button mnemonicParsing="false" onAction="#cancel" text="Cancel"/>
+                        <Button mnemonicParsing="false" onAction="#applyAndClose" text="Ok" defaultButton="true"/>
+                        <Button mnemonicParsing="false" onAction="#cancel" text="Cancel" cancelButton="true"/>
                     </items>
                 </ToolBar>
             </children>
