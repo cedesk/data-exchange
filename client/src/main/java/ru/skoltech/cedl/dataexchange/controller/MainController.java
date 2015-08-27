@@ -16,10 +16,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -82,19 +82,14 @@ public class MainController implements Initializable {
     private Label userRoleLabel;
 
     @FXML
-    private Tab modelTab;
-
-    @FXML
-    private Tab userRolesTab;
-
-    @FXML
     private AnchorPane applicationPane;
+
+    @FXML
+    private BorderPane layoutPane;
 
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
     private ModelEditingController modelEditingController;
-
-    private UserRoleManagementController userRoleManagementController;
 
     public void newProject(ActionEvent actionEvent) {
         Optional<String> choice = Dialogues.inputStudyName(Project.DEFAULT_PROJECT_NAME);
@@ -173,34 +168,11 @@ public class MainController implements Initializable {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.MODEL_EDITING_PANE);
             Parent editingPane = loader.load();
-            modelTab.setContent(editingPane);
-            modelTab.setOnSelectionChanged(event -> {
-                if (modelTab.isSelected()) {
-                    modelEditingController.updateView();
-                }
-            });
+            layoutPane.setCenter(editingPane);
             modelEditingController = loader.getController();
             modelEditingController.setProject(project);
         } catch (IOException ioe) {
             logger.error("Unable to load editing view pane.");
-            throw new RuntimeException(ioe);
-        }
-
-        // USERS PANE
-        try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.USER_ROLES_EDITING_PANE);
-            Parent usersPane = loader.load();
-            userRolesTab.setContent(usersPane);
-            userRolesTab.setOnSelectionChanged(event -> {
-                if (userRolesTab.isSelected()) {
-                    userRoleManagementController.updateView();
-                }
-            });
-            userRoleManagementController = loader.getController();
-            userRoleManagementController.setProject(project);
-        } catch (IOException ioe) {
-            logger.error("Unable to load user management view pane.");
             throw new RuntimeException(ioe);
         }
 
@@ -288,11 +260,7 @@ public class MainController implements Initializable {
             studyNameLabel.setText(project.getStudy().getName());
             userNameLabel.setText(project.getUser().getName());
             userRoleLabel.setText(getDisciplineNames(project.getUser()));
-            if (modelTab.isSelected()) {
-                modelEditingController.updateView();
-            } else if (userRolesTab.isSelected()) {
-                userRoleManagementController.updateView();
-            }
+            modelEditingController.updateView();
         } else {
             studyNameLabel.setText(project.getProjectName());
             userNameLabel.setText("--");
@@ -427,6 +395,28 @@ public class MainController implements Initializable {
                 }
             });
             stage.showAndWait();
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void openUserManagement(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.USER_ROLES_EDITING_PANE);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("User Management");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(getAppWindow());
+
+            UserRoleManagementController userRoleManagementController = loader.getController();
+            userRoleManagementController.setProject(project);
+            stage.show();
+            userRoleManagementController.updateView();
         } catch (IOException e) {
             logger.error(e);
         }
