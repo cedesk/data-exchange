@@ -25,10 +25,6 @@ public class UserEditingController implements Initializable {
 
     private User userModel;
 
-    public User getUserModel() {
-        return userModel;
-    }
-
     public void setUserModel(User userModel) {
         this.userModel = userModel;
         updateView();
