@@ -94,10 +94,14 @@ public class FileStorage {
                 logger.error("external model file import failed!", e);
             }
         }
+
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             parameterModel.setParent(modelNode);
             parameterModel.setValueReference(new ExternalModelReference(parameterModel.getImportModel(), parameterModel.getImportField()));
             parameterModel.setExportReference(new ExternalModelReference(parameterModel.getExportModel(), parameterModel.getExportField()));
+            if (parameterModel.getUnit() == null) {
+                logger.warn("parameter " + parameterModel.getNodePath() + " is missing a unit!");
+            }
         }
         if (modelNode instanceof CompositeModelNode) {
             CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
@@ -172,9 +176,9 @@ public class FileStorage {
     }
 
     private void postProcessUnitManagement(UnitManagement unitManagement) {
-        for(Unit unit : unitManagement.getUnits()) {
+        for (Unit unit : unitManagement.getUnits()) {
             String quantityKindStr = unit.getQuantityKindStr();
-            if(quantityKindStr != null) {
+            if (quantityKindStr != null) {
                 Integer qtki = Integer.valueOf(quantityKindStr);
                 QuantityKind quantityKind = unitManagement.getQuantityKinds().get(qtki);
                 unit.setQuantityKind(quantityKind);

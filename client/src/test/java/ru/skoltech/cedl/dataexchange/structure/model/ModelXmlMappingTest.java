@@ -3,15 +3,22 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.repository.Repository;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.ModelDifferencesFactory;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.List;
 
@@ -29,7 +36,14 @@ public class ModelXmlMappingTest {
     private SystemModel m3;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws IOException, NoSuchFieldException, IllegalAccessException {
+        Project project = new Project("project");
+        DatabaseStorage tempRepository = RepositoryFactory.getTempRepository();
+        Field field = Project.class.getDeclaredField("repository");
+        field.setAccessible(true);
+        field.set(project, tempRepository);
+        project.loadUnitManagement();
+
         FileStorage fs = new FileStorage();
 
         URL url1 = this.getClass().getResource("/model1.xml");
@@ -82,7 +96,7 @@ public class ModelXmlMappingTest {
         SystemModel s2 = fs.loadSystemModel(file);
 
         List<ModelDifference> modelDifferences = ModelDifferencesFactory.computeDifferences(s1, s2);
-        for(ModelDifference modelDifference : modelDifferences) {
+        for (ModelDifference modelDifference : modelDifferences) {
             System.out.println(modelDifference);
         }
 
