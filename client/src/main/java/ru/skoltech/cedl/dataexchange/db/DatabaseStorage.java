@@ -13,6 +13,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
@@ -229,6 +230,51 @@ public class DatabaseStorage implements Repository {
         return userRoleManagement;
     }
 
+    @Override
+    public UnitManagement storeUnitManagement(UnitManagement unitManagement) throws RepositoryException {
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
+            if (unitManagement.getId() == 0) {
+                entityManager.persist(unitManagement);
+            } else {
+                unitManagement = entityManager.merge(unitManagement);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            throw new RepositoryException("Storing UnitManagement failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+        return unitManagement;
+    }
+
+    @Override
+    public UnitManagement loadUnitManagement() throws RepositoryException {
+        EntityManager entityManager = getEntityManager();
+        UnitManagement unitManagement = null;
+        try {
+            unitManagement = entityManager.find(UnitManagement.class, 1L);
+        } catch (Exception e) {
+            throw new RepositoryException("Loading UnitManagement failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+        if (unitManagement == null)
+            throw new RepositoryException("UnitManagement not found.");
+        return unitManagement;
+    }
+
     private RepositoryException extractAndRepackCause(Throwable throwable) {
         Throwable cause = throwable.getCause();
         while (cause != null && !(cause instanceof StaleObjectStateException)) {
@@ -356,48 +402,6 @@ public class DatabaseStorage implements Repository {
         return revisionList;
     }
 
-    private EntityManager getEntityManager() throws RepositoryException {
-        if (emf == null) {
-            try {
-                emf = Persistence.createEntityManagerFactory(persistenceUnit, properties);
-            } catch (Exception e) {
-                logger.fatal("connecting to database failed!");
-                throw new RepositoryException("database connection failed");
-            }
-        }
-        return emf.createEntityManager();
-    }
-
-    private void releaseEntityManagerFactory() {
-        if (emf != null) {
-            try {
-                emf.close();
-            } catch (Exception ignore) {
-            }
-            emf = null;
-        }
-    }
-
-    @Override
-    public void close() {
-        releaseEntityManagerFactory();
-    }
-
-    @Override
-    public void finalize() throws Throwable {
-        releaseEntityManagerFactory();
-        super.finalize();
-    }
-
-    @Override
-    public String toString() {
-        return "DatabaseStorage{" +
-                "hostName='" + hostName + '\'' +
-                "persistenceUnit='" + persistenceUnit + '\'' +
-                "properties=" + properties +
-                '}';
-    }
-
     @Override
     public ExternalModel storeExternalModel(ExternalModel externalModel) throws RepositoryException {
         EntityManager entityManager = null;
@@ -442,5 +446,47 @@ public class DatabaseStorage implements Repository {
         if (externalModel == null)
             throw new RepositoryException("ExternalModel not found.");
         return externalModel;
+    }
+
+    @Override
+    public void close() {
+        releaseEntityManagerFactory();
+    }
+
+    @Override
+    public void finalize() throws Throwable {
+        releaseEntityManagerFactory();
+        super.finalize();
+    }
+
+    @Override
+    public String toString() {
+        return "DatabaseStorage{" +
+                "hostName='" + hostName + '\'' +
+                "persistenceUnit='" + persistenceUnit + '\'' +
+                "properties=" + properties +
+                '}';
+    }
+
+    private EntityManager getEntityManager() throws RepositoryException {
+        if (emf == null) {
+            try {
+                emf = Persistence.createEntityManagerFactory(persistenceUnit, properties);
+            } catch (Exception e) {
+                logger.fatal("connecting to database failed!");
+                throw new RepositoryException("database connection failed");
+            }
+        }
+        return emf.createEntityManager();
+    }
+
+    private void releaseEntityManagerFactory() {
+        if (emf != null) {
+            try {
+                emf.close();
+            } catch (Exception ignore) {
+            }
+            emf = null;
+        }
     }
 }

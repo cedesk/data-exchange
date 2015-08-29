@@ -24,6 +24,11 @@
         <class>ru.skoltech.cedl.dataexchange.users.model.UserDiscipline</class>
         <class>ru.skoltech.cedl.dataexchange.users.model.DisciplineSubSystem</class>
 
+        <class>ru.skoltech.cedl.dataexchange.units.model.UnitManagement</class>
+        <class>ru.skoltech.cedl.dataexchange.units.model.Prefix</class>
+        <class>ru.skoltech.cedl.dataexchange.units.model.Unit</class>
+        <class>ru.skoltech.cedl.dataexchange.units.model.QuantityKind</class>
+
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:mem:demodb"/>

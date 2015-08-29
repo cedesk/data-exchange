@@ -1,7 +1,11 @@
 package ru.skoltech.cedl.dataexchange.units.model;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,6 +32,7 @@ public class UnitManagement {
 
     @Id
     @GeneratedValue
+    @Column(name="UM_ID")
     public long getId() {
         return id;
     }
@@ -37,6 +42,8 @@ public class UnitManagement {
     }
 
     @OneToMany(targetEntity = Prefix.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name="OWNER_ID", referencedColumnName="UM_ID")
+    @Fetch(FetchMode.SELECT)
     public List<Prefix> getPrefixes() {
         return prefixes;
     }
@@ -46,6 +53,8 @@ public class UnitManagement {
     }
 
     @OneToMany(targetEntity = Unit.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name="OWNER_ID", referencedColumnName="UM_ID")
+    @Fetch(FetchMode.SELECT)
     public List<Unit> getUnits() {
         return units;
     }
@@ -55,6 +64,8 @@ public class UnitManagement {
     }
 
     @OneToMany(targetEntity = QuantityKind.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name="OWNER_ID", referencedColumnName="UM_ID")
+    @Fetch(FetchMode.SELECT)
     public List<QuantityKind> getQuantityKinds() {
         return quantityKinds;
     }
@@ -64,12 +75,32 @@ public class UnitManagement {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UnitManagement that = (UnitManagement) o;
+
+        if (!Arrays.equals(prefixes.toArray(), that.prefixes.toArray())) return false;
+        if (!Arrays.equals(units.toArray(), that.units.toArray())) return false;
+        return Arrays.equals(quantityKinds.toArray(), that.quantityKinds.toArray());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = prefixes.hashCode();
+        result = 31 * result + units.hashCode();
+        result = 31 * result + quantityKinds.hashCode();
+        return result;
+    }
+
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("UnitManagement{");
-        sb.append("prefixes(").append(prefixes.size()).append(")=").append(prefixes);
+        sb.append("\nprefixes(").append(prefixes.size()).append(")=").append(prefixes);
         sb.append(",\nunits(").append(units.size()).append(")=").append(units);
         sb.append(",\nquantityKinds(").append(quantityKinds.size()).append(")=").append(quantityKinds);
-        sb.append('}');
+        sb.append("\n}");
         return sb.toString();
     }
 }

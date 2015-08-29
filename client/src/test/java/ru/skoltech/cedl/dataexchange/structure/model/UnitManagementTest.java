@@ -1,9 +1,14 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.ClientApplication;
+import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
+import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.io.File;
@@ -15,7 +20,15 @@ import java.net.URL;
  */
 public class UnitManagementTest {
 
-    UnitManagement um1;
+    UnitManagement unitManagement;
+
+    private DatabaseStorage databaseStorage;
+
+    @Before
+    public void prepare() {
+        this.databaseStorage = RepositoryFactory.getTempRepository();
+        this.unitManagement = UnitManagementFactory.getUnitManagement();
+    }
 
     @Test
     public void loadFromFile() throws IOException {
@@ -23,7 +36,7 @@ public class UnitManagementTest {
 
         URL url1 = ClientApplication.class.getResource("units/unit-management.xml");
         File file1 = new File(url1.getFile());
-        um1 = fs.loadUnitManagement(file1);
+        UnitManagement um1 = fs.loadUnitManagement(file1);
 
         Assert.assertEquals(um1.getPrefixes().size(), 20);
         Assert.assertEquals(um1.getUnits().size(), 106);
@@ -35,7 +48,17 @@ public class UnitManagementTest {
     }
 
     @Test
-    public void storeToDB() throws IOException {
+    public void storeAndLoadFromDB() throws Exception {
 
+        UnitManagement storedUnitManagement = databaseStorage.storeUnitManagement(unitManagement);
+
+        UnitManagement loadedUnitManagement = databaseStorage.loadUnitManagement();
+
+        Assert.assertEquals(storedUnitManagement, loadedUnitManagement);
+    }
+
+    @After
+    public void cleanup() {
+        databaseStorage.close();
     }
 }
