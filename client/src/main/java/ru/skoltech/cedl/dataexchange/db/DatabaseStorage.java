@@ -473,7 +473,7 @@ public class DatabaseStorage implements Repository {
             try {
                 emf = Persistence.createEntityManagerFactory(persistenceUnit, properties);
             } catch (Exception e) {
-                logger.fatal("connecting to database failed!");
+                logger.fatal("connecting to database failed!", e);
                 throw new RepositoryException("database connection failed");
             }
         }
