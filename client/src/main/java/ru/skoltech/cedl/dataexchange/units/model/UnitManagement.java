@@ -10,6 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * Loosely based on Library for Quantity Kinds and Units
+ * <a href="http://www.w3.org/2005/Incubator/ssn/ssnx/qu/qu">http://www.w3.org/2005/Incubator/ssn/ssnx/qu/qu</a>
+ * and QUDT - Quantities, Units, Dimensions and Data Types Ontologies
+ * <a href="http://qudt.org/">http://qudt.org/</a>
+ * <br/>
  * Created by D.Knoll on 28.08.2015.
  */
 @XmlRootElement
@@ -32,7 +37,7 @@ public class UnitManagement {
 
     @Id
     @GeneratedValue
-    @Column(name="id")
+    @Column(name = "id")
     public long getId() {
         return id;
     }
@@ -42,7 +47,7 @@ public class UnitManagement {
     }
 
     @OneToMany(targetEntity = Prefix.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name="um_id", referencedColumnName="id")
+    @JoinColumn(name = "um_id", referencedColumnName = "id")
     @Fetch(FetchMode.SELECT)
     public List<Prefix> getPrefixes() {
         return prefixes;
@@ -53,7 +58,7 @@ public class UnitManagement {
     }
 
     @OneToMany(targetEntity = Unit.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name="um_id", referencedColumnName="id")
+    @JoinColumn(name = "um_id", referencedColumnName = "id")
     @Fetch(FetchMode.SELECT)
     public List<Unit> getUnits() {
         return units;
@@ -64,7 +69,7 @@ public class UnitManagement {
     }
 
     @OneToMany(targetEntity = QuantityKind.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name="um_id", referencedColumnName="id")
+    @JoinColumn(name = "um_id", referencedColumnName = "id")
     @Fetch(FetchMode.SELECT)
     public List<QuantityKind> getQuantityKinds() {
         return quantityKinds;
