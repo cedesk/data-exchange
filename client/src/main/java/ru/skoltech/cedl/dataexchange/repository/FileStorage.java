@@ -164,9 +164,21 @@ public class FileStorage {
 
             Unmarshaller u = ct.createUnmarshaller();
             UnitManagement unitManagement = (UnitManagement) u.unmarshal(inp);
+            postProcessUnitManagement(unitManagement);
             return unitManagement;
         } catch (JAXBException e) {
             throw new IOException("Error reading unit management from XML file.", e);
+        }
+    }
+
+    private void postProcessUnitManagement(UnitManagement unitManagement) {
+        for(Unit unit : unitManagement.getUnits()) {
+            String quantityKindStr = unit.getQuantityKindStr();
+            if(quantityKindStr != null) {
+                Integer qtki = Integer.valueOf(quantityKindStr);
+                QuantityKind quantityKind = unitManagement.getQuantityKinds().get(qtki);
+                unit.setQuantityKind(quantityKind);
+            }
         }
     }
 }

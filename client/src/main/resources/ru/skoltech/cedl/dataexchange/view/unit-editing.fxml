@@ -12,7 +12,7 @@
             <tabs>
                 <Tab text="Units">
                     <content>
-                        <SplitPane dividerPositions="0.4">
+                        <SplitPane dividerPositions="0.5">
                             <items>
                                 <AnchorPane>
                                     <children>
@@ -26,10 +26,13 @@
                                                         <PropertyValueFactory property="name"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
-                                                <TableColumn prefWidth="60.0" text="Symbol">
+                                                <TableColumn prefWidth="50.0" text="Symbol">
                                                     <cellValueFactory>
                                                         <PropertyValueFactory property="symbol"/>
                                                     </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn fx:id="unitQuantityKindColumn" prefWidth="150.0"
+                                                             text="Quantity Kind">
                                                 </TableColumn>
                                             </columns>
                                         </TableView>

@@ -1,14 +1,18 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
+import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.units.model.QuantityKind;
@@ -35,6 +39,9 @@ public class UnitManagementController implements Initializable {
     private TableView<Unit> unitsTableView;
 
     @FXML
+    public TableColumn<Unit, String> unitQuantityKindColumn;
+
+    @FXML
     private TableView<QuantityKind> quantityTableView;
 
     @FXML
@@ -58,6 +65,17 @@ public class UnitManagementController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        unitQuantityKindColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Unit, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<Unit, String> param) {
+                if(param != null && param.getValue() != null && param.getValue().getQuantityKind() != null) {
+                    return new SimpleStringProperty(param.getValue().getQuantityKind().asText());
+                } else {
+                    return new SimpleStringProperty();
+                }
+            }
+        });
+
         BooleanBinding noUnitSelected = unitsTableView.getSelectionModel().selectedItemProperty().isNull();
         //deleteUnitButton.disableProperty().bind(noUnitSelected);
         deleteUnitButton.setDisable(true);
