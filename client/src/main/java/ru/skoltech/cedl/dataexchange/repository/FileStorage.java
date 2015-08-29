@@ -4,6 +4,10 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.units.model.Prefix;
+import ru.skoltech.cedl.dataexchange.units.model.QuantityKind;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
+import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -136,5 +140,33 @@ public class FileStorage {
         final StringBuilder sb = new StringBuilder("FileStorage{");
         sb.append('}');
         return sb.toString();
+    }
+
+    public void storeUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
+
+        StorageUtils.makeDirectory(outputFile.getParentFile());
+
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+
+            JAXBContext jc = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
+
+            Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            m.marshal(unitManagement, fos);
+        } catch (JAXBException e) {
+            throw new IOException("Error writing unit management to XML file.", e);
+        }
+    }
+
+    public UnitManagement loadUnitManagement(File inputFile) throws IOException {
+        try (FileInputStream inp = new FileInputStream(inputFile)) {
+            JAXBContext ct = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
+
+            Unmarshaller u = ct.createUnmarshaller();
+            UnitManagement unitManagement = (UnitManagement) u.unmarshal(inp);
+            return unitManagement;
+        } catch (JAXBException e) {
+            throw new IOException("Error reading unit management from XML file.", e);
+        }
     }
 }
