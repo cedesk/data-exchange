@@ -19,7 +19,7 @@ public class ElementModel extends CompositeModelNode<InstrumentModel> {
     }
 
     @Override
-    @OneToMany(targetEntity = InstrumentModel.class, mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(targetEntity = InstrumentModel.class, mappedBy = "parent", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     public List<InstrumentModel> getSubNodes() {
         return super.getSubNodes();
     }
