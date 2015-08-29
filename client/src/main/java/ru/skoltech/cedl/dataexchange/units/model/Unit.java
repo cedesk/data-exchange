@@ -70,6 +70,28 @@ public class Unit {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Unit unit = (Unit) o;
+
+        if (!name.equals(unit.name)) return false;
+        if (!symbol.equals(unit.symbol)) return false;
+        if (description != null ? !description.equals(unit.description) : unit.description != null) return false;
+        return !(quantityKind != null ? !quantityKind.equals(unit.quantityKind) : unit.quantityKind != null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + symbol.hashCode();
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (quantityKind != null ? quantityKind.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("\nUnit{");
         sb.append("name='").append(name).append('\'');
