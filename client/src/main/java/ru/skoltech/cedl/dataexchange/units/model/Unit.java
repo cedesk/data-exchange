@@ -24,8 +24,11 @@ public class Unit {
     @XmlAttribute
     private String description;
 
-    @XmlAttribute
-    private String quantityKind;
+    @XmlTransient
+    private QuantityKind quantityKind;
+
+    @XmlAttribute(name = "quantityKind")
+    private String quantityKindStr;
 
     @Id
     @GeneratedValue
@@ -61,12 +64,26 @@ public class Unit {
         this.description = description;
     }
 
-    public String getQuantityKind() {
+    @ManyToOne(targetEntity = QuantityKind.class)
+    public QuantityKind getQuantityKind() {
         return quantityKind;
     }
 
-    public void setQuantityKind(String quantityKind) {
+    public void setQuantityKind(QuantityKind quantityKind) {
         this.quantityKind = quantityKind;
+    }
+
+    @Transient
+    public String getQuantityKindStr() {
+        return quantityKindStr;
+    }
+
+    public void setQuantityKindStr(String quantityKindStr) {
+        this.quantityKindStr = quantityKindStr;
+    }
+
+    public String asText() {
+        return name + " [" + symbol + "]";
     }
 
     @Override
@@ -97,7 +114,7 @@ public class Unit {
         sb.append("name='").append(name).append('\'');
         sb.append(", symbol='").append(symbol).append('\'');
         sb.append(", description='").append(description).append('\'');
-        sb.append(", quantityKind='").append(quantityKind).append('\'');
+        sb.append(", quantityKind='").append(quantityKind != null ? quantityKind.asText() : null).append('\'');
         sb.append('}');
         return sb.toString();
     }

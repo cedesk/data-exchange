@@ -58,6 +58,10 @@ public class QuantityKind {
         this.description = description;
     }
 
+    public String asText() {
+        return name + " [" + symbol + "]";
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
