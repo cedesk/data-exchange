@@ -48,6 +48,8 @@
                                                         <PropertyValueFactory property="value"/>
                                                     </cellValueFactory>
                                                 </TableColumn>
+                                                <TableColumn fx:id="parameterUnitColumn" prefWidth="100.0" text="Unit">
+                                                </TableColumn>
                                                 <TableColumn fx:id="parameterNatureColumn" prefWidth="60.0"
                                                              text="Nature" editable="false">
                                                     <cellValueFactory>

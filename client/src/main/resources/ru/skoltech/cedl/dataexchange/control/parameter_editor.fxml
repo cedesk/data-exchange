@@ -2,8 +2,8 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<fx:root xmlns:fx="http://javafx.com/fxml/1" type="javafx.scene.layout.AnchorPane"
-         xmlns="http://javafx.com/javafx/8.0.40">
+<fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/8.0.40"
+         xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <GridPane fx:id="propertyPane" hgap="8.0" vgap="4.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0"
                   AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
@@ -16,6 +16,7 @@
                 <RowConstraints vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
@@ -25,8 +26,8 @@
                 <Label text="Nature" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
                 <Label text="Value Source" GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
                 <Label text="Value" GridPane.halignment="RIGHT" GridPane.rowIndex="3"/>
-                <Label text="Exported" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
-                <Label text="Description" GridPane.halignment="RIGHT" GridPane.rowIndex="5"/>
+                <Label text="Exported" GridPane.halignment="RIGHT" GridPane.rowIndex="5"/>
+                <Label text="Description" GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
                 <TextField fx:id="nameText" promptText="name" GridPane.columnIndex="1"/>
                 <ChoiceBox fx:id="natureChoiceBox" prefWidth="120.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                 <HBox spacing="16.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
@@ -44,16 +45,10 @@
                 <HBox spacing="16.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                     <children>
                         <TextField fx:id="valueText" prefWidth="120.0" promptText="0123.45"/>
-                        <HBox fx:id="overrideValueGroup" prefWidth="200.0">
-                            <children>
-                                <CheckBox fx:id="isReferenceValueOverriddenCheckbox" mnemonicParsing="false"
-                                          text="Override"/>
-                                <TextField fx:id="valueOverrideText" prefWidth="120.0" promptText="0123.45"/>
-                            </children>
-                        </HBox>
+                        <ChoiceBox fx:id="unitChoiceBox" prefWidth="200.0"/>
                     </children>
                 </HBox>
-                <HBox spacing="16.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                <HBox spacing="16.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                     <children>
                         <CheckBox fx:id="isExportedCheckbox" mnemonicParsing="false" prefWidth="120.0" text=""/>
                         <HBox fx:id="exportSelectorGroup" prefWidth="200.0">
@@ -66,11 +61,18 @@
                     </children>
                 </HBox>
                 <TextArea fx:id="descriptionText" prefHeight="50.0" prefWidth="200.0" promptText="description"
-                          GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                          GridPane.columnIndex="1" GridPane.rowIndex="6"/>
                 <Button mnemonicParsing="true" onAction="#applyChanges" text="_Apply" GridPane.columnIndex="1"
-                        GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
+                        GridPane.halignment="RIGHT" GridPane.rowIndex="7"/>
                 <Button mnemonicParsing="true" onAction="#revertChanges" text="Rever_t" GridPane.columnIndex="1"
-                        GridPane.halignment="CENTER" GridPane.rowIndex="6"/>
+                        GridPane.halignment="CENTER" GridPane.rowIndex="7"/>
+                <Label text="Override" GridPane.rowIndex="4"/>
+                <HBox fx:id="overrideValueGroup" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                    <children>
+                        <CheckBox fx:id="isReferenceValueOverriddenCheckbox" mnemonicParsing="false"/>
+                        <TextField fx:id="valueOverrideText" prefWidth="120.0" promptText="0123.45"/>
+                    </children>
+                </HBox>
             </children>
         </GridPane>
     </children>

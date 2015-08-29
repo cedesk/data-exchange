@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -35,6 +36,9 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @XmlAttribute
     private Double value;
+
+    //@XmlJavaTypeAdapter()
+    private Unit unit;
 
     @XmlTransient
     private Double serverValue;
@@ -146,6 +150,16 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public void setValue(Double value) {
         this.value = value;
+    }
+
+    @ManyToOne(targetEntity = Unit.class)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+    public Unit getUnit() {
+        return unit;
+    }
+
+    public void setUnit(Unit unit) {
+        this.unit = unit;
     }
 
     @Transient

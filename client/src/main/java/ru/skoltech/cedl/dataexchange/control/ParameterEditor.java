@@ -18,6 +18,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
@@ -31,12 +32,14 @@ import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
@@ -64,6 +67,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     @FXML
     private TextField valueText;
+
+    @FXML
+    private ChoiceBox<Unit> unitChoiceBox;
 
     @FXML
     private CheckBox isReferenceValueOverriddenCheckbox;
@@ -120,6 +126,17 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         overrideValueGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.MANUAL));
         valueOverrideText.visibleProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty());
         exportSelectorGroup.visibleProperty().bind(isExportedCheckbox.selectedProperty());
+        unitChoiceBox.setConverter(new StringConverter<Unit>() {
+            @Override
+            public String toString(Unit unit) {
+                return unit.asText();
+            }
+
+            @Override
+            public Unit fromString(String unitStr) {
+                return project.getUnitManagement().findUnit(unitStr);
+            }
+        });
 
         parameterBean.bindBidirectional("name", nameText.textProperty());
         parameterBean.bindBidirectional("value", valueText.textProperty());
@@ -135,6 +152,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
+        List<Unit> units = project.getUnitManagement().getUnits();
+        unitChoiceBox.setItems(FXCollections.observableArrayList(units));
     }
 
     public ParameterModel getParameterModel() {
@@ -157,6 +176,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         parameterBean.setBean(localParameterModel);
         natureChoiceBox.valueProperty().setValue(localParameterModel.getNature());
         valueSourceChoiceBox.valueProperty().setValue(localParameterModel.getValueSource());
+        unitChoiceBox.valueProperty().setValue(localParameterModel.getUnit());
         valueReferenceText.setText(localParameterModel.getValueReference() != null ? localParameterModel.getValueReference().toString() : "");
         exportReferenceText.setText(localParameterModel.getExportReference() != null ? localParameterModel.getExportReference().toString() : "");
     }
@@ -179,7 +199,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                     // TODO: update parameter table
                 }
             });
-            if(updateListener != null) {
+            if (updateListener != null) {
                 ParameterUpdate parameterUpdate = new ParameterUpdate(parameterModel, parameterModel.getValue());
                 updateListener.accept(parameterUpdate);
             }
@@ -236,6 +256,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
             parameterModel.setNature(natureChoiceBox.getValue());
             parameterModel.setValueSource(valueSourceChoiceBox.getValue());
+            parameterModel.setUnit(unitChoiceBox.getValue());
 
             if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
                 parameterModel.setValueReference(null);
