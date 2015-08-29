@@ -59,6 +59,26 @@ public class Prefix {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Prefix prefix = (Prefix) o;
+
+        if (!name.equals(prefix.name)) return false;
+        if (!symbol.equals(prefix.symbol)) return false;
+        return factor.equals(prefix.factor);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + symbol.hashCode();
+        result = 31 * result + factor.hashCode();
+        return result;
+    }
+
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("\nPrefix{");
         sb.append("name='").append(name).append('\'');
