@@ -1,0 +1,558 @@
+<unitManagement xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <prefix name="yotta" symbol="Y" factor="1.0E24"/>
+    <prefix name="zetta" symbol="Z" factor="1.0E21"/>
+    <prefix name="exa" symbol="E" factor="1.0E18"/>
+    <prefix name="peta" symbol="P" factor="1.0E15"/>
+    <prefix name="tera" symbol="T" factor="1.0E12"/>
+    <prefix name="giga" symbol="G" factor="1.0E9"/>
+    <prefix name="mega" symbol="M" factor="1000000.0"/>
+    <prefix name="kilo" symbol="k" factor="1000.0"/>
+    <prefix name="hecto" symbol="h" factor="100.0"/>
+    <prefix name="deka" symbol="da" factor="10.0"/>
+    <prefix name="deci" symbol="d" factor="0.1"/>
+    <prefix name="centi" symbol="c" factor="0.01"/>
+    <prefix name="milli" symbol="m" factor="0.001"/>
+    <prefix name="micro" symbol="µ" factor="1.0E-6"/>
+    <prefix name="nano" symbol="n" factor="1.0E-9"/>
+    <prefix name="pico" symbol="p" factor="1.0E-12"/>
+    <prefix name="femto" symbol="f" factor="1.0E-15"/>
+    <prefix name="atto" symbol="a" factor="1.0E-18"/>
+    <prefix name="zepto" symbol="z" factor="1.0E-21"/>
+    <prefix name="yocto" symbol="y" factor="1.0E-24"/>
+    <unit xsi:type="SimpleUnit" name="No Unit" symbol="U" description="noUnitUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.0"/>
+    <unit xsi:type="SimpleUnit" name="Meter" symbol="m" description="meterUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+    <unit xsi:type="SimpleUnit" name="Gram" symbol="g" description="gramUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+    <unit xsi:type="SimpleUnit" name="Second" symbol="s" description="secondUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    <unit xsi:type="SimpleUnit" name="Ampere" symbol="A" description="ampereUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.6"/>
+    <unit xsi:type="SimpleUnit" name="Kelvin" symbol="K" description="kelvinUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.4"/>
+    <unit xsi:type="SimpleUnit" name="Mole" symbol="mol" description="moleUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.5"/>
+    <unit xsi:type="SimpleUnit" name="Candela" symbol="cd" description="candelaUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.7"/>
+    <unit xsi:type="PrefixedUnit" name="Kilometer" symbol="km" description="kilometerUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.1" prefix="//@unitManagement/@systemOfUnits/@prefix.7"/>
+    <unit xsi:type="PrefixedUnit" name="Millimeter" symbol="mm" description="millimeterUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.1"
+          prefix="//@unitManagement/@systemOfUnits/@prefix.12"/>
+    <unit xsi:type="PrefixedUnit" name="Centimeter" symbol="cm" description="centimeterUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.1"
+          prefix="//@unitManagement/@systemOfUnits/@prefix.11"/>
+    <unit xsi:type="PrefixedUnit" name="Kilogram" symbol="kg" description="kilogramUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.2" prefix="//@unitManagement/@systemOfUnits/@prefix.7"/>
+    <unit xsi:type="AffineConversionUnit" name="Minute" symbol="min" description="minuteUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.3" factor="60.0"/>
+    <unit xsi:type="AffineConversionUnit" name="Hour" symbol="h" description="hourUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.12" factor="60.0"/>
+    <unit xsi:type="AffineConversionUnit" name="Year" symbol="y" description="yearUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.3" factor="3.1556926E7"/>
+    <unit xsi:type="AffineConversionUnit" name="Degree Celsius" symbol="°C" description="degreeCelsiusUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.4"
+          isInvertible="true" referenceUnit="//@unitManagement/@systemOfUnits/@unit.5" factor="1.0" offset="273.15"/>
+    <unit xsi:type="AffineConversionUnit" name="Degree Fahrenheit" symbol="°F" description="degreeFahrenheitUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.4"
+          isInvertible="true" referenceUnit="//@unitManagement/@systemOfUnits/@unit.15" factor="0.5555555555555556"
+          offset="-17.77777777777778"/>
+    <unit xsi:type="DerivedUnit" name="Meter Per Second" symbol="m¹ s⁻¹" description="meterPerSecondUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.24">
+        <factor exponent="-1.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Kilometer Per Hour" symbol="km¹ h⁻¹" description="kilometerPerHourUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.24">
+        <factor exponent="-1.0" unit="//@unitManagement/@systemOfUnits/@unit.13"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.8"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Square Kilometer" symbol="km²" description="squareKilometerUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.8">
+        <factor exponent="2.0" unit="//@unitManagement/@systemOfUnits/@unit.8"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Square Meter" symbol="m²" description="squareMeterUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.8">
+        <factor exponent="2.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Square Millimeter" symbol="mm²" description="squareMillimeterUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.8">
+        <factor exponent="2.0" unit="//@unitManagement/@systemOfUnits/@unit.9"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Square Centimeter" symbol="cm²" description="squareCentiMeterUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.8">
+        <factor exponent="2.0" unit="//@unitManagement/@systemOfUnits/@unit.10"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Cubic Meter" symbol="m³" description="cubicMeterUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.42">
+        <factor exponent="3.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Cubic Centimeter" symbol="cm³" description="cubicCentimeterUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.42">
+        <factor exponent="3.0" unit="//@unitManagement/@systemOfUnits/@unit.10"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Newton" symbol="N" description="newtonUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.9">
+        <factor exponent="-2.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.11"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Joule" symbol="J" description="jouleUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.10">
+        <factor exponent="-2.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+        <factor exponent="2.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.11"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Newtonmeter" symbol="Nm" description="newtonMeterUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.41">
+        <factor exponent="-2.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+        <factor exponent="2.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.11"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Hertz" symbol="Hz" description="hertzUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.13">
+        <factor exponent="-1.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Meter Per Second Squared" symbol="m s⁻²" description="meterPerSecondSquaredUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.19">
+        <factor exponent="-2.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Kilogram Per Cubic Meter" symbol="kg m⁻³" description="kilogramPerCubicMeterUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.11">
+        <factor exponent="-3.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.11"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Kilogram Per Meter Squared" symbol="kg m⁻²"
+          description="kilogramPerMeterSquaredUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.34">
+        <factor exponent="-2.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.11"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Watt" symbol="W" description="wattUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.32">
+        <factor exponent="-3.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+        <factor exponent="2.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.11"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Pascal" symbol="Pa" description="pascalUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.35">
+        <factor exponent="-2.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+        <factor exponent="-1.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.11"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Radian" symbol="rad" description="radianUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.20">
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.0"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="RadianPerSecond" symbol="rad s⁻¹" description="radianPerSecondUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.21">
+        <factor exponent="-1.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.34"/>
+    </unit>
+    <unit xsi:type="AffineConversionUnit" name="Degree" symbol="°" description="degreeUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.20" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.34" factor="0.017453292519943295"/>
+    <unit xsi:type="DerivedUnit" name="DegreePerSecond" symbol="° s⁻¹" description="degreePerSecondUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.21">
+        <factor exponent="-1.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.36"/>
+    </unit>
+    <unit xsi:type="PrefixedUnit" name="Percent" symbol="%" description="percentUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.0" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.0"
+          prefix="//@unitManagement/@systemOfUnits/@prefix.11"/>
+    <unit xsi:type="DerivedUnit" name="Kilogram Meter Squared" symbol="kg m²" description="kilogramMeterSquaredUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.22">
+        <factor exponent="2.0" unit="//@unitManagement/@systemOfUnits/@unit.1"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.11"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Bit" symbol="bit" description="bitUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.0">
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.0"/>
+    </unit>
+    <unit xsi:type="LinearConversionUnit" name="Byte" symbol="byte" description="byteUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.0" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.40" factor="8.0"/>
+    <unit xsi:type="PrefixedUnit" name="Megabyte" symbol="MB" description="megaByteUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.0" isInvertible="true"
+          referenceUnit="//@unitManagement/@systemOfUnits/@unit.41"
+          prefix="//@unitManagement/@systemOfUnits/@prefix.6"/>
+    <unit xsi:type="DerivedUnit" name="Megabyte Per Second" symbol="MB s⁻¹" description="megabyterPerSecondUnit"
+          definitionURI="" quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.14">
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.41"/>
+        <factor exponent="-1.0" unit="//@unitManagement/@systemOfUnits/@unit.3"/>
+    </unit>
+    <unit xsi:type="DerivedUnit" name="Ampere hours" symbol="Ah" description="ampereHoursUnit" definitionURI=""
+          quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.12">
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.13"/>
+        <factor exponent="1.0" unit="//@unitManagement/@systemOfUnits/@unit.4"/>
+    </unit>
+    <unit xsi:type="SimpleUnit" name="second" symbol="s" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="text" symbol="-" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="kilogram" symbol="kg" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="kilometre" symbol="km" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="million instructions per second" symbol="MIPS" description="ECSS - Unit"
+          definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="count" symbol="#" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="radian" symbol="rad" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="metre" symbol="m" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="newton metre" symbol="N.m" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="revolutions per minute" symbol="min" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="kilobyte" symbol="kB" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="newton" symbol="N" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="metre per second" symbol="m/s" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="kilobit per second" symbol="kbit/s" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="millimetre" symbol="mm" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="metre squared" symbol="m2" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="kilogram metre squared" symbol="kg.m" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="kilobit" symbol="kbit" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="boolean" symbol="-" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="percent" symbol="%" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="degree Celsius" symbol="degC" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="metre per square second" symbol="m/s2" description="ECSS - Unit"
+          definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="watt" symbol="W" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="degree" symbol="deg" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="1" symbol="-" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="watt per metre squared" symbol="W/m" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="joule per kilogram kelvin" symbol="J/(kg.K)" description="ECSS - Unit"
+          definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="radian per second" symbol="rad/s" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="newton second" symbol="N.s" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="ampere hour" symbol="A.h" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="Volt" symbol="V" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="minute" symbol="min" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="revolutions per second" symbol="s-1" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="date" symbol="-" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="relative gravity" symbol="-" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="kilorad" symbol="krad" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="hour" symbol="hour" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="megahertz" symbol="MHz" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="hertz" symbol="Hz" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="megabit" symbol="Mbit" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="megabit per second" symbol="Mbit/s" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="kiloeuro" symbol="kEUR" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="newton per metre squared" symbol="N.m2" description="ECSS - Unit"
+          definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="metre cubed" symbol="m3" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="rads in silicon" symbol="cGy_Silicon" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="micrometre" symbol="µm" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="number per centimetre squared" symbol="#/cm2" description="ECSS - Unit"
+          definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="day" symbol="day" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="metre per second squared" symbol="m/s2" description="ECSS - Unit"
+          definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="astronomical unit" symbol="AU" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="year" symbol="year" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="degree per day" symbol="deg/day" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="kilometre per second" symbol="km/s" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="Decibel" symbol="dB" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="gain" symbol="-" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="decibel per degree kelvin" symbol="dBK" description="ECSS - Unit"
+          definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="decibel kelvin" symbol="dBK" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="decibel watt" symbol="dBW" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="kilowatt" symbol="kW" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="man year" symbol="man.year" description="ECSS - Unit" definitionURI=""/>
+    <unit xsi:type="SimpleUnit" name="man.hour" symbol="man.hour" description="ECSS - Unit" definitionURI=""/>
+    <quantityKind xsi:type="SimpleQuantityKind" name="Dimensionless" symbol="U" description="dimensionlessQK"
+                  definitionURI=""/>
+    <quantityKind xsi:type="SimpleQuantityKind" name="Length" symbol="L" description="lengthQK" definitionURI=""/>
+    <quantityKind xsi:type="SimpleQuantityKind" name="Mass" symbol="M" description="massQK" definitionURI=""/>
+    <quantityKind xsi:type="SimpleQuantityKind" name="Time" symbol="T" description="timeQK" definitionURI=""/>
+    <quantityKind xsi:type="SimpleQuantityKind" name="Temperature" symbol="Θ" description="temperatureQK"
+                  definitionURI=""/>
+    <quantityKind xsi:type="SimpleQuantityKind" name="Amount of substance" symbol="N"
+                  description="amountOfSubstanceQK" definitionURI=""/>
+    <quantityKind xsi:type="SimpleQuantityKind" name="Electric current" symbol="I" description="electricCurrentQK"
+                  definitionURI=""/>
+    <quantityKind xsi:type="SimpleQuantityKind" name="Luminous intensity" symbol="J"
+                  description="luminousIntensityQK" definitionURI=""/>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Area" symbol="L²" description="areaQK" definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Force" symbol="L¹ M¹ T⁻²" description="forceQK"
+                  definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Energy and Work" symbol="L² M¹ T⁻²"
+                  description="energyAndWorkQK" definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Density" symbol="L⁻³ M¹" description="densityQK"
+                  definitionURI="">
+        <factor exponent="-3.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Electric Charge" symbol="T¹ I¹"
+                  description="electricChargeQK" definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.6"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Frequency" symbol="T⁻¹" description="frequencyQK"
+                  definitionURI="">
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Data rate" symbol="T⁻¹" description="dataRateQK"
+                  definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.13"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Heat Capacity and Entropy" symbol="L² M¹ T⁻² Θ⁻¹"
+                  description="heatCapacityAndEntropyQK" definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.4"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Heat Flow Rate" symbol="L² M¹ T⁻³"
+                  description="heatFlowRateQK" definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-3.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Heat Flow Rate per Unit Area" symbol="M¹ T⁻³"
+                  description="heatFlowRatePerUnitAreaQK" definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-3.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Inductance" symbol="L² M¹ T⁻² I⁻²" description="inductanceQK"
+                  definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.6"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Acceleration" symbol="L¹ T⁻²" description="accelerationQK"
+                  definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Angle" symbol="α" description="angleQK" definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.0"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Angular Velocity" symbol="α¹ T⁻¹"
+                  description="angularVelocityQK" definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.20"/>
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Moment Of Inertia" symbol="M¹ L²"
+                  description="momentOfInertiaQK" definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Linear Momentum" symbol="L¹ M¹ T⁻¹"
+                  description="linearMomentumQK" definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Velocity" symbol="L¹ T⁻¹" description="velocityQK"
+                  definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Luminance" symbol="L¹ M¹ T⁻¹" description="luminanceQK"
+                  definitionURI="">
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.7"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Magnetic Dipole Moment" symbol="L² I¹"
+                  description="magneticDipoleMomentQK" definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.6"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Magnetic Field Strength" symbol="L⁻¹ I¹"
+                  description="magneticFieldStrengthQK" definitionURI="">
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.6"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Magnetic Flux" symbol="L² M¹ T⁻² I⁻¹"
+                  description="magneticFluxQK" definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.6"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Magnetic Flux Density" symbol="M¹ T⁻² I⁻¹"
+                  description="magneticFluxDensityQK" definitionURI="">
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.6"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Molar Energy" symbol="L² M¹ T⁻² N⁻¹"
+                  description="molarEnergyQK" definitionURI="">
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.5"/>
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Molar Heat Capacity" symbol="L² M¹ T⁻² N⁻¹"
+                  description="molarHeatCapacityQK" definitionURI="">
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.5"/>
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.4"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Power" symbol="L² M¹ T⁻³" description="powerQK"
+                  definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-3.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Power per Unit Area" symbol="M¹ T⁻³"
+                  description="powerPerUnitAreaQK" definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-3.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Mass per Unit Area" symbol="M¹ L⁻²"
+                  description="massPerUnitAreaQK" definitionURI="">
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="PressureOrStress" symbol="M¹ T⁻³"
+                  description="pressureOrStressQK" definitionURI="">
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Resistance" symbol="L² M¹ T⁻³ I⁻²" description="resistanceQK"
+                  definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.6"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-3.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Specific Energy" symbol="L² T⁻²"
+                  description="specificEnergyQK" definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Specific Heat Capacity" symbol="L² T⁻² Θ⁻¹"
+                  description="specificHeatCapacityQK" definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.4"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Thermal Conductivity" symbol="L¹ M¹ T⁻³ Θ⁻¹"
+                  description="thermalConductivityQK" definitionURI="">
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.4"/>
+        <factor exponent="-3.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Time Squared" symbol="T²" description="timeSquaredQK"
+                  definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Torque" symbol="L² M¹ T⁻²" description="torqueQK"
+                  definitionURI="">
+        <factor exponent="2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+        <factor exponent="1.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.2"/>
+        <factor exponent="-2.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.3"/>
+    </quantityKind>
+    <quantityKind xsi:type="DerivedQuantityKind" name="Volume" symbol="L³" description="volumeQK" definitionURI="">
+        <factor exponent="3.0"
+                quantityKind="//@unitManagement/@systemOfUnits/@systemOfQuantities.0/@quantityKind.1"/>
+    </quantityKind>
+</unitManagement>
