@@ -4,6 +4,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -32,6 +33,7 @@ import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -61,13 +63,10 @@ public class ModelEditingController implements Initializable {
     private TextField externalModelFilePath;
 
     @FXML
-    private TableColumn parameterNameColumn;
+    private TableColumn<ParameterModel, Object> parameterValueColumn;
 
     @FXML
-    private TableColumn parameterValueColumn;
-
-    @FXML
-    private TableColumn parameterDescriptionColumn;
+    private TableColumn<ParameterModel, String> parameterUnitColumn;
 
     @FXML
     private Button addNodeButton;
@@ -138,6 +137,16 @@ public class ModelEditingController implements Initializable {
             @Override
             public TableCell<ParameterModel, Object> call(TableColumn<ParameterModel, Object> param) {
                 return new ParameterFieldCell(new DoubleStringConverter());
+            }
+        });
+        parameterUnitColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
+                if(param != null && param.getValue() != null && param.getValue().getUnit() != null) {
+                    return new SimpleStringProperty(param.getValue().getUnit().asText());
+                } else {
+                    return new SimpleStringProperty();
+                }
             }
         });
 

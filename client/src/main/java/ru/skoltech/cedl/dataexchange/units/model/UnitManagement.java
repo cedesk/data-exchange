@@ -108,4 +108,15 @@ public class UnitManagement {
         sb.append("\n}");
         return sb.toString();
     }
+
+    public Unit findUnit(String unitStr) {
+        Unit result = null;
+        for (Unit unit : units) {
+            if (unit.asText().equals(unitStr)) {
+                result = unit;
+                break;
+            }
+        }
+        return result;
+    }
 }
