@@ -5,7 +5,20 @@
     -fx-font-weight: bold;
 }
 
-.projectDetails,
+.projectDetailsLabels,
+.projectDetailsText {
+    -fx-font-size: 14px;
+}
+
+.projectDetailsLabels {
+    -fx-font-style: italic;
+    -fx-underline: true;
+}
+
+.projectDetailsText {
+    -fx-font-weight: bold;
+}
+
 .sectionTitle {
     -fx-font-size: 16px;
     -fx-font-style: italic;

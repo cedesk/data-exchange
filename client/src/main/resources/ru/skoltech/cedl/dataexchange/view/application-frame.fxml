@@ -81,28 +81,28 @@
                                     <children>
                                         <HBox>
                                             <children>
-                                                <Label text="Design Study:" styleClass="projectDetails">
+                                                <Label text="Design Study:" styleClass="projectDetailsLabels">
                                                     <HBox.margin>
                                                         <Insets right="4.0"/>
                                                     </HBox.margin>
                                                 </Label>
-                                                <Label fx:id="studyNameLabel" layoutX="10.0" layoutY="10.0"
-                                                       text="--">
+                                                <Label fx:id="studyNameLabel"
+                                                       styleClass="projectDetailsText" text="--">
                                                 </Label>
-                                                <Label text="User:" styleClass="projectDetails">
+                                                <Label text="User:" styleClass="projectDetailsLabels">
                                                     <HBox.margin>
                                                         <Insets left="20.0" right="4.0"/>
                                                     </HBox.margin>
                                                 </Label>
-                                                <Label fx:id="userNameLabel" text="--">
+                                                <Label fx:id="userNameLabel" styleClass="projectDetailsText" text="--">
                                                 </Label>
-                                                <Label layoutX="97.0" layoutY="10.0" text="Roles:"
-                                                       styleClass="projectDetails">>
+                                                <Label text="Roles:"
+                                                       styleClass="projectDetailsLabels">
                                                     <HBox.margin>
                                                         <Insets left="20.0" right="4.0"/>
                                                     </HBox.margin>
                                                 </Label>
-                                                <Label fx:id="userRoleLabel" layoutX="211.0" layoutY="10.0"
+                                                <Label fx:id="userRoleLabel" styleClass="projectDetailsText"
                                                        text="--">
                                                     <font>
                                                         <Font size="14.0"/>
