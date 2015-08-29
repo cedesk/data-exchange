@@ -5,6 +5,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
@@ -33,6 +34,10 @@ public interface Repository extends Closeable {
     UserManagement storeUserManagement(UserManagement userManagement) throws RepositoryException;
 
     UserManagement loadUserManagement() throws RepositoryException;
+
+    UnitManagement storeUnitManagement(UnitManagement unitManagement) throws RepositoryException;
+
+    UnitManagement loadUnitManagement() throws RepositoryException;
 
     List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException;
 
