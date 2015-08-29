@@ -17,6 +17,8 @@ import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
+import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.User;
@@ -56,6 +58,8 @@ public class Project {
     private RepositoryStateMachine repositoryStateMachine = new RepositoryStateMachine();
 
     private UserManagement userManagement;
+
+    private UnitManagement unitManagement;
 
     private User currentUser;
 
@@ -139,13 +143,6 @@ public class Project {
         }
     }
 
-    public UserManagement getUserManagement() {
-        if (userManagement == null) {
-            loadUserManagement();
-        }
-        return userManagement;
-    }
-
     public long getLatestLoadedModification() {
         return latestLoadedModification.get();
     }
@@ -174,6 +171,13 @@ public class Project {
         return latestRepositoryModification;
     }
 
+    public UserManagement getUserManagement() {
+        if (userManagement == null) {
+            loadUserManagement();
+        }
+        return userManagement;
+    }
+
     public boolean loadUserManagement() {
         try {
             userManagement = repository.loadUserManagement();
@@ -185,10 +189,60 @@ public class Project {
         return false;
     }
 
+    private void initializeUserManagement() {
+        userManagement = UserManagementFactory.getUserManagement();
+        storeUserManagement();
+    }
+
+    public boolean storeUserManagement() {
+        try {
+            userManagement = repository.storeUserManagement(userManagement);
+            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error storing user management.", e);
+        }
+        return false;
+    }
+
     public UserRoleManagement getUserRoleManagement() {
         if (getStudy() == null)
             return null;
         return getStudy().getUserRoleManagement();
+    }
+
+    public UnitManagement getUnitManagement() {
+        if (unitManagement == null) {
+            loadUnitManagement();
+        }
+        return unitManagement;
+    }
+
+    public boolean loadUnitManagement() {
+        try {
+            unitManagement = repository.loadUnitManagement();
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error loading unit management. recreating new unit management.");
+            initializeUnitManagement();
+        }
+        return false;
+    }
+
+    private void initializeUnitManagement() {
+        unitManagement = UnitManagementFactory.getUnitManagement();
+        storeUnitManagement();
+    }
+
+    public boolean storeUnitManagement() {
+        try {
+            unitManagement = repository.storeUnitManagement(unitManagement);
+            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error storing unit management.", e);
+        }
+        return false;
     }
 
     public String getProjectName() {
@@ -378,22 +432,6 @@ public class Project {
         userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
         userRoleManagement.addUserDiscipline(getUser(), userRoleManagement.getAdminDiscipline());
         getStudy().setUserRoleManagement(userRoleManagement);
-    }
-
-    private void initializeUserManagement() {
-        userManagement = UserManagementFactory.getUserManagement();
-        storeUserManagement();
-    }
-
-    public boolean storeUserManagement() {
-        try {
-            userManagement = repository.storeUserManagement(userManagement);
-            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
-            return true;
-        } catch (RepositoryException e) {
-            logger.error("Error storing user management.", e);
-        }
-        return false;
     }
 
     public Repository getRepository() {
