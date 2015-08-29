@@ -138,7 +138,7 @@
                                                 </TableView>
                                             </children>
                                         </VBox>
-                                        <ToolBar styleClass="sectionTitle">
+                                        <ToolBar>
                                             <items>
                                                 <Button fx:id="addUserButton" mnemonicParsing="false"
                                                         onAction="#addUser" text="Add"/>
