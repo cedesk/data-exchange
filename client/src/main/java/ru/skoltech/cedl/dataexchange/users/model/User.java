@@ -81,15 +81,6 @@ public class User implements Comparable<User> {
         this.salt = salt;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("User{");
-        sb.append("userName='").append(userName).append('\'');
-        sb.append(", fullName='").append(fullName).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -123,5 +114,14 @@ public class User implements Comparable<User> {
         result = 31 * result + (salt != null ? salt.hashCode() : 0);
         result = 31 * result + (passwordHash != null ? passwordHash.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("User{");
+        sb.append("userName='").append(userName).append('\'');
+        sb.append(", fullName='").append(fullName).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }
