@@ -438,7 +438,6 @@ public class MainController implements Initializable {
             UnitManagementController unitManagementController = loader.getController();
             unitManagementController.setProject(project);
             stage.show();
-            unitManagementController.updateView();
         } catch (IOException e) {
             logger.error(e);
         }
