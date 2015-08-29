@@ -1,13 +1,19 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.beans.binding.BooleanBinding;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.units.model.QuantityKind;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
+import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -23,13 +29,13 @@ public class UnitManagementController implements Initializable {
     private AnchorPane unitsDetailPane;
 
     @FXML
-    private AnchorPane measuresDetailPane;
+    private AnchorPane quantityKindsDetailPane;
 
     @FXML
-    private ListView unitsListView;
+    private TableView<Unit> unitsTableView;
 
     @FXML
-    private ListView measuresListView;
+    private TableView<QuantityKind> quantityTableView;
 
     @FXML
     private Button addUnitButton;
@@ -38,23 +44,38 @@ public class UnitManagementController implements Initializable {
     private Button deleteUnitButton;
 
     @FXML
-    private Button addMeasureButton;
+    private Button addQuantityKindButton;
 
     @FXML
-    private Button deleteMeasureButton;
+    private Button deleteQuantityKindButton;
 
     private Project project;
 
     public void setProject(Project project) {
         this.project = project;
+        updateView();
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        BooleanBinding noUnitSelected = unitsTableView.getSelectionModel().selectedItemProperty().isNull();
+        //deleteUnitButton.disableProperty().bind(noUnitSelected);
+        deleteUnitButton.setDisable(true);
+        addUnitButton.setDisable(true);
 
+        BooleanBinding noQuantityKindSelected = quantityTableView.getSelectionModel().selectedItemProperty().isNull();
+        //deleteQuantityKindButton.disableProperty().bind(noQuantityKindSelected);
+        deleteQuantityKindButton.setDisable(true);
+        addQuantityKindButton.setDisable(true);
     }
 
     public void updateView() {
+        UnitManagement unitManagement = project.getUnitManagement();
+        ObservableList<Unit> unitsList = FXCollections.observableList(unitManagement.getUnits());
+        unitsTableView.setItems(unitsList);
+
+        ObservableList<QuantityKind> quantityKindsList = FXCollections.observableList(unitManagement.getQuantityKinds());
+        quantityTableView.setItems(quantityKindsList);
     }
 
     public void addUnit(ActionEvent actionEvent) {
@@ -65,11 +86,11 @@ public class UnitManagementController implements Initializable {
 
     }
 
-    public void addMeasure(ActionEvent actionEvent) {
+    public void addQuantityKind(ActionEvent actionEvent) {
 
     }
 
-    public void deleteMeasure(ActionEvent actionEvent) {
+    public void deleteQuantityKind(ActionEvent actionEvent) {
 
     }
 }
