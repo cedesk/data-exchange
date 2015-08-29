@@ -121,11 +121,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueOverrideText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
         natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
-        referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
+        referenceSelectorGroup.disableProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.REFERENCE));
         valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
-        overrideValueGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.MANUAL));
-        valueOverrideText.visibleProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty());
-        exportSelectorGroup.visibleProperty().bind(isExportedCheckbox.selectedProperty());
+        isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
+        valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty().not());
+        exportSelectorGroup.disableProperty().bind(isExportedCheckbox.selectedProperty().not());
         unitChoiceBox.setConverter(new StringConverter<Unit>() {
             @Override
             public String toString(Unit unit) {
