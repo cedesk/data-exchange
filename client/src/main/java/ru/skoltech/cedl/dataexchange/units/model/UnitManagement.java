@@ -32,7 +32,7 @@ public class UnitManagement {
 
     @Id
     @GeneratedValue
-    @Column(name="UM_ID")
+    @Column(name="id")
     public long getId() {
         return id;
     }
@@ -42,7 +42,7 @@ public class UnitManagement {
     }
 
     @OneToMany(targetEntity = Prefix.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name="OWNER_ID", referencedColumnName="UM_ID")
+    @JoinColumn(name="um_id", referencedColumnName="id")
     @Fetch(FetchMode.SELECT)
     public List<Prefix> getPrefixes() {
         return prefixes;
@@ -53,7 +53,7 @@ public class UnitManagement {
     }
 
     @OneToMany(targetEntity = Unit.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name="OWNER_ID", referencedColumnName="UM_ID")
+    @JoinColumn(name="um_id", referencedColumnName="id")
     @Fetch(FetchMode.SELECT)
     public List<Unit> getUnits() {
         return units;
@@ -64,7 +64,7 @@ public class UnitManagement {
     }
 
     @OneToMany(targetEntity = QuantityKind.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name="OWNER_ID", referencedColumnName="UM_ID")
+    @JoinColumn(name="um_id", referencedColumnName="id")
     @Fetch(FetchMode.SELECT)
     public List<QuantityKind> getQuantityKinds() {
         return quantityKinds;

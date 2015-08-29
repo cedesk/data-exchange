@@ -1,6 +1,8 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
 import org.apache.log4j.Logger;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -34,6 +36,7 @@ public class UserManagement {
 
     @Id
     @GeneratedValue
+    @Column(name="id")
     public long getId() {
         return id;
     }
@@ -43,6 +46,8 @@ public class UserManagement {
     }
 
     @OneToMany(targetEntity = User.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name="um_id", referencedColumnName="id")
+    @Fetch(FetchMode.SELECT)
     public List<User> getUsers() {
         return users;
     }
