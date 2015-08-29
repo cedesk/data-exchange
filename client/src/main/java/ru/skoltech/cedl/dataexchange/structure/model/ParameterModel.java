@@ -3,17 +3,19 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.units.UnitAdapter;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-@XmlType(propOrder = {"name", "value", "nature", "valueSource", "isExported", "lastModification", "valueReference", "exportReference", "description"})
+@XmlType(propOrder = {"name", "value", "nature", "valueSource", "unit", "isExported", "lastModification", "valueReference", "exportReference", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
@@ -37,7 +39,8 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @XmlAttribute
     private Double value;
 
-    //@XmlJavaTypeAdapter()
+    @XmlAttribute
+    @XmlJavaTypeAdapter(value = UnitAdapter.class)
     private Unit unit;
 
     @XmlTransient
@@ -321,27 +324,31 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
                 || (this.name != null && !this.name.equals(other.name))) {
             diff.put("name", other.name);
         }
-        if ((this.nature == null && other.nature != null) || (this.nature != null && other.nature == null)
-                || (this.nature != null && !this.nature.equals(other.nature))) {
-            diff.put("nature", String.valueOf(other.nature));
-        }
-        if (!this.isExported == other.isExported) {
-            diff.put("isExported", String.valueOf(other.isExported));
-        }
-        if (!this.isReferenceValueOverridden == other.isReferenceValueOverridden) {
-            diff.put("isReferenceValueOverridden", String.valueOf(other.isReferenceValueOverridden));
-        }
         if ((this.value == null && other.value != null) || (this.value != null && other.value == null)
                 || (this.value != null && !this.value.equals(other.value))) {
             diff.put("value", String.valueOf(other.getValue()));
+        }
+        if (!this.isReferenceValueOverridden == other.isReferenceValueOverridden) {
+            diff.put("isReferenceValueOverridden", String.valueOf(other.isReferenceValueOverridden));
         }
         if ((this.overrideValue == null && other.overrideValue != null) || (this.overrideValue != null && other.overrideValue == null)
                 || (this.overrideValue != null && !this.overrideValue.equals(other.overrideValue))) {
             diff.put("overrideValue", String.valueOf(other.overrideValue));
         }
+        if ((this.unit == null && other.unit != null) || (this.unit != null && other.unit == null)
+                || (this.unit != null && !this.unit.equals(other.unit))) {
+            diff.put("unit", other.unit != null ? other.unit.asText() : null);
+        }
+        if ((this.nature == null && other.nature != null) || (this.nature != null && other.nature == null)
+                || (this.nature != null && !this.nature.equals(other.nature))) {
+            diff.put("nature", String.valueOf(other.nature));
+        }
         if ((this.getValueSource() == null && other.getValueSource() != null) || (this.getValueSource() != null && other.getValueSource() == null)
                 || (this.getValueSource() != null && !this.getValueSource().equals(other.getValueSource()))) {
             diff.put("valueSource", String.valueOf(other.getValueSource()));
+        }
+        if (!this.isExported == other.isExported) {
+            diff.put("isExported", String.valueOf(other.isExported));
         }
         if ((this.getExportReference() == null && other.getExportReference() != null) || (this.getExportReference() != null && other.getExportReference() == null)
                 || (this.getExportReference() != null && !this.getExportReference().equals(other.getExportReference()))) {
@@ -369,16 +376,18 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
         ParameterModel that = (ParameterModel) o;
 
-        if (isReferenceValueOverridden != that.isReferenceValueOverridden) return false;
-        if (isExported != that.isExported) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
-        if (nature != that.nature) return false;
-        if (valueSource != that.valueSource) return false;
-        if (getValueReference() != null ? !getValueReference().equals(that.getValueReference()) : that.getValueReference() != null)
-            return false;
+        if (isReferenceValueOverridden != that.isReferenceValueOverridden) return false;
         if (overrideValue != null ? !overrideValue.equals(that.overrideValue) : that.overrideValue != null)
             return false;
+        if (unit != null ? !unit.equals(that.unit) : that.unit != null) return false;
+        if (nature != that.nature) return false;
+        if (valueSource != that.valueSource) return false;
+        if (isExported != that.isExported) return false;
+        if (getValueReference() != null ? !getValueReference().equals(that.getValueReference()) : that.getValueReference() != null) {
+            return false;
+        }
         if (getExportReference() != null ? !getExportReference().equals(that.getExportReference()) : that.getExportReference() != null)
             return false;
         return !(description != null ? !description.equals(that.description) : that.description != null);
@@ -388,11 +397,12 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (value != null ? value.hashCode() : 0);
+        result = 31 * result + (isReferenceValueOverridden ? 1 : 0);
+        result = 31 * result + (overrideValue != null ? overrideValue.hashCode() : 0);
+        result = 31 * result + (unit != null ? unit.hashCode() : 0);
         result = 31 * result + (nature != null ? nature.hashCode() : 0);
         result = 31 * result + (valueSource != null ? valueSource.hashCode() : 0);
         result = 31 * result + (getValueReference() != null ? getValueReference().hashCode() : 0);
-        result = 31 * result + (isReferenceValueOverridden ? 1 : 0);
-        result = 31 * result + (overrideValue != null ? overrideValue.hashCode() : 0);
         result = 31 * result + (isExported ? 1 : 0);
         result = 31 * result + (getExportReference() != null ? getExportReference().hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
@@ -404,11 +414,12 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         final StringBuilder sb = new StringBuilder("ParameterModel{");
         sb.append("name='").append(name).append('\'');
         sb.append(", value=").append(value);
+        sb.append(", isReferenceValueOverridden=").append(isReferenceValueOverridden);
+        sb.append(", overrideValue=").append(overrideValue);
+        sb.append(", unit").append(unit);
         sb.append(", nature=").append(nature);
         sb.append(", valueSource=").append(valueSource);
         sb.append(", valueReference=").append(getValueReference());
-        sb.append(", isReferenceValueOverridden=").append(isReferenceValueOverridden);
-        sb.append(", overrideValue=").append(overrideValue);
         sb.append(", isExported=").append(isExported);
         sb.append(", exportReference=").append(getExportReference());
         sb.append(", description='").append(description).append('\'');
