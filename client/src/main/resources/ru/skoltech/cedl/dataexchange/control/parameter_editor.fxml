@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/8.0.40"
@@ -50,7 +51,11 @@
                 </HBox>
                 <HBox spacing="16.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                     <children>
-                        <CheckBox fx:id="isExportedCheckbox" mnemonicParsing="false" prefWidth="120.0" text=""/>
+                        <CheckBox fx:id="isExportedCheckbox" mnemonicParsing="false" prefWidth="120.0" text="">
+                            <HBox.margin>
+                                <Insets top="4.0"/>
+                            </HBox.margin>
+                        </CheckBox>
                         <HBox fx:id="exportSelectorGroup" prefWidth="200.0">
                             <children>
                                 <TextField fx:id="exportReferenceText" editable="false" prefWidth="200.0"
@@ -66,11 +71,16 @@
                         GridPane.halignment="RIGHT" GridPane.rowIndex="7"/>
                 <Button mnemonicParsing="true" onAction="#revertChanges" text="Rever_t" GridPane.columnIndex="1"
                         GridPane.halignment="CENTER" GridPane.rowIndex="7"/>
-                <Label text="Override" GridPane.rowIndex="4"/>
-                <HBox fx:id="overrideValueGroup" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                <Label text="Override" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
+                <HBox fx:id="overrideValueGroup" prefWidth="200.0" spacing="16.0" GridPane.columnIndex="1"
+                      GridPane.rowIndex="4">
                     <children>
-                        <CheckBox fx:id="isReferenceValueOverriddenCheckbox" mnemonicParsing="false"/>
                         <TextField fx:id="valueOverrideText" prefWidth="120.0" promptText="0123.45"/>
+                        <CheckBox fx:id="isReferenceValueOverriddenCheckbox" mnemonicParsing="false">
+                            <HBox.margin>
+                                <Insets top="4.0"/>
+                            </HBox.margin>
+                        </CheckBox>
                     </children>
                 </HBox>
             </children>
