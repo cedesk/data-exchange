@@ -1,6 +1,9 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
+import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +25,8 @@ public class DummySystemBuilder {
 
     private static int instrumentCnt = 1;
 
+    private static UnitManagement unitManagement = UnitManagementFactory.getUnitManagement();
+
     public static List<Integer> getValidModelDepths() {
         Integer[] values = new Integer[MAX_MODEL_DEPTH - MIN_MODEL_DEPTH + 1];
         for (int i = 0; i < values.length; i++) {
@@ -35,8 +40,8 @@ public class DummySystemBuilder {
             throw new IllegalArgumentException("model depth must be >= " + MIN_MODEL_DEPTH + " and <=" + MAX_MODEL_DEPTH);
 
         SystemModel system = new SystemModel("Spacecraft " + getRandomInt());
-        system.addParameter(getParameter());
-        system.addParameter(getParameter());
+        system.addParameter(getMassParameter());
+        system.addParameter(getPowerParameter());
 
         if (modelDepth < 2) return system;
         system.addSubNode(getSubSystem("Power", modelDepth - 1));
@@ -101,14 +106,45 @@ public class DummySystemBuilder {
         } else {
             parameterModel.setValueSource(ParameterValueSource.MANUAL);
         }
+        //parameterModel.setUnit(getNoUnit());
         if (Math.random() > .5) {
             parameterModel.setIsExported(true);
-            ExternalModelReference exportLink = new ExternalModelReference();
-            exportLink.setExternalModel(null);
-            exportLink.setTarget("Z9");
-            parameterModel.setExportReference(exportLink);
+            ExternalModelReference modelReference = new ExternalModelReference();
+            modelReference.setExternalModel(null);
+            modelReference.setTarget("Z9");
+            parameterModel.setExportReference(modelReference);
         } else {
             parameterModel.setIsExported(false);
+        }
+        return parameterModel;
+    }
+
+    private static ParameterModel getMassParameter() {
+        ParameterModel parameterModel = new ParameterModel("mass", getRandomDouble());
+        parameterModel.setDescription("");
+        parameterModel.setNature(ParameterNature.OUTPUT);
+        parameterModel.setValueSource(ParameterValueSource.MANUAL);
+        {
+            parameterModel.setIsExported(true);
+            ExternalModelReference modelReference = new ExternalModelReference();
+            modelReference.setExternalModel(null);
+            modelReference.setTarget("B3");
+            parameterModel.setExportReference(modelReference);
+        }
+        return parameterModel;
+    }
+
+    private static ParameterModel getPowerParameter() {
+        ParameterModel parameterModel = new ParameterModel("power", getRandomDouble());
+        parameterModel.setDescription("");
+        parameterModel.setNature(ParameterNature.OUTPUT);
+        parameterModel.setValueSource(ParameterValueSource.MANUAL);
+        {
+            parameterModel.setIsExported(true);
+            ExternalModelReference modelReference = new ExternalModelReference();
+            modelReference.setExternalModel(null);
+            modelReference.setTarget("D4");
+            parameterModel.setExportReference(modelReference);
         }
         return parameterModel;
     }
@@ -119,5 +155,10 @@ public class DummySystemBuilder {
 
     private static int getRandomInt() {
         return (int) (Math.random() * 100);
+    }
+
+    private static Unit getNoUnit() {
+        Unit unit = unitManagement.findUnit("No Unit [U]");
+        return unit;
     }
 }
