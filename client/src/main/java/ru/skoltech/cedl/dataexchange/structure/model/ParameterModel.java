@@ -104,30 +104,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.description = description;
     }
 
-    @Transient
-    public Double getEffectiveValue() {
-        return isReferenceValueOverridden ? overrideValue : value;
-    }
-
-    @Version()
-    public long getVersion() {
-        return version;
-    }
-
-    public void setVersion(long version) {
-        this.version = version;
-    }
-
-    @Override
-    public Long getLastModification() {
-        return lastModification;
-    }
-
-    @Override
-    public void setLastModification(Long timestamp) {
-        this.lastModification = timestamp;
-    }
-
     @Id
     @GeneratedValue
     public long getId() {
@@ -303,6 +279,30 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.description = description;
     }
 
+    @Transient
+    public Double getEffectiveValue() {
+        return isReferenceValueOverridden ? overrideValue : value;
+    }
+
+    @Version()
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+    }
+
+    @Override
+    public Long getLastModification() {
+        return lastModification;
+    }
+
+    @Override
+    public void setLastModification(Long timestamp) {
+        this.lastModification = timestamp;
+    }
+
     @ManyToOne(targetEntity = ModelNode.class)
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     public ModelNode getParent() {
@@ -347,6 +347,10 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
                 || (this.getValueSource() != null && !this.getValueSource().equals(other.getValueSource()))) {
             diff.put("valueSource", String.valueOf(other.getValueSource()));
         }
+        if ((this.getValueReference() == null && other.getValueReference() != null) || (this.getValueReference() != null && other.getValueReference() == null)
+                || (this.getValueReference() != null && !this.getValueReference().equals(other.getValueReference()))) {
+            diff.put("valueReference", String.valueOf(other.getValueReference()));
+        }
         if (!this.isExported == other.isExported) {
             diff.put("isExported", String.valueOf(other.isExported));
         }
@@ -384,10 +388,10 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         if (unit != null ? !unit.equals(that.unit) : that.unit != null) return false;
         if (nature != that.nature) return false;
         if (valueSource != that.valueSource) return false;
-        if (isExported != that.isExported) return false;
         if (getValueReference() != null ? !getValueReference().equals(that.getValueReference()) : that.getValueReference() != null) {
             return false;
         }
+        if (isExported != that.isExported) return false;
         if (getExportReference() != null ? !getExportReference().equals(that.getExportReference()) : that.getExportReference() != null)
             return false;
         return !(description != null ? !description.equals(that.description) : that.description != null);
