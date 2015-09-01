@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 public class SpreadsheetFactory {
 
     /**
-     * Opens a XLS file and reads the cells of the given sheet for visualization in a <code>org.conrolsfx.spearsheet.SpreadSheetView</code>
+     * Opens a XLS/XLSX file and reads the cells of the given sheet for visualization in a <code>org.conrolsfx.spearsheet.SpreadSheetView</code>
      *
      * @param spreadsheetFile the XLS workbook file
      * @param sheetIndex      the spreadheet within the workbook
@@ -27,21 +28,30 @@ public class SpreadsheetFactory {
      * @throws IOException in case of problems reading the file
      */
     public static Grid getGrid(File spreadsheetFile, int sheetIndex) throws IOException {
+        String fileName = spreadsheetFile.getName();
         FileInputStream fileInputStream = new FileInputStream(spreadsheetFile);
-        return getGrid(fileInputStream, sheetIndex);
+        return getGrid(fileInputStream, fileName, sheetIndex);
     }
 
     /**
-     * Opens a XLS file and reads the cells of the given sheet for visualization in a <code>org.conrolsfx.spearsheet.SpreadSheetView</code>
+     * Opens a XLS/XLSX file and reads the cells of the given sheet for visualization in a <code>org.conrolsfx.spearsheet.SpreadSheetView</code>
      *
      * @param inputStream the stream from which to read the XLS workbook file
+     * @param fileName    the name of the XLS workbook file
      * @param sheetIndex  the spreadheet within the workbook
      * @return a grid of cell values
      * @throws IOException in case of problems reading the stream
      */
-    public static Grid getGrid(InputStream inputStream, int sheetIndex) throws IOException {
-        NPOIFSFileSystem fs = new NPOIFSFileSystem(inputStream);
-        HSSFWorkbook wb = new HSSFWorkbook(fs.getRoot(), true);
+    public static Grid getGrid(InputStream inputStream, String fileName, int sheetIndex) throws IOException {
+        Workbook wb;
+        if (fileName.endsWith(".xls")) {
+            NPOIFSFileSystem fs = new NPOIFSFileSystem(inputStream);
+            wb = new HSSFWorkbook(fs.getRoot(), true);
+        } else if (fileName.endsWith(".xlsx")) {
+            wb = new XSSFWorkbook(inputStream);
+        } else {
+            throw new IllegalArgumentException("not a valid excel file");
+        }
         Sheet sheet = wb.getSheetAt(sheetIndex);
         Grid grid = getGrid(sheet);
         wb.close();

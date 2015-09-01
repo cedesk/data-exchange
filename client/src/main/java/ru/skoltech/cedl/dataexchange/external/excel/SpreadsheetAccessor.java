@@ -6,6 +6,8 @@ import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.skoltech.cedl.dataexchange.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 
@@ -19,7 +21,7 @@ public class SpreadsheetAccessor implements Closeable {
 
     private static Logger logger = Logger.getLogger(SpreadsheetAccessor.class);
     private Sheet sheet;
-    private HSSFWorkbook wb;
+    private Workbook wb;
 
     private boolean modified = false;
 
@@ -27,12 +29,16 @@ public class SpreadsheetAccessor implements Closeable {
      * Opens a XLS file and reads the cells of the given sheet for evaluation
      *
      * @param inputStream the stream from which to read the XLS workbook file
-     * @param sheetIndex  the spreadheet within the workbook
-     * @throws IOException in case of problems reading the stream
+     * @param fileName
+     *@param sheetIndex  the spreadheet within the workbook  @throws IOException in case of problems reading the stream
      */
-    public SpreadsheetAccessor(InputStream inputStream, int sheetIndex) throws IOException {
-        NPOIFSFileSystem fs = new NPOIFSFileSystem(inputStream);
-        wb = new HSSFWorkbook(fs.getRoot(), true);
+    public SpreadsheetAccessor(InputStream inputStream, String fileName, int sheetIndex) throws IOException {
+        if (fileName.endsWith(".xls")) {
+            NPOIFSFileSystem fs = new NPOIFSFileSystem(inputStream);
+            wb = new HSSFWorkbook(fs.getRoot(), true);
+        } else {
+            wb = new XSSFWorkbook(inputStream);
+        }
         sheet = wb.getSheetAt(sheetIndex);
     }
 
@@ -44,7 +50,7 @@ public class SpreadsheetAccessor implements Closeable {
      * @throws IOException in case of problems reading the file
      */
     public SpreadsheetAccessor(File spreadsheetFile, int sheetIndex) throws IOException {
-        this(new FileInputStream(spreadsheetFile), sheetIndex);
+        this(new FileInputStream(spreadsheetFile), spreadsheetFile.getName(), sheetIndex);
     }
 
     public static String getValueAsString(Cell cell) {

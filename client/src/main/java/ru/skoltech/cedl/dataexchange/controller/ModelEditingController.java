@@ -25,10 +25,7 @@ import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.ModelUpdate;
-import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
-import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
+import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -391,9 +388,8 @@ public class ModelEditingController implements Initializable {
         Objects.requireNonNull(selectedItem);
         File externalModelFile = Dialogues.chooseExternalModelFile();
         if (externalModelFile != null) {
-            if (!externalModelFile.isFile() || !externalModelFile.getName().endsWith(".xls")) {
-                Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
-            } else {
+            String fileName = externalModelFile.getName();
+            if (externalModelFile.isFile() && ExternalModelAccessorFactory.hasEvaluator(fileName)) {
                 try {
                     ExternalModel externalModel = ExternalModelFileHandler.newFromFile(externalModelFile, selectedItem.getValue());
                     selectedItem.getValue().addExternalModel(externalModel);
@@ -404,6 +400,8 @@ public class ModelEditingController implements Initializable {
                 } catch (IOException e) {
                     logger.warn("Unable to import model file.", e);
                 }
+            } else {
+                Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
             }
         }
     }

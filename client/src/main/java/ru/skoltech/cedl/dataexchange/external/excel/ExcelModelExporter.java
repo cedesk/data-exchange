@@ -87,7 +87,8 @@ public class ExcelModelExporter implements ExternalModelExporter {
         if (spreadsheetAccessor == null) {
             try {
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
-                spreadsheetAccessor = new SpreadsheetAccessor(inputStream, 0);
+                String fileName = externalModel.getName();
+                spreadsheetAccessor = new SpreadsheetAccessor(inputStream, fileName, 0);
             } catch (IOException e) {
                 logger.error("unable to open spreadsheet");
                 throw new ExternalModelException("unable access excel spreadsheet", e);

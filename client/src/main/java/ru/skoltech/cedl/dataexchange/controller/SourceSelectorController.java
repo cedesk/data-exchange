@@ -118,7 +118,8 @@ public class SourceSelectorController implements Initializable {
             if (externalModel.getAttachment() != null) {
                 ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
-                Grid grid = SpreadsheetFactory.getGrid(inputStream, 0);
+                String fileName = externalModel.getName();
+                Grid grid = SpreadsheetFactory.getGrid(inputStream, fileName, 0);
                 spreadsheetView.setGrid(grid);
                 // TODO: select current coordinates
             }
