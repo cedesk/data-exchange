@@ -7,6 +7,7 @@ import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 /**
@@ -19,11 +20,10 @@ public class UnitManagementFactory {
     public static UnitManagement getUnitManagement() {
         FileStorage fs = new FileStorage();
 
-        URL url1 = ClientApplication.class.getResource("units/unit-management.xml");
-        File file1 = new File(url1.getFile());
         UnitManagement um = null;
         try {
-            um = fs.loadUnitManagement(file1);
+            InputStream inputStream = ClientApplication.class.getResourceAsStream("units/unit-management.xml");
+            um = fs.loadUnitManagement(inputStream);
         } catch (IOException e) {
             logger.error("error loading unit management from file", e);
         }
