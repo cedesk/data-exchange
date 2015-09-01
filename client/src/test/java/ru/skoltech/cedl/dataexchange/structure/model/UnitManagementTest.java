@@ -13,6 +13,7 @@ import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 /**
@@ -34,9 +35,8 @@ public class UnitManagementTest {
     public void loadFromFile() throws IOException {
         FileStorage fs = new FileStorage();
 
-        URL url1 = ClientApplication.class.getResource("units/unit-management.xml");
-        File file1 = new File(url1.getFile());
-        UnitManagement um1 = fs.loadUnitManagement(file1);
+        InputStream inputStream = ClientApplication.class.getResourceAsStream("units/unit-management.xml");
+        UnitManagement um1 = fs.loadUnitManagement(inputStream);
 
         Assert.assertEquals(um1.getPrefixes().size(), 20);
         Assert.assertEquals(um1.getUnits().size(), 106);
