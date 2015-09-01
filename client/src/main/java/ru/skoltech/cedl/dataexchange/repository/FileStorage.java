@@ -16,10 +16,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Iterator;
 
 /**
@@ -139,13 +136,6 @@ public class FileStorage {
         }
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("FileStorage{");
-        sb.append('}');
-        return sb.toString();
-    }
-
     public void storeUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
 
         StorageUtils.makeDirectory(outputFile.getParentFile());
@@ -162,8 +152,8 @@ public class FileStorage {
         }
     }
 
-    public UnitManagement loadUnitManagement(File inputFile) throws IOException {
-        try (FileInputStream inp = new FileInputStream(inputFile)) {
+    public UnitManagement loadUnitManagement(InputStream inputStream) throws IOException {
+        try (BufferedInputStream inp = new BufferedInputStream(inputStream)) {
             JAXBContext ct = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
 
             Unmarshaller u = ct.createUnmarshaller();
