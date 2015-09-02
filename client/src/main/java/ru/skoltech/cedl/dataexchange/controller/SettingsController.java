@@ -66,11 +66,12 @@ public class SettingsController implements Initializable {
         boolean success = false;
         ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
         ApplicationSettings.setStudyModelDepth(modelDepth.getValue());
+        String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
 
         String hostname = dbHostnameText.getText().isEmpty() ? DatabaseStorage.DEFAULT_HOST_NAME : dbHostnameText.getText();
         String username = dbUsernameText.getText().isEmpty() ? DatabaseStorage.DEFAULT_USER_NAME : dbUsernameText.getText();
         String password = dbPasswordText.getText().isEmpty() ? DatabaseStorage.DEFAULT_PASSWORD : dbPasswordText.getText();
-        boolean validCredentials = DatabaseStorage.checkDatabaseConnection(hostname, username, password);
+        boolean validCredentials = DatabaseStorage.checkDatabaseConnection(hostname, schema, username, password);
         if (validCredentials) {
             ApplicationSettings.setRepositoryServerHostname(hostname);
             ApplicationSettings.setRepositoryUserName(username);
