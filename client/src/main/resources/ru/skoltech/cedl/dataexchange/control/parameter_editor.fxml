@@ -41,6 +41,13 @@
                                 <Button mnemonicParsing="false" onAction="#chooseSource" text="Ref"/>
                             </children>
                         </HBox>
+                        <HBox fx:id="linkSelectorGroup" prefWidth="200.0">
+                            <children>
+                                <TextField fx:id="parameterLinkText" editable="false" prefWidth="200.0"
+                                           promptText="link"/>
+                                <Button mnemonicParsing="false" onAction="#chooseParameter" text="Link"/>
+                            </children>
+                        </HBox>
                     </children>
                 </HBox>
                 <HBox spacing="16.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
