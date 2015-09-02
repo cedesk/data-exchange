@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.control;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -8,16 +10,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
 import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -40,6 +40,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
@@ -66,6 +67,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private TextField valueReferenceText;
 
     @FXML
+    private TextField parameterLinkText;
+
+    @FXML
     private TextField valueText;
 
     @FXML
@@ -88,6 +92,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     @FXML
     private HBox referenceSelectorGroup;
+
+    @FXML
+    private HBox linkSelectorGroup;
 
     @FXML
     private HBox exportSelectorGroup;
@@ -120,8 +127,19 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
         valueOverrideText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
         natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
+        natureChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ParameterNature>() {
+            @Override
+            public void changed(ObservableValue<? extends ParameterNature> observable, ParameterNature oldValue, ParameterNature newValue) {
+                if (newValue != ParameterNature.INPUT) {
+                    valueSourceChoiceBox.getItems().remove(ParameterValueSource.LINK);
+                } else if (!valueSourceChoiceBox.getItems().contains(ParameterValueSource.LINK)) {
+                    valueSourceChoiceBox.getItems().add(ParameterValueSource.LINK);
+                }
+            }
+        });
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
         referenceSelectorGroup.disableProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.REFERENCE));
+        linkSelectorGroup.disableProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.LINK));
         valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
         isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
         valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty().not());
@@ -178,6 +196,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueSourceChoiceBox.valueProperty().setValue(localParameterModel.getValueSource());
         unitChoiceBox.valueProperty().setValue(localParameterModel.getUnit());
         valueReferenceText.setText(localParameterModel.getValueReference() != null ? localParameterModel.getValueReference().toString() : "");
+        parameterLinkText.setText(localParameterModel.getValueLink() != null ? localParameterModel.getValueLink().getNodePath() : "");
         exportReferenceText.setText(localParameterModel.getExportReference() != null ? localParameterModel.getExportReference().toString() : "");
     }
 
@@ -228,6 +247,39 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             controller.setupBinding(parameterBean, fieldName);
             if (controller.canShow()) {
                 stage.showAndWait();
+            }
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void chooseParameter(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.PARAMETER_SELECTOR);
+            Parent root = loader.load();
+
+            Dialog<ParameterModel> dialog = new Dialog<>();
+            dialog.setTitle("Link Selector");
+            dialog.setHeaderText("Choose a parameter from another subsystem.");
+            dialog.setResizable(true);
+            dialog.getDialogPane().setContent(root);
+            dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+            dialog.setResultConverter(new Callback<ButtonType, ParameterModel>() {
+                @Override
+                public ParameterModel call(ButtonType buttonType) {
+                    if(buttonType == ButtonType.OK) {
+                        // TODO create parameter
+                    }
+                    return null;
+                }
+            });
+            Optional<ParameterModel> parameterChoice = dialog.showAndWait();
+            if(parameterChoice.isPresent()) {
+                ParameterModel parameterModel = parameterChoice.get();
+                parameterLinkText.setText(parameterModel.getNodePath());
+            } else {
+                parameterLinkText.setText(null);
             }
         } catch (IOException e) {
             logger.error(e);

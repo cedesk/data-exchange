@@ -9,9 +9,14 @@ public enum ParameterValueSource {
             return "manual";
         }
     },
-    /*CalculatedValue {
+    LINK {
         public String toString() {
-            return "calculated";
+            return "link";
+        }
+    },
+    /*CALCULATION {
+        public String toString() {
+            return "calculation";
         }
     }*/
     REFERENCE {

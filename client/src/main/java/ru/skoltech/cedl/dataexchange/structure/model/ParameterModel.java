@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-@XmlType(propOrder = {"name", "value", "nature", "valueSource", "unit", "isExported", "lastModification", "valueReference", "exportReference", "description"})
+@XmlType(propOrder = {"name", "value", "nature", "valueSource", "unit", "isExported", "lastModification", "valueReference", "valueLink", "exportReference", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
@@ -53,6 +53,8 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     private ParameterValueSource valueSource = DEFAULT_VALUE_SOURCE;
 
     private ExternalModelReference valueReference;
+
+    private ParameterModel valueLink;
 
     @XmlTransient
     private ExternalModel importModel;
@@ -187,6 +189,15 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
             this.importModel = null;
             this.importField = null;
         }
+    }
+
+    @ManyToOne(targetEntity = ParameterModel.class)
+    public ParameterModel getValueLink() {
+        return valueLink;
+    }
+
+    public void setValueLink(ParameterModel valueLink) {
+        this.valueLink = valueLink;
     }
 
     @ManyToOne(targetEntity = ExternalModel.class, optional = true, cascade = CascadeType.ALL)
@@ -351,6 +362,10 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
                 || (this.getValueReference() != null && !this.getValueReference().equals(other.getValueReference()))) {
             diff.put("valueReference", String.valueOf(other.getValueReference()));
         }
+        if ((this.getValueLink() == null && other.getValueLink() != null) || (this.getValueLink() != null && other.getValueLink() == null)
+                || (this.getValueLink() != null && !this.getValueLink().equals(other.getValueLink()))) {
+            diff.put("valueLink", String.valueOf(other.getValueLink() != null ? other.getValueLink() : null));
+        }
         if (!this.isExported == other.isExported) {
             diff.put("isExported", String.valueOf(other.isExported));
         }
@@ -391,6 +406,8 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         if (getValueReference() != null ? !getValueReference().equals(that.getValueReference()) : that.getValueReference() != null) {
             return false;
         }
+        if (valueLink != null ? !valueLink.equals(that.valueLink) : that.valueLink != null)
+            return false;
         if (isExported != that.isExported) return false;
         if (getExportReference() != null ? !getExportReference().equals(that.getExportReference()) : that.getExportReference() != null)
             return false;
@@ -407,6 +424,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         result = 31 * result + (nature != null ? nature.hashCode() : 0);
         result = 31 * result + (valueSource != null ? valueSource.hashCode() : 0);
         result = 31 * result + (getValueReference() != null ? getValueReference().hashCode() : 0);
+        result = 31 * result + (valueLink != null ? valueLink.hashCode() : 0);
         result = 31 * result + (isExported ? 1 : 0);
         result = 31 * result + (getExportReference() != null ? getExportReference().hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
@@ -424,6 +442,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         sb.append(", nature=").append(nature);
         sb.append(", valueSource=").append(valueSource);
         sb.append(", valueReference=").append(getValueReference());
+        sb.append(", valueLink=").append(valueLink != null ? valueLink.getNodePath() : null);
         sb.append(", isExported=").append(isExported);
         sb.append(", exportReference=").append(getExportReference());
         sb.append(", description='").append(description).append('\'');
