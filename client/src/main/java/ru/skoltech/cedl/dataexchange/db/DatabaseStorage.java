@@ -39,15 +39,18 @@ public class DatabaseStorage implements Repository {
     public static final String PERSISTENCE_URL_PROPERTY = "javax.persistence.jdbc.url";
     public static final String PERSISTENCE_USER_PROPERTY = "javax.persistence.jdbc.user";
     public static final String PERSISTENCE_PASSWORD_PROPERTY = "javax.persistence.jdbc.password";
+    public static final String DEFAULT_HOST_NAME = "localhost";
+    public static final String DEFAULT_SCHEMA = "cedesk_repo";
     public static final String DEFAULT_USER_NAME = "cedesk";
     public static final String DEFAULT_PASSWORD = "cedesk";
-    public static final String DEFAULT_HOST_NAME = "localhost";
     public static final String DB_PERSISTENCE_UNIT_NAME = "db";
     public static final String MEM_PERSISTENCE_UNIT_NAME = "mem";
     private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
     private static final String HOST_NAME = "HOSTNAME";
-    private static final String DEFAULT_JDBC_URL = "jdbc:mysql://" + HOST_NAME + ":3306/cedesk_dev";
+    private static final String SCHEMA = "SCHEMA";
+    private static final String DEFAULT_JDBC_URL = "jdbc:mysql://" + HOST_NAME + ":3306/" + SCHEMA;
     private String hostName;
+    private String schema;
     private EntityManagerFactory emf;
     private String persistenceUnit;
     private Map<String, Object> properties = new HashMap<>();
@@ -59,19 +62,24 @@ public class DatabaseStorage implements Repository {
         this.persistenceUnit = persistenceUnit;
     }
 
-    public DatabaseStorage(String persistenceUnit, String hostName, String userName, String password) {
+    public DatabaseStorage(String persistenceUnit, String hostName, String schema, String userName, String password) {
         this.persistenceUnit = persistenceUnit;
         this.hostName = hostName;
+        this.schema = schema;
         String url = DEFAULT_JDBC_URL.replace(HOST_NAME, hostName);
+        url = url.replace(SCHEMA, schema);
+        logger.debug("repository url: " + url + ", user: " + userName);
         properties.put(PERSISTENCE_URL_PROPERTY, url);
         properties.put(PERSISTENCE_USER_PROPERTY, userName);
         properties.put(PERSISTENCE_PASSWORD_PROPERTY, password);
     }
 
-    public static boolean checkDatabaseConnection(String hostName, String user, String password) {
+    public static boolean checkDatabaseConnection(String hostName, String schema, String userName, String password) {
         String url = DEFAULT_JDBC_URL.replace(HOST_NAME, hostName);
+        url = url.replace(SCHEMA, schema);
+        logger.debug("repository url: " + url + ", user: " + userName);
         try {
-            DriverManager.getConnection(url, user, password).close();
+            DriverManager.getConnection(url, userName, password).close();
             // TODO: check also existence of schema "cedesk"
             logger.info("check of database connection succeeded!");
             return true;
@@ -463,6 +471,7 @@ public class DatabaseStorage implements Repository {
     public String toString() {
         return "DatabaseStorage{" +
                 "hostName='" + hostName + '\'' +
+                "schema='" + schema + '\'' +
                 "persistenceUnit='" + persistenceUnit + '\'' +
                 "properties=" + properties +
                 '}';
