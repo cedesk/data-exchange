@@ -246,9 +246,10 @@ public class MainController implements Initializable {
 
     private boolean validDatabaseConnection() {
         String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
+        String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
         String repoUser = ApplicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
         String repoPassword = ApplicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
-        return DatabaseStorage.checkDatabaseConnection(hostname, repoUser, repoPassword);
+        return DatabaseStorage.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
     }
 
     public Window getAppWindow() {
