@@ -2,7 +2,6 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.units.UnitAdapter;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
 

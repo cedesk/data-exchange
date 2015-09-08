@@ -2,7 +2,7 @@ package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;

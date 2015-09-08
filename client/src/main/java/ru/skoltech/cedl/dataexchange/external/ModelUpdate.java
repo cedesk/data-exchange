@@ -1,6 +1,6 @@
 package ru.skoltech.cedl.dataexchange.external;
 
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 
 /**
  * Created by D.Knoll on 10.07.2015.

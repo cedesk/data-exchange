@@ -1,7 +1,5 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
-
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.MappedSuperclass;

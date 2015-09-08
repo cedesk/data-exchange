@@ -1,9 +1,7 @@
-package ru.skoltech.cedl.dataexchange.structure;
+package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ModificationTimestamped;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;

@@ -1,7 +1,5 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.function.Predicate;

@@ -2,7 +2,7 @@ package ru.skoltech.cedl.dataexchange.repository;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.units.model.Prefix;
 import ru.skoltech.cedl.dataexchange.units.model.QuantityKind;
