@@ -101,6 +101,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private ParameterModel originalParameterModel;
 
+    private ParameterModel valueLinkParameter;
+
     private ModelEditingController.ParameterUpdateListener updateListener;
 
     public ParameterEditor() {
@@ -131,9 +133,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             }
         });
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
-        referenceSelectorGroup.disableProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.REFERENCE));
-        linkSelectorGroup.disableProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.LINK));
-        valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
+        referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
+        linkSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
+        valueText.disableProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.MANUAL));
+        unitChoiceBox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
         isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
         valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty().not());
         exportSelectorGroup.disableProperty().bind(isExportedCheckbox.selectedProperty().not());
@@ -185,6 +188,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private void updateView(ParameterModel localParameterModel) {
         parameterBean.setBean(localParameterModel);
+        valueLinkParameter = localParameterModel.getValueLink();
         natureChoiceBox.valueProperty().setValue(localParameterModel.getNature());
         valueSourceChoiceBox.valueProperty().setValue(localParameterModel.getValueSource());
         unitChoiceBox.valueProperty().setValue(localParameterModel.getUnit());
@@ -250,6 +254,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         ModelNode parameterOwningNode = originalParameterModel.getParent();
         SystemModel systemModel = findRoot(parameterOwningNode);
 
+        // filter list of parameters
         List<ParameterModel> parameters = new LinkedList<>();
         Iterator<ParameterModel> pmi = systemModel.parametersTreeIterator();
         pmi.forEachRemaining(parameter -> {
@@ -259,12 +264,12 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             }
         });
 
-        Dialog<ParameterModel> dialog = new ParameterChooser(parameters);
+        Dialog<ParameterModel> dialog = new ParameterChooser(parameters, valueLinkParameter);
 
         Optional<ParameterModel> parameterChoice = dialog.showAndWait();
         if (parameterChoice.isPresent()) {
-            ParameterModel parameterModel = parameterChoice.get();
-            parameterLinkText.setText(parameterModel.getNodePath());
+            valueLinkParameter = parameterChoice.get();
+            parameterLinkText.setText(valueLinkParameter.getNodePath());
         } else {
             parameterLinkText.setText(null);
         }
@@ -301,6 +306,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             parameterModel.setNature(natureChoiceBox.getValue());
             parameterModel.setValueSource(valueSourceChoiceBox.getValue());
             parameterModel.setUnit(unitChoiceBox.getValue());
+            parameterModel.setValueLink(valueLinkParameter);
 
             if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
                 parameterModel.setValueReference(null);

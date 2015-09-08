@@ -34,7 +34,7 @@ public class ParameterChooser extends ChoiceDialog<ParameterModel> {
     @FXML
     private TextArea descriptionText;
 
-    public ParameterChooser(Collection<ParameterModel> choices) {
+    public ParameterChooser(Collection<ParameterModel> choices, ParameterModel defaultValue) {
         nodeParametersMap = choices.stream().collect(Collectors.groupingBy(ParameterModel::getParent));
 
         // load layout
@@ -105,5 +105,9 @@ public class ParameterChooser extends ChoiceDialog<ParameterModel> {
                 }
             }
         });
+        if (defaultValue != null) {
+            subsystemChoiceBox.getSelectionModel().select(defaultValue.getParent());
+            parameterChoiceBox.getSelectionModel().select(defaultValue);
+        }
     }
 }
