@@ -17,7 +17,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import javafx.util.StringConverter;
 import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -254,35 +253,14 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     public void chooseParameter(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.PARAMETER_SELECTOR);
-            Parent root = loader.load();
+        Dialog<ParameterModel> dialog = new ParameterChooser(originalParameterModel.getParent().getParameters());
 
-            Dialog<ParameterModel> dialog = new Dialog<>();
-            dialog.setTitle("Link Selector");
-            dialog.setHeaderText("Choose a parameter from another subsystem.");
-            dialog.setResizable(true);
-            dialog.getDialogPane().setContent(root);
-            dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
-            dialog.setResultConverter(new Callback<ButtonType, ParameterModel>() {
-                @Override
-                public ParameterModel call(ButtonType buttonType) {
-                    if(buttonType == ButtonType.OK) {
-                        // TODO create parameter
-                    }
-                    return null;
-                }
-            });
-            Optional<ParameterModel> parameterChoice = dialog.showAndWait();
-            if(parameterChoice.isPresent()) {
-                ParameterModel parameterModel = parameterChoice.get();
-                parameterLinkText.setText(parameterModel.getNodePath());
-            } else {
-                parameterLinkText.setText(null);
-            }
-        } catch (IOException e) {
-            logger.error(e);
+        Optional<ParameterModel> parameterChoice = dialog.showAndWait();
+        if (parameterChoice.isPresent()) {
+            ParameterModel parameterModel = parameterChoice.get();
+            parameterLinkText.setText(parameterModel.getNodePath());
+        } else {
+            parameterLinkText.setText(null);
         }
     }
 

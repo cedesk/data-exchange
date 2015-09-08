@@ -30,7 +30,6 @@ import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -139,7 +138,7 @@ public class ModelEditingController implements Initializable {
         parameterUnitColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
-                if(param != null && param.getValue() != null && param.getValue().getUnit() != null) {
+                if (param != null && param.getValue() != null && param.getValue().getUnit() != null) {
                     return new SimpleStringProperty(param.getValue().getUnit().asText());
                 } else {
                     return new SimpleStringProperty();
