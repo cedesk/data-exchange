@@ -2,6 +2,8 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 27.07.2015.
@@ -10,15 +12,19 @@ public class ParameterTreeIterator implements Iterator<ParameterModel> {
     private LinkedList<ParameterModel> list = new LinkedList<ParameterModel>();
 
     public ParameterTreeIterator(ModelNode modelNode) {
-        buildList(modelNode);
+        buildList(modelNode, node -> true);
     }
 
-    private void buildList(ModelNode modelNode) {
-        list.addAll(modelNode.getParameters());
+    public ParameterTreeIterator(ModelNode modelNode, Predicate<ParameterModel> filter) {
+        buildList(modelNode, filter);
+    }
+
+    private void buildList(ModelNode modelNode, Predicate<ParameterModel> filter) {
+        list.addAll(modelNode.getParameters().stream().filter(filter).collect(Collectors.toList()));
         if (modelNode instanceof CompositeModelNode) {
             CompositeModelNode<ModelNode> compositeModelNode = (CompositeModelNode<ModelNode>) modelNode;
             for (ModelNode child : compositeModelNode.getSubNodes()) {
-                buildList(child);
+                buildList(child, filter);
             }
         }
     }
