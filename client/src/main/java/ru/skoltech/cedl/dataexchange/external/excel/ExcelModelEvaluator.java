@@ -5,7 +5,7 @@ import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelEvaluator;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 
 import java.io.IOException;
 import java.io.InputStream;

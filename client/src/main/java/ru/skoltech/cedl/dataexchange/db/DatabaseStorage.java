@@ -8,7 +8,7 @@ import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;

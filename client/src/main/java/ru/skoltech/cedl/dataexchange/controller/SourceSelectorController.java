@@ -20,7 +20,7 @@ import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetFactory;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;

@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;

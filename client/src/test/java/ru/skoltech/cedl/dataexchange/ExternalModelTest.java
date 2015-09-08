@@ -8,7 +8,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;

@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.view.ChangeType;

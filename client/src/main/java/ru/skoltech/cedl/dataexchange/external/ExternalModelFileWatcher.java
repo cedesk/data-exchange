@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.file.DirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.file.SimpleDirectoryWatchService;
-import ru.skoltech.cedl.dataexchange.structure.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 
 import java.io.File;
 import java.io.IOException;
