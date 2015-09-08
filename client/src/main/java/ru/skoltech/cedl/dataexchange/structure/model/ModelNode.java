@@ -151,32 +151,6 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         return getParameterMap().containsKey(parameterName);
     }
 
-    public void diffParameters(ModelNode otherModelNode) {
-        if (otherModelNode == null) return;
-        Set<ParameterModel> diff = Utils.symmetricDiffTwoLists(this.getParameters(), otherModelNode.getParameters());
-
-        Map<String, ParameterModel> thisParameterMap = getParameterMap();
-        Map<String, ParameterModel> otherModelNodeParameterMap = otherModelNode.getParameterMap();
-
-        for (ParameterModel param : diff) {
-            String n = param.getName();
-            ParameterModel diffParam = null;
-            if (thisParameterMap.containsKey(n) &&
-                    otherModelNodeParameterMap.containsKey(n)) {
-                diffParam = thisParameterMap.get(n);
-                diffParam.setServerValue(otherModelNodeParameterMap.get(n).getValue());
-            } else if (thisParameterMap.containsKey(n)) {
-                diffParam = thisParameterMap.get(n);
-                diffParam.setServerValue(null);
-            } else if (otherModelNodeParameterMap.containsKey(n)) {
-                diffParam = new ParameterModel(otherModelNodeParameterMap.get(n).getName(), null);
-                diffParam.setServerValue(otherModelNodeParameterMap.get(n).getValue());
-                // TODO: This parameter needs to be removed from the model after the user exits the diff view.
-                addParameter(diffParam);
-            }
-        }
-    }
-
     @Transient
     public String getNodePath() {
         return isRootNode() ? name : parent.getNodePath() + NODE_SEPARATOR + name;

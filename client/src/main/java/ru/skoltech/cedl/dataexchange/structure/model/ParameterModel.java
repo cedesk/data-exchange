@@ -43,9 +43,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @XmlJavaTypeAdapter(value = UnitAdapter.class)
     private Unit unit;
 
-    @XmlTransient
-    private Double serverValue;
-
     @XmlAttribute
     private ParameterNature nature = DEFAULT_NATURE;
 
@@ -141,15 +138,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public void setUnit(Unit unit) {
         this.unit = unit;
-    }
-
-    @Transient
-    public Double getServerValue() {
-        return serverValue;
-    }
-
-    public void setServerValue(Double serverValue) {
-        this.serverValue = serverValue;
     }
 
     public ParameterNature getNature() {
