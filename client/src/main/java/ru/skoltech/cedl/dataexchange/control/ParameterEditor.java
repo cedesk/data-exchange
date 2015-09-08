@@ -26,10 +26,7 @@ import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
 import ru.skoltech.cedl.dataexchange.view.Views;
@@ -37,10 +34,7 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -253,7 +247,19 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     public void chooseParameter(ActionEvent actionEvent) {
-        Dialog<ParameterModel> dialog = new ParameterChooser(originalParameterModel.getParent().getParameters());
+        ModelNode parameterOwningNode = originalParameterModel.getParent();
+        SystemModel systemModel = findRoot(parameterOwningNode);
+
+        List<ParameterModel> parameters = new LinkedList<>();
+        Iterator<ParameterModel> pmi = systemModel.parametersTreeIterator();
+        pmi.forEachRemaining(parameter -> {
+            if (parameter.getParent() != parameterOwningNode &&
+                    parameter.getNature() == ParameterNature.OUTPUT) {
+                parameters.add(parameter);
+            }
+        });
+
+        Dialog<ParameterModel> dialog = new ParameterChooser(parameters);
 
         Optional<ParameterModel> parameterChoice = dialog.showAndWait();
         if (parameterChoice.isPresent()) {
@@ -261,6 +267,14 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             parameterLinkText.setText(parameterModel.getNodePath());
         } else {
             parameterLinkText.setText(null);
+        }
+    }
+
+    private SystemModel findRoot(ModelNode modelNode) {
+        if (modelNode.getParent() == null) {
+            return (SystemModel) modelNode;
+        } else {
+            return findRoot(modelNode.getParent());
         }
     }
 
