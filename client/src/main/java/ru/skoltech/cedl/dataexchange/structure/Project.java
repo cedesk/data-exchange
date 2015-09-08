@@ -67,6 +67,8 @@ public class Project {
 
     private ExternalModelFileHandler externalModelFileHandler;
 
+    private final ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
+
     public Project() {
         this(DEFAULT_PROJECT_NAME);
     }
@@ -268,6 +270,7 @@ public class Project {
 
     public boolean storeLocalStudy() {
         try {
+            updateParameterValuesFromLinks();
             exportValuesToExternalModels();
             storeChangedExternalModels();
             Study study = repository.storeStudy(this.study);
@@ -284,6 +287,10 @@ public class Project {
             logger.error("Error storing study!", e);
         }
         return false;
+    }
+
+    private void updateParameterValuesFromLinks() {
+        parameterLinkRegistry.updateAll();
     }
 
     private void exportValuesToExternalModels() {
@@ -342,8 +349,13 @@ public class Project {
             setLatestLoadedModification(latestMod.getTime());
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
             initializeStateOfExternalModels();
+            registerParameterLinks();
         }
         return study != null;
+    }
+
+    private void registerParameterLinks() {
+        parameterLinkRegistry.registerAllParameters(getSystemModel());
     }
 
     private void initializeStateOfExternalModels() {
@@ -427,6 +439,7 @@ public class Project {
         setRepositoryStudy(null);
         externalModelFileWatcher.clear();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+        parameterLinkRegistry.clear();
 
         UserRoleManagement userRoleManagement;
         userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
