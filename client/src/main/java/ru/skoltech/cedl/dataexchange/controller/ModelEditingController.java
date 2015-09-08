@@ -59,7 +59,7 @@ public class ModelEditingController implements Initializable {
     private TextField externalModelFilePath;
 
     @FXML
-    private TableColumn<ParameterModel, Object> parameterValueColumn;
+    private TableColumn<ParameterModel, String> parameterValueColumn;
 
     @FXML
     private TableColumn<ParameterModel, String> parameterUnitColumn;
@@ -129,10 +129,14 @@ public class ModelEditingController implements Initializable {
 
         // NODE PARAMETER TABLE
         parameterTable.editableProperty().bind(selectedNodeIsEditable);
-        parameterValueColumn.setCellFactory(new Callback<TableColumn<ParameterModel, Object>, TableCell<ParameterModel, Object>>() {
+        parameterValueColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
             @Override
-            public TableCell<ParameterModel, Object> call(TableColumn<ParameterModel, Object> param) {
-                return new ParameterFieldCell(new DoubleStringConverter());
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
+                if(param != null) {
+                    return new SimpleStringProperty(String.valueOf(param.getValue().getValue()));
+                } else {
+                    return new SimpleStringProperty();
+                }
             }
         });
         parameterUnitColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
@@ -189,10 +193,7 @@ public class ModelEditingController implements Initializable {
     private void updateParameterTable(TreeItem<ModelNode> treeItem) {
         int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
 
-        StructureTreeItem item = (StructureTreeItem) treeItem;
-        ModelNode modelNode = item.getValue();
-        // TODO: fix preparation of remote parameters for display
-        modelNode.diffParameters(item.getRemoteValue());
+        ModelNode modelNode = treeItem.getValue();
         boolean showOnlyOutputParameters = !selectedNodeIsEditable.getValue();
         viewParameters.displayParameters(modelNode.getParameters(), showOnlyOutputParameters);
         logger.debug("updateParameterTable " + showOnlyOutputParameters + " #" + viewParameters.getItems().size());
