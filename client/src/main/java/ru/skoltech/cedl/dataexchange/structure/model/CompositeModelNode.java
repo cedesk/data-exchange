@@ -72,23 +72,6 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
         return subNodes.isEmpty();
     }
 
-    public void diffSubNodes(CompositeModelNode<SUBNODES> otherModelNode) {
-        super.diffParameters(otherModelNode);
-        Map<String, ModelNode> otherModelSubNodesMap = otherModelNode.getSubNodesMap();
-
-        for (SUBNODES subSystemModel : subNodes) {
-            String name = subSystemModel.getName();
-            if (otherModelSubNodesMap.containsKey(name)) {
-                ModelNode compareTo = otherModelSubNodesMap.get(name);
-                if (subSystemModel instanceof CompositeModelNode && compareTo instanceof CompositeModelNode) {
-                    ((CompositeModelNode) subSystemModel).diffSubNodes((CompositeModelNode) compareTo);
-                } else {
-                    subSystemModel.diffParameters(compareTo);
-                }
-            }
-        }
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (super.equals(obj)) {
