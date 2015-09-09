@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import org.apache.log4j.Logger;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,7 +12,9 @@ import java.util.Map;
  */
 public class ParameterLinkRegistry {
 
-    private Map<ParameterModel, List<ParameterModel>> valueLinks = new HashMap<>();
+    private Logger logger = Logger.getLogger(ParameterLinkRegistry.class);
+
+    private Map<String, List<ParameterModel>> valueLinks = new HashMap<>();
 
     public ParameterLinkRegistry() {
     }
@@ -27,33 +31,52 @@ public class ParameterLinkRegistry {
     }
 
     public void addLink(ParameterModel source, ParameterModel sink) {
-        if (valueLinks.containsKey(source)) {
-            valueLinks.get(source).add(sink);
+        logger.debug("source '" + source.getNodePath() + "' is now linked by sink '" + sink.getNodePath() + "'");
+        String sourceId = source.getNodePath();
+        if (valueLinks.containsKey(sourceId)) {
+            valueLinks.get(sourceId).add(sink);
         } else {
             List<ParameterModel> sinks = new LinkedList<>();
             sinks.add(sink);
-            valueLinks.put(source, sinks);
+            valueLinks.put(sourceId, sinks);
         }
     }
 
-    public void updateAll() {
-        valueLinks.keySet().forEach(this::updateSinks);
+    public void updateAll(SystemModel systemModel) {
+        ParameterTreeIterator pmi = new ParameterTreeIterator(systemModel,
+                sink -> sink.getNature() == ParameterNature.INPUT &&
+                        sink.getValueSource() == ParameterValueSource.LINK &&
+                        sink.getValueLink() != null);
+        pmi.forEachRemaining(sink -> {
+            updateSinks(sink.getValueLink());
+        });
+        //valueLinks.keySet().forEach(this::updateSinks);
     }
 
     public void updateSinks(ParameterModel source) {
-        if (valueLinks.containsKey(source)) {
-            List<ParameterModel> parameterModels = valueLinks.get(source);
+        String sourceId = source.getNodePath();
+        if (valueLinks.containsKey(sourceId)) {
+            List<ParameterModel> parameterModels = valueLinks.get(sourceId);
             for (ParameterModel parameterModel : parameterModels) {
-                parameterModel.setValue(source.getValue());
-                parameterModel.setUnit(source.getUnit());
-                // TODO: notify UI ?
+                if (parameterModel.getValueLink() == source) {
+                    parameterModel.setValue(source.getValue());
+                    parameterModel.setUnit(source.getUnit());
+                    // TODO: notify UI ?
+                } else {
+                    logger.error("model changed, sink '" + parameterModel.getNodePath() + "' no longer referencing '" + source.getNodePath() + "'");
+                }
             }
         }
     }
 
     public void removeLink(ParameterModel source, ParameterModel sink) {
-        if (valueLinks.containsKey(source)) {
-            valueLinks.get(source).remove(sink);
+        String sourceId = source.getNodePath();
+        if (valueLinks.containsKey(sourceId)) {
+            List<ParameterModel> sinks = valueLinks.get(sourceId);
+            sinks.remove(sink);
+            if (sinks.isEmpty()) {
+                valueLinks.remove(sourceId);
+            }
         }
     }
 

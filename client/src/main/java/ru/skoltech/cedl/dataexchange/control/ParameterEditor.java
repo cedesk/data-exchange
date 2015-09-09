@@ -21,6 +21,7 @@ import javafx.util.StringConverter;
 import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
 import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
@@ -256,8 +257,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
         // filter list of parameters
         List<ParameterModel> parameters = new LinkedList<>();
-        Iterator<ParameterModel> pmi = systemModel.parametersTreeIterator();
-        pmi.forEachRemaining(parameter -> {
+        systemModel.parametersTreeIterator().forEachRemaining(parameter -> {
             if (parameter.getParent() != parameterOwningNode &&
                     parameter.getNature() == ParameterNature.OUTPUT) {
                 parameters.add(parameter);
@@ -270,8 +270,14 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         if (parameterChoice.isPresent()) {
             valueLinkParameter = parameterChoice.get();
             parameterLinkText.setText(valueLinkParameter.getNodePath());
+            ProjectContext.getInstance().getProject().getParameterLinkRegistry().addLink(valueLinkParameter, originalParameterModel);
+            valueText.setText(String.valueOf(valueLinkParameter.getValue()));
+            unitChoiceBox.setValue(valueLinkParameter.getUnit());
         } else {
             parameterLinkText.setText(null);
+            if(valueLinkParameter != null) {
+                ProjectContext.getInstance().getProject().getParameterLinkRegistry().removeLink(valueLinkParameter, originalParameterModel);
+            }
         }
     }
 
@@ -311,6 +317,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
                 parameterModel.setValueReference(null);
             }
+            if (parameterModel.getValueSource() != ParameterValueSource.LINK) {
+                parameterModel.setValueLink(null);
+            }
             if (!parameterModel.getIsExported()) {
                 parameterModel.setExportReference(null);
             }
@@ -324,6 +333,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 logger.error("error copying parameter model", e);
             }
+            ProjectContext.getInstance().getProject().getParameterLinkRegistry().updateSinks(originalParameterModel);
+
             project.markStudyModified();
         }
     }
