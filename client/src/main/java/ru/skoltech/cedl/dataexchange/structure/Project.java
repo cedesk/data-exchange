@@ -290,7 +290,7 @@ public class Project {
     }
 
     private void updateParameterValuesFromLinks() {
-        parameterLinkRegistry.updateAll();
+        parameterLinkRegistry.updateAll(getSystemModel());
     }
 
     private void exportValuesToExternalModels() {
@@ -477,6 +477,10 @@ public class Project {
 
     public boolean isStudyInRepository() {
         return repositoryStateMachine.wasLoadedOrSaved();
+    }
+
+    public ParameterLinkRegistry getParameterLinkRegistry() {
+        return parameterLinkRegistry;
     }
 
     private class AccessChecker implements Predicate<ModelNode> {
