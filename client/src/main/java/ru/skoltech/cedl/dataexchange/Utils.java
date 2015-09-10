@@ -1,8 +1,12 @@
 package ru.skoltech.cedl.dataexchange;
 
+import org.apache.commons.beanutils.PropertyUtils;
+import org.jboss.logging.Logger;
+
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
 
 /**
  * Created by D.Knoll on 12.03.2015.
@@ -10,8 +14,8 @@ import java.util.*;
 public class Utils {
 
     public static final DateFormat TIME_AND_DATE_FOR_FILENAMES = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
-
     public static final DateFormat TIME_AND_DATE_FOR_USER_INTERFACE = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final Logger logger = Logger.getLogger(Utils.class);
 
     public static String getUserName() {
         String userName = System.getProperty("user.name");
@@ -23,15 +27,12 @@ public class Utils {
         return TIME_AND_DATE_FOR_FILENAMES.format(now);
     }
 
-    public static <T extends Comparable<T>> Set<T> symmetricDiffTwoLists(List<T> l1,
-                                                                         List<T> l2) {
-        Set<T> symDiff = new TreeSet<T>(Comparator.<T>naturalOrder());
-        symDiff.addAll(l1);
-        symDiff.addAll(l2);
-        Set<T> intersection = new TreeSet<>(Comparator.<T>naturalOrder());
-        intersection.addAll(l1);
-        intersection.retainAll(l2);
-        symDiff.removeAll(intersection);
-        return symDiff;
+    public static <T> T copyBean(T source, T target) {
+        try {
+            PropertyUtils.copyProperties(target, source);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            logger.error("error copying bean " + source.toString(), e);
+        }
+        return target;
     }
 }
