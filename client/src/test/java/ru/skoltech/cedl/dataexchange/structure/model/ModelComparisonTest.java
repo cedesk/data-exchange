@@ -2,7 +2,9 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.junit.Assert;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
 
 /**
  * Created by D.Knoll on 08.07.2015.
@@ -47,11 +49,13 @@ public class ModelComparisonTest {
     public void equals4() {
         SystemModel s1 = new SystemModel();
         s1.setName("SA");
-        s1.addParameter(new ParameterModel("p1", 3.1415));
+        ParameterModel p1a = new ParameterModel("p1", 3.1415);
+        s1.addParameter(p1a);
 
         SystemModel s2 = new SystemModel();
         s2.setName("SA");
-        s2.addParameter(new ParameterModel("p1", 3.1415));
+        ParameterModel p1b = Utils.copyBean(p1a, new ParameterModel());
+        s2.addParameter(p1b);
 
         Assert.assertEquals(s1, s2);
     }

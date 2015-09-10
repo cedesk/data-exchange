@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.Utils;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -50,15 +51,16 @@ public class ModelNodeTest {
     @Test
     public void testEqualsSystems() throws Exception {
         SystemModel m1 = new SystemModel("system 1");
-        SystemModel m2 = new SystemModel("system 1");
+        SystemModel m2 = Utils.copyBean(m1, new SystemModel());
         assertTrue(m1.equals(m2));
 
         m2 = new SystemModel("system 2");
         assertFalse(m1.equals(m2));
 
-        m1.addParameter(new ParameterModel("alpha", 1.0));
+        ParameterModel p1 = new ParameterModel("alpha", 1.0);
+        m1.addParameter(p1);
         m2 = new SystemModel("system 1");
-        m2.addParameter(new ParameterModel("alpha", 1.0));
+        m2.addParameter(Utils.copyBean(p1, new ParameterModel()));
         assertTrue(m1.equals(m2));
 
         m2.addParameter(new ParameterModel("beta", 1.0));
@@ -74,7 +76,7 @@ public class ModelNodeTest {
     @Test
     public void testEqualsSubSystems() throws Exception {
         SubSystemModel m1 = new SubSystemModel("subsystem 1");
-        SubSystemModel m2 = new SubSystemModel("subsystem 1");
+        SubSystemModel m2 = Utils.copyBean(m1, new SubSystemModel());
         assertTrue(m1.equals(m2));
 
         m2 = new SubSystemModel("subsystem 2");
@@ -84,7 +86,7 @@ public class ModelNodeTest {
     @Test
     public void testEqualsElements() throws Exception {
         ElementModel m1 = new ElementModel("element 1");
-        ElementModel m2 = new ElementModel("element 1");
+        ElementModel m2 = Utils.copyBean(m1, new ElementModel());
         assertTrue(m1.equals(m2));
 
         m2 = new ElementModel("element 2");
@@ -94,7 +96,7 @@ public class ModelNodeTest {
     @Test
     public void testEqualsInstruments() throws Exception {
         InstrumentModel m1 = new InstrumentModel("instrument 1");
-        InstrumentModel m2 = new InstrumentModel("instrument 1");
+        InstrumentModel m2 = Utils.copyBean(m1, new InstrumentModel());
         assertTrue(m1.equals(m2));
 
         m2 = new InstrumentModel("instrument 2");
