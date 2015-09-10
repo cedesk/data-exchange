@@ -19,13 +19,13 @@ public class DummySystemBuilder {
 
     public static final int DEFAULT_MODEL_DEPTH = 2;
 
+    private static int systemsCnt = 1;
+
     private static int parameterCnt = 1;
 
     private static int elementCnt = 1;
 
     private static int instrumentCnt = 1;
-
-    private static UnitManagement unitManagement = UnitManagementFactory.getUnitManagement();
 
     public static List<Integer> getValidModelDepths() {
         Integer[] values = new Integer[MAX_MODEL_DEPTH - MIN_MODEL_DEPTH + 1];
@@ -39,16 +39,18 @@ public class DummySystemBuilder {
         if (modelDepth < MIN_MODEL_DEPTH || modelDepth > MAX_MODEL_DEPTH)
             throw new IllegalArgumentException("model depth must be >= " + MIN_MODEL_DEPTH + " and <=" + MAX_MODEL_DEPTH);
 
-        SystemModel system = new SystemModel("Spacecraft " + getRandomInt());
+        SystemModel system = new SystemModel("Spacecraft " + systemsCnt++);
         system.addParameter(getMassParameter());
         system.addParameter(getPowerParameter());
 
         if (modelDepth < 2) return system;
-        system.addSubNode(getSubSystem("Power", modelDepth - 1));
-        system.addSubNode(getSubSystem("AOCS", modelDepth - 1));
-        system.addSubNode(getSubSystem("Thermal", modelDepth - 1));
-        system.addSubNode(getSubSystem("Orbit", modelDepth - 1));
+        system.addSubNode(getSubSystem("Mission", modelDepth - 1));
         system.addSubNode(getSubSystem("Payload", modelDepth - 1));
+        system.addSubNode(getSubSystem("Orbit", modelDepth - 1));
+        system.addSubNode(getSubSystem("Structure", modelDepth - 1));
+        system.addSubNode(getSubSystem("Power", modelDepth - 1));
+        system.addSubNode(getSubSystem("Thermal", modelDepth - 1));
+        system.addSubNode(getSubSystem("AOCS", modelDepth - 1));
         system.addSubNode(getSubSystem("Communication", modelDepth - 1));
         return system;
     }
@@ -157,8 +159,4 @@ public class DummySystemBuilder {
         return (int) (Math.random() * 100);
     }
 
-    private static Unit getNoUnit() {
-        Unit unit = unitManagement.findUnit("No Unit [U]");
-        return unit;
-    }
 }
