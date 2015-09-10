@@ -10,11 +10,12 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-@XmlType(propOrder = {"name", "value", "nature", "valueSource", "unit", "isExported", "lastModification", "valueReference", "valueLink", "exportReference", "description"})
+@XmlType(propOrder = {"name", "value", "nature", "valueSource", "unit", "isExported", "isReferenceValueOverridden", "lastModification", "uuid", "valueReference", "valueLink", "exportReference", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
@@ -31,6 +32,10 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @XmlTransient
     private long id;
+
+    @XmlID
+    @XmlAttribute
+    private String uuid = UUID.randomUUID().toString();
 
     @XmlAttribute
     private String name;
@@ -50,6 +55,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     private ExternalModelReference valueReference;
 
+    @XmlIDREF
     private ParameterModel valueLink;
 
     @XmlTransient
@@ -110,6 +116,14 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     @Column(nullable = false)
@@ -318,6 +332,10 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public Map<String, String> diff(ParameterModel other) {
         Map<String, String> diff = new HashMap<>();
+        if ((this.uuid == null && other.uuid != null) || (this.uuid != null && other.uuid == null)
+                || (this.uuid != null && !this.uuid.equals(other.uuid))) {
+            diff.put("uuid", other.uuid);
+        }
         if ((this.name == null && other.name != null) || (this.name != null && other.name == null)
                 || (this.name != null && !this.name.equals(other.name))) {
             diff.put("name", other.name);
@@ -382,6 +400,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
         ParameterModel that = (ParameterModel) o;
 
+        if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
         if (isReferenceValueOverridden != that.isReferenceValueOverridden) return false;
@@ -403,18 +422,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @Override
     public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (isReferenceValueOverridden ? 1 : 0);
-        result = 31 * result + (overrideValue != null ? overrideValue.hashCode() : 0);
-        result = 31 * result + (unit != null ? unit.hashCode() : 0);
-        result = 31 * result + (nature != null ? nature.hashCode() : 0);
-        result = 31 * result + (valueSource != null ? valueSource.hashCode() : 0);
-        result = 31 * result + (getValueReference() != null ? getValueReference().hashCode() : 0);
-        result = 31 * result + (valueLink != null ? valueLink.hashCode() : 0);
-        result = 31 * result + (isExported ? 1 : 0);
-        result = 31 * result + (getExportReference() != null ? getExportReference().hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
+        int result = uuid != null ? uuid.hashCode() : 0;
         return result;
     }
 
@@ -435,6 +443,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         sb.append(", description='").append(description).append('\'');
         sb.append(", version=").append(version);
         sb.append(", lastModification='").append(lastModification).append('\'');
+        sb.append(", uuid='").append(uuid).append('\'');
         sb.append('}');
         return sb.toString();
     }
