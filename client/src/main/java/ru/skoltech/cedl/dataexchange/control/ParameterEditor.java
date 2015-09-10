@@ -22,6 +22,7 @@ import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
 import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
@@ -177,17 +178,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void setParameterModel(ParameterModel parameterModel) {
         this.originalParameterModel = parameterModel;
-
-        ParameterModel localParameterModel = new ParameterModel();
-        try {
-            PropertyUtils.copyProperties(localParameterModel, originalParameterModel);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            logger.error("error copying parameter model", e);
-        }
-        updateView(localParameterModel);
+        updateView(originalParameterModel);
     }
 
-    private void updateView(ParameterModel localParameterModel) {
+    private void updateView(ParameterModel parameterModel) {
+        ParameterModel localParameterModel = Utils.copyBean(parameterModel, new ParameterModel());
         parameterBean.setBean(localParameterModel);
         valueLinkParameter = localParameterModel.getValueLink();
         natureChoiceBox.valueProperty().setValue(localParameterModel.getNature());
@@ -296,13 +291,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     public void revertChanges(ActionEvent actionEvent) {
-        ParameterModel localParameterModel = new ParameterModel();
-        try {
-            PropertyUtils.copyProperties(localParameterModel, originalParameterModel);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            logger.error("error copying parameter model", e);
-        }
-        updateView(localParameterModel);
+        updateView(originalParameterModel);
     }
 
     private void updateModel() {
