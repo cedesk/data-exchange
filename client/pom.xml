@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.skoltech.cedl</groupId>
     <artifactId>dataexchange-client</artifactId>
-    <version>1.8-snapshot</version>
+    <version>1.8</version>
     <properties>
         <jar.final.name>cedesk-client</jar.final.name>
         <main.class>ru.skoltech.cedl.dataexchange.ClientApplication</main.class>
@@ -193,7 +193,7 @@
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <target name="copy JAR ro installation directory">
+                                    <target name="copy JAR to installation directory">
                                         <copy file="${project.build.directory}/cedesk-client.jar"
                                               tofile="${user.home}/AppData/Local/CEDESK/app/cedesk-client-jfx.jar"/>
                                     </target>
