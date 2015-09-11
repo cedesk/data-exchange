@@ -21,18 +21,22 @@ public class ParameterLinkRegistry {
 
     public void registerAllParameters(SystemModel systemModel) {
         clear();
-        ParameterTreeIterator pmi = new ParameterTreeIterator(systemModel,
-                sink -> sink.getNature() == ParameterNature.INPUT &&
-                        sink.getValueSource() == ParameterValueSource.LINK &&
-                        sink.getValueLink() != null);
+        ParameterTreeIterator pmi = getLinkedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
             addLink(sink.getValueLink(), sink);
         });
     }
 
+    public ParameterTreeIterator getLinkedParameters(SystemModel systemModel) {
+        return new ParameterTreeIterator(systemModel,
+                sink -> sink.getNature() == ParameterNature.INPUT &&
+                        sink.getValueSource() == ParameterValueSource.LINK &&
+                        sink.getValueLink() != null);
+    }
+
     public void addLink(ParameterModel source, ParameterModel sink) {
         logger.debug("sink '" + sink.getNodePath() + "' is linking to source '" + source.getNodePath() + "'");
-        String sourceId = source.getNodePath();
+        String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
             valueLinks.get(sourceId).add(sink);
         } else {
@@ -43,17 +47,14 @@ public class ParameterLinkRegistry {
     }
 
     public void updateAll(SystemModel systemModel) {
-        ParameterTreeIterator pmi = new ParameterTreeIterator(systemModel,
-                sink -> sink.getNature() == ParameterNature.INPUT &&
-                        sink.getValueSource() == ParameterValueSource.LINK &&
-                        sink.getValueLink() != null);
+        ParameterTreeIterator pmi = getLinkedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
             updateSinks(sink.getValueLink());
         });
     }
 
     public void updateSinks(ParameterModel source) {
-        String sourceId = source.getNodePath();
+        String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
             Set<ParameterModel> parameterModels = valueLinks.get(sourceId);
             for (ParameterModel parameterModel : parameterModels) {
@@ -70,7 +71,7 @@ public class ParameterLinkRegistry {
     }
 
     public void removeLink(ParameterModel source, ParameterModel sink) {
-        String sourceId = source.getNodePath();
+        String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
             Set<ParameterModel> sinks = valueLinks.get(sourceId);
             sinks.remove(sink);
