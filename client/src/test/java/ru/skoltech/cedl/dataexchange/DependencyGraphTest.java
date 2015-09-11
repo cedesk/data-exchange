@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange;
 
+import org.jgrapht.DirectedGraph;
 import org.junit.Assert;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
@@ -9,8 +10,6 @@ import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by dknoll on 11/09/15.
@@ -27,8 +26,8 @@ public class DependencyGraphTest {
 
         ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
         parameterLinkRegistry.registerAllParameters(systemModel);
-        Map<ModelNode, Set<ModelNode>> dependencies = parameterLinkRegistry.calculateModelDependencies();
-        Assert.assertEquals(4, dependencies.size());
+        DirectedGraph<ModelNode, ParameterLinkRegistry.MyEdge> dependencies = parameterLinkRegistry.calculateModelDependencies();
+        Assert.assertEquals(6, dependencies.vertexSet().size());
     }
 
 }

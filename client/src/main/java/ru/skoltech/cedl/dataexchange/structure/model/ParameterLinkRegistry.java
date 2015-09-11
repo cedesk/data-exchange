@@ -1,6 +1,9 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.apache.log4j.Logger;
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleDirectedGraph;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,7 +26,7 @@ public class ParameterLinkRegistry {
         pmi.forEachRemaining(sink -> {
             addLink(sink.getValueLink(), sink);
         });
-        Map<ModelNode, Set<ModelNode>> modelDependencies = calculateModelDependencies();
+        DirectedGraph<ModelNode, MyEdge> modelDependencies = calculateModelDependencies();
         printDependencies(modelDependencies);
     }
 
@@ -103,32 +106,46 @@ public class ParameterLinkRegistry {
         return result;
     }
 
-    public Map<ModelNode, Set<ModelNode>> calculateModelDependencies() {
-        Map<ModelNode, Set<ModelNode>> dependencies = new HashMap<>();
+    public DirectedGraph<ModelNode, MyEdge> calculateModelDependencies() {
+        DirectedGraph<ModelNode, MyEdge> dependencies = new SimpleDirectedGraph<ModelNode, MyEdge>(MyEdge.class);
+
         SystemModel systemModel = getSystem();
         ParameterTreeIterator pmi = getLinkedParameters(systemModel);
         pmi.forEachRemaining(valueSink -> {
             ModelNode from = valueSink.getParent();
             ParameterModel valueSource = valueSink.getValueLink();
             ModelNode to = valueSource.getParent();
-            if (dependencies.containsKey(from)) {
-                Set<ModelNode> tos = dependencies.get(from);
-                tos.add(to);
-            } else {
-                Set<ModelNode> tos = new TreeSet<>();
-                tos.add(to);
-                dependencies.put(from, tos);
-            }
+            dependencies.addVertex(from);
+            dependencies.addVertex(to);
+            dependencies.addEdge(from, to);
+
         });
         return dependencies;
     }
 
-    private void printDependencies(Map<ModelNode, Set<ModelNode>> modelDependencies) {
+
+    private void printDependencies(DirectedGraph<ModelNode, MyEdge> modelDependencies) {
         logger.info("DEPENDENCIES");
-        modelDependencies.forEach((toNode, fromNodes) -> {
-            String toName = toNode.getName();
-            String fromNodeNames = fromNodes.stream().map(ModelNode::getName).collect(Collectors.joining(", "));
-            logger.info(toName + " depends on " + fromNodeNames);
-        });
+        modelDependencies.vertexSet().stream()
+                .filter(toNode -> modelDependencies.inDegreeOf(toNode) > 0)
+                .forEach(toNode -> {
+                    String toName = toNode.getName();
+                    String fromNames = modelDependencies.incomingEdgesOf(toNode).stream().map(
+                            edge -> edge.getSource().getName()
+                    ).collect(Collectors.joining(", "));
+                    logger.info(toName + " depends on " + fromNames);
+                });
+    }
+
+    public static class MyEdge extends DefaultEdge {
+        @Override
+        protected ModelNode getSource() {
+            return (ModelNode) super.getSource();
+        }
+
+        @Override
+        protected ModelNode getTarget() {
+            return (ModelNode) super.getTarget();
+        }
     }
 }
