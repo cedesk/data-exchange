@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<systemModel name="djSat21">
+    <externalModels/>
+    <parameters>
+        <parameter name="mass" value="1.0" nature="OUTPUT" valueSource="MANUAL" unit="" isExported="true"
+                   isReferenceValueOverridden="false" lastModification="1441781156273"
+                   uuid="8b03fca8-57b0-11e5-8f47-28d24465b034">
+            <description></description>
+        </parameter>
+        <parameter name="power" value="600.0" nature="OUTPUT" valueSource="MANUAL" unit="Watt [W]" isExported="true"
+                   isReferenceValueOverridden="false" lastModification="1441871717344"
+                   uuid="8b03fcfa-57b0-11e5-8f47-28d24465b034">
+            <description></description>
+        </parameter>
+    </parameters>
+    <subNodes>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Power">
+            <externalModels/>
+            <parameters>
+                <parameter name="parameter1" value="47.0" nature="INPUT" valueSource="LINK" unit="Minute [min]"
+                           isExported="false" isReferenceValueOverridden="false" lastModification="1441871044567"
+                           uuid="8b03fd51-57b0-11e5-8f47-28d24465b034">
+                    <valueLink>8b03ff52-57b0-11e5-8f47-28d24465b034</valueLink>
+                    <description></description>
+                </parameter>
+                <parameter name="parameter2" value="61.0" nature="INPUT" valueSource="REFERENCE" unit=""
+                           isExported="true" isReferenceValueOverridden="false" lastModification="1441781156273"
+                           uuid="8b03fdab-57b0-11e5-8f47-28d24465b034">
+                    <description></description>
+                </parameter>
+            </parameters>
+            <subNodes/>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="AOCS">
+            <externalModels/>
+            <parameters>
+                <parameter name="parameter3" value="93.0" nature="INPUT" valueSource="REFERENCE" unit=""
+                           isExported="false" isReferenceValueOverridden="true" lastModification="1441781156273"
+                           uuid="8b03fe01-57b0-11e5-8f47-28d24465b034" overrideValue="9.0">
+                    <description></description>
+                </parameter>
+                <parameter name="parameter4" value="47.0" nature="INPUT" valueSource="REFERENCE" unit=""
+                           isExported="false" isReferenceValueOverridden="false" lastModification="1441781156273"
+                           uuid="8b03fe53-57b0-11e5-8f47-28d24465b034">
+                    <description></description>
+                </parameter>
+            </parameters>
+            <subNodes/>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Thermal">
+            <externalModels/>
+            <parameters>
+                <parameter name="parameter5" value="61.0" nature="INPUT" valueSource="REFERENCE" unit=""
+                           isExported="false" isReferenceValueOverridden="false" lastModification="1441781156273"
+                           uuid="8b03fea5-57b0-11e5-8f47-28d24465b034">
+                    <description></description>
+                </parameter>
+                <parameter name="parameter6" value="600.0" nature="INPUT" valueSource="LINK" unit="Watt [W]"
+                           isExported="false" isReferenceValueOverridden="true" lastModification="1441881446085"
+                           uuid="8b03fef7-57b0-11e5-8f47-28d24465b034" overrideValue="99.0">
+                    <valueLink>8b03fcfa-57b0-11e5-8f47-28d24465b034</valueLink>
+                    <description></description>
+                </parameter>
+            </parameters>
+            <subNodes/>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Orbit">
+            <externalModels/>
+            <parameters>
+                <parameter name="parameter7" value="47.0" nature="OUTPUT" valueSource="MANUAL" unit="Minute [min]"
+                           isExported="true" isReferenceValueOverridden="false" lastModification="1441871044567"
+                           uuid="8b03ff52-57b0-11e5-8f47-28d24465b034">
+                    <description></description>
+                </parameter>
+                <parameter name="parameter8" value="95.0" nature="INPUT" valueSource="LINK" unit="Kilometer [km]"
+                           isExported="true" isReferenceValueOverridden="false" lastModification="1441881446085"
+                           uuid="8b03ffa8-57b0-11e5-8f47-28d24465b034">
+                    <valueLink>8b040050-57b0-11e5-8f47-28d24465b034</valueLink>
+                    <description></description>
+                </parameter>
+            </parameters>
+            <subNodes/>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Payload">
+            <externalModels/>
+            <parameters>
+                <parameter name="parameter9" value="79.0" nature="INTERNAL" valueSource="REFERENCE" unit=""
+                           isExported="true" isReferenceValueOverridden="false" lastModification="1441881446085"
+                           uuid="8b03fffe-57b0-11e5-8f47-28d24465b034">
+                    <description></description>
+                </parameter>
+                <parameter name="parameter10" value="95.0" nature="OUTPUT" valueSource="REFERENCE" unit="Kilometer [km]"
+                           isExported="true" isReferenceValueOverridden="false" lastModification="1441871717344"
+                           uuid="8b040050-57b0-11e5-8f47-28d24465b034">
+                    <description></description>
+                </parameter>
+            </parameters>
+            <subNodes/>
+        </subNode>
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Communication">
+            <externalModels/>
+            <parameters>
+                <parameter name="parameter11" value="9.0" nature="INPUT" valueSource="MANUAL" unit="" isExported="false"
+                           isReferenceValueOverridden="false" lastModification="1441781156273"
+                           uuid="8b0402ac-57b0-11e5-8f47-28d24465b034">
+                    <description></description>
+                </parameter>
+                <parameter name="parameter12" value="47.0" nature="INPUT" valueSource="LINK" unit="Minute [min]"
+                           isExported="false" isReferenceValueOverridden="false" lastModification="1441881446085"
+                           uuid="8b040306-57b0-11e5-8f47-28d24465b034">
+                    <valueLink>8b03ff52-57b0-11e5-8f47-28d24465b034</valueLink>
+                    <description></description>
+                </parameter>
+            </parameters>
+            <subNodes/>
+        </subNode>
+    </subNodes>
+</systemModel>
