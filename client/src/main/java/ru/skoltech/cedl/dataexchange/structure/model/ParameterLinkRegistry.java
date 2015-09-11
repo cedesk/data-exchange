@@ -2,10 +2,8 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 08.09.2015.
@@ -25,9 +23,12 @@ public class ParameterLinkRegistry {
         pmi.forEachRemaining(sink -> {
             addLink(sink.getValueLink(), sink);
         });
+        Map<ModelNode, Set<ModelNode>> modelDependencies = calculateModelDependencies();
+        printDependencies(modelDependencies);
     }
 
     public ParameterTreeIterator getLinkedParameters(SystemModel systemModel) {
+        Objects.requireNonNull(systemModel);
         return new ParameterTreeIterator(systemModel,
                 sink -> sink.getNature() == ParameterNature.INPUT &&
                         sink.getValueSource() == ParameterValueSource.LINK &&
@@ -83,5 +84,51 @@ public class ParameterLinkRegistry {
 
     public void clear() {
         valueLinks.clear();
+    }
+
+    private SystemModel getSystem() {
+        ModelNode parent = null;
+        if (valueLinks.size() > 0) {
+            Set<ParameterModel> sinks = valueLinks.values().iterator().next();
+            ParameterModel sink = sinks.iterator().next();
+            parent = sink.getParent();
+        }
+        SystemModel result = null;
+        if (parent != null) {
+            while (parent.getParent() != null) {
+                parent = parent.getParent();
+            }
+            result = (SystemModel) parent;
+        }
+        return result;
+    }
+
+    public Map<ModelNode, Set<ModelNode>> calculateModelDependencies() {
+        Map<ModelNode, Set<ModelNode>> dependencies = new HashMap<>();
+        SystemModel systemModel = getSystem();
+        ParameterTreeIterator pmi = getLinkedParameters(systemModel);
+        pmi.forEachRemaining(valueSink -> {
+            ModelNode from = valueSink.getParent();
+            ParameterModel valueSource = valueSink.getValueLink();
+            ModelNode to = valueSource.getParent();
+            if (dependencies.containsKey(from)) {
+                Set<ModelNode> tos = dependencies.get(from);
+                tos.add(to);
+            } else {
+                Set<ModelNode> tos = new TreeSet<>();
+                tos.add(to);
+                dependencies.put(from, tos);
+            }
+        });
+        return dependencies;
+    }
+
+    private void printDependencies(Map<ModelNode, Set<ModelNode>> modelDependencies) {
+        logger.info("DEPENDENCIES");
+        modelDependencies.forEach((toNode, fromNodes) -> {
+            String toName = toNode.getName();
+            String fromNodeNames = fromNodes.stream().map(ModelNode::getName).collect(Collectors.joining(", "));
+            logger.info(toName + " depends on " + fromNodeNames);
+        });
     }
 }
