@@ -269,9 +269,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             valueText.setText(String.valueOf(valueLinkParameter.getValue()));
             unitChoiceBox.setValue(valueLinkParameter.getUnit());
         } else {
-            parameterLinkText.setText(null);
-            if(valueLinkParameter != null) {
+            if (valueLinkParameter != null) {
+                parameterLinkText.setText(valueLinkParameter.getNodePath());
                 ProjectContext.getInstance().getProject().getParameterLinkRegistry().removeLink(valueLinkParameter, originalParameterModel);
+            } else {
+                parameterLinkText.setText(null);
             }
         }
     }
