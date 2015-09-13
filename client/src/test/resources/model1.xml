@@ -1,158 +1,120 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<systemModel name="TestSpacecraft">
+<systemModel name="djSat21" uuid="34ed3c94-5a42-11e5-8f47-28d24465b034">
     <externalModels/>
     <parameters>
-        <parameter name="mass" value="19.0" unit="No Unit [U]" nature="OUTPUT" valueSource="MANUAL"
-                   isExported="true" isReferenceValueOverridden="false" uuid="a695ef59-6cfd-4381-82c5-2a42f7a092e9">
-            <exportReference target="B3"/>
+        <parameter name="mass" value="1.0" nature="OUTPUT" valueSource="MANUAL" unit="" isExported="true"
+                   isReferenceValueOverridden="false" lastModification="1441781156273"
+                   uuid="8b03fca8-57b0-11e5-8f47-28d24465b034">
             <description></description>
         </parameter>
-        <parameter name="power" value="52.0" unit="No Unit [U]" nature="OUTPUT" valueSource="MANUAL"
-                   isExported="true" isReferenceValueOverridden="false" uuid="3964edab-4103-48ff-9569-e4684bfb9bd9">
-            <exportReference target="D4"/>
+        <parameter name="power" value="600.0" nature="OUTPUT" valueSource="MANUAL" unit="Watt [W]" isExported="true"
+                   isReferenceValueOverridden="false" lastModification="1441871717344"
+                   uuid="8b03fcfa-57b0-11e5-8f47-28d24465b034">
             <description></description>
         </parameter>
     </parameters>
     <subNodes>
-        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Mission">
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Power"
+                 uuid="34ed3f14-5a42-11e5-8f47-28d24465b034">
             <externalModels/>
             <parameters>
-                <parameter name="parameter65" value="12.0" unit="No Unit [U]" nature="INPUT" valueSource="MANUAL"
-                           isExported="false" isReferenceValueOverridden="false"
-                           uuid="f09dbad2-f28f-4b61-81e3-1c051e05be66">
+                <parameter name="parameter1" value="47.0" nature="INPUT" valueSource="LINK" unit="Minute [min]"
+                           isExported="false" isReferenceValueOverridden="false" lastModification="1441871044567"
+                           uuid="8b03fd51-57b0-11e5-8f47-28d24465b034">
+                    <valueLink>8b03ff52-57b0-11e5-8f47-28d24465b034</valueLink>
                     <description></description>
                 </parameter>
-                <parameter name="parameter66" value="80.0" unit="No Unit [U]" nature="OUTPUT" valueSource="REFERENCE"
-                           isExported="false" isReferenceValueOverridden="false"
-                           uuid="9ba8b351-7fdc-4cc9-896a-1bf5f93e52ad">
-                    <valueReference target="A1"/>
+                <parameter name="parameter2" value="61.0" nature="INPUT" valueSource="REFERENCE" unit=""
+                           isExported="true" isReferenceValueOverridden="false" lastModification="1441781156273"
+                           uuid="8b03fdab-57b0-11e5-8f47-28d24465b034">
                     <description></description>
                 </parameter>
             </parameters>
             <subNodes/>
         </subNode>
-        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Payload">
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="AOCS"
+                 uuid="34ed3fd5-5a42-11e5-8f47-28d24465b034">
             <externalModels/>
             <parameters>
-                <parameter name="parameter67" value="69.0" unit="No Unit [U]" nature="OUTPUT" valueSource="MANUAL"
-                           isExported="false" isReferenceValueOverridden="false"
-                           uuid="274e8cf7-923b-4a7a-b216-2381ec4e8060">
+                <parameter name="parameter3" value="93.0" nature="INPUT" valueSource="REFERENCE" unit=""
+                           isExported="false" isReferenceValueOverridden="true" lastModification="1441781156273"
+                           uuid="8b03fe01-57b0-11e5-8f47-28d24465b034" overrideValue="9.0">
                     <description></description>
                 </parameter>
-                <parameter name="parameter68" value="25.0" unit="No Unit [U]" nature="INPUT" valueSource="REFERENCE"
-                           isExported="false" isReferenceValueOverridden="false"
-                           uuid="36c0de67-9120-42a1-9ee2-7a681341097d">
-                    <valueReference target="A1"/>
+                <parameter name="parameter4" value="47.0" nature="INPUT" valueSource="REFERENCE" unit=""
+                           isExported="false" isReferenceValueOverridden="false" lastModification="1441781156273"
+                           uuid="8b03fe53-57b0-11e5-8f47-28d24465b034">
                     <description></description>
                 </parameter>
             </parameters>
             <subNodes/>
         </subNode>
-        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Orbit">
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Thermal"
+                 uuid="34ed407a-5a42-11e5-8f47-28d24465b034">
             <externalModels/>
             <parameters>
-                <parameter name="parameter69" value="59.0" unit="No Unit [U]" nature="INPUT" valueSource="MANUAL"
-                           isExported="false" isReferenceValueOverridden="false"
-                           uuid="e691a96b-0383-4aac-b4e6-78637a4fb7fe">
+                <parameter name="parameter5" value="61.0" nature="INPUT" valueSource="REFERENCE" unit=""
+                           isExported="false" isReferenceValueOverridden="false" lastModification="1441781156273"
+                           uuid="8b03fea5-57b0-11e5-8f47-28d24465b034">
                     <description></description>
                 </parameter>
-                <parameter name="parameter70" value="64.0" unit="No Unit [U]" nature="INPUT" valueSource="MANUAL"
-                           isExported="true" isReferenceValueOverridden="false"
-                           uuid="9cfe60fd-654b-4007-8009-48c60c09152d">
-                    <exportReference target="Z9"/>
+                <parameter name="parameter6" value="600.0" nature="INPUT" valueSource="LINK" unit="Watt [W]"
+                           isExported="false" isReferenceValueOverridden="true" lastModification="1441881446085"
+                           uuid="8b03fef7-57b0-11e5-8f47-28d24465b034" overrideValue="99.0">
+                    <valueLink>8b03fcfa-57b0-11e5-8f47-28d24465b034</valueLink>
                     <description></description>
                 </parameter>
             </parameters>
             <subNodes/>
         </subNode>
-        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Structure">
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Orbit"
+                 uuid="34ed411a-5a42-11e5-8f47-28d24465b034">
             <externalModels/>
             <parameters>
-                <parameter name="parameter71" value="45.0" unit="No Unit [U]" nature="OUTPUT" valueSource="MANUAL"
-                           isExported="false" isReferenceValueOverridden="false"
-                           uuid="3c249b96-2600-40a9-81a0-e254e67e7c98">
+                <parameter name="parameter7" value="47.0" nature="OUTPUT" valueSource="MANUAL" unit="Minute [min]"
+                           isExported="true" isReferenceValueOverridden="false" lastModification="1441871044567"
+                           uuid="8b03ff52-57b0-11e5-8f47-28d24465b034">
                     <description></description>
                 </parameter>
-                <parameter name="parameter72" value="74.0" unit="No Unit [U]" nature="INPUT" valueSource="REFERENCE"
-                           isExported="true" isReferenceValueOverridden="false"
-                           uuid="2b708150-6c92-4a08-be5a-0de4391d27d2">
-                    <valueReference target="A1"/>
-                    <exportReference target="Z9"/>
+                <parameter name="parameter8" value="95.0" nature="INPUT" valueSource="LINK" unit="Kilometer [km]"
+                           isExported="true" isReferenceValueOverridden="false" lastModification="1441881446085"
+                           uuid="8b03ffa8-57b0-11e5-8f47-28d24465b034">
+                    <valueLink>8b040050-57b0-11e5-8f47-28d24465b034</valueLink>
                     <description></description>
                 </parameter>
             </parameters>
             <subNodes/>
         </subNode>
-        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Power">
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Payload"
+                 uuid="34ed41ba-5a42-11e5-8f47-28d24465b034">
             <externalModels/>
             <parameters>
-                <parameter name="parameter73" value="87.0" unit="No Unit [U]" nature="OUTPUT" valueSource="REFERENCE"
-                           isExported="false" isReferenceValueOverridden="false"
-                           uuid="93d64117-f6c1-4afb-a82b-5ba5ad3a77fd">
-                    <valueReference target="A1"/>
+                <parameter name="parameter9" value="79.0" nature="INTERNAL" valueSource="REFERENCE" unit=""
+                           isExported="true" isReferenceValueOverridden="false" lastModification="1441881446085"
+                           uuid="8b03fffe-57b0-11e5-8f47-28d24465b034">
                     <description></description>
                 </parameter>
-                <parameter name="parameter74" value="53.0" unit="No Unit [U]" nature="INPUT" valueSource="MANUAL"
-                           isExported="true" isReferenceValueOverridden="false"
-                           uuid="445db3a3-4ea5-463f-b28f-ffb4e08b2d58">
-                    <exportReference target="Z9"/>
+                <parameter name="parameter10" value="95.0" nature="OUTPUT" valueSource="REFERENCE" unit="Kilometer [km]"
+                           isExported="true" isReferenceValueOverridden="false" lastModification="1441871717344"
+                           uuid="8b040050-57b0-11e5-8f47-28d24465b034">
                     <description></description>
                 </parameter>
             </parameters>
             <subNodes/>
         </subNode>
-        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Thermal">
+        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Communication"
+                 uuid="34ed4256-5a42-11e5-8f47-28d24465b034">
             <externalModels/>
             <parameters>
-                <parameter name="parameter75" value="1.0" unit="No Unit [U]" nature="INPUT" valueSource="REFERENCE"
-                           isExported="true" isReferenceValueOverridden="true"
-                           uuid="6ac18c2b-fc99-42b7-ba77-85616bc1e066" overrideValue="79.0">
-                    <valueReference target="A1"/>
-                    <exportReference target="Z9"/>
+                <parameter name="parameter11" value="9.0" nature="INPUT" valueSource="MANUAL" unit="" isExported="false"
+                           isReferenceValueOverridden="false" lastModification="1441781156273"
+                           uuid="8b0402ac-57b0-11e5-8f47-28d24465b034">
                     <description></description>
                 </parameter>
-                <parameter name="parameter76" value="45.0" unit="No Unit [U]" nature="INPUT" valueSource="REFERENCE"
-                           isExported="true" isReferenceValueOverridden="true"
-                           uuid="dafd3f41-6eae-427b-a6e0-7fa1a8b80cd6" overrideValue="27.0">
-                    <valueReference target="A1"/>
-                    <exportReference target="Z9"/>
-                    <description></description>
-                </parameter>
-            </parameters>
-            <subNodes/>
-        </subNode>
-        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="AOCS">
-            <externalModels/>
-            <parameters>
-                <parameter name="parameter77" value="71.0" unit="No Unit [U]" nature="OUTPUT" valueSource="MANUAL"
-                           isExported="false" isReferenceValueOverridden="false"
-                           uuid="02e4f01e-7f6e-4f1f-b22c-4ce4e6606eee">
-                    <description></description>
-                </parameter>
-                <parameter name="parameter78" value="77.0" unit="No Unit [U]" nature="INPUT" valueSource="REFERENCE"
-                           isExported="true" isReferenceValueOverridden="false"
-                           uuid="4879cff9-bc52-4f3b-90b7-7560008c1bab">
-                    <valueReference target="A1"/>
-                    <exportReference target="Z9"/>
-                    <description></description>
-                </parameter>
-            </parameters>
-            <subNodes/>
-        </subNode>
-        <subNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="subSystemModel" name="Communication">
-            <externalModels/>
-            <parameters>
-                <parameter name="parameter79" value="84.0" unit="No Unit [U]" nature="INPUT" valueSource="MANUAL"
-                           isExported="true" isReferenceValueOverridden="false"
-                           uuid="6f9b4a49-781d-45c5-8548-32793feb2ae4">
-                    <exportReference target="Z9"/>
-                    <description></description>
-                </parameter>
-                <parameter name="parameter80" value="86.0" unit="No Unit [U]" nature="INPUT" valueSource="REFERENCE"
-                           isExported="true" isReferenceValueOverridden="true"
-                           uuid="d264f2b8-6591-4a4f-a5bb-0b15ccc86e1b" overrideValue="38.0">
-                    <valueReference target="A1"/>
-                    <exportReference target="Z9"/>
+                <parameter name="parameter12" value="47.0" nature="INPUT" valueSource="LINK" unit="Minute [min]"
+                           isExported="false" isReferenceValueOverridden="false" lastModification="1441881446085"
+                           uuid="8b040306-57b0-11e5-8f47-28d24465b034">
+                    <valueLink>8b03ff52-57b0-11e5-8f47-28d24465b034</valueLink>
                     <description></description>
                 </parameter>
             </parameters>

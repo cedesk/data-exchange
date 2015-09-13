@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 11.03.2015.
  */
-@XmlType(propOrder = {"name", "lastModification", "externalModels", "parameters"})
+@XmlType(propOrder = {"name", "lastModification", "uuid", "externalModels", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped {
@@ -33,8 +33,12 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     @XmlElement(name = "externalModel")
     protected List<ExternalModel> externalModels = new LinkedList<>();
 
+    @XmlID
     @XmlAttribute
-    private Long lastModification;
+    protected String uuid = UUID.randomUUID().toString();
+
+    @XmlAttribute
+    protected Long lastModification;
 
     public ModelNode() {
     }
@@ -117,6 +121,14 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         this.id = id;
     }
 
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
     @Transient
     public ModelNode getParent() {
         return parent;
@@ -157,9 +169,9 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     public boolean equals(Object obj) {
         if (obj instanceof ModelNode) {
             ModelNode other = (ModelNode) obj;
-            if (this.name.equals(other.name)) {
-                return equalParameters(other.getParameterMap());
-            }
+            if (!this.name.equals(other.name)) return false;
+            if (!this.uuid.equals(other.uuid)) return false;
+            return equalParameters(other.getParameterMap());
         }
         return false;
     }
@@ -186,6 +198,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         sb.append("name='").append(name).append('\'');
         sb.append(", parameters=").append(parameters);
         sb.append("lastModification=").append(lastModification);
+        sb.append(", uuid='").append(uuid).append('\'');
         sb.append('}');
         return sb.toString();
     }
