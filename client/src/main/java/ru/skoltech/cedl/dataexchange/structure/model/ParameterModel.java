@@ -171,7 +171,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @Transient
     public ExternalModelReference getValueReference() {
-        if (importModel == null && importField == null)
+        if (importModel == null || importField == null)
             return null;
         if (valueReference == null) {
             valueReference = new ExternalModelReference();
@@ -244,7 +244,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @Transient
     public ExternalModelReference getExportReference() {
-        if (exportModel == null && exportField == null)
+        if (exportModel == null || exportField == null)
             return null;
         if (exportReference == null) {
             exportReference = new ExternalModelReference();
@@ -328,61 +328,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @Transient
     public String getNodePath() {
         return parent.getNodePath() + "::" + name;
-    }
-
-    public Map<String, String> diff(ParameterModel other) {
-        Map<String, String> diff = new HashMap<>();
-        if ((this.uuid == null && other.uuid != null) || (this.uuid != null && other.uuid == null)
-                || (this.uuid != null && !this.uuid.equals(other.uuid))) {
-            diff.put("uuid", other.uuid);
-        }
-        if ((this.name == null && other.name != null) || (this.name != null && other.name == null)
-                || (this.name != null && !this.name.equals(other.name))) {
-            diff.put("name", other.name);
-        }
-        if ((this.value == null && other.value != null) || (this.value != null && other.value == null)
-                || (this.value != null && !this.value.equals(other.value))) {
-            diff.put("value", String.valueOf(other.getValue()));
-        }
-        if (!this.isReferenceValueOverridden == other.isReferenceValueOverridden) {
-            diff.put("isReferenceValueOverridden", String.valueOf(other.isReferenceValueOverridden));
-        }
-        if ((this.overrideValue == null && other.overrideValue != null) || (this.overrideValue != null && other.overrideValue == null)
-                || (this.overrideValue != null && !this.overrideValue.equals(other.overrideValue))) {
-            diff.put("overrideValue", String.valueOf(other.overrideValue));
-        }
-        if ((this.unit == null && other.unit != null) || (this.unit != null && other.unit == null)
-                || (this.unit != null && !this.unit.equals(other.unit))) {
-            diff.put("unit", other.unit != null ? other.unit.asText() : null);
-        }
-        if ((this.nature == null && other.nature != null) || (this.nature != null && other.nature == null)
-                || (this.nature != null && !this.nature.equals(other.nature))) {
-            diff.put("nature", String.valueOf(other.nature));
-        }
-        if ((this.getValueSource() == null && other.getValueSource() != null) || (this.getValueSource() != null && other.getValueSource() == null)
-                || (this.getValueSource() != null && !this.getValueSource().equals(other.getValueSource()))) {
-            diff.put("valueSource", String.valueOf(other.getValueSource()));
-        }
-        if ((this.getValueReference() == null && other.getValueReference() != null) || (this.getValueReference() != null && other.getValueReference() == null)
-                || (this.getValueReference() != null && !this.getValueReference().equals(other.getValueReference()))) {
-            diff.put("valueReference", String.valueOf(other.getValueReference()));
-        }
-        if ((this.getValueLink() == null && other.getValueLink() != null) || (this.getValueLink() != null && other.getValueLink() == null)
-                || (this.getValueLink() != null && !this.getValueLink().equals(other.getValueLink()))) {
-            diff.put("valueLink", String.valueOf(other.getValueLink() != null ? other.getValueLink() : null));
-        }
-        if (!this.isExported == other.isExported) {
-            diff.put("isExported", String.valueOf(other.isExported));
-        }
-        if ((this.getExportReference() == null && other.getExportReference() != null) || (this.getExportReference() != null && other.getExportReference() == null)
-                || (this.getExportReference() != null && !this.getExportReference().equals(other.getExportReference()))) {
-            diff.put("exportReference", String.valueOf(other.getExportReference()));
-        }
-        if ((this.description == null && other.description != null) || (this.description != null && other.description == null)
-                || (this.description != null && !this.description.equals(other.description))) {
-            diff.put("description", other.description);
-        }
-        return diff;
     }
 
     /*
