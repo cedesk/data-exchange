@@ -149,9 +149,9 @@ public class Dialogues {
     public static Optional<String> chooseStudy(List<String> studyNames) {
         Objects.requireNonNull(studyNames);
         ChoiceDialog<String> dlg = new ChoiceDialog<>(studyNames.get(0), studyNames);
-        dlg.setTitle("Choose a Study");
+        dlg.setTitle("Open a Study");
         dlg.setHeaderText("Choose from available studies");
-        dlg.setContentText("Choose");
+        dlg.setContentText("Study");
         return dlg.showAndWait();
     }
 }

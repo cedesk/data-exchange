@@ -35,6 +35,7 @@ public class RepositoryWatcher extends Thread {
                 if (!pausedRunning.get() &&
                         project.getStudy() != null &&
                         project.isStudyInRepository()) {
+                    logger.info("load repository study");
                     project.loadRepositoryStudy();
                 }
                 sleep(SECONDS_OF_CHECK_PERIODICITY * 1000);

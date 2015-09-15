@@ -25,8 +25,8 @@
                                         <Menu mnemonicParsing="true" text="_Project">
                                             <items>
                                                 <MenuItem mnemonicParsing="true" onAction="#newProject" text="_New..."/>
-                                                <MenuItem mnemonicParsing="true" onAction="#loadProject"
-                                                          text="Load..."/>
+                                                <MenuItem mnemonicParsing="true" onAction="#openProject"
+                                                          text="_Open..."/>
                                                 <MenuItem mnemonicParsing="true" onAction="#saveProject" text="_Save"/>
                                                 <SeparatorMenuItem mnemonicParsing="true"/>
                                                 <MenuItem mnemonicParsing="true" onAction="#importProject"

@@ -19,14 +19,14 @@ public class DiffController implements Initializable {
 
     public TableView diffTable;
     private SystemModel localSystemModel;
-    private SystemModel remoteSysteModel;
+    private SystemModel remoteSystemModel;
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
     public void setSystemModels(SystemModel local, SystemModel remote) {
         this.localSystemModel = local;
-        this.remoteSysteModel = remote;
+        this.remoteSystemModel = remote;
         modelDifferences.clear();
-        List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSysteModel);
+        List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
         modelDifferences.addAll(modelDiffs);
     }
 
