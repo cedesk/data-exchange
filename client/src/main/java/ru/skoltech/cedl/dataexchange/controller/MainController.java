@@ -5,10 +5,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -30,10 +27,7 @@ import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
-import ru.skoltech.cedl.dataexchange.repository.FileStorage;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
+import ru.skoltech.cedl.dataexchange.repository.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
@@ -106,7 +100,7 @@ public class MainController implements Initializable {
         }
     }
 
-    public void loadProject(ActionEvent actionEvent) {
+    public void openProject(ActionEvent actionEvent) {
         List<String> studyNames = null;
         try {
             studyNames = project.getRepository().listStudies();
@@ -149,6 +143,7 @@ public class MainController implements Initializable {
             boolean success = project.storeLocalStudy();
             updateView();
             if (success) {
+                repositoryWatcher.unpause();
                 ApplicationSettings.setLastUsedProject(project.getProjectName());
                 StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
             } else {
@@ -180,7 +175,9 @@ public class MainController implements Initializable {
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
 
         // TOOLBAR
-        BooleanBinding repositoryNewer = Bindings.greaterThan(project.latestRepositoryModificationProperty(), project.latestLoadedModificationProperty());
+        BooleanBinding repositoryNewer = Bindings.greaterThan(
+                project.latestRepositoryModificationProperty(),
+                project.latestLoadedModificationProperty());
         diffButton.disableProperty().bind(repositoryNewer.not());
         repositoryNewer.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -196,19 +193,16 @@ public class MainController implements Initializable {
                 }
             }
         });
-        project.latestRepositoryModificationProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if (newValue != null && oldValue != null && oldValue.longValue() > 0) {
-                    long timeOfModificationInRepository = newValue.longValue();
-                    long timeOfModificationLoaded = project.getLatestLoadedModification();
-                    if (timeOfModificationInRepository > timeOfModificationLoaded) {
-                        String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
-                        String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
-                        logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
-                        updateRemoteModel();
-                        UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", MainController.this::openDiffView);
-                    }
+        project.latestRepositoryModificationProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && oldValue != null && oldValue.longValue() > 0) {
+                long timeOfModificationInRepository = newValue.longValue();
+                long timeOfModificationLoaded = project.getLatestLoadedModification();
+                if (timeOfModificationInRepository > timeOfModificationLoaded) {
+                    String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
+                    String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
+                    logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
+                    updateRemoteModel();
+                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", MainController.this::openDiffView);
                 }
             }
         });
@@ -216,8 +210,8 @@ public class MainController implements Initializable {
         repositoryWatcher.start();
         project.addRepositoryStateObserver(new Observer() {
             @Override
-            public void update(Observable o, Object arg) {
-                RepositoryStateMachine stateMachine = (RepositoryStateMachine) o;
+            public void update(Observable observable, Object arg) {
+                RepositoryStateMachine stateMachine = (RepositoryStateMachine) observable;
                 newButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
                 loadButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
                 saveButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE));
@@ -237,7 +231,7 @@ public class MainController implements Initializable {
                         reloadProject(null);
                     } else {
                         // TODO: ask to create a new study or start from an existing one
-                        loadProject(null);
+                        openProject(null);
                     }
                 }
             }
@@ -300,9 +294,14 @@ public class MainController implements Initializable {
     public void importProject(ActionEvent actionEvent) {
         // TODO: warn user about replacing current project
 
-        File importFile = Dialogues.chooseImportFile();
+        File importFile = null;
+        if (actionEvent == null) { // invoked from startup
+            importFile = new File(StorageUtils.getAppDir(), "djSat21_2015-09-13_21-10_cedesk-system-model.xml");
+        } else {
+            importFile = Dialogues.chooseImportFile();
+        }
         if (importFile != null) {
-            repositoryWatcher.pause();
+            //repositoryWatcher.pause();
             FileStorage fs = new FileStorage();
             try {
                 SystemModel systemModel = fs.loadSystemModel(importFile);
@@ -354,6 +353,11 @@ public class MainController implements Initializable {
     }
 
     public void openDiffView(ActionEvent actionEvent) {
+        if (project.getSystemModel() == null
+                || project.getRepositoryStudy() == null
+                || project.getRepositoryStudy().getSystemModel() == null) {
+            return;
+        }
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.MODEL_DIFF_VIEW);
@@ -386,13 +390,10 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-            stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-                @Override
-                public void handle(WindowEvent event) {
-                    if (!validDatabaseConnection()) {
-                        Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository");
-                        quit(null);
-                    }
+            stage.setOnCloseRequest(event -> {
+                if (!validDatabaseConnection()) {
+                    Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository");
+                    quit(null);
                 }
             });
             stage.showAndWait();
