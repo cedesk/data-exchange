@@ -9,14 +9,22 @@ public class ModelDifference {
 
     private ChangeType changeType;
 
-    private String changeValue;
+    private String value1;
+
+    private String value2;
 
     private String author;
 
-    public ModelDifference(String nodePath, ChangeType changeType, String changeValue) {
+    public ModelDifference(String nodePath, ChangeType changeType) {
         this.nodePath = nodePath;
         this.changeType = changeType;
-        this.changeValue = changeValue;
+    }
+
+    public ModelDifference(String nodePath, ChangeType changeType, String value1, String value2) {
+        this.nodePath = nodePath;
+        this.changeType = changeType;
+        this.value1 = value1;
+        this.value2 = value2;
     }
 
     public String getNodePath() {
@@ -35,12 +43,20 @@ public class ModelDifference {
         this.changeType = changeType;
     }
 
-    public String getChangeValue() {
-        return changeValue;
+    public String getValue1() {
+        return value1;
     }
 
-    public void setChangeValue(String changeValue) {
-        this.changeValue = changeValue;
+    public void setValue1(String value1) {
+        this.value1 = value1;
+    }
+
+    public String getValue2() {
+        return value2;
+    }
+
+    public void setValue2(String value2) {
+        this.value2 = value2;
     }
 
     public String getAuthor() {
@@ -56,7 +72,8 @@ public class ModelDifference {
         final StringBuilder sb = new StringBuilder("ModelDifference{");
         sb.append("nodePath='").append(nodePath).append('\'');
         sb.append(", changeType=").append(changeType);
-        sb.append(", changeValue='").append(changeValue).append('\'');
+        sb.append(", value1='").append(value1).append('\'');
+        sb.append(", value2='").append(value2).append('\'');
         sb.append(", author='").append(author).append('\'');
         sb.append("}\n ");
         return sb.toString();

@@ -3,13 +3,13 @@
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane prefHeight="320.0" prefWidth="680.0" xmlns="http://javafx.com/javafx/8.0.40"
+<AnchorPane prefHeight="320.0" prefWidth="740.0" xmlns="http://javafx.com/javafx/8.0.40"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.DiffController">
     <children>
-        <TableView fx:id="diffTable" prefHeight="280.0" prefWidth="480.0" AnchorPane.bottomAnchor="0.0"
+        <TableView fx:id="diffTable" AnchorPane.bottomAnchor="0.0"
                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columns>
-                <TableColumn fx:id="nodePathColumn" prefWidth="320.0" text="Node">
+                <TableColumn fx:id="nodePathColumn" prefWidth="260.0" text="Node">
                     <cellValueFactory>
                         <PropertyValueFactory property="nodePath"/>
                     </cellValueFactory>
@@ -19,9 +19,14 @@
                         <PropertyValueFactory property="changeType"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="changeValueColumn" prefWidth="100.0" text="Change Value">
+                <TableColumn fx:id="fromValueColumn" prefWidth="110.0" text="Local Value">
                     <cellValueFactory>
-                        <PropertyValueFactory property="changeValue"/>
+                        <PropertyValueFactory property="value1"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="toValueColumn" prefWidth="110.0" text="Repository Value">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="value2"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="authorColumn" prefWidth="75.0" text="Author">
