@@ -109,11 +109,22 @@ public class ModelDifferencesFactory {
                 parameterDifferences.add(new ModelDifference(p2.getNodePath(), ChangeType.ADD_PARAMETER));
             } else if (p1 != null && p2 != null) {
                 List<AttributeDifference> differences = parameterDifferences(p1, p2);
+                if(!differences.isEmpty()) {
+                    ModelDifference modelDifference = new ModelDifference(p1.getNodePath(), ChangeType.MODIFY_PARAMETER);
+                    if(p1.getLastModification() < p2.getLastModification()) {
+                        modelDifference.setValue2("NEWER");
+                    } else {
+                        modelDifference.setValue1("NEWER");
+                    }
+                    parameterDifferences.add(modelDifference);
+                }
                 for (AttributeDifference diff : differences) {
                     String nodePath = p1.getNodePath() + "." + diff.attributeName;
                     ChangeType changeParameterAttribute = diff.attributeName.equals("value") || diff.attributeName.equals("overrideValue") ?
                             ChangeType.CHANGE_PARAMETER_VALUE : ChangeType.CHANGE_PARAMETER_ATTRIBUTE;
-                    parameterDifferences.add(new ModelDifference(nodePath, changeParameterAttribute, diff.value1, diff.value2));
+                    ModelDifference modelDifference = new ModelDifference(nodePath, changeParameterAttribute, diff.value1, diff.value2);
+
+                    parameterDifferences.add(modelDifference);
                 }
             }
         }

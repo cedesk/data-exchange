@@ -13,9 +13,10 @@ public enum ChangeType {
         public String toString() {
             return "remove node";
         }
-    }, CHANGE_NODE_ATTRIBUTE {
+    },
+    CHANGE_NODE_ATTRIBUTE {
         public String toString() {
-            return "change node attibute";
+            return "change node attribute";
         }
     },
     ADD_EXTERNAL_MODEL {
@@ -36,6 +37,11 @@ public enum ChangeType {
     ADD_PARAMETER {
         public String toString() {
             return "add parameter";
+        }
+    },
+    MODIFY_PARAMETER {
+        public String toString() {
+            return "modify parameter";
         }
     },
     REMOVE_PARAMETER {
