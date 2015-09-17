@@ -21,8 +21,10 @@ import javafx.util.StringConverter;
 import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
 import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
@@ -298,6 +300,12 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private void updateModel() {
         if (parameterBean != null && project != null) {
+            String parameterName = nameText.getText();
+            if (!Identifiers.validateParameterName(parameterName)) {
+                Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
+                return;
+            }
+
             ParameterModel parameterModel = getParameterModel();
 
             parameterModel.setNature(natureChoiceBox.getValue());

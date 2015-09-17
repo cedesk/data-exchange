@@ -6,13 +6,17 @@ import java.util.regex.Pattern;
  * Created by dknoll on 16/05/15.
  */
 public class Identifiers {
-    private static final Pattern NAME_RULE = Pattern.compile("^[a-zA-Z]{1,}$");
+    private static final Pattern NODE_NAME_RULE = Pattern.compile("^[a-zA-Z]{1,}$");
+
+    private static final Pattern PARAMETER_NAME_RULE = Pattern.compile("^[a-zA-Z ]{1,}$");
 
     private static final Pattern USER_NAME_RULE = Pattern.compile("^[a-z]{1,}[\\.\\-_]?[a-z]{1,}$");
 
     private static final Pattern PROJECT_NAME_RULE = Pattern.compile("^[a-zA-Z]{2,}[\\-]?[a-zA-Z0-9]{1,}$");
 
-    private static final String NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphabetic characters!";
+    private static final String NODE_NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphabetic characters!";
+
+    private static final String PARAMETER_NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphabetic characters!";
 
     private static final String USER_NAME_RULE_DESCRIPTION = "User names must be at least of 1 character and contain only alphanumeric lowercase characters and '_.-' inside!";
 
@@ -20,7 +24,12 @@ public class Identifiers {
 
     public static boolean validateNodeName(String nodeName) {
         if (nodeName.length() < 1) return false;
-        return NAME_RULE.matcher(nodeName).matches();
+        return NODE_NAME_RULE.matcher(nodeName).matches();
+    }
+
+    public static boolean validateParameterName(String parameterName) {
+        if (parameterName.length() < 1) return false;
+        return PARAMETER_NAME_RULE.matcher(parameterName).matches();
     }
 
     public static boolean validateUserName(String userName) {
@@ -33,8 +42,12 @@ public class Identifiers {
         return PROJECT_NAME_RULE.matcher(projectName).matches();
     }
 
-    public static String getNameValidationDescription() {
-        return NAME_RULE_DESCRIPTION;
+    public static String getNodeNameValidationDescription() {
+        return NODE_NAME_RULE_DESCRIPTION;
+    }
+
+    public static String getParameterNameValidationDescription() {
+        return PARAMETER_NAME_RULE_DESCRIPTION;
     }
 
     public static String getUserNameValidationDescription() {

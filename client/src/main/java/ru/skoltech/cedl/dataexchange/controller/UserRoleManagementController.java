@@ -242,7 +242,7 @@ public class UserRoleManagementController implements Initializable {
             String disciplineName = disciplineNameChoice.get();
 
             if (!Identifiers.validateNodeName(disciplineName)) {
-                Dialogues.showError("Invalid name", Identifiers.getNameValidationDescription());
+                Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
                 return;
             }
             if (project.getUserRoleManagement().getDisciplineMap().containsKey(disciplineName)) {
