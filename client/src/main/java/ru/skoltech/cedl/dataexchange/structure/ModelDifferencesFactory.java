@@ -50,9 +50,9 @@ public class ModelDifferencesFactory {
             ModelNode s2 = (ModelNode) m2SubNodesMap.get(nodeUuid);
 
             if (s1 != null && s2 == null) {
-                subnodesDifferences.add(new ModelDifference(s1.getNodePath(), ChangeType.REMOVE_NODE));
+                subnodesDifferences.add(new ModelDifference(s1.getNodePath(), ChangeType.REMOVE_NODE, s1.getName(), ""));
             } else if (s1 == null && s2 != null) {
-                subnodesDifferences.add(new ModelDifference(s2.getNodePath(), ChangeType.ADD_NODE));
+                subnodesDifferences.add(new ModelDifference(s2.getNodePath(), ChangeType.ADD_NODE, "", s2.getName()));
             } else {
                 // depth search
                 subnodesDifferences.addAll(computeDifferences(s1, s2));
@@ -75,9 +75,9 @@ public class ModelDifferencesFactory {
             ExternalModel e2 = m2extModels.get(extMod);
 
             if (e1 != null && e2 == null) {
-                extModelDifferences.add(new ModelDifference(e1.getNodePath(), ChangeType.REMOVE_EXTERNALS_MODEL));
+                extModelDifferences.add(new ModelDifference(e1.getNodePath(), ChangeType.REMOVE_EXTERNALS_MODEL, e1.getName(), ""));
             } else if (e1 == null && e2 != null) {
-                extModelDifferences.add(new ModelDifference(e2.getNodePath(), ChangeType.ADD_EXTERNAL_MODEL));
+                extModelDifferences.add(new ModelDifference(e2.getNodePath(), ChangeType.ADD_EXTERNAL_MODEL, "", e2.getName()));
             } else {
                 if (!Arrays.equals(e1.getAttachment(), e2.getAttachment())) {
                     extModelDifferences.add(new ModelDifference(e1.getNodePath(), ChangeType.CHANGE_EXTERNAL_MODEL));
@@ -104,14 +104,14 @@ public class ModelDifferencesFactory {
             ParameterModel p2 = m2params.get(parUuid);
 
             if (p1 != null && p2 == null) {
-                parameterDifferences.add(new ModelDifference(p1.getNodePath(), ChangeType.REMOVE_PARAMETER));
+                parameterDifferences.add(new ModelDifference(p1.getNodePath(), ChangeType.REMOVE_PARAMETER, p1.getName(), ""));
             } else if (p1 == null && p2 != null) {
-                parameterDifferences.add(new ModelDifference(p2.getNodePath(), ChangeType.ADD_PARAMETER));
+                parameterDifferences.add(new ModelDifference(p2.getNodePath(), ChangeType.ADD_PARAMETER, "", p2.getName()));
             } else if (p1 != null && p2 != null) {
                 List<AttributeDifference> differences = parameterDifferences(p1, p2);
-                if(!differences.isEmpty()) {
+                if (!differences.isEmpty()) {
                     ModelDifference modelDifference = new ModelDifference(p1.getNodePath(), ChangeType.MODIFY_PARAMETER);
-                    if(p1.getLastModification() < p2.getLastModification()) {
+                    if (p1.getLastModification() < p2.getLastModification()) {
                         modelDifference.setValue2("NEWER");
                     } else {
                         modelDifference.setValue1("NEWER");

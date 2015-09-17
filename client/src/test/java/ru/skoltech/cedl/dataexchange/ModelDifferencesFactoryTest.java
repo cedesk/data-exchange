@@ -27,6 +27,7 @@ public class ModelDifferencesFactoryTest {
         s1 = new SystemModel();
         s1.setName("S-1");
         s2 = new SystemModel();
+        s2.setUuid(s1.getUuid());
         s2.setName("S-2");
     }
 
@@ -81,8 +82,10 @@ public class ModelDifferencesFactoryTest {
 
     @Test
     public void twoNodeWithSubNodes() {
-        s1.addSubNode(new SubSystemModel("u1"));
+        SubSystemModel u1 = new SubSystemModel("u1");
+        s1.addSubNode(u1);
         SubSystemModel u2 = new SubSystemModel("u1");
+        u2.setUuid(u1.getUuid());
         u2.addParameter(new ParameterModel("new-param", 0.24));
         s2.addSubNode(u2);
         List<ModelDifference> modelDifferences =
