@@ -34,6 +34,12 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
         return null;
     }
 
+    @Override
+    @Transient
+    public String getNodePath() {
+        return "";
+    }
+
     /**
      * Find the most recent modification time of any of the sub-nodes or any of their parameters.
      *
