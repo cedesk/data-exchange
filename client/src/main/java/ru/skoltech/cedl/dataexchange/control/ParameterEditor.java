@@ -354,13 +354,17 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         @Override
         public void handle(KeyEvent e) {
             TextField txt_TextField = (TextField) e.getSource();
-            if (txt_TextField.getText().length() >= maxLength) {
+            String text = txt_TextField.getText();
+            if (text.length() >= maxLength) {
                 e.consume();
             }
-            if (e.getCharacter().matches("[0-9.]")) {
-                if (txt_TextField.getText().contains(".") && e.getCharacter().matches("[.]")) {
+            String character = e.getCharacter();
+            if (character.matches("[-0-9.]")) {
+                if (text.contains(".") && character.equals(".")) {
                     e.consume();
-                } else if (txt_TextField.getText().length() == 0 && e.getCharacter().matches("[.]")) {
+                } else if (text.startsWith("-") && character.equals("-")) {
+                    e.consume();
+                } else if (text.length() == 0 && character.equals(".")) {
                     e.consume();
                 }
             } else {
