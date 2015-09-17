@@ -171,6 +171,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     public void setProject(Project project) {
         this.project = project;
         List<Unit> units = project.getUnitManagement().getUnits();
+        units.sort((o1, o2) -> o1.asText().compareTo(o2.asText()));
         unitChoiceBox.setItems(FXCollections.observableArrayList(units));
     }
 
