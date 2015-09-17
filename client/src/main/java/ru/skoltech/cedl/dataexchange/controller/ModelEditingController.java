@@ -25,7 +25,6 @@ import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.external.*;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
@@ -131,7 +130,7 @@ public class ModelEditingController implements Initializable {
         parameterValueColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
-                if(param != null) {
+                if (param != null) {
                     return new SimpleStringProperty(String.valueOf(param.getValue().getValue()));
                 } else {
                     return new SimpleStringProperty();
@@ -343,6 +342,7 @@ public class ModelEditingController implements Initializable {
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem, "no item selected in tree view");
 
+        ParameterModel parameter = null;
         Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
         if (parameterNameChoice.isPresent()) {
             String parameterName = parameterNameChoice.get();
@@ -354,13 +354,17 @@ public class ModelEditingController implements Initializable {
                 Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
             } else {
                 // TODO: use factory
-                ParameterModel pm = new ParameterModel(parameterName, 0.0);
-                selectedItem.getValue().addParameter(pm);
-                StatusLogger.getInstance().log("added parameter: " + pm.getName());
+
+                parameter = new ParameterModel(parameterName, 0.0);
+                selectedItem.getValue().addParameter(parameter);
+                StatusLogger.getInstance().log("added parameter: " + parameter.getName());
                 project.markStudyModified();
             }
         }
         updateParameterTable(selectedItem);
+        if (parameter != null) {
+            parameterTable.getSelectionModel().select(parameter);
+        }
     }
 
     public void deleteParameter(ActionEvent actionEvent) {
