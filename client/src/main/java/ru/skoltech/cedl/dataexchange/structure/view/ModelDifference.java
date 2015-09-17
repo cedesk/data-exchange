@@ -1,38 +1,33 @@
 package ru.skoltech.cedl.dataexchange.structure.view;
 
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+
 /**
  * Created by D.Knoll on 20.07.2015.
  */
-public class ModelDifference {
+public abstract class ModelDifference {
 
-    private String nodePath;
+    protected String attribute;
 
-    private ChangeType changeType;
+    protected ChangeType changeType;
 
-    private String value1;
+    protected String value1;
 
-    private String value2;
+    protected String value2;
 
-    private String author;
+    protected String author;
 
-    public ModelDifference(String nodePath, ChangeType changeType) {
-        this.nodePath = nodePath;
-        this.changeType = changeType;
+    abstract public String getNodeName();
+
+    abstract public String getNodePath();
+
+    public String getAttribute() {
+        return attribute;
     }
 
-    public ModelDifference(String nodePath, ChangeType changeType, String value1, String value2) {
-        this.nodePath = nodePath;
-        this.changeType = changeType;
-        this.value1 = value1;
-        this.value2 = value2;
-    }
-
-    public String getNodePath() {
-        return nodePath;
-    }
-
-    public void setNodePath(String nodePath) {
-        this.nodePath = nodePath;
+    public void setAttribute(String attribute) {
+        this.attribute = attribute;
     }
 
     public ChangeType getChangeType() {
@@ -70,7 +65,7 @@ public class ModelDifference {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ModelDifference{");
-        sb.append("nodePath='").append(nodePath).append('\'');
+        sb.append("attribute").append(attribute);
         sb.append(", changeType=").append(changeType);
         sb.append(", value1='").append(value1).append('\'');
         sb.append(", value2='").append(value2).append('\'');

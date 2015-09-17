@@ -1,12 +1,26 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import javafx.util.Callback;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.view.ChangeType;
 import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.view.ParameterDifference;
 
 import java.net.URL;
 import java.util.List;
@@ -17,21 +31,89 @@ import java.util.ResourceBundle;
  */
 public class DiffController implements Initializable {
 
-    public TableView diffTable;
-    private SystemModel localSystemModel;
-    private SystemModel remoteSystemModel;
-    private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
+    private static final Logger logger = Logger.getLogger(DiffController.class);
 
-    public void setSystemModels(SystemModel local, SystemModel remote) {
-        this.localSystemModel = local;
-        this.remoteSystemModel = remote;
-        modelDifferences.clear();
-        List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
-        modelDifferences.addAll(modelDiffs);
-    }
+    @FXML
+    private TableView<ModelDifference> diffTable;
+
+    @FXML
+    private TableColumn<ModelDifference, String> actionColumn;
+
+    @FXML
+    private Button mergeButton;
+
+    private SystemModel localSystemModel;
+
+    private SystemModel remoteSystemModel;
+
+    private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         diffTable.setItems(modelDifferences);
+        diffTable.itemsProperty().addListener(new ChangeListener<ObservableList<ModelDifference>>() {
+            @Override
+            public void changed(ObservableValue<? extends ObservableList<ModelDifference>> observable, ObservableList<ModelDifference> oldValue, ObservableList<ModelDifference> newValue) {
+                if (newValue != null && newValue.size() > 0) {
+                    mergeButton.setDisable(false);
+                } else {
+                    mergeButton.setDisable(true);
+                }
+            }
+        });
+        actionColumn.setCellFactory(new ActionCellFactory());
+    }
+
+    public void setSystemModels(SystemModel local, SystemModel remote) {
+        this.localSystemModel = local;
+        this.remoteSystemModel = remote;
+        List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
+        modelDifferences.clear();
+        modelDifferences.addAll(modelDiffs);
+    }
+
+    public void merge(ActionEvent actionEvent) {
+
+    }
+
+    public void cancel(ActionEvent actionEvent) {
+        Node source = (Node) actionEvent.getSource();
+        Stage stage = (Stage) source.getScene().getWindow();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
+    private void acceptDifference(ActionEvent actionEvent) {
+        Button acceptButton = (Button) actionEvent.getTarget();
+        ModelDifference modelDifference = (ModelDifference) acceptButton.getUserData();
+        String nodePath = modelDifference.getNodePath();
+        logger.debug("accepting differences on " + nodePath);
+        if(modelDifference instanceof ParameterDifference) {
+            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
+            parameterDifference.mergeDifference();
+            modelDifferences.removeIf(difference -> difference.getNodePath().equals(nodePath));
+        }
+    }
+
+    private class ActionCellFactory implements Callback<TableColumn<ModelDifference, String>, TableCell<ModelDifference, String>> {
+        @Override
+        public TableCell<ModelDifference, String> call(TableColumn<ModelDifference, String> param) {
+            return new TableCell<ModelDifference, String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    ModelDifference difference = (ModelDifference) getTableRow().getItem();
+                    if (!empty && difference != null) {
+                        if (difference.getChangeType() == ChangeType.MODIFY_PARAMETER) {
+                            Button acceptButton = new Button("accept");
+                            acceptButton.setUserData(difference);
+                            acceptButton.setOnAction(DiffController.this::acceptDifference);
+                            setGraphic(acceptButton);
+                        }
+                    } else {
+                        setGraphic(null);
+                    }
+                }
+            };
+        }
     }
 }
