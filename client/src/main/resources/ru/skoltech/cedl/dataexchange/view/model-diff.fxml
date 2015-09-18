@@ -46,8 +46,9 @@
         <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="200.0"
                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <items>
-                <Button fx:id="mergeButton" onAction="#mergeAll" mnemonicParsing="true" text="_Merge All"/>
-                <Button fx:id="cancelButton" onAction="#close" mnemonicParsing="false" cancelButton="true" text="Cancel"/>
+                <Button onAction="#close" mnemonicParsing="false" cancelButton="true" text="Cancel"/>
+                <Button onAction="#acceptAll" mnemonicParsing="true" text="_Accept all remote remote changes"/>
+                <Button onAction="#revertAll" mnemonicParsing="true" text="_Revert all local changes"/>
             </items>
         </ToolBar>
     </children>

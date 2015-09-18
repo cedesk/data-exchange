@@ -35,9 +35,6 @@ public class DiffController implements Initializable {
     @FXML
     private TableColumn<ModelDifference, String> actionColumn;
 
-    @FXML
-    private Button mergeButton;
-
     private SystemModel localSystemModel;
 
     private SystemModel remoteSystemModel;
@@ -93,12 +90,27 @@ public class DiffController implements Initializable {
         }
     }
 
-    public void mergeAll(ActionEvent actionEvent) {
+    public void acceptAll(ActionEvent actionEvent) {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
-            boolean success = mergeOne(modelDifference);
-            if (success) {
-                appliedDifferences.add(modelDifference);
+            if (modelDifference.changeLocation() == ChangeLocation.ARG2) {
+                boolean success = mergeOne(modelDifference);
+                if (success) {
+                    appliedDifferences.add(modelDifference);
+                }
+            }
+        }
+        modelDifferences.removeAll(appliedDifferences);
+    }
+
+    public void revertAll(ActionEvent actionEvent) {
+        List<ModelDifference> appliedDifferences = new LinkedList<>();
+        for (ModelDifference modelDifference : modelDifferences) {
+            if (modelDifference.changeLocation() == ChangeLocation.ARG1) {
+                boolean success = mergeOne(modelDifference);
+                if (success) {
+                    appliedDifferences.add(modelDifference);
+                }
             }
         }
         modelDifferences.removeAll(appliedDifferences);
