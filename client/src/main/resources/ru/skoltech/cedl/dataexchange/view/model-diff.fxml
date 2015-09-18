@@ -14,14 +14,14 @@
                         <PropertyValueFactory property="nodeName"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="attribute" prefWidth="80.0" text="Attribute">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="attribute"/>
-                    </cellValueFactory>
-                </TableColumn>
                 <TableColumn fx:id="changeTypeColumn" prefWidth="180.0" text="Change Type">
                     <cellValueFactory>
                         <PropertyValueFactory property="changeType"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="attribute" prefWidth="80.0" text="Attribute">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="attribute"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="fromValueColumn" prefWidth="110.0" text="Local Value">

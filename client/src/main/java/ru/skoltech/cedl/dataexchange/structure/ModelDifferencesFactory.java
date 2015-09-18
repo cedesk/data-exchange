@@ -109,19 +109,18 @@ public class ModelDifferencesFactory {
             } else if (p1 != null && p2 != null) {
                 List<AttributeDifference> differences = parameterDifferences(p1, p2);
                 if (!differences.isEmpty()) {
-                    ModelDifference modelDifference = new ParameterDifference(p1, "", ChangeType.MODIFY_PARAMETER, "", "");
-                    if (p1.getLastModification() < p2.getLastModification()) {
-                        modelDifference.setValue2("NEWER");
-                    } else {
-                        modelDifference.setValue1("NEWER");
+                    StringBuilder sbAttributes = new StringBuilder(), sbValues1 = new StringBuilder(), sbValues2 = new StringBuilder();
+                    for (AttributeDifference diff : differences) {
+                        if (sbAttributes.length() > 0) {
+                            sbAttributes.append('\n');
+                            sbValues1.append('\n');
+                            sbValues2.append('\n');
+                        }
+                        sbAttributes.append(diff.attributeName);
+                        sbValues1.append(diff.value1);
+                        sbValues2.append(diff.value2);
                     }
-                    parameterDifferences.add(modelDifference);
-                }
-                for (AttributeDifference diff : differences) {
-                    ChangeType changeParameterAttribute = diff.attributeName.equals("value") || diff.attributeName.equals("overrideValue") ?
-                            ChangeType.CHANGE_PARAMETER_VALUE : ChangeType.CHANGE_PARAMETER_ATTRIBUTE;
-                    ModelDifference modelDifference = new ParameterDifference(p1, diff.attributeName, changeParameterAttribute, diff.value1, diff.value2);
-
+                    ModelDifference modelDifference = new ParameterDifference(p1, sbAttributes.toString(), ChangeType.MODIFY_PARAMETER, sbValues1.toString(), sbValues2.toString());
                     parameterDifferences.add(modelDifference);
                 }
             }
