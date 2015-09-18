@@ -16,12 +16,8 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.structure.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.structure.view.ChangeType;
-import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.view.NodeDifference;
-import ru.skoltech.cedl.dataexchange.structure.view.ParameterDifference;
+import ru.skoltech.cedl.dataexchange.structure.view.*;
 
 import java.net.URL;
 import java.util.List;
@@ -87,8 +83,10 @@ public class DiffController implements Initializable {
         Button acceptButton = (Button) actionEvent.getTarget();
         ModelDifference modelDifference = (ModelDifference) acceptButton.getUserData();
         if (modelDifference instanceof ParameterDifference) {
-            logger.debug("accepting differences on " + modelDifference.getNodeName() + "::" + modelDifference.getParameterName());
-            ((ParameterDifference) modelDifference).mergeDifference();
+            String changeLocation = getChangeLocation(modelDifference);
+            logger.debug("accepting " + changeLocation + " differences on " + modelDifference.getNodeName() + "::" + modelDifference.getParameterName());
+            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
+            parameterDifference.mergeDifference();
             modelDifferences.remove(modelDifference);
         } else if (modelDifference instanceof NodeDifference) {
             logger.debug("accepting differences on " + modelDifference.getNodeName());
@@ -96,6 +94,10 @@ public class DiffController implements Initializable {
             // TODO: MERGE
             modelDifferences.remove(modelDifference);
         }
+    }
+
+    private String getChangeLocation(ModelDifference modelDifference) {
+        return modelDifference.changeLocation() == ChangeLocation.ARG1 ? "local" : "remote";
     }
 
     private class ActionCellFactory implements Callback<TableColumn<ModelDifference, String>, TableCell<ModelDifference, String>> {
@@ -106,16 +108,19 @@ public class DiffController implements Initializable {
                 protected void updateItem(String item, boolean empty) {
                     super.updateItem(item, empty);
                     ModelDifference difference = (ModelDifference) getTableRow().getItem();
-                    if (!empty && difference != null) {
-                        if (difference.getChangeType() == ChangeType.MODIFY_PARAMETER) {
-                            Button acceptButton = new Button("accept");
-                            acceptButton.setUserData(difference);
-                            acceptButton.setOnAction(DiffController.this::acceptDifference);
-                            setGraphic(acceptButton);
-                        }
+                    if (!empty && difference != null && difference.isMergeable()) {
+                        setGraphic(createAcceptButton(difference));
                     } else {
                         setGraphic(null);
                     }
+                }
+
+                private Button createAcceptButton(ModelDifference difference) {
+                    String changeLocation = getChangeLocation(difference);
+                    Button acceptButton = new Button("accept " + changeLocation);
+                    acceptButton.setUserData(difference);
+                    acceptButton.setOnAction(DiffController.this::acceptDifference);
+                    return acceptButton;
                 }
             };
         }

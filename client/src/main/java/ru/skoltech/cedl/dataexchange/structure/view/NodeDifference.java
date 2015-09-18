@@ -7,19 +7,51 @@ import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
  */
 public class NodeDifference extends ModelDifference {
 
-    protected ModelNode node;
+    protected ModelNode node1;
 
-    public NodeDifference(ModelNode node, String attribute, ChangeType changeType, String value1, String value2) {
-        this.node = node;
+    protected ModelNode node2;
+
+    private NodeDifference(ModelNode node1, String attribute, ChangeType changeType) {
+        this.node1 = node1;
+        this.attribute = attribute;
+        this.changeType = changeType;
+    }
+
+    private NodeDifference(ModelNode node1, ModelNode node2, String attribute, ChangeType changeType, String value1, String value2) {
+        this.node1 = node1;
         this.attribute = attribute;
         this.changeType = changeType;
         this.value1 = value1;
         this.value2 = value2;
     }
 
+    public static NodeDifference createNodeAttributesModified(ModelNode node1, ModelNode node2, String attribute, String value1, String value2) {
+        return new NodeDifference(node1, node2, attribute, ChangeType.CHANGE_NODE_ATTRIBUTE, value1, value2);
+    }
+
+    public static NodeDifference createAddedNode(ModelNode node1, String name) {
+        return new NodeDifference(node1, name, ChangeType.ADD_NODE);
+    }
+
+    public static NodeDifference createRemovedNode(ModelNode node1, String name) {
+        return new NodeDifference(node1, name, ChangeType.REMOVE_NODE);
+    }
+
+    public static NodeDifference createRemoveExternalModel(ModelNode node1, String name) {
+        return new NodeDifference(node1, name, ChangeType.REMOVE_EXTERNAL_MODEL);
+    }
+
+    public static NodeDifference createAddExternalModel(ModelNode node1, String name) {
+        return new NodeDifference(node1, name, ChangeType.ADD_EXTERNAL_MODEL);
+    }
+
+    public static NodeDifference createExternaModelModified(ModelNode node1, String name) {
+        return new NodeDifference(node1, name, ChangeType.CHANGE_EXTERNAL_MODEL);
+    }
+
     @Override
     public String getNodeName() {
-        return node.getNodePath();
+        return node1.getNodePath();
     }
 
     @Override
@@ -27,18 +59,38 @@ public class NodeDifference extends ModelDifference {
         return "";
     }
 
-    public ModelNode getNode() {
-        return node;
+    @Override
+    public boolean isMergeable() {
+        return false;
     }
 
-    public void setNode(ModelNode node) {
-        this.node = node;
+    @Override
+    public ChangeLocation changeLocation() {
+        switch (changeType) {
+            case ADD_PARAMETER:
+                return ChangeLocation.ARG1;
+            case REMOVE_PARAMETER:
+                return ChangeLocation.ARG2;
+            default:
+                return node2.getLastModification() > node1.getLastModification() ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
+        }
+    }
+
+    public ModelNode getNode1() {
+        return node1;
+    }
+
+    public void setNode1(ModelNode node1) {
+        this.node1 = node1;
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NodeDifference{");
-        sb.append("node='").append(node.getName()).append('\'');
+        sb.append("node1='").append(node1.getName()).append('\'');
+        if (node2 != null) {
+            sb.append(", node2='").append(node1.getName()).append('\'');
+        }
         sb.append(", attribute").append(attribute);
         sb.append(", changeType=").append(changeType);
         sb.append(", value1='").append(value1).append('\'');

@@ -1,13 +1,9 @@
-package ru.skoltech.cedl.dataexchange.structure;
+package ru.skoltech.cedl.dataexchange.structure.view;
 
 import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.view.ChangeType;
-import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.view.NodeDifference;
-import ru.skoltech.cedl.dataexchange.structure.view.ParameterDifference;
 
 import java.util.*;
 import java.util.function.Function;
@@ -21,9 +17,9 @@ public class ModelDifferencesFactory {
     public static List<ModelDifference> computeDifferences(ModelNode m1, ModelNode m2) {
         LinkedList<ModelDifference> modelDifferences = new LinkedList<>();
         if (!m1.getName().equals(m2.getName())) {
-            String fromValue = m1.getName();
-            String toValue = m2.getName();
-            modelDifferences.add(new NodeDifference(m1, "name", ChangeType.CHANGE_NODE_ATTRIBUTE, fromValue, toValue));
+            String value1 = m1.getName();
+            String value2 = m2.getName();
+            modelDifferences.add(NodeDifference.createNodeAttributesModified(m1, m2, "name", value1, value2));
         }
         modelDifferences.addAll(differencesOnParameters(m1, m2));
         modelDifferences.addAll(differencesOnExternalModels(m1, m2));
@@ -51,9 +47,9 @@ public class ModelDifferencesFactory {
             ModelNode s2 = (ModelNode) m2SubNodesMap.get(nodeUuid);
 
             if (s1 != null && s2 == null) {
-                subnodesDifferences.add(new NodeDifference(s1, "", ChangeType.REMOVE_NODE, s1.getName(), ""));
+                subnodesDifferences.add(NodeDifference.createRemovedNode(s1, s1.getName()));
             } else if (s1 == null && s2 != null) {
-                subnodesDifferences.add(new NodeDifference(s2, "", ChangeType.ADD_NODE, "", s2.getName()));
+                subnodesDifferences.add(NodeDifference.createAddedNode(s2, s2.getName()));
             } else {
                 // depth search
                 subnodesDifferences.addAll(computeDifferences(s1, s2));
@@ -76,11 +72,11 @@ public class ModelDifferencesFactory {
             ExternalModel e2 = m2extModels.get(extMod);
 
             if (e1 != null && e2 == null) {
-                extModelDifferences.add(new NodeDifference(e1.getParent(), e1.getName(), ChangeType.REMOVE_EXTERNALS_MODEL, e1.getName(), ""));
+                extModelDifferences.add(NodeDifference.createRemoveExternalModel(e1.getParent(), e1.getName()));
             } else if (e1 == null && e2 != null) {
-                extModelDifferences.add(new NodeDifference(e2.getParent(), e2.getName(), ChangeType.ADD_EXTERNAL_MODEL, "", e2.getName()));
+                extModelDifferences.add(NodeDifference.createAddExternalModel(e2.getParent(), e2.getName()));
             } else if (!Arrays.equals(e1.getAttachment(), e2.getAttachment())) {
-                extModelDifferences.add(new NodeDifference(e1.getParent(), e1.getName(), ChangeType.CHANGE_EXTERNAL_MODEL, "", ""));
+                extModelDifferences.add(NodeDifference.createExternaModelModified(e1.getParent(), e1.getName()));
             }
         }
         return extModelDifferences;
@@ -109,18 +105,7 @@ public class ModelDifferencesFactory {
             } else if (p1 != null && p2 != null) {
                 List<AttributeDifference> differences = parameterDifferences(p1, p2);
                 if (!differences.isEmpty()) {
-                    StringBuilder sbAttributes = new StringBuilder(), sbValues1 = new StringBuilder(), sbValues2 = new StringBuilder();
-                    for (AttributeDifference diff : differences) {
-                        if (sbAttributes.length() > 0) {
-                            sbAttributes.append('\n');
-                            sbValues1.append('\n');
-                            sbValues2.append('\n');
-                        }
-                        sbAttributes.append(diff.attributeName);
-                        sbValues1.append(diff.value1);
-                        sbValues2.append(diff.value2);
-                    }
-                    ModelDifference modelDifference = ParameterDifference.createModifiedParameterAttributes(p1, p2, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString());
+                    ModelDifference modelDifference = ParameterDifference.createParameterAttributesModified(p1, p2, differences);
                     parameterDifferences.add(modelDifference);
                 }
             }
@@ -182,17 +167,5 @@ public class ModelDifferencesFactory {
             differences.add(new AttributeDifference("description", p1.getDescription(), p2.getDescription()));
         }
         return differences;
-    }
-
-    static class AttributeDifference {
-        public String attributeName;
-        public String value1;
-        public String value2;
-
-        public AttributeDifference(String attributeName, Object value1, Object value2) {
-            this.attributeName = attributeName;
-            this.value1 = String.valueOf(value1);
-            this.value2 = String.valueOf(value2);
-        }
     }
 }

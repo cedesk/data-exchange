@@ -19,44 +19,28 @@ public abstract class ModelDifference {
 
     abstract public String getParameterName();
 
+    abstract public boolean isMergeable();
+
+    abstract public ChangeLocation changeLocation();
+
     public String getAttribute() {
         return attribute;
-    }
-
-    public void setAttribute(String attribute) {
-        this.attribute = attribute;
     }
 
     public ChangeType getChangeType() {
         return changeType;
     }
 
-    public void setChangeType(ChangeType changeType) {
-        this.changeType = changeType;
-    }
-
     public String getValue1() {
         return value1;
-    }
-
-    public void setValue1(String value1) {
-        this.value1 = value1;
     }
 
     public String getValue2() {
         return value2;
     }
 
-    public void setValue2(String value2) {
-        this.value2 = value2;
-    }
-
     public String getAuthor() {
         return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
     }
 
     @Override

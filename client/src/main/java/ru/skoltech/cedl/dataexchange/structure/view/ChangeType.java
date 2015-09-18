@@ -24,7 +24,7 @@ public enum ChangeType {
             return "add external model";
         }
     },
-    REMOVE_EXTERNALS_MODEL {
+    REMOVE_EXTERNAL_MODEL {
         public String toString() {
             return "remove external model";
         }
@@ -47,16 +47,6 @@ public enum ChangeType {
     REMOVE_PARAMETER {
         public String toString() {
             return "remove parameter";
-        }
-    },
-    CHANGE_PARAMETER_ATTRIBUTE {
-        public String toString() {
-            return "change parameter attribute";
-        }
-    },
-    CHANGE_PARAMETER_VALUE {
-        public String toString() {
-            return "change parameter value";
         }
     }
 }

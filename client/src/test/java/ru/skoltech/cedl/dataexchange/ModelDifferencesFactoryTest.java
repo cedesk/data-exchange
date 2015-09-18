@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.ModelDifferencesFactory;
+import ru.skoltech.cedl.dataexchange.structure.view.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -77,7 +77,7 @@ public class ModelDifferencesFactoryTest {
         Assert.assertEquals(3, modelDifferences.size());
         Assert.assertEquals(ChangeType.ADD_PARAMETER, modelDifferences.get(0).getChangeType());
         Assert.assertEquals(ChangeType.ADD_EXTERNAL_MODEL, modelDifferences.get(1).getChangeType());
-        Assert.assertEquals(ChangeType.REMOVE_EXTERNALS_MODEL, modelDifferences.get(2).getChangeType());
+        Assert.assertEquals(ChangeType.REMOVE_EXTERNAL_MODEL, modelDifferences.get(2).getChangeType());
     }
 
     @Test
@@ -95,5 +95,28 @@ public class ModelDifferencesFactoryTest {
         Assert.assertEquals(2, modelDifferences.size());
         Assert.assertEquals(ChangeType.CHANGE_NODE_ATTRIBUTE, modelDifferences.get(0).getChangeType());
         Assert.assertEquals(ChangeType.ADD_PARAMETER, modelDifferences.get(1).getChangeType());
+    }
+
+    @Test
+    public void twoNodeWithParams() {
+        SubSystemModel u1 = new SubSystemModel("u1");
+        s1.addSubNode(u1);
+        ParameterModel p1 = new ParameterModel("new-param", 0.2);
+        u1.addParameter(p1);
+
+        SubSystemModel u2 = new SubSystemModel("u1");
+        u2.setUuid(u1.getUuid());
+        s2.addSubNode(u2);
+        ParameterModel p2 = new ParameterModel("new-param", 0.5);
+        p2.setUuid(p1.getUuid());
+        u2.addParameter(p2);
+
+        List<ModelDifference> modelDifferences =
+                ModelDifferencesFactory.computeDifferences(s1, s2);
+        System.out.println(modelDifferences);
+
+        Assert.assertEquals(2, modelDifferences.size());
+        Assert.assertEquals(ChangeType.CHANGE_NODE_ATTRIBUTE, modelDifferences.get(0).getChangeType());
+        Assert.assertEquals(ChangeType.MODIFY_PARAMETER, modelDifferences.get(1).getChangeType());
     }
 }

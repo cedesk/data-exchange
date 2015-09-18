@@ -3,6 +3,8 @@ package ru.skoltech.cedl.dataexchange.structure.view;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
+import java.util.List;
+
 /**
  * Created by D.Knoll on 17.09.2015.
  */
@@ -22,16 +24,26 @@ public class ParameterDifference extends ModelDifference {
         this.value2 = values2;
     }
 
-    public ParameterDifference(ParameterModel parameter1, ChangeType changeType, String value1, String value2) {
+    private ParameterDifference(ParameterModel parameter1, ChangeType changeType, String value1, String value2) {
         this.parameter1 = parameter1;
         this.changeType = changeType;
         this.value1 = value1;
         this.value2 = value2;
     }
 
-    public static ParameterDifference createModifiedParameterAttributes(ParameterModel parameter1, ParameterModel parameter2,
-                                                                        String attributes, String values1, String values2) {
-        return new ParameterDifference(parameter1, parameter2, ChangeType.MODIFY_PARAMETER, attributes, values1, values2);
+    public static ModelDifference createParameterAttributesModified(ParameterModel parameter1, ParameterModel parameter2, List<AttributeDifference> differences) {
+        StringBuilder sbAttributes = new StringBuilder(), sbValues1 = new StringBuilder(), sbValues2 = new StringBuilder();
+        for (AttributeDifference diff : differences) {
+            if (sbAttributes.length() > 0) {
+                sbAttributes.append('\n');
+                sbValues1.append('\n');
+                sbValues2.append('\n');
+            }
+            sbAttributes.append(diff.attributeName);
+            sbValues1.append(diff.value1);
+            sbValues2.append(diff.value2);
+        }
+        return new ParameterDifference(parameter1, parameter2, ChangeType.MODIFY_PARAMETER, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString());
     }
 
     public static ModelDifference createRemovedParameter(ParameterModel p1, String name) {
@@ -52,6 +64,23 @@ public class ParameterDifference extends ModelDifference {
         return parameter1.getName();
     }
 
+    @Override
+    public boolean isMergeable() {
+        return changeType == ChangeType.MODIFY_PARAMETER;
+    }
+
+    @Override
+    public ChangeLocation changeLocation() {
+        switch (changeType) {
+            case ADD_PARAMETER:
+                return ChangeLocation.ARG1;
+            case REMOVE_PARAMETER:
+                return ChangeLocation.ARG2;
+            default:
+                return parameter2.getLastModification() > parameter1.getLastModification() ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
+        }
+    }
+
     public ParameterModel getParameter1() {
         return parameter1;
     }
@@ -63,7 +92,11 @@ public class ParameterDifference extends ModelDifference {
     public void mergeDifference() {
         switch (changeType) {
             case MODIFY_PARAMETER:
-                Utils.copyBean(parameter2, parameter1);
+                if (changeLocation() == ChangeLocation.ARG1) {
+                    Utils.copyBean(parameter1, parameter2);
+                } else {
+                    Utils.copyBean(parameter2, parameter1);
+                }
                 break;
             default:
                 throw new IllegalArgumentException("NO ACTION CHANGE TYPE " + changeType.toString());
@@ -74,7 +107,9 @@ public class ParameterDifference extends ModelDifference {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ParameterDifference{");
         sb.append("parameter1='").append(parameter1.getName()).append('\'');
-        sb.append(", parameter2='").append(parameter2.getName()).append('\'');
+        if (parameter2 != null) {
+            sb.append(", parameter2='").append(parameter2.getName()).append('\'');
+        }
         sb.append(", changeType=").append(changeType);
         sb.append(", attributes='").append(attribute).append('\'');
         sb.append(", values1='").append(value1).append('\'');
