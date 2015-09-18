@@ -50,10 +50,8 @@ public class DiffController implements Initializable {
         modelDifferences.addListener(new ListChangeListener<ModelDifference>() {
             @Override
             public void onChanged(Change<? extends ModelDifference> c) {
-                if (c.getList().size() > 0) {
-                    mergeButton.setDisable(false);
-                } else {
-                    mergeButton.setDisable(true);
+                if (c.getList().size() == 0) {
+                    close(null);
                 }
             }
         });
@@ -104,9 +102,6 @@ public class DiffController implements Initializable {
             }
         }
         modelDifferences.removeAll(appliedDifferences);
-        if (modelDifferences.size() == 0) {
-            close(null);
-        }
     }
 
     public void close(ActionEvent actionEvent) {
