@@ -29,4 +29,10 @@ public class SubSystemModel extends CompositeModelNode<ElementModel> {
     public ModelNode getParent() {
         return super.getParent();
     }
+
+    @Override
+    @Transient
+    public String getNodePath() {
+        return NODE_SEPARATOR + name;
+    }
 }

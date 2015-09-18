@@ -37,7 +37,7 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
     @Override
     @Transient
     public String getNodePath() {
-        return "";
+        return name;
     }
 
     /**

@@ -61,8 +61,8 @@ public class ParameterChooser extends ChoiceDialog<ParameterModel> {
         // SUBSYSTEM CHOICE
         subsystemChoiceBox.setConverter(new StringConverter<ModelNode>() {
             @Override
-            public String toString(ModelNode object) {
-                return object.getNodePath();
+            public String toString(ModelNode modelNode) {
+                return modelNode.getNodePath();
             }
 
             @Override
