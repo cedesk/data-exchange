@@ -20,6 +20,7 @@ import ru.skoltech.cedl.dataexchange.structure.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.ChangeType;
 import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.view.NodeDifference;
 import ru.skoltech.cedl.dataexchange.structure.view.ParameterDifference;
 
 import java.net.URL;
@@ -85,12 +86,15 @@ public class DiffController implements Initializable {
     private void acceptDifference(ActionEvent actionEvent) {
         Button acceptButton = (Button) actionEvent.getTarget();
         ModelDifference modelDifference = (ModelDifference) acceptButton.getUserData();
-        String nodePath = modelDifference.getNodePath();
-        logger.debug("accepting differences on " + nodePath);
-        if(modelDifference instanceof ParameterDifference) {
-            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
-            parameterDifference.mergeDifference();
-            modelDifferences.removeIf(difference -> difference.getNodePath().equals(nodePath));
+        if (modelDifference instanceof ParameterDifference) {
+            logger.debug("accepting differences on " + modelDifference.getNodeName() + "::" + modelDifference.getParameterName());
+            ((ParameterDifference) modelDifference).mergeDifference();
+            modelDifferences.remove(modelDifference);
+        } else if (modelDifference instanceof NodeDifference) {
+            logger.debug("accepting differences on " + modelDifference.getNodeName());
+            NodeDifference nodeDifference = (NodeDifference) modelDifference;
+            // TODO: MERGE
+            modelDifferences.remove(modelDifference);
         }
     }
 

@@ -1,8 +1,5 @@
 package ru.skoltech.cedl.dataexchange.structure.view;
 
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-
 /**
  * Created by D.Knoll on 20.07.2015.
  */
@@ -20,7 +17,7 @@ public abstract class ModelDifference {
 
     abstract public String getNodeName();
 
-    abstract public String getNodePath();
+    abstract public String getParameterName();
 
     public String getAttribute() {
         return attribute;

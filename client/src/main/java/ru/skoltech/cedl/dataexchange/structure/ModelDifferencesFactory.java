@@ -103,9 +103,9 @@ public class ModelDifferencesFactory {
             ParameterModel p2 = m2params.get(parUuid);
 
             if (p1 != null && p2 == null) {
-                parameterDifferences.add(new ParameterDifference(p1, "", ChangeType.REMOVE_PARAMETER, p1.getName(), ""));
+                parameterDifferences.add(ParameterDifference.createRemovedParameter(p1, p1.getName()));
             } else if (p1 == null && p2 != null) {
-                parameterDifferences.add(new ParameterDifference(p2, "", ChangeType.ADD_PARAMETER, "", p2.getName()));
+                parameterDifferences.add(ParameterDifference.createAddedParameter(p2, p2.getName()));
             } else if (p1 != null && p2 != null) {
                 List<AttributeDifference> differences = parameterDifferences(p1, p2);
                 if (!differences.isEmpty()) {
@@ -120,7 +120,7 @@ public class ModelDifferencesFactory {
                         sbValues1.append(diff.value1);
                         sbValues2.append(diff.value2);
                     }
-                    ModelDifference modelDifference = new ParameterDifference(p1, sbAttributes.toString(), ChangeType.MODIFY_PARAMETER, sbValues1.toString(), sbValues2.toString());
+                    ModelDifference modelDifference = ParameterDifference.createModifiedParameterAttributes(p1, p2, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString());
                     parameterDifferences.add(modelDifference);
                 }
             }

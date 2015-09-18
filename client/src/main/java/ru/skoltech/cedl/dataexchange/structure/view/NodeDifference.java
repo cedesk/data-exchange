@@ -23,8 +23,8 @@ public class NodeDifference extends ModelDifference {
     }
 
     @Override
-    public String getNodePath() {
-        return node.getNodePath();
+    public String getParameterName() {
+        return "";
     }
 
     public ModelNode getNode() {

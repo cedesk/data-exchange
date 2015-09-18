@@ -9,14 +9,19 @@
         <TableView fx:id="diffTable" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columns>
-                <TableColumn fx:id="node" prefWidth="220.0" text="Node">
+                <TableColumn fx:id="changeTypeColumn" prefWidth="180.0" text="Change Type">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="changeType"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="node" prefWidth="160.0" text="Node">
                     <cellValueFactory>
                         <PropertyValueFactory property="nodeName"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="changeTypeColumn" prefWidth="180.0" text="Change Type">
+                <TableColumn fx:id="parameter" prefWidth="80.0" text="Parameter">
                     <cellValueFactory>
-                        <PropertyValueFactory property="changeType"/>
+                        <PropertyValueFactory property="parameterName"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn fx:id="attribute" prefWidth="80.0" text="Attribute">
