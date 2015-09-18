@@ -360,7 +360,7 @@ public class UserRoleManagementController implements Initializable {
             stage.setScene(new Scene(root));
             stage.setTitle("User details");
             stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
 
             UserEditingController controller = loader.getController();

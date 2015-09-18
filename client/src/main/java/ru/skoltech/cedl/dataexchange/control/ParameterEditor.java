@@ -237,7 +237,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             stage.setScene(new Scene(root));
             stage.setTitle("Source Selector");
             stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(nameText.getScene().getWindow());
             SourceSelectorController controller = loader.getController();
             controller.setupBinding(parameterBean, fieldName);
