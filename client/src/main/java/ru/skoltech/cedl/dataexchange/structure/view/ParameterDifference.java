@@ -90,16 +90,10 @@ public class ParameterDifference extends ModelDifference {
     }
 
     public void mergeDifference() {
-        switch (changeType) {
-            case MODIFY_PARAMETER:
-                if (changeLocation() == ChangeLocation.ARG1) {
-                    Utils.copyBean(parameter1, parameter2);
-                } else {
-                    Utils.copyBean(parameter2, parameter1);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("NO ACTION CHANGE TYPE " + changeType.toString());
+        if (changeType == ChangeType.MODIFY_PARAMETER) {
+            Utils.copyBean(parameter2, parameter1);
+        } else {
+            System.err.println("MERGE IMPOSSIBLE");
         }
     }
 

@@ -46,9 +46,8 @@
         <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="200.0"
                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <items>
-                <Button fx:id="mergeButton" onAction="#merge" mnemonicParsing="false" defaultButton="true"
-                        text="Merge"/>
-                <Button fx:id="cancelButton" mnemonicParsing="false" cancelButton="true" text="Cancel"/>
+                <Button fx:id="mergeButton" onAction="#mergeAll" mnemonicParsing="true" text="_Merge All"/>
+                <Button fx:id="cancelButton" onAction="#close" mnemonicParsing="false" cancelButton="true" text="Cancel"/>
             </items>
         </ToolBar>
     </children>
