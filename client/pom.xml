@@ -168,10 +168,10 @@
                         <configuration>
                             <target name="copy native installer to external output directory">
                                 <tstamp>
-                                    <format property="timestamp" pattern="yyyy-MM-dd_HH-mm"/>
+                                    <format property="build_timestamp" pattern="yyyy-MM-dd_HH-mm"/>
                                 </tstamp>
                                 <copy file="${project.build.directory}/jfx/native/CEDESK-${project.version}.exe"
-                                      tofile="${package.output.dir}/CEDESK-${project.version}_${timestamp}.exe"/>
+                                      tofile="${package.output.dir}/CEDESK-${project.version}_${build_timestamp}.exe"/>
                             </target>
                         </configuration>
                     </execution>
