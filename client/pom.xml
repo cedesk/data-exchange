@@ -10,7 +10,7 @@
         <main.class>ru.skoltech.cedl.dataexchange.ClientApplication</main.class>
         <app.vendor>CEDL - SkolTech</app.vendor>
         <timestamp>${maven.build.timestamp}</timestamp>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm'GMT'Z</maven.build.timestamp.format>
     </properties>
     <dependencies>
         <dependency>
