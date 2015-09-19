@@ -11,6 +11,7 @@
         <app.vendor>CEDL - SkolTech</app.vendor>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm'GMT'Z</maven.build.timestamp.format>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
         <dependency>
@@ -137,7 +138,7 @@
             <plugin>
                 <groupId>com.zenjava</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <version>8.1.2</version>
+                <version>8.1.4</version>
                 <configuration>
                     <mainClass>${main.class}</mainClass>
                     <nativeReleaseVersion>${project.version}</nativeReleaseVersion>
@@ -181,6 +182,9 @@
     <profiles>
         <profile>
             <id>development-environment</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <package.output.dir>${user.home}/development/cedesk-builds</package.output.dir>
             </properties>
