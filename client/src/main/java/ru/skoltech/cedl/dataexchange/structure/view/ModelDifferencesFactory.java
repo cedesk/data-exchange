@@ -150,10 +150,22 @@ public class ModelDifferencesFactory {
                 || (p1.getValueReference() != null && !p1.getValueReference().equals(p2.getValueReference()))) {
             differences.add(new AttributeDifference("valueReference", p1.getValueReference(), p2.getValueReference()));
         }
-        if ((p1.getValueLink() == null && p2.getValueLink() != null) || (p1.getValueLink() != null && p2.getValueLink() == null)
-                || (p1.getValueLink() != null && !p1.getValueLink().equals(p2.getValueLink()))) {
-            differences.add(new AttributeDifference("valueLink", p1.getValueLink() != null ? p1.getValueLink().getNodePath() : null,
-                    p2.getValueLink() != null ? p2.getValueLink().getNodePath() : null));
+        ParameterModel vl1 = p1.getValueLink();
+        ParameterModel vl2 = p2.getValueLink();
+        if ((vl1 == null && vl2 != null) || (vl1 != null && vl2 == null)) {
+            if ((vl1 != null && !vl1.getUuid().equals(vl2.getUuid()))) { // reference is the same
+                if ((vl1.getValue() == null && vl2.getValue() != null) || (vl1.getValue() != null && vl2.getValue() == null)
+                        || (vl1.getValue() != null && !vl1.getValue().equals(vl2.getValue()))) {
+                    differences.add(new AttributeDifference("valueLink>value", vl1.getValue(), vl2.getValue()));
+                }
+                if ((vl1.getUnit() == null && vl2.getUnit() != null) || (vl1.getUnit() != null && vl2.getUnit() == null)
+                        || (vl1.getUnit() != null && !vl1.getUnit().equals(vl2.getUnit()))) {
+                    differences.add(new AttributeDifference("valueLink>unit", vl1.getUnit() != null ? vl1.getUnit().asText() : null, vl2.getUnit() != null ? vl2.getUnit().asText() : null));
+                }
+            } else { // different reference
+                differences.add(new AttributeDifference("valueLink", vl1 != null ? vl1.getNodePath() : null,
+                        vl2 != null ? vl2.getNodePath() : null));
+            }
         }
         if (!p1.getIsExported() == p2.getIsExported()) {
             differences.add(new AttributeDifference("isExported", p1.getIsExported(), p2.getIsExported()));
