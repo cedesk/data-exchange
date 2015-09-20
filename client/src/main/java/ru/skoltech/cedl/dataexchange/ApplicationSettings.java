@@ -2,8 +2,10 @@ package ru.skoltech.cedl.dataexchange;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -83,9 +85,13 @@ public class ApplicationSettings {
         setAutoLoadLastProjectOnStartup(true);
     }
 
+    private static File getSettingsFile() {
+        return new File(StorageUtils.getAppDir(), SETTINGS_FILE);
+    }
+
     private static synchronized void load() {
         Properties props = new Properties();
-        try (FileReader fileReader = new FileReader(SETTINGS_FILE)) {
+        try (FileReader fileReader = new FileReader(getSettingsFile())) {
             props.load(fileReader);
             properties = props;
         } catch (IOException e) {
@@ -94,7 +100,7 @@ public class ApplicationSettings {
     }
 
     private static synchronized void save() {
-        try (FileWriter fileWriter = new FileWriter(SETTINGS_FILE)) {
+        try (FileWriter fileWriter = new FileWriter(getSettingsFile())) {
             properties.store(fileWriter, SETTINGS_COMMENTS);
         } catch (IOException e) {
             logger.error("Error saving application settings!");

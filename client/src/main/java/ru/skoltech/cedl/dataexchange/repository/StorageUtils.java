@@ -19,16 +19,26 @@ public class StorageUtils {
     private static final String USER_HOME = System.getProperty("user.home");
 
     public static File getAppDir() {
-        File homeDir = new File(USER_HOME);
-        File appDir = new File(homeDir, APP_DIR);
-        makeDirectory(appDir);
-        return appDir;
+        File appHome;
+        String cedeskAppDirProperty = System.getProperty("cedesk.app.dir");
+        if (cedeskAppDirProperty == null) {
+            File homeDir = new File(USER_HOME);
+            appHome = new File(homeDir, APP_DIR);
+        } else {
+            appHome = new File(cedeskAppDirProperty);
+        }
+        cedeskAppDirProperty = appHome.getAbsolutePath();
+        System.setProperty("cedesk.data.dir", cedeskAppDirProperty); // re-write in any case for log4j
+
+        if (!appHome.exists()) {
+            boolean dirCreated = appHome.mkdirs();
+            System.err.println("unable to create application directory in user home: " + cedeskAppDirProperty);
+        }
+        return appHome;
     }
 
     public static File getDataDir(String projectName) {
-        File homeDir = new File(USER_HOME);
-        File appDir = new File(homeDir, APP_DIR);
-        return new File(appDir, projectName);
+        return new File(getAppDir(), projectName);
     }
 
     public static void makeDirectory(File path) {

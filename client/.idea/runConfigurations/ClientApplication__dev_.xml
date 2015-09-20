@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ClientApplication" type="Application" factoryName="Application">
+  <configuration default="false" name="ClientApplication (dev)" type="Application" factoryName="Application">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
       <pattern>
         <option name="PATTERN" value="sample.*" />
@@ -7,7 +7,7 @@
       </pattern>
     </extension>
     <option name="MAIN_CLASS_NAME" value="ru.skoltech.cedl.dataexchange.ClientApplication" />
-    <option name="VM_PARAMETERS" value="" />
+    <option name="VM_PARAMETERS" value="-Dcedesk.app.dir=&quot;CEDESK-dev&quot;" />
     <option name="PROGRAM_PARAMETERS" value="" />
     <option name="WORKING_DIRECTORY" value="file://$USER_HOME$/" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -17,8 +17,6 @@
     <option name="PASS_PARENT_ENVS" value="true" />
     <module name="client" />
     <envs />
-    <RunnerSettings RunnerId="Run" />
-    <ConfigurationWrapper RunnerId="Run" />
     <method />
   </configuration>
 </component>

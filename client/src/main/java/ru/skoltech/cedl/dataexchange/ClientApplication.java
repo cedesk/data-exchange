@@ -10,22 +10,16 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
-
-import java.io.File;
 
 public class ClientApplication extends Application {
 
     private static Logger logger = Logger.getLogger(ClientApplication.class);
 
     public static void main(String[] args) {
-        if (System.getProperty("cedesk.data.dir") == null) {
-            System.setProperty("cedesk.data.dir", new File(System.getProperty("user.home"), "CEDESK").getAbsolutePath());
-        }
-        // ensure log directory exists
-        new File(System.getProperty("cedesk.data.dir")).mkdirs();
-        // now it's safe to configure log4j
+        System.out.println("using: " + StorageUtils.getAppDir().getAbsolutePath());
         PropertyConfigurator.configure(ClientApplication.class.getResource("/META-INF/log4j.properties"));
 
         logger.info("----------------------------------------------------------------------------------------------------");
