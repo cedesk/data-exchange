@@ -27,7 +27,7 @@ public class RepositoryWatcher extends Thread {
     @Override
     public void run() {
         try {
-            sleep(SECONDS_OF_CHECK_PERIODICITY * 1000);
+            sleep(SECONDS_OF_CHECK_PERIODICITY * 100); // willingly shorter
         } catch (InterruptedException ignore) {
         }
         while (!quitRunning.get()) {

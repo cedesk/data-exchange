@@ -42,32 +42,19 @@ public class Project {
     public static final String DEFAULT_PROJECT_NAME = "defaultProject";
 
     private static Logger logger = Logger.getLogger(Project.class);
-
-    private String projectName;
-
-    private Repository repository;
-
-    private Study study;
-
-    private Study repositoryStudy;
-
-    private LongProperty latestLoadedModification = new SimpleLongProperty(-1L);
-
-    private LongProperty latestRepositoryModification = new SimpleLongProperty(-1L);
-
-    private RepositoryStateMachine repositoryStateMachine = new RepositoryStateMachine();
-
-    private UserManagement userManagement;
-
-    private UnitManagement unitManagement;
-
-    private User currentUser;
-
-    private ExternalModelFileWatcher externalModelFileWatcher = new ExternalModelFileWatcher();
-
-    private ExternalModelFileHandler externalModelFileHandler;
-
     private final ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
+    private String projectName;
+    private Repository repository;
+    private Study study;
+    private Study repositoryStudy;
+    private LongProperty latestLoadedModification = new SimpleLongProperty(-1L);
+    private LongProperty latestRepositoryModification = new SimpleLongProperty(-1L);
+    private RepositoryStateMachine repositoryStateMachine = new RepositoryStateMachine();
+    private UserManagement userManagement;
+    private UnitManagement unitManagement;
+    private User currentUser;
+    private ExternalModelFileWatcher externalModelFileWatcher = new ExternalModelFileWatcher();
+    private ExternalModelFileHandler externalModelFileHandler;
 
     public Project() {
         this(DEFAULT_PROJECT_NAME);
@@ -476,6 +463,10 @@ public class Project {
     }
 
     public boolean isStudyInRepository() {
+        // TODO: it is an imprecise assumption that in case of any import setting, this study is also available in the repository
+        if (ApplicationSettings.getProjectToImport() != null) {
+            return true;
+        }
         return repositoryStateMachine.wasLoadedOrSaved();
     }
 

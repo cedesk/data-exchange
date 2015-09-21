@@ -224,7 +224,9 @@ public class MainController implements Initializable {
                 if (!validDatabaseConnection()) {
                     openSettingsDialog(null);
                 }
-                if (validDatabaseConnection() && ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
+                if (validDatabaseConnection() && ApplicationSettings.getProjectToImport() != null) {
+                    importProject(null);
+                } else if (validDatabaseConnection() && ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
                     String projectName = ApplicationSettings.getLastUsedProject(null);
                     if (projectName != null) {
                         project.setProjectName(projectName);
@@ -292,12 +294,23 @@ public class MainController implements Initializable {
     }
 
     public void importProject(ActionEvent actionEvent) {
-        // TODO: warn user about replacing current project
-
         File importFile = null;
         if (actionEvent == null) { // invoked from startup
-            importFile = new File(StorageUtils.getAppDir(), "djSat21_2015-09-17_14-53_cedesk-system-model.xml");
-        } else {
+            String projectToImport = ApplicationSettings.getProjectToImport();
+            if (projectToImport != null) {
+                importFile = new File(StorageUtils.getAppDir(), projectToImport);
+                if (importFile.exists()) {
+                    logger.info("importing " + importFile.getAbsolutePath());
+                } else {
+                    logger.info("missing project to import " + importFile.getAbsolutePath());
+                    importFile = null;
+                }
+            } else {
+                logger.error("missing setting: project.import.name");
+            }
+        }
+        if (importFile == null) {
+            // TODO: warn user about replacing current project
             importFile = Dialogues.chooseImportFile();
         }
         if (importFile != null) {

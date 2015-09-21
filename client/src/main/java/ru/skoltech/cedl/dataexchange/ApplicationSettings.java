@@ -29,6 +29,7 @@ public class ApplicationSettings {
     private static final String PROJECT_LAST_AUTOLOAD = "project.last.autoload";
     private static final String LAST_PROJECT_NAME = "project.last.name";
     private static final String LAST_PROJECT_USER = "project.last.user";
+    private static final String IMPORT_PROJECT_NAME = "project.import.name";
 
     private static final String STUDY_MODEL_DEPTH = "study.model.depth";
 
@@ -81,8 +82,6 @@ public class ApplicationSettings {
             properties.setProperty(LAST_PROJECT_NAME, projectName);
             save();
         }
-        // TODO: remove, when there are is a settings dialog
-        setAutoLoadLastProjectOnStartup(true);
     }
 
     private static File getSettingsFile() {
@@ -201,5 +200,9 @@ public class ApplicationSettings {
             properties.setProperty(STUDY_MODEL_DEPTH, String.valueOf(studyModelDepth));
             save();
         }
+    }
+
+    public static String getProjectToImport() {
+        return properties.getProperty(IMPORT_PROJECT_NAME);
     }
 }
