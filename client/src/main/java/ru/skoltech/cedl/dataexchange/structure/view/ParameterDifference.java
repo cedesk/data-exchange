@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure.view;
 
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
@@ -9,6 +10,8 @@ import java.util.List;
  * Created by D.Knoll on 17.09.2015.
  */
 public class ParameterDifference extends ModelDifference {
+
+    private static final Logger logger = Logger.getLogger(ParameterDifference.class);
 
     private final ParameterModel parameter1;
 
@@ -77,7 +80,12 @@ public class ParameterDifference extends ModelDifference {
             case REMOVE_PARAMETER:
                 return ChangeLocation.ARG2;
             default:
-                return parameter2.getLastModification() > parameter1.getLastModification() ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
+                boolean p2newer = parameter2.getLastModification() > parameter1.getLastModification();
+                logger.debug("checking difference on " + parameter1.getNodePath() +
+                        ", parameter 2: " + parameter2.getLastModification() +
+                        ", parameter 1: " + parameter1.getLastModification() +
+                        " --> " + p2newer);
+                return p2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
         }
     }
 

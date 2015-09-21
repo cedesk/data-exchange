@@ -6,7 +6,6 @@ import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
@@ -255,25 +254,15 @@ public class Project {
         return sb.toString();
     }
 
-    public boolean storeLocalStudy() {
-        try {
-            updateParameterValuesFromLinks();
-            exportValuesToExternalModels();
-            storeChangedExternalModels();
-            Study study = repository.storeStudy(this.study);
-            setStudy(study);
-            setRepositoryStudy(study);
-            repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
-            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
-            return true;
-        } catch (RepositoryException re) {
-            StatusLogger.getInstance().log("Unable to store. Concurrent editing appeared!", true);
-            logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
-            StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
-        } catch (Exception e) {
-            logger.error("Error storing study!", e);
-        }
-        return false;
+    public void storeLocalStudy() throws RepositoryException {
+        updateParameterValuesFromLinks();
+        exportValuesToExternalModels();
+        storeChangedExternalModels();
+        Study study = repository.storeStudy(this.study);
+        setStudy(study);
+        setRepositoryStudy(study);
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+        ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
     }
 
     private void updateParameterValuesFromLinks() {

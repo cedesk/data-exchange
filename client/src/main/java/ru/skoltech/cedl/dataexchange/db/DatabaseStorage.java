@@ -8,11 +8,7 @@ import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -292,28 +288,36 @@ public class DatabaseStorage implements Repository {
             StaleObjectStateException staleObjectStateException = (StaleObjectStateException) cause;
             String entityName = staleObjectStateException.getEntityName();
             Serializable identifier = staleObjectStateException.getIdentifier();
-            RepositoryException re = new RepositoryException("Stale object encountered");
+            RepositoryException re = new RepositoryException("Stale object encountered", throwable);
             re.setEntityClassName(entityName);
             re.setEntityIdentifier(identifier.toString());
-            EntityManager entityManager = null;
-            try {
-                entityManager = getEntityManager();
-                Class<?> entityClass = Class.forName(entityName);
-                Object entity = entityManager.find(entityClass, identifier);
-                if (entity != null) {
-                    re.setEntityAsString(entity.toString());
-                    Method getNameMethod = entity.getClass().getMethod("getName");
-                    Object name = getNameMethod.invoke(entity);
-                    re.setEntityName(name.toString());
-                }
-            } catch (Exception ignore) {
-            } finally {
-                if (entityManager != null)
-                    entityManager.close();
-            }
+            String[] names = findEntityName(entityName, identifier);
+            re.setEntityName(names[0]);
+            re.setEntityAsString(names[1]);
             return re;
         }
         return new RepositoryException("Unknown DataStorage Exception", throwable);
+    }
+
+    private String[] findEntityName(String entityClassName, Serializable identifier) {
+        String[] result = new String[2];
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            Class<?> entityClass = Class.forName(entityClassName);
+            Object entity = entityManager.find(entityClass, identifier);
+            if (entity != null) {
+                Method getNameMethod = entity.getClass().getMethod("getName");
+                Object name = getNameMethod.invoke(entity);
+                result[0] = name.toString();
+                result[1] = entity.toString();
+            }
+        } catch (Exception ignore) {
+        } finally {
+            if (entityManager != null)
+                entityManager.close();
+        }
+        return result;
     }
 
     @Override

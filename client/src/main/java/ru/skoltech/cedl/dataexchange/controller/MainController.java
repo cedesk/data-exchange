@@ -31,11 +31,13 @@ import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.view.ChangeLocation;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
+import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.view.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
-import sun.applet.Main;
 
 import java.io.File;
 import java.io.IOException;
@@ -142,19 +144,42 @@ public class MainController implements Initializable {
 
     public void saveProject(ActionEvent actionEvent) {
         try {
-            boolean success = project.storeLocalStudy();
-            updateView();
-            if (success) {
-                repositoryWatcher.unpause();
-                ApplicationSettings.setLastUsedProject(project.getProjectName());
-                StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
-            } else {
-                StatusLogger.getInstance().log("Saving study failed!", true);
+            boolean hasRemoteChanges = checkRepositoryForChanges();
+            if (hasRemoteChanges) {
+                Dialogues.showWarning("Repository has changes", "Please review differences and then retry!");
+                return;
             }
+            project.storeLocalStudy();
+            updateView();
+            repositoryWatcher.unpause();
+            ApplicationSettings.setLastUsedProject(project.getProjectName());
+            StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
+        } catch (RepositoryException re) {
+            logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
+            StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
         } catch (Exception e) {
-            StatusLogger.getInstance().log("Error saving project!", true);
+            StatusLogger.getInstance().log("Saving study failed!", true);
             logger.error(e);
         }
+    }
+
+    private boolean checkRepositoryForChanges() {
+        if (project.getRepositoryStudy() != null) {
+            try {
+                project.loadRepositoryStudy();
+                SystemModel localSystemModel = project.getStudy().getSystemModel();
+                SystemModel remoteSystemModel = project.getRepositoryStudy().getSystemModel();
+                List<ModelDifference> modelDifferences =
+                        ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
+                long remoteDifferenceCounts = modelDifferences.stream()
+                        .filter(md -> md.changeLocation() == ChangeLocation.ARG2).count();
+                return remoteDifferenceCounts > 0;
+            } catch (Exception e) {
+                StatusLogger.getInstance().log("Error checking repository for changes");
+                logger.error(e);
+            }
+        }
+        return false;
     }
 
     @Override
@@ -235,9 +260,9 @@ public class MainController implements Initializable {
                         reloadProject(null);
                     } else {
                         Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
-                        if(choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {
+                        if (choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {
                             openProject(null);
-                        } else if(choice.isPresent() && choice.get() == Dialogues.NEW_STUDY_BUTTON) {
+                        } else if (choice.isPresent() && choice.get() == Dialogues.NEW_STUDY_BUTTON) {
                             newProject(null);
                         }
                     }
@@ -320,6 +345,7 @@ public class MainController implements Initializable {
             importFile = Dialogues.chooseImportFile();
         }
         if (importFile != null) {
+            // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
             //repositoryWatcher.pause();
             FileStorage fs = new FileStorage();
             try {
