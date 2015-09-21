@@ -15,6 +15,7 @@ import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 
 import java.net.URL;
@@ -26,19 +27,22 @@ import java.util.ResourceBundle;
 public class SettingsController implements Initializable {
 
     @FXML
-    private PasswordField dbPasswordText;
+    private CheckBox autoloadOnStartupCheckbox;
 
     @FXML
-    private TextField dbUsernameText;
+    private ComboBox<Integer> modelDepth;
+
+    @FXML
+    private TextField appDirText;
 
     @FXML
     private TextField dbHostnameText;
 
     @FXML
-    private CheckBox autoloadOnStartupCheckbox;
+    private TextField dbUsernameText;
 
     @FXML
-    private ComboBox<Integer> modelDepth;
+    private PasswordField dbPasswordText;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -49,6 +53,9 @@ public class SettingsController implements Initializable {
     private void updateView() {
         autoloadOnStartupCheckbox.setSelected(ApplicationSettings.getAutoLoadLastProjectOnStartup());
         modelDepth.setValue(ApplicationSettings.getStudyModelDepth(DummySystemBuilder.DEFAULT_MODEL_DEPTH));
+
+        String appDir = StorageUtils.getAppDir().getAbsolutePath();
+        appDirText.setText(appDir);
 
         dbHostnameText.setText(ApplicationSettings.getRepositoryServerHostname(""));
         dbUsernameText.setText(ApplicationSettings.getRepositoryUserName(""));
@@ -64,6 +71,7 @@ public class SettingsController implements Initializable {
 
     private boolean updateModel() {
         boolean success = false;
+
         ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
         ApplicationSettings.setStudyModelDepth(modelDepth.getValue());
         String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
