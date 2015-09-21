@@ -44,7 +44,7 @@ public class ApplicationSettings {
         if (autoload != null) {
             return Boolean.parseBoolean(autoload);
         }
-        return false;
+        return true;
     }
 
     public static void setAutoLoadLastProjectOnStartup(boolean autoload) {
