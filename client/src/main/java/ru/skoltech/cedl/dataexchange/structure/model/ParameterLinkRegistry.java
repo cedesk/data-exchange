@@ -26,7 +26,7 @@ public class ParameterLinkRegistry {
         pmi.forEachRemaining(sink -> {
             addLink(sink.getValueLink(), sink);
         });
-        DirectedGraph<ModelNode, MyEdge> modelDependencies = calculateModelDependencies();
+        DirectedGraph<ModelNode, MyEdge> modelDependencies = calculateModelDependencies(systemModel);
         printDependencies(modelDependencies);
     }
 
@@ -106,10 +106,9 @@ public class ParameterLinkRegistry {
         return result;
     }
 
-    public DirectedGraph<ModelNode, MyEdge> calculateModelDependencies() {
+    public DirectedGraph<ModelNode, MyEdge> calculateModelDependencies(SystemModel systemModel) {
         DirectedGraph<ModelNode, MyEdge> dependencies = new SimpleDirectedGraph<ModelNode, MyEdge>(MyEdge.class);
 
-        SystemModel systemModel = getSystem();
         ParameterTreeIterator pmi = getLinkedParameters(systemModel);
         pmi.forEachRemaining(valueSink -> {
             ModelNode from = valueSink.getParent();
@@ -118,11 +117,9 @@ public class ParameterLinkRegistry {
             dependencies.addVertex(from);
             dependencies.addVertex(to);
             dependencies.addEdge(from, to);
-
         });
         return dependencies;
     }
-
 
     private void printDependencies(DirectedGraph<ModelNode, MyEdge> modelDependencies) {
         logger.info("DEPENDENCIES");
