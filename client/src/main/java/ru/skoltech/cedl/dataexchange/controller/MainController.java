@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -34,6 +35,7 @@ import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
+import sun.applet.Main;
 
 import java.io.File;
 import java.io.IOException;
@@ -232,8 +234,12 @@ public class MainController implements Initializable {
                         project.setProjectName(projectName);
                         reloadProject(null);
                     } else {
-                        // TODO: ask to create a new study or start from an existing one
-                        openProject(null);
+                        Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
+                        if(choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {
+                            openProject(null);
+                        } else if(choice.isPresent() && choice.get() == Dialogues.NEW_STUDY_BUTTON) {
+                            newProject(null);
+                        }
                     }
                 }
             }

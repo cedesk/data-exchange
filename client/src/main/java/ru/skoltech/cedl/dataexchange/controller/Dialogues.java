@@ -18,10 +18,10 @@ import java.util.Optional;
  */
 public class Dialogues {
 
-    /*
-    public static final ButtonType REMOTE_REPO = new ButtonType("Remote");
-    public static final ButtonType LOCAL_REPO = new ButtonType("Local");
+    public static final ButtonType NEW_STUDY_BUTTON = new ButtonType("Create new Study");
+    public static final ButtonType LOAD_STUDY_BUTTON = new ButtonType("Load existing Study");
 
+    /*
         static void showInvalidRepositoryWarning() {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Invalid Repository");
@@ -35,15 +35,6 @@ public class Dialogues {
             alert.setTitle("Invalid Repository");
             alert.setContentText("The selected path does not contain a valid repository!");
             alert.showAndWait();
-        }
-
-        static Optional<ButtonType> chooseLocalOrRemoteRepository() {
-            Alert repositoryTypeDialog = new Alert(Alert.AlertType.CONFIRMATION);
-            repositoryTypeDialog.setTitle("Repository type selection");
-            repositoryTypeDialog.setHeaderText("Please choose which type of repository you want to use.");
-            repositoryTypeDialog.setContentText(null);
-            repositoryTypeDialog.getButtonTypes().setAll(REMOTE_REPO, LOCAL_REPO, ButtonType.CANCEL);
-            return repositoryTypeDialog.showAndWait();
         }
 
         static File chooseLocalRepositoryPath() {
@@ -153,5 +144,14 @@ public class Dialogues {
         dlg.setHeaderText("Choose from available studies");
         dlg.setContentText("Study");
         return dlg.showAndWait();
+    }
+
+    static Optional<ButtonType> chooseNewOrLoadStudy() {
+        Alert repositoryTypeDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        repositoryTypeDialog.setTitle("Start with a Study");
+        repositoryTypeDialog.setHeaderText("Choose whether to create a new study or load an existing one.");
+        repositoryTypeDialog.setContentText(null);
+        repositoryTypeDialog.getButtonTypes().setAll(NEW_STUDY_BUTTON, LOAD_STUDY_BUTTON, ButtonType.CANCEL);
+        return repositoryTypeDialog.showAndWait();
     }
 }
