@@ -313,6 +313,7 @@ public class DatabaseStorage implements Repository {
                 result[1] = entity.toString();
             }
         } catch (Exception ignore) {
+            logger.error("unable to find entity " + entityClassName + "#" + identifier.toString());
         } finally {
             if (entityManager != null)
                 entityManager.close();
