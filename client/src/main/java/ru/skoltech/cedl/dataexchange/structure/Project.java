@@ -412,6 +412,10 @@ public class Project {
         reinitializeProject(systemModel);
     }
 
+    public void deleteStudy(String studyName) throws RepositoryException {
+        repository.deleteStudy(studyName);
+    }
+
     public void importSystemModel(SystemModel systemModel) {
         reinitializeProject(systemModel);
         initializeStateOfExternalModels();

@@ -34,6 +34,9 @@
                                                 <MenuItem mnemonicParsing="true" onAction="#exportProject"
                                                           text="_Export"/>
                                                 <SeparatorMenuItem mnemonicParsing="true"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#deleteProject"
+                                                          text="_Delete"/>
+                                                <SeparatorMenuItem mnemonicParsing="true"/>
                                                 <MenuItem mnemonicParsing="true" onAction="#quit" text="_Quit"/>
                                             </items>
                                         </Menu>
