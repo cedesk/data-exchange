@@ -9,6 +9,8 @@ public abstract class ModelDifference {
 
     protected ChangeType changeType;
 
+    protected ChangeLocation changeLocation;
+
     protected String value1;
 
     protected String value2;
@@ -21,14 +23,16 @@ public abstract class ModelDifference {
 
     abstract public boolean isMergeable();
 
-    abstract public ChangeLocation changeLocation();
-
     public String getAttribute() {
         return attribute;
     }
 
     public ChangeType getChangeType() {
         return changeType;
+    }
+
+    public ChangeLocation getChangeLocation() {
+        return changeLocation;
     }
 
     public String getValue1() {
@@ -48,6 +52,7 @@ public abstract class ModelDifference {
         final StringBuilder sb = new StringBuilder("ModelDifference{");
         sb.append("attribute").append(attribute);
         sb.append(", changeType=").append(changeType);
+        sb.append(", changeLocation=").append(changeLocation);
         sb.append(", value1='").append(value1).append('\'');
         sb.append(", value2='").append(value2).append('\'');
         sb.append(", author='").append(author).append('\'');

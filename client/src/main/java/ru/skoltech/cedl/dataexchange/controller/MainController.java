@@ -163,6 +163,7 @@ public class MainController implements Initializable {
         }
     }
 
+    // TODO: move to project!
     private boolean checkRepositoryForChanges() {
         if (project.getRepositoryStudy() != null) {
             try {
@@ -172,7 +173,7 @@ public class MainController implements Initializable {
                 List<ModelDifference> modelDifferences =
                         ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
                 long remoteDifferenceCounts = modelDifferences.stream()
-                        .filter(md -> md.changeLocation() == ChangeLocation.ARG2).count();
+                        .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2).count();
                 return remoteDifferenceCounts > 0;
             } catch (Exception e) {
                 StatusLogger.getInstance().log("Error checking repository for changes");
@@ -205,7 +206,7 @@ public class MainController implements Initializable {
         BooleanBinding repositoryNewer = Bindings.greaterThan(
                 project.latestRepositoryModificationProperty(),
                 project.latestLoadedModificationProperty());
-        diffButton.disableProperty().bind(repositoryNewer.not());
+        //diffButton.disableProperty().bind(repositoryNewer.not());
         repositoryNewer.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 if (newValue) {

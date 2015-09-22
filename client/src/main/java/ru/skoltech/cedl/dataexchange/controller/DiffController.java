@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 
@@ -68,6 +69,7 @@ public class DiffController implements Initializable {
             logger.debug("merging " + modelDifference.getNodeName() + "::" + modelDifference.getParameterName());
             ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
             parameterDifference.mergeDifference();
+            // TODO: update sinks
             return true;
         } else if (modelDifference instanceof NodeDifference) {
             logger.debug("accepting differences on " + modelDifference.getNodeName());
@@ -77,43 +79,54 @@ public class DiffController implements Initializable {
         return false;
     }
 
-    private boolean hasRemoteChange(ModelDifference modelDifference) {
-        return modelDifference.changeLocation() == ChangeLocation.ARG2;
-    }
-
     private void handleDifference(ActionEvent actionEvent) {
         Button acceptButton = (Button) actionEvent.getTarget();
         ModelDifference modelDifference = (ModelDifference) acceptButton.getUserData();
         boolean success = mergeOne(modelDifference);
         if (success) {
             modelDifferences.remove(modelDifference);
+            ProjectContext.getInstance().getProject().markStudyModified();
         }
     }
 
     public void acceptAll(ActionEvent actionEvent) {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
-            if (modelDifference.changeLocation() == ChangeLocation.ARG2) {
+            if (hasRemoteChange(modelDifference)) {
                 boolean success = mergeOne(modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
                 }
             }
         }
-        modelDifferences.removeAll(appliedDifferences);
+        boolean removed = modelDifferences.removeAll(appliedDifferences);
+        if (removed) {
+            ProjectContext.getInstance().getProject().markStudyModified();
+        }
     }
 
     public void revertAll(ActionEvent actionEvent) {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
-            if (modelDifference.changeLocation() == ChangeLocation.ARG1) {
+            if (hasLocalChange(modelDifference)) {
                 boolean success = mergeOne(modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
                 }
             }
         }
-        modelDifferences.removeAll(appliedDifferences);
+        boolean removed = modelDifferences.removeAll(appliedDifferences);
+        if (removed) {
+            ProjectContext.getInstance().getProject().markStudyModified();
+        }
+    }
+
+    private boolean hasRemoteChange(ModelDifference modelDifference) {
+        return modelDifference.getChangeLocation() == ChangeLocation.ARG2;
+    }
+
+    public boolean hasLocalChange(ModelDifference modelDifference) {
+        return modelDifference.getChangeLocation() == ChangeLocation.ARG1;
     }
 
     public void close(ActionEvent actionEvent) {
