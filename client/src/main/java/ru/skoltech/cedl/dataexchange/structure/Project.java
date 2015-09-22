@@ -257,8 +257,9 @@ public class Project {
     public void storeLocalStudy() throws RepositoryException {
         updateParameterValuesFromLinks();
         exportValuesToExternalModels();
-        storeChangedExternalModels();
+        updateExternalModelsInStudy();
         Study study = repository.storeStudy(this.study);
+        updateExternalModelStateInCache();
         setStudy(study);
         setRepositoryStudy(study);
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
@@ -281,7 +282,7 @@ public class Project {
         }
     }
 
-    private void storeChangedExternalModels() {
+    private void updateExternalModelsInStudy() {
         for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
             ModelNode modelNode = externalModel.getParent();
             ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
@@ -289,13 +290,6 @@ public class Project {
                 logger.debug("storing " + externalModel.getNodePath());
                 try {
                     ExternalModelFileHandler.updateFromFile(externalModel);
-                    storeExternalModel(externalModel);
-                    String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
-                    ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
-                    long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
-                    String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
-                    logger.debug("stored external model '" + externalModel.getName() +
-                            "' (model: " + modelModification + ", file: " + fileModification + ")");
                 } catch (IOException e) {
                     logger.error("error updating external model from file!", e);
                 }
@@ -304,6 +298,22 @@ public class Project {
                 logger.warn(externalModel.getNodePath() + " has conflicting changes locally and in repository");
             } else {
                 logger.warn(externalModel.getNodePath() + " is in state " + cacheState);
+            }
+        }
+    }
+
+    private void updateExternalModelStateInCache() {
+        for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
+            logger.debug("timestamping " + externalModel.getNodePath());
+            ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
+            if(logger.isDebugEnabled()) {
+                String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
+                long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
+                String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
+                logger.debug("stored external model '" + externalModel.getName() +
+                        "' (model: " + modelModification + ", file: " + fileModification + ")");
+                ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+                logger.debug(externalModel.getNodePath() + " is now in state " + cacheState);
             }
         }
         externalModelFileHandler.getChangedExternalModels().clear();
