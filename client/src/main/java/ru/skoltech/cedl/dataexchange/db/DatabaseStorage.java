@@ -114,6 +114,33 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
+    public void deleteStudy(String name) throws RepositoryException {
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+            final CriteriaQuery criteriaQuery = criteriaBuilder.createQuery(Study.class);
+            final Root studyRoot = criteriaQuery.from(Study.class);
+            final Predicate namePredicate = criteriaBuilder.equal(studyRoot.get("name"), name);
+            criteriaQuery.where(namePredicate);
+            final TypedQuery query = entityManager.createQuery(criteriaQuery);
+            Object singleResult = query.getSingleResult();
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
+            entityManager.remove(singleResult);
+            transaction.commit();
+        } catch (Exception e) {
+            throw new RepositoryException("Deleting Study failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    @Override
     public List<String> listStudies() throws RepositoryException {
         EntityManager entityManager = null;
         try {
