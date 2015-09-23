@@ -6,7 +6,10 @@ import ru.skoltech.cedl.dataexchange.structure.model.calculation.Operation;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.OperationRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.OperationRegistry.OperationAdapter;
 
-import javax.persistence.*;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
@@ -19,7 +22,7 @@ import java.util.List;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-@Entity
+//@Entity
 @Access(AccessType.PROPERTY)
 @Audited
 public class Calculation {
@@ -31,8 +34,16 @@ public class Calculation {
     @XmlJavaTypeAdapter(value = OperationAdapter.class)
     private Operation operation;
 
-    @XmlElement(type=Object.class)
+    @XmlElement(type = Object.class)
     private Argument[] arguments;
+
+    public static Class[] getEntityClasses() {
+        List<Class> classList = new ArrayList<>();
+        classList.add(Calculation.class);
+        classList.addAll(Argument.getClasses());
+        classList.addAll(OperationRegistry.getClasses());
+        return classList.toArray(new Class[0]);
+    }
 
     @Id
     @GeneratedValue
@@ -100,13 +111,5 @@ public class Calculation {
         sb.append(", arguments=").append(Arrays.toString(arguments));
         sb.append('}');
         return sb.toString();
-    }
-
-    public static Class[] getEntityClasses() {
-        List<Class> classList = new ArrayList<>();
-        classList.add(Calculation.class);
-        classList.addAll(Argument.getClasses());
-        classList.addAll(OperationRegistry.getClasses());
-        return classList.toArray(new Class[0]);
     }
 }
