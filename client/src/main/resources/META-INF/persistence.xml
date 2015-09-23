@@ -9,26 +9,6 @@
 
         <class>ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity</class>
 
-        <class>ru.skoltech.cedl.dataexchange.structure.model.Study</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.SystemModel</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.ElementModel</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.InstrumentModel</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.ParameterModel</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.ExternalModel</class>
-
-        <class>ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement</class>
-        <class>ru.skoltech.cedl.dataexchange.users.model.UserManagement</class>
-        <class>ru.skoltech.cedl.dataexchange.users.model.User</class>
-        <class>ru.skoltech.cedl.dataexchange.users.model.Discipline</class>
-        <class>ru.skoltech.cedl.dataexchange.users.model.UserDiscipline</class>
-        <class>ru.skoltech.cedl.dataexchange.users.model.DisciplineSubSystem</class>
-
-        <class>ru.skoltech.cedl.dataexchange.units.model.UnitManagement</class>
-        <class>ru.skoltech.cedl.dataexchange.units.model.Prefix</class>
-        <class>ru.skoltech.cedl.dataexchange.units.model.Unit</class>
-        <class>ru.skoltech.cedl.dataexchange.units.model.QuantityKind</class>
-
         <properties>
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
@@ -47,21 +27,6 @@
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
         <class>ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity</class>
-
-        <class>ru.skoltech.cedl.dataexchange.structure.model.Study</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.SystemModel</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.ElementModel</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.InstrumentModel</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.ParameterModel</class>
-        <class>ru.skoltech.cedl.dataexchange.structure.model.ExternalModel</class>
-
-        <class>ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement</class>
-        <class>ru.skoltech.cedl.dataexchange.users.model.UserManagement</class>
-        <class>ru.skoltech.cedl.dataexchange.users.model.User</class>
-        <class>ru.skoltech.cedl.dataexchange.users.model.Discipline</class>
-        <class>ru.skoltech.cedl.dataexchange.users.model.UserDiscipline</class>
-        <class>ru.skoltech.cedl.dataexchange.users.model.DisciplineSubSystem</class>
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver"/>
