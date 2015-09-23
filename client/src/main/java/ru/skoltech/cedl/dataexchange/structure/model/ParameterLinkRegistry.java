@@ -39,7 +39,7 @@ public class ParameterLinkRegistry {
     }
 
     public void addLink(ParameterModel source, ParameterModel sink) {
-        logger.debug("sink '" + sink.getNodePath() + "' is linking to source '" + source.getNodePath() + "'");
+        System.out.println("sink '" + sink.getNodePath() + "' is linking to source '" + source.getNodePath() + "'");
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
             valueLinks.get(sourceId).add(sink);
@@ -51,6 +51,7 @@ public class ParameterLinkRegistry {
     }
 
     public void updateAll(SystemModel systemModel) {
+        logger.debug("updating all linked values");
         ParameterTreeIterator pmi = getLinkedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
             updateSinks(sink.getValueLink());
@@ -71,6 +72,8 @@ public class ParameterLinkRegistry {
                     logger.error("model changed, sink '" + parameterModel.getNodePath() + "' no longer referencing '" + source.getNodePath() + "'");
                 }
             }
+        } else {
+            logger.debug("source never linked " + source.getNodePath());
         }
     }
 
@@ -122,7 +125,7 @@ public class ParameterLinkRegistry {
     }
 
     private void printDependencies(DirectedGraph<ModelNode, MyEdge> modelDependencies) {
-        logger.info("DEPENDENCIES");
+        System.out.println("DEPENDENCIES");
         modelDependencies.vertexSet().stream()
                 .filter(toNode -> modelDependencies.inDegreeOf(toNode) > 0)
                 .forEach(toNode -> {
@@ -130,7 +133,7 @@ public class ParameterLinkRegistry {
                     String fromNames = modelDependencies.incomingEdgesOf(toNode).stream().map(
                             edge -> edge.getSource().getName()
                     ).collect(Collectors.joining(", "));
-                    logger.info(toName + " depends on " + fromNames);
+                    System.out.println(toName + " depends on " + fromNames);
                 });
     }
 

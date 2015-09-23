@@ -47,9 +47,14 @@ public class ModelDifferencesFactory {
             ModelNode s2 = (ModelNode) m2SubNodesMap.get(nodeUuid);
 
             if (s1 != null && s2 == null) {
-                subnodesDifferences.add(NodeDifference.createRemovedNode(s1, s1.getName()));
+                if (s1.getLastModification() == null) {
+                    subnodesDifferences.add(NodeDifference.createAddedNode(s1, s1.getName(), ChangeLocation.ARG1));
+                } else {
+                    subnodesDifferences.add(NodeDifference.createRemovedNode(s1, s1.getName(), ChangeLocation.ARG2));
+                }
             } else if (s1 == null && s2 != null) {
-                subnodesDifferences.add(NodeDifference.createAddedNode(s2, s2.getName()));
+                // TODO: distinguish between local remove and remote add
+                subnodesDifferences.add(NodeDifference.createRemovedNode(s2, s2.getName(), ChangeLocation.ARG1));
             } else {
                 // depth search
                 subnodesDifferences.addAll(computeDifferences(s1, s2));
@@ -72,11 +77,18 @@ public class ModelDifferencesFactory {
             ExternalModel e2 = m2extModels.get(extMod);
 
             if (e1 != null && e2 == null) {
-                extModelDifferences.add(NodeDifference.createRemoveExternalModel(e1.getParent(), e1.getName()));
+                if (e1.getLastModification() == null) {
+                    extModelDifferences.add(NodeDifference.createAddExternalModel(e1.getParent(), e1.getName(), ChangeLocation.ARG1));
+                } else {
+                    extModelDifferences.add(NodeDifference.createRemoveExternalModel(e1.getParent(), e1.getName(), ChangeLocation.ARG1));
+                }
             } else if (e1 == null && e2 != null) {
-                extModelDifferences.add(NodeDifference.createAddExternalModel(e2.getParent(), e2.getName()));
+                // TODO: distinguish between local remove and remote add
+                extModelDifferences.add(NodeDifference.createRemoveExternalModel(e2.getParent(), e2.getName(), ChangeLocation.ARG1));
             } else if (!Arrays.equals(e1.getAttachment(), e2.getAttachment())) {
-                extModelDifferences.add(NodeDifference.createExternaModelModified(e1.getParent(), e1.getName()));
+                boolean e2newer = e2.getLastModification() > e1.getLastModification();
+                ChangeLocation changeLocation = e2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
+                extModelDifferences.add(NodeDifference.createExternaModelModified(e1.getParent(), e1.getName(), changeLocation));
             }
         }
         return extModelDifferences;
@@ -99,9 +111,14 @@ public class ModelDifferencesFactory {
             ParameterModel p2 = m2params.get(parUuid);
 
             if (p1 != null && p2 == null) {
-                parameterDifferences.add(ParameterDifference.createRemovedParameter(p1, p1.getName()));
+                if (p1.getLastModification() == null) { // parameter 1 was newly added
+                    parameterDifferences.add(ParameterDifference.createAddedParameter(m1, p1, p1.getName(), ChangeLocation.ARG1));
+                } else { // parameter 2 was deleted
+                    parameterDifferences.add(ParameterDifference.createRemovedParameter(m1, p1, p1.getName(), ChangeLocation.ARG2));
+                }
             } else if (p1 == null && p2 != null) {
-                parameterDifferences.add(ParameterDifference.createAddedParameter(p2, p2.getName()));
+                // TODO: distinguish between local remove and remote add
+                parameterDifferences.add(ParameterDifference.createRemovedParameter(m1, p2, p2.getName(), ChangeLocation.ARG1));
             } else if (p1 != null && p2 != null) {
                 List<AttributeDifference> differences = parameterDifferences(p1, p2);
                 if (!differences.isEmpty()) {

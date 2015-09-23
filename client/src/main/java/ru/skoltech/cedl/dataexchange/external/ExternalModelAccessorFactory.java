@@ -40,7 +40,7 @@ public class ExternalModelAccessorFactory {
                 ExternalModelEvaluator evaluator = (ExternalModelEvaluator) evaluatorConstructor.newInstance(externalModel);
                 return evaluator;
             } catch (Exception e) {
-                logger.error("error instantiating ExternalModelEvaluator");
+                logger.error("error instantiating ExternalModelEvaluator", e);
                 throw new RuntimeException(e);
             }
 /*
@@ -61,11 +61,11 @@ public class ExternalModelAccessorFactory {
         if (exporters.containsKey(fileExtension)) {
             Class exporterClass = exporters.get(fileExtension);
             try {
-                Constructor exporterConstructor = exporterClass.getConstructor(ExternalModel.class);
-                ExternalModelExporter exporter = (ExternalModelExporter) exporterConstructor.newInstance(externalModel);
+                Constructor exporterConstructor = exporterClass.getConstructor(ExternalModel.class, ExternalModelFileHandler.class);
+                ExternalModelExporter exporter = (ExternalModelExporter) exporterConstructor.newInstance(externalModel, externalModelFileHandler);
                 return exporter;
             } catch (Exception e) {
-                logger.error("error instantiating ExternalModelExporter");
+                logger.error("error instantiating ExternalModelExporter",e );
                 throw new RuntimeException(e);
             }
        /* if (externalModel.getName().endsWith(".xls") ||

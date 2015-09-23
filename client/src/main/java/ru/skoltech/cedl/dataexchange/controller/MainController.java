@@ -121,7 +121,7 @@ public class MainController implements Initializable {
             }
         } else {
             logger.warn("list of studies is empty!");
-            Dialogues.showWarning("Repository empty", "There are not studies available in the repository!");
+            Dialogues.showWarning("Repository empty", "There are no studies available in the repository!");
         }
     }
 
@@ -163,6 +163,7 @@ public class MainController implements Initializable {
         }
     }
 
+    // TODO: move to project!
     private boolean checkRepositoryForChanges() {
         if (project.getRepositoryStudy() != null) {
             try {
@@ -172,7 +173,7 @@ public class MainController implements Initializable {
                 List<ModelDifference> modelDifferences =
                         ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
                 long remoteDifferenceCounts = modelDifferences.stream()
-                        .filter(md -> md.changeLocation() == ChangeLocation.ARG2).count();
+                        .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2).count();
                 return remoteDifferenceCounts > 0;
             } catch (Exception e) {
                 StatusLogger.getInstance().log("Error checking repository for changes");
@@ -205,7 +206,7 @@ public class MainController implements Initializable {
         BooleanBinding repositoryNewer = Bindings.greaterThan(
                 project.latestRepositoryModificationProperty(),
                 project.latestLoadedModificationProperty());
-        diffButton.disableProperty().bind(repositoryNewer.not());
+        //diffButton.disableProperty().bind(repositoryNewer.not());
         repositoryNewer.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 if (newValue) {
@@ -375,6 +376,40 @@ public class MainController implements Initializable {
             }
         } else {
             logger.info("user aborted export path selection.");
+        }
+    }
+
+    public void deleteProject(ActionEvent actionEvent) {
+        List<String> studyNames = null;
+        try {
+            studyNames = project.getRepository().listStudies();
+        } catch (RepositoryException e) {
+            logger.error("error retrieving list of available studies");
+            return;
+        }
+        if (studyNames.size() > 0) {
+            Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
+            if (studyChoice.isPresent()) {
+                String studyName = studyChoice.get();
+                try {
+                    if (studyName.equals(project.getProjectName())) {
+                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study", "You are deleting the currently loaded project. Unexpected behavior can appear!\nWARNING: This is not reversible!");
+                        if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
+                            project.deleteStudy(studyName);
+                        }
+                    } else {
+                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study", "Are you really sure to delete project '" + studyName + "' from the repository?\nWARNING: This is not reversible!");
+                        if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
+                            project.deleteStudy(studyName);
+                        }
+                    }
+                } catch (RepositoryException re) {
+                    logger.error("Failed to delete the study!", re);
+                }
+            }
+        } else {
+            logger.warn("list of studies is empty!");
+            Dialogues.showWarning("Repository empty", "There are no studies available in the repository!");
         }
     }
 

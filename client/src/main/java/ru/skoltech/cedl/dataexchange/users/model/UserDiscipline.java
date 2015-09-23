@@ -36,7 +36,7 @@ public class UserDiscipline {
         this.id = id;
     }
 
-    @ManyToOne(optional = false, targetEntity = UserRoleManagement.class)
+    @ManyToOne(targetEntity = UserRoleManagement.class)
     public UserRoleManagement getUserRoleManagement() {
         return userRoleManagement;
     }
@@ -45,7 +45,7 @@ public class UserDiscipline {
         this.userRoleManagement = userRoleManagement;
     }
 
-    @ManyToOne(optional = false, targetEntity = User.class)
+    @ManyToOne(targetEntity = User.class)
     public User getUser() {
         return user;
     }
@@ -54,7 +54,7 @@ public class UserDiscipline {
         this.user = user;
     }
 
-    @ManyToOne(optional = false, targetEntity = Discipline.class)
+    @ManyToOne(targetEntity = Discipline.class)
     public Discipline getDiscipline() {
         return discipline;
     }

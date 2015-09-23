@@ -11,42 +11,51 @@ public class NodeDifference extends ModelDifference {
 
     protected ModelNode node2;
 
-    private NodeDifference(ModelNode node1, String attribute, ChangeType changeType) {
+    private NodeDifference(ModelNode node1, String attribute, ChangeType changeType, ChangeLocation changeLocation) {
         this.node1 = node1;
         this.attribute = attribute;
         this.changeType = changeType;
+        this.changeLocation = changeLocation;
     }
 
-    private NodeDifference(ModelNode node1, ModelNode node2, String attribute, ChangeType changeType, String value1, String value2) {
+    private NodeDifference(ModelNode node1, ModelNode node2, String attribute,
+                           ChangeType changeType, ChangeLocation changeLocation,
+                           String value1, String value2) {
         this.node1 = node1;
+        this.node2 = node2;
         this.attribute = attribute;
         this.changeType = changeType;
+        this.changeLocation = changeLocation;
         this.value1 = value1;
         this.value2 = value2;
     }
 
-    public static NodeDifference createNodeAttributesModified(ModelNode node1, ModelNode node2, String attribute, String value1, String value2) {
-        return new NodeDifference(node1, node2, attribute, ChangeType.CHANGE_NODE_ATTRIBUTE, value1, value2);
+    public static NodeDifference createNodeAttributesModified(ModelNode node1, ModelNode node2, String attribute,
+                                                              String value1, String value2) {
+
+        boolean n2newer = firstIsNewer(node2, node1);
+        ChangeLocation changeLocation = n2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
+        return new NodeDifference(node1, node2, attribute, ChangeType.CHANGE_NODE_ATTRIBUTE, changeLocation, value1, value2);
     }
 
-    public static NodeDifference createAddedNode(ModelNode node1, String name) {
-        return new NodeDifference(node1, name, ChangeType.ADD_NODE);
+    public static NodeDifference createAddedNode(ModelNode node1, String name, ChangeLocation changeLocation) {
+        return new NodeDifference(node1, name, ChangeType.ADD_NODE, changeLocation);
     }
 
-    public static NodeDifference createRemovedNode(ModelNode node1, String name) {
-        return new NodeDifference(node1, name, ChangeType.REMOVE_NODE);
+    public static NodeDifference createRemovedNode(ModelNode node1, String name, ChangeLocation changeLocation) {
+        return new NodeDifference(node1, name, ChangeType.REMOVE_NODE, changeLocation);
     }
 
-    public static NodeDifference createRemoveExternalModel(ModelNode node1, String name) {
-        return new NodeDifference(node1, name, ChangeType.REMOVE_EXTERNAL_MODEL);
+    public static NodeDifference createRemoveExternalModel(ModelNode node1, String name, ChangeLocation changeLocation) {
+        return new NodeDifference(node1, name, ChangeType.REMOVE_EXTERNAL_MODEL, changeLocation);
     }
 
-    public static NodeDifference createAddExternalModel(ModelNode node1, String name) {
-        return new NodeDifference(node1, name, ChangeType.ADD_EXTERNAL_MODEL);
+    public static NodeDifference createAddExternalModel(ModelNode node1, String name, ChangeLocation changeLocation) {
+        return new NodeDifference(node1, name, ChangeType.ADD_EXTERNAL_MODEL, changeLocation);
     }
 
-    public static NodeDifference createExternaModelModified(ModelNode node1, String name) {
-        return new NodeDifference(node1, name, ChangeType.CHANGE_EXTERNAL_MODEL);
+    public static NodeDifference createExternaModelModified(ModelNode node1, String name, ChangeLocation changeLocation) {
+        return new NodeDifference(node1, name, ChangeType.CHANGE_EXTERNAL_MODEL, changeLocation);
     }
 
     @Override
@@ -62,18 +71,6 @@ public class NodeDifference extends ModelDifference {
     @Override
     public boolean isMergeable() {
         return false;
-    }
-
-    @Override
-    public ChangeLocation changeLocation() {
-        switch (changeType) {
-            case ADD_PARAMETER:
-                return ChangeLocation.ARG1;
-            case REMOVE_PARAMETER:
-                return ChangeLocation.ARG2;
-            default:
-                return node2.getLastModification() > node1.getLastModification() ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
-        }
     }
 
     public ModelNode getNode1() {
@@ -93,6 +90,7 @@ public class NodeDifference extends ModelDifference {
         }
         sb.append(", attribute").append(attribute);
         sb.append(", changeType=").append(changeType);
+        sb.append(", changeLocation=").append(changeLocation);
         sb.append(", value1='").append(value1).append('\'');
         sb.append(", value2='").append(value2).append('\'');
         sb.append(", author='").append(author).append('\'');

@@ -140,7 +140,7 @@ public class Dialogues {
     public static Optional<String> chooseStudy(List<String> studyNames) {
         Objects.requireNonNull(studyNames);
         ChoiceDialog<String> dlg = new ChoiceDialog<>(studyNames.get(0), studyNames);
-        dlg.setTitle("Open a Study");
+        dlg.setTitle("Choose a study");
         dlg.setHeaderText("Choose from available studies");
         dlg.setContentText("Study");
         return dlg.showAndWait();
@@ -148,7 +148,7 @@ public class Dialogues {
 
     static Optional<ButtonType> chooseNewOrLoadStudy() {
         Alert repositoryTypeDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        repositoryTypeDialog.setTitle("Start with a Study");
+        repositoryTypeDialog.setTitle("Start with a study");
         repositoryTypeDialog.setHeaderText("Choose whether to create a new study or load an existing one.");
         repositoryTypeDialog.setContentText(null);
         repositoryTypeDialog.getButtonTypes().setAll(NEW_STUDY_BUTTON, LOAD_STUDY_BUTTON, ButtonType.CANCEL);

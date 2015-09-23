@@ -2,9 +2,12 @@ package ru.skoltech.cedl.dataexchange.structure.view;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by D.Knoll on 17.09.2015.
@@ -12,23 +15,25 @@ import java.util.List;
 public class ParameterDifference extends ModelDifference {
 
     private static final Logger logger = Logger.getLogger(ParameterDifference.class);
-
     private final ParameterModel parameter1;
-
+    private ModelNode parent;
     private ParameterModel parameter2;
 
     private ParameterDifference(ParameterModel parameter1, ParameterModel parameter2, ChangeType changeType,
-                                String attributes, String values1, String values2) {
+                                ChangeLocation changeLocation, String attributes, String values1, String values2) {
         this.parameter1 = parameter1;
         this.parameter2 = parameter2;
+        this.changeLocation = changeLocation;
         this.changeType = changeType;
         this.attribute = attributes;
         this.value1 = values1;
         this.value2 = values2;
     }
 
-    private ParameterDifference(ParameterModel parameter1, ChangeType changeType, String value1, String value2) {
-        this.parameter1 = parameter1;
+    private ParameterDifference(ModelNode parent, ParameterModel parameter, ChangeType changeType, ChangeLocation changeLocation, String value1, String value2) {
+        this.parent = parent;
+        this.parameter1 = parameter;
+        this.changeLocation = changeLocation;
         this.changeType = changeType;
         this.value1 = value1;
         this.value2 = value2;
@@ -46,15 +51,23 @@ public class ParameterDifference extends ModelDifference {
             sbValues1.append(diff.value1);
             sbValues2.append(diff.value2);
         }
-        return new ParameterDifference(parameter1, parameter2, ChangeType.MODIFY_PARAMETER, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString());
+        boolean p2newer = firstIsNewer(parameter2, parameter1);
+        ChangeLocation changeLocation = p2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
+        return new ParameterDifference(parameter1, parameter2, ChangeType.MODIFY_PARAMETER, changeLocation, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString());
     }
 
-    public static ModelDifference createRemovedParameter(ParameterModel p1, String name) {
-        return new ParameterDifference(p1, ChangeType.REMOVE_PARAMETER, name, "");
+    public static ModelDifference createRemovedParameter(ModelNode parent, ParameterModel param, String name, ChangeLocation changeLocation) {
+        if (changeLocation == ChangeLocation.ARG1)
+            return new ParameterDifference(parent, param, ChangeType.REMOVE_PARAMETER, changeLocation, name, "");
+        else
+            return new ParameterDifference(parent, param, ChangeType.REMOVE_PARAMETER, changeLocation, "", name);
     }
 
-    public static ModelDifference createAddedParameter(ParameterModel p2, String name) {
-        return new ParameterDifference(p2, ChangeType.ADD_PARAMETER, "", name);
+    public static ModelDifference createAddedParameter(ModelNode parent, ParameterModel param, String name, ChangeLocation changeLocation) {
+        if (changeLocation == ChangeLocation.ARG1)
+            return new ParameterDifference(parent, param, ChangeType.ADD_PARAMETER, changeLocation, name, "");
+        else
+            return new ParameterDifference(parent, param, ChangeType.ADD_PARAMETER, changeLocation, "", name);
     }
 
     @Override
@@ -69,39 +82,51 @@ public class ParameterDifference extends ModelDifference {
 
     @Override
     public boolean isMergeable() {
-        return changeType == ChangeType.MODIFY_PARAMETER;
-    }
-
-    @Override
-    public ChangeLocation changeLocation() {
-        switch (changeType) {
-            case ADD_PARAMETER:
-                return ChangeLocation.ARG1;
-            case REMOVE_PARAMETER:
-                return ChangeLocation.ARG2;
-            default:
-                boolean p2newer = parameter2.getLastModification() > parameter1.getLastModification();
-                logger.debug("checking difference on " + parameter1.getNodePath() +
-                        ", parameter 2: " + parameter2.getLastModification() +
-                        ", parameter 1: " + parameter1.getLastModification() +
-                        " --> " + p2newer);
-                return p2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
-        }
-    }
-
-    public ParameterModel getParameter1() {
-        return parameter1;
-    }
-
-    public ParameterModel getParameter2() {
-        return parameter2;
+        return changeType == ChangeType.MODIFY_PARAMETER
+                || (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.ADD_PARAMETER)
+                || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.ADD_PARAMETER)
+                || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.REMOVE_PARAMETER);
     }
 
     public void mergeDifference() {
         if (changeType == ChangeType.MODIFY_PARAMETER) {
+            Objects.requireNonNull(parameter1);
+            Objects.requireNonNull(parameter2);
             Utils.copyBean(parameter2, parameter1);
+        } else if (changeLocation == ChangeLocation.ARG2) {
+            Objects.requireNonNull(parent);
+            String uuid = parameter1.getUuid();
+            List<ParameterModel> parentParameters = parent.getParameters();
+            if (changeType == ChangeType.ADD_PARAMETER) { // add also to local
+                // TODO: block changes that make the model inconsistent (name duplicates, ...)
+                ParameterModel param = new ParameterModel();
+                Utils.copyBean(parameter1, param);
+                parentParameters.add(param);
+            }
+            if (changeType == ChangeType.REMOVE_PARAMETER) { // remove also from local
+                // TODO: block changes that make the model inconsistent (links to this parameter, ...)
+                boolean removed = parentParameters.removeIf(pm -> pm.getUuid().equals(uuid));
+                if (!removed) {
+                    logger.warn("parameter to remove not present: " + parameter1.getNodePath());
+                } else {
+                    // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
+                    parent.setParameters(new LinkedList<>(parentParameters));
+                }
+            }
+        } else if (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.ADD_PARAMETER) { // remove local again
+            Objects.requireNonNull(parent);
+            String uuid = parameter1.getUuid();
+            List<ParameterModel> parentParameters = parent.getParameters();
+            // TODO: block changes that make the model inconsistent (links to this parameter, ...)
+            boolean removed = parentParameters.removeIf(pm -> pm.getUuid().equals(uuid));
+            if (!removed) {
+                logger.warn("parameter to remove not present: " + parameter1.getNodePath());
+            } else {
+                // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
+                parent.setParameters(new LinkedList<>(parentParameters));
+            }
         } else {
-            System.err.println("MERGE IMPOSSIBLE");
+            logger.error("MERGE IMPOSSIBLE:\n" + toString());
         }
     }
 
@@ -112,7 +137,11 @@ public class ParameterDifference extends ModelDifference {
         if (parameter2 != null) {
             sb.append(", parameter2='").append(parameter2.getName()).append('\'');
         }
+        if (parent != null) {
+            sb.append(", parent='").append(parent.getName()).append('\'');
+        }
         sb.append(", changeType=").append(changeType);
+        sb.append(", changeLocation=").append(changeLocation);
         sb.append(", attributes='").append(attribute).append('\'');
         sb.append(", values1='").append(value1).append('\'');
         sb.append(", values2='").append(value2).append('\'');
