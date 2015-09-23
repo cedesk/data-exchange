@@ -2,8 +2,9 @@ package ru.skoltech.cedl.dataexchange.repository;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.structure.model.calculation.Literal;
 import ru.skoltech.cedl.dataexchange.units.model.Prefix;
 import ru.skoltech.cedl.dataexchange.units.model.QuantityKind;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
@@ -42,6 +43,7 @@ public class FileStorage {
             JAXBContext jc = JAXBContext.newInstance(MODEL_CLASSES);
 
             Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             m.marshal(systemModel, fos);
         } catch (JAXBException e) {
@@ -117,6 +119,7 @@ public class FileStorage {
             JAXBContext jc = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
 
             Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             m.marshal(userRoleManagement, fos);
         } catch (JAXBException e) {
@@ -145,6 +148,7 @@ public class FileStorage {
             JAXBContext jc = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
 
             Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             m.marshal(unitManagement, fos);
         } catch (JAXBException e) {
