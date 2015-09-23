@@ -51,7 +51,7 @@ public class ParameterDifference extends ModelDifference {
             sbValues1.append(diff.value1);
             sbValues2.append(diff.value2);
         }
-        boolean p2newer = parameter2.getLastModification() > parameter1.getLastModification();
+        boolean p2newer = firstIsNewer(parameter2, parameter1);
         ChangeLocation changeLocation = p2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
         return new ParameterDifference(parameter1, parameter2, ChangeType.MODIFY_PARAMETER, changeLocation, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString());
     }
@@ -83,8 +83,9 @@ public class ParameterDifference extends ModelDifference {
     @Override
     public boolean isMergeable() {
         return changeType == ChangeType.MODIFY_PARAMETER
-                || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.REMOVE_PARAMETER)
-                || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.ADD_PARAMETER);
+                || (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.ADD_PARAMETER)
+                || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.ADD_PARAMETER)
+                || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.REMOVE_PARAMETER);
     }
 
     public void mergeDifference() {
@@ -96,13 +97,13 @@ public class ParameterDifference extends ModelDifference {
             Objects.requireNonNull(parent);
             String uuid = parameter1.getUuid();
             List<ParameterModel> parentParameters = parent.getParameters();
-            if (changeType == ChangeType.ADD_PARAMETER) {
+            if (changeType == ChangeType.ADD_PARAMETER) { // add also to local
                 // TODO: block changes that make the model inconsistent (name duplicates, ...)
                 ParameterModel param = new ParameterModel();
                 Utils.copyBean(parameter1, param);
                 parentParameters.add(param);
             }
-            if (changeType == ChangeType.REMOVE_PARAMETER) {
+            if (changeType == ChangeType.REMOVE_PARAMETER) { // remove also from local
                 // TODO: block changes that make the model inconsistent (links to this parameter, ...)
                 boolean removed = parentParameters.removeIf(pm -> pm.getUuid().equals(uuid));
                 if (!removed) {
@@ -111,6 +112,18 @@ public class ParameterDifference extends ModelDifference {
                     // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
                     parent.setParameters(new LinkedList<>(parentParameters));
                 }
+            }
+        } else if (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.ADD_PARAMETER) { // remove local again
+            Objects.requireNonNull(parent);
+            String uuid = parameter1.getUuid();
+            List<ParameterModel> parentParameters = parent.getParameters();
+            // TODO: block changes that make the model inconsistent (links to this parameter, ...)
+            boolean removed = parentParameters.removeIf(pm -> pm.getUuid().equals(uuid));
+            if (!removed) {
+                logger.warn("parameter to remove not present: " + parameter1.getNodePath());
+            } else {
+                // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
+                parent.setParameters(new LinkedList<>(parentParameters));
             }
         } else {
             logger.error("MERGE IMPOSSIBLE:\n" + toString());
