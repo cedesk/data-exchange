@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model.calculation;
 
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,6 +42,23 @@ public class OperationRegistry {
         @Override
         public String marshal(Operation operation) throws Exception {
             return operation.name();
+        }
+    }
+
+    @javax.persistence.Converter
+    public static class Converter implements AttributeConverter<Operation, String> {
+        @Override
+        public String convertToDatabaseColumn(Operation operation) {
+            return operation.name();
+        }
+
+        @Override
+        public Operation convertToEntityAttribute(String name) {
+            if (registry.containsKey(name)) {
+                return registry.get(name);
+            } else {
+                throw new IllegalArgumentException("no such operation found! " + name);
+            }
         }
     }
 }

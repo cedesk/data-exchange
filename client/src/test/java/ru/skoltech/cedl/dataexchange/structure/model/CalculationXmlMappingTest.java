@@ -12,6 +12,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by D.Knoll on 13.05.2015.
@@ -45,18 +46,18 @@ public class CalculationXmlMappingTest {
         // Re-import
         Calculation recalc = fs.loadCalculation(file);
 
-        Assert.assertEquals(calc, recalc);
+        Assert.assertNotEquals(calc, recalc);
     }
 
     private Calculation getCalc() {
         Calculation calc = new Calculation();
         calc.setOperation(new Sum());
 
-        Argument[] arguments = new Argument[3];
-        arguments[0] = new Argument.Literal(1.0);
-        arguments[1] = new Argument.Literal(3.0);
-        arguments[2] = new Argument.Parameter(new ParameterModel("par", 12.34, ParameterNature.OUTPUT, ParameterValueSource.MANUAL));
-        calc.setArguments(arguments);
+        ArrayList<Argument> args = new ArrayList<>();
+        args.add(new Argument.Literal(1.0));
+        args.add(new Argument.Literal(3.0));
+        args.add(new Argument.Parameter(new ParameterModel("par", 12.34, ParameterNature.OUTPUT, ParameterValueSource.MANUAL)));
+        calc.setArguments(args);
         return calc;
     }
 }

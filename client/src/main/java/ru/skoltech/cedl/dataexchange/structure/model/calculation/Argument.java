@@ -1,7 +1,12 @@
 package ru.skoltech.cedl.dataexchange.structure.model.calculation;
 
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
+import ru.skoltech.cedl.dataexchange.structure.model.Calculation;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,16 +16,49 @@ import java.util.Collection;
  */
 @XmlRootElement
 @XmlSeeAlso({Argument.Literal.class, Argument.Parameter.class})
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "argType", discriminatorType = DiscriminatorType.STRING)
 public abstract class Argument {
+
+    @XmlTransient
+    protected long id;
+
+    @XmlTransient
+    private Calculation parent;
 
     public static Collection<? extends Class> getClasses() {
         return Arrays.asList(Literal.class, Parameter.class);
     }
 
+    @Id
+    @GeneratedValue
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    @ManyToOne(targetEntity = Calculation.class)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+    public Calculation getParent() {
+        return parent;
+    }
+
+    public void setParent(Calculation parent) {
+        this.parent = parent;
+    }
+
+    @Transient
     public abstract double getEffectiveValue();
 
     @XmlType
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Entity
+    @DiscriminatorValue("L")
+    @Access(AccessType.PROPERTY)
     public static class Literal extends Argument {
 
         @XmlAttribute
@@ -42,6 +80,7 @@ public abstract class Argument {
         }
 
         @Override
+        @Transient
         public double getEffectiveValue() {
             return value;
         }
@@ -73,6 +112,9 @@ public abstract class Argument {
 
     @XmlType
     @XmlAccessorType(XmlAccessType.FIELD)
+    @Entity
+    @DiscriminatorValue("P")
+    @Access(AccessType.PROPERTY)
     public static class Parameter extends Argument {
 
         @XmlAttribute(name = "parameterRef")
@@ -86,6 +128,7 @@ public abstract class Argument {
             this.link = link;
         }
 
+        @OneToOne(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, orphanRemoval = true)
         public ParameterModel getLink() {
             return link;
         }
@@ -95,6 +138,7 @@ public abstract class Argument {
         }
 
         @Override
+        @Transient
         public double getEffectiveValue() {
             return link.getEffectiveValue();
         }

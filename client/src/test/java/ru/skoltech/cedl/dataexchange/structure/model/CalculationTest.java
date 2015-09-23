@@ -7,6 +7,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.calculation.Margin;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument.Literal;
 
@@ -25,7 +26,7 @@ public class CalculationTest {
         ArrayList<Argument> args = new ArrayList<>();
         args.add(new Literal(v1));
         args.add(new Literal(v2));
-        calc.setArguments(args.toArray(new Argument[0]));
+        calc.setArguments(args);
 
         Assert.assertTrue(calc.valid());
         Double result = calc.calculateValue();
@@ -38,25 +39,15 @@ public class CalculationTest {
         Calculation calc = new Calculation();
         calc.setOperation(new Sum());
 
-        Argument[] arguments = new Argument[3];
-        arguments[0] = new Literal(1.0);
-        arguments[1] = new Literal(3.0);
-        arguments[2] = new Literal(5.0);
-        calc.setArguments(arguments);
-
-        Assert.assertTrue(calc.valid());
-        Double result = calc.calculateValue();
-        Assert.assertEquals("9.0", Double.toString(result));
-
         double v1 = 7, v2 = 11, v3 = 13, v4 = 17, res = 48;
         ArrayList<Argument> args = new ArrayList<>();
         args.add(new Literal(v1));
         args.add(new Literal(v2));
         args.add(new Literal(v3));
         args.add(new Literal(v4));
-        calc.setArguments(args.toArray(arguments));
+        calc.setArguments(args);
 
-        result = calc.calculateValue();
+        double result = calc.calculateValue();
         Assert.assertEquals(Double.toString(res), Double.toString(result));
     }
 }

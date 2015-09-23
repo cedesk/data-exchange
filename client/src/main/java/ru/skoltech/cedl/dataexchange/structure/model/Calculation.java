@@ -1,15 +1,14 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import org.apache.commons.collections.ListUtils;
+import org.hibernate.annotations.IndexColumn;
 import org.hibernate.envers.Audited;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Operation;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.OperationRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.OperationRegistry.OperationAdapter;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
@@ -22,9 +21,9 @@ import java.util.List;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-//@Entity
+@Entity
 @Access(AccessType.PROPERTY)
-@Audited
+//@Audited
 public class Calculation {
 
     @XmlTransient
@@ -35,7 +34,7 @@ public class Calculation {
     private Operation operation;
 
     @XmlElement(type = Object.class)
-    private Argument[] arguments;
+    private List<Argument> arguments;
 
     public static Class[] getEntityClasses() {
         List<Class> classList = new ArrayList<>();
@@ -55,6 +54,7 @@ public class Calculation {
         this.id = id;
     }
 
+    @Convert(converter = OperationRegistry.Converter.class)
     public Operation getOperation() {
         return operation;
     }
@@ -63,24 +63,27 @@ public class Calculation {
         this.operation = operation;
     }
 
-    public Argument[] getArguments() {
+    @OneToMany(targetEntity = Argument.class,/* mappedBy = "parent", */orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderColumn(name = "id")
+    //@IndexColumn
+    public List<Argument> getArguments() {
         return arguments;
     }
 
-    public void setArguments(Argument[] arguments) {
+    public void setArguments(List<Argument> arguments) {
         this.arguments = arguments;
     }
 
     public boolean valid() {
-        int args = arguments.length;
+        int args = arguments.size();
         return operation.minArguments() <= args && operation.maxArguments() >= args;
     }
 
     public Double calculateValue() throws IllegalArgumentException {
         if (!valid()) throw new IllegalArgumentException("number of arguments");
-        double[] argValues = new double[arguments.length];
-        for (int i = 0; i < arguments.length; i++) {
-            argValues[i] = arguments[i].getEffectiveValue();
+        double[] argValues = new double[arguments.size()];
+        for (int i = 0; i < arguments.size(); i++) {
+            argValues[i] = arguments.get(i).getEffectiveValue();
         }
         return operation.apply(argValues);
     }
@@ -94,13 +97,13 @@ public class Calculation {
 
         if (operation != null ? !operation.equals(that.operation) : that.operation != null) return false;
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
-        return Arrays.equals(arguments, that.arguments);
+        return ListUtils.isEqualList(arguments, that.arguments);
     }
 
     @Override
     public int hashCode() {
         int result = operation != null ? operation.hashCode() : 0;
-        result = 31 * result + (arguments != null ? Arrays.hashCode(arguments) : 0);
+        result = 31 * result + (arguments != null ? arguments.hashCode() : 0);
         return result;
     }
 
@@ -108,7 +111,7 @@ public class Calculation {
     public String toString() {
         final StringBuilder sb = new StringBuilder("Calculation{");
         sb.append("operation=").append(operation);
-        sb.append(", arguments=").append(Arrays.toString(arguments));
+        sb.append(", arguments=").append(arguments);
         sb.append('}');
         return sb.toString();
     }
