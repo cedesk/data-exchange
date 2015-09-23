@@ -8,8 +8,6 @@ import ru.skoltech.cedl.dataexchange.units.model.Unit;
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -98,6 +96,13 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     public ParameterModel(String name, Double value) {
         this.name = name;
         this.value = value;
+    }
+
+    public ParameterModel(String name, Double value, ParameterNature nature, ParameterValueSource valueSource) {
+        this.name = name;
+        this.value = value;
+        this.nature = nature;
+        this.valueSource = valueSource;
     }
 
     public ParameterModel(String name, Double value, ParameterValueSource valueSource, boolean isExported, String description) {
@@ -292,7 +297,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     }
 
     @Transient
-    public Double getEffectiveValue() {
+    public double getEffectiveValue() {
         return isReferenceValueOverridden ? overrideValue : value;
     }
 
