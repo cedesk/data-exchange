@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Literal;
+import ru.skoltech.cedl.dataexchange.structure.model.calculation.OperationRegistry;
 import ru.skoltech.cedl.dataexchange.units.model.Prefix;
 import ru.skoltech.cedl.dataexchange.units.model.QuantityKind;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
@@ -18,7 +18,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -177,6 +179,34 @@ public class FileStorage {
                 QuantityKind quantityKind = unitManagement.getQuantityKinds().get(qtki);
                 unit.setQuantityKind(quantityKind);
             }
+        }
+    }
+
+    public void storeCalculation(Calculation calc, File outputFile) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+            final Class[] MC = Calculation.getEntityClasses();
+            JAXBContext jc = JAXBContext.newInstance(MC);
+
+            Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            m.marshal(calc, fos);
+        } catch (JAXBException e) {
+            throw new IOException("Error writing system model to XML file.", e);
+        }
+    }
+
+    public Calculation loadCalculation(File file) throws IOException {
+        try (FileInputStream inp = new FileInputStream(file)) {
+            final Class[] MC = Calculation.getEntityClasses();
+            JAXBContext ct = JAXBContext.newInstance(MC);
+
+            Unmarshaller u = ct.createUnmarshaller();
+            Calculation calculation = (Calculation) u.unmarshal(inp);
+
+            return calculation;
+        } catch (JAXBException e) {
+            throw new IOException("Error reading calculation from XML file.", e);
         }
     }
 }

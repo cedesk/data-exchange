@@ -332,7 +332,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @Transient
     public String getNodePath() {
-        return parent.getNodePath() + "::" + name;
+        return (parent != null ? parent.getNodePath() : "") + "::" + name;
     }
 
     /*
