@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
-import ru.skoltech.cedl.dataexchange.SpreadsheetCoordinates;
+import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;

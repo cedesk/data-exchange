@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange;
 
 import org.junit.Assert;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 
 import java.text.ParseException;
 

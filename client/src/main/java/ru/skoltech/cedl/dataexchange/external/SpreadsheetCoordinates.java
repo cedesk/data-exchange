@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.external;
 
 import javafx.scene.control.TablePosition;
 
