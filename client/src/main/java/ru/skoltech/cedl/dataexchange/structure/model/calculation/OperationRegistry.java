@@ -3,9 +3,7 @@ package ru.skoltech.cedl.dataexchange.structure.model.calculation;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +24,12 @@ public class OperationRegistry {
 
     public static Collection<? extends Class> getClasses() {
         return registry.values().stream().map(Object::getClass).collect(Collectors.toList());
+    }
+
+    public static Collection<Operation> getAll() {
+        List<Operation> operationList = new ArrayList<>(registry.values());
+        operationList.sort(Comparator.<Operation>naturalOrder());
+        return operationList;
     }
 
     public static class OperationAdapter extends XmlAdapter<String, Operation> {

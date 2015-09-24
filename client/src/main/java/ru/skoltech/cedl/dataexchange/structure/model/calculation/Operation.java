@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
  */
 @XmlRootElement
 @XmlSeeAlso({Sum.class, Margin.class})
-public interface Operation {
+public interface Operation extends Comparable<Operation> {
 
     String name();
 
@@ -21,4 +21,9 @@ public interface Operation {
     int maxArguments();
 
     double apply(double[] argumentValues);
+
+    @Override
+    default int compareTo(Operation o) {
+        return name().compareTo(o.name());
+    }
 }

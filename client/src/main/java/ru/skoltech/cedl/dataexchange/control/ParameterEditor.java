@@ -67,6 +67,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private TextField parameterLinkText;
 
     @FXML
+    private TextField calculationText;
+
+    @FXML
     private TextField valueText;
 
     @FXML
@@ -94,6 +97,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private HBox linkSelectorGroup;
 
     @FXML
+    private HBox calculationGroup;
+
+    @FXML
     private HBox exportSelectorGroup;
 
     @FXML
@@ -106,6 +112,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private ParameterModel originalParameterModel;
 
     private ParameterModel valueLinkParameter;
+
+    private Calculation calculation;
 
     private ModelEditingController.ParameterUpdateListener updateListener;
 
@@ -139,6 +147,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
         linkSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
+        calculationGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.CALCULATION));
         valueText.disableProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.MANUAL));
         unitChoiceBox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
         isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
@@ -188,6 +197,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         ParameterModel localParameterModel = Utils.copyBean(parameterModel, new ParameterModel());
         parameterBean.setBean(localParameterModel);
         valueLinkParameter = localParameterModel.getValueLink();
+        calculation = localParameterModel.getCalculation();
         natureChoiceBox.valueProperty().setValue(localParameterModel.getNature());
         valueSourceChoiceBox.valueProperty().setValue(localParameterModel.getValueSource());
         unitChoiceBox.valueProperty().setValue(localParameterModel.getUnit());
@@ -289,6 +299,17 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         }
     }
 
+    public void editCalculation(ActionEvent actionEvent) {
+
+        Dialog<Calculation> dialog = new CalculationEditor(getParameterModel());
+        Optional<Calculation> calculationOptional = dialog.showAndWait();
+        if(calculationOptional.isPresent()) {
+            calculation = calculationOptional.get();
+            calculationText.setText(calculation.asText());
+            System.out.println(calculation);
+        }
+    }
+
     public void applyChanges(ActionEvent actionEvent) {
         updateModel();
         // TODO: if(exported) export value to model?
@@ -313,6 +334,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             parameterModel.setValueSource(valueSourceChoiceBox.getValue());
             parameterModel.setUnit(unitChoiceBox.getValue());
             parameterModel.setValueLink(valueLinkParameter);
+            parameterModel.setCalculation(calculation);
 
             if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
                 parameterModel.setValueReference(null);

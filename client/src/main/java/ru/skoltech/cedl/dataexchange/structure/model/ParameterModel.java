@@ -13,7 +13,7 @@ import java.util.UUID;
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-@XmlType(propOrder = {"name", "value", "nature", "valueSource", "unit", "isExported", "isReferenceValueOverridden", "lastModification", "uuid", "valueReference", "valueLink", "exportReference", "description"})
+@XmlType(propOrder = {"name", "value", "nature", "valueSource", "unit", "isExported", "isReferenceValueOverridden", "lastModification", "uuid", "valueReference", "valueLink", "exportReference", "calculation", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
@@ -55,6 +55,8 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @XmlIDREF
     private ParameterModel valueLink;
+
+    private Calculation calculation;
 
     @XmlTransient
     private ExternalModel importModel;
@@ -204,6 +206,16 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public void setValueLink(ParameterModel valueLink) {
         this.valueLink = valueLink;
+    }
+
+    @OneToOne(targetEntity = Calculation.class)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+    public Calculation getCalculation() {
+        return calculation;
+    }
+
+    public void setCalculation(Calculation calculation) {
+        this.calculation = calculation;
     }
 
     @ManyToOne(targetEntity = ExternalModel.class, optional = true, cascade = CascadeType.ALL)

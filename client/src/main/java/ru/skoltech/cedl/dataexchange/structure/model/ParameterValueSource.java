@@ -14,11 +14,11 @@ public enum ParameterValueSource {
             return "link";
         }
     },
-    /*CALCULATION {
+    CALCULATION {
         public String toString() {
             return "calculation";
         }
-    }*/
+    },
     REFERENCE {
         public String toString() {
             return "reference";

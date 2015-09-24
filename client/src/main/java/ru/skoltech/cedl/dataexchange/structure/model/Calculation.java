@@ -1,8 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.apache.commons.collections.ListUtils;
-import org.hibernate.annotations.IndexColumn;
-import org.hibernate.envers.Audited;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Operation;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.OperationRegistry;
@@ -12,7 +10,6 @@ import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -105,6 +102,10 @@ public class Calculation {
         int result = operation != null ? operation.hashCode() : 0;
         result = 31 * result + (arguments != null ? arguments.hashCode() : 0);
         return result;
+    }
+
+    public String asText() {
+        return operation != null ? operation.name() : null;
     }
 
     @Override
