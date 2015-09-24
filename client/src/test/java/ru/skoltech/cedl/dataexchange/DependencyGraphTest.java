@@ -26,7 +26,7 @@ public class DependencyGraphTest {
 
         ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
         parameterLinkRegistry.registerAllParameters(systemModel);
-        DirectedGraph<ModelNode, ParameterLinkRegistry.MyEdge> dependencies = parameterLinkRegistry.calculateModelDependencies(systemModel);
+        DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencies = parameterLinkRegistry.calculateModelDependencies(systemModel);
         Assert.assertEquals(6, dependencies.vertexSet().size());
     }
 

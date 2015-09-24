@@ -24,9 +24,10 @@ public class ParameterLinkRegistry {
         clear();
         ParameterTreeIterator pmi = getLinkedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
-            addLink(sink.getValueLink(), sink);
+            ParameterModel source = sink.getValueLink();
+            addLink(source, sink);
         });
-        DirectedGraph<ModelNode, MyEdge> modelDependencies = calculateModelDependencies(systemModel);
+        DirectedGraph<ModelNode, ModelDependency> modelDependencies = calculateModelDependencies(systemModel);
         printDependencies(modelDependencies);
     }
 
@@ -109,35 +110,36 @@ public class ParameterLinkRegistry {
         return result;
     }
 
-    public DirectedGraph<ModelNode, MyEdge> calculateModelDependencies(SystemModel systemModel) {
-        DirectedGraph<ModelNode, MyEdge> dependencies = new SimpleDirectedGraph<ModelNode, MyEdge>(MyEdge.class);
+    public DirectedGraph<ModelNode, ModelDependency> calculateModelDependencies(SystemModel systemModel) {
+        DirectedGraph<ModelNode, ModelDependency> dependencyGraph = new SimpleDirectedGraph<ModelNode, ModelDependency>(ModelDependency.class);
 
         ParameterTreeIterator pmi = getLinkedParameters(systemModel);
-        pmi.forEachRemaining(valueSink -> {
-            ModelNode from = valueSink.getParent();
-            ParameterModel valueSource = valueSink.getValueLink();
-            ModelNode to = valueSource.getParent();
-            dependencies.addVertex(from);
-            dependencies.addVertex(to);
-            dependencies.addEdge(from, to);
+        pmi.forEachRemaining(sinkParameter -> {
+            ModelNode sinkModel = sinkParameter.getParent();
+            ParameterModel sourceParameter = sinkParameter.getValueLink();
+            ModelNode sourceModel = sourceParameter.getParent();
+            dependencyGraph.addVertex(sinkModel);
+            dependencyGraph.addVertex(sourceModel);
+            // dependency goes from SOURCE to SINK
+            dependencyGraph.addEdge(sourceModel, sinkModel);
         });
-        return dependencies;
+        return dependencyGraph;
     }
 
-    private void printDependencies(DirectedGraph<ModelNode, MyEdge> modelDependencies) {
+    private void printDependencies(DirectedGraph<ModelNode, ModelDependency> modelDependencies) {
         System.out.println("DEPENDENCIES");
         modelDependencies.vertexSet().stream()
-                .filter(toNode -> modelDependencies.inDegreeOf(toNode) > 0)
-                .forEach(toNode -> {
-                    String toName = toNode.getName();
-                    String fromNames = modelDependencies.incomingEdgesOf(toNode).stream().map(
-                            edge -> edge.getSource().getName()
+                .filter(sourceNode -> modelDependencies.inDegreeOf(sourceNode) > 0)
+                .forEach(sinkNode -> {
+                    String sinkName = sinkNode.getName();
+                    String sourceNames = modelDependencies.incomingEdgesOf(sinkNode).stream().map(
+                            dependency -> dependency.getSource().getName()
                     ).collect(Collectors.joining(", "));
-                    System.out.println(toName + " depends on " + fromNames);
+                    System.out.println(sinkName + " depends on " + sourceNames);
                 });
     }
 
-    public static class MyEdge extends DefaultEdge {
+    public static class ModelDependency extends DefaultEdge {
         @Override
         protected ModelNode getSource() {
             return (ModelNode) super.getSource();
