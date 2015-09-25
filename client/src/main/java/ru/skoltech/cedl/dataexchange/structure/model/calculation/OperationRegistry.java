@@ -16,6 +16,8 @@ public class OperationRegistry {
     static {
         register(new Sum());
         register(new Margin());
+        register(new Min());
+        register(new Max());
     }
 
     private static void register(Operation operation) {

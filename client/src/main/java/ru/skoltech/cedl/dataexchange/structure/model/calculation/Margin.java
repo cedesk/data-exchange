@@ -3,7 +3,7 @@ package ru.skoltech.cedl.dataexchange.structure.model.calculation;
 /**
  * Created by D.Knoll on 23.09.2015.
  */
-public class Margin implements Operation {
+public class Margin extends Operation {
 
     @Override
     public String name() {
@@ -35,14 +35,4 @@ public class Margin implements Operation {
         return arguments[0] * (1 + arguments[1]);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        return (o == null || getClass() != o.getClass());
-    }
-
-    @Override
-    public String toString() {
-        return name();
-    }
 }

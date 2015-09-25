@@ -8,22 +8,33 @@ import javax.xml.bind.annotation.XmlSeeAlso;
  */
 @XmlRootElement
 @XmlSeeAlso({Sum.class, Margin.class})
-public interface Operation extends Comparable<Operation> {
+public abstract class Operation implements Comparable<Operation> {
 
-    String name();
+    public abstract String name();
 
-    String description();
+    public abstract String description();
 
-    String[] argumentNames();
+    public abstract String[] argumentNames();
 
-    int minArguments();
+    public abstract int minArguments();
 
-    int maxArguments();
+    public abstract int maxArguments();
 
-    double apply(double[] argumentValues);
+    public abstract double apply(double[] argumentValues);
 
     @Override
-    default int compareTo(Operation o) {
+    public int compareTo(Operation o) {
         return name().compareTo(o.name());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        return (o != null && getClass() == o.getClass());
+    }
+
+    @Override
+    public String toString() {
+        return name();
     }
 }

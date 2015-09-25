@@ -1,23 +1,26 @@
 package ru.skoltech.cedl.dataexchange.structure.model.calculation;
 
+import java.util.Arrays;
+import java.util.OptionalDouble;
+
 /**
- * Created by D.Knoll on 23.09.2015.
+ * Created by D.Knoll on 26.09.2015.
  */
-public class Sum extends Operation {
+public class Max extends Operation {
 
     @Override
     public String name() {
-        return "Sum";
+        return "Max";
     }
 
     @Override
     public String description() {
-        return "This operation sums all arguments";
+        return "This operation finds the maximum among all arguments";
     }
 
     @Override
     public String[] argumentNames() {
-        return new String[]{"summand n"};
+        return new String[]{"argument n"};
     }
 
     @Override
@@ -32,10 +35,7 @@ public class Sum extends Operation {
 
     @Override
     public double apply(double[] arguments) {
-        double result = 0;
-        for (Double arg : arguments) {
-            result += arg;
-        }
-        return result;
+        OptionalDouble optionalDouble = Arrays.stream(arguments).max();
+        return optionalDouble.getAsDouble();
     }
 }
