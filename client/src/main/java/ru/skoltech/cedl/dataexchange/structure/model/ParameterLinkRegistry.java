@@ -16,6 +16,7 @@ public class ParameterLinkRegistry {
     private Logger logger = Logger.getLogger(ParameterLinkRegistry.class);
 
     private Map<String, Set<ParameterModel>> valueLinks = new HashMap<>();
+    private DirectedGraph<ModelNode, ModelDependency> dependencyGraph = new SimpleDirectedGraph<>(ModelDependency.class);
 
     public ParameterLinkRegistry() {
     }
@@ -27,8 +28,7 @@ public class ParameterLinkRegistry {
             ParameterModel source = sink.getValueLink();
             addLink(source, sink);
         });
-        DirectedGraph<ModelNode, ModelDependency> modelDependencies = calculateModelDependencies(systemModel);
-        printDependencies(modelDependencies);
+        printDependencies(dependencyGraph);
     }
 
     public ParameterTreeIterator getLinkedParameters(SystemModel systemModel) {
@@ -49,6 +49,13 @@ public class ParameterLinkRegistry {
             sinks.add(sink);
             valueLinks.put(sourceId, sinks);
         }
+
+        ModelNode sourceModel = source.getParent();
+        ModelNode sinkModel = sink.getParent();
+        dependencyGraph.addVertex(sinkModel);
+        dependencyGraph.addVertex(sourceModel);
+        // dependency goes from SOURCE to SINK
+        dependencyGraph.addEdge(sourceModel, sinkModel);
     }
 
     public void updateAll(SystemModel systemModel) {
@@ -87,45 +94,65 @@ public class ParameterLinkRegistry {
                 valueLinks.remove(sourceId);
             }
         }
+        // dependency goes from SOURCE to SINK
+        ModelNode sourceModel = source.getParent();
+        ModelNode sinkModel = sink.getParent();
+        dependencyGraph.removeEdge(sourceModel, sinkModel);
     }
 
     public void clear() {
         valueLinks.clear();
+        dependencyGraph = new SimpleDirectedGraph<>(ModelDependency.class);
     }
 
-    private SystemModel getSystem() {
-        ModelNode parent = null;
-        if (valueLinks.size() > 0) {
-            Set<ParameterModel> sinks = valueLinks.values().iterator().next();
-            ParameterModel sink = sinks.iterator().next();
-            parent = sink.getParent();
+    public String getDependencies(ModelNode modelNode) {
+        StringBuilder sb = new StringBuilder();
+        if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.inDegreeOf(modelNode) > 0) {
+            Set<ModelDependency> sourceDependencies = dependencyGraph.incomingEdgesOf(modelNode);
+            String sourceNames = sourceDependencies.stream().map(
+                    dependency -> dependency.getSource().getName()
+            ).collect(Collectors.joining(", "));
+            sb.append("upstream: ").append(sourceNames).append('\n');
         }
-        SystemModel result = null;
-        if (parent != null) {
-            while (parent.getParent() != null) {
-                parent = parent.getParent();
+        if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.outDegreeOf(modelNode) > 0) {
+            Set<ModelDependency> sinkDependencies = dependencyGraph.outgoingEdgesOf(modelNode);
+            String sinkNames = sinkDependencies.stream().map(
+                    dependency -> dependency.getSource().getName()
+            ).collect(Collectors.joining(", "));
+            sb.append("downstream: ").append(sinkNames);
+        }
+        return sb.toString();
+    }
+
+    /*
+        private SystemModel getSystem() {
+            ModelNode parent = null;
+            if (valueLinks.size() > 0) {
+                Set<ParameterModel> sinks = valueLinks.values().iterator().next();
+                ParameterModel sink = sinks.iterator().next();
+                parent = sink.getParent();
             }
-            result = (SystemModel) parent;
+            SystemModel result = null;
+            if (parent != null) {
+                while (parent.getParent() != null) {
+                    parent = parent.getParent();
+                }
+                result = (SystemModel) parent;
+            }
+            return result;
         }
-        return result;
-    }
 
-    public DirectedGraph<ModelNode, ModelDependency> calculateModelDependencies(SystemModel systemModel) {
-        DirectedGraph<ModelNode, ModelDependency> dependencyGraph = new SimpleDirectedGraph<ModelNode, ModelDependency>(ModelDependency.class);
+        public DirectedGraph<ModelNode, ModelDependency> calculateModelDependencies(SystemModel systemModel) {
+            ParameterTreeIterator pmi = getLinkedParameters(systemModel);
+            pmi.forEachRemaining(sinkParameter -> {
+                ModelNode sinkModel = sinkParameter.getParent();
+                ParameterModel sourceParameter = sinkParameter.getValueLink();
+                ModelNode sourceModel = sourceParameter.getParent();
 
-        ParameterTreeIterator pmi = getLinkedParameters(systemModel);
-        pmi.forEachRemaining(sinkParameter -> {
-            ModelNode sinkModel = sinkParameter.getParent();
-            ParameterModel sourceParameter = sinkParameter.getValueLink();
-            ModelNode sourceModel = sourceParameter.getParent();
-            dependencyGraph.addVertex(sinkModel);
-            dependencyGraph.addVertex(sourceModel);
-            // dependency goes from SOURCE to SINK
-            dependencyGraph.addEdge(sourceModel, sinkModel);
-        });
-        return dependencyGraph;
-    }
-
+            });
+            return dependencyGraph;
+        }
+    */
     private void printDependencies(DirectedGraph<ModelNode, ModelDependency> modelDependencies) {
         System.out.println("DEPENDENCIES");
         modelDependencies.vertexSet().stream()

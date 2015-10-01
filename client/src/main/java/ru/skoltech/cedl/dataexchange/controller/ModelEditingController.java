@@ -51,6 +51,9 @@ public class ModelEditingController implements Initializable {
     private TitledPane externalModelPane;
 
     @FXML
+    private TextArea dependenciesText;
+
+    @FXML
     private ParameterEditor parameterEditor;
 
     @FXML
@@ -494,6 +497,9 @@ public class ModelEditingController implements Initializable {
                 selectedNodeIsEditable.setValue(editable);
 
                 ModelEditingController.this.updateParameterTable(newValue);
+                String dependencies = project.getParameterLinkRegistry().getDependencies(modelNode);
+                dependenciesText.setText(dependencies);
+
                 List<ExternalModel> externalModels = modelNode.getExternalModels();
                 if (externalModels.size() > 0) { // TODO: allow more external models
                     ExternalModel externalModel = externalModels.get(0);
@@ -505,6 +511,8 @@ public class ModelEditingController implements Initializable {
                 }
             } else {
                 ModelEditingController.this.clearParameterTable();
+                dependenciesText.setText(null);
+                // TODO: allow more external models
                 selectedNodeCanHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
                 selectedNodeIsEditable.setValue(false);
