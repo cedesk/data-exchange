@@ -2,11 +2,16 @@ package ru.skoltech.cedl.dataexchange.control;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.structure.model.Calculation;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Operation;
@@ -26,8 +31,18 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
 
     @FXML
     private ChoiceBox<Operation> operationChoiceBox;
+
     @FXML
     private TextArea operationDescriptionText;
+
+    @FXML
+    private VBox argumentsContainer;
+
+    @FXML
+    private GridPane argumentPane;
+
+    @FXML
+    private Button addButton;
 
     public CalculationEditor(ParameterModel parameterModel) {
         this.parameterModel = parameterModel;
@@ -66,9 +81,9 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
                 return null;
             }
         });
-        operationChoiceBox.getItems().addAll(OperationRegistry.getAll());
+        operationChoiceBox.setItems(FXCollections.observableArrayList(OperationRegistry.getAll()));
 
-        operationChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Operation>() {
+        operationChoiceBox.valueProperty().addListener(new ChangeListener<Operation>() {
             @Override
             public void changed(ObservableValue<? extends Operation> observable, Operation oldValue, Operation newValue) {
                 if (newValue != null) {
@@ -78,5 +93,19 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
                 }
             }
         });
+        if (calculation != null && calculation.getOperation() != null) {
+            operationChoiceBox.getSelectionModel().select(calculation.getOperation());
+        }
+//        BooleanBinding maxArgumentReached = Bindings.greaterThan(
+//                operationChoiceBox.getSelectionModel().selectedItemProperty().get().maxArguments(),
+//                argumentsContainer.getChildren().size());
+//        addButton.disableProperty().bind(maxArgumentReached);
+        addButton.setOnAction(CalculationEditor.this::addArgument);
+    }
+
+    public void addArgument(ActionEvent actionEvent) {
+        GridPane newArgPane = Utils.copyBean(argumentPane, new GridPane());
+        argumentsContainer.getChildren().add(newArgPane);
+        argumentsContainer.requestLayout();
     }
 }

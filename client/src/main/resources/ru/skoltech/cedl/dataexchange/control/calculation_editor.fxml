@@ -27,10 +27,10 @@
                 <VBox spacing="4.0" GridPane.columnIndex="1">
                     <children>
                         <ChoiceBox fx:id="operationChoiceBox" prefWidth="100.0" />
-                        <TextArea fx:id="operationDescriptionText" prefHeight="200.0" prefWidth="150.0" text="Operation description" editable="false" />
+                        <TextArea fx:id="operationDescriptionText" wrapText="true" prefHeight="200.0" prefWidth="150.0" text="Operation description" editable="false" />
                     </children>
                 </VBox>
-                <VBox GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+                <VBox fx:id="argumentsContainer" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
                     <children>
                         <GridPane fx:id="argumentPane" hgap="8.0" style="-fx-border-width: 1px; -fx-border-color: black; -fx-border-style: solid;" vgap="2.0">
                             <columnConstraints>
@@ -45,7 +45,7 @@
                             <children>
                                 <Label fx:id="arg0NameText" text="Argument 0" GridPane.halignment="RIGHT" />
                                 <Button fx:id="arg0DeleteButton" mnemonicParsing="false" text="delete" GridPane.columnIndex="2" />
-                                <TextArea fx:id="arg0DescriptionText" editable="false" prefHeight="200.0" prefWidth="150.0" text="Argument description" GridPane.rowIndex="1" />
+                                <TextArea fx:id="arg0DescriptionText" wrapText="true" editable="false" prefHeight="200.0" prefWidth="150.0" text="Argument description" GridPane.rowIndex="1" />
                                 <TextField fx:id="arg0NumericValueText" GridPane.columnIndex="1" />
                                 <HBox GridPane.columnIndex="1" GridPane.rowIndex="1">
                                     <children>
@@ -60,7 +60,7 @@
                         </GridPane>
                     </children>
                 </VBox>
-                <Button mnemonicParsing="false" text="add" GridPane.rowIndex="2" />
+                <Button fx:id="addButton" mnemonicParsing="false" text="add" GridPane.rowIndex="2" />
             </children>
         </GridPane>
     </content>
