@@ -5,6 +5,8 @@ package ru.skoltech.cedl.dataexchange.structure.model.calculation;
  */
 public class Margin extends Operation {
 
+    private static final String[] argNames = new String[]{"argument", "percentage"};
+
     @Override
     public String name() {
         return "Margin";
@@ -16,8 +18,10 @@ public class Margin extends Operation {
     }
 
     @Override
-    public String[] argumentNames() {
-        return new String[]{"argument", "percentage"};
+    public String argumentName(int index) {
+        if (index < 0 || index >= argNames.length)
+            throw new IllegalArgumentException("invalid argument index " + index);
+        return argNames[index];
     }
 
     @Override
@@ -34,5 +38,4 @@ public class Margin extends Operation {
     public double apply(double[] arguments) {
         return arguments[0] * (1 + arguments[1]);
     }
-
 }

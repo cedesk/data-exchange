@@ -19,8 +19,10 @@ public class Max extends Operation {
     }
 
     @Override
-    public String[] argumentNames() {
-        return new String[]{"argument n"};
+    public String argumentName(int index) {
+        if (index < 0)
+            throw new IllegalArgumentException("invalid argument index " + index);
+        return "argument " + index;
     }
 
     @Override

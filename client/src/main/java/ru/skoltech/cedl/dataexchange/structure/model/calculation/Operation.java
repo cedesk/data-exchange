@@ -14,7 +14,7 @@ public abstract class Operation implements Comparable<Operation> {
 
     public abstract String description();
 
-    public abstract String[] argumentNames();
+    public abstract String argumentName(int index);
 
     public abstract int minArguments();
 

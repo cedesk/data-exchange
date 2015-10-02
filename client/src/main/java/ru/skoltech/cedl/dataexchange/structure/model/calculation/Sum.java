@@ -16,8 +16,10 @@ public class Sum extends Operation {
     }
 
     @Override
-    public String[] argumentNames() {
-        return new String[]{"summand n"};
+    public String argumentName(int index) {
+        if (index < 0)
+            throw new IllegalArgumentException("invalid argument index " + index);
+        return "summand " + index;
     }
 
     @Override
