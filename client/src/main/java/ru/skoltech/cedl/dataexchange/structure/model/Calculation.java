@@ -10,6 +10,7 @@ import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -31,7 +32,7 @@ public class Calculation {
     private Operation operation;
 
     @XmlElement(type = Object.class)
-    private List<Argument> arguments;
+    private List<Argument> arguments = new LinkedList<>();
 
     public static Class[] getEntityClasses() {
         List<Class> classList = new ArrayList<>();
@@ -62,7 +63,6 @@ public class Calculation {
 
     @OneToMany(targetEntity = Argument.class,/* mappedBy = "parent", */orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @OrderColumn(name = "id")
-    //@IndexColumn
     public List<Argument> getArguments() {
         return arguments;
     }
@@ -105,7 +105,18 @@ public class Calculation {
     }
 
     public String asText() {
-        return operation != null ? operation.name() : null;
+        if (operation == null) return null;
+        StringBuilder sb = new StringBuilder(operation.name());
+        sb.append('(');
+        for (int i = 0; i < arguments.size(); i++) {
+            Argument arg = arguments.get(i);
+            sb.append(arg.asText());
+            if (i < arguments.size() - 1) {
+                sb.append(',');
+            }
+        }
+        sb.append(')');
+        return sb.toString();
     }
 
     @Override

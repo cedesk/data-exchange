@@ -6,16 +6,16 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<DialogPane xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<DialogPane xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
     <content>
         <GridPane hgap="8.0" vgap="4.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="142.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="266.0" minWidth="191.0" prefWidth="257.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="142.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="191.0" prefWidth="257.0" />
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints minHeight="10.0" prefHeight="80.0" vgrow="NEVER" />
-                <RowConstraints vgrow="NEVER" />
+                <RowConstraints vgrow="ALWAYS" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
             </rowConstraints>
             <children>
@@ -27,40 +27,15 @@
                 <VBox spacing="4.0" GridPane.columnIndex="1">
                     <children>
                         <ChoiceBox fx:id="operationChoiceBox" prefWidth="100.0" />
-                        <TextArea fx:id="operationDescriptionText" wrapText="true" prefHeight="200.0" prefWidth="150.0" text="Operation description" editable="false" />
+                        <TextArea fx:id="operationDescriptionText" editable="false" prefHeight="200.0" prefWidth="150.0" text="Operation description" wrapText="true" />
                     </children>
                 </VBox>
-                <VBox fx:id="argumentsContainer" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+                <VBox fx:id="argumentsContainer" spacing="4.0" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
                     <children>
-                        <GridPane fx:id="argumentPane" hgap="8.0" style="-fx-border-width: 1px; -fx-border-color: black; -fx-border-style: solid;" vgap="2.0">
-                            <columnConstraints>
-                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
-                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
-                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                                <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
-                            </rowConstraints>
-                            <children>
-                                <Label fx:id="arg0NameText" text="Argument 0" GridPane.halignment="RIGHT" />
-                                <Button fx:id="arg0DeleteButton" mnemonicParsing="false" text="delete" GridPane.columnIndex="2" />
-                                <TextArea fx:id="arg0DescriptionText" wrapText="true" editable="false" prefHeight="200.0" prefWidth="150.0" text="Argument description" GridPane.rowIndex="1" />
-                                <TextField fx:id="arg0NumericValueText" GridPane.columnIndex="1" />
-                                <HBox GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                    <children>
-                                        <TextField fx:id="arg0ParameterValueLinkText" editable="false" />
-                                        <Button fx:id="arg0LinkButton" mnemonicParsing="false" text="link" />
-                                    </children>
-                                </HBox>
-                            </children>
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                        </GridPane>
+
                     </children>
                 </VBox>
-                <Button fx:id="addButton" mnemonicParsing="false" text="add" GridPane.rowIndex="2" />
+                <Button fx:id="addButton" mnemonicParsing="false" onAction="#addNewArgument" text="add" GridPane.rowIndex="2" />
             </children>
         </GridPane>
     </content>

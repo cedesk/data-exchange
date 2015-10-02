@@ -4,7 +4,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -303,10 +302,12 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
         Dialog<Calculation> dialog = new CalculationEditor(getParameterModel());
         Optional<Calculation> calculationOptional = dialog.showAndWait();
-        if(calculationOptional.isPresent()) {
+        if (calculationOptional.isPresent()) {
             calculation = calculationOptional.get();
             calculationText.setText(calculation.asText());
-            System.out.println(calculation);
+            logger.debug(originalParameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
+        } else {
+            calculationText.setText(null);
         }
     }
 
@@ -342,6 +343,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             if (parameterModel.getValueSource() != ParameterValueSource.LINK) {
                 parameterModel.setValueLink(null);
             }
+            if (parameterModel.getValueSource() != ParameterValueSource.CALCULATION) {
+                parameterModel.setCalculation(null);
+            } else {
+                parameterModel.setCalculation(calculation);
+            }
             if (!parameterModel.getIsExported()) {
                 parameterModel.setExportReference(null);
             }
@@ -363,35 +369,5 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void setUpdateListener(ModelEditingController.ParameterUpdateListener updateListener) {
         this.updateListener = updateListener;
-    }
-
-    //TODO: add possibility for negative values
-    public class NumericTextFieldValidator implements EventHandler<KeyEvent> {
-        final Integer maxLength;
-
-        public NumericTextFieldValidator(Integer maxLength) {
-            this.maxLength = maxLength;
-        }
-
-        @Override
-        public void handle(KeyEvent e) {
-            TextField txt_TextField = (TextField) e.getSource();
-            String text = txt_TextField.getText();
-            if (text.length() >= maxLength) {
-                e.consume();
-            }
-            String character = e.getCharacter();
-            if (character.matches("[-0-9.]")) {
-                if (text.contains(".") && character.equals(".")) {
-                    e.consume();
-                } else if (text.startsWith("-") && character.equals("-")) {
-                    e.consume();
-                } else if (text.length() == 0 && character.equals(".")) {
-                    e.consume();
-                }
-            } else {
-                e.consume();
-            }
-        }
     }
 }

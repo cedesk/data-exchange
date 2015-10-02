@@ -3,7 +3,6 @@ package ru.skoltech.cedl.dataexchange.structure.model.calculation;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.structure.model.Calculation;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
 import javax.persistence.*;
@@ -54,6 +53,8 @@ public abstract class Argument {
     @Transient
     public abstract double getEffectiveValue();
 
+    public abstract String asText();
+
     @XmlType
     @XmlAccessorType(XmlAccessType.FIELD)
     @Entity
@@ -83,6 +84,11 @@ public abstract class Argument {
         @Transient
         public double getEffectiveValue() {
             return value;
+        }
+
+        @Override
+        public String asText() {
+            return Double.toString(value);
         }
 
         @Override
@@ -141,6 +147,11 @@ public abstract class Argument {
         @Transient
         public double getEffectiveValue() {
             return link.getEffectiveValue();
+        }
+
+        @Override
+        public String asText() {
+            return link != null ? link.getNodePath() : null;
         }
 
         @Override
