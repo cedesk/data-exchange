@@ -117,7 +117,7 @@ public class ParameterLinkRegistry {
         if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.outDegreeOf(modelNode) > 0) {
             Set<ModelDependency> sinkDependencies = dependencyGraph.outgoingEdgesOf(modelNode);
             String sinkNames = sinkDependencies.stream().map(
-                    dependency -> dependency.getSource().getName()
+                    dependency -> dependency.getTarget().getName()
             ).collect(Collectors.joining(", "));
             sb.append("downstream: ").append(sinkNames);
         }
