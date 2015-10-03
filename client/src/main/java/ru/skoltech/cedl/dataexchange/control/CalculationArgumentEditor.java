@@ -7,10 +7,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterTreeIterator;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 
 import java.io.IOException;
@@ -96,14 +94,11 @@ public class CalculationArgumentEditor extends GridPane implements Initializable
 
     public void chooseParameter(ActionEvent actionEvent) {
 
-        SystemModel systemModel = getSystem();
-        // filter list of parameters
+        // list parameters of subsystem and children, excluding the parameter which contains the calculation
         List<ParameterModel> parameters = new LinkedList<>();
-        systemModel.parametersTreeIterator().forEachRemaining(parameter -> {
-            if (parameter != parameterModel && parameter.getNature() == ParameterNature.OUTPUT) {
-                parameters.add(parameter);
-            }
-        });
+        ParameterTreeIterator subsystemParameterIterator =
+                new ParameterTreeIterator(parameterModel.getParent(), param -> param != parameterModel);
+        subsystemParameterIterator.forEachRemaining(parameters::add);
 
         ParameterModel valueLinkParameter = ((Argument.Parameter) argument).getLink();
         Dialog<ParameterModel> dialog = new ParameterChooser(parameters, valueLinkParameter);
@@ -122,18 +117,6 @@ public class CalculationArgumentEditor extends GridPane implements Initializable
                 argParameterValueLinkText.setText(null);
             }
         }
-    }
-
-    private SystemModel getSystem() {
-        ModelNode parent = parameterModel.getParent();
-        SystemModel result = null;
-        if (parent != null) {
-            while (parent.getParent() != null) {
-                parent = parent.getParent();
-            }
-            result = (SystemModel) parent;
-        }
-        return result;
     }
 
     public void setArgumentName(String argumentName) {

@@ -108,6 +108,8 @@ public class ParameterChooser extends ChoiceDialog<ParameterModel> {
         if (defaultValue != null) {
             subsystemChoiceBox.getSelectionModel().select(defaultValue.getParent());
             parameterChoiceBox.getSelectionModel().select(defaultValue);
+        } else {
+            subsystemChoiceBox.getSelectionModel().selectFirst();
         }
     }
 }
