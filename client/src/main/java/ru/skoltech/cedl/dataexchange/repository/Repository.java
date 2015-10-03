@@ -17,35 +17,39 @@ import java.util.List;
  */
 public interface Repository extends Closeable {
 
-    SystemModel loadSystemModel(long studyId) throws RepositoryException;
+    boolean validateDatabaseScheme();
 
-    UserRoleManagement loadUserRoleManagement(long studyId) throws RepositoryException;
+    boolean updateDatabaseScheme();
 
-    SystemModel storeSystemModel(SystemModel systemModel) throws RepositoryException;
-
-    void deleteStudy(String name) throws RepositoryException;
+    String getUrl();
 
     List<String> listStudies() throws RepositoryException;
 
     Study loadStudy(String name) throws RepositoryException;
 
+    void deleteStudy(String name) throws RepositoryException;
+
     Study storeStudy(Study study) throws RepositoryException;
 
-    UserRoleManagement storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException;
+    SystemModel loadSystemModel(long studyId) throws RepositoryException;
 
-    UserManagement storeUserManagement(UserManagement userManagement) throws RepositoryException;
+    SystemModel storeSystemModel(SystemModel systemModel) throws RepositoryException;
 
-    UserManagement loadUserManagement() throws RepositoryException;
-
-    UnitManagement storeUnitManagement(UnitManagement unitManagement) throws RepositoryException;
-
-    UnitManagement loadUnitManagement() throws RepositoryException;
-
-    List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException;
-
-    String getUrl();
+    ExternalModel loadExternalModel(long externalModelId) throws RepositoryException;
 
     ExternalModel storeExternalModel(ExternalModel externalModel) throws RepositoryException;
 
-    ExternalModel loadExternalModel(long externalModelId) throws RepositoryException;
+    UserRoleManagement loadUserRoleManagement(long studyId) throws RepositoryException;
+
+    UserRoleManagement storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException;
+
+    UserManagement loadUserManagement() throws RepositoryException;
+
+    UserManagement storeUserManagement(UserManagement userManagement) throws RepositoryException;
+
+    UnitManagement loadUnitManagement() throws RepositoryException;
+
+    UnitManagement storeUnitManagement(UnitManagement unitManagement) throws RepositoryException;
+
+    List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException;
 }

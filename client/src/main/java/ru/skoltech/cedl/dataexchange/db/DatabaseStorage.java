@@ -22,10 +22,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by dknoll on 24/05/15.
@@ -35,6 +32,8 @@ public class DatabaseStorage implements Repository {
     public static final String PERSISTENCE_URL_PROPERTY = "javax.persistence.jdbc.url";
     public static final String PERSISTENCE_USER_PROPERTY = "javax.persistence.jdbc.user";
     public static final String PERSISTENCE_PASSWORD_PROPERTY = "javax.persistence.jdbc.password";
+    public static final String HIBERNATE_TABLE_MAPPING = "hibernate.hbm2ddl.auto";
+    public static final String HIBERNATE_TABLE_MAPPING_UPDATE = "update";
     public static final String DEFAULT_HOST_NAME = "localhost";
     public static final String DEFAULT_SCHEMA = "cedesk_repo";
     public static final String DEFAULT_USER_NAME = "cedesk";
@@ -76,13 +75,70 @@ public class DatabaseStorage implements Repository {
         logger.debug("repository url: " + url + ", user: " + userName);
         try {
             DriverManager.getConnection(url, userName, password).close();
-            // TODO: check also existence of schema "cedesk"
             logger.info("check of database connection succeeded!");
             return true;
         } catch (SQLException e) {
             logger.warn("check of database connection failed!");
             return false;
         }
+    }
+
+    @Override
+    public boolean validateDatabaseScheme() {
+        EntityManagerFactory entityManagerFactory = null;
+        EntityManager entityManager = null;
+        logger.info("validating database scheme");
+        try {
+            entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
+            entityManager = entityManagerFactory.createEntityManager();
+            // TODO: eventually check schema version
+            return true;
+        } catch (Exception e) {
+            logger.error("Database scheme validation failed!");
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+            if (entityManagerFactory != null) {
+                try {
+                    entityManagerFactory.close();
+                } catch (Exception ignore) {
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateDatabaseScheme() {
+        EntityManagerFactory entityManagerFactory = null;
+        EntityManager entityManager = null;
+        logger.info("updating database scheme");
+        try {
+            properties.put(HIBERNATE_TABLE_MAPPING, HIBERNATE_TABLE_MAPPING_UPDATE);
+            entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
+            entityManager = entityManagerFactory.createEntityManager();
+            // TODO: eventually update schema version
+            properties.remove(HIBERNATE_TABLE_MAPPING);
+            return true;
+        } catch (Exception e) {
+            logger.error("Database scheme update failed!");
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+            if (entityManagerFactory != null) {
+                try {
+                    entityManagerFactory.close();
+                } catch (Exception ignore) {
+                }
+            }
+        }
+        return false;
     }
 
     @Override

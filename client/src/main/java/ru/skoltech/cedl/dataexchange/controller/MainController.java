@@ -249,12 +249,14 @@ public class MainController implements Initializable {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                if (!validDatabaseConnection()) {
+                boolean validRepository = checkRepository();
+                if (!validRepository) {
                     openSettingsDialog(null);
+                    validRepository = checkRepository();
                 }
-                if (validDatabaseConnection() && ApplicationSettings.getProjectToImport() != null) {
+                if (validRepository && ApplicationSettings.getProjectToImport() != null) {
                     importProject(null);
-                } else if (validDatabaseConnection() && ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
+                } else if (validRepository && ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
                     String projectName = ApplicationSettings.getLastUsedProject(null);
                     if (projectName != null) {
                         project.setProjectName(projectName);
@@ -272,12 +274,22 @@ public class MainController implements Initializable {
         });
     }
 
-    private boolean validDatabaseConnection() {
+    private boolean checkRepository() {
         String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
         String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
         String repoUser = ApplicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
         String repoPassword = ApplicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
-        return DatabaseStorage.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
+
+        boolean connectionValid = DatabaseStorage.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
+        if (connectionValid) {
+            Repository databaseRepository = RepositoryFactory.getDatabaseRepository();
+            boolean validScheme = databaseRepository.validateDatabaseScheme();
+            if (!validScheme && ApplicationSettings.getRepositorySchemaCreate()) {
+                validScheme = databaseRepository.updateDatabaseScheme();
+            }
+            return validScheme;
+        }
+        return false;
     }
 
     public Window getAppWindow() {
@@ -472,7 +484,7 @@ public class MainController implements Initializable {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
             stage.setOnCloseRequest(event -> {
-                if (!validDatabaseConnection()) {
+                if (!checkRepository()) {
                     Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository");
                     quit(null);
                 }

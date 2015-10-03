@@ -22,7 +22,8 @@ public class ApplicationSettings {
     private static final String SETTINGS_COMMENTS = "CEDESK application settings";
 
     private static final String REPOSITORY_HOST = "repository.host";
-    private static final String REPOSITORY_SCHEMA = "repository.schema";
+    private static final String REPOSITORY_SCHEMA_NAME = "repository.schema.name";
+    private static final String REPOSITORY_SCHEMA_CREATE = "repository.schema.create";
     private static final String REPOSITORY_USER = "repository.user";
     private static final String REPOSITORY_PASSWORD = "repository.password";
 
@@ -125,12 +126,20 @@ public class ApplicationSettings {
     }
 
     public static String getRepositorySchema(String defaultRepositorySchema) {
-        String schema = properties.getProperty(REPOSITORY_SCHEMA);
+        String schema = properties.getProperty(REPOSITORY_SCHEMA_NAME);
         if (schema == null) {
             logger.warn("Empty repository schema. Assuming: " + defaultRepositorySchema);
             schema = defaultRepositorySchema;
         }
         return schema;
+    }
+
+    public static boolean getRepositorySchemaCreate() {
+        String schemaCreate = properties.getProperty(REPOSITORY_SCHEMA_CREATE);
+        if (schemaCreate != null) {
+            return Boolean.parseBoolean(schemaCreate);
+        }
+        return false;
     }
 
     public static String getRepositoryUserName(String defaultUserName) {
