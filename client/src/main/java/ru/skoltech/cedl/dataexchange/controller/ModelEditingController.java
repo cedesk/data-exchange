@@ -43,7 +43,6 @@ import java.util.function.Consumer;
 public class ModelEditingController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
-
     @FXML
     private SplitPane viewPane;
 
@@ -51,7 +50,10 @@ public class ModelEditingController implements Initializable {
     private TitledPane externalModelPane;
 
     @FXML
-    private TextArea dependenciesText;
+    private TextField upstreamDependenciesText;
+
+    @FXML
+    private TextField downstreamDependenciesText;
 
     @FXML
     private ParameterEditor parameterEditor;
@@ -497,8 +499,10 @@ public class ModelEditingController implements Initializable {
                 selectedNodeIsEditable.setValue(editable);
 
                 ModelEditingController.this.updateParameterTable(newValue);
-                String dependencies = project.getParameterLinkRegistry().getDependencies(modelNode);
-                dependenciesText.setText(dependencies);
+                String upstreamDependencies = project.getParameterLinkRegistry().getUpstreamDependencies(modelNode);
+                upstreamDependenciesText.setText(upstreamDependencies);
+                String downstreamDependencies = project.getParameterLinkRegistry().getDownstreamDependencies(modelNode);
+                downstreamDependenciesText.setText(downstreamDependencies);
 
                 List<ExternalModel> externalModels = modelNode.getExternalModels();
                 if (externalModels.size() > 0) { // TODO: allow more external models
@@ -511,7 +515,8 @@ public class ModelEditingController implements Initializable {
                 }
             } else {
                 ModelEditingController.this.clearParameterTable();
-                dependenciesText.setText(null);
+                upstreamDependenciesText.setText(null);
+                downstreamDependenciesText.setText(null);
                 // TODO: allow more external models
                 selectedNodeCanHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);

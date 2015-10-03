@@ -105,23 +105,26 @@ public class ParameterLinkRegistry {
         dependencyGraph = new SimpleDirectedGraph<>(ModelDependency.class);
     }
 
-    public String getDependencies(ModelNode modelNode) {
-        StringBuilder sb = new StringBuilder();
+    public String getUpstreamDependencies(ModelNode modelNode) {
         if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.inDegreeOf(modelNode) > 0) {
             Set<ModelDependency> sourceDependencies = dependencyGraph.incomingEdgesOf(modelNode);
             String sourceNames = sourceDependencies.stream().map(
                     dependency -> dependency.getSource().getName()
             ).collect(Collectors.joining(", "));
-            sb.append("upstream: ").append(sourceNames).append('\n');
+            return sourceNames;
         }
+        return "";
+    }
+
+    public String getDownstreamDependencies(ModelNode modelNode) {
         if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.outDegreeOf(modelNode) > 0) {
             Set<ModelDependency> sinkDependencies = dependencyGraph.outgoingEdgesOf(modelNode);
             String sinkNames = sinkDependencies.stream().map(
                     dependency -> dependency.getTarget().getName()
             ).collect(Collectors.joining(", "));
-            sb.append("downstream: ").append(sinkNames);
+            return sinkNames;
         }
-        return sb.toString();
+        return "";
     }
 
     /*

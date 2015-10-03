@@ -1,75 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
+
 <?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
-<SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0"
-           stylesheets="@styling.css" BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/null"
-           fx:controller="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
+<SplitPane fx:id="viewPane" dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0" stylesheets="@styling.css" BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
     <items>
         <AnchorPane>
             <children>
-                <TreeView fx:id="structureTree" layoutY="75.0" prefHeight="488.0" prefWidth="197.0"
-                          AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                          AnchorPane.topAnchor="0.0"/>
-                <ToolBar layoutX="-11.0" layoutY="479.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                         AnchorPane.rightAnchor="0.0">
+                <TreeView fx:id="structureTree" layoutY="75.0" prefHeight="488.0" prefWidth="197.0" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                <ToolBar layoutX="-11.0" layoutY="479.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <items>
-                        <Button fx:id="addNodeButton" mnemonicParsing="false" onAction="#addNode" text="Add"/>
-                        <Button fx:id="deleteNodeButton" mnemonicParsing="false" onAction="#deleteNode" text="Delete"/>
+                        <Button fx:id="addNodeButton" mnemonicParsing="false" onAction="#addNode" text="Add" />
+                        <Button fx:id="deleteNodeButton" mnemonicParsing="false" onAction="#deleteNode" text="Delete" />
                     </items>
                 </ToolBar>
             </children>
         </AnchorPane>
         <AnchorPane>
             <children>
-                <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                      AnchorPane.topAnchor="0.0">
+                <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <children>
                         <TitledPane fx:id="dependencyPane" collapsible="false" expanded="true" text="Dependencies">
                             <content>
-                                <FlowPane>
+                                <GridPane vgap="4.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="15.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                    </rowConstraints>
                                     <children>
-                                        <TextArea fx:id="dependenciesText" editable="false" prefHeight="50.0"
-                                                  prefWidth="600.0"/>
+                                        <TextField fx:id="upstreamDependenciesText" editable="false" GridPane.columnIndex="1" />
+                                        <TextField fx:id="downstreamDependenciesText" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label text="upstream" />
+                                        <Label text="downstream" GridPane.rowIndex="1" />
                                     </children>
-                                </FlowPane>
+                                </GridPane>
                             </content>
                         </TitledPane>
                         <TitledPane fx:id="externalModelPane" animated="false" expanded="false" text="External Model">
                             <content>
                                 <FlowPane>
                                     <children>
-                                        <TextField fx:id="externalModelFilePath" editable="false" prefWidth="200.0"
-                                                   promptText="File"/>
+                                        <TextField fx:id="externalModelFilePath" editable="false" prefWidth="200.0" promptText="File" />
                                         <Button mnemonicParsing="false" onAction="#attachExternalModel" text="Attach">
                                             <FlowPane.margin>
-                                                <Insets left="8.0"/>
+                                                <Insets left="8.0" />
                                             </FlowPane.margin>
                                         </Button>
-                                        <Button mnemonicParsing="false" onAction="#openExternalModel"
-                                                text="Open externally">
+                                        <Button mnemonicParsing="false" onAction="#openExternalModel" text="Open externally">
                                             <FlowPane.margin>
-                                                <Insets left="8.0"/>
+                                                <Insets left="8.0" />
                                             </FlowPane.margin>
                                         </Button>
-                                        <Button disable="true" mnemonicParsing="false" onAction="#viewExternalModel"
-                                                text="View">
+                                        <Button disable="true" mnemonicParsing="false" onAction="#viewExternalModel" text="View">
                                             <FlowPane.margin>
-                                                <Insets left="8.0"/>
+                                                <Insets left="8.0" />
                                             </FlowPane.margin>
                                         </Button>
                                         <Button mnemonicParsing="false" onAction="#reloadExternalModel" text="Reload">
                                             <FlowPane.margin>
-                                                <Insets left="8.0"/>
+                                                <Insets left="8.0" />
                                             </FlowPane.margin>
                                         </Button>
-                                        <Button layoutX="428.0" layoutY="20.0" mnemonicParsing="false"
-                                                onAction="#detachExternalModel" text="Detach">
+                                        <Button layoutX="428.0" layoutY="20.0" mnemonicParsing="false" onAction="#detachExternalModel" text="Detach">
                                             <FlowPane.margin>
-                                                <Insets left="8.0"/>
+                                                <Insets left="8.0" />
                                             </FlowPane.margin>
                                         </Button>
                                     </children>
@@ -82,52 +84,41 @@
                                     <items>
                                         <AnchorPane>
                                             <children>
-                                                <TableView fx:id="parameterTable" prefHeight="160" AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                                           AnchorPane.rightAnchor="0.0"
-                                                           AnchorPane.bottomAnchor="40.0">
+                                                <TableView fx:id="parameterTable" prefHeight="160" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                     <columns>
-                                                        <TableColumn fx:id="parameterNameColumn" editable="false"
-                                                                     prefWidth="150.0" text="Name">
+                                                        <TableColumn fx:id="parameterNameColumn" editable="false" prefWidth="150.0" text="Name">
                                                             <cellValueFactory>
-                                                                <PropertyValueFactory property="name"/>
+                                                                <PropertyValueFactory property="name" />
                                                             </cellValueFactory>
                                                         </TableColumn>
-                                                        <TableColumn fx:id="parameterValueColumn" prefWidth="60.0"
-                                                                     text="Value">
+                                                        <TableColumn fx:id="parameterValueColumn" prefWidth="60.0" text="Value">
                                                             <cellValueFactory>
-                                                                <PropertyValueFactory property="value"/>
+                                                                <PropertyValueFactory property="value" />
                                                             </cellValueFactory>
                                                         </TableColumn>
-                                                        <TableColumn fx:id="parameterUnitColumn" prefWidth="100.0"
-                                                                     text="Unit">
+                                                        <TableColumn fx:id="parameterUnitColumn" prefWidth="100.0" text="Unit">
                                                         </TableColumn>
-                                                        <TableColumn fx:id="parameterNatureColumn" editable="false"
-                                                                     prefWidth="60.0" text="Nature">
+                                                        <TableColumn fx:id="parameterNatureColumn" editable="false" prefWidth="60.0" text="Nature">
                                                             <cellValueFactory>
-                                                                <PropertyValueFactory property="nature"/>
+                                                                <PropertyValueFactory property="nature" />
                                                             </cellValueFactory>
                                                         </TableColumn>
-                                                        <TableColumn fx:id="parameterValueSourceColumn"
-                                                                     prefWidth="100.0" text="Value Source">
+                                                        <TableColumn fx:id="parameterValueSourceColumn" prefWidth="100.0" text="Value Source">
                                                             <cellValueFactory>
-                                                                <PropertyValueFactory property="valueSource"/>
+                                                                <PropertyValueFactory property="valueSource" />
                                                             </cellValueFactory>
                                                         </TableColumn>
-                                                        <TableColumn fx:id="parameterDescriptionColumn" editable="false"
-                                                                     prefWidth="150.0" text="Description">
+                                                        <TableColumn fx:id="parameterDescriptionColumn" editable="false" prefWidth="150.0" text="Description">
                                                             <cellValueFactory>
-                                                                <PropertyValueFactory property="description"/>
+                                                                <PropertyValueFactory property="description" />
                                                             </cellValueFactory>
                                                         </TableColumn>
                                                     </columns>
                                                 </TableView>
-                                                <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                                         AnchorPane.rightAnchor="0.0">
+                                                <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                                                     <items>
-                                                        <Button fx:id="addParameterButton" mnemonicParsing="false"
-                                                                onAction="#addParameter" text="Add"/>
-                                                        <Button fx:id="deleteParameterButton" mnemonicParsing="false"
-                                                                onAction="#deleteParameter" text="Delete"/>
+                                                        <Button fx:id="addParameterButton" mnemonicParsing="false" onAction="#addParameter" text="Add" />
+                                                        <Button fx:id="deleteParameterButton" mnemonicParsing="false" onAction="#deleteParameter" text="Delete" />
                                                     </items>
                                                 </ToolBar>
                                             </children>
