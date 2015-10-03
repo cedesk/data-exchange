@@ -51,7 +51,7 @@ public class DummySystemBuilder {
         system.addSubNode(getSubSystem("Power", modelDepth - 1));
         system.addSubNode(getSubSystem("Thermal", modelDepth - 1));
         system.addSubNode(getSubSystem("AOCS", modelDepth - 1));
-        system.addSubNode(getSubSystem("Communication", modelDepth - 1));
+        system.addSubNode(getSubSystem("Communications", modelDepth - 1));
         return system;
     }
 
