@@ -47,7 +47,7 @@ public class SpreadsheetFactory {
         if (fileName.endsWith(".xls")) {
             NPOIFSFileSystem fs = new NPOIFSFileSystem(inputStream);
             wb = new HSSFWorkbook(fs.getRoot(), true);
-        } else if (fileName.endsWith(".xlsx")) {
+        } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xlsm")) {
             wb = new XSSFWorkbook(inputStream);
         } else {
             throw new IllegalArgumentException("not a valid excel file");

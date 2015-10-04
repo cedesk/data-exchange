@@ -20,17 +20,18 @@ public class ExternalModelAccessorFactory {
 
     private static final Map<String, Class<? extends ExternalModelExporter>> exporters = new HashMap<>();
 
+    // TODO: add possibility to register new exporters
     static {
         evaluators.put("xls", ExcelModelEvaluator.class);
         evaluators.put("xlsx", ExcelModelEvaluator.class);
+        evaluators.put("xlsm", ExcelModelEvaluator.class);
 
         exporters.put("xls", ExcelModelExporter.class);
         exporters.put("xlsx", ExcelModelExporter.class);
+        exporters.put("xlsm", ExcelModelExporter.class);
     }
 
     public static ExternalModelEvaluator getEvaluator(ExternalModel externalModel) {
-        // TODO: add possibility to register new evaluators
-
         String fileName = externalModel.getName();
         String fileExtension = getExtension(fileName);
         if (evaluators.containsKey(fileExtension)) {
@@ -54,8 +55,6 @@ public class ExternalModelAccessorFactory {
     }
 
     public static ExternalModelExporter getExporter(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
-        // TODO: add possibility to register new exporters
-
         String fileName = externalModel.getName();
         String fileExtension = getExtension(fileName);
         if (exporters.containsKey(fileExtension)) {
@@ -65,7 +64,7 @@ public class ExternalModelAccessorFactory {
                 ExternalModelExporter exporter = (ExternalModelExporter) exporterConstructor.newInstance(externalModel, externalModelFileHandler);
                 return exporter;
             } catch (Exception e) {
-                logger.error("error instantiating ExternalModelExporter",e );
+                logger.error("error instantiating ExternalModelExporter", e);
                 throw new RuntimeException(e);
             }
        /* if (externalModel.getName().endsWith(".xls") ||
