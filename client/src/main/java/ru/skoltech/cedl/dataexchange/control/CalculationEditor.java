@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.control;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -32,6 +34,12 @@ import java.util.List;
 public class CalculationEditor extends ChoiceDialog<Calculation> {
 
     private final ParameterModel parameterModel;
+
+    private final IntegerProperty argumentCount = new SimpleIntegerProperty(0);
+
+    private final IntegerProperty minArguments = new SimpleIntegerProperty(0);
+
+    private final IntegerProperty maxArguments = new SimpleIntegerProperty(0);
 
     private Calculation calculation;
 
@@ -99,6 +107,8 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
             public void changed(ObservableValue<? extends Operation> observable, Operation oldValue, Operation operation) {
                 if (operation != null) {
                     operationDescriptionText.setText(operation.description());
+                    minArguments.setValue(operation.minArguments());
+                    maxArguments.setValue(operation.maxArguments());
                     updateArgumentsView(operation);
                 } else {
                     operationDescriptionText.setText(null);
@@ -116,8 +126,10 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
                     String argumentName = operation.argumentName(idx);
                     renderArgument(argumentName, arg);
                 }
+                argumentCount.setValue(arguments.size());
             }
         }
+        addButton.disableProperty().bind(argumentCount.greaterThanOrEqualTo(maxArguments));
     }
 
     private void updateCalculationModel() {
@@ -142,10 +154,14 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
                 cae.setArgumentName(operation.argumentName(idx));
             } else {
                 unneededArgumentEditors.add(argumentRow);
+                CalculationArgumentEditor editor = (CalculationArgumentEditor) argumentRow.getChildren().get(0);
+                Argument argument = editor.getArgument();
+                calculation.getArguments().remove(argument);
             }
         }
         if (allArgumentEditors.size() > operation.maxArguments()) {
             argumentsContainer.getChildren().removeAll(unneededArgumentEditors);
+            argumentCount.setValue(argumentsContainer.getChildren().size());
         }
     }
 
@@ -154,9 +170,11 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
         Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS_SQUARE));
         removeButton.setTooltip(new Tooltip("remove argument"));
         removeButton.setOnAction(CalculationEditor.this::deleteArgument);
+        removeButton.disableProperty().bind(argumentCount.lessThanOrEqualTo(minArguments));
         HBox argumentRow = new HBox(4, editor, removeButton);
         removeButton.setUserData(argumentRow);
         argumentsContainer.getChildren().add(argumentRow);
+        argumentCount.setValue(argumentsContainer.getChildren().size());
         getDialogPane().getScene().getWindow().sizeToScene();
     }
 
@@ -167,6 +185,8 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
         CalculationArgumentEditor editor = (CalculationArgumentEditor) argumentRow.getChildren().get(0);
         Argument argument = editor.getArgument();
         calculation.getArguments().remove(argument);
+        argumentCount.setValue(argumentsContainer.getChildren().size());
+        //getDialogPane().getScene().getWindow().sizeToScene();
     }
 
     public void addNewArgument(ActionEvent actionEvent) {
