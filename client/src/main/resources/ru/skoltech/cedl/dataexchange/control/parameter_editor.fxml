@@ -3,8 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/8.0.40"
-         xmlns:fx="http://javafx.com/fxml/1">
+<fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <GridPane fx:id="propertyPane" hgap="8.0" vgap="4.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="8.0"
                   AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
@@ -18,7 +17,7 @@
                 <RowConstraints vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
@@ -50,31 +49,25 @@
                 <Label text="Override Value" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
                 <TextField fx:id="valueOverrideText" prefWidth="120.0" promptText="0123.45" GridPane.columnIndex="2"
                            GridPane.rowIndex="4"/>
-                <VBox GridPane.columnIndex="2" GridPane.rowIndex="2">
+                <HBox fx:id="referenceSelectorGroup" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <children>
-                        <HBox fx:id="referenceSelectorGroup" prefWidth="200.0">
-                            <children>
-                                <TextField fx:id="valueReferenceText" editable="false" prefWidth="200.0"
-                                           promptText="reference"/>
-                                <Button mnemonicParsing="false" onAction="#chooseSource" text="Ref"/>
-                            </children>
-                        </HBox>
-                        <HBox fx:id="linkSelectorGroup" prefWidth="200.0">
-                            <children>
-                                <TextField fx:id="parameterLinkText" editable="false" prefWidth="200.0"
-                                           promptText="link"/>
-                                <Button mnemonicParsing="false" onAction="#chooseParameter" text="Link"/>
-                            </children>
-                        </HBox>
-                        <HBox fx:id="calculationGroup" prefWidth="200.0">
-                            <children>
-                                <TextField fx:id="calculationText" editable="false" prefWidth="200.0"
-                                           promptText="calculation"/>
-                                <Button mnemonicParsing="false" onAction="#editCalculation" text="Calc"/>
-                            </children>
-                        </HBox>
+                        <TextField fx:id="valueReferenceText" editable="false" prefWidth="200.0"
+                                   promptText="reference"/>
+                        <Button mnemonicParsing="false" onAction="#chooseSource" text="Ref"/>
                     </children>
-                </VBox>
+                </HBox>
+                <HBox fx:id="linkSelectorGroup" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                    <children>
+                        <TextField fx:id="parameterLinkText" editable="false" prefWidth="200.0" promptText="link"/>
+                        <Button mnemonicParsing="false" onAction="#chooseParameter" text="Link"/>
+                    </children>
+                </HBox>
+                <HBox fx:id="calculationGroup" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                    <children>
+                        <TextField fx:id="calculationText" editable="false" prefWidth="200.0" promptText="calculation"/>
+                        <Button mnemonicParsing="false" onAction="#editCalculation" text="Calc"/>
+                    </children>
+                </HBox>
                 <ChoiceBox fx:id="unitChoiceBox" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
                 <HBox fx:id="exportSelectorGroup" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
                     <children>
@@ -87,7 +80,7 @@
                           GridPane.rowIndex="4"/>
             </children>
         </GridPane>
-        <ButtonBar layoutX="8.0" layoutY="316.0" prefHeight="40.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
+        <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <buttons>
                 <Button mnemonicParsing="true" onAction="#revertChanges" text="Rever_t"/>

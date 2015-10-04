@@ -22,7 +22,7 @@
 
                     </children>
                 </VBox>
-                <Button fx:id="addButton" mnemonicParsing="false" onAction="#addNewArgument" text="add" GridPane.rowIndex="2" />
+                <Button fx:id="addButton" mnemonicParsing="false" minWidth="20" onAction="#addNewArgument" text="add" GridPane.rowIndex="2" />
             </children>
         </VBox>
     </content>

@@ -170,6 +170,7 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
         Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS_SQUARE));
         removeButton.setTooltip(new Tooltip("remove argument"));
         removeButton.setOnAction(CalculationEditor.this::deleteArgument);
+        removeButton.setMinWidth(20);
         removeButton.disableProperty().bind(argumentCount.lessThanOrEqualTo(minArguments));
         HBox argumentRow = new HBox(4, editor, removeButton);
         removeButton.setUserData(argumentRow);
@@ -178,7 +179,7 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
         getDialogPane().getScene().getWindow().sizeToScene();
     }
 
-    private void deleteArgument(ActionEvent actionEvent) {
+    public void deleteArgument(ActionEvent actionEvent) {
         Button deleteButton = (Button) actionEvent.getSource();
         HBox argumentRow = (HBox) deleteButton.getUserData();
         argumentsContainer.getChildren().remove(argumentRow);
@@ -186,7 +187,8 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
         Argument argument = editor.getArgument();
         calculation.getArguments().remove(argument);
         argumentCount.setValue(argumentsContainer.getChildren().size());
-        //getDialogPane().getScene().getWindow().sizeToScene();
+        getDialogPane().getScene().getWindow().sizeToScene();
+        updateArgumentsView(calculation.getOperation());
     }
 
     public void addNewArgument(ActionEvent actionEvent) {
