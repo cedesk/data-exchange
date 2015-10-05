@@ -277,13 +277,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         if (parameterChoice.isPresent()) {
             valueLinkParameter = parameterChoice.get();
             parameterLinkText.setText(valueLinkParameter.getNodePath());
-            ProjectContext.getInstance().getProject().getParameterLinkRegistry().addLink(valueLinkParameter, originalParameterModel);
             valueText.setText(String.valueOf(valueLinkParameter.getValue()));
             unitChoiceBox.setValue(valueLinkParameter.getUnit());
         } else {
             if (valueLinkParameter != null) {
                 parameterLinkText.setText(valueLinkParameter.getNodePath());
-                ProjectContext.getInstance().getProject().getParameterLinkRegistry().removeLink(valueLinkParameter, originalParameterModel);
             } else {
                 parameterLinkText.setText(null);
             }
@@ -305,6 +303,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         if (calculationOptional.isPresent()) {
             calculation = calculationOptional.get();
             calculationText.setText(calculation.asText());
+            valueText.setText(String.valueOf(calculation.evaluate()));
             logger.debug(originalParameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
         } else {
             calculationText.setText(null);
@@ -334,19 +333,35 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             parameterModel.setNature(natureChoiceBox.getValue());
             parameterModel.setValueSource(valueSourceChoiceBox.getValue());
             parameterModel.setUnit(unitChoiceBox.getValue());
-            parameterModel.setValueLink(valueLinkParameter);
-            parameterModel.setCalculation(calculation);
 
             if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
                 parameterModel.setValueReference(null);
             }
-            if (parameterModel.getValueSource() != ParameterValueSource.LINK) {
+            if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
+                ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
+                ParameterModel previousValueLink = parameterModel.getValueLink();
+                if (previousValueLink != null) {
+                    parameterLinkRegistry.removeLink(previousValueLink, originalParameterModel);
+                }
+                if (valueLinkParameter != null) {
+                    parameterLinkRegistry.addLink(valueLinkParameter, originalParameterModel);
+                }
+                parameterModel.setValueLink(valueLinkParameter);
+            } else {
                 parameterModel.setValueLink(null);
             }
-            if (parameterModel.getValueSource() != ParameterValueSource.CALCULATION) {
-                parameterModel.setCalculation(null);
-            } else {
+            if (parameterModel.getValueSource() == ParameterValueSource.CALCULATION) {
+                Calculation previousCalculation = parameterModel.getCalculation();
+                ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
+                if(previousCalculation != null) {
+                    parameterLinkRegistry.removeLinks(parameterModel, calculation.getLinkedParameters());
+                }
+                if (calculation != null) {
+                    parameterLinkRegistry.addLinks(parameterModel, calculation.getLinkedParameters());
+                }
                 parameterModel.setCalculation(calculation);
+            } else {
+                parameterModel.setCalculation(null);
             }
             if (!parameterModel.getIsExported()) {
                 parameterModel.setExportReference(null);

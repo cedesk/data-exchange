@@ -76,7 +76,7 @@ public class Calculation {
         return operation.minArguments() <= args && operation.maxArguments() >= args;
     }
 
-    public Double calculateValue() throws IllegalArgumentException {
+    public Double evaluate() throws IllegalArgumentException {
         if (!valid()) throw new IllegalArgumentException("number of arguments");
         double[] argValues = new double[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
@@ -126,5 +126,16 @@ public class Calculation {
         sb.append(", arguments=").append(arguments);
         sb.append('}');
         return sb.toString();
+    }
+
+    public List<ParameterModel> getLinkedParameters() {
+        List<ParameterModel> linkedParameters = new LinkedList<>();
+        for (Argument argument : getArguments()) {
+            if (argument instanceof Argument.Parameter) {
+                ParameterModel parameter = ((Argument.Parameter) argument).getLink();
+                linkedParameters.add(parameter);
+            }
+        }
+        return linkedParameters;
     }
 }

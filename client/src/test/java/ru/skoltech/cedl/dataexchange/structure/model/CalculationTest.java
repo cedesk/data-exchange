@@ -7,7 +7,6 @@ import ru.skoltech.cedl.dataexchange.structure.model.calculation.Margin;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument.Literal;
 
@@ -29,7 +28,7 @@ public class CalculationTest {
         calc.setArguments(args);
 
         Assert.assertTrue(calc.valid());
-        Double result = calc.calculateValue();
+        Double result = calc.evaluate();
         Assert.assertEquals(Double.toString(res), Double.toString(result));
     }
 
@@ -47,7 +46,7 @@ public class CalculationTest {
         args.add(new Literal(v4));
         calc.setArguments(args);
 
-        double result = calc.calculateValue();
+        double result = calc.evaluate();
         Assert.assertEquals(Double.toString(res), Double.toString(result));
     }
 }
