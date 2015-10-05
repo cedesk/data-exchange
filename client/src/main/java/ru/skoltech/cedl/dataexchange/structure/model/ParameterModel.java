@@ -208,7 +208,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.valueLink = valueLink;
     }
 
-    @OneToOne(targetEntity = Calculation.class)
+    @OneToOne(targetEntity = Calculation.class, orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     public Calculation getCalculation() {
         return calculation;
@@ -310,6 +310,11 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @Transient
     public double getEffectiveValue() {
+        if(valueSource == ParameterValueSource.LINK && valueLink != null) {
+            setValue(valueLink.getEffectiveValue());
+        } else if(valueSource == ParameterValueSource.CALCULATION && calculation != null) {
+            setValue(calculation.evaluate());
+        }
         return isReferenceValueOverridden ? overrideValue : value;
     }
 
