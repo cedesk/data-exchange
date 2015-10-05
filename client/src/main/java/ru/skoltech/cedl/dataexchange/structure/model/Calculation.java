@@ -128,6 +128,7 @@ public class Calculation {
         return sb.toString();
     }
 
+    @Transient
     public List<ParameterModel> getLinkedParameters() {
         List<ParameterModel> linkedParameters = new LinkedList<>();
         for (Argument argument : getArguments()) {
