@@ -28,6 +28,11 @@ public class ParameterLinkRegistry {
             ParameterModel source = sink.getValueLink();
             addLink(source, sink);
         });
+        pmi = getCalculatedParameters(systemModel);
+        pmi.forEachRemaining(sink -> {
+            Calculation calculation = sink.getCalculation();
+            addLinks(calculation.getLinkedParameters(), sink);
+        });
         printDependencies(dependencyGraph);
     }
 
@@ -37,6 +42,13 @@ public class ParameterLinkRegistry {
                 sink -> sink.getNature() == ParameterNature.INPUT &&
                         sink.getValueSource() == ParameterValueSource.LINK &&
                         sink.getValueLink() != null);
+    }
+
+    public ParameterTreeIterator getCalculatedParameters(SystemModel systemModel) {
+        Objects.requireNonNull(systemModel);
+        return new ParameterTreeIterator(systemModel,
+                sink -> sink.getValueSource() == ParameterValueSource.CALCULATION &&
+                        sink.getCalculation() != null);
     }
 
     public void addLink(ParameterModel source, ParameterModel sink) {
@@ -52,15 +64,21 @@ public class ParameterLinkRegistry {
 
         ModelNode sourceModel = source.getParent();
         ModelNode sinkModel = sink.getParent();
-        dependencyGraph.addVertex(sinkModel);
-        dependencyGraph.addVertex(sourceModel);
-        // dependency goes from SOURCE to SINK
-        dependencyGraph.addEdge(sourceModel, sinkModel);
+        if (sourceModel != sinkModel) { // do not record self-references to keep the graph acyclic
+            dependencyGraph.addVertex(sinkModel);
+            dependencyGraph.addVertex(sourceModel);
+            // dependency goes from SOURCE to SINK
+            dependencyGraph.addEdge(sourceModel, sinkModel);
+        }
     }
 
     public void updateAll(SystemModel systemModel) {
         logger.debug("updating all linked values");
         ParameterTreeIterator pmi = getLinkedParameters(systemModel);
+        pmi.forEachRemaining(sink -> {
+            updateSinks(sink.getValueLink());
+        });
+        pmi = getCalculatedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
             updateSinks(sink.getValueLink());
         });
@@ -140,13 +158,13 @@ public class ParameterLinkRegistry {
                 });
     }
 
-    public void removeLinks(ParameterModel sink, List<ParameterModel> sources) {
+    public void removeLinks(List<ParameterModel> sources, ParameterModel sink) {
         for (ParameterModel source : sources) {
             removeLink(source, sink);
         }
     }
 
-    public void addLinks(ParameterModel sink, List<ParameterModel> sources) {
+    public void addLinks(List<ParameterModel> sources, ParameterModel sink) {
         for (ParameterModel source : sources) {
             addLink(source, sink);
         }

@@ -45,7 +45,8 @@ public class CalculationEditorTest extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        Dialog<Calculation> dialog = new CalculationEditor(getParameterModel());
+        ParameterModel parameterModel = getParameterModel();
+        Dialog<Calculation> dialog = new CalculationEditor(parameterModel, parameterModel.getCalculation());
         Optional<Calculation> calculationOptional = dialog.showAndWait();
         if (calculationOptional.isPresent()) {
             Calculation calculation = calculationOptional.get();

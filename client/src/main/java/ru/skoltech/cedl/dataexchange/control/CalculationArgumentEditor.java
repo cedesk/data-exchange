@@ -73,7 +73,9 @@ public class CalculationArgumentEditor extends GridPane implements Initializable
             literalRadio.setSelected(true);
         } else {
             linkRadio.setSelected(true);
+            argParameterValueLinkText.setText(argument.asText());
         }
+        argNumericValueText.setText(String.valueOf(argument.getEffectiveValue()));
         literalRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
 
             if (newValue != null) {

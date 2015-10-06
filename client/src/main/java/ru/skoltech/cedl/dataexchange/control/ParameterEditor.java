@@ -201,7 +201,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueSourceChoiceBox.valueProperty().setValue(localParameterModel.getValueSource());
         unitChoiceBox.valueProperty().setValue(localParameterModel.getUnit());
         valueReferenceText.setText(localParameterModel.getValueReference() != null ? localParameterModel.getValueReference().toString() : "");
-        parameterLinkText.setText(localParameterModel.getValueLink() != null ? localParameterModel.getValueLink().getNodePath() : "");
+        parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : "");
+        calculationText.setText(calculation != null ? calculation.asText() : "");
         exportReferenceText.setText(localParameterModel.getExportReference() != null ? localParameterModel.getExportReference().toString() : "");
     }
 
@@ -298,7 +299,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void editCalculation(ActionEvent actionEvent) {
 
-        Dialog<Calculation> dialog = new CalculationEditor(getParameterModel());
+        Dialog<Calculation> dialog = new CalculationEditor(getParameterModel(), calculation);
         Optional<Calculation> calculationOptional = dialog.showAndWait();
         if (calculationOptional.isPresent()) {
             calculation = calculationOptional.get();
@@ -353,11 +354,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             if (parameterModel.getValueSource() == ParameterValueSource.CALCULATION) {
                 Calculation previousCalculation = parameterModel.getCalculation();
                 ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
-                if(previousCalculation != null) {
-                    parameterLinkRegistry.removeLinks(parameterModel, calculation.getLinkedParameters());
+                if (previousCalculation != null) {
+                    parameterLinkRegistry.removeLinks(calculation.getLinkedParameters(), originalParameterModel);
                 }
                 if (calculation != null) {
-                    parameterLinkRegistry.addLinks(parameterModel, calculation.getLinkedParameters());
+                    parameterLinkRegistry.addLinks(calculation.getLinkedParameters(), originalParameterModel);
                 }
                 parameterModel.setCalculation(calculation);
             } else {
@@ -370,7 +371,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                 parameterModel.setOverrideValue(null);
             }
 
-            // TODO: check whether modification were done
+            // TODO: check whether modifications were made
             try {
                 PropertyUtils.copyProperties(originalParameterModel, parameterModel);
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {

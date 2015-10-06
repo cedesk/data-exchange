@@ -58,12 +58,9 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
     @FXML
     private Button addButton;
 
-    public CalculationEditor(ParameterModel parameterModel) {
+    public CalculationEditor(ParameterModel parameterModel, Calculation calc) {
         this.parameterModel = parameterModel;
-        this.calculation = parameterModel.getCalculation();
-        if (calculation == null) {
-            calculation = new Calculation();
-        }
+        this.calculation = calc != null ? calc : new Calculation();
 
         // load layout
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("calculation_editor.fxml"));
@@ -87,7 +84,7 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
             return calculation;
         });
         addButton.setText("");
-        addButton.setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.PLUS_SQUARE));
+        addButton.setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.PLUS));
         addButton.setTooltip(new Tooltip("add argument"));
         // OPERATION CHOICE
         operationChoiceBox.setConverter(new StringConverter<Operation>() {
@@ -102,6 +99,20 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
             }
         });
         operationChoiceBox.setItems(FXCollections.observableArrayList(OperationRegistry.getAll()));
+        Operation operation = calculation.getOperation();
+        if (operation != null) {
+            operationChoiceBox.getSelectionModel().select(operation);
+            if (calculation.getArguments() != null && calculation.getArguments().size() > 0) {
+                List<Argument> arguments = calculation.getArguments();
+                for (int idx = 0, argumentsSize = arguments.size(); idx < argumentsSize; idx++) {
+                    Argument arg = arguments.get(idx);
+                    String argumentName = operation.argumentName(idx);
+                    renderArgument(argumentName, arg);
+                }
+                argumentCount.setValue(arguments.size());
+            }
+        }
+        addButton.disableProperty().bind(argumentCount.greaterThanOrEqualTo(maxArguments));
         operationChoiceBox.valueProperty().addListener(new ChangeListener<Operation>() {
             @Override
             public void changed(ObservableValue<? extends Operation> observable, Operation oldValue, Operation operation) {
@@ -115,21 +126,6 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
                 }
             }
         });
-        Operation operation = calculation.getOperation();
-        if (operation != null) {
-            operationChoiceBox.getSelectionModel().select(operation);
-
-            if (calculation.getArguments() != null && calculation.getArguments().size() > 0) {
-                List<Argument> arguments = calculation.getArguments();
-                for (int idx = 0, argumentsSize = arguments.size(); idx < argumentsSize; idx++) {
-                    Argument arg = arguments.get(idx);
-                    String argumentName = operation.argumentName(idx);
-                    renderArgument(argumentName, arg);
-                }
-                argumentCount.setValue(arguments.size());
-            }
-        }
-        addButton.disableProperty().bind(argumentCount.greaterThanOrEqualTo(maxArguments));
     }
 
     private void updateCalculationModel() {
@@ -159,15 +155,20 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
                 calculation.getArguments().remove(argument);
             }
         }
+        for (int idx = allArgumentEditors.size(); idx < operation.minArguments(); idx++) {
+            Argument arg = new Argument.Literal();
+            String argumentName = operation.argumentName(idx);
+            renderArgument(argumentName, arg);
+        }
         if (allArgumentEditors.size() > operation.maxArguments()) {
             argumentsContainer.getChildren().removeAll(unneededArgumentEditors);
-            argumentCount.setValue(argumentsContainer.getChildren().size());
         }
+        argumentCount.setValue(argumentsContainer.getChildren().size());
     }
 
     private void renderArgument(String argName, Argument argument) {
         CalculationArgumentEditor editor = new CalculationArgumentEditor(argName, argument, parameterModel);
-        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS_SQUARE));
+        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
         removeButton.setTooltip(new Tooltip("remove argument"));
         removeButton.setOnAction(CalculationEditor.this::deleteArgument);
         removeButton.setMinWidth(20);
