@@ -112,7 +112,7 @@ public class Calculation {
             Argument arg = arguments.get(i);
             sb.append(arg.asText());
             if (i < arguments.size() - 1) {
-                sb.append(',');
+                sb.append(';');
             }
         }
         sb.append(')');

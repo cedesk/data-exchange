@@ -463,10 +463,6 @@ public class ModelEditingController implements Initializable {
         return appWindow;
     }
 
-    public void viewExternalModel(ActionEvent actionEvent) {
-        // TODO: open spreadsheet pane
-    }
-
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {

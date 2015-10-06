@@ -14,7 +14,7 @@ public class Margin extends Operation {
 
     @Override
     public String description() {
-        return "Adds a percent of margin to the argument, given by the formula argument1 * (1 + argument2)";
+        return "Adds a percentage of margin to the argument, given by the formula: argument * (1 + percentage)";
     }
 
     @Override
