@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
+<?import org.controlsfx.glyphfont.*?>
 <?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
 <SplitPane fx:id="viewPane" dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0" stylesheets="@styling.css"
            BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
@@ -15,8 +16,23 @@
                           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
                 <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <items>
-                        <Button fx:id="addNodeButton" mnemonicParsing="false" onAction="#addNode" text="Add"/>
-                        <Button fx:id="deleteNodeButton" mnemonicParsing="false" onAction="#deleteNode" text="Delete"/>
+                        <Button fx:id="addNodeButton" mnemonicParsing="false" onAction="#addNode" text="" minWidth="28">
+                            <tooltip>
+                                <Tooltip text="Add Node"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="deleteNodeButton" mnemonicParsing="false" onAction="#deleteNode" text=""
+                                minWidth="28">
+                            <tooltip>
+                                <Tooltip text="Remove Node"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="MINUS"/>
+                            </graphic>
+                        </Button>
                     </items>
                 </ToolBar>
             </children>
@@ -54,29 +70,50 @@
                                     <children>
                                         <TextField fx:id="externalModelFilePath" editable="false" prefWidth="200.0"
                                                    promptText="File"/>
-                                        <Button mnemonicParsing="false" onAction="#attachExternalModel" text="Attach">
+                                        <Button mnemonicParsing="false" onAction="#attachExternalModel" text=""
+                                                minWidth="28">
+                                            <tooltip>
+                                                <Tooltip text="Attach External Model"/>
+                                            </tooltip>
+                                            <graphic>
+                                                <Glyph fontFamily="FontAwesome" icon="UPLOAD"/>
+                                            </graphic>
+                                            <FlowPane.margin>
+                                                <Insets left="8.0"/>
+                                            </FlowPane.margin>
+                                        </Button>
+                                        <Button mnemonicParsing="false" onAction="#detachExternalModel" text=""
+                                                minWidth="28">
+                                            <tooltip>
+                                                <Tooltip text="Detach External Model"/>
+                                            </tooltip>
+                                            <graphic>
+                                                <Glyph fontFamily="FontAwesome" icon="REMOVE"/>
+                                            </graphic>
                                             <FlowPane.margin>
                                                 <Insets left="8.0"/>
                                             </FlowPane.margin>
                                         </Button>
                                         <Button mnemonicParsing="false" onAction="#openExternalModel"
-                                                text="Open externally">
+                                                text="" minWidth="28">
+                                            <tooltip>
+                                                <Tooltip text="Open Externally"/>
+                                            </tooltip>
+                                            <graphic>
+                                                <Glyph fontFamily="FontAwesome" icon="EXTERNAL_LINK"/>
+                                            </graphic>
                                             <FlowPane.margin>
                                                 <Insets left="8.0"/>
                                             </FlowPane.margin>
                                         </Button>
-                                        <Button disable="true" mnemonicParsing="false" onAction="#viewExternalModel"
-                                                text="View">
-                                            <FlowPane.margin>
-                                                <Insets left="8.0"/>
-                                            </FlowPane.margin>
-                                        </Button>
-                                        <Button mnemonicParsing="false" onAction="#reloadExternalModel" text="Reload">
-                                            <FlowPane.margin>
-                                                <Insets left="8.0"/>
-                                            </FlowPane.margin>
-                                        </Button>
-                                        <Button mnemonicParsing="false" onAction="#detachExternalModel" text="Detach">
+                                        <Button mnemonicParsing="false" onAction="#reloadExternalModel" text=""
+                                                minWidth="28">
+                                            <tooltip>
+                                                <Tooltip text="Reload External Models"/>
+                                            </tooltip>
+                                            <graphic>
+                                                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                                            </graphic>
                                             <FlowPane.margin>
                                                 <Insets left="8.0"/>
                                             </FlowPane.margin>
@@ -134,9 +171,24 @@
                                                          AnchorPane.rightAnchor="0.0">
                                                     <items>
                                                         <Button fx:id="addParameterButton" mnemonicParsing="false"
-                                                                onAction="#addParameter" text="Add"/>
+                                                                text="" minWidth="28"
+                                                                onAction="#addParameter">
+                                                            <tooltip>
+                                                                <Tooltip text="Add Parameter"/>
+                                                            </tooltip>
+                                                            <graphic>
+                                                                <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                                                            </graphic>
+                                                        </Button>
                                                         <Button fx:id="deleteParameterButton" mnemonicParsing="false"
-                                                                onAction="#deleteParameter" text="Delete"/>
+                                                                onAction="#deleteParameter" text="" minWidth="28">
+                                                            <tooltip>
+                                                                <Tooltip text="Remove Parameter"/>
+                                                            </tooltip>
+                                                            <graphic>
+                                                                <Glyph fontFamily="FontAwesome" icon="MINUS"/>
+                                                            </graphic>
+                                                        </Button>
                                                     </items>
                                                 </ToolBar>
                                             </children>
