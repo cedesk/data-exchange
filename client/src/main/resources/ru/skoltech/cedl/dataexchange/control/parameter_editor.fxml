@@ -3,14 +3,15 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/null"
+         xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <GridPane fx:id="propertyPane" hgap="8.0" vgap="4.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="8.0"
                   AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="100.0" prefWidth="100.0"/>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0"/>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="20.0" prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="30.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0"/>
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints vgrow="NEVER"/>
@@ -29,7 +30,7 @@
                 <Label text="Value" GridPane.halignment="RIGHT" GridPane.rowIndex="3"/>
                 <Label text="Export" GridPane.halignment="RIGHT" GridPane.rowIndex="5"/>
                 <Label text="Description" GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
-                <TextField fx:id="nameText" promptText="name" GridPane.columnIndex="1"/>
+                <TextField fx:id="nameText" promptText="name" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
                 <ChoiceBox fx:id="natureChoiceBox" prefWidth="120.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                 <ChoiceBox fx:id="valueSourceChoiceBox" prefWidth="120.0" GridPane.columnIndex="1"
                            GridPane.rowIndex="2"/>
@@ -80,8 +81,8 @@
                           GridPane.rowIndex="4"/>
             </children>
         </GridPane>
-        <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
-                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                   AnchorPane.rightAnchor="0.0">
             <buttons>
                 <Button mnemonicParsing="true" onAction="#revertChanges" text="Rever_t"/>
                 <Button mnemonicParsing="true" onAction="#applyChanges" text="_Apply"/>
