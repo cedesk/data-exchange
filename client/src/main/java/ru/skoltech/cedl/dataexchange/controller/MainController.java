@@ -408,11 +408,13 @@ public class MainController implements Initializable {
                         Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study", "You are deleting the currently loaded project. Unexpected behavior can appear!\nWARNING: This is not reversible!");
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
+                            StatusLogger.getInstance().log("Successfully deleted study!", false);
                         }
                     } else {
                         Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study", "Are you really sure to delete project '" + studyName + "' from the repository?\nWARNING: This is not reversible!");
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
+                            StatusLogger.getInstance().log("Successfully deleted study!", false);
                         }
                     }
                 } catch (RepositoryException re) {
