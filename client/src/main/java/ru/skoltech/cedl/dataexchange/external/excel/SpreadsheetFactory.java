@@ -62,34 +62,41 @@ public class SpreadsheetFactory {
         final int maxRows = sheet.getLastRowNum() + 1;
         final int maxColumns = extractColumns(sheet);
         ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(maxRows);
+        int lastRowIndex = -1;
         for (Row dataRow : sheet) {
             final int rowIndex = dataRow.getRowNum();
             final ObservableList<SpreadsheetCell> viewRow = FXCollections.observableArrayList();
+            paddingMissingRows(viewRows, lastRowIndex, rowIndex, maxColumns);
             int lastColumnIndex = -1;
             for (Cell dataCell : dataRow) {
                 int columnIndex = dataCell.getColumnIndex();
-                paddingMissingCells(viewRow, lastColumnIndex, rowIndex, columnIndex);
+                paddingMissingCells(viewRow, rowIndex, lastColumnIndex, columnIndex);
                 String value = SpreadsheetAccessor.getValueAsString(dataCell);
-                SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(
-                        rowIndex, columnIndex, 1, 1, value);
+                SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(rowIndex, columnIndex, 1, 1, value);
                 viewRow.add(viewCell);
                 lastColumnIndex = columnIndex;
             }
-            paddingMissingCells(viewRow, lastColumnIndex, rowIndex, maxColumns);
+            paddingMissingCells(viewRow, rowIndex, lastColumnIndex, maxColumns);
             viewRows.add(viewRow);
+            lastRowIndex = rowIndex;
         }
         final GridBase grid = new GridBase(maxRows, maxColumns);
         grid.setRows(viewRows);
         return grid;
     }
 
-    private static void paddingMissingCells(ObservableList<SpreadsheetCell> viewRow, int lastColumnIndex, int rowIndex, int columnIndex) {
-        if (columnIndex > lastColumnIndex + 1) {
-            for (int i = lastColumnIndex + 1; i < columnIndex; i++) {
-                SpreadsheetCell padCell = SpreadsheetCellType.STRING.createCell(
-                        rowIndex, i, 1, 1, "");
-                viewRow.add(padCell);
-            }
+    private static void paddingMissingRows(ArrayList<ObservableList<SpreadsheetCell>> viewRows, int fromRowIndex, int toRowIndex, int maxColumns) {
+        for (int r = fromRowIndex + 1; r < toRowIndex; r++) {
+            ObservableList<SpreadsheetCell> singleRow = FXCollections.observableArrayList();
+            paddingMissingCells(singleRow, r, -1, maxColumns);
+            viewRows.add(singleRow);
+        }
+    }
+
+    private static void paddingMissingCells(ObservableList<SpreadsheetCell> viewRow, int rowIndex, int fromColumnIndex, int toColumnIndex) {
+        for (int c = fromColumnIndex + 1; c < toColumnIndex; c++) {
+            SpreadsheetCell padCell = SpreadsheetCellType.STRING.createCell(rowIndex, c, 1, 1, "");
+            viewRow.add(padCell);
         }
     }
 
