@@ -7,15 +7,11 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -25,14 +21,11 @@ import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
-import ru.skoltech.cedl.dataexchange.controller.SourceSelectorController;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
-import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -210,52 +203,43 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         ParameterModel parameterModel = getParameterModel();
         ExternalModelReference oldValueReference = parameterModel.getValueReference();
 
-        openChooser("valueReference");
-        ExternalModelReference newValueReference = parameterModel.getValueReference();
-        valueReferenceText.setText(newValueReference != null ? newValueReference.toString() : "");
-
-        if (newValueReference != null && !newValueReference.equals(oldValueReference)) {
-            logger.debug("update parameter value from model");
-            ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
-                @Override
-                public void accept(ParameterUpdate parameterUpdate) {
-                    parameterBean.unBindBidirectional("value", valueText.textProperty());
-                    parameterBean.bindBidirectional("value", valueText.textProperty());
-                    // TODO: update parameter table
-                }
-            });
-            if (updateListener != null) {
-                ParameterUpdate parameterUpdate = new ParameterUpdate(parameterModel, parameterModel.getValue());
-                updateListener.accept(parameterUpdate);
+        ExternalModelReference valueReference = parameterModel.getValueReference();
+        List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
+        Dialog<ExternalModelReference> dialog = new ReferenceSelector(valueReference, externalModels);
+        Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
+        if (referenceOptional.isPresent()) {
+            ExternalModelReference newValueReference = referenceOptional.get();
+            parameterModel.setValueReference(newValueReference); // TODO: remove premature model change
+            valueReferenceText.setText(newValueReference.toString());
+            if (!newValueReference.equals(oldValueReference)) {
+                logger.debug("update parameter value from model");
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
+                    @Override
+                    public void accept(ParameterUpdate parameterUpdate) {
+//                        valueText.setText(String.valueOf(parameterUpdate.getValue()));
+                        parameterBean.unBindBidirectional("value", valueText.textProperty());
+                        parameterBean.bindBidirectional("value", valueText.textProperty());
+                        // TODO: update parameter table
+                    }
+                });
             }
+        } else {
+            valueReferenceText.setText(null);
         }
     }
 
     public void chooseTarget(ActionEvent actionEvent) {
-        openChooser("exportReference");
         ParameterModel parameterModel = getParameterModel();
-        exportReferenceText.setText(parameterModel.getExportReference() != null ? parameterModel.getExportReference().toString() : "");
-    }
-
-    public void openChooser(String fieldName) {
-        try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.SOURCE_SELECTOR);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Source Selector");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(nameText.getScene().getWindow());
-            SourceSelectorController controller = loader.getController();
-            controller.setupBinding(parameterBean, fieldName);
-            if (controller.canShow()) {
-                stage.showAndWait();
-            }
-        } catch (IOException e) {
-            logger.error(e);
+        ExternalModelReference valueReference = parameterModel.getValueReference();
+        List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
+        Dialog<ExternalModelReference> dialog = new ReferenceSelector(valueReference, externalModels);
+        Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
+        if (referenceOptional.isPresent()) {
+            ExternalModelReference exportReference = referenceOptional.get();
+            parameterModel.setExportReference(exportReference); // TODO: remove premature model change
+            exportReferenceText.setText(exportReference.toString());
+        } else {
+            exportReferenceText.setText(null);
         }
     }
 
