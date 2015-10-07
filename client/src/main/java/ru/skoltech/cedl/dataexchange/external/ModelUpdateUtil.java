@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.io.IOException;
@@ -52,11 +53,13 @@ public class ModelUpdateUtil {
         }
 
         // APPLY CHANGES
+        ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
         for (ParameterUpdate parameterUpdate : updates) {
             parameterUpdate.apply();
             if (parameterUpdateListener != null) {
                 parameterUpdateListener.accept(parameterUpdate);
             }
+            parameterLinkRegistry.updateSinks(parameterUpdate.getParameterModel());
         }
     }
 
@@ -84,10 +87,13 @@ public class ModelUpdateUtil {
         }
         // APPLY CHANGES
         if (parameterUpdate != null) {
+            ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
             parameterUpdate.apply();
             if (parameterUpdateListener != null) {
                 parameterUpdateListener.accept(parameterUpdate);
             }
+            parameterLinkRegistry.updateSinks(parameterModel);
+
         }
     }
 

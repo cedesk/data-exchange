@@ -76,12 +76,18 @@ public class ParameterLinkRegistry {
         logger.debug("updating all linked values");
         ParameterTreeIterator pmi = getLinkedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
-            updateSinks(sink.getValueLink());
+            ParameterModel source = sink.getValueLink();
+            updateSinks(source);
         });
         pmi = getCalculatedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
-            updateSinks(sink.getValueLink());
+            recalculate(sink);
         });
+    }
+
+    private void recalculate(ParameterModel sink) {
+        logger.info("updating sink '" + sink.getNodePath() + "' from calculation");
+        sink.setValue(sink.getCalculation().evaluate());
     }
 
     public void updateSinks(ParameterModel source) {
@@ -92,14 +98,18 @@ public class ParameterLinkRegistry {
         if (valueLinks.containsKey(sourceId)) {
             Set<String> sinkIds = valueLinks.get(sourceId);
             for (String sinkId : sinkIds) {
-                ParameterModel parameterModel = parameterDictionary.get(sinkId);
-                if (parameterModel.getValueLink() == source) {
-                    logger.error("updating sink '" + parameterModel.getNodePath() + "' from source '" + source.getNodePath() + "'");
-                    parameterModel.setValue(source.getEffectiveValue());
-                    parameterModel.setUnit(source.getUnit());
-                    // TODO: notify UI ?
-                } else {
-                    logger.error("model changed, sink '" + parameterModel.getNodePath() + "' no longer referencing '" + source.getNodePath() + "'");
+                ParameterModel sink = parameterDictionary.get(sinkId);
+                if(sink.getValueSource() == ParameterValueSource.LINK) {
+                    if (sink.getValueLink() == source) {
+                        logger.info("updating sink '" + sink.getNodePath() + "' from source '" + source.getNodePath() + "'");
+                        sink.setValue(source.getEffectiveValue());
+                        sink.setUnit(source.getUnit());
+                        // TODO: notify UI ?
+                    } else {
+                        logger.error("model changed, sink '" + sink.getNodePath() + "' no longer referencing '" + source.getNodePath() + "'");
+                    }
+                } else if(sink.getValueSource() == ParameterValueSource.CALCULATION) {
+                    recalculate(sink);
                 }
             }
         } else {
