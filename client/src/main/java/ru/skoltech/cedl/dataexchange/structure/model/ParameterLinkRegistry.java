@@ -15,7 +15,7 @@ public class ParameterLinkRegistry {
 
     private Logger logger = Logger.getLogger(ParameterLinkRegistry.class);
 
-    private Map<String, Set<ParameterModel>> valueLinks = new HashMap<>();
+    private Map<String, Set<String>> valueLinks = new HashMap<>();
     private DirectedGraph<ModelNode, ModelDependency> dependencyGraph = new SimpleDirectedGraph<>(ModelDependency.class);
 
     public ParameterLinkRegistry() {
@@ -55,10 +55,10 @@ public class ParameterLinkRegistry {
         System.out.println("sink '" + sink.getNodePath() + "' is linking to source '" + source.getNodePath() + "'");
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
-            valueLinks.get(sourceId).add(sink);
+            valueLinks.get(sourceId).add(sink.getUuid());
         } else {
-            Set<ParameterModel> sinks = new TreeSet<>();
-            sinks.add(sink);
+            Set<String> sinks = new TreeSet<>();
+            sinks.add(sink.getUuid());
             valueLinks.put(sourceId, sinks);
         }
 
@@ -85,10 +85,14 @@ public class ParameterLinkRegistry {
     }
 
     public void updateSinks(ParameterModel source) {
+        SystemModel systemModel = getSystem(source.getParent());
+        Map<String, ParameterModel> parameterDictionary = makeDictionary(systemModel);
+
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
-            Set<ParameterModel> parameterModels = valueLinks.get(sourceId);
-            for (ParameterModel parameterModel : parameterModels) {
+            Set<String> sinkIds = valueLinks.get(sourceId);
+            for (String sinkId : sinkIds) {
+                ParameterModel parameterModel = parameterDictionary.get(sinkId);
                 if (parameterModel.getValueLink() == source) {
                     logger.error("updating sink '" + parameterModel.getNodePath() + "' from source '" + source.getNodePath() + "'");
                     parameterModel.setValue(source.getEffectiveValue());
@@ -103,11 +107,18 @@ public class ParameterLinkRegistry {
         }
     }
 
+    private Map<String, ParameterModel> makeDictionary(SystemModel systemModel) {
+        Map<String, ParameterModel> dictionary = new HashMap<>();
+        Iterator<ParameterModel> pmi = systemModel.parametersTreeIterator();
+        pmi.forEachRemaining(parameterModel -> dictionary.put(parameterModel.getUuid(), parameterModel));
+        return dictionary;
+    }
+
     public void removeLink(ParameterModel source, ParameterModel sink) {
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
-            Set<ParameterModel> sinks = valueLinks.get(sourceId);
-            sinks.remove(sink);
+            Set<String> sinks = valueLinks.get(sourceId);
+            sinks.remove(sink.getUuid());
             if (sinks.isEmpty()) {
                 valueLinks.remove(sourceId);
             }
@@ -143,6 +154,18 @@ public class ParameterLinkRegistry {
             return sinkNames;
         }
         return "";
+    }
+
+
+    private SystemModel getSystem(ModelNode parent) {
+        SystemModel result = null;
+        if (parent != null) {
+            while (parent.getParent() != null) {
+                parent = parent.getParent();
+            }
+            result = (SystemModel) parent;
+        }
+        return result;
     }
 
     private void printDependencies(DirectedGraph<ModelNode, ModelDependency> modelDependencies) {
