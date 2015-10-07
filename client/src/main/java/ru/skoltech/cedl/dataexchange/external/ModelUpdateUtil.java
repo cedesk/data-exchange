@@ -2,11 +2,7 @@ package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -20,7 +16,7 @@ public class ModelUpdateUtil {
 
     private static final Logger logger = Logger.getLogger(ModelUpdateUtil.class);
 
-    public static void applyParameterChangesFromExternalModel(ExternalModel externalModel, Consumer<ModelUpdate> modelUpdateListener, Consumer<ParameterUpdate> parameterUpdateListener) {
+    public static void applyParameterChangesFromExternalModel(ExternalModel externalModel, Consumer<ModelUpdate> modelUpdateListener, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
         ModelUpdate modelUpdate = new ModelUpdate(externalModel);
@@ -30,26 +26,29 @@ public class ModelUpdateUtil {
 
         List<ParameterUpdate> updates = new LinkedList<>();
         ExternalModelEvaluator evaluator = ExternalModelAccessorFactory.getEvaluator(externalModel);
-        for (ParameterModel parameterModel : modelNode.getParameters()) {
-            // check whether parameter references external model
-            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                ExternalModelReference valueReference = parameterModel.getValueReference();
-                if (valueReference != null && valueReference.getExternalModel() != null) {
-                    if (externalModel.equals(valueReference.getExternalModel())) {
-                        ParameterUpdate parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
-                        if (parameterUpdate != null) {
-                            updates.add(parameterUpdate);
+        try {
+            for (ParameterModel parameterModel : modelNode.getParameters()) {
+                // check whether parameter references external model
+                if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+                    ExternalModelReference valueReference = parameterModel.getValueReference();
+                    if (valueReference != null && valueReference.getExternalModel() != null) {
+                        if (externalModel.equals(valueReference.getExternalModel())) {
+                            ParameterUpdate parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
+                            if (parameterUpdate != null) {
+                                updates.add(parameterUpdate);
+                            }
                         }
+                    } else {
+                        logger.warn("parameter " + parameterModel.getNodePath() + " has empty valueReference");
                     }
-                } else {
-                    logger.warn("parameter " + parameterModel.getNodePath() + " has empty valueReference");
                 }
             }
-        }
-        try {
-            evaluator.close();
-        } catch (IOException e) {
-            logger.warn("error closing the external model: " + externalModel.getNodePath());
+        } finally {
+            try {
+                evaluator.close();
+            } catch (IOException e) {
+                logger.warn("error closing the external model: " + externalModel.getNodePath());
+            }
         }
 
         // APPLY CHANGES
@@ -61,7 +60,7 @@ public class ModelUpdateUtil {
         }
     }
 
-    public static void applyParameterChangesFromExternalModel(ParameterModel parameterModel, Consumer<ParameterUpdate> parameterUpdateListener) {
+    public static void applyParameterChangesFromExternalModel(ParameterModel parameterModel, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ParameterUpdate parameterUpdate = null;
 
         // check whether parameter references external model
@@ -70,11 +69,14 @@ public class ModelUpdateUtil {
             if (valueReference != null && valueReference.getExternalModel() != null) {
                 ExternalModel externalModel = valueReference.getExternalModel();
                 ExternalModelEvaluator evaluator = ExternalModelAccessorFactory.getEvaluator(externalModel);
-                parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
                 try {
-                    evaluator.close();
-                } catch (IOException e) {
-                    logger.warn("error closing the external model: " + externalModel.getNodePath());
+                    parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
+                } finally {
+                    try {
+                        evaluator.close();
+                    } catch (IOException e) {
+                        logger.warn("error closing the external model: " + externalModel.getNodePath());
+                    }
                 }
             }
         } else {
@@ -89,7 +91,7 @@ public class ModelUpdateUtil {
         }
     }
 
-    private static ParameterUpdate getParameterUpdate(ParameterModel parameterModel, ExternalModelReference valueReference, ExternalModelEvaluator evaluator) {
+    private static ParameterUpdate getParameterUpdate(ParameterModel parameterModel, ExternalModelReference valueReference, ExternalModelEvaluator evaluator) throws ExternalModelException {
         ParameterUpdate parameterUpdate = null;
         try {
             Double value = evaluator.getValue(valueReference.getTarget());
@@ -98,6 +100,7 @@ public class ModelUpdateUtil {
             }
         } catch (ExternalModelException e) {
             logger.error("unable to evaluate value for parameter '" + parameterModel.getNodePath() + "' from '" + valueReference.toString() + "'");
+            throw e;
         }
         return parameterUpdate;
     }

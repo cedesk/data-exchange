@@ -2,10 +2,12 @@ package ru.skoltech.cedl.dataexchange.control;
 
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
@@ -71,8 +73,8 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
         this.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
         this.getDialogPane().getButtonTypes().add(ButtonType.OK);
         this.setResultConverter(buttonType -> {
-            chooseSelectedCell(null);
             if (buttonType == ButtonType.OK) {
+                chooseSelectedCell(null);
                 return this.reference;
             } else {
                 return null;
@@ -98,7 +100,13 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
             }
         });
 
-        //spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        spreadsheetView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                System.out.println(event.getTarget());
+            }
+        });
 
         if (reference != null && reference.getExternalModel() != null) {
             externalModel = reference.getExternalModel();

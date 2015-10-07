@@ -7,10 +7,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
-import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
+import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
@@ -109,6 +106,7 @@ public class Project {
 
     /**
      * Use with caution.
+     *
      * @param study
      */
     public void setStudy(Study study) {
@@ -310,7 +308,7 @@ public class Project {
         for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
             logger.debug("timestamping " + externalModel.getNodePath());
             ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
-            if(logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
                 String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
                 long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
                 String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
@@ -371,8 +369,12 @@ public class Project {
                 logger.warn(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
             }
 
-            // silently update model from external model
-            ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, null, null);
+            try {
+                // silently update model from external model
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, null, null);
+            } catch (ExternalModelException e) {
+                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
+            }
         }
     }
 

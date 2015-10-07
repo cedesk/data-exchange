@@ -39,11 +39,15 @@ public class ReferenceSelectorTest extends Application {
         parameterModel.setValueSource(ParameterValueSource.REFERENCE);
 
         try {
-            File file = new File(ReferenceSelectorTest.class.getResource("/attachment.xls").toURI());
             SystemModel testSat = new SystemModel("testSat");
+            File file = new File(ReferenceSelectorTest.class.getResource("/simple-model.xls").toURI());
             ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
             systemModel.addExternalModel(externalModel);
-            parameterModel.setValueReference(new ExternalModelReference(externalModel, "B3"));
+            parameterModel.setValueReference(new ExternalModelReference(externalModel, "G4"));
+
+            file = new File(ReferenceSelectorTest.class.getResource("/attachment.xls").toURI());
+            externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
+            systemModel.addExternalModel(externalModel);
         } catch (Exception e) {
             logger.error(e);
             System.exit(-1);

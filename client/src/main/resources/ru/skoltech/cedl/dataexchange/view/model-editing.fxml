@@ -68,7 +68,7 @@
                             <content>
                                 <FlowPane>
                                     <children>
-                                        <TextField fx:id="externalModelFilePath" editable="false" prefWidth="200.0"
+                                        <TextField fx:id="externalModelNameText" editable="false" prefWidth="200.0"
                                                    promptText="File"/>
                                         <Button mnemonicParsing="false" onAction="#attachExternalModel" text=""
                                                 minWidth="28">

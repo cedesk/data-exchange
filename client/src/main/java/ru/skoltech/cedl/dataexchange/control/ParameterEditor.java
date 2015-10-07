@@ -12,6 +12,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Window;
 import javafx.util.StringConverter;
 import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -21,6 +22,8 @@ import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
+import ru.skoltech.cedl.dataexchange.controller.UserNotifications;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -213,15 +216,19 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             valueReferenceText.setText(newValueReference.toString());
             if (!newValueReference.equals(oldValueReference)) {
                 logger.debug("update parameter value from model");
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
-                    @Override
-                    public void accept(ParameterUpdate parameterUpdate) {
-//                        valueText.setText(String.valueOf(parameterUpdate.getValue()));
-                        parameterBean.unBindBidirectional("value", valueText.textProperty());
-                        parameterBean.bindBidirectional("value", valueText.textProperty());
-                        // TODO: update parameter table
-                    }
-                });
+                try {
+                    ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
+                        @Override
+                        public void accept(ParameterUpdate parameterUpdate) {
+                            parameterBean.unBindBidirectional("value", valueText.textProperty());
+                            parameterBean.bindBidirectional("value", valueText.textProperty());
+                            // TODO: update parameter table
+                        }
+                    });
+                } catch (ExternalModelException e) {
+                    Window window = propertyPane.getScene().getWindow();
+                    UserNotifications.showNotification(window, "Error", "Unable to update value from given target.");
+                }
             }
         } else {
             valueReferenceText.setText(null);
@@ -350,6 +357,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             }
             if (!parameterModel.getIsExported()) {
                 parameterModel.setExportReference(null);
+            }
+            if (parameterModel.getValueSource() == ParameterValueSource.MANUAL) {
+                parameterModel.setIsReferenceValueOverridden(false);
             }
             if (!parameterModel.getIsReferenceValueOverridden()) {
                 parameterModel.setOverrideValue(null);
