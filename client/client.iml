@@ -39,8 +39,7 @@
     <orderEntry type="library" name="Maven: org.apache.poi:poi-ooxml-schemas:3.12" level="project" />
     <orderEntry type="library" name="Maven: org.apache.xmlbeans:xmlbeans:2.6.0" level="project" />
     <orderEntry type="library" name="Maven: stax:stax-api:1.0.1" level="project" />
-    <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:8.40.9" level="project" />
-    <orderEntry type="library" name="Maven: org.controlsfx:openjfx-dialogs:1.0.3" level="project" />
+    <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:8.40.10-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.jfxtras:jfxtras-labs:8.0-r3" level="project" />
     <orderEntry type="library" name="Maven: org.jfxtras:jfxtras-controls:8.0-r3" level="project" />
     <orderEntry type="library" name="Maven: org.jfxtras:jfxtras-fxml:8.0-r3" level="project" />
