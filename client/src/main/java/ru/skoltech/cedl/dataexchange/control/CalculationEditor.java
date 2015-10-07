@@ -80,8 +80,10 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
         this.setResultConverter(buttonType -> {
             if (buttonType == ButtonType.OK) {
                 updateCalculationModel();
+                return calculation;
+            } else {
+                return null;
             }
-            return calculation;
         });
         // OPERATION CHOICE
         operationChoiceBox.setConverter(new StringConverter<Operation>() {
