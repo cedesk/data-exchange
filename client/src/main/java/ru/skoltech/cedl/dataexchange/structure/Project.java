@@ -107,7 +107,11 @@ public class Project {
         return study;
     }
 
-    private void setStudy(Study study) {
+    /**
+     * Use with caution.
+     * @param study
+     */
+    public void setStudy(Study study) {
         this.study = study;
         if (study != null && study.getSystemModel() != null) {
             Timestamp latestMod = getSystemModel().findLatestModification();
