@@ -24,7 +24,9 @@ import java.util.ResourceBundle;
 public class CalculationArgumentEditor extends GridPane implements Initializable {
 
     private final ParameterModel parameterModel;
+
     private Argument argument;
+
     @FXML
     private Label argNameText;
 

@@ -1,28 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
+<?import org.controlsfx.glyphfont.Glyph?>
 <DialogPane prefWidth="550.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
     <content>
-        <VBox spacing="4" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
+        <VBox spacing="4" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0"
+              AnchorPane.topAnchor="8.0">
             <children>
                 <HBox spacing="4.0" GridPane.columnIndex="1">
                     <children>
-                        <Label prefWidth="120.0" text="Operation" GridPane.halignment="RIGHT" GridPane.valignment="TOP" />
-                        <ChoiceBox fx:id="operationChoiceBox" prefWidth="150.0" />
-                        <TextArea fx:id="operationDescriptionText" editable="false" prefHeight="40.0" prefWidth="400.0" text="Operation description" wrapText="true" />
+                        <Label prefWidth="120.0" text="Operation" GridPane.halignment="RIGHT"
+                               GridPane.valignment="TOP"/>
+                        <ChoiceBox fx:id="operationChoiceBox" prefWidth="150.0"/>
+                        <TextArea fx:id="operationDescriptionText" editable="false" prefHeight="40.0" prefWidth="400.0"
+                                  text="Operation description" wrapText="true"/>
                     </children>
                 </HBox>
-                <VBox fx:id="argumentsContainer" spacing="4.0" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+                <VBox fx:id="argumentsContainer" spacing="4.0" GridPane.columnSpan="2" GridPane.halignment="RIGHT"
+                      GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
                     <children>
 
                     </children>
                 </VBox>
-                <Button fx:id="addButton" mnemonicParsing="false" minWidth="20" onAction="#addNewArgument" text="add" GridPane.rowIndex="2" />
+                <Button fx:id="addButton" mnemonicParsing="false" onAction="#addNewArgument" GridPane.rowIndex="2"
+                        text="" minWidth="28">
+                    <tooltip>
+                        <Tooltip text="Add argument"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                    </graphic>
+                </Button>
             </children>
         </VBox>
     </content>

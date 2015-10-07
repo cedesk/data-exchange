@@ -76,7 +76,7 @@
                                                 <Tooltip text="Attach External Model"/>
                                             </tooltip>
                                             <graphic>
-                                                <Glyph fontFamily="FontAwesome" icon="UPLOAD"/>
+                                                <Glyph fontFamily="FontAwesome" icon="PAPERCLIP"/>
                                             </graphic>
                                             <FlowPane.margin>
                                                 <Insets left="8.0"/>
@@ -88,7 +88,7 @@
                                                 <Tooltip text="Detach External Model"/>
                                             </tooltip>
                                             <graphic>
-                                                <Glyph fontFamily="FontAwesome" icon="REMOVE"/>
+                                                <Glyph fontFamily="FontAwesome" icon="MINUS"/>
                                             </graphic>
                                             <FlowPane.margin>
                                                 <Insets left="8.0"/>
@@ -100,7 +100,7 @@
                                                 <Tooltip text="Open Externally"/>
                                             </tooltip>
                                             <graphic>
-                                                <Glyph fontFamily="FontAwesome" icon="EXTERNAL_LINK"/>
+                                                <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
                                             </graphic>
                                             <FlowPane.margin>
                                                 <Insets left="8.0"/>

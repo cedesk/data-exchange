@@ -83,9 +83,6 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
             }
             return calculation;
         });
-        addButton.setText("");
-        addButton.setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.PLUS));
-        addButton.setTooltip(new Tooltip("add argument"));
         // OPERATION CHOICE
         operationChoiceBox.setConverter(new StringConverter<Operation>() {
             @Override
