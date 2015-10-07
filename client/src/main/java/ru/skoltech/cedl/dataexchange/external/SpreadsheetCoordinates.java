@@ -7,6 +7,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * This object encapsulates Spreadsheet Coordinates as used in Excel (eg. A1, C3)
+ * Column letters and row numbers are transformed in 1-based numbers.
+ * <p>
  * Created by D.Knoll on 06.07.2015.
  */
 public class SpreadsheetCoordinates {
@@ -60,10 +63,16 @@ public class SpreadsheetCoordinates {
         return sb.toString();
     }
 
+    /**
+     * @return row number 1-based
+     */
     public int getRowNumber() {
         return rowNumber;
     }
 
+    /**
+     * @return column number 1-based
+     */
     public int getColumnNumber() {
         return columnNumber;
     }
