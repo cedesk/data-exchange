@@ -4,14 +4,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<fx:root type="javafx.scene.layout.AnchorPane" xmlns="http://javafx.com/javafx/null"
-         xmlns:fx="http://javafx.com/fxml/1">
+<fx:root xmlns:fx="http://javafx.com/fxml/1" type="javafx.scene.layout.AnchorPane"
+         xmlns="http://javafx.com/javafx/null">
     <children>
         <GridPane fx:id="propertyPane" hgap="8.0" vgap="4.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="8.0"
                   AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="20.0" prefWidth="100.0"/>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="30.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="20.0"/>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0"/>
             </columnConstraints>
             <rowConstraints>
@@ -46,7 +46,7 @@
                         </CheckBox>
                     </children>
                 </HBox>
-                <TextArea fx:id="descriptionText" prefHeight="50.0" prefWidth="200.0" promptText="description"
+                <TextArea fx:id="descriptionText" minHeight="50.0" prefWidth="200.0" promptText="description"
                           GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="6"/>
                 <Label text="Override Value" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
                 <TextField fx:id="valueOverrideText" prefWidth="120.0" promptText="0123.45" GridPane.columnIndex="2"
@@ -93,7 +93,12 @@
                         </Button>
                     </children>
                 </HBox>
-                <ChoiceBox fx:id="unitChoiceBox" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+                <HBox prefWidth="200.0" spacing="8" GridPane.columnIndex="2" GridPane.rowIndex="3" alignment="CENTER_LEFT">
+                    <children>
+                        <Label text="Unit"/>
+                        <ChoiceBox fx:id="unitChoiceBox" prefWidth="200.0"/>
+                    </children>
+                </HBox>
                 <HBox fx:id="exportSelectorGroup" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
                     <children>
                         <TextField fx:id="exportReferenceText" editable="false" prefWidth="200.0"
@@ -113,15 +118,14 @@
                           GridPane.rowIndex="4"/>
             </children>
         </GridPane>
-        <ButtonBar prefHeight="40.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                   AnchorPane.rightAnchor="0.0">
-            <buttons>
-                <Button mnemonicParsing="true" onAction="#revertChanges" text="Rever_t"/>
-                <Button mnemonicParsing="true" onAction="#applyChanges" text="_Apply"/>
-            </buttons>
-            <padding>
-                <Insets right="8.0"/>
-            </padding>
-        </ButtonBar>
+        <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <items>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Button mnemonicParsing="true" onAction="#revertChanges" minWidth="28" text="Rever_t">
+                </Button>
+                <Button mnemonicParsing="true" onAction="#applyChanges" minWidth="28" text="_Apply">
+                </Button>
+            </items>
+        </ToolBar>
     </children>
 </fx:root>

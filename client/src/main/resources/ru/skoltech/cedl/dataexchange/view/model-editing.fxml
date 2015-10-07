@@ -6,17 +6,17 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.*?>
 <?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
-<SplitPane fx:id="viewPane" dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0" stylesheets="@styling.css"
-           BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
+<SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="515.0" prefWidth="800.0"
+           stylesheets="@styling.css" BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/null"
            fx:controller="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
     <items>
         <AnchorPane>
             <children>
-                <TreeView fx:id="structureTree" prefWidth="197.0" AnchorPane.bottomAnchor="35.0"
+                <TreeView fx:id="structureTree" prefWidth="197.0" AnchorPane.bottomAnchor="40.0"
                           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
                 <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <items>
-                        <Button fx:id="addNodeButton" mnemonicParsing="false" onAction="#addNode" text="" minWidth="28">
+                        <Button fx:id="addNodeButton" minWidth="28" mnemonicParsing="false" onAction="#addNode" text="">
                             <tooltip>
                                 <Tooltip text="Add Node"/>
                             </tooltip>
@@ -24,8 +24,8 @@
                                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
                             </graphic>
                         </Button>
-                        <Button fx:id="deleteNodeButton" mnemonicParsing="false" onAction="#deleteNode" text=""
-                                minWidth="28">
+                        <Button fx:id="deleteNodeButton" minWidth="28" mnemonicParsing="false" onAction="#deleteNode"
+                                text="">
                             <tooltip>
                                 <Tooltip text="Remove Node"/>
                             </tooltip>
@@ -42,7 +42,7 @@
                 <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                       AnchorPane.topAnchor="0.0">
                     <children>
-                        <TitledPane fx:id="dependencyPane" collapsible="true" expanded="false" text="Dependencies">
+                        <TitledPane fx:id="dependencyPane" collapsible="true" text="Dependencies">
                             <content>
                                 <GridPane vgap="4.0">
                                     <columnConstraints>
@@ -50,8 +50,8 @@
                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
                                     </columnConstraints>
                                     <rowConstraints>
-                                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
-                                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+                                        <RowConstraints minHeight="24.0" vgrow="SOMETIMES"/>
+                                        <RowConstraints minHeight="24.0" vgrow="SOMETIMES"/>
                                     </rowConstraints>
                                     <children>
                                         <TextField fx:id="upstreamDependenciesText" editable="false"
@@ -70,8 +70,8 @@
                                     <children>
                                         <TextField fx:id="externalModelNameText" editable="false" prefWidth="200.0"
                                                    promptText="File"/>
-                                        <Button mnemonicParsing="false" onAction="#attachExternalModel" text=""
-                                                minWidth="28">
+                                        <Button minWidth="28" mnemonicParsing="false" onAction="#attachExternalModel"
+                                                text="">
                                             <tooltip>
                                                 <Tooltip text="Attach External Model"/>
                                             </tooltip>
@@ -82,8 +82,8 @@
                                                 <Insets left="8.0"/>
                                             </FlowPane.margin>
                                         </Button>
-                                        <Button mnemonicParsing="false" onAction="#detachExternalModel" text=""
-                                                minWidth="28">
+                                        <Button minWidth="28" mnemonicParsing="false" onAction="#detachExternalModel"
+                                                text="">
                                             <tooltip>
                                                 <Tooltip text="Detach External Model"/>
                                             </tooltip>
@@ -94,8 +94,8 @@
                                                 <Insets left="8.0"/>
                                             </FlowPane.margin>
                                         </Button>
-                                        <Button mnemonicParsing="false" onAction="#openExternalModel"
-                                                text="" minWidth="28">
+                                        <Button minWidth="28" mnemonicParsing="false" onAction="#openExternalModel"
+                                                text="">
                                             <tooltip>
                                                 <Tooltip text="Open Externally"/>
                                             </tooltip>
@@ -106,8 +106,8 @@
                                                 <Insets left="8.0"/>
                                             </FlowPane.margin>
                                         </Button>
-                                        <Button mnemonicParsing="false" onAction="#reloadExternalModel" text=""
-                                                minWidth="28">
+                                        <Button minWidth="28" mnemonicParsing="false" onAction="#reloadExternalModel"
+                                                text="">
                                             <tooltip>
                                                 <Tooltip text="Reload External Models"/>
                                             </tooltip>
@@ -170,9 +170,9 @@
                                                 <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                                                          AnchorPane.rightAnchor="0.0">
                                                     <items>
-                                                        <Button fx:id="addParameterButton" mnemonicParsing="false"
-                                                                text="" minWidth="28"
-                                                                onAction="#addParameter">
+                                                        <Button fx:id="addParameterButton" minWidth="28"
+                                                                mnemonicParsing="false" onAction="#addParameter"
+                                                                text="">
                                                             <tooltip>
                                                                 <Tooltip text="Add Parameter"/>
                                                             </tooltip>
@@ -180,8 +180,9 @@
                                                                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
                                                             </graphic>
                                                         </Button>
-                                                        <Button fx:id="deleteParameterButton" mnemonicParsing="false"
-                                                                onAction="#deleteParameter" text="" minWidth="28">
+                                                        <Button fx:id="deleteParameterButton" minWidth="28"
+                                                                mnemonicParsing="false" onAction="#deleteParameter"
+                                                                text="">
                                                             <tooltip>
                                                                 <Tooltip text="Remove Parameter"/>
                                                             </tooltip>
