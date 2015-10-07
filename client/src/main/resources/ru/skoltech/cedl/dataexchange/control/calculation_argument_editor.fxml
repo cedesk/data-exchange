@@ -3,7 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<fx:root hgap="8.0" maxWidth="-Infinity" prefWidth="500.0"
+<?import org.controlsfx.glyphfont.Glyph?>
+<fx:root hgap="8.0" maxWidth="-Infinity" minWidth="600.0"
          style="-fx-border-width: 1px; -fx-border-color: grey; -fx-border-style: solid;"
          type="javafx.scene.layout.GridPane" vgap="2.0" xmlns="http://javafx.com/javafx/null"
          xmlns:fx="http://javafx.com/fxml/1">
@@ -21,16 +22,25 @@
         <!--
                 <Label fx:id="argDescriptionText" alignment="TOP_LEFT" prefHeight="50.0" prefWidth="150.0" text="Argument description" wrapText="true" GridPane.rowIndex="1" />
         -->
-        <HBox spacing="4.0" GridPane.columnIndex="2">
+        <HBox spacing="4.0" GridPane.columnIndex="2" alignment="CENTER_LEFT">
             <children>
-                <TextField fx:id="argNumericValueText"/>
-                <TextField fx:id="argValueUnitText" disable="true"/>
+                <TextField fx:id="argNumericValueText" prefWidth="150"/>
+                <Label text="Unit"/>
+                <TextField fx:id="argValueUnitText" prefWidth="150" disable="true"/>
             </children>
         </HBox>
-        <HBox spacing="4.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+        <HBox GridPane.columnIndex="2" GridPane.rowIndex="1">
             <children>
-                <TextField fx:id="argParameterValueLinkText" editable="false"/>
-                <Button fx:id="argLinkButton" onAction="#chooseParameter" mnemonicParsing="false" text="choose"/>
+                <TextField fx:id="argParameterValueLinkText" minWidth="300" editable="false"/>
+                <Button fx:id="argLinkButton" onAction="#chooseParameter" mnemonicParsing="false" text=""
+                        minWidth="28">
+                    <tooltip>
+                        <Tooltip text="Choose parameter to link to"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="LINK"/>
+                    </graphic>
+                </Button>
             </children>
         </HBox>
         <RadioButton fx:id="literalRadio" mnemonicParsing="false" text="Value" GridPane.columnIndex="1"
