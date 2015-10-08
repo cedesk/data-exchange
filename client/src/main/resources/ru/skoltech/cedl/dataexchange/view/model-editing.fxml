@@ -42,7 +42,7 @@
                 <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                       AnchorPane.topAnchor="0.0">
                     <children>
-                        <TitledPane fx:id="dependencyPane" collapsible="true" text="Dependencies">
+                        <TitledPane fx:id="dependencyPane" collapsible="true" expanded="false" text="Dependencies">
                             <content>
                                 <GridPane vgap="4.0">
                                     <columnConstraints>
