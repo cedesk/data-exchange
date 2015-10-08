@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.OperationRegistry;
 import ru.skoltech.cedl.dataexchange.units.model.Prefix;
 import ru.skoltech.cedl.dataexchange.units.model.QuantityKind;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
@@ -18,9 +17,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -29,7 +26,7 @@ public class FileStorage {
 
     public static final Class[] MODEL_CLASSES = new Class[]{
             SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class,
-            ParameterModel.class, ExternalModel.class, ExternalModelReference.class};
+            ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
     private static Logger logger = Logger.getLogger(FileStorage.class);
 
     public FileStorage() {
@@ -41,8 +38,10 @@ public class FileStorage {
         StorageUtils.makeDirectory(outputFolder);
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
-
-            JAXBContext jc = JAXBContext.newInstance(MODEL_CLASSES);
+            Set<Class> modelClasses = new HashSet<>();
+            modelClasses.addAll(Arrays.asList(MODEL_CLASSES));
+            modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
+            JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
             Marshaller m = jc.createMarshaller();
             m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
@@ -64,9 +63,12 @@ public class FileStorage {
 
     public SystemModel loadSystemModel(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
-            JAXBContext ct = JAXBContext.newInstance(MODEL_CLASSES);
+            Set<Class> modelClasses = new HashSet<>();
+            modelClasses.addAll(Arrays.asList(MODEL_CLASSES));
+            modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
+            JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Unmarshaller u = ct.createUnmarshaller();
+            Unmarshaller u = jc.createUnmarshaller();
             SystemModel systemModel = (SystemModel) u.unmarshal(inp);
 
             File inputFolder = inputFile.getParentFile();
@@ -102,6 +104,12 @@ public class FileStorage {
             parameterModel.setExportReference(new ExternalModelReference(parameterModel.getExportModel(), parameterModel.getExportField()));
             if (parameterModel.getUnit() == null) {
                 logger.warn("parameter " + parameterModel.getNodePath() + " is missing a unit!");
+            }
+            Calculation calculation = parameterModel.getCalculation();
+            if (calculation != null && calculation.getArguments() != null) {
+                for (Argument argument : calculation.getArguments()) {
+                    argument.setParent(calculation);
+                }
             }
         }
         if (modelNode instanceof CompositeModelNode) {
