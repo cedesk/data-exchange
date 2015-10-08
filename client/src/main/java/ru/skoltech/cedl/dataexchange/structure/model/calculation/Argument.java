@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure.model.calculation;
 
+import org.hibernate.annotations.DiscriminatorOptions;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.structure.model.Calculation;
@@ -14,10 +15,12 @@ import java.util.Collection;
  * Created by D.Knoll on 23.09.2015.
  */
 @XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 @XmlSeeAlso({Argument.Literal.class, Argument.Parameter.class})
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "argType", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorOptions(force = true)
 public abstract class Argument {
 
     @XmlTransient

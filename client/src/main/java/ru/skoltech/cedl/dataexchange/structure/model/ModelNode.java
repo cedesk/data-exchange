@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import org.hibernate.annotations.DiscriminatorOptions;
+
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import java.util.*;
@@ -12,6 +14,8 @@ import java.util.stream.Collectors;
 @XmlType(propOrder = {"name", "lastModification", "uuid", "externalModels", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorOptions(force = true)
 public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped {
 
     public static final String NODE_SEPARATOR = "\\";
