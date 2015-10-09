@@ -127,8 +127,9 @@ public class ModelEditingController implements Initializable {
         externalModelPane.disableProperty().bind(selectedNodeIsEditable.not());
 
         // NODE PARAMETERS
-        addParameterButton.disableProperty().bind(noSelectionOnStructureTreeView);
-        deleteParameterButton.disableProperty().bind(parameterTable.getSelectionModel().selectedIndexProperty().lessThan(0));
+        addParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnStructureTreeView));
+        BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
+        deleteParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnParameterTableView));
 
         // NODE PARAMETER TABLE
         parameterTable.editableProperty().bind(selectedNodeIsEditable);
