@@ -124,7 +124,7 @@
                         </TitledPane>
                         <TitledPane animated="false" expanded="true" text="Parameters">
                             <content>
-                                <SplitPane dividerPositions="0.5" orientation="VERTICAL">
+                                <SplitPane dividerPositions="0.45" orientation="VERTICAL">
                                     <items>
                                         <AnchorPane>
                                             <children>
