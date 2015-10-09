@@ -36,10 +36,10 @@ public interface IconSet {
     }
 
     class Nodes implements IconSet {
-        private final static Image SYS_ICON = new Image("/icons/node_l1.png");
-        private final static Image SUBSYS_ICON = new Image("/icons/node_l2.png");
-        private final static Image ELEMENT_ICON = new Image("/icons/node_l3.png");
-        private final static Image INSTRUMENT_ICON = new Image("/icons/node_l4.png");
+        private final static Image SYS_ICON = new Image("/icons/bw/node_l1.png");
+        private final static Image SUBSYS_ICON = new Image("/icons/bw/node_l2.png");
+        private final static Image ELEMENT_ICON = new Image("/icons/bw/node_l3.png");
+        private final static Image INSTRUMENT_ICON = new Image("/icons/bw/node_l4.png");
 
         @Override
         public Image getIcon(IconType iconType) {
