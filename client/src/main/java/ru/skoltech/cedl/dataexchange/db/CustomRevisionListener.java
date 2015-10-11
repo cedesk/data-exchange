@@ -16,11 +16,11 @@ public class CustomRevisionListener implements EntityTrackingRevisionListener {
                               Serializable entityId, RevisionType revisionType,
                               Object revisionEntity) {
         CustomRevisionEntity revision = (CustomRevisionEntity) revisionEntity;
-        revision.setUsername(ApplicationSettings.getLastUsedUser()); // not certainly always carries the "current" value
+        revision.setUsername(ApplicationSettings.getProjectUser()); // not certainly always carries the "current" value
     }
 
     public void newRevision(Object revisionEntity) {
         CustomRevisionEntity revision = (CustomRevisionEntity) revisionEntity;
-        revision.setUsername(ApplicationSettings.getLastUsedUser()); // not certainly always carries the "current" value
+        revision.setUsername(ApplicationSettings.getProjectUser()); // not certainly always carries the "current" value
     }
 }

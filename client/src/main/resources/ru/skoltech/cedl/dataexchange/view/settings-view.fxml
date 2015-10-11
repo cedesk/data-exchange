@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
 <?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -20,36 +21,43 @@
                             <rowConstraints>
                                 <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                             <children>
                                 <CheckBox fx:id="autoloadOnStartupCheckbox" graphicTextGap="8.0" mnemonicParsing="false" GridPane.columnIndex="1" />
                                 <ComboBox fx:id="modelDepth" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Autoload last project on startup" />
                                 <Text layoutX="20.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Model depth" GridPane.rowIndex="1" />
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Study User" GridPane.rowIndex="3" />
+                                <TextField fx:id="userNameText" promptText="username" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                <CheckBox fx:id="useOsUserCheckbox" graphicTextGap="8.0" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Use OS user" GridPane.rowIndex="2" />
                             </children>
                         </GridPane>
                     </content>
                 </TitledPane>
-            <TitledPane animated="false" layoutX="10.0" layoutY="10.0" text="Local">
-               <content>
-                   <GridPane hgap="8.0" vgap="2.0">
-                       <columnConstraints>
-                           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="25.0" />
-                           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                       </columnConstraints>
-                       <rowConstraints>
-                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                       </rowConstraints>
-                       <children>
-                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Working Directory">
-                           <GridPane.margin>
-                              <Insets right="8.0" />
-                           </GridPane.margin></Text>
-                           <TextField fx:id="appDirText" editable="false" GridPane.columnIndex="1" />
-                       </children>
-                   </GridPane>
-               </content>
-            </TitledPane>
+                <TitledPane animated="false" layoutX="10.0" layoutY="10.0" text="Local">
+                    <content>
+                        <GridPane hgap="8.0" vgap="2.0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="25.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            </rowConstraints>
+                            <children>
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Working Directory">
+                                    <GridPane.margin>
+                                        <Insets right="8.0" />
+                                    </GridPane.margin>
+                                </Text>
+                                <TextField fx:id="appDirText" editable="false" GridPane.columnIndex="1" />
+                            </children>
+                        </GridPane>
+                    </content>
+                </TitledPane>
                 <TitledPane animated="false" text="Repository">
                     <content>
                         <GridPane hgap="8.0" vgap="2.0">
@@ -66,18 +74,21 @@
                                 <TextField fx:id="dbHostnameText" promptText="hostname (leave empty to use default)" GridPane.columnIndex="1" />
                                 <TextField fx:id="dbUsernameText" promptText="username (leave empty to use default)" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="DB hostname">
-                           <GridPane.margin>
-                              <Insets />
-                           </GridPane.margin></Text>
+                                    <GridPane.margin>
+                                        <Insets />
+                                    </GridPane.margin>
+                                </Text>
                                 <PasswordField fx:id="dbPasswordText" promptText="password (leave empty to use default)" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                 <Text layoutX="20.0" layoutY="40.0" strokeType="OUTSIDE" strokeWidth="0.0" text="DB username" GridPane.rowIndex="1">
-                           <GridPane.margin>
-                              <Insets />
-                           </GridPane.margin></Text>
+                                    <GridPane.margin>
+                                        <Insets />
+                                    </GridPane.margin>
+                                </Text>
                                 <Text layoutX="20.0" layoutY="70.0" strokeType="OUTSIDE" strokeWidth="0.0" text="DB password" GridPane.rowIndex="2">
-                           <GridPane.margin>
-                              <Insets />
-                           </GridPane.margin></Text>
+                                    <GridPane.margin>
+                                        <Insets />
+                                    </GridPane.margin>
+                                </Text>
                             </children>
                         </GridPane>
                     </content>

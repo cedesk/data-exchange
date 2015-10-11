@@ -33,6 +33,12 @@ public class SettingsController implements Initializable {
     private ComboBox<Integer> modelDepth;
 
     @FXML
+    private CheckBox useOsUserCheckbox;
+
+    @FXML
+    private TextField userNameText;
+
+    @FXML
     private TextField appDirText;
 
     @FXML
@@ -47,6 +53,7 @@ public class SettingsController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         modelDepth.setItems(FXCollections.observableArrayList(DummySystemBuilder.getValidModelDepths()));
+        userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
         updateView();
     }
 
@@ -56,6 +63,9 @@ public class SettingsController implements Initializable {
 
         String appDir = StorageUtils.getAppDir().getAbsolutePath();
         appDirText.setText(appDir);
+
+        useOsUserCheckbox.setSelected(ApplicationSettings.getUseOsUser());
+        userNameText.setText(ApplicationSettings.getProjectUser());
 
         dbHostnameText.setText(ApplicationSettings.getRepositoryServerHostname(""));
         dbUsernameText.setText(ApplicationSettings.getRepositoryUserName(""));
@@ -74,6 +84,13 @@ public class SettingsController implements Initializable {
 
         ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
         ApplicationSettings.setStudyModelDepth(modelDepth.getValue());
+        ApplicationSettings.setUseOsUser(useOsUserCheckbox.isSelected());
+        if (useOsUserCheckbox.isSelected()) {
+            ApplicationSettings.setProjectUser(userNameText.getText());
+        } else {
+            ApplicationSettings.setProjectUser(null);
+        }
+
         String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
 
         String hostname = dbHostnameText.getText().isEmpty() ? DatabaseStorage.DEFAULT_HOST_NAME : dbHostnameText.getText();

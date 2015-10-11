@@ -17,11 +17,6 @@ public class Utils {
     public static final DateFormat TIME_AND_DATE_FOR_USER_INTERFACE = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final Logger logger = Logger.getLogger(Utils.class);
 
-    public static String getUserName() {
-        String userName = System.getProperty("user.name");
-        return userName.toLowerCase();
-    }
-
     public static String getFormattedDateAndTime() {
         Date now = new Date();
         return TIME_AND_DATE_FOR_FILENAMES.format(now);

@@ -35,7 +35,7 @@ public class UserRoleManagementStorageTest {
         UserManagement userManagement = UserManagementFactory.getUserManagement();
         UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
 
-        String userName = Utils.getUserName();
+        String userName = System.getProperty("user.name").toLowerCase();
         UserManagementFactory.addUserWithAllPower(userRoleManagement, userManagement, userName);
 
         databaseStorage.storeUserManagement(userManagement);

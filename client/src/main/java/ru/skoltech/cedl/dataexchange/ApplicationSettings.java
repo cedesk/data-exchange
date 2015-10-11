@@ -28,9 +28,10 @@ public class ApplicationSettings {
     private static final String REPOSITORY_PASSWORD = "repository.password";
 
     private static final String PROJECT_LAST_AUTOLOAD = "project.last.autoload";
-    private static final String LAST_PROJECT_NAME = "project.last.name";
-    private static final String LAST_PROJECT_USER = "project.last.user";
-    private static final String IMPORT_PROJECT_NAME = "project.import.name";
+    private static final String PROJECT_LAST_NAME = "project.last.name";
+    private static final String PROJECT_USE_OS_USER = "project.use.os.user";
+    private static final String PROJECT_USER_NAME = "project.user.name";
+    private static final String PROJECT_IMPORT_NAME = "project.import.name";
 
     private static final String STUDY_MODEL_DEPTH = "study.model.depth";
 
@@ -57,7 +58,7 @@ public class ApplicationSettings {
     }
 
     public static String getLastUsedProject(String defaultValue) {
-        String projName = properties.getProperty(LAST_PROJECT_NAME);
+        String projName = properties.getProperty(PROJECT_LAST_NAME);
         if (projName == null) {
             logger.warn("Empty last project. Using default: " + defaultValue);
             return defaultValue;
@@ -65,22 +66,31 @@ public class ApplicationSettings {
         return projName;
     }
 
-    public static String getLastUsedUser() {
-        return properties.getProperty(LAST_PROJECT_USER);
+    public static String getProjectUser() {
+        String userName = properties.getProperty(PROJECT_USER_NAME);
+        if (!getUseOsUser() && userName != null && !userName.isEmpty()) {
+            return userName;
+        } else {
+            return System.getProperty("user.name").toLowerCase();
+        }
     }
 
-    public static void setLastUsedUser(String lastUsedUser) {
-        String userName = properties.getProperty(LAST_PROJECT_USER);
-        if (userName == null || !userName.equals(lastUsedUser)) {
-            properties.setProperty(LAST_PROJECT_USER, lastUsedUser);
+    public static void setProjectUser(String projectUser) {
+        String userName = properties.getProperty(PROJECT_USER_NAME);
+        if (userName == null || !userName.equals(projectUser)) {
+            if (projectUser != null) {
+                properties.setProperty(PROJECT_USER_NAME, projectUser);
+            } else {
+                properties.remove(PROJECT_USER_NAME);
+            }
             save();
         }
     }
 
     public static void setLastUsedProject(String projectName) {
-        String projName = properties.getProperty(LAST_PROJECT_NAME);
+        String projName = properties.getProperty(PROJECT_LAST_NAME);
         if (projName == null || !projName.equals(projectName)) {
-            properties.setProperty(LAST_PROJECT_NAME, projectName);
+            properties.setProperty(PROJECT_LAST_NAME, projectName);
             save();
         }
     }
@@ -212,6 +222,22 @@ public class ApplicationSettings {
     }
 
     public static String getProjectToImport() {
-        return properties.getProperty(IMPORT_PROJECT_NAME);
+        return properties.getProperty(PROJECT_IMPORT_NAME);
+    }
+
+    public static boolean getUseOsUser() {
+        String useOsUser = properties.getProperty(PROJECT_USE_OS_USER);
+        if (useOsUser != null) {
+            return Boolean.parseBoolean(useOsUser);
+        }
+        return true;
+    }
+
+    public static void setUseOsUser(boolean useOsUser) {
+        String prop = properties.getProperty(PROJECT_USE_OS_USER);
+        if (prop == null || Boolean.parseBoolean(prop) != useOsUser) {
+            properties.setProperty(PROJECT_USE_OS_USER, Boolean.toString(useOsUser));
+            save();
+        }
     }
 }

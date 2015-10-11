@@ -11,13 +11,13 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 public class UserManagementFactory {
 
     public static final String ADMIN = "admin";
-    public static final String EXPERT = "expert";
+    public static final String OBSERVER = "expert";
 
     public static UserManagement getUserManagement() {
         UserManagement userManagement = new UserManagement();
 
-        User expert = new User(EXPERT, "Expert in all Disciplines", "");
-        User admin = new User(ADMIN, "Laboratory Administrator", "");
+        User expert = new User(OBSERVER, "Observer", "");
+        User admin = new User(ADMIN, "Team Lead", "");
 
         userManagement.getUsers().add(admin);
         userManagement.getUsers().add(expert);
@@ -53,7 +53,7 @@ public class UserManagementFactory {
             User admin = userManagement.findUser(ADMIN);
             if (admin != null)
                 urm.addUserDiscipline(admin, urm.getAdminDiscipline());
-            User expert = userManagement.findUser(EXPERT);
+            User expert = userManagement.findUser(OBSERVER);
             if (expert != null) {
                 urm.addUserDiscipline(expert, aocsDiscipline);
                 urm.addUserDiscipline(expert, orbitDiscipline);

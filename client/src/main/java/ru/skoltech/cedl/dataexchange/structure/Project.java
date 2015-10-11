@@ -81,15 +81,15 @@ public class Project {
 
     public User getUser() {
         if (currentUser == null) { // caching
-            String userName = ApplicationSettings.getLastUsedUser();
-            if (userName == null) {
-                userName = UserManagementFactory.ADMIN;
-                logger.warn("No user in application settings found. Assuming admin!");
-            }
+            String userName = ApplicationSettings.getProjectUser();
+            /*if (userName == null) {
+                userName = UserManagementFactory.OBSERVER;
+                logger.warn("No user in application settings found. Assuming observer!");
+            }*/
             currentUser = getUserManagement().findUser(userName);
             if (currentUser == null) {
-                logger.warn("User not found in user management. Assuming admin!");
-                currentUser = getUserManagement().findUser(UserManagementFactory.ADMIN);
+                logger.warn("User not found in user management. Assuming observer!");
+                currentUser = getUserManagement().findUser(UserManagementFactory.OBSERVER);
                 Objects.requireNonNull(currentUser);
             }
         }

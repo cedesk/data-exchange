@@ -492,6 +492,7 @@ public class MainController implements Initializable {
                 }
             });
             stage.showAndWait();
+            updateView();
         } catch (IOException e) {
             logger.error(e);
         }
