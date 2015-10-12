@@ -86,9 +86,9 @@ public class SettingsController implements Initializable {
         ApplicationSettings.setStudyModelDepth(modelDepth.getValue());
         ApplicationSettings.setUseOsUser(useOsUserCheckbox.isSelected());
         if (useOsUserCheckbox.isSelected()) {
-            ApplicationSettings.setProjectUser(userNameText.getText());
-        } else {
             ApplicationSettings.setProjectUser(null);
+        } else {
+            ApplicationSettings.setProjectUser(userNameText.getText());
         }
 
         String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
