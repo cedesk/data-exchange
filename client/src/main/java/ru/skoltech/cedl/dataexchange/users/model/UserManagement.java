@@ -70,6 +70,10 @@ public class UserManagement {
                 Collectors.toMap(User::getUserName, Function.<User>identity()));
     }
 
+    public boolean checkUser(String userName) {
+        return getUserMap().containsKey(userName);
+    }
+
     public User findUser(String userName) {
         User user = getUserMap().get(userName);
         if (user == null) {

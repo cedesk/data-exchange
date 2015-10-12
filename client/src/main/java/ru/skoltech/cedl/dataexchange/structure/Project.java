@@ -79,17 +79,25 @@ public class Project {
         ProjectContext.getInstance().setProject(this);
     }
 
+    public boolean checkUser() {
+        String userName = ApplicationSettings.getProjectUser();
+        if (userName == null) {
+            boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
+            userName = isStudyNew ? UserManagementFactory.ADMIN : UserManagementFactory.OBSERVER;
+        }
+        currentUser = null; // make sure next getUser retrieves the user from settings
+        return getUserManagement().checkUser(userName);
+    }
+
     public User getUser() {
         if (currentUser == null) { // caching
             String userName = ApplicationSettings.getProjectUser();
-            /*if (userName == null) {
-                userName = UserManagementFactory.OBSERVER;
-                logger.warn("No user in application settings found. Assuming observer!");
-            }*/
             currentUser = getUserManagement().findUser(userName);
             if (currentUser == null) {
-                logger.warn("User not found in user management. Assuming observer!");
-                currentUser = getUserManagement().findUser(UserManagementFactory.OBSERVER);
+                boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
+                userName = isStudyNew ? UserManagementFactory.ADMIN : UserManagementFactory.OBSERVER;
+                logger.warn("User not found in user management. Assuming " + userName + "!");
+                currentUser = getUserManagement().findUser(userName);
                 Objects.requireNonNull(currentUser);
             }
         }

@@ -14,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -54,6 +55,9 @@ public class MainController implements Initializable {
     private final Project project = new Project();
 
     private final RepositoryWatcher repositoryWatcher = new RepositoryWatcher(project);
+
+    @FXML
+    private MenuItem usersAndDisciplinesMenu;
 
     @FXML
     private Button newButton;
@@ -118,6 +122,7 @@ public class MainController implements Initializable {
                 String studyName = studyChoice.get();
                 project.setProjectName(studyName);
                 reloadProject(null);
+                validateUser();
             }
         } else {
             logger.warn("list of studies is empty!");
@@ -274,6 +279,16 @@ public class MainController implements Initializable {
         });
     }
 
+    public void validateUser() {
+        boolean validUser = project.checkUser();
+        if (!validUser) {
+            String userName = ApplicationSettings.getProjectUser();
+            Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
+                    "Contact the administrator for the creation of a user for you.\n" +
+                    "As for now you'lll be given the role of an observer, who can not perform modifications.");
+        }
+    }
+
     private boolean checkRepository() {
         String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
         String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
@@ -300,12 +315,22 @@ public class MainController implements Initializable {
         if (project.getStudy() != null) {
             studyNameLabel.setText(project.getStudy().getName());
             userNameLabel.setText(project.getUser().getName());
-            userRoleLabel.setText(getDisciplineNames(project.getUser()));
+            String disciplineNames = getDisciplineNames(project.getUser());
+            if(!disciplineNames.isEmpty()) {
+                userRoleLabel.setText(disciplineNames);
+                userRoleLabel.setStyle("-fx-text-fill: inherit;");
+            } else {
+                userRoleLabel.setText("without permissions");
+                userRoleLabel.setStyle("-fx-text-fill: red;");
+            }
+            boolean userIsAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
+            usersAndDisciplinesMenu.setDisable(!userIsAdmin);
             modelEditingController.updateView();
         } else {
             studyNameLabel.setText(project.getProjectName());
             userNameLabel.setText("--");
             userRoleLabel.setText("--");
+            usersAndDisciplinesMenu.setDisable(false);
         }
     }
 
@@ -487,9 +512,10 @@ public class MainController implements Initializable {
             stage.initOwner(getAppWindow());
             stage.setOnCloseRequest(event -> {
                 if (!checkRepository()) {
-                    Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository");
+                    Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository!");
                     quit(null);
                 }
+                validateUser();
             });
             stage.showAndWait();
             updateView();

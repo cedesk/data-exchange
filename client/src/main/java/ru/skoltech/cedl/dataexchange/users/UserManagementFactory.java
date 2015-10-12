@@ -11,7 +11,7 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 public class UserManagementFactory {
 
     public static final String ADMIN = "admin";
-    public static final String OBSERVER = "expert";
+    public static final String OBSERVER = "observer";
 
     public static UserManagement getUserManagement() {
         UserManagement userManagement = new UserManagement();

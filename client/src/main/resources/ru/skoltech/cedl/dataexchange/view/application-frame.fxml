@@ -6,10 +6,10 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-            minWidth="-Infinity"
-            prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" stylesheets="@styling.css"
-            fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController" fx:id="applicationPane">
+<AnchorPane fx:id="applicationPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity" prefHeight="700.0" prefWidth="800.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
         <BorderPane fx:id="layoutPane" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0"
                     AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -42,8 +42,8 @@
                                         </Menu>
                                         <Menu mnemonicParsing="true" text="_Edit">
                                             <items>
-                                                <MenuItem mnemonicParsing="true" onAction="#openUserManagement"
-                                                          text="Users and _Disciplines"/>
+                                                <MenuItem fx:id="usersAndDisciplinesMenu" mnemonicParsing="true"
+                                                          onAction="#openUserManagement" text="Users and _Disciplines"/>
                                                 <MenuItem mnemonicParsing="true" onAction="#openUnitManagement"
                                                           text="Units and _Measures"/>
                                                 <SeparatorMenuItem mnemonicParsing="true"/>
@@ -84,29 +84,26 @@
                                     <children>
                                         <HBox>
                                             <children>
-                                                <Label text="Design Study:" styleClass="projectDetailsLabels">
+                                                <Label styleClass="projectDetailsLabels" text="Design Study:">
                                                     <HBox.margin>
                                                         <Insets right="4.0"/>
                                                     </HBox.margin>
                                                 </Label>
-                                                <Label fx:id="studyNameLabel"
-                                                       styleClass="projectDetailsText" text="--">
+                                                <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--">
                                                 </Label>
-                                                <Label text="User:" styleClass="projectDetailsLabels">
+                                                <Label styleClass="projectDetailsLabels" text="User:">
                                                     <HBox.margin>
                                                         <Insets left="20.0" right="4.0"/>
                                                     </HBox.margin>
                                                 </Label>
                                                 <Label fx:id="userNameLabel" styleClass="projectDetailsText" text="--">
                                                 </Label>
-                                                <Label text="Roles:"
-                                                       styleClass="projectDetailsLabels">
+                                                <Label styleClass="projectDetailsLabels" text="Roles:">
                                                     <HBox.margin>
                                                         <Insets left="20.0" right="4.0"/>
                                                     </HBox.margin>
                                                 </Label>
-                                                <Label fx:id="userRoleLabel" styleClass="projectDetailsText"
-                                                       text="--">
+                                                <Label fx:id="userRoleLabel" styleClass="projectDetailsText" text="--">
                                                     <font>
                                                         <Font size="14.0"/>
                                                     </font>
