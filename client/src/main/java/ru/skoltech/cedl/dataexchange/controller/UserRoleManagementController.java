@@ -468,14 +468,13 @@ public class UserRoleManagementController implements Initializable {
                 @Override
                 public void updateItem(Object item, boolean empty) {
                     super.updateItem(item, empty);
-
-                    if (item != null && !empty) {
-                        Discipline discipline = (Discipline) getTableRow().getItem();
-                        String name = discipline.getName() + (discipline.isBuiltIn() ? " (builtin)" : "");
-                        setText(name);
+                    Discipline discipline = (Discipline) getTableRow().getItem();
+                    if (!empty && discipline != null) {
                         if (discipline.isBuiltIn()) {
+                            setText(discipline.getName()+" (builtin)");
                             setStyle("-fx-font-weight: bold;");
                         } else {
+                            setText(discipline.getName());
                             setStyle("-fx-font-weight: normal;");
                         }
                     } else {
