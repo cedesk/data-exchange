@@ -80,16 +80,10 @@ public class SettingsController implements Initializable {
     }
 
     private boolean updateModel() {
-        boolean success = false;
+        boolean validSettings = false;
 
         ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
         ApplicationSettings.setStudyModelDepth(modelDepth.getValue());
-        ApplicationSettings.setUseOsUser(useOsUserCheckbox.isSelected());
-        if (useOsUserCheckbox.isSelected()) {
-            ApplicationSettings.setProjectUser(null);
-        } else {
-            ApplicationSettings.setProjectUser(userNameText.getText());
-        }
 
         String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
 
@@ -103,7 +97,7 @@ public class SettingsController implements Initializable {
             ApplicationSettings.setRepositoryPassword(password);
             try {
                 ProjectContext.getInstance().getProject().connectRepository();
-                success = true;
+                validSettings = true;
                 StatusLogger.getInstance().log("Successfully configured repository settings!");
             } catch (Exception e) {
                 Dialogues.showError("Repository connection failed!", "Please verify that the access credentials for the repository are correct.");
@@ -111,7 +105,25 @@ public class SettingsController implements Initializable {
         } else {
             Dialogues.showError("Repository Connection Failed", "The given database access credentials did not work! Please verify they are correct, the database server is running and the connection is working.");
         }
-        return success;
+
+        if(!validSettings)
+            return false;
+
+        ApplicationSettings.setUseOsUser(useOsUserCheckbox.isSelected());
+        if (useOsUserCheckbox.isSelected()) {
+            ApplicationSettings.setProjectUser(null);
+        } else {
+            String userName = userNameText.getText();
+            boolean validUser = ProjectContext.getInstance().getProject().getUserManagement().checkUser(userName);
+            validSettings = validUser;
+            if(validUser) {
+                ApplicationSettings.setProjectUser(userName);
+            } else {
+                Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
+            }
+        }
+
+        return validSettings;
     }
 
     public void cancel(ActionEvent actionEvent) {
