@@ -14,6 +14,7 @@ import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
 
 import java.net.URL;
 import java.text.DateFormat;
@@ -43,6 +44,9 @@ public class RevisionHistoryController implements Initializable {
     public TableColumn parameterValueColumn;
 
     @FXML
+    public TableColumn parameterUnitColumn;
+
+    @FXML
     public TableColumn revisionAuthorColumn;
 
     @FXML
@@ -50,6 +54,9 @@ public class RevisionHistoryController implements Initializable {
 
     @FXML
     public TableColumn parameterValueSourceColumn;
+
+    @FXML
+    public TableColumn parameterSourceDetailsColumn;
 
     private ParameterModel parameter;
 
@@ -82,6 +89,16 @@ public class RevisionHistoryController implements Initializable {
                         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         property.setValue(dateFormat.format(parameterRevision.getValue().getRevisionDate()));
                         return property;
+                    }
+                });
+
+        parameterUnitColumn.setCellValueFactory(
+                new Callback<TableColumn.CellDataFeatures<ParameterRevision, String>, ObservableValue<String>>() {
+                    @Override
+                    public ObservableValue call(TableColumn.CellDataFeatures<ParameterRevision, String> parameterRevision) {
+                        Unit unit = parameterRevision.getValue().getUnit();
+                        String unitName = unit != null ? unit.asText() : "";
+                        return new SimpleStringProperty(unitName);
                     }
                 });
 

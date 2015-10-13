@@ -18,6 +18,8 @@ public class ParameterRevision extends ParameterModel {
 
     private RevisionType revisionType;
 
+    private String sourceDetails;
+
     public ParameterRevision(ParameterModel versionedParameterModel, CustomRevisionEntity revisionEntity, RevisionType revisionType) {
         this.revisionId = revisionEntity.getId();
         this.revisionDate = revisionEntity.getRevisionDate();
@@ -27,10 +29,23 @@ public class ParameterRevision extends ParameterModel {
         setId(versionedParameterModel.getId());
         setName(versionedParameterModel.getName());
         setValue(versionedParameterModel.getValue());
+        setUnit(versionedParameterModel.getUnit());
+        setIsReferenceValueOverridden(versionedParameterModel.getIsReferenceValueOverridden());
+        setOverrideValue(versionedParameterModel.getOverrideValue());
         setDescription(versionedParameterModel.getDescription());
         setNature(versionedParameterModel.getNature());
-        setValueSource(versionedParameterModel.getValueSource());
         setIsExported(versionedParameterModel.getIsExported());
+        setValueSource(versionedParameterModel.getValueSource());
+        if (versionedParameterModel.getValueSource() == ParameterValueSource.REFERENCE &&
+                versionedParameterModel.getValueReference() != null) {
+            setSourceDetails(versionedParameterModel.getValueReference().toString());
+        } else if (versionedParameterModel.getValueSource() == ParameterValueSource.LINK &&
+                versionedParameterModel.getValueLink() != null) {
+            setSourceDetails(versionedParameterModel.getValueLink().getNodePath());
+        } else if (versionedParameterModel.getValueSource() == ParameterValueSource.CALCULATION &&
+                versionedParameterModel.getCalculation() != null) {
+            setSourceDetails(versionedParameterModel.getCalculation().asText());
+        }
     }
 
     public int getRevisionId() {
@@ -63,6 +78,14 @@ public class ParameterRevision extends ParameterModel {
 
     public void setRevisionType(RevisionType revisionType) {
         this.revisionType = revisionType;
+    }
+
+    public String getSourceDetails() {
+        return sourceDetails;
+    }
+
+    public void setSourceDetails(String sourceDetails) {
+        this.sourceDetails = sourceDetails;
     }
 
     @Override

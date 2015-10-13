@@ -3,13 +3,13 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="280.0" prefWidth="620.0" xmlns="http://javafx.com/javafx/8"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="280.0" prefWidth="840.0" xmlns="http://javafx.com/javafx/8"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController">
     <children>
         <TableView fx:id="revisionHistoryTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columns>
-                <TableColumn fx:id="revisionNumberColumn" prefWidth="50.0" text="Rev#">
+                <TableColumn fx:id="revisionNumberColumn" prefWidth="40.0" text="Rev#">
                     <cellValueFactory>
                         <PropertyValueFactory property="revisionId"/>
                     </cellValueFactory>
@@ -19,7 +19,7 @@
                         <PropertyValueFactory property="revisionDate"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="revisionAuthorColumn" prefWidth="75.0" text="Author">
+                <TableColumn fx:id="revisionAuthorColumn" prefWidth="60.0" text="Author">
                     <cellValueFactory>
                         <PropertyValueFactory property="revisionAuthor"/>
                     </cellValueFactory>
@@ -34,6 +34,16 @@
                         <PropertyValueFactory property="value"/>
                     </cellValueFactory>
                 </TableColumn>
+                <TableColumn fx:id="parameterOverrideValueColumn" prefWidth="60.0" text="Override Value">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="overrideValue"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="parameterUnitColumn" prefWidth="100.0" text="Unit">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="unit"/>
+                    </cellValueFactory>
+                </TableColumn>
                 <TableColumn fx:id="parameterNatureColumn" prefWidth="80.0" text="Nature">
                     <cellValueFactory>
                         <PropertyValueFactory property="nature"/>
@@ -42,6 +52,11 @@
                 <TableColumn fx:id="parameterValueSourceColumn" prefWidth="80.0" text="Source">
                     <cellValueFactory>
                         <PropertyValueFactory property="valueSource"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="parameterSourceDetailsColumn" prefWidth="160.0" text="Source Details">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="sourceDetails"/>
                     </cellValueFactory>
                 </TableColumn>
             </columns>
