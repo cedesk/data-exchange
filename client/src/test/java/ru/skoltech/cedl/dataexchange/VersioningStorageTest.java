@@ -27,6 +27,7 @@ public class VersioningStorageTest {
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         databaseStorage = RepositoryFactory.getTempRepository();
 
+        ApplicationSettings.setUseOsUser(false);
         ApplicationSettings.setProjectUser(ADMIN);
     }
 
