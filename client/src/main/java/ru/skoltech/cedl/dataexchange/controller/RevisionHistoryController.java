@@ -1,24 +1,19 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.util.Callback;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
 
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -29,34 +24,8 @@ public class RevisionHistoryController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(RevisionHistoryController.class);
 
-    public TableView<ParameterRevision> revisionHistoryTable;
-
     @FXML
-    public TableColumn revisionNumberColumn;
-
-    @FXML
-    public TableColumn revisionTimestampColumn;
-
-    @FXML
-    public TableColumn parameterNameColumn;
-
-    @FXML
-    public TableColumn parameterValueColumn;
-
-    @FXML
-    public TableColumn parameterUnitColumn;
-
-    @FXML
-    public TableColumn revisionAuthorColumn;
-
-    @FXML
-    public TableColumn parameterNatureColumn;
-
-    @FXML
-    public TableColumn parameterValueSourceColumn;
-
-    @FXML
-    public TableColumn parameterSourceDetailsColumn;
+    private TableView<ParameterRevision> revisionHistoryTable;
 
     private ParameterModel parameter;
 
@@ -80,27 +49,6 @@ public class RevisionHistoryController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-        revisionTimestampColumn.setCellValueFactory(
-                new Callback<TableColumn.CellDataFeatures<ParameterRevision, String>, ObservableValue<String>>() {
-                    @Override
-                    public ObservableValue call(TableColumn.CellDataFeatures<ParameterRevision, String> parameterRevision) {
-                        SimpleStringProperty property = new SimpleStringProperty();
-                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        property.setValue(dateFormat.format(parameterRevision.getValue().getRevisionDate()));
-                        return property;
-                    }
-                });
-
-        parameterUnitColumn.setCellValueFactory(
-                new Callback<TableColumn.CellDataFeatures<ParameterRevision, String>, ObservableValue<String>>() {
-                    @Override
-                    public ObservableValue call(TableColumn.CellDataFeatures<ParameterRevision, String> parameterRevision) {
-                        Unit unit = parameterRevision.getValue().getUnit();
-                        String unitName = unit != null ? unit.asText() : "";
-                        return new SimpleStringProperty(unitName);
-                    }
-                });
 
         ObservableList<ParameterRevision> items = FXCollections.observableArrayList();
         revisionHistoryTable.setItems(items);

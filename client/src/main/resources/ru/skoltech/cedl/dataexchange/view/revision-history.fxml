@@ -9,52 +9,57 @@
         <TableView fx:id="revisionHistoryTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columns>
-                <TableColumn fx:id="revisionNumberColumn" prefWidth="40.0" text="Rev#">
+                <TableColumn prefWidth="40.0" text="Rev#">
                     <cellValueFactory>
                         <PropertyValueFactory property="revisionId"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="revisionTimestampColumn" prefWidth="120.0" text="Date">
+                <TableColumn prefWidth="120.0" text="Date">
                     <cellValueFactory>
-                        <PropertyValueFactory property="revisionDate"/>
+                        <PropertyValueFactory property="revisionDateAsText"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="revisionAuthorColumn" prefWidth="60.0" text="Author">
+                <TableColumn prefWidth="60.0" text="Author">
                     <cellValueFactory>
                         <PropertyValueFactory property="revisionAuthor"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="parameterNameColumn" prefWidth="100.0" text="Name">
+                <TableColumn prefWidth="100.0" text="Name">
                     <cellValueFactory>
                         <PropertyValueFactory property="name"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="parameterValueColumn" prefWidth="60.0" text="Value">
+                <TableColumn prefWidth="60.0" text="Value">
                     <cellValueFactory>
                         <PropertyValueFactory property="value"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="parameterOverrideValueColumn" prefWidth="60.0" text="Override Value">
+                <TableColumn prefWidth="40.0" text="Override">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="isReferenceValueOverridden"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn prefWidth="60.0" text="Override Value">
                     <cellValueFactory>
                         <PropertyValueFactory property="overrideValue"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="parameterUnitColumn" prefWidth="100.0" text="Unit">
+                <TableColumn prefWidth="100.0" text="Unit">
                     <cellValueFactory>
-                        <PropertyValueFactory property="unit"/>
+                        <PropertyValueFactory property="unitAsText"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="parameterNatureColumn" prefWidth="80.0" text="Nature">
+                <TableColumn prefWidth="80.0" text="Nature">
                     <cellValueFactory>
                         <PropertyValueFactory property="nature"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="parameterValueSourceColumn" prefWidth="80.0" text="Source">
+                <TableColumn prefWidth="80.0" text="Source">
                     <cellValueFactory>
                         <PropertyValueFactory property="valueSource"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="parameterSourceDetailsColumn" prefWidth="160.0" text="Source Details">
+                <TableColumn prefWidth="160.0" text="Source Details">
                     <cellValueFactory>
                         <PropertyValueFactory property="sourceDetails"/>
                     </cellValueFactory>

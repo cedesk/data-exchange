@@ -2,13 +2,18 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.envers.RevisionType;
 import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
  * Created by D.Knoll on 23.06.2015.
  */
 public class ParameterRevision extends ParameterModel {
+
+    private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private int revisionId;
 
@@ -17,8 +22,6 @@ public class ParameterRevision extends ParameterModel {
     private String revisionAuthor;
 
     private RevisionType revisionType;
-
-    private String sourceDetails;
 
     public ParameterRevision(ParameterModel versionedParameterModel, CustomRevisionEntity revisionEntity, RevisionType revisionType) {
         this.revisionId = revisionEntity.getId();
@@ -36,16 +39,9 @@ public class ParameterRevision extends ParameterModel {
         setNature(versionedParameterModel.getNature());
         setIsExported(versionedParameterModel.getIsExported());
         setValueSource(versionedParameterModel.getValueSource());
-        if (versionedParameterModel.getValueSource() == ParameterValueSource.REFERENCE &&
-                versionedParameterModel.getValueReference() != null) {
-            setSourceDetails(versionedParameterModel.getValueReference().toString());
-        } else if (versionedParameterModel.getValueSource() == ParameterValueSource.LINK &&
-                versionedParameterModel.getValueLink() != null) {
-            setSourceDetails(versionedParameterModel.getValueLink().getNodePath());
-        } else if (versionedParameterModel.getValueSource() == ParameterValueSource.CALCULATION &&
-                versionedParameterModel.getCalculation() != null) {
-            setSourceDetails(versionedParameterModel.getCalculation().asText());
-        }
+        setValueReference(versionedParameterModel.getValueReference());
+        setValueLink(versionedParameterModel.getValueLink());
+        setCalculation(versionedParameterModel.getCalculation());
     }
 
     public int getRevisionId() {
@@ -81,11 +77,32 @@ public class ParameterRevision extends ParameterModel {
     }
 
     public String getSourceDetails() {
-        return sourceDetails;
+        if (getValueSource() == ParameterValueSource.REFERENCE && getValueReference() != null) {
+            return getValueReference().toString();
+        } else if (getValueSource() == ParameterValueSource.LINK && getValueLink() != null) {
+            return getValueLink().getNodePath();
+        } else if (getValueSource() == ParameterValueSource.CALCULATION && getCalculation() != null) {
+            return getCalculation().asText();
+        }
+        return "";
     }
 
-    public void setSourceDetails(String sourceDetails) {
-        this.sourceDetails = sourceDetails;
+    public String getUnitAsText() {
+        Unit unit = super.getUnit();
+        return unit != null ? unit.asText() : "";
+    }
+
+    public String getRevisionDateAsText() {
+        return dateFormat.format(getRevisionDate());
+    }
+
+    @Override
+    public boolean getIsReferenceValueOverridden() {
+        return super.getIsReferenceValueOverridden();
+    }
+
+    public boolean getReferenceValueOverridden() {
+        return super.getIsReferenceValueOverridden();
     }
 
     @Override
