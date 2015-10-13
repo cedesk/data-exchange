@@ -3,13 +3,11 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="280.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/8"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="280.0" prefWidth="620.0" xmlns="http://javafx.com/javafx/8"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController">
     <children>
-        <TableView fx:id="revisionHistoryTable" layoutX="224.0" layoutY="31.0" prefHeight="280.0" prefWidth="400.0"
-                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                   AnchorPane.topAnchor="0.0">
+        <TableView fx:id="revisionHistoryTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columns>
                 <TableColumn fx:id="revisionNumberColumn" prefWidth="50.0" text="Rev#">
                     <cellValueFactory>
@@ -34,6 +32,16 @@
                 <TableColumn fx:id="parameterValueColumn" prefWidth="60.0" text="Value">
                     <cellValueFactory>
                         <PropertyValueFactory property="value"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="parameterNatureColumn" prefWidth="80.0" text="Nature">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="nature"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="parameterValueSourceColumn" prefWidth="80.0" text="Source">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="valueSource"/>
                     </cellValueFactory>
                 </TableColumn>
             </columns>
