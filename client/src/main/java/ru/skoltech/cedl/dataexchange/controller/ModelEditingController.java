@@ -43,6 +43,7 @@ import java.util.function.Consumer;
 public class ModelEditingController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
+
     @FXML
     private SplitPane viewPane;
 
@@ -78,6 +79,9 @@ public class ModelEditingController implements Initializable {
 
     @FXML
     private Button deleteParameterButton;
+
+    @FXML
+    private Button viewParameterHistoryButton;
 
     @FXML
     private TreeView<ModelNode> structureTree;
@@ -130,6 +134,7 @@ public class ModelEditingController implements Initializable {
         addParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnStructureTreeView));
         BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
         deleteParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnParameterTableView));
+        viewParameterHistoryButton.disableProperty().bind(noSelectionOnParameterTableView);
 
         // NODE PARAMETER TABLE
         parameterTable.editableProperty().bind(selectedNodeIsEditable);
@@ -160,6 +165,10 @@ public class ModelEditingController implements Initializable {
 
         // NODE PARAMETERS TABLE CONTEXT MENU
         ContextMenu parameterContextMenu = new ContextMenu();
+        MenuItem deleteParameterMenuItem = new MenuItem("Delete parameter");
+        deleteParameterMenuItem.setOnAction(ModelEditingController.this::deleteParameter);
+        deleteParameterMenuItem.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnParameterTableView));
+        parameterContextMenu.getItems().add(deleteParameterMenuItem);
         MenuItem addNodeMenuItem = new MenuItem("View history");
         addNodeMenuItem.setOnAction(ModelEditingController.this::openParameterHistoryDialog);
         parameterContextMenu.getItems().add(addNodeMenuItem);
