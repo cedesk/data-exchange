@@ -6,15 +6,34 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.*?>
 <?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
-<SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="515.0"
-           prefWidth="800.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/null"
+<SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="700.0" prefWidth="900.0"
+           stylesheets="@styling.css" xmlns="http://javafx.com/javafx/null"
            fx:controller="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
     <items>
         <AnchorPane>
             <children>
-                <TreeView fx:id="structureTree" prefWidth="197.0" AnchorPane.bottomAnchor="40.0"
-                          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-                <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                <TitledPane animated="false" collapsible="false" text="Structure" AnchorPane.bottomAnchor="180.0"
+                            AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <content>
+                        <TreeView fx:id="structureTree"/>
+                    </content>
+                </TitledPane>
+                <TitledPane fx:id="dependencyPane" collapsible="true" expanded="true" prefHeight="140.0"
+                            text="Dependencies" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
+                            AnchorPane.rightAnchor="0.0">
+                    <content>
+                        <VBox>
+                            <children>
+                                <Label text="upstream"/>
+                                <TextField fx:id="upstreamDependenciesText" editable="false"/>
+                                <Label text="downstream"/>
+                                <TextField fx:id="downstreamDependenciesText" editable="false"/>
+                            </children>
+                        </VBox>
+                    </content>
+                </TitledPane>
+                <ToolBar layoutY="534.0" prefHeight="40.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                         AnchorPane.rightAnchor="0.0">
                     <items>
                         <Button fx:id="addNodeButton" minWidth="28" mnemonicParsing="false" onAction="#addNode" text="">
                             <tooltip>
@@ -42,29 +61,8 @@
                 <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                       AnchorPane.topAnchor="0.0">
                     <children>
-                        <TitledPane fx:id="dependencyPane" collapsible="true" expanded="true" text="Dependencies">
-                            <content>
-                                <GridPane vgap="4.0">
-                                    <columnConstraints>
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="15.0"/>
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
-                                    </columnConstraints>
-                                    <rowConstraints>
-                                        <RowConstraints minHeight="24.0" vgrow="SOMETIMES"/>
-                                        <RowConstraints minHeight="24.0" vgrow="SOMETIMES"/>
-                                    </rowConstraints>
-                                    <children>
-                                        <TextField fx:id="upstreamDependenciesText" editable="false"
-                                                   GridPane.columnIndex="1"/>
-                                        <TextField fx:id="downstreamDependenciesText" editable="false"
-                                                   GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                                        <Label text="upstream"/>
-                                        <Label text="downstream" GridPane.rowIndex="1"/>
-                                    </children>
-                                </GridPane>
-                            </content>
-                        </TitledPane>
-                        <TitledPane fx:id="externalModelPane" animated="false" expanded="false" text="External Model">
+                        <TitledPane fx:id="externalModelPane" animated="false" expanded="false" text="External Model"
+                                    VBox.vgrow="ALWAYS">
                             <content>
                                 <FlowPane>
                                     <children>
@@ -122,7 +120,8 @@
                                 </FlowPane>
                             </content>
                         </TitledPane>
-                        <TitledPane animated="false" expanded="true" text="Parameters">
+                        <TitledPane animated="false" expanded="true" text="Parameters" AnchorPane.leftAnchor="0.0"
+                                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="200" VBox.vgrow="ALWAYS">
                             <content>
                                 <SplitPane dividerPositions="0.45" orientation="VERTICAL">
                                     <items>
@@ -192,8 +191,7 @@
                                                         </Button>
                                                         <Button fx:id="viewParameterHistoryButton" minWidth="28"
                                                                 mnemonicParsing="false"
-                                                                onAction="#openParameterHistoryDialog"
-                                                                text="">
+                                                                onAction="#openParameterHistoryDialog" text="">
                                                             <tooltip>
                                                                 <Tooltip text="View Parameter Revision History"/>
                                                             </tooltip>
@@ -215,6 +213,7 @@
                                 </SplitPane>
                             </content>
                         </TitledPane>
+
                     </children>
                 </VBox>
             </children>
