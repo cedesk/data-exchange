@@ -24,3 +24,6 @@ dt {
 /*    font-style: italic;*/
 }
 
+.text-input:readonly {
+    -fx-background-color: transparent;
+}

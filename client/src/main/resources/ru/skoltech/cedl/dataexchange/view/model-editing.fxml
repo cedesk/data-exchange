@@ -7,8 +7,7 @@
 <?import org.controlsfx.glyphfont.*?>
 <?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
 <SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="515.0"
-           prefWidth="800.0"
-           stylesheets="@styling.css" BorderPane.alignment="CENTER" xmlns="http://javafx.com/javafx/null"
+           prefWidth="800.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/null"
            fx:controller="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
     <items>
         <AnchorPane>

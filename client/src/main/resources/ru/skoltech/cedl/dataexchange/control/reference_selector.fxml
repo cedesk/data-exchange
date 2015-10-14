@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
-<DialogPane xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
+<DialogPane xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../view/styling.css">
     <content>
         <AnchorPane prefHeight="480.0" prefWidth="800.0">
             <children>
