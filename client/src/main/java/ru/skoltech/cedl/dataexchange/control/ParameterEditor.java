@@ -298,7 +298,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             valueText.setText(String.valueOf(calculation.evaluate()));
             logger.debug(originalParameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
         } else {
-            calculationText.setText(null);
+            calculationText.setText(calculation != null ? calculation.asText() : null);
         }
     }
 
