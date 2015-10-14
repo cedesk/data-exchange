@@ -1,3 +1,12 @@
+
+.text-input:readonly {
+    -fx-background-color: transparent;
+    -fx-border-style:solid;
+    -fx-border-radius: 3px;
+    -fx-border-width: 1px;
+    -fx-border-color:grey;
+}
+
 .applicationTitle {
     -fx-font-family: serif;
     -fx-font-size: 26px;
@@ -23,4 +32,11 @@
     -fx-font-size: 16px;
     -fx-font-style: italic;
     -fx-underline: true;
+}
+
+.calculationArgument {
+    -fx-border-style:solid;
+    -fx-border-radius: 3px;
+    -fx-border-width: 1px;
+    -fx-border-color:grey;
 }

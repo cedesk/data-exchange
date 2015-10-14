@@ -3,7 +3,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<DialogPane prefWidth="550.0" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1">
+<DialogPane xmlns:fx="http://javafx.com/fxml/1" prefWidth="550.0" xmlns="http://javafx.com/javafx/null"
+            stylesheets="@../view/styling.css">
     <content>
         <VBox spacing="4" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0"
               AnchorPane.topAnchor="8.0">

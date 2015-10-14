@@ -5,8 +5,9 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <fx:root hgap="8.0" maxWidth="-Infinity" minWidth="600.0"
-         style="-fx-border-width: 1px; -fx-border-color: grey; -fx-border-style: solid;"
          type="javafx.scene.layout.GridPane" vgap="2.0" xmlns="http://javafx.com/javafx/null"
+         styleClass="calculationArgument"
+         stylesheets="@../view/styling.css"
          xmlns:fx="http://javafx.com/fxml/1">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
