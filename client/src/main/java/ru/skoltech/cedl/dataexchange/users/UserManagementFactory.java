@@ -34,7 +34,7 @@ public class UserManagementFactory {
         Discipline aocsDiscipline = new Discipline("AOCS", urm);
         Discipline powerDiscipline = new Discipline("Power", urm);
         Discipline thermalDiscipline = new Discipline("Thermal", urm);
-        Discipline communicationDiscipline = new Discipline("Communication", urm);
+        Discipline communicationDiscipline = new Discipline("Communications", urm);
         Discipline propulsionDiscipline = new Discipline("Propulsion", urm);
         Discipline missionDiscipline = new Discipline("Mission", urm);
 
