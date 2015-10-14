@@ -42,6 +42,9 @@ public class SettingsController implements Initializable {
     private TextField appDirText;
 
     @FXML
+    private TextField repoSchemaText;
+
+    @FXML
     private TextField dbHostnameText;
 
     @FXML
@@ -63,6 +66,7 @@ public class SettingsController implements Initializable {
 
         String appDir = StorageUtils.getAppDir().getAbsolutePath();
         appDirText.setText(appDir);
+        repoSchemaText.setText(ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA));
 
         useOsUserCheckbox.setSelected(ApplicationSettings.getUseOsUser());
         userNameText.setText(ApplicationSettings.getProjectUser());
