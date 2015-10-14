@@ -135,9 +135,10 @@ public class UserRoleManagementController implements Initializable {
                 }
             }
         });
+        BooleanBinding noSelectionOnDisciplinesTable = disciplinesTable.getSelectionModel().selectedItemProperty().isNull();
+        deleteDisciplineButton.disableProperty().bind(noSelectionOnDisciplinesTable);
 
         // SUB-SYSTEMS
-        BooleanBinding noSelectionOnDisciplinesTable = disciplinesTable.getSelectionModel().selectedItemProperty().isNull();
         subsystemsPane.disableProperty().bind(noSelectionOnDisciplinesTable);
 
         subsystemsAvailableList.setCellFactory(new SubsystemsViewCellFactory());
@@ -187,8 +188,8 @@ public class UserRoleManagementController implements Initializable {
             ObservableList<Discipline> disciplineList = FXCollections.observableList(disciplines);
             disciplineList.sort(Comparator.<Discipline>naturalOrder());
             disciplinesTable.setItems(disciplineList);
-            boolean editable = project.getUserRoleManagement().isAdmin(project.getUser());
-            disciplinesTable.setEditable(editable);
+            //boolean editable = project.getUserRoleManagement().isAdmin(project.getUser());
+            //disciplinesTable.setEditable(editable);
         }
     }
 
@@ -369,7 +370,6 @@ public class UserRoleManagementController implements Initializable {
             Platform.runLater(() -> {
                 updateUsers();
             });
-
         } catch (IOException e) {
             logger.error(e);
         }
@@ -464,14 +464,14 @@ public class UserRoleManagementController implements Initializable {
     private class DisciplineNameCellFactory implements Callback<TableColumn<Discipline, Object>, TableCell<Discipline, Object>> {
         @Override
         public TableCell<Discipline, Object> call(TableColumn<Discipline, Object> param) {
-            return new TextFieldTableCell<Discipline, Object>() {
+            return new TableCell<Discipline, Object>() {
                 @Override
                 public void updateItem(Object item, boolean empty) {
                     super.updateItem(item, empty);
                     Discipline discipline = (Discipline) getTableRow().getItem();
                     if (!empty && discipline != null) {
                         if (discipline.isBuiltIn()) {
-                            setText(discipline.getName()+" (builtin)");
+                            setText(discipline.getName() + " (builtin)");
                             setStyle("-fx-font-weight: bold;");
                         } else {
                             setText(discipline.getName());
