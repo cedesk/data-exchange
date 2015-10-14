@@ -51,18 +51,8 @@ public class UserManagementFactory {
         // add user disciplines
         if (userManagement != null) {
             User admin = userManagement.findUser(ADMIN);
-            if (admin != null)
+            if (admin != null) {
                 urm.addUserDiscipline(admin, urm.getAdminDiscipline());
-            User expert = userManagement.findUser(OBSERVER);
-            if (expert != null) {
-                urm.addUserDiscipline(expert, aocsDiscipline);
-                urm.addUserDiscipline(expert, orbitDiscipline);
-                urm.addUserDiscipline(expert, payloadDiscipline);
-                urm.addUserDiscipline(expert, powerDiscipline);
-                urm.addUserDiscipline(expert, thermalDiscipline);
-                urm.addUserDiscipline(expert, communicationDiscipline);
-                urm.addUserDiscipline(expert, propulsionDiscipline);
-                urm.addUserDiscipline(expert, missionDiscipline);
             }
         }
         return urm;
