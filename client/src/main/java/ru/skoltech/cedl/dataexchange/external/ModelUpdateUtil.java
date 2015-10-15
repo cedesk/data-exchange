@@ -87,13 +87,12 @@ public class ModelUpdateUtil {
         }
         // APPLY CHANGES
         if (parameterUpdate != null) {
-            ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
             parameterUpdate.apply();
             if (parameterUpdateListener != null) {
                 parameterUpdateListener.accept(parameterUpdate);
             }
+            ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
             parameterLinkRegistry.updateSinks(parameterModel);
-
         }
     }
 
@@ -111,7 +110,7 @@ public class ModelUpdateUtil {
         return parameterUpdate;
     }
 
-    public static void applyParameterChangesToExternalModel(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler, ExternalModelFileWatcher externalModelFileWatcher) {
+    public static void applyParameterChangesToExternalModel(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
         ExternalModelExporter exporter = ExternalModelAccessorFactory.getExporter(externalModel, externalModelFileHandler);
@@ -131,10 +130,6 @@ public class ModelUpdateUtil {
                 }
             }
         }
-        try {
-            exporter.flushModifications(externalModelFileWatcher);
-        } catch (ExternalModelException e) {
-            logger.warn("error flushing the external model: " + externalModel.getNodePath());
-        }
+        exporter.flushModifications(externalModelFileWatcher);
     }
 }
