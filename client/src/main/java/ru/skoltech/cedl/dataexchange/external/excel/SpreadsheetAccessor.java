@@ -3,10 +3,7 @@ package ru.skoltech.cedl.dataexchange.external.excel;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
@@ -22,6 +19,8 @@ public class SpreadsheetAccessor implements Closeable {
     private static Logger logger = Logger.getLogger(SpreadsheetAccessor.class);
     private Sheet sheet;
     private Workbook wb;
+
+    private FormulaEvaluator formulaEvaluator;
 
     private boolean modified = false;
 
@@ -40,6 +39,9 @@ public class SpreadsheetAccessor implements Closeable {
             wb = new XSSFWorkbook(inputStream);
         }
         sheet = wb.getSheetAt(sheetIndex);
+        formulaEvaluator = wb.getCreationHelper().createFormulaEvaluator();
+        formulaEvaluator.evaluateAll();
+        formulaEvaluator.clearAllCachedResultValues();
     }
 
     /**
@@ -105,6 +107,7 @@ public class SpreadsheetAccessor implements Closeable {
             } catch (IllegalArgumentException | IllegalStateException e ){
                 throw new ExternalModelException("writing to cell failed!", e);
             }
+            formulaEvaluator.notifyUpdateCell(cell);
         }
     }
 
@@ -147,6 +150,7 @@ public class SpreadsheetAccessor implements Closeable {
     }
 
     public void saveChanges(OutputStream outputStream) throws IOException {
+        formulaEvaluator.evaluateAll();
         wb.write(outputStream);
     }
 }
