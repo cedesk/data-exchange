@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -265,7 +266,7 @@ public class Project {
         return sb.toString();
     }
 
-    public void storeLocalStudy() throws RepositoryException {
+    public void storeLocalStudy() throws RepositoryException, ExternalModelException {
         updateParameterValuesFromLinks();
         exportValuesToExternalModels();
         updateExternalModelsInStudy();
@@ -281,15 +282,21 @@ public class Project {
         parameterLinkRegistry.updateAll(getSystemModel());
     }
 
-    private void exportValuesToExternalModels() {
-
+    private void exportValuesToExternalModels() throws ExternalModelException {
         SystemModel systemModel = getSystemModel();
-        Iterator<ExternalModel> externalModelsIterator = systemModel.externalModelsIterator();
+        Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, new AccessChecker());
+        List<ExternalModelException> exceptions = new LinkedList<>();
         while (externalModelsIterator.hasNext()) {
             ExternalModel externalModel = externalModelsIterator.next();
-            if (UserRoleUtil.checkAccess(externalModel.getParent(), getUser(), getUserRoleManagement())) {
+            try {
                 ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler, externalModelFileWatcher);
+            } catch (ExternalModelException e) {
+                exceptions.add(e);
             }
+        }
+        if (exceptions.size() > 0) {
+            String errorMessages = exceptions.stream().map(ExternalModelException::getMessage).collect(Collectors.joining("\n"));
+            throw new ExternalModelException(errorMessages);
         }
     }
 
