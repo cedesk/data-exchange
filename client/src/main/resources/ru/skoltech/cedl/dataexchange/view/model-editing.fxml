@@ -18,7 +18,7 @@
                         <TreeView fx:id="structureTree"/>
                     </content>
                 </TitledPane>
-                <TitledPane fx:id="dependencyPane" collapsible="true" expanded="true" prefHeight="140.0"
+                <TitledPane fx:id="dependencyPane" collapsible="false" expanded="true" prefHeight="140.0"
                             text="Dependencies" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
                             AnchorPane.rightAnchor="0.0">
                     <content>
