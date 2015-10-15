@@ -451,11 +451,11 @@ public class ModelEditingController implements Initializable {
             }
         }
         if (referencingParameters.length() > 0) {
-            modelNode.getExternalModels().remove(0);
+            Dialogues.showError("External Model is not removable.", "The given external model is referenced by parameters: " + referencingParameters.toString());
+        } else {
+            modelNode.getExternalModels().remove(0); // TODO: allow more external models
             externalModelNameText.setText(null);
             project.markStudyModified();
-        } else {
-            Dialogues.showError("External Model is not removable.", "The given external model is referenced by parameters :" + referencingParameters.toString());
         }
     }
 
