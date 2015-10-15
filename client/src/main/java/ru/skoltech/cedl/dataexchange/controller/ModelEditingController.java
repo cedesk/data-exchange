@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -226,6 +227,13 @@ public class ModelEditingController implements Initializable {
 
     private void clearParameterTable() {
         parameterTable.getItems().clear();
+    }
+
+    private void updateDependencies(ModelNode modelNode) {
+        String upstreamDependencies = project.getParameterLinkRegistry().getUpstreamDependencies(modelNode);
+        upstreamDependenciesText.setText(upstreamDependencies);
+        String downstreamDependencies = project.getParameterLinkRegistry().getDownstreamDependencies(modelNode);
+        downstreamDependenciesText.setText(downstreamDependencies);
     }
 
     public void updateView() {
@@ -482,6 +490,13 @@ public class ModelEditingController implements Initializable {
         return appWindow;
     }
 
+    private void lightTableRefresh() {
+        Platform.runLater(() -> {
+            parameterTable.getColumns().get(1).setVisible(false);
+            parameterTable.getColumns().get(1).setVisible(true);
+        });
+    }
+
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
@@ -514,10 +529,7 @@ public class ModelEditingController implements Initializable {
                 selectedNodeIsEditable.setValue(editable);
 
                 ModelEditingController.this.updateParameterTable(newValue);
-                String upstreamDependencies = project.getParameterLinkRegistry().getUpstreamDependencies(modelNode);
-                upstreamDependenciesText.setText(upstreamDependencies);
-                String downstreamDependencies = project.getParameterLinkRegistry().getDownstreamDependencies(modelNode);
-                downstreamDependenciesText.setText(downstreamDependencies);
+                ModelEditingController.this.updateDependencies(modelNode);
 
                 List<ExternalModel> externalModels = modelNode.getExternalModels();
                 if (externalModels.size() > 0) { // TODO: allow more external models
@@ -546,7 +558,6 @@ public class ModelEditingController implements Initializable {
         public void accept(ModelUpdate modelUpdate) {
             ExternalModel externalModel = modelUpdate.getExternalModel();
             project.addChangedExternalModel(externalModel);
-            //TODO: update view
             String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
             logger.info(message);
             UserNotifications.showNotification(getAppWindow(), "External model modified", message);
@@ -561,12 +572,11 @@ public class ModelEditingController implements Initializable {
                     parameterTable.getSelectionModel().getSelectedItem().equals(parameterModel)) {
                 parameterEditor.setParameterModel(parameterModel);
             }
-            /*
             TreeItem<ModelNode> selectedTreeItem = getSelectedTreeItem();
             if (selectedTreeItem != null &&
                     selectedTreeItem.getValue().equals(parameterModel.getParent())) {
-                // update parameter table without refreshing the parameter editor
-            } */
+                lightTableRefresh();
+            }
 
             Double value = parameterUpdate.getValue();
             String message = parameterModel.getNodePath() + " has been updated! (" + String.valueOf(value) + ")";
