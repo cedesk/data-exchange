@@ -101,6 +101,17 @@ public class MainController implements Initializable {
                 Dialogues.showError("Invalid name", Identifiers.getProjectNameValidationDescription());
                 return;
             }
+            List<String> studyNames = null;
+            try {
+                studyNames = project.getRepository().listStudies();
+            } catch (RepositoryException e) {
+                logger.error("error retrieving list of available studies");
+                return;
+            }
+            if(studyNames != null && studyNames.contains(projectName)) {
+                Dialogues.showError("Invalid name", "A study with this name already exists in the repository!");
+                return;
+            }
             project.newStudy(projectName);
             StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
             updateView();
