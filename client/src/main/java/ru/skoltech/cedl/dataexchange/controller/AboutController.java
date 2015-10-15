@@ -27,7 +27,7 @@ public class AboutController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         URI uri = null;
         try {
-            uri = getClass().getResource("/about.html").toURI();
+            uri = getClass().getResource("about.html").toURI();
         } catch (URISyntaxException e) {
             logger.error(e);
         }

@@ -116,7 +116,7 @@
                         </VBox>
                         <ImageView fitHeight="85.0" fitWidth="129.0">
                             <image>
-                                <Image url="@/cedesk-logo.png"/>
+                                <Image url="@../controller/cedesk-logo.png"/>
                             </image>
                             <HBox.margin>
                                 <Insets bottom="6" right="6" top="6"/>
