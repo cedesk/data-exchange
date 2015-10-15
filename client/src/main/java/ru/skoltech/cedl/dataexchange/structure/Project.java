@@ -8,7 +8,6 @@ import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.controller.MainController;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
@@ -474,6 +473,10 @@ public class Project {
 
     public ExternalModelFileHandler getExternalModelFileHandler() {
         return externalModelFileHandler;
+    }
+
+    public ExternalModelFileWatcher getExternalModelFileWatcher() {
+        return externalModelFileWatcher;
     }
 
     public void addChangedExternalModel(ExternalModel externalModel) {

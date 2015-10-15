@@ -23,9 +23,7 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
 import ru.skoltech.cedl.dataexchange.controller.UserNotifications;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
-import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
+import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
@@ -106,6 +104,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private ParameterModel originalParameterModel;
 
+    private ExternalModelReference valueReference;
+
+    private ExternalModelReference exportReference;
+
     private ParameterModel valueLinkParameter;
 
     private Calculation calculation;
@@ -143,7 +145,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
         linkSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
         calculationGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.CALCULATION));
-        valueText.disableProperty().bind(valueSourceChoiceBox.valueProperty().isNotEqualTo(ParameterValueSource.MANUAL));
+        valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
         unitChoiceBox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
         isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
         valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty().not());
@@ -166,6 +168,12 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         parameterBean.bindBidirectional("overrideValue", valueOverrideText.textProperty());
         parameterBean.bindBidirectional("isExported", isExportedCheckbox.selectedProperty());
         parameterBean.bindBidirectional("description", descriptionText.textProperty());
+        isReferenceValueOverriddenCheckbox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                parameterBean.unBindBidirectional("overrideValue", valueOverrideText.textProperty());
+                parameterBean.bindBidirectional("overrideValue", valueOverrideText.textProperty());
+            }
+        });
     }
 
     public Project getProject() {
@@ -191,6 +199,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private void updateView(ParameterModel parameterModel) {
         ParameterModel localParameterModel = Utils.copyBean(parameterModel, new ParameterModel());
         parameterBean.setBean(localParameterModel);
+        valueReference = localParameterModel.getValueReference();
+        exportReference = localParameterModel.getExportReference();
         valueLinkParameter = localParameterModel.getValueLink();
         calculation = localParameterModel.getCalculation();
         natureChoiceBox.valueProperty().setValue(localParameterModel.getNature());
@@ -199,54 +209,35 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueReferenceText.setText(localParameterModel.getValueReference() != null ? localParameterModel.getValueReference().toString() : "");
         parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : "");
         calculationText.setText(calculation != null ? calculation.asText() : "");
-        exportReferenceText.setText(localParameterModel.getExportReference() != null ? localParameterModel.getExportReference().toString() : "");
+        exportReferenceText.setText(exportReference != null ? exportReference.toString() : "");
     }
 
     public void chooseSource(ActionEvent actionEvent) {
         ParameterModel parameterModel = getParameterModel();
-        ExternalModelReference oldValueReference = parameterModel.getValueReference();
-
-        ExternalModelReference valueReference = parameterModel.getValueReference();
         List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
         Dialog<ExternalModelReference> dialog = new ReferenceSelector(valueReference, externalModels);
         Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
         if (referenceOptional.isPresent()) {
             ExternalModelReference newValueReference = referenceOptional.get();
-            parameterModel.setValueReference(newValueReference); // TODO: remove premature model change
+            valueReference = newValueReference;
             valueReferenceText.setText(newValueReference.toString());
-            if (!newValueReference.equals(oldValueReference)) {
-                logger.debug("update parameter value from model");
-                try {
-                    ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
-                        @Override
-                        public void accept(ParameterUpdate parameterUpdate) {
-                            parameterBean.unBindBidirectional("value", valueText.textProperty());
-                            parameterBean.bindBidirectional("value", valueText.textProperty());
-                            // TODO: update parameter table
-                        }
-                    });
-                } catch (ExternalModelException e) {
-                    Window window = propertyPane.getScene().getWindow();
-                    UserNotifications.showNotification(window, "Error", "Unable to update value from given target.");
-                }
-            }
+            //valueText.setText("?");
         } else {
-            valueReferenceText.setText(null);
+            valueReferenceText.setText(valueReference != null ? valueReference.toString() : null);
         }
     }
 
     public void chooseTarget(ActionEvent actionEvent) {
         ParameterModel parameterModel = getParameterModel();
-        ExternalModelReference valueReference = parameterModel.getValueReference();
         List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
-        Dialog<ExternalModelReference> dialog = new ReferenceSelector(valueReference, externalModels);
+        Dialog<ExternalModelReference> dialog = new ReferenceSelector(exportReference, externalModels);
         Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
         if (referenceOptional.isPresent()) {
-            ExternalModelReference exportReference = referenceOptional.get();
-            parameterModel.setExportReference(exportReference); // TODO: remove premature model change
-            exportReferenceText.setText(exportReference.toString());
+            ExternalModelReference newExportReference = referenceOptional.get();
+            exportReference = newExportReference;
+            exportReferenceText.setText(newExportReference.toString());
         } else {
-            exportReferenceText.setText(null);
+            exportReferenceText.setText(exportReference != null ? exportReference.toString() : null);
         }
     }
 
@@ -272,11 +263,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             valueText.setText(String.valueOf(valueLinkParameter.getValue()));
             unitChoiceBox.setValue(valueLinkParameter.getUnit());
         } else {
-            if (valueLinkParameter != null) {
-                parameterLinkText.setText(valueLinkParameter.getNodePath());
-            } else {
-                parameterLinkText.setText(null);
-            }
+            parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : null);
         }
     }
 
@@ -326,7 +313,26 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             parameterModel.setValueSource(valueSourceChoiceBox.getValue());
             parameterModel.setUnit(unitChoiceBox.getValue());
 
-            if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
+            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+                ExternalModelReference oldValueReference = parameterModel.getValueReference();
+                if (oldValueReference != null && !oldValueReference.equals(valueReference)) {
+                    parameterModel.setValueReference(valueReference);
+                    logger.debug("update parameter value from model");
+                    try {
+                        ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
+                            @Override
+                            public void accept(ParameterUpdate parameterUpdate) {
+                                parameterBean.unBindBidirectional("value", valueText.textProperty());
+                                parameterBean.bindBidirectional("value", valueText.textProperty());
+                                // TODO: update parameter table
+                            }
+                        });
+                    } catch (ExternalModelException e) {
+                        Window window = propertyPane.getScene().getWindow();
+                        UserNotifications.showNotification(window, "Error", "Unable to update value from given target.");
+                    }
+                }
+            } else {
                 parameterModel.setValueReference(null);
             }
             if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
@@ -355,7 +361,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             } else {
                 parameterModel.setCalculation(null);
             }
-            if (!parameterModel.getIsExported()) {
+            if (parameterModel.getIsExported()) {
+                parameterModel.setExportReference(exportReference);
+            } else {
                 parameterModel.setExportReference(null);
             }
             if (parameterModel.getValueSource() == ParameterValueSource.MANUAL) {
@@ -371,6 +379,18 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 logger.error("error copying parameter model", e);
             }
+
+            // UPDATE EXTERNAL MODEL
+            if (parameterModel.getIsExported()) {
+                if (exportReference != null && exportReference.getExternalModel() != null) {
+                    ExternalModel externalModel = exportReference.getExternalModel();
+                    ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
+                    ExternalModelFileWatcher externalModelFileWatcher = project.getExternalModelFileWatcher();
+                    ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler, externalModelFileWatcher);
+                }
+            }
+
+            // UPDATE LINKING PARAMETERS
             ProjectContext.getInstance().getProject().getParameterLinkRegistry().updateSinks(originalParameterModel);
 
             project.markStudyModified();
