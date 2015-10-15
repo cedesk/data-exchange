@@ -6,13 +6,18 @@ import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.controller.MainController;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.structure.view.ChangeLocation;
+import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.view.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
@@ -24,10 +29,7 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Observer;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -489,6 +491,25 @@ public class Project {
 
     public ParameterLinkRegistry getParameterLinkRegistry() {
         return parameterLinkRegistry;
+    }
+
+    public boolean checkRepositoryForChanges() {
+        if (getRepositoryStudy() != null) {
+            try {
+                loadRepositoryStudy();
+                SystemModel localSystemModel = getStudy().getSystemModel();
+                SystemModel remoteSystemModel = getRepositoryStudy().getSystemModel();
+                List<ModelDifference> modelDifferences =
+                        ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
+                long remoteDifferenceCounts = modelDifferences.stream()
+                        .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2).count();
+                return remoteDifferenceCounts > 0;
+            } catch (Exception e) {
+                StatusLogger.getInstance().log("Error checking repository for changes");
+                logger.error(e);
+            }
+        }
+        return false;
     }
 
     private class AccessChecker implements Predicate<ModelNode> {

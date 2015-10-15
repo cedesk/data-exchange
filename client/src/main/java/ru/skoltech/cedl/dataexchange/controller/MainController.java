@@ -32,10 +32,7 @@ import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.structure.view.ChangeLocation;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
-import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.view.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
@@ -151,7 +148,7 @@ public class MainController implements Initializable {
 
     public void saveProject(ActionEvent actionEvent) {
         try {
-            boolean hasRemoteChanges = checkRepositoryForChanges();
+            boolean hasRemoteChanges = project.checkRepositoryForChanges();
             if (hasRemoteChanges) {
                 Dialogues.showWarning("Repository has changes", "Please review differences and then retry!");
                 return;
@@ -168,26 +165,6 @@ public class MainController implements Initializable {
             StatusLogger.getInstance().log("Saving study failed!", true);
             logger.error(e);
         }
-    }
-
-    // TODO: move to project!
-    private boolean checkRepositoryForChanges() {
-        if (project.getRepositoryStudy() != null) {
-            try {
-                project.loadRepositoryStudy();
-                SystemModel localSystemModel = project.getStudy().getSystemModel();
-                SystemModel remoteSystemModel = project.getRepositoryStudy().getSystemModel();
-                List<ModelDifference> modelDifferences =
-                        ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
-                long remoteDifferenceCounts = modelDifferences.stream()
-                        .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2).count();
-                return remoteDifferenceCounts > 0;
-            } catch (Exception e) {
-                StatusLogger.getInstance().log("Error checking repository for changes");
-                logger.error(e);
-            }
-        }
-        return false;
     }
 
     @Override
