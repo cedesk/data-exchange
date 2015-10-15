@@ -194,6 +194,7 @@ public class ModelEditingController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
+        parameterEditor.setProject(project);
 
         project.addExternalModelChangeObserver(new Observer() {
             @Override
@@ -505,7 +506,6 @@ public class ModelEditingController implements Initializable {
                 boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
                 logger.debug("selected parameter: " + newValue.getNodePath() + ", editable: " + editable);
 
-                parameterEditor.setProject(project);
                 parameterEditor.setParameterModel(newValue);
                 parameterEditor.setVisible(editable); // TODO: allow viewing
             } else {

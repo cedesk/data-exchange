@@ -182,9 +182,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
-        List<Unit> units = project.getUnitManagement().getUnits();
-        units.sort((o1, o2) -> o1.asText().compareTo(o2.asText()));
-        unitChoiceBox.setItems(FXCollections.observableArrayList(units));
+        if (unitChoiceBox.getItems().size() == 0) { // first time only, units are not tied to a study
+            List<Unit> units = project.getUnitManagement().getUnits();
+            units.sort((o1, o2) -> o1.asText().compareTo(o2.asText()));
+            unitChoiceBox.setItems(FXCollections.observableArrayList(units));
+        }
     }
 
     public ParameterModel getParameterModel() {
