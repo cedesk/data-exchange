@@ -59,6 +59,7 @@ public class DiffController implements Initializable {
     public void setSystemModels(SystemModel local, SystemModel remote) {
         this.localSystemModel = local;
         this.remoteSystemModel = remote;
+        ProjectContext.getInstance().getProject().updateExternalModelsInStudy();
         List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
         modelDifferences.clear();
         modelDifferences.addAll(modelDiffs);
@@ -74,7 +75,8 @@ public class DiffController implements Initializable {
         } else if (modelDifference instanceof NodeDifference) {
             logger.debug("accepting differences on " + modelDifference.getNodeName());
             NodeDifference nodeDifference = (NodeDifference) modelDifference;
-            // TODO: MERGE
+            nodeDifference.mergeDifference(); // may fail, inform user about cause
+            return true;
         }
         return false;
     }

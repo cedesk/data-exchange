@@ -85,10 +85,12 @@ public class ModelDifferencesFactory {
             } else if (e1 == null && e2 != null) {
                 // TODO: distinguish between local remove and remote add
                 extModelDifferences.add(NodeDifference.createRemoveExternalModel(e2.getParent(), e2.getName(), ChangeLocation.ARG1));
-            } else if (!Arrays.equals(e1.getAttachment(), e2.getAttachment())) {
-                boolean e2newer = e2.getLastModification() > e1.getLastModification();
-                ChangeLocation changeLocation = e2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
-                extModelDifferences.add(NodeDifference.createExternaModelModified(e1.getParent(), e1.getName(), changeLocation));
+            } else {
+                if (!Arrays.equals(e1.getAttachment(), e2.getAttachment())) {
+                    boolean e2newer = e2.getLastModification() > e1.getLastModification();
+                    ChangeLocation changeLocation = e2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
+                    extModelDifferences.add(NodeDifference.createExternalModelModified(e1.getParent(), e2.getParent(), e1.getName(), changeLocation));
+                }
             }
         }
         return extModelDifferences;
