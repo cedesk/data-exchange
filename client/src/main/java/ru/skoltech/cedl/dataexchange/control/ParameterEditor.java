@@ -317,7 +317,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
                 ExternalModelReference oldValueReference = parameterModel.getValueReference();
-                if (oldValueReference != null && !oldValueReference.equals(valueReference)) {
+                if (oldValueReference == null || !oldValueReference.equals(valueReference)) {
                     parameterModel.setValueReference(valueReference);
                     logger.debug("update parameter value from model");
                     try {
