@@ -45,14 +45,14 @@ public class ExternalModelFileHandler {
         return externalModel;
     }
 
-    public static ExternalModel updateFromFile(ExternalModel externalModel) throws IOException {
+    public static ExternalModel readAttachmentFromFile(ExternalModel externalModel) throws IOException {
         File file = getFilePathInCache(externalModel);
         Path path = Paths.get(file.getAbsolutePath());
         externalModel.setAttachment(Files.readAllBytes(path));
         return externalModel;
     }
 
-    public static ExternalModel updateFromFile(ExternalModel externalModel, File file) throws IOException {
+    public static ExternalModel readAttachmentFromFile(ExternalModel externalModel, File file) throws IOException {
         Path path = Paths.get(file.getAbsolutePath());
         externalModel.setAttachment(Files.readAllBytes(path));
         return externalModel;
@@ -173,6 +173,23 @@ public class ExternalModelFileHandler {
             case CACHED_CONFLICTING_CHANGES:
                 logger.warn("using cached file: " + file.getAbsolutePath() + ", file has conflicting changes!");
                 break;
+        }
+        return file;
+    }
+
+    public File forceCacheUpdate(ExternalModel externalModel) throws IOException {
+        Objects.requireNonNull(externalModel);
+        File file = getFilePathInCache(externalModel);
+        StorageUtils.makeDirectory(file.getParentFile());
+        ExternalModelCacheState state = getCacheState(externalModel);
+        switch (state) {
+            case CACHED_MODIFIED_AFTER_CHECKOUT: // overwrite
+            case CACHED_CONFLICTING_CHANGES:
+                logger.warn("overwriting cached file: " + file.getAbsolutePath());
+                toFile(externalModel, file.getParentFile());
+                updateCheckoutTimestamp(externalModel);
+                break;
+            default:
         }
         return file;
     }

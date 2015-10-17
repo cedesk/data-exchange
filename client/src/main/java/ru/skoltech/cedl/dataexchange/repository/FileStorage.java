@@ -89,7 +89,7 @@ public class FileStorage {
                 File nodeDir = new File(inputFolder, nodePath);
                 File file = new File(nodeDir, externalModel.getName());
                 if (file.exists()) {
-                    ExternalModelFileHandler.updateFromFile(externalModel, file);
+                    ExternalModelFileHandler.readAttachmentFromFile(externalModel, file);
                 } else {
                     logger.error("external model file not found!");
                 }
