@@ -68,10 +68,7 @@ public class ExternalModelReference {
         if (o == null || getClass() != o.getClass()) return false;
 
         ExternalModelReference that = (ExternalModelReference) o;
-
-        if (externalModel != null ? !externalModel.equals(that.externalModel) : that.externalModel != null)
-            return false;
-        return !(target != null ? !target.equals(that.target) : that.target != null);
+        return toString().equals(that.toString());
     }
 
     @Override
