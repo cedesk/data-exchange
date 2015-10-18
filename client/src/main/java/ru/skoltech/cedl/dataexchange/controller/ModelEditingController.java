@@ -175,7 +175,12 @@ public class ModelEditingController implements Initializable {
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
         parameterEditor.setVisible(false);
-        parameterEditor.setUpdateListener(new ParameterUpdateListener());
+        parameterEditor.setEditListener(new Consumer<ParameterModel>() {
+            @Override
+            public void accept(ParameterModel parameterModel) {
+                lightTableRefresh();
+            }
+        });
     }
 
     private ContextMenu makeStructureTreeContextMenu() {

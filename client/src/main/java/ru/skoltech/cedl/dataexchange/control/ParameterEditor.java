@@ -112,7 +112,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private Calculation calculation;
 
-    private ModelEditingController.ParameterUpdateListener updateListener;
+    private Consumer<ParameterModel> editListener;
 
     public ParameterEditor() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("parameter_editor.fxml"));
@@ -401,10 +401,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             ProjectContext.getInstance().getProject().getParameterLinkRegistry().updateSinks(originalParameterModel);
 
             project.markStudyModified();
+            editListener.accept(parameterModel);
         }
     }
 
-    public void setUpdateListener(ModelEditingController.ParameterUpdateListener updateListener) {
-        this.updateListener = updateListener;
+    public void setEditListener(Consumer<ParameterModel> updateListener) {
+        this.editListener = updateListener;
     }
 }
