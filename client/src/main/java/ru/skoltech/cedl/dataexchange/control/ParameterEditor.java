@@ -316,8 +316,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             parameterModel.setUnit(unitChoiceBox.getValue());
 
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                ExternalModelReference oldValueReference = parameterModel.getValueReference();
-                if (oldValueReference == null || !oldValueReference.equals(valueReference)) {
+                if (valueReference != null) {
                     parameterModel.setValueReference(valueReference);
                     logger.debug("update parameter value from model");
                     try {
@@ -333,6 +332,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                         Window window = propertyPane.getScene().getWindow();
                         UserNotifications.showNotification(window, "Error", "Unable to update value from given target.");
                     }
+                } else {
+                    Dialogues.showWarning("Empty reference", "No reference has been specified!");
                 }
             } else {
                 parameterModel.setValueReference(null);
