@@ -170,8 +170,8 @@
                                 <tstamp>
                                     <format property="build_timestamp" pattern="yyyy-MM-dd_HH-mm"/>
                                 </tstamp>
-                                <copy file="${project.build.directory}/jfx/native/CEDESK-${project.version}.exe"
-                                      tofile="${package.output.dir}/CEDESK-${project.version}_${build_timestamp}.exe"/>
+                                <copy file="${project.build.directory}/jfx/native/cedesk-${project.version}.${package.output.extension}"
+                                      tofile="${package.output.dir}/cedesk-${project.version}_${build_timestamp}.${package.output.extension}"/>
                             </target>
                         </configuration>
                     </execution>
@@ -187,6 +187,28 @@
             </activation>
             <properties>
                 <package.output.dir>${user.home}/development/cedesk-builds</package.output.dir>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux-os</id>
+            <activation>
+                <os>
+                    <family>Linux</family>
+                </os>
+            </activation>
+            <properties>
+                <package.output.extension>deb</package.output.extension>
+            </properties>
+        </profile>
+        <profile>
+            <id>windows-os</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <package.output.extension>exe</package.output.extension>
             </properties>
         </profile>
         <profile>
