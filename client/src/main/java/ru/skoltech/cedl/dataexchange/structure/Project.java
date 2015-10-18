@@ -275,6 +275,7 @@ public class Project {
         setStudy(study);
         setRepositoryStudy(study);
         initializeStateOfExternalModels();
+        registerParameterLinks();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
         ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
     }
