@@ -217,7 +217,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
         while (isRunning.get()) {
             WatchKey key;
             try {
-                key = watchService.poll(100, TimeUnit.MICROSECONDS);
+                key = watchService.poll(10, TimeUnit.MILLISECONDS);
                 if (key == null && isRunning.get()) {
                     continue;
                 } else if (!isRunning.get()) {
@@ -239,9 +239,6 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
             boolean valid = key.reset();
             if (!valid) {
                 watchKeyToDirPathMap.remove(key);
-//                if (watchKeyToDirPathMap.isEmpty()) {
-//                    break;
-//                }
             }
         }
         try {
