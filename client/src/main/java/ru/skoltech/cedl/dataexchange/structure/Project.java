@@ -274,6 +274,7 @@ public class Project {
         updateExternalModelStateInCache();
         setStudy(study);
         setRepositoryStudy(study);
+        initializeStateOfExternalModels();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
         ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
     }
@@ -300,14 +301,14 @@ public class Project {
         }
     }
 
-    private void updateExternalModelsInStudy() {
+    public void updateExternalModelsInStudy() {
         for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
             ModelNode modelNode = externalModel.getParent();
             ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
             if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
                 logger.debug("storing " + externalModel.getNodePath());
                 try {
-                    ExternalModelFileHandler.updateFromFile(externalModel);
+                    ExternalModelFileHandler.readAttachmentFromFile(externalModel);
                 } catch (IOException e) {
                     logger.error("error updating external model from file!", e);
                 }
@@ -507,6 +508,7 @@ public class Project {
         if (getRepositoryStudy() != null) {
             try {
                 loadRepositoryStudy();
+                updateExternalModelsInStudy();
                 SystemModel localSystemModel = getStudy().getSystemModel();
                 SystemModel remoteSystemModel = getRepositoryStudy().getSystemModel();
                 List<ModelDifference> modelDifferences =
