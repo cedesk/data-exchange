@@ -33,11 +33,13 @@ public class ModelUpdateUtil {
                 if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
                     ExternalModelReference valueReference = parameterModel.getValueReference();
                     if (valueReference != null && valueReference.getExternalModel() != null) {
-                        if (externalModel.equals(valueReference.getExternalModel())) {
+                        if (externalModel.getName().equals(valueReference.getExternalModel().getName())) {
                             ParameterUpdate parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
                             if (parameterUpdate != null) {
                                 updates.add(parameterUpdate);
                             }
+                        } else {
+                            logger.error("reference concerning other external model!"); // TODO: change when more models are possible
                         }
                     } else {
                         logger.warn("parameter " + parameterModel.getNodePath() + " has empty valueReference");
