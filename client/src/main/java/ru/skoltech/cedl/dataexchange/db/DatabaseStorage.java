@@ -410,6 +410,11 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
+    public String getSchema() {
+        return schema;
+    }
+
+    @Override
     public UserManagement loadUserManagement() throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         UserManagement userManagement = null;

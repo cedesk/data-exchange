@@ -24,12 +24,11 @@ public class ProjectContext {
         return INSTANCE;
     }
 
-    public String getProjectName() {
-        return project.getProjectName();
-    }
-
     public File getProjectDataDir() {
-        return StorageUtils.getDataDir(getProjectName());
+        String projectName = project.getProjectName();
+        String repositoryUrl = project.getRepository().getUrl();
+        String repositorySchema = project.getRepository().getSchema();
+        return StorageUtils.getDataDir(repositoryUrl, repositorySchema, projectName);
     }
 
     public Project getProject() {

@@ -23,6 +23,8 @@ public interface Repository extends Closeable {
 
     String getUrl();
 
+    String getSchema();
+
     List<String> listStudies() throws RepositoryException;
 
     Study loadStudy(String name) throws RepositoryException;

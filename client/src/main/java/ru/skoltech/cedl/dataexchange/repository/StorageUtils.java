@@ -37,8 +37,10 @@ public class StorageUtils {
         return appHome;
     }
 
-    public static File getDataDir(String projectName) {
-        return new File(getAppDir(), projectName);
+    public static File getDataDir(String repositoryUrl, String repositoryScheme, String projectName) {
+        File repoDir = new File(getAppDir(), repositoryUrl);
+        File schemaDir = new File(repoDir, repositoryScheme);
+        return new File(schemaDir, projectName);
     }
 
     public static void makeDirectory(File path) {
