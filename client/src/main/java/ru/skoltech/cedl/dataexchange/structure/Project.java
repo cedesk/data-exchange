@@ -136,9 +136,12 @@ public class Project {
     public void setRepositoryStudy(Study repositoryStudy) {
         this.repositoryStudy = repositoryStudy;
         if (repositoryStudy != null) {
-            logger.debug("overwriting local studySettings and userRoleManagement");
+            logger.debug("updating studySettings");
             getStudy().setStudySettings(repositoryStudy.getStudySettings());
-            getStudy().setUserRoleManagement(repositoryStudy.getUserRoleManagement());
+            if(!getUserRoleManagement().isAdmin(getUser())) {
+                logger.debug("updating userRoleManagement");
+                getStudy().setUserRoleManagement(repositoryStudy.getUserRoleManagement());
+            }
         }
         if (repositoryStudy != null && repositoryStudy.getSystemModel() != null) {
             Timestamp latestMod = repositoryStudy.getSystemModel().findLatestModification();
