@@ -135,6 +135,10 @@ public class Project {
 
     public void setRepositoryStudy(Study repositoryStudy) {
         this.repositoryStudy = repositoryStudy;
+        if (repositoryStudy != null) {
+            getStudy().setStudySettings(repositoryStudy.getStudySettings());
+            getStudy().setUserRoleManagement(repositoryStudy.getUserRoleManagement());
+        }
         if (repositoryStudy != null && repositoryStudy.getSystemModel() != null) {
             Timestamp latestMod = repositoryStudy.getSystemModel().findLatestModification();
             setLatestRepositoryModification(latestMod.getTime());
