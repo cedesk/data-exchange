@@ -33,7 +33,7 @@ public class ParameterLinkRegistry {
             Calculation calculation = sink.getCalculation();
             addLinks(calculation.getLinkedParameters(), sink);
         });
-        printDependencies(dependencyGraph);
+        //printDependencies(dependencyGraph);
     }
 
     public ParameterTreeIterator getLinkedParameters(SystemModel systemModel) {
@@ -52,7 +52,7 @@ public class ParameterLinkRegistry {
     }
 
     public void addLink(ParameterModel source, ParameterModel sink) {
-        System.out.println("sink '" + sink.getNodePath() + "' is linking to source '" + source.getNodePath() + "'");
+        logger.debug("sink '" + sink.getNodePath() + "' is linking to source '" + source.getNodePath() + "'");
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
             valueLinks.get(sourceId).add(sink.getUuid());
@@ -99,7 +99,7 @@ public class ParameterLinkRegistry {
             Set<String> sinkIds = valueLinks.get(sourceId);
             for (String sinkId : sinkIds) {
                 ParameterModel sink = parameterDictionary.get(sinkId);
-                if(sink.getValueSource() == ParameterValueSource.LINK) {
+                if (sink.getValueSource() == ParameterValueSource.LINK) {
                     if (sink.getValueLink() == source) {
                         logger.info("updating sink '" + sink.getNodePath() + "' from source '" + source.getNodePath() + "'");
                         sink.setValue(source.getEffectiveValue());
@@ -108,7 +108,7 @@ public class ParameterLinkRegistry {
                     } else {
                         logger.error("model changed, sink '" + sink.getNodePath() + "' no longer referencing '" + source.getNodePath() + "'");
                     }
-                } else if(sink.getValueSource() == ParameterValueSource.CALCULATION) {
+                } else if (sink.getValueSource() == ParameterValueSource.CALCULATION) {
                     recalculate(sink);
                 }
             }
@@ -165,7 +165,6 @@ public class ParameterLinkRegistry {
         }
         return "";
     }
-
 
     private SystemModel getSystem(ModelNode parent) {
         SystemModel result = null;
