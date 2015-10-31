@@ -136,6 +136,7 @@ public class Project {
     public void setRepositoryStudy(Study repositoryStudy) {
         this.repositoryStudy = repositoryStudy;
         if (repositoryStudy != null) {
+            logger.debug("overwriting local studySettings and userRoleManagement");
             getStudy().setStudySettings(repositoryStudy.getStudySettings());
             getStudy().setUserRoleManagement(repositoryStudy.getUserRoleManagement());
         }
