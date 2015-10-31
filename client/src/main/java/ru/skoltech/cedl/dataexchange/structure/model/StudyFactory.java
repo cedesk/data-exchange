@@ -16,6 +16,7 @@ public class StudyFactory {
 
     public static Study makeStudy(String projectName, int modelDepth, UserManagement userManagement) {
         Study study = new Study();
+        study.setStudySettings(new StudySettings());
         study.setSystemModel(DummySystemBuilder.getSystemModel(modelDepth));
         study.setName(projectName);
         addUserRoleManagement(study, userManagement);

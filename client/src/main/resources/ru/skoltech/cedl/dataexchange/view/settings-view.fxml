@@ -4,11 +4,29 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<AnchorPane xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css"
+<AnchorPane stylesheets="@styling.css" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.SettingsController">
     <children>
         <VBox>
             <children>
+                <TitledPane fx:id="studySettingsPane" animated="false" text="Study">
+                    <content>
+                        <GridPane hgap="8.0" vgap="2.0">
+                            <columnConstraints>
+                                <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0"/>
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                            </rowConstraints>
+                            <children>
+                                <CheckBox fx:id="enableSyncCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                                          GridPane.columnIndex="1"/>
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Enable Team to save"/>
+                            </children>
+                        </GridPane>
+                    </content>
+                </TitledPane>
                 <TitledPane animated="false" text="Project">
                     <content>
                         <GridPane hgap="8.0" vgap="2.0">
@@ -95,16 +113,15 @@
                                         <Insets right="8.0"/>
                                     </GridPane.margin>
                                 </Text>
-                                <TextField fx:id="appDirText" editable="false"
-                                           GridPane.columnIndex="1"/>
+                                <TextField fx:id="appDirText" editable="false" GridPane.columnIndex="1"/>
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Repository Schema"
                                       GridPane.rowIndex="1">
                                     <GridPane.margin>
                                         <Insets right="8.0"/>
                                     </GridPane.margin>
                                 </Text>
-                                <TextField fx:id="repoSchemaText" editable="false" GridPane.rowIndex="1"
-                                           GridPane.columnIndex="1"/>
+                                <TextField fx:id="repoSchemaText" editable="false" GridPane.columnIndex="1"
+                                           GridPane.rowIndex="1"/>
                             </children>
                         </GridPane>
                     </content>

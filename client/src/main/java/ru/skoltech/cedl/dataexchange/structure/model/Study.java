@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import javax.persistence.*;
@@ -20,6 +22,9 @@ public class Study {
     private SystemModel systemModel;
 
     private UserRoleManagement userRoleManagement;
+
+    @XmlTransient
+    private StudySettings studySettings;
 
     @XmlTransient
     private long version;
@@ -65,6 +70,19 @@ public class Study {
 
     public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
         this.userRoleManagement = userRoleManagement;
+    }
+
+    @NotFound(action = NotFoundAction.IGNORE)
+    @OneToOne(targetEntity = StudySettings.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    public StudySettings getStudySettings() {
+        if (studySettings == null) {
+            studySettings = new StudySettings();
+        }
+        return studySettings;
+    }
+
+    public void setStudySettings(StudySettings studySettings) {
+        this.studySettings = studySettings;
     }
 
     @Version
