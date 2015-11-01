@@ -131,16 +131,6 @@ public class UserRoleManagement {
         return found;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("UserRoleManagement{");
-        sb.append("disciplines=").append(disciplines);
-        sb.append("disciplineSubSystems").append(disciplineSubSystems);
-        sb.append("userDisciplines").append(userDisciplines);
-        sb.append('}');
-        return sb.toString();
-    }
-
     @Transient
     public long getSubSystemsOfDiscipline(Discipline discipline) {
         long count = disciplineSubSystems.stream()
@@ -202,6 +192,12 @@ public class UserRoleManagement {
         }
     }
 
+    public void removeDiscipline(Discipline discipline) {
+        getUserDisciplines().removeIf(userDiscipline -> userDiscipline.getDiscipline().equals(discipline));
+        getDisciplineSubSystems().removeIf(disciplineSubSystem -> disciplineSubSystem.getDiscipline().equals(discipline));
+        getDisciplines().remove(discipline);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -220,5 +216,15 @@ public class UserRoleManagement {
         result = 31 * result + userDisciplines.hashCode();
         result = 31 * result + disciplineSubSystems.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("UserRoleManagement{");
+        sb.append("disciplines=").append(disciplines);
+        sb.append("disciplineSubSystems").append(disciplineSubSystems);
+        sb.append("userDisciplines").append(userDisciplines);
+        sb.append('}');
+        return sb.toString();
     }
 }

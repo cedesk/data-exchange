@@ -261,7 +261,7 @@ public class UserRoleManagementController implements Initializable {
     public void deleteDiscipline(ActionEvent actionEvent) {
         Discipline selectedDiscipline = getSelectedDiscipline();
         Objects.requireNonNull(selectedDiscipline, "no discipline in table view");
-        project.getUserRoleManagement().getDisciplines().remove(selectedDiscipline);
+        project.getUserRoleManagement().removeDiscipline(selectedDiscipline);
         project.markStudyModified();
         StatusLogger.getInstance().log("removed discipline: " + selectedDiscipline.getName());
         updateDisciplineTable();
