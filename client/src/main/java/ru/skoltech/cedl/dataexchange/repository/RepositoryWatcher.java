@@ -2,6 +2,10 @@ package ru.skoltech.cedl.dataexchange.repository;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.Study;
+import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
+import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,7 +40,7 @@ public class RepositoryWatcher extends Thread {
                         project.getStudy() != null &&
                         project.isStudyInRepository()) {
                     logger.info("load repository study");
-                    project.loadRepositoryStudy();
+                    loadRepositoryStudy();
                 }
                 sleep(SECONDS_OF_CHECK_PERIODICITY * 1000);
                 //} catch (RepositoryException ignore1) {
@@ -46,6 +50,27 @@ public class RepositoryWatcher extends Thread {
             }
         }
         logger.info("RepositoryWatcher finished.");
+    }
+
+    public void loadRepositoryStudy() {
+        project.loadRepositoryStudy();
+        Study localStudy = project.getStudy();
+        Study repositoryStudy = project.getRepositoryStudy();
+        User user = project.getUser();
+        if (repositoryStudy != null) {
+            StudySettings localSettings = localStudy.getStudySettings();
+            StudySettings remoteSettings = repositoryStudy.getStudySettings();
+            if(!localSettings.equals(remoteSettings)) {
+                logger.debug("updating studySettings");
+                localStudy.setStudySettings(remoteSettings);
+            }
+            UserRoleManagement localURM = localStudy.getUserRoleManagement();
+            UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
+            if(!localURM.isAdmin(user) && !localURM.equals(remoteURM)) {
+                logger.debug("updating userRoleManagement");
+                localStudy.setUserRoleManagement(remoteURM);
+            }
+        }
     }
 
     public void pause() {

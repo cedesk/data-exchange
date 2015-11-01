@@ -407,20 +407,6 @@ public class Project {
             logger.error("Error loading repositoryStudy!", e);
         }
         setRepositoryStudy(repositoryStudy);
-        if (repositoryStudy != null) {
-            StudySettings localSettings = getStudy().getStudySettings();
-            StudySettings remoteSettings = repositoryStudy.getStudySettings();
-            if(!localSettings.equals(remoteSettings)) {
-                logger.debug("updating studySettings");
-                getStudy().setStudySettings(remoteSettings);
-            }
-            UserRoleManagement localURM = getUserRoleManagement();
-            UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
-            if(!localURM.isAdmin(getUser()) && !localURM.equals(remoteURM)) {
-                logger.debug("updating userRoleManagement");
-                getStudy().setUserRoleManagement(remoteURM);
-            }
-        }
         return repositoryStudy != null;
     }
 
