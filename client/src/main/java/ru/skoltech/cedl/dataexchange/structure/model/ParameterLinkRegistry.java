@@ -21,6 +21,10 @@ public class ParameterLinkRegistry {
     public ParameterLinkRegistry() {
     }
 
+    public DirectedGraph<ModelNode, ModelDependency> getDependencyGraph() {
+        return dependencyGraph;
+    }
+
     public void registerAllParameters(SystemModel systemModel) {
         clear();
         ParameterTreeIterator pmi = getLinkedParameters(systemModel);

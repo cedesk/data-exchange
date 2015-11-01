@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.DialogPane?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
+<DialogPane xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.DependencyController"
+            stylesheets="@styling.css">
+    <content>
+        <AnchorPane prefHeight="480.0" prefWidth="800.0">
+            <children>
+                <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                            AnchorPane.topAnchor="0.0">
+                    <center>
+                        <SpreadsheetView fx:id="spreadsheetView" editable="false" prefWidth="500.0" prefHeight="400"
+                                         BorderPane.alignment="CENTER"/>
+                    </center>
+                </BorderPane>
+            </children>
+        </AnchorPane>
+    </content>
+</DialogPane>

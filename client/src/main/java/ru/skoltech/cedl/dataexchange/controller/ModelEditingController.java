@@ -503,6 +503,27 @@ public class ModelEditingController implements Initializable {
         });
     }
 
+    public void openDependencyView(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.DEPENDENCY_VIEW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Dependency View");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(getAppWindow());
+            DependencyController controller = loader.getController();
+            controller.refreshTable(null);
+
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {

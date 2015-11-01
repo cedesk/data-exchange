@@ -13,6 +13,8 @@ public class Views {
 
     public static final URL MODEL_DIFF_VIEW = Views.class.getResource("model-diff.fxml");
 
+    public static final URL DEPENDENCY_VIEW = Views.class.getResource("dependency-view.fxml");
+
     public static final URL USER_ROLES_EDITING_PANE = Views.class.getResource("user-role-editing.fxml");
 
     public static final URL USER_EDITING_PANE = Views.class.getResource("user-editing.fxml");
@@ -24,5 +26,4 @@ public class Views {
     public static final URL SETTINGS_VIEW = Views.class.getResource("settings-view.fxml");
 
     public static final URL ABOUT = Views.class.getResource("about.fxml");
-
 }
