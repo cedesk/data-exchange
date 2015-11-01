@@ -101,12 +101,6 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
         });
 
         spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        spreadsheetView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                System.out.println(event.getTarget());
-            }
-        });
 
         if (reference != null && reference.getExternalModel() != null) {
             externalModel = reference.getExternalModel();
@@ -139,7 +133,6 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
                 String fileName = externalModel.getName();
                 Grid grid = SpreadsheetFactory.getGrid(inputStream, fileName, 0);
                 spreadsheetView.setGrid(grid);
-                // TODO: select current coordinates
                 if (reference.getTarget() != null) {
                     SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(reference.getTarget());
                     int rowNumber = coordinates.getRowNumber() - 1;
@@ -161,9 +154,4 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
         }
     }
 
-    public void openSpreadsheet(ActionEvent actionEvent) {
-        Objects.requireNonNull(externalModel);
-        ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
-        externalModelFileHandler.openOnDesktop(externalModel);
-    }
 }
