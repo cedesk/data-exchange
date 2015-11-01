@@ -6,7 +6,8 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.*?>
 <?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
-<SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="700.0" prefWidth="900.0"
+<SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="700.0"
+           prefWidth="900.0"
            stylesheets="@styling.css" xmlns="http://javafx.com/javafx/null"
            fx:controller="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
     <items>
@@ -18,21 +19,7 @@
                         <TreeView fx:id="structureTree"/>
                     </content>
                 </TitledPane>
-                <TitledPane fx:id="dependencyPane" collapsible="false" expanded="true" prefHeight="140.0"
-                            text="Dependencies" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
-                            AnchorPane.rightAnchor="0.0">
-                    <content>
-                        <VBox>
-                            <children>
-                                <Label text="upstream"/>
-                                <TextField fx:id="upstreamDependenciesText" editable="false"/>
-                                <Label text="downstream"/>
-                                <TextField fx:id="downstreamDependenciesText" editable="false"/>
-                            </children>
-                        </VBox>
-                    </content>
-                </TitledPane>
-                <ToolBar layoutY="534.0" prefHeight="40.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                <ToolBar layoutY="500.0" prefHeight="40.0" AnchorPane.bottomAnchor="140.0" AnchorPane.leftAnchor="0.0"
                          AnchorPane.rightAnchor="0.0">
                     <items>
                         <Button fx:id="addNodeButton" minWidth="28" mnemonicParsing="false" onAction="#addNode" text="">
@@ -54,6 +41,20 @@
                         </Button>
                     </items>
                 </ToolBar>
+                <TitledPane fx:id="dependencyPane" collapsible="false" expanded="true" prefHeight="140.0"
+                            text="Dependencies" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                            AnchorPane.rightAnchor="0.0">
+                    <content>
+                        <VBox>
+                            <children>
+                                <Label text="upstream"/>
+                                <TextField fx:id="upstreamDependenciesText" editable="false"/>
+                                <Label text="downstream"/>
+                                <TextField fx:id="downstreamDependenciesText" editable="false"/>
+                            </children>
+                        </VBox>
+                    </content>
+                </TitledPane>
             </children>
         </AnchorPane>
         <AnchorPane>
