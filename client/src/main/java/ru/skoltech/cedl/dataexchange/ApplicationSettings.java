@@ -57,12 +57,8 @@ public class ApplicationSettings {
         }
     }
 
-    public static String getLastUsedProject(String defaultValue) {
+    public static String getLastUsedProject() {
         String projName = properties.getProperty(PROJECT_LAST_NAME);
-        if (projName == null) {
-            logger.warn("Empty last project. Using default: " + defaultValue);
-            return defaultValue;
-        }
         return projName;
     }
 

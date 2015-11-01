@@ -108,7 +108,7 @@ public class MainController implements Initializable {
                 logger.error("error retrieving list of available studies");
                 return;
             }
-            if(studyNames != null && studyNames.contains(projectName)) {
+            if (studyNames != null && studyNames.contains(projectName)) {
                 Dialogues.showError("Invalid name", "A study with this name already exists in the repository!");
                 return;
             }
@@ -250,10 +250,13 @@ public class MainController implements Initializable {
                     openSettingsDialog(null);
                     validRepository = checkRepository();
                 }
-                if (validRepository && ApplicationSettings.getProjectToImport() != null) {
+                if (!validRepository) return;
+                validateUser();
+
+                if (ApplicationSettings.getProjectToImport() != null) {
                     importProject(null);
-                } else if (validRepository && ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
-                    String projectName = ApplicationSettings.getLastUsedProject(null);
+                } else if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
+                    String projectName = ApplicationSettings.getLastUsedProject();
                     if (projectName != null) {
                         project.setProjectName(projectName);
                         reloadProject(null);
