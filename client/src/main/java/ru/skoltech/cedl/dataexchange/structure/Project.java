@@ -135,14 +135,6 @@ public class Project {
 
     public void setRepositoryStudy(Study repositoryStudy) {
         this.repositoryStudy = repositoryStudy;
-        if (repositoryStudy != null) {
-            logger.debug("updating studySettings");
-            getStudy().setStudySettings(repositoryStudy.getStudySettings());
-            if(!getUserRoleManagement().isAdmin(getUser())) {
-                logger.debug("updating userRoleManagement");
-                getStudy().setUserRoleManagement(repositoryStudy.getUserRoleManagement());
-            }
-        }
         if (repositoryStudy != null && repositoryStudy.getSystemModel() != null) {
             Timestamp latestMod = repositoryStudy.getSystemModel().findLatestModification();
             setLatestRepositoryModification(latestMod.getTime());
@@ -415,6 +407,20 @@ public class Project {
             logger.error("Error loading repositoryStudy!", e);
         }
         setRepositoryStudy(repositoryStudy);
+        if (repositoryStudy != null) {
+            StudySettings localSettings = getStudy().getStudySettings();
+            StudySettings remoteSettings = repositoryStudy.getStudySettings();
+            if(!localSettings.equals(remoteSettings)) {
+                logger.debug("updating studySettings");
+                getStudy().setStudySettings(remoteSettings);
+            }
+            UserRoleManagement localURM = getUserRoleManagement();
+            UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
+            if(!localURM.isAdmin(getUser()) && !localURM.equals(remoteURM)) {
+                logger.debug("updating userRoleManagement");
+                getStudy().setUserRoleManagement(remoteURM);
+            }
+        }
         return repositoryStudy != null;
     }
 
