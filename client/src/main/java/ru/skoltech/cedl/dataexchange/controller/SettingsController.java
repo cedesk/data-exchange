@@ -8,6 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -24,6 +25,8 @@ import java.util.ResourceBundle;
  * Created by D.Knoll on 22.07.2015.
  */
 public class SettingsController implements Initializable {
+
+    private static Logger logger = Logger.getLogger(SettingsController.class);
 
     @FXML
     public TitledPane studySettingsPane;
@@ -100,17 +103,16 @@ public class SettingsController implements Initializable {
 
     private boolean updateModel() {
         boolean validSettings = false;
-        boolean studyChanged = false;
 
         StudySettings studySettings = getStudySettings();
         if (studySettings != null) {
             boolean oldSyncEnabled = studySettings.getSyncEnabled();
             boolean newSyncEnable = enableSyncCheckbox.isSelected();
             studySettings.setSyncEnabled(newSyncEnable);
-            studyChanged = oldSyncEnabled != newSyncEnable;
-        }
-        if(studyChanged) {
-            ProjectContext.getInstance().getProject().markStudyModified();
+            if (oldSyncEnabled != newSyncEnable) {
+                ProjectContext.getInstance().getProject().markStudyModified();
+            }
+            logger.info(studySettings);
         }
 
         ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
