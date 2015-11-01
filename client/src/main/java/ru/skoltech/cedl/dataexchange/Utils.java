@@ -13,6 +13,8 @@ import java.util.Date;
  */
 public class Utils {
 
+    public static final long INVALID_TIME = - 1;
+
     public static final DateFormat TIME_AND_DATE_FOR_FILENAMES = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
     public static final DateFormat TIME_AND_DATE_FOR_USER_INTERFACE = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final Logger logger = Logger.getLogger(Utils.class);

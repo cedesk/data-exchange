@@ -27,7 +27,6 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -45,8 +44,8 @@ public class Project {
     private Repository repository;
     private Study study;
     private Study repositoryStudy;
-    private LongProperty latestLoadedModification = new SimpleLongProperty(-1L);
-    private LongProperty latestRepositoryModification = new SimpleLongProperty(-1L);
+    private LongProperty latestLoadedModification = new SimpleLongProperty(Utils.INVALID_TIME);
+    private LongProperty latestRepositoryModification = new SimpleLongProperty(Utils.INVALID_TIME);
     private RepositoryStateMachine repositoryStateMachine = new RepositoryStateMachine();
     private UserManagement userManagement;
     private UnitManagement unitManagement;
@@ -125,7 +124,7 @@ public class Project {
             Timestamp latestMod = getSystemModel().findLatestModification();
             setLatestLoadedModification(latestMod.getTime());
         } else {
-            setLatestLoadedModification(Timestamp.from(Instant.MIN).getTime());
+            setLatestLoadedModification(Utils.INVALID_TIME);
         }
     }
 
@@ -139,7 +138,7 @@ public class Project {
             Timestamp latestMod = repositoryStudy.getSystemModel().findLatestModification();
             setLatestRepositoryModification(latestMod.getTime());
         } else {
-            setLatestRepositoryModification(Timestamp.from(Instant.MIN).getTime());
+            setLatestRepositoryModification(Utils.INVALID_TIME);
         }
     }
 
@@ -211,6 +210,11 @@ public class Project {
         return getStudy().getUserRoleManagement();
     }
 
+    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
+        this.study.setUserRoleManagement(userRoleManagement);
+        // TODO: update user information on ui
+    }
+
     public UnitManagement getUnitManagement() {
         if (unitManagement == null) {
             loadUnitManagement();
@@ -251,6 +255,11 @@ public class Project {
 
     public void setProjectName(String projectName) {
         initialize(projectName);
+    }
+
+    public void setStudySettings(StudySettings studySettings) {
+        this.study.setStudySettings(studySettings);
+        // TODO: update save button
     }
 
     @Override

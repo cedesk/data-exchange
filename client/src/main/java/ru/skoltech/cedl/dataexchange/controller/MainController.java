@@ -40,8 +40,6 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -224,10 +222,9 @@ public class MainController implements Initializable {
         });
         project.latestRepositoryModificationProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && oldValue != null && oldValue.longValue() > 0) {
-                long startOfTime = Timestamp.from(Instant.MIN).getTime();
                 long timeOfModificationInRepository = newValue.longValue();
                 long timeOfModificationLoaded = project.getLatestLoadedModification();
-                if (timeOfModificationInRepository > startOfTime && timeOfModificationInRepository > timeOfModificationLoaded) {
+                if (timeOfModificationInRepository > Utils.INVALID_TIME && timeOfModificationInRepository > timeOfModificationLoaded) {
                     String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
                     String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
                     logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
