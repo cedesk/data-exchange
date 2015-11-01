@@ -6,9 +6,14 @@ import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
+import ru.skoltech.cedl.dataexchange.users.model.Discipline;
+import ru.skoltech.cedl.dataexchange.users.model.User;
 
 /**
  * Created by D.Knoll on 24.04.2015.
@@ -55,6 +60,13 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
                 setGraphic(textField);
             } else {
                 setText(getString());
+                Project project = ProjectContext.getInstance().getProject();
+                boolean access = UserRoleUtil.checkAccess(item, project.getUser(), project.getUserRoleManagement());
+                if (access) {
+                    setStyle("-fx-font-weight: bold;");
+                } else {
+                    setStyle("-fx-font-weight: normal;");
+                }
                 setGraphic(getTreeItem().getGraphic());
             }
         }
