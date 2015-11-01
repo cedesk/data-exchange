@@ -159,6 +159,12 @@ public class MainController implements Initializable {
 
     public void saveProject(ActionEvent actionEvent) {
         try {
+            boolean isSyncDisabled = !project.getStudy().getStudySettings().getSyncEnabled();
+            boolean isNormalUser = !project.getUserRoleManagement().isAdmin(project.getUser());
+            if (isSyncDisabled && isNormalUser) {
+                Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\nContact the team lead for him to enable it!");
+                return;
+            }
             boolean hasRemoteChanges = project.checkRepositoryForChanges();
             if (hasRemoteChanges) {
                 Dialogues.showWarning("Repository has changes", "Please review differences and then retry!");
@@ -238,7 +244,10 @@ public class MainController implements Initializable {
                 RepositoryStateMachine stateMachine = (RepositoryStateMachine) observable;
                 newButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
                 loadButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
-                saveButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE));
+                boolean isNormalUser = !project.getUserRoleManagement().isAdmin(project.getUser());
+                boolean isSyncDisabled = isNormalUser && !project.getStudy().getStudySettings().getSyncEnabled();
+                boolean isSaveImpossible = !stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
+                saveButton.setDisable(isSyncDisabled || isSaveImpossible);
             }
         });
 
