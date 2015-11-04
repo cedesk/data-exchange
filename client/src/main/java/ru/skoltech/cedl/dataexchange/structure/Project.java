@@ -1,7 +1,9 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
@@ -53,6 +55,10 @@ public class Project {
     private ExternalModelFileWatcher externalModelFileWatcher = new ExternalModelFileWatcher();
     private ExternalModelFileHandler externalModelFileHandler;
 
+    private BooleanProperty canNew = new SimpleBooleanProperty(false);
+    private BooleanProperty canLoad = new SimpleBooleanProperty(false);
+    private BooleanProperty canSync = new SimpleBooleanProperty(false);
+
     public Project() {
         this(DEFAULT_PROJECT_NAME);
     }
@@ -61,6 +67,14 @@ public class Project {
         connectRepository();
         initialize(projectName);
         externalModelFileHandler = new ExternalModelFileHandler(this);
+        repositoryStateMachine.addObserver((o, arg) -> {
+            canNew.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
+            canLoad.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
+            boolean isAdmin = getUserRoleManagement().isAdmin(getUser());
+            boolean isSyncEnabled = isAdmin || getStudy().getStudySettings().getSyncEnabled();
+            boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
+            canSync.setValue(isSyncEnabled && isSavePossible);
+        });
     }
 
     public void connectRepository() {
@@ -419,10 +433,6 @@ public class Project {
         return repositoryStudy != null;
     }
 
-    public void addRepositoryStateObserver(Observer o) {
-        repositoryStateMachine.addObserver(o);
-    }
-
     public void addExternalModelChangeObserver(Observer o) {
         externalModelFileWatcher.addObserver(o);
     }
@@ -533,6 +543,19 @@ public class Project {
         }
         return false;
     }
+
+    public BooleanProperty canNewProperty() {
+        return canNew;
+    }
+
+    public BooleanProperty canLoadProperty() {
+        return canLoad;
+    }
+
+    public BooleanProperty canSyncProperty() {
+        return canSync;
+    }
+
 
     private class AccessChecker implements Predicate<ModelNode> {
         @Override

@@ -235,18 +235,10 @@ public class MainController implements Initializable {
         });
 
         repositoryWatcher.start();
-        project.addRepositoryStateObserver(new Observer() {
-            @Override
-            public void update(Observable observable, Object arg) {
-                RepositoryStateMachine stateMachine = (RepositoryStateMachine) observable;
-                newButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
-                loadButton.setDisable(!stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
-                boolean isNormalUser = !project.getUserRoleManagement().isAdmin(project.getUser());
-                boolean isSyncDisabled = isNormalUser && !project.getStudy().getStudySettings().getSyncEnabled();
-                boolean isSaveImpossible = !stateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
-                saveButton.setDisable(isSyncDisabled || isSaveImpossible);
-            }
-        });
+        newButton.disableProperty().bind(project.canNewProperty().not());
+        loadButton.disableProperty().bind(project.canLoadProperty().not());
+        saveButton.disableProperty().bind(project.canSyncProperty().not());
+        diffButton.disableProperty().bind(project.canSyncProperty().not());
 
         Platform.runLater(new Runnable() {
             @Override
