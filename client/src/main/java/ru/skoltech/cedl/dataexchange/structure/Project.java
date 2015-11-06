@@ -68,13 +68,17 @@ public class Project {
         initialize(projectName);
         externalModelFileHandler = new ExternalModelFileHandler(this);
         repositoryStateMachine.addObserver((o, arg) -> {
-            canNew.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
-            canLoad.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
-            boolean isAdmin = getUserRoleManagement().isAdmin(getUser());
-            boolean isSyncEnabled = isAdmin || getStudy().getStudySettings().getSyncEnabled();
-            boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
-            canSync.setValue(isSyncEnabled && isSavePossible);
+            updatePossibleActions();
         });
+    }
+
+    private void updatePossibleActions() {
+        canNew.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
+        canLoad.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
+        boolean isAdmin = getUserRoleManagement().isAdmin(getUser());
+        boolean isSyncEnabled = isAdmin || getStudy().getStudySettings().getSyncEnabled();
+        boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
+        canSync.setValue(isSyncEnabled && isSavePossible);
     }
 
     public void connectRepository() {
@@ -273,7 +277,7 @@ public class Project {
 
     public void setStudySettings(StudySettings studySettings) {
         this.study.setStudySettings(studySettings);
-        // TODO: update save button
+        updatePossibleActions();
     }
 
     @Override
@@ -555,7 +559,6 @@ public class Project {
     public BooleanProperty canSyncProperty() {
         return canSync;
     }
-
 
     private class AccessChecker implements Predicate<ModelNode> {
         @Override

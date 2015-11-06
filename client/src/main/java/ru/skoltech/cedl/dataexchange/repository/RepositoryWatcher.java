@@ -67,13 +67,13 @@ public class RepositoryWatcher extends Thread {
             StudySettings remoteSettings = repositoryStudy.getStudySettings();
             if (!localSettings.equals(remoteSettings)) {
                 logger.debug("updating studySettings");
-                localStudy.setStudySettings(remoteSettings);
+                project.setStudySettings(remoteSettings);
             }
             UserRoleManagement localURM = localStudy.getUserRoleManagement();
             UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
             if (!localURM.isAdmin(user) && !localURM.equals(remoteURM)) {
                 logger.debug("updating userRoleManagement");
-                localStudy.setUserRoleManagement(remoteURM);
+                project.setUserRoleManagement(remoteURM);
             }
         }
     }
