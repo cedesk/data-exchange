@@ -47,8 +47,8 @@
                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <items>
                 <Button onAction="#close" mnemonicParsing="false" cancelButton="true" text="Cancel"/>
-                <Button onAction="#acceptAll" mnemonicParsing="true" text="_Accept all remote remote changes"/>
-                <Button onAction="#revertAll" mnemonicParsing="true" text="_Revert all local changes"/>
+                <Button fx:id="acceptAllButton" onAction="#acceptAll" mnemonicParsing="true" text="_Accept all remote remote changes"/>
+                <Button fx:id="revertAllButton" onAction="#revertAll" mnemonicParsing="true" text="_Revert all local changes"/>
             </items>
         </ToolBar>
     </children>

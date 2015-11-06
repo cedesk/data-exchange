@@ -238,7 +238,6 @@ public class MainController implements Initializable {
         newButton.disableProperty().bind(project.canNewProperty().not());
         loadButton.disableProperty().bind(project.canLoadProperty().not());
         saveButton.disableProperty().bind(project.canSyncProperty().not());
-        diffButton.disableProperty().bind(project.canSyncProperty().not());
 
         Platform.runLater(new Runnable() {
             @Override

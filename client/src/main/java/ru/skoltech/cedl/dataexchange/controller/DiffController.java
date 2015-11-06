@@ -15,6 +15,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 
@@ -29,6 +30,12 @@ import java.util.ResourceBundle;
 public class DiffController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(DiffController.class);
+
+    @FXML
+    private Button acceptAllButton;
+
+    @FXML
+    public Button revertAllButton;
 
     @FXML
     private TableView<ModelDifference> diffTable;
@@ -54,6 +61,9 @@ public class DiffController implements Initializable {
             }
         });
         actionColumn.setCellFactory(new ActionCellFactory());
+        Project project = ProjectContext.getInstance().getProject();
+        acceptAllButton.disableProperty().bind(project.canSyncProperty().not());
+        revertAllButton.disableProperty().bind(project.canSyncProperty().not());;
     }
 
     public void setSystemModels(SystemModel local, SystemModel remote) {
@@ -154,10 +164,12 @@ public class DiffController implements Initializable {
 
                 private Button createAcceptButton(ModelDifference difference) {
                     String buttonTitle = hasRemoteChange(difference) ? "accept remote" : "revert local";
-                    Button acceptButton = new Button(buttonTitle);
-                    acceptButton.setUserData(difference);
-                    acceptButton.setOnAction(DiffController.this::handleDifference);
-                    return acceptButton;
+                    Button applyButton = new Button(buttonTitle);
+                    applyButton.setUserData(difference);
+                    applyButton.setOnAction(DiffController.this::handleDifference);
+                    Project project = ProjectContext.getInstance().getProject();
+                    applyButton.disableProperty().bind(project.canSyncProperty().not());
+                    return applyButton;
                 }
             };
         }
