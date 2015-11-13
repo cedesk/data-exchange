@@ -47,7 +47,8 @@ public class DependencyController implements Initializable {
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode toVertex = vertices.get(columnIndex);
                 String value = "";
-                boolean hasDependency = dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0;
+                boolean hasDependency = dependencyGraph.getAllEdges(fromVertex, toVertex) != null
+                        && dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0;
                 if (rowIndex == columnIndex) {
                     value = "--";
                 } else if (hasDependency) {
