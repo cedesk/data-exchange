@@ -3,7 +3,11 @@ package ru.skoltech.cedl.dataexchange;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.apache.commons.collections.buffer.BoundedFifoBuffer;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.log4j.Logger;
+
+import java.util.Collection;
 
 /**
  * Created by D.Knoll on 28.03.2015.
@@ -11,6 +15,8 @@ import org.apache.log4j.Logger;
 public class StatusLogger {
 
     final static Logger logger = Logger.getLogger(StatusLogger.class);
+
+    final static BoundedFifoBuffer lineBuffer = new CircularFifoBuffer(10);
 
     private static StatusLogger instance = new StatusLogger();
 
@@ -31,7 +37,12 @@ public class StatusLogger {
         return lastMessage;
     }
 
+    public Collection getLastMessages() {
+        return lineBuffer;
+    }
+
     public void log(String msg, boolean error) {
+        lineBuffer.add(msg);
         if (error) {
             logger.error(msg);
         } else {

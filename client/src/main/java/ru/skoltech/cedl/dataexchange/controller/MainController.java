@@ -9,14 +9,13 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
@@ -24,6 +23,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
+import org.controlsfx.control.PopOver;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -200,6 +200,7 @@ public class MainController implements Initializable {
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
+        statusbarLabel.setOnMouseClicked(this::showStatusMessages);
 
         // TOOLBAR
         BooleanBinding repositoryNewer = Bindings.greaterThan(
@@ -268,6 +269,20 @@ public class MainController implements Initializable {
                 }
             }
         });
+    }
+
+    private void showStatusMessages(MouseEvent mouseEvent) {
+        Collection lastMessages = StatusLogger.getInstance().getLastMessages();
+        StringBuilder sb = new StringBuilder();
+        lastMessages.forEach(o -> sb.append(o).append('\n'));
+        TextArea textArea = new TextArea(sb.toString());
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+        PopOver popOver = new PopOver(textArea);
+        popOver.setArrowLocation(PopOver.ArrowLocation.BOTTOM_LEFT);
+        popOver.show(statusbarLabel);
     }
 
     public void validateUser() {
