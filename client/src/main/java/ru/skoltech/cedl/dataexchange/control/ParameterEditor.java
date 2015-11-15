@@ -21,7 +21,6 @@ import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
-import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
 import ru.skoltech.cedl.dataexchange.controller.UserNotifications;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -293,8 +292,6 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void applyChanges(ActionEvent actionEvent) {
         updateModel();
-        // TODO: if(exported) export value to model?
-        // TODO: update parameter table?
     }
 
     public void revertChanges(ActionEvent actionEvent) {
@@ -365,7 +362,14 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                 parameterModel.setCalculation(null);
             }
             if (parameterModel.getIsExported()) {
-                parameterModel.setExportReference(exportReference);
+                if (exportReference != null && exportReference.equals(valueReference)) {
+                    Dialogues.showWarning("inconsistency", "value source and export reference must not be equal. ignoring export reference.");
+                    exportReference = null;
+                    parameterModel.setIsExported(false);
+                    parameterModel.setExportReference(null);
+                } else {
+                    parameterModel.setExportReference(exportReference);
+                }
             } else {
                 parameterModel.setExportReference(null);
             }
