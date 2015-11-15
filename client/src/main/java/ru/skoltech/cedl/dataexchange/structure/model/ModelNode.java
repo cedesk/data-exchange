@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @XmlType(propOrder = {"name", "lastModification", "uuid", "externalModels", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @DiscriminatorOptions(force = true)
 public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped {
 
