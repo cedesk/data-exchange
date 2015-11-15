@@ -22,7 +22,10 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dknoll on 24/05/15.
@@ -156,6 +159,7 @@ public class DatabaseStorage implements Repository {
             }
             transaction.commit();
         } catch (OptimisticLockException | RollbackException re) {
+            logger.warn("transaction failed", re);
             throw extractAndRepackCause(re);
         } catch (Exception e) {
             throw new RepositoryException("Storing Study failed.", e);
