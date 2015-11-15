@@ -5,8 +5,9 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 
 import java.io.*;
 import java.text.ParseException;
@@ -17,6 +18,7 @@ import java.text.ParseException;
 public class SpreadsheetAccessor implements Closeable {
 
     private static Logger logger = Logger.getLogger(SpreadsheetAccessor.class);
+    private final String fileName;
     private Sheet sheet;
     private Workbook wb;
 
@@ -29,9 +31,10 @@ public class SpreadsheetAccessor implements Closeable {
      *
      * @param inputStream the stream from which to read the XLS workbook file
      * @param fileName
-     *@param sheetIndex  the spreadheet within the workbook  @throws IOException in case of problems reading the stream
+     * @param sheetIndex  the spreadheet within the workbook  @throws IOException in case of problems reading the stream
      */
     public SpreadsheetAccessor(InputStream inputStream, String fileName, int sheetIndex) throws IOException {
+        this.fileName = fileName;
         if (fileName.endsWith(".xls")) {
             NPOIFSFileSystem fs = new NPOIFSFileSystem(inputStream);
             wb = new HSSFWorkbook(fs.getRoot(), true);
@@ -40,7 +43,12 @@ public class SpreadsheetAccessor implements Closeable {
         }
         sheet = wb.getSheetAt(sheetIndex);
         formulaEvaluator = wb.getCreationHelper().createFormulaEvaluator();
-        formulaEvaluator.evaluateAll();
+        try {
+            formulaEvaluator.evaluateAll();
+        } catch (Exception e) {
+            logger.error(e);
+            StatusLogger.getInstance().log("Error while recalculating " + fileName + ". Make sure it does not have external links!", true);
+        }
         formulaEvaluator.clearAllCachedResultValues();
     }
 
@@ -82,7 +90,7 @@ public class SpreadsheetAccessor implements Closeable {
     }
 
     private static Double getNumericValue(Cell cell) throws ExternalModelException {
-        Double result = null;
+        Double result = Double.NaN;
         if (cell != null) {
             switch (cell.getCellType()) {
                 case Cell.CELL_TYPE_NUMERIC:
@@ -91,7 +99,6 @@ public class SpreadsheetAccessor implements Closeable {
                     break;
                 default:
                     throw new ExternalModelException("invalid cell type: " + cell.getCellType());
-
             }
         }
         return result;
@@ -104,7 +111,7 @@ public class SpreadsheetAccessor implements Closeable {
             try {
                 cell.setCellType(Cell.CELL_TYPE_NUMERIC);
                 cell.setCellValue(value);
-            } catch (IllegalArgumentException | IllegalStateException e ){
+            } catch (IllegalArgumentException | IllegalStateException e) {
                 throw new ExternalModelException("writing to cell failed!", e);
             }
             formulaEvaluator.notifyUpdateCell(cell);
@@ -150,7 +157,12 @@ public class SpreadsheetAccessor implements Closeable {
     }
 
     public void saveChanges(OutputStream outputStream) throws IOException {
-        formulaEvaluator.evaluateAll();
+        try {
+            formulaEvaluator.evaluateAll();
+        } catch (Exception e) {
+            logger.error(e);
+            StatusLogger.getInstance().log("Error while recalculating " + fileName + ". Make sure it does not have external links!", true);
+        }
         wb.write(outputStream);
     }
 }
