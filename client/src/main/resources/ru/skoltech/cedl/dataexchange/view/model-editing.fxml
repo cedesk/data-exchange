@@ -13,7 +13,7 @@
     <items>
         <AnchorPane>
             <children>
-                <TitledPane animated="false" collapsible="false" text="Structure" AnchorPane.bottomAnchor="180.0"
+                <TitledPane animated="false" collapsible="false" text="Structure" AnchorPane.bottomAnchor="210.0"
                             AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <content>
                         <TreeView fx:id="structureTree"/>
