@@ -23,7 +23,8 @@ public class ClientApplication extends Application {
         PropertyConfigurator.configure(ClientApplication.class.getResource("/META-INF/log4j.properties"));
 
         logger.info("----------------------------------------------------------------------------------------------------");
-        logger.info("Opening CEDESK ...");
+        String version = ApplicationProperties.getVersion();
+        logger.info("Opening CEDESK " + version + " ...");
         launch(args);
     }
 
