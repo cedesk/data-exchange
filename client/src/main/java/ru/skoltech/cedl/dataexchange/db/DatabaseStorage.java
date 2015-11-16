@@ -6,6 +6,7 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -38,7 +39,7 @@ public class DatabaseStorage implements Repository {
     public static final String HIBERNATE_TABLE_MAPPING = "hibernate.hbm2ddl.auto";
     public static final String HIBERNATE_TABLE_MAPPING_UPDATE = "update";
     public static final String DEFAULT_HOST_NAME = "localhost";
-    public static final String DEFAULT_SCHEMA = "cedesk_repo";
+    public static final String DEFAULT_SCHEMA = "cedesk_repo13";
     public static final String DEFAULT_USER_NAME = "cedesk";
     public static final String DEFAULT_PASSWORD = "cedesk";
     public static final String DB_PERSISTENCE_UNIT_NAME = "db";
@@ -94,10 +95,22 @@ public class DatabaseStorage implements Repository {
         try {
             entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
             entityManager = entityManagerFactory.createEntityManager();
-            // TODO: eventually check schema version
-            return true;
+
+            ApplicationProperty appVersion = ApplicationProperty.getVersionProperty();
+            ApplicationProperty dbSchemaVersion = loadApplicationProperty(appVersion);
+            if (dbSchemaVersion == null) {
+                logger.error("No DB Schema Version!");
+                return false;
+            }
+            int versionCompare = Utils.compareVersions(dbSchemaVersion.getValue(), appVersion.getValue());
+            if (versionCompare == 0) {
+                return true;
+            } else {
+                logger.error("App Version: " + appVersion.getValue() + " is incompatible with DB Schema Version: " + dbSchemaVersion.getValue());
+                return false;
+            }
         } catch (Exception e) {
-            logger.error("Database scheme validation failed!");
+            logger.error("Database scheme validation failed!", e);
         } finally {
             try {
                 if (entityManager != null)
@@ -123,11 +136,22 @@ public class DatabaseStorage implements Repository {
             properties.put(HIBERNATE_TABLE_MAPPING, HIBERNATE_TABLE_MAPPING_UPDATE);
             entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
             entityManager = entityManagerFactory.createEntityManager();
-            // TODO: eventually update schema version
             properties.remove(HIBERNATE_TABLE_MAPPING);
-            return true;
+            ApplicationProperty appVersion = ApplicationProperty.getVersionProperty();
+            ApplicationProperty dbSchemaVersion = loadApplicationProperty(appVersion);
+            if (dbSchemaVersion == null) {
+                return storeApplicationProperty(appVersion);
+            } else {
+                int versionCompare = Utils.compareVersions(dbSchemaVersion.getValue(), appVersion.getValue());
+                if (versionCompare <= 0) {
+                    return storeApplicationProperty(appVersion);
+                } else {
+                    logger.error("App Version: " + appVersion.getValue() + " is older than DB Schema Version: " + dbSchemaVersion.getValue());
+                    return false;
+                }
+            }
         } catch (Exception e) {
-            logger.error("Database scheme update failed!");
+            logger.error("Database scheme update failed!", e);
         } finally {
             try {
                 if (entityManager != null)
@@ -142,6 +166,50 @@ public class DatabaseStorage implements Repository {
             }
         }
         return false;
+    }
+
+    private boolean storeApplicationProperty(ApplicationProperty applicationProperty) throws RepositoryException {
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            entityManager.setFlushMode(FlushModeType.AUTO);
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
+            ApplicationProperty appProp = entityManager.find(ApplicationProperty.class, applicationProperty.getId());
+            if (appProp == null) {
+                entityManager.persist(applicationProperty);
+            } else {
+                entityManager.merge(applicationProperty);
+            }
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            throw new RepositoryException("Storing ApplicationProperty failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    private ApplicationProperty loadApplicationProperty(ApplicationProperty applicationProperty) throws RepositoryException {
+        EntityManager entityManager = null;
+        ApplicationProperty appProp = null;
+        try {
+            entityManager = getEntityManager();
+            appProp = entityManager.find(ApplicationProperty.class, applicationProperty.getId());
+        } catch (Exception e) {
+            throw new RepositoryException("Loading ApplicationProperty failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+        return appProp;
     }
 
     @Override
