@@ -6,11 +6,12 @@ import org.hibernate.envers.RelationTargetAuditMode;
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * Created by D.Knoll on 02.07.2015.
  */
-@XmlType(propOrder = {"name", "lastModification"})
+@XmlType(propOrder = {"name", "lastModification", "uuid"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Access(AccessType.PROPERTY)
@@ -19,6 +20,9 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
 
     @XmlTransient
     private long id;
+
+    @XmlAttribute
+    private String uuid = UUID.randomUUID().toString();
 
     @XmlID
     @XmlAttribute
@@ -40,13 +44,21 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
     }
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.TABLE)
     public long getId() {
         return id;
     }
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {
