@@ -40,8 +40,10 @@ public class UserRoleManagementStorageTest {
 
         databaseStorage.storeUserManagement(userManagement);
         databaseStorage.storeUserRoleManagement(userRoleManagement);
+        long id = userRoleManagement.getId();
 
-        UserRoleManagement userRoleManagement1 = databaseStorage.loadUserRoleManagement(1L);
+        System.out.println("user role management id: " + id);
+        UserRoleManagement userRoleManagement1 = databaseStorage.loadUserRoleManagement(id);
 
         Assert.assertEquals(userRoleManagement, userRoleManagement1);
     }
