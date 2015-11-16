@@ -39,7 +39,7 @@ public class DatabaseStorage implements Repository {
     public static final String HIBERNATE_TABLE_MAPPING = "hibernate.hbm2ddl.auto";
     public static final String HIBERNATE_TABLE_MAPPING_UPDATE = "update";
     public static final String DEFAULT_HOST_NAME = "localhost";
-    public static final String DEFAULT_SCHEMA = "cedesk_repo13";
+    public static final String DEFAULT_SCHEMA = "cedesk_repo";
     public static final String DEFAULT_USER_NAME = "cedesk";
     public static final String DEFAULT_PASSWORD = "cedesk";
     public static final String DB_PERSISTENCE_UNIT_NAME = "db";
