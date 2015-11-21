@@ -17,6 +17,7 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 public class ClientApplication extends Application {
 
     private static Logger logger = Logger.getLogger(ClientApplication.class);
+    private MainController mainController;
 
     public static void main(String[] args) {
         System.out.println("using: " + StorageUtils.getAppDir().getAbsolutePath());
@@ -33,7 +34,7 @@ public class ClientApplication extends Application {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Views.APPLICATION_VIEW);
         Parent root = loader.load();
-        MainController mainController = loader.getController();
+        mainController = loader.getController();
 
         primaryStage.setTitle("Concurrent Engineering Data Exchange Skoltech");
         primaryStage.setScene(new Scene(root));
@@ -43,8 +44,19 @@ public class ClientApplication extends Application {
             public void handle(WindowEvent we) {
                 logger.info("Closing CEDESK ...");
                 mainController.terminate();
-                logger.info("CEDESK terminated.");
+                logger.info("CEDESK closed.");
             }
         });
+    }
+
+    @Override
+    public void stop() throws Exception {
+        logger.info("Stopping CEDESK ...");
+        try {
+            mainController.terminate();
+        } catch (Exception e) {
+            logger.warn("", e);
+        }
+        logger.info("CEDESK stopped.");
     }
 }
