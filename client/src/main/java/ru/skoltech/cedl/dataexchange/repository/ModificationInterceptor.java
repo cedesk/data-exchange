@@ -32,6 +32,7 @@ public class ModificationInterceptor extends EmptyInterceptor {
             logger.debug(entity.getClass().getCanonicalName() + "#" + id + ":" + getNodeName(currentState, propertyNames));
             ModificationTimestamped timestampedEntity = (ModificationTimestamped) entity;
             timestampedEntity.setLastModification(flushTimeStamp);
+            System.out.println("flushDirty - " + entity.getClass().getCanonicalName() + ".lastModification: " + timestampedEntity.getLastModification());
         }
         return false;
     }
@@ -53,6 +54,7 @@ public class ModificationInterceptor extends EmptyInterceptor {
             logger.debug(entity.getClass().getCanonicalName() + "#" + id + ":" + nodeName);
             ModificationTimestamped timestampedEntity = (ModificationTimestamped) entity;
             timestampedEntity.setLastModification(flushTimeStamp);
+            System.out.println("onSave - " + entity.getClass().getCanonicalName() + ".lastModification: " + timestampedEntity.getLastModification());
         }
         return false;
     }
