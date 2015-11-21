@@ -6,21 +6,21 @@ import java.util.regex.Pattern;
  * Created by dknoll on 16/05/15.
  */
 public class Identifiers {
-    private static final Pattern NODE_NAME_RULE = Pattern.compile("^[a-zA-Z]{1,}$");
+    private static final Pattern NODE_NAME_RULE = Pattern.compile("^[a-zA-Z\\-]{1,}$");
 
-    private static final Pattern PARAMETER_NAME_RULE = Pattern.compile("^[a-zA-Z ]{1,}$");
+    private static final Pattern PARAMETER_NAME_RULE = Pattern.compile("^[a-zA-Z\\-_ ]{1,}$");
 
     private static final Pattern USER_NAME_RULE = Pattern.compile("^[a-z]{1,}[\\.\\-_]?[a-z]{1,}$");
 
     private static final Pattern PROJECT_NAME_RULE = Pattern.compile("^[a-zA-Z]{2,}[\\-]?[a-zA-Z0-9]{1,}$");
 
-    private static final String NODE_NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphabetic characters!";
+    private static final String NODE_NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphabetic characters, minus '-'!";
 
-    private static final String PARAMETER_NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphabetic characters!";
+    private static final String PARAMETER_NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphabetic characters, minus '-', underscore '_', space ' '!";
 
-    private static final String USER_NAME_RULE_DESCRIPTION = "User names must be at least of 1 character and contain only alphanumeric lowercase characters and '_.-' inside!";
+    private static final String USER_NAME_RULE_DESCRIPTION = "User names must be at least of 1 character and contain only alphanumeric lowercase characters and minus '-', underscore '_' and dot '.' inside!";
 
-    private static final String PROJECT_NAME_RULE_DESCRIPTION = "Project names must be at least of 4 character and contain only alphanumeric characters and - inside!";
+    private static final String PROJECT_NAME_RULE_DESCRIPTION = "Project names must be at least of 4 character and contain only alphanumeric characters and minus '-' inside!";
 
     public static boolean validateNodeName(String nodeName) {
         if (nodeName.length() < 1) return false;
