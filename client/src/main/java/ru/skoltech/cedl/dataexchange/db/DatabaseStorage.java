@@ -6,6 +6,7 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
@@ -106,10 +107,11 @@ public class DatabaseStorage implements Repository {
             if (versionCompare == 0) {
                 return true;
             } else {
-                logger.error("App Version: " + appVersion.getValue() + " is incompatible with DB Schema Version: " + dbSchemaVersion.getValue());
+                StatusLogger.getInstance().log("App Version: " + appVersion.getValue() + " is incompatible with DB Schema Version: " + dbSchemaVersion.getValue());
                 return false;
             }
         } catch (Exception e) {
+            StatusLogger.getInstance().log("Database scheme validation failed!", true);
             logger.error("Database scheme validation failed!", e);
         } finally {
             try {
@@ -146,11 +148,12 @@ public class DatabaseStorage implements Repository {
                 if (versionCompare <= 0) {
                     return storeApplicationProperty(appVersion);
                 } else {
-                    logger.error("App Version: " + appVersion.getValue() + " is older than DB Schema Version: " + dbSchemaVersion.getValue());
+                    StatusLogger.getInstance().log("App Version: " + appVersion.getValue() + " is older than DB Schema Version: " + dbSchemaVersion.getValue(), true);
                     return false;
                 }
             }
         } catch (Exception e) {
+            StatusLogger.getInstance().log("Database scheme update failed!", true);
             logger.error("Database scheme update failed!", e);
         } finally {
             try {
