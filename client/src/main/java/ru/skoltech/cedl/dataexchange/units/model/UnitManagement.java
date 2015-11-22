@@ -36,7 +36,6 @@ public class UnitManagement {
     private List<QuantityKind> quantityKinds = new LinkedList<>();
 
     @Id
-    @GeneratedValue
     @Column(name = "id")
     public long getId() {
         return id;
