@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.db;
 import org.hibernate.envers.EntityTrackingRevisionListener;
 import org.hibernate.envers.RevisionType;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 
 import java.io.Serializable;
 
@@ -15,8 +16,7 @@ public class CustomRevisionListener implements EntityTrackingRevisionListener {
     public void entityChanged(Class entityClass, String entityName,
                               Serializable entityId, RevisionType revisionType,
                               Object revisionEntity) {
-        CustomRevisionEntity revision = (CustomRevisionEntity) revisionEntity;
-        revision.setUsername(ApplicationSettings.getProjectUser()); // not certainly always carries the "current" value
+        // empty
     }
 
     public void newRevision(Object revisionEntity) {
