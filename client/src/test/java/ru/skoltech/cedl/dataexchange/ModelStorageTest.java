@@ -37,14 +37,36 @@ public class ModelStorageTest {
         databaseStorage.storeSystemModel(systemModel);
         long systemModelId = systemModel.getId();
 
-        databaseStorage.storeSystemModel(DummySystemBuilder.getSystemModel(2));
-
         SystemModel systemModel1 = databaseStorage.loadSystemModel(systemModelId);
         System.out.println(systemModel1);
 
         Assert.assertEquals(systemModel1.getName(), systemModel.getName());
         Assert.assertArrayEquals(systemModel1.getParameters().toArray(), systemModel.getParameters().toArray());
         Assert.assertEquals(systemModel1, systemModel);
+
+    }
+
+    @Test
+    public void testTimeStamping() throws RepositoryException {
+        SystemModel systemModel = DummySystemBuilder.getSystemModel(1);
+        System.out.println(systemModel);
+        System.out.println("----------------------------------------------------------------");
+
+        systemModel = databaseStorage.storeSystemModel(systemModel);
+        long systemModelId = systemModel.getId();
+        System.out.println(systemModel);
+        System.out.println("----------------------------------------------------------------");
+
+        SystemModel systemModel1 = databaseStorage.loadSystemModel(systemModelId);
+        System.out.println(systemModel1);
+
+        Assert.assertEquals(systemModel1.getName(), systemModel.getName());
+
+        Long lastModification = systemModel.getLastModification();
+        System.out.println("systemModel.lastModification: " + lastModification);
+        Long lastModification1 = systemModel1.getLastModification();
+        System.out.println("systemModel1.lastModification: " + lastModification1);
+        Assert.assertTrue(lastModification <= lastModification1); // TODO: fix to strictly smaller!
     }
 
     @Test
@@ -119,7 +141,7 @@ public class ModelStorageTest {
         ParameterModel parameterModel = storedModel.getParameters().get(0);
         String newName = parameterModel.getName() + "1";
         parameterModel.setName(newName);
-        int newValue = (int) (parameterModel.getValue().intValue() * 123);
+        int newValue = parameterModel.getValue().intValue() * 123;
         parameterModel.setValue((double) newValue);
 
         databaseStorage.storeSystemModel(storedModel);
