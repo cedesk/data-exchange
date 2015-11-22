@@ -200,8 +200,8 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     public String toString() {
         final StringBuilder sb = new StringBuilder("ModelNode{");
         sb.append("name='").append(name).append('\'');
-        sb.append(", parameters=").append(parameters);
-        sb.append("lastModification=").append(lastModification);
+        sb.append(", parameters=").append("\n\t").append(parameters).append("\n");
+        sb.append(", lastModification=").append(lastModification);
         sb.append(", uuid='").append(uuid).append('\'');
         sb.append('}');
         return sb.toString();

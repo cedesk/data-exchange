@@ -102,8 +102,8 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
     public String toString() {
         final StringBuilder sb = new StringBuilder("CompositeModelNode{");
         sb.append("name='").append(name).append('\'');
-        sb.append(", parameters=").append(parameters);
-        sb.append(", subNodes=\n").append(subNodes);
+        sb.append(", parameters=").append("\n\t").append(parameters).append("\n");
+        sb.append(", subNodes=\n").append(subNodes).append("\n");
         sb.append(", lastModification=").append(lastModification);
         sb.append(", uuid='").append(uuid).append('\'');
         sb.append("\n}");

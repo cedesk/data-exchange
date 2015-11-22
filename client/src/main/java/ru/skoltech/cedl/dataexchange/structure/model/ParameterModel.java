@@ -400,7 +400,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         sb.append(", value=").append(value);
         sb.append(", isReferenceValueOverridden=").append(isReferenceValueOverridden);
         sb.append(", overrideValue=").append(overrideValue);
-        sb.append(", unit").append(unit);
+        sb.append(", unit=").append(unit);
         sb.append(", nature=").append(nature);
         sb.append(", valueSource=").append(valueSource);
         sb.append(", valueReference=").append(getValueReference());
