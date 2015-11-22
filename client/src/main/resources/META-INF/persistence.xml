@@ -13,9 +13,6 @@
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
             <property name="hibernate.hbm2ddl.auto" value="validate"/>
-            <!--<property name="hibernate.show_sql" value="true"/>-->
-            <property name="hibernate.format_sql" value="true"/>
-            <property name="hibernate.transaction.flush_before_completion" value="true"/>
             <property name="hibernate.connection.isolation" value="2"/>
             <property name="hibernate.ejb.interceptor"
                       value="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor"/>
@@ -35,10 +32,8 @@
             <property name="javax.persistence.jdbc.password" value=""/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
             <property name="hibernate.hbm2ddl.auto" value="create"/>
-
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
-            <property name="hibernate.transaction.flush_before_completion" value="true"/>
             <property name="hibernate.ejb.interceptor"
                       value="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor"/>
         </properties>
