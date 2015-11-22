@@ -61,9 +61,9 @@ public class DiffController implements Initializable {
             }
         });
         actionColumn.setCellFactory(new ActionCellFactory());
-        Project project = ProjectContext.getInstance().getProject();
-        acceptAllButton.disableProperty().bind(project.canSyncProperty().not());
-        revertAllButton.disableProperty().bind(project.canSyncProperty().not());;
+        //Project project = ProjectContext.getInstance().getProject();
+        //acceptAllButton.disableProperty().bind(project.canSyncProperty().not());
+        //revertAllButton.disableProperty().bind(project.canSyncProperty().not());;
     }
 
     public void setSystemModels(SystemModel local, SystemModel remote) {
@@ -167,8 +167,8 @@ public class DiffController implements Initializable {
                     Button applyButton = new Button(buttonTitle);
                     applyButton.setUserData(difference);
                     applyButton.setOnAction(DiffController.this::handleDifference);
-                    Project project = ProjectContext.getInstance().getProject();
-                    applyButton.disableProperty().bind(project.canSyncProperty().not());
+                    //Project project = ProjectContext.getInstance().getProject();
+                    //applyButton.disableProperty().bind(project.canSyncProperty().not());
                     return applyButton;
                 }
             };
