@@ -13,6 +13,7 @@ import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
+import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
@@ -495,7 +496,7 @@ public class DatabaseStorage implements Repository {
         EntityManager entityManager = getEntityManager();
         UserManagement userManagement = null;
         try {
-            userManagement = entityManager.find(UserManagement.class, 1L);
+            userManagement = entityManager.find(UserManagement.class, UserManagementFactory.IDENTIFIER);
         } catch (Exception e) {
             throw new RepositoryException("Loading UserManagement failed.", e);
         } finally {

@@ -10,11 +10,13 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
  */
 public class UserManagementFactory {
 
+    public static final Long IDENTIFIER = 1L;
     public static final String ADMIN = "admin";
     public static final String OBSERVER = "observer";
 
     public static UserManagement getUserManagement() {
         UserManagement userManagement = new UserManagement();
+        userManagement.setId(IDENTIFIER);
 
         User expert = new User(OBSERVER, "Observer", "");
         User admin = new User(ADMIN, "Team Lead", "");
