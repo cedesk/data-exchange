@@ -51,11 +51,20 @@
                                 <TextField fx:id="upstreamDependenciesText" editable="false"/>
                                 <Label text="downstream"/>
                                 <TextField fx:id="downstreamDependenciesText" editable="false"/>
-                                <Button mnemonicParsing="false" onAction="#openDependencyView" text="View DSM">
+                                <HBox>
+                                    <children>
+                                        <Button mnemonicParsing="false" onAction="#viewDSM" text="View DSM">
+                                        </Button>
+                                        <Button mnemonicParsing="false" onAction="#viewNSquaredChart" text="View N2">
+                                            <HBox.margin>
+                                                <Insets left="8.0"/>
+                                            </HBox.margin>
+                                        </Button>
+                                    </children>
                                     <VBox.margin>
                                         <Insets top="8.0"/>
                                     </VBox.margin>
-                                </Button>
+                                </HBox>
                             </children>
                         </VBox>
                     </content>
@@ -219,7 +228,6 @@
                                 </SplitPane>
                             </content>
                         </TitledPane>
-
                     </children>
                 </VBox>
             </children>
