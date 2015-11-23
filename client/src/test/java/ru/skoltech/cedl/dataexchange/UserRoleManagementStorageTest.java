@@ -33,12 +33,9 @@ public class UserRoleManagementStorageTest {
     @Test
     public void storeAndRetrieveUserManagement() throws RepositoryException {
         UserManagement userManagement = UserManagementFactory.getUserManagement();
-        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
+        UserManagement userManagement1 = databaseStorage.storeUserManagement(userManagement);
 
-        String userName = System.getProperty("user.name").toLowerCase();
-        UserManagementFactory.addUserWithAllPower(userRoleManagement, userManagement, userName);
-
-        databaseStorage.storeUserManagement(userManagement);
+        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement1);
         databaseStorage.storeUserRoleManagement(userRoleManagement);
         long id = userRoleManagement.getId();
 
