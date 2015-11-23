@@ -11,10 +11,7 @@ import org.controlsfx.control.spreadsheet.*;
 import org.jgrapht.DirectedGraph;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -52,7 +49,8 @@ public class DependencyController implements Initializable {
                 if (rowIndex == columnIndex) {
                     value = "--";
                 } else if (hasDependency) {
-                    value = "X";
+                    value = getParameterLinks(fromVertex, toVertex);
+                    //value = "X";
                 }
                 SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(rowIndex, columnIndex, 1, 1, value);
                 viewCell.setStyle("-fx-text-alignment: center;");
@@ -62,6 +60,20 @@ public class DependencyController implements Initializable {
         }
         grid.setRows(viewRows);
         return grid;
+    }
+
+    private static String getParameterLinks(ModelNode fromVertex, ModelNode toVertex) {
+        List<ParameterModel> parameters = toVertex.getParameters();// TODO: also add subnodes
+        StringBuilder sb = new StringBuilder();
+        for (ParameterModel pm : parameters) {
+            if (pm.getValueSource() == ParameterValueSource.LINK &&
+                    pm.getValueLink() != null && pm.getValueLink().getParent() != null &&
+                    pm.getValueLink().getParent().equals(fromVertex)) {
+                if (sb.length() > 0) sb.append('\n');
+                sb.append(pm.getName());
+            }
+        }
+        return sb.toString();
     }
 
     @Override
