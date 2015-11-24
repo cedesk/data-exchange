@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.external;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.io.IOException;
@@ -102,11 +103,13 @@ public class ModelUpdateUtil {
         ParameterUpdate parameterUpdate = null;
         try {
             Double value = evaluator.getValue(valueReference.getTarget());
-            if (!Precision.equals(parameterModel.getValue(), value, 2)) {
+            if (Double.isNaN(value)) {
+                StatusLogger.getInstance().log("invalid value for parameter '" + parameterModel.getNodePath() + "' from '" + valueReference.toString() + "'", true);
+            } else if (!Precision.equals(parameterModel.getValue(), value, 2)) {
                 parameterUpdate = new ParameterUpdate(parameterModel, value);
             }
         } catch (ExternalModelException e) {
-            logger.error("unable to evaluate value for parameter '" + parameterModel.getNodePath() + "' from '" + valueReference.toString() + "'");
+            StatusLogger.getInstance().log("unable to evaluate value for parameter '" + parameterModel.getNodePath() + "' from '" + valueReference.toString() + "'");
             throw e;
         }
         return parameterUpdate;
@@ -125,10 +128,10 @@ public class ModelUpdateUtil {
                     try {
                         exporter.setValue(target, parameterModel.getEffectiveValue()); // TODO: document behavior
                     } catch (ExternalModelException e) {
-                        logger.warn("failed to export parameter " + parameterModel.getNodePath());
+                        StatusLogger.getInstance().log("failed to export parameter " + parameterModel.getNodePath());
                     }
                 } else {
-                    logger.warn("parameter " + parameterModel.getNodePath() + " has empty exportReference");
+                    StatusLogger.getInstance().log("parameter " + parameterModel.getNodePath() + " has empty exportReference");
                 }
             }
         }
