@@ -2,12 +2,10 @@ package ru.skoltech.cedl.dataexchange.control;
 
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
@@ -27,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
@@ -102,20 +99,7 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
 
         spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-        if (reference != null && reference.getExternalModel() != null) {
-            externalModel = reference.getExternalModel();
-        } else if (externalModels.size() > 0) {
-            externalModel = externalModels.get(0);
-            attachmentChooser.setItems(FXCollections.observableArrayList(externalModels));
-        }
-        if (externalModel == null) {
-            Dialogues.showWarning("No external models available.", "This system node does not have externals models attached, which could be referenced.");
-            referenceText.getScene().getWindow().hide();
-        } else {
-            attachmentChooser.setValue(externalModel);
-            referenceText.textProperty().setValue(reference.toString());
-            refreshTable(null);
-        }
+        attachmentChooser.setItems(FXCollections.observableArrayList(externalModels));
         attachmentChooser.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 externalModel = newValue;
@@ -123,6 +107,18 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
                 refreshTable(null);
             }
         });
+
+        if (reference != null && reference.getExternalModel() != null) {
+            externalModel = reference.getExternalModel();
+        } else if (externalModels.size() > 0) {
+            externalModel = externalModels.get(0);
+        }
+        if (externalModel == null) {
+            Dialogues.showWarning("No external models available.", "This system node does not have externals models attached, which could be referenced.");
+            referenceText.getScene().getWindow().hide();
+        } else {
+            attachmentChooser.setValue(externalModel);
+        }
     }
 
     public void refreshTable(ActionEvent actionEvent) {
@@ -136,8 +132,14 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
                 if (reference.getTarget() != null) {
                     SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(reference.getTarget());
                     int rowNumber = coordinates.getRowNumber() - 1;
-                    SpreadsheetColumn column = spreadsheetView.getColumns().get(coordinates.getColumnNumber() - 1);
-                    spreadsheetView.getSelectionModel().select(rowNumber, column);
+                    int columnNumber = coordinates.getColumnNumber() - 1;
+                    if (rowNumber < spreadsheetView.getGrid().getRowCount() &&
+                            columnNumber < spreadsheetView.getGrid().getColumnCount()) {
+                        SpreadsheetColumn column = spreadsheetView.getColumns().get(columnNumber);
+                        spreadsheetView.getSelectionModel().select(rowNumber, column);
+                    } else {
+                        spreadsheetView.getSelectionModel().clearSelection();
+                    }
                 }
             }
         } catch (Exception ex) {
