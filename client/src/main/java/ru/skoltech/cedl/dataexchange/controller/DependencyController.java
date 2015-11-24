@@ -32,6 +32,82 @@ public class DependencyController implements Initializable {
 
     private int mode;
 
+    private static Grid getDSMGrid(List<ModelNode> vertices, DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph) {
+        final int matrixSize = vertices.size();
+        List<String> vertexNames = vertices.stream().map(ModelNode::getName).collect(Collectors.toList());
+
+        final GridBase grid = new GridBase(matrixSize, matrixSize);
+        grid.getRowHeaders().addAll(vertexNames);
+        grid.getColumnHeaders().addAll(vertexNames);
+
+        ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(matrixSize);
+        for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
+            ModelNode toVertex = vertices.get(rowIndex);
+            final ObservableList<SpreadsheetCell> viewRow = FXCollections.observableArrayList();
+            for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+                ModelNode fromVertex = vertices.get(columnIndex);
+                String value = "";
+                boolean hasDependency = dependencyGraph.getAllEdges(toVertex, fromVertex) != null
+                        && dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0;
+                String style = "";
+                if (rowIndex == columnIndex) {
+                    value = "--";
+                    style = "-fx-text-alignment: center;";
+                } else if (hasDependency) {
+                    value = getLinkedParameters(toVertex, fromVertex);
+                }
+                SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(rowIndex, columnIndex, 1, 1, value);
+                viewCell.setStyle(style);
+                viewRow.add(viewCell);
+            }
+            viewRows.add(viewRow);
+        }
+        grid.setRows(viewRows);
+        return grid;
+    }
+
+    private static Grid getNSquareGrid(List<ModelNode> vertices, DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph) {
+        final int matrixSize = vertices.size();
+        final GridBase grid = new GridBase(matrixSize, matrixSize);
+
+        ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(matrixSize);
+        for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
+            ModelNode toVertex = vertices.get(rowIndex);
+            final ObservableList<SpreadsheetCell> viewRow = FXCollections.observableArrayList();
+            for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+                ModelNode fromVertex = vertices.get(columnIndex);
+                String value = "";
+                boolean hasDependency = dependencyGraph.getAllEdges(toVertex, fromVertex) != null
+                        && dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0;
+                if (rowIndex == columnIndex) {
+                    value = toVertex.getName();
+                } else if (hasDependency) {
+                    value = getLinkedParameters(toVertex, fromVertex);
+                }
+                SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(rowIndex, columnIndex, 1, 1, value);
+                viewRow.add(viewCell);
+            }
+            viewRows.add(viewRow);
+        }
+        grid.setRows(viewRows);
+        return grid;
+    }
+
+    private static String getLinkedParameters(ModelNode toVertex, ModelNode fromVertex) {
+        ParameterTreeIterator it = new ParameterTreeIterator(fromVertex);
+        StringBuilder sb = new StringBuilder();
+        while (it.hasNext()) {
+            ParameterModel pm = it.next();
+            if (pm.getValueSource() == ParameterValueSource.LINK &&
+                    pm.getValueLink() != null && pm.getValueLink().getParent() != null &&
+                    pm.getValueLink().getParent().equals(toVertex)) {
+                if (sb.length() > 0) sb.append('\n');
+                sb.append(pm.getValueLink().getName());
+            }
+        }
+        return sb.toString();
+    }
+
     public int getMode() {
         return mode;
     }
@@ -68,80 +144,5 @@ public class DependencyController implements Initializable {
             spreadsheetView.setShowColumnHeader(false);
         }
         spreadsheetView.setGrid(grid);
-    }
-
-    private static Grid getDSMGrid(List<ModelNode> vertices, DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph) {
-        final int matrixSize = vertices.size();
-        List<String> vertexNames = vertices.stream().map(ModelNode::getName).collect(Collectors.toList());
-
-        final GridBase grid = new GridBase(matrixSize, matrixSize);
-        grid.getRowHeaders().addAll(vertexNames);
-        grid.getColumnHeaders().addAll(vertexNames);
-
-        ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(matrixSize);
-        for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
-            ModelNode fromVertex = vertices.get(rowIndex);
-            final ObservableList<SpreadsheetCell> viewRow = FXCollections.observableArrayList();
-            for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
-                ModelNode toVertex = vertices.get(columnIndex);
-                String value = "";
-                boolean hasDependency = dependencyGraph.getAllEdges(fromVertex, toVertex) != null
-                        && dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0;
-                String style = "";
-                if (rowIndex == columnIndex) {
-                    value = "--";
-                    style = "-fx-text-alignment: center;";
-                } else if (hasDependency) {
-                    value = getLinkedParameters(fromVertex, toVertex);
-                }
-                SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(rowIndex, columnIndex, 1, 1, value);
-                viewCell.setStyle(style);
-                viewRow.add(viewCell);
-            }
-            viewRows.add(viewRow);
-        }
-        grid.setRows(viewRows);
-        return grid;
-    }
-
-    private static Grid getNSquareGrid(List<ModelNode> vertices, DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph) {
-        final int matrixSize = vertices.size();
-        final GridBase grid = new GridBase(matrixSize, matrixSize);
-
-        ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(matrixSize);
-        for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
-            ModelNode fromVertex = vertices.get(rowIndex);
-            final ObservableList<SpreadsheetCell> viewRow = FXCollections.observableArrayList();
-            for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
-                ModelNode toVertex = vertices.get(columnIndex);
-                String value = "";
-                boolean hasDependency = dependencyGraph.getAllEdges(fromVertex, toVertex) != null
-                        && dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0;
-                if (rowIndex == columnIndex) {
-                    value = fromVertex.getName();
-                } else if (hasDependency) {
-                    value = getLinkedParameters(fromVertex, toVertex);
-                }
-                SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(rowIndex, columnIndex, 1, 1, value);
-                viewRow.add(viewCell);
-            }
-            viewRows.add(viewRow);
-        }
-        grid.setRows(viewRows);
-        return grid;
-    }
-
-    private static String getLinkedParameters(ModelNode fromVertex, ModelNode toVertex) {
-        List<ParameterModel> parameters = toVertex.getParameters();// TODO: also add subnodes
-        StringBuilder sb = new StringBuilder();
-        for (ParameterModel pm : parameters) {
-            if (pm.getValueSource() == ParameterValueSource.LINK &&
-                    pm.getValueLink() != null && pm.getValueLink().getParent() != null &&
-                    pm.getValueLink().getParent().equals(fromVertex)) {
-                if (sb.length() > 0) sb.append('\n');
-                sb.append(pm.getName());
-            }
-        }
-        return sb.toString();
     }
 }
