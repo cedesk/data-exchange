@@ -437,14 +437,14 @@ public class ModelEditingController implements Initializable {
     }
 
     public void viewDSM(ActionEvent actionEvent) {
-        openDependencyView("Dependency View", DependencyController.DSM);
+        openDependencyView("Dependency Structure Matrix", DependencyController.ViewMode.DSM);
     }
 
     public void viewNSquaredChart(ActionEvent actionEvent) {
-        openDependencyView("N-square Chart", DependencyController.N_SQUARE);
+        openDependencyView("N-square Chart", DependencyController.ViewMode.N_SQUARE);
     }
 
-    private void openDependencyView(String title, int mode) {
+    private void openDependencyView(String title, DependencyController.ViewMode mode) {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.DEPENDENCY_VIEW);
@@ -454,7 +454,7 @@ public class ModelEditingController implements Initializable {
             stage.setScene(new Scene(root));
             stage.setTitle(title);
             stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initModality(Modality.NONE);
             stage.initOwner(getAppWindow());
             DependencyController controller = loader.getController();
             controller.setMode(mode);

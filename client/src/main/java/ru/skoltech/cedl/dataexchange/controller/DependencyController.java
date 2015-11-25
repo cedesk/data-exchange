@@ -24,13 +24,16 @@ import java.util.stream.Collectors;
  */
 public class DependencyController implements Initializable {
 
-    public static final int DSM = 0;
-    public static final int N_SQUARE = 1;
+    public enum ViewMode {
+        DSM, N_SQUARE
+    }
+
     private static final Logger logger = Logger.getLogger(DependencyController.class);
+
     @FXML
     private SpreadsheetView spreadsheetView;
 
-    private int mode;
+    private ViewMode mode;
 
     private static Grid getDSMGrid(List<ModelNode> vertices, DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph) {
         final int matrixSize = vertices.size();
@@ -108,11 +111,11 @@ public class DependencyController implements Initializable {
         return sb.toString();
     }
 
-    public int getMode() {
+    public ViewMode getMode() {
         return mode;
     }
 
-    public void setMode(int mode) {
+    public void setMode(ViewMode mode) {
         this.mode = mode;
     }
 
@@ -134,7 +137,7 @@ public class DependencyController implements Initializable {
         DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph = parameterLinkRegistry.getDependencyGraph();
 
         Grid grid = null;
-        if (mode == DSM) {
+        if (mode == ViewMode.DSM) {
             grid = getDSMGrid(modelNodeList, dependencyGraph);
             spreadsheetView.setShowRowHeader(true);
             spreadsheetView.setShowColumnHeader(true);
