@@ -183,6 +183,8 @@ public class ModelEditingController implements Initializable {
                 lightTableRefresh();
             }
         });
+
+        externalModelEditor.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
     }
 
     private ContextMenu makeStructureTreeContextMenu() {
@@ -519,7 +521,7 @@ public class ModelEditingController implements Initializable {
         }
     }
 
-    private class ExternalModelUpdateListener implements Consumer<ModelUpdate> {
+    public class ExternalModelUpdateListener implements Consumer<ModelUpdate> {
         @Override
         public void accept(ModelUpdate modelUpdate) {
             ExternalModel externalModel = modelUpdate.getExternalModel();

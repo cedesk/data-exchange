@@ -17,13 +17,5 @@
                 <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
             </graphic>
         </Button>
-        <Button minWidth="28" mnemonicParsing="false" onAction="#reloadExternalModel" text="">
-            <tooltip>
-                <Tooltip text="Reload External Models"/>
-            </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-            </graphic>
-        </Button>
     </children>
 </fx:root>

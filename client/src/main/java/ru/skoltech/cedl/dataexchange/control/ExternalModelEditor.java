@@ -16,8 +16,11 @@ import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
+import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
@@ -40,6 +43,10 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
 
     @FXML
     private VBox externalModelViewContainer;
+
+    private ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener;
+
+    private ModelEditingController.ParameterUpdateListener parameterUpdateListener;
 
     public ExternalModelEditor() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("external_models_editor.fxml"));
@@ -65,6 +72,11 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     public void setModelNode(ModelNode modelNode) {
         this.modelNode = modelNode;
         updateView();
+    }
+
+    public void setListeners(ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener, ModelEditingController.ParameterUpdateListener parameterUpdateListener) {
+        this.externalModelUpdateListener = externalModelUpdateListener;
+        this.parameterUpdateListener = parameterUpdateListener;
     }
 
     private void updateView() {
@@ -146,4 +158,14 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         }
     }
 
+    public void reloadExternalModels(ActionEvent actionEvent) {
+        for (ExternalModel externalModel : modelNode.getExternalModels())
+            try {
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelUpdateListener, parameterUpdateListener);
+            } catch (ExternalModelException e) {
+                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
+            }
+    }
 }
+
+

@@ -49,15 +49,6 @@ public class ExternalModelView extends HBox implements Initializable {
         externalModelFileHandler.openOnDesktop(externalModel);
     }
 
-    public void reloadExternalModel(ActionEvent actionEvent) {
-        /*
-            try {
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, new ExternalModelUpdateListener(), new ParameterUpdateListener());
-            } catch (ExternalModelException e) {
-                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
-            }
-        */
-    }
 
     public ExternalModel getExternalModel() {
         return externalModel;

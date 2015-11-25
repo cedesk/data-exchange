@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <fx:root stylesheets="@../view/styling.css" type="javafx.scene.control.ScrollPane"
@@ -22,6 +20,14 @@
                     </tooltip>
                     <graphic>
                         <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                    </graphic>
+                </Button>
+                <Button minWidth="28" mnemonicParsing="false" onAction="#reloadExternalModels" text="">
+                    <tooltip>
+                        <Tooltip text="Reload External Models"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
                     </graphic>
                 </Button>
             </children>
