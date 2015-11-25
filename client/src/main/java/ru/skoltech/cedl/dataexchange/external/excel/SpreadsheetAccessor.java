@@ -66,24 +66,32 @@ public class SpreadsheetAccessor implements Closeable {
     public static String getValueAsString(Cell cell) {
         String result = "";
         if (cell != null) {
-            switch (cell.getCellType()) {
-                case Cell.CELL_TYPE_BLANK:
-                    result = "";
-                    break;
-                case Cell.CELL_TYPE_BOOLEAN:
-                    result = String.valueOf(cell.getBooleanCellValue());
-                    break;
-                case Cell.CELL_TYPE_STRING:
-                    result = cell.getStringCellValue();
-                    break;
-                case Cell.CELL_TYPE_NUMERIC:
-                    result = String.valueOf(cell.getNumericCellValue());
-                    break;
-                case Cell.CELL_TYPE_FORMULA:
-                    result = String.valueOf(cell.getNumericCellValue());
-                    break;
-                default:
-                    result = "<unknown>";
+            try {
+                switch (cell.getCellType()) {
+                    case Cell.CELL_TYPE_BLANK:
+                        result = "";
+                        break;
+                    case Cell.CELL_TYPE_BOOLEAN:
+                        result = String.valueOf(cell.getBooleanCellValue());
+                        break;
+                    case Cell.CELL_TYPE_STRING:
+                        result = cell.getStringCellValue();
+                        break;
+                    case Cell.CELL_TYPE_NUMERIC:
+                        result = String.valueOf(cell.getNumericCellValue());
+                        break;
+                    case Cell.CELL_TYPE_FORMULA:
+                        result = String.valueOf(cell.getNumericCellValue());
+                        break;
+                    default:
+                        result = "<unknown>";
+                }
+            } catch (Exception e) {
+                if (logger.isDebugEnabled()) {
+                    String cellCoordinates = "r" + cell.getRowIndex() + ",c" + cell.getColumnIndex();
+                    logger.error("Error while accessing cell " + cellCoordinates);
+                }
+                result = "<error>";
             }
         }
         return result;
