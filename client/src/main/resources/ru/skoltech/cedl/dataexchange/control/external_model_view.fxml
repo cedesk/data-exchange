@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import org.controlsfx.glyphfont.Glyph?>
+<fx:root type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/null"
+         xmlns:fx="http://javafx.com/fxml/1"
+         stylesheets="@../view/styling.css"
+         spacing="8.0">
+    <children>
+        <TextField fx:id="externalModelNameText" editable="false" prefWidth="200.0" promptText="File"/>
+        <Button minWidth="28" mnemonicParsing="false" onAction="#openExternalModel" text="">
+            <tooltip>
+                <Tooltip text="Open Externally"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
+            </graphic>
+        </Button>
+        <Button minWidth="28" mnemonicParsing="false" onAction="#reloadExternalModel" text="">
+            <tooltip>
+                <Tooltip text="Reload External Models"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+            </graphic>
+        </Button>
+    </children>
+</fx:root>

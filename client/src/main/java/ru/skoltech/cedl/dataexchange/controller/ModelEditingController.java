@@ -22,17 +22,19 @@ import javafx.stage.Window;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
-import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ModelUpdate;
+import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
+import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
@@ -61,7 +63,7 @@ public class ModelEditingController implements Initializable {
     private ParameterEditor parameterEditor;
 
     @FXML
-    private TextField externalModelNameText;
+    private ExternalModelEditor externalModelEditor;
 
     @FXML
     private TableColumn<ParameterModel, String> parameterValueColumn;
@@ -415,75 +417,6 @@ public class ModelEditingController implements Initializable {
         }
     }
 
-    public void attachExternalModel(ActionEvent actionEvent) {
-        if (!project.isStudyInRepository()) {
-            Dialogues.showError("Save Project", "Unable to attach an external model, as long as the project has not been saved yet!");
-            return;
-        }
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        Objects.requireNonNull(selectedItem);
-        File externalModelFile = Dialogues.chooseExternalModelFile();
-        if (externalModelFile != null) {
-            String fileName = externalModelFile.getName();
-            if (externalModelFile.isFile() && ExternalModelAccessorFactory.hasEvaluator(fileName)) {
-                try {
-                    ExternalModel externalModel = ExternalModelFileHandler.newFromFile(externalModelFile, selectedItem.getValue());
-                    selectedItem.getValue().addExternalModel(externalModel);
-                    project.storeExternalModel(externalModel);
-                    externalModelNameText.setText(externalModel.getName());
-                    Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
-                    project.markStudyModified();
-                } catch (IOException e) {
-                    logger.warn("Unable to import model file.", e);
-                }
-            } else {
-                Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
-            }
-        }
-    }
-
-    public void detachExternalModel(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        Objects.requireNonNull(selectedItem);
-        ModelNode modelNode = selectedItem.getValue();
-        ExternalModel externalModel = modelNode.getExternalModels().get(0); // TODO: allow more external models
-        StringBuilder referencingParameters = new StringBuilder();
-        for (ParameterModel parameterModel : modelNode.getParameters()) {
-            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE &&
-                    parameterModel.getValueReference() != null &&
-                    parameterModel.getValueReference().getExternalModel() == externalModel) {
-                if (referencingParameters.length() > 0) referencingParameters.append(", ");
-                referencingParameters.append(parameterModel.getName());
-            }
-        }
-        if (referencingParameters.length() > 0) {
-            Dialogues.showError("External Model is not removable.", "The given external model is referenced by parameters: " + referencingParameters.toString());
-        } else {
-            modelNode.getExternalModels().remove(0); // TODO: allow more external models
-            externalModelNameText.setText(null);
-            project.markStudyModified();
-        }
-    }
-
-    public void openExternalModel(ActionEvent actionEvent) {
-        List<ExternalModel> externalModels = getSelectedTreeItem().getValue().getExternalModels();
-        if (externalModels.size() > 0) { // TODO: allow more external models
-            ExternalModel externalModel = externalModels.get(0);
-            ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
-            externalModelFileHandler.openOnDesktop(externalModel);
-        }
-    }
-
-    public void reloadExternalModel(ActionEvent actionEvent) {
-        ModelNode modelNode = getSelectedTreeItem().getValue();
-        for (ExternalModel externalModel : modelNode.getExternalModels()) {
-            try {
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, new ExternalModelUpdateListener(), new ParameterUpdateListener());
-            } catch (ExternalModelException e) {
-                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
-            }
-        }
-    }
 
     private TreeItem<ModelNode> getSelectedTreeItem() {
         return structureTree.getSelectionModel().getSelectedItem();
@@ -533,6 +466,13 @@ public class ModelEditingController implements Initializable {
         }
     }
 
+    private void updateExternalModelEditor(ModelNode modelNode) {
+        externalModelEditor.setModelNode(modelNode);
+        boolean hasExtModels = modelNode.getExternalModels().size() > 0;
+        externalModelEditor.setVisible(hasExtModels);
+        externalModelPane.setExpanded(hasExtModels);
+    }
+
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
@@ -565,25 +505,16 @@ public class ModelEditingController implements Initializable {
 
                 ModelEditingController.this.updateParameterTable(newValue);
                 ModelEditingController.this.updateDependencies(modelNode);
-
-                List<ExternalModel> externalModels = modelNode.getExternalModels();
-                if (externalModels.size() > 0) { // TODO: allow more external models
-                    ExternalModel externalModel = externalModels.get(0);
-                    externalModelNameText.setText(externalModel.getName());
-                    externalModelPane.setExpanded(true);
-                } else {
-                    externalModelNameText.setText(null);
-                    externalModelPane.setExpanded(false);
-                }
+                ModelEditingController.this.updateExternalModelEditor(modelNode);
             } else {
                 ModelEditingController.this.clearParameterTable();
                 upstreamDependenciesText.setText(null);
                 downstreamDependenciesText.setText(null);
-                // TODO: allow more external models
                 selectedNodeCanHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
                 selectedNodeIsEditable.setValue(false);
-                externalModelNameText.setText(null);
+                externalModelPane.setExpanded(false);
+                externalModelEditor.setVisible(false);
             }
         }
     }
