@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Table(uniqueConstraints = {@UniqueConstraint(name = "uniquePropertyName", columnNames = {"name"})})
 public class ApplicationProperty implements Comparable<ApplicationProperty> {
 
-    private static final ApplicationProperty versionProperty = new ApplicationProperty(1, "version", ApplicationProperties.getVersion());
+    public static final ApplicationProperty DB_SCHEMA_VERSION = new ApplicationProperty(1, "version", ApplicationProperties.getDbSchemaVersion());
 
     private long id;
     private String name;
@@ -25,10 +25,6 @@ public class ApplicationProperty implements Comparable<ApplicationProperty> {
         this.id = id;
         this.name = name;
         this.value = value;
-    }
-
-    public static ApplicationProperty getVersionProperty() {
-        return versionProperty;
     }
 
     @Id

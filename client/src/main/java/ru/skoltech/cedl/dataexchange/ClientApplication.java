@@ -24,8 +24,10 @@ public class ClientApplication extends Application {
         PropertyConfigurator.configure(ClientApplication.class.getResource("/META-INF/log4j.properties"));
 
         logger.info("----------------------------------------------------------------------------------------------------");
-        String version = ApplicationProperties.getVersion();
-        logger.info("Opening CEDESK " + version + " ...");
+        logger.info("Opening CEDESK ...");
+        String appVersion = ApplicationProperties.getAppVersion();
+        String dbSchemaVersion = ApplicationProperties.getDbSchemaVersion();
+        logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
         launch(args);
     }
 

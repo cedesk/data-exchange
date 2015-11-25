@@ -99,17 +99,22 @@ public class DatabaseStorage implements Repository {
             entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
             entityManager = entityManagerFactory.createEntityManager();
 
-            ApplicationProperty appVersion = ApplicationProperty.getVersionProperty();
-            ApplicationProperty dbSchemaVersion = loadApplicationProperty(appVersion);
-            if (dbSchemaVersion == null) {
+            ApplicationProperty targetSchemaVersion = ApplicationProperty.DB_SCHEMA_VERSION;
+            ApplicationProperty actualSchemaVersion = loadApplicationProperty(targetSchemaVersion);
+            if (actualSchemaVersion == null) {
                 logger.error("No DB Schema Version!");
                 return false;
             }
-            int versionCompare = Utils.compareVersions(dbSchemaVersion.getValue(), appVersion.getValue());
+            int versionCompare = Utils.compareVersions(actualSchemaVersion.getValue(), targetSchemaVersion.getValue());
             if (versionCompare == 0) {
                 return true;
-            } else {
-                StatusLogger.getInstance().log("App Version: " + appVersion.getValue() + " is incompatible with DB Schema Version: " + dbSchemaVersion.getValue());
+            } else if (versionCompare < 0) {
+                StatusLogger.getInstance().log("Upgrade your CEDESK Client! Current Application Version requires a DB Schema Version " + targetSchemaVersion.getValue()
+                        + ", which is incompatible with current DB Schema Version " + actualSchemaVersion.getValue());
+                return false;
+            } else if (versionCompare > 0) {
+                StatusLogger.getInstance().log("Have the administrator upgrade the DB Schema! Current Application Version requires a DB Schema Version " + targetSchemaVersion.getValue()
+                        + ", which is incompatible with current DB Schema Version " + actualSchemaVersion.getValue());
                 return false;
             }
         } catch (Exception e) {
@@ -141,16 +146,17 @@ public class DatabaseStorage implements Repository {
             entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
             entityManager = entityManagerFactory.createEntityManager();
             properties.remove(HIBERNATE_TABLE_MAPPING);
-            ApplicationProperty appVersion = ApplicationProperty.getVersionProperty();
-            ApplicationProperty dbSchemaVersion = loadApplicationProperty(appVersion);
-            if (dbSchemaVersion == null) {
-                return storeApplicationProperty(appVersion);
+            ApplicationProperty targetSchemaVersion = ApplicationProperty.DB_SCHEMA_VERSION;
+            ApplicationProperty actualSchemaVersion = loadApplicationProperty(targetSchemaVersion);
+            if (actualSchemaVersion == null) {
+                return storeApplicationProperty(targetSchemaVersion);
             } else {
-                int versionCompare = Utils.compareVersions(dbSchemaVersion.getValue(), appVersion.getValue());
+                int versionCompare = Utils.compareVersions(actualSchemaVersion.getValue(), targetSchemaVersion.getValue());
                 if (versionCompare <= 0) {
-                    return storeApplicationProperty(appVersion);
+                    return storeApplicationProperty(targetSchemaVersion);
                 } else {
-                    StatusLogger.getInstance().log("App Version: " + appVersion.getValue() + " is older than DB Schema Version: " + dbSchemaVersion.getValue(), true);
+                    StatusLogger.getInstance().log("Downgrade your CEDESK Client! Current Application Version " + targetSchemaVersion.getValue()
+                            + ", is older than current DB Schema Version " + actualSchemaVersion.getValue());
                     return false;
                 }
             }

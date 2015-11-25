@@ -15,8 +15,11 @@ public class ApplicationProperties {
         load();
     }
 
-    public static String getVersion() {
-        return properties.getProperty("version", "<>");
+    public static String getAppVersion() {
+        return properties.getProperty("app.version", "<>");
+    }
+    public static String getDbSchemaVersion() {
+        return properties.getProperty("db.schema.version", "<>");
     }
 
     private static synchronized void load() {
