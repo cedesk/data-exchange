@@ -37,6 +37,8 @@ public class UpdateChecker {
             logger.error("error with application distribution server url", e);
         } catch (IOException e) {
             logger.error("problem accessing application distribution server", e);
+        } catch (Exception e) {
+            logger.error("unknown problem while checking available software on distribution server", e);
         }
         return Optional.empty();
     }

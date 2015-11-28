@@ -11,7 +11,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -23,10 +27,7 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.Identifiers;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -36,10 +37,15 @@ import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MainController implements Initializable {
@@ -229,7 +235,7 @@ public class MainController implements Initializable {
                     String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
                     logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
                     updateRemoteModel();
-                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", MainController.this::openDiffView);
+                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", "View Differences", MainController.this::openDiffView);
                 }
             }
         });
@@ -457,6 +463,28 @@ public class MainController implements Initializable {
         }
     }
 
+    public void checkForUpdate(ActionEvent actionEvent) {
+        Optional<ApplicationPackage> latestVersionAvailable = UpdateChecker.getLatestVersionAvailable();
+        if (latestVersionAvailable.isPresent()) {
+            ApplicationPackage applicationPackage = latestVersionAvailable.get();
+            logger.info("available package: " + applicationPackage.toString());
+            String packageVersion = applicationPackage.getVersion();
+            String appVersion = ApplicationProperties.getAppVersion();
+            int versionCompare = Utils.compareVersions(appVersion, packageVersion);
+            if (versionCompare < 0) {
+                UserNotifications.showActionableNotification(getAppWindow(), "Application Update",
+                        "You are using " + appVersion + ", while " + packageVersion + " is already available. Please update!",
+                        "Download Update", new UpdateDownloader(applicationPackage));
+            } else if (versionCompare > 0) {
+                StatusLogger.getInstance().log("You are using " + appVersion + ", which is newer than the latest available " + packageVersion + ". Please publish!");
+            } else {
+                StatusLogger.getInstance().log("Latest version installed. No need to update.");
+            }
+        } else {
+            Dialogues.showWarning("Check failed", "Unable to connect to Distribution Server!");
+        }
+    }
+
     public void openAboutDialog(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
@@ -575,5 +603,28 @@ public class MainController implements Initializable {
     public void quit(ActionEvent actionEvent) {
         Stage stage = (Stage) applicationPane.getScene().getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
+    private class UpdateDownloader implements Consumer<ActionEvent> {
+        ApplicationPackage applicationPackage;
+
+        public UpdateDownloader(ApplicationPackage applicationPackage) {
+            this.applicationPackage = applicationPackage;
+        }
+
+        @Override
+        public void accept(ActionEvent actionEvent) {
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                try {
+                    URI uri = new URI(applicationPackage.getUrl());
+                    desktop.browse(uri);
+                } catch (URISyntaxException | IOException e) {
+                    StatusLogger.getInstance().log("Unable to open URL!", true);
+                }
+            } else {
+                StatusLogger.getInstance().log("Unable to open URL!", true);
+            }
+        }
     }
 }

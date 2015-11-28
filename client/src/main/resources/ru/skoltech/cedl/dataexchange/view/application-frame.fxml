@@ -53,6 +53,10 @@
                                         </Menu>
                                         <Menu mnemonicParsing="true" text="_Help">
                                             <items>
+                                                <MenuItem mnemonicParsing="true" onAction="#checkForUpdate"
+                                                          text="Check for _Update"/>
+                                            </items>
+                                            <items>
                                                 <MenuItem mnemonicParsing="true" onAction="#openAboutDialog"
                                                           text="_About"/>
                                             </items>
