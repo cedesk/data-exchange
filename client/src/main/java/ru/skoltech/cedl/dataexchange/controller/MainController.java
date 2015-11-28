@@ -476,12 +476,12 @@ public class MainController implements Initializable {
                         "You are using " + appVersion + ", while " + packageVersion + " is already available. Please update!",
                         "Download Update", new UpdateDownloader(applicationPackage));
             } else if (versionCompare > 0) {
-                StatusLogger.getInstance().log("You are using " + appVersion + ", which is newer than the latest available " + packageVersion + ". Please publish!");
+                UserNotifications.showNotification(getAppWindow(), "Application Update", "You are using " + appVersion + ", which is newer than the latest available " + packageVersion + ". Please publish!");
             } else {
-                StatusLogger.getInstance().log("Latest version installed. No need to update.");
+                UserNotifications.showNotification(getAppWindow(), "Application Update", "Latest version installed. No need to update.");
             }
         } else {
-            Dialogues.showWarning("Check failed", "Unable to connect to Distribution Server!");
+            UserNotifications.showNotification(getAppWindow(), "Application Update failed", "Unable to connect to Distribution Server!");
         }
     }
 
