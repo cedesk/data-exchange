@@ -274,6 +274,13 @@ public class MainController implements Initializable {
                 }
             }
         });
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                checkForUpdate(null);
+            }
+        });
     }
 
     private void showStatusMessages(MouseEvent mouseEvent) {
@@ -478,10 +485,18 @@ public class MainController implements Initializable {
             } else if (versionCompare > 0) {
                 UserNotifications.showNotification(getAppWindow(), "Application Update", "You are using " + appVersion + ", which is newer than the latest available " + packageVersion + ". Please publish!");
             } else {
-                UserNotifications.showNotification(getAppWindow(), "Application Update", "Latest version installed. No need to update.");
+                if (actionEvent != null) {
+                    UserNotifications.showNotification(getAppWindow(), "Application Update", "Latest version installed. No need to update.");
+                } else {
+                    StatusLogger.getInstance().log("Latest application version installed. No need to update.");
+                }
             }
         } else {
-            UserNotifications.showNotification(getAppWindow(), "Application Update failed", "Unable to connect to Distribution Server!");
+            if (actionEvent != null) {
+                UserNotifications.showNotification(getAppWindow(), "Update check failed", "Unable to connect to Distribution Server!");
+            } else {
+                StatusLogger.getInstance().log("Update check failed. Unable to connect to Distribution Server!");
+            }
         }
     }
 
