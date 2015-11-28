@@ -149,7 +149,7 @@ public class UserRoleManagement {
     public List<User> getUsersOfDiscipline(Discipline discipline) {
         List<User> userList = userDisciplines.stream()
                 .filter(userDiscipline -> userDiscipline.getDiscipline().equals(discipline))
-                .map(UserDiscipline::getUser)
+                .map(UserDiscipline::getUser).distinct()
                 .collect(Collectors.toCollection(() -> new LinkedList<>()));
         return userList;
     }
@@ -158,7 +158,7 @@ public class UserRoleManagement {
     public List<Discipline> getDisciplinesOfUser(User user) {
         List<Discipline> disciplineList = userDisciplines.stream()
                 .filter(userDiscipline -> userDiscipline.getUser().equals(user))
-                .map(UserDiscipline::getDiscipline)
+                .map(UserDiscipline::getDiscipline).distinct()
                 .collect(Collectors.toCollection(() -> new LinkedList<>()));
         return disciplineList;
     }
