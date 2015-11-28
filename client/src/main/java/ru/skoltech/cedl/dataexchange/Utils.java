@@ -55,6 +55,7 @@ public class Utils {
         // "1.13-snapshot" < "1.13"
         else {
             if (str1.length == 2 && str2.length == 1) return -1;
+            if (str1.length == 1 && str2.length == 2) return 1;
             return str1[1].compareTo(str2[1]);
         }
     }
