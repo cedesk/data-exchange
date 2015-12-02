@@ -16,6 +16,7 @@ public class ParameterLinkRegistry {
     private Logger logger = Logger.getLogger(ParameterLinkRegistry.class);
 
     private Map<String, Set<String>> valueLinks = new HashMap<>();
+
     private DirectedGraph<ModelNode, ModelDependency> dependencyGraph = new SimpleDirectedGraph<>(ModelDependency.class);
 
     public ParameterLinkRegistry() {
@@ -170,6 +171,22 @@ public class ParameterLinkRegistry {
         return "";
     }
 
+    public List<ParameterModel> getDependentParameters(ParameterModel source) {
+        List<ParameterModel> dependentParameters = new LinkedList<>();
+        SystemModel systemModel = getSystem(source.getParent());
+        Map<String, ParameterModel> parameterDictionary = makeDictionary(systemModel);
+
+        String sourceId = source.getUuid();
+        if (valueLinks.containsKey(sourceId)) {
+            Set<String> sinks = valueLinks.get(sourceId);
+            sinks.forEach(sinkUuid -> {
+                ParameterModel sink = parameterDictionary.get(sinkUuid);
+                dependentParameters.add(sink);
+            });
+        }
+        return dependentParameters;
+    }
+
     private SystemModel getSystem(ModelNode parent) {
         SystemModel result = null;
         if (parent != null) {
@@ -203,6 +220,13 @@ public class ParameterLinkRegistry {
     public void addLinks(List<ParameterModel> sources, ParameterModel sink) {
         for (ParameterModel source : sources) {
             addLink(source, sink);
+        }
+    }
+
+    public void removeSink(ParameterModel sink) {
+        if (sink.getValueSource() == ParameterValueSource.LINK && sink.getValueLink() != null) {
+            ParameterModel source = sink.getValueLink();
+            removeLink(source, sink);
         }
     }
 

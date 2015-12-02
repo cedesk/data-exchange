@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 20.03.2015.
@@ -407,18 +408,23 @@ public class ModelEditingController implements Initializable {
     public void deleteParameter(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         int selectedParameterIndex = parameterTable.getSelectionModel().getSelectedIndex();
+        ParameterModel parameterModel = selectedItem.getValue().getParameters().get(selectedParameterIndex);
+        List<ParameterModel> dependentParameters = project.getParameterLinkRegistry().getDependentParameters(parameterModel);
+        if (dependentParameters.size() > 0) {
+            String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
+            Dialogues.showWarning("Parameter deletion impossible!", "This parameter is referenced by " + dependentParams);
+            return;
+        }
 
-        Optional<ButtonType> parameterNameChoice = Dialogues.chooseYesNo("Parameter deletion", "Are you sure you want to delete this parameter?");
-        if (parameterNameChoice.isPresent() && parameterNameChoice.get() == ButtonType.YES) {
-            // TODO: add sanity check if parameter is referenced
-            ParameterModel parameterModel = selectedItem.getValue().getParameters().get(selectedParameterIndex);
+        Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Parameter deletion", "Are you sure you want to delete this parameter?");
+        if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
             selectedItem.getValue().getParameters().remove(selectedParameterIndex);
+            project.getParameterLinkRegistry().removeSink(parameterModel);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
             updateParameterTable(selectedItem);
             project.markStudyModified();
         }
     }
-
 
     private TreeItem<ModelNode> getSelectedTreeItem() {
         return structureTree.getSelectionModel().getSelectedItem();
