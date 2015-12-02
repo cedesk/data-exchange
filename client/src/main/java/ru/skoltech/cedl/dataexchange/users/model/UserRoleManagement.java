@@ -6,10 +6,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -176,16 +173,12 @@ public class UserRoleManagement {
         if (modelNode.isRootNode()) {
             return getAdminDiscipline();
         }
-        DisciplineSubSystem associationFound = null;
-        for (DisciplineSubSystem disciplineSubSystem : disciplineSubSystems) {
-            if (disciplineSubSystem.getSubSystem().equals(modelNode)) {
-                associationFound = disciplineSubSystem;
-                break;
-            }
-        }
+        Optional<DisciplineSubSystem> subSystemOptional = disciplineSubSystems.stream()
+                .filter(disciplineSubSystem -> disciplineSubSystem.getSubSystem().getUuid().equals(modelNode.getUuid()))
+                .findAny();
 
-        if (associationFound != null) {
-            return associationFound.getDiscipline();
+        if (subSystemOptional.isPresent()) {
+            return subSystemOptional.get().getDiscipline();
         } else {
             logger.debug("no discipline found for subsystem '" + modelNode.getName() + "'");
             return null;
