@@ -1,6 +1,8 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.annotations.DiscriminatorOptions;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -76,6 +78,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     }
 
     @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
+    @Fetch(FetchMode.SELECT)
     public List<ParameterModel> getParameters() {
         return parameters;
     }
@@ -102,6 +105,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     //TODO: fix EAGER
     @OneToMany(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
+    @Fetch(FetchMode.SELECT)
     public List<ExternalModel> getExternalModels() {
         return externalModels;
     }
