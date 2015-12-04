@@ -1,6 +1,8 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
 import org.apache.log4j.Logger;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 
@@ -53,6 +55,7 @@ public class UserRoleManagement {
     }
 
     @OneToMany(targetEntity = Discipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     public List<Discipline> getDisciplines() {
         return disciplines;
     }
@@ -62,6 +65,7 @@ public class UserRoleManagement {
     }
 
     @OneToMany(targetEntity = UserDiscipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     public List<UserDiscipline> getUserDisciplines() {
         return userDisciplines;
     }
@@ -103,6 +107,7 @@ public class UserRoleManagement {
     }
 
     @OneToMany(targetEntity = DisciplineSubSystem.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     public List<DisciplineSubSystem> getDisciplineSubSystems() {
         return disciplineSubSystems;
     }
