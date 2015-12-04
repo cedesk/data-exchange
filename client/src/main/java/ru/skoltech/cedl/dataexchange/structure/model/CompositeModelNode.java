@@ -75,20 +75,24 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
         if (super.equals(obj)) {
             if (obj instanceof CompositeModelNode) {
                 CompositeModelNode otherComposite = (CompositeModelNode) obj;
-                return equalSubNodes(otherComposite.getSubNodesMap());
+                return equalSubNodes(otherComposite);
             }
         }
         return false;
     }
 
-    private boolean equalSubNodes(Map<String, ModelNode> otherSubNodesMap) {
-        if (subNodes.size() != otherSubNodesMap.size())
+    private boolean equalSubNodes(CompositeModelNode otherNode) {
+        if (subNodes.size() != otherNode.subNodes.size())
             return false;
-        for (SUBNODES subNode : subNodes) {
+        List<ModelNode> subNodes = otherNode.subNodes;
+        Map<String, ModelNode> otherSubNodesMap = subNodes.stream().collect(
+                Collectors.toMap(ModelNode::getUuid, Function.identity())
+        );
+        for (SUBNODES subNode : this.subNodes) {
             boolean res = true;
-            String nodeName = subNode.getName(); // tree comparison via subnode names
-            if (otherSubNodesMap.containsKey(nodeName)) {
-                ModelNode otherSubNode = otherSubNodesMap.get(nodeName);
+            String nodeUuid = subNode.getUuid();
+            if (otherSubNodesMap.containsKey(nodeUuid)) {
+                ModelNode otherSubNode = otherSubNodesMap.get(nodeUuid);
                 res = res & subNode.equals(otherSubNode);
             } else {  // corresponding node not found
                 return false;
