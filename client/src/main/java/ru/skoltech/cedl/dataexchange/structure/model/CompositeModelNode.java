@@ -81,6 +81,13 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
         return false;
     }
 
+    /**
+     * this method explicitly does not check the subnodes.
+     */
+    public boolean equalsFlat(ModelNode otherNode) {
+        return super.equals(otherNode);
+    }
+
     private boolean equalSubNodes(CompositeModelNode otherNode) {
         if (subNodes.size() != otherNode.subNodes.size())
             return false;

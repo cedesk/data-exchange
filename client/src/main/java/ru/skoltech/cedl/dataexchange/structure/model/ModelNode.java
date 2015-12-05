@@ -185,6 +185,10 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         return false;
     }
 
+    public boolean equalsFlat(ModelNode otherNode) {
+        return equals(otherNode);
+    }
+
     private boolean equalParameters(ModelNode otherNode) {
         if (this.parameters.size() != otherNode.parameters.size())
             return false;
