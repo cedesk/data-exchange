@@ -254,9 +254,23 @@ public class ModelEditingController implements Initializable {
                 StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
                 structureTree.setRoot(rootNode);
             } else {
-                StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
-                        project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
-                structureTree.setRoot(rootNode);
+                TreeItem<ModelNode> currentViewRoot = structureTree.getRoot();
+                if(currentViewRoot != null) {
+                    String currentViewRootUuid = currentViewRoot.getValue().getUuid();
+                    String modelRootUuid = project.getSystemModel().getUuid();
+                    if (modelRootUuid.equals(currentViewRootUuid)) {
+                        StructureTreeItemFactory.updateTreeView(currentViewRoot,
+                                project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
+                    } else { // different system model
+                        StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
+                                project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
+                        structureTree.setRoot(rootNode);
+                    }
+                } else {
+                    StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
+                            project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
+                    structureTree.setRoot(rootNode);
+                }
             }
             boolean isAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
             structureTree.setEditable(isAdmin);
@@ -314,7 +328,8 @@ public class ModelEditingController implements Initializable {
                     // model
                     ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
                     // view
-                    selectedItem.getChildren().add(StructureTreeItemFactory.getTreeNodeView(newNode));
+                    StructureTreeItem structureTreeItem = new StructureTreeItem(newNode);
+                    selectedItem.getChildren().add(structureTreeItem);
                     selectedItem.setExpanded(true);
                     project.markStudyModified();
                     StatusLogger.getInstance().log("added node: " + newNode.getNodePath());
@@ -479,6 +494,11 @@ public class ModelEditingController implements Initializable {
         boolean hasExtModels = modelNode.getExternalModels().size() > 0;
         externalModelEditor.setVisible(hasExtModels);
         externalModelPane.setExpanded(hasExtModels);
+    }
+
+    public void refreshView(ActionEvent actionEvent) {
+        structureTree.setRoot(null);
+        updateView();
     }
 
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {

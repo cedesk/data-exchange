@@ -40,6 +40,14 @@
                                 <Glyph fontFamily="FontAwesome" icon="MINUS"/>
                             </graphic>
                         </Button>
+                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
+                            <tooltip>
+                                <Tooltip text="Refresh View"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                            </graphic>
+                        </Button>
                     </items>
                 </ToolBar>
                 <TitledPane fx:id="dependencyPane" collapsible="false" expanded="true" prefHeight="170.0"
