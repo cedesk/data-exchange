@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
+import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
@@ -54,4 +55,6 @@ public interface Repository extends Closeable {
     UnitManagement storeUnitManagement(UnitManagement unitManagement) throws RepositoryException;
 
     List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException;
+
+    void storeLog(LogEntry logEntry);
 }

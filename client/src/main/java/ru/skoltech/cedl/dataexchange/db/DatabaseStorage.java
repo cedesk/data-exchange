@@ -8,6 +8,7 @@ import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -604,6 +605,23 @@ public class DatabaseStorage implements Repository {
         }
 
         return revisionList;
+    }
+
+    @Override
+    public void storeLog(LogEntry logEntry) {
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            entityManager.persist(logEntry);
+        } catch (Exception e) {
+            logger.debug("logging action to database failed: "+ e.getMessage());
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     @Override
