@@ -82,4 +82,17 @@ public class LogEntry {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("LogEntry{");
+        sb.append("id=").append(id);
+        sb.append(", logTimestamp=").append(logTimestamp);
+        sb.append(", user='").append(user).append('\'');
+        sb.append(", client='").append(client).append('\'');
+        sb.append(", action='").append(action).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

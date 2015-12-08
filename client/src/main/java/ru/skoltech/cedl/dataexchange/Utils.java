@@ -4,6 +4,8 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.jboss.logging.Logger;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -72,5 +74,14 @@ public class Utils {
             logger.error("error copying bean " + source.toString(), e);
         }
         return target;
+    }
+
+    public static String getHostname() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            // ignore
+        }
+        return "localhost";
     }
 }
