@@ -101,6 +101,7 @@ public class DatabaseStorage implements Repository {
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme validation failed!", true);
             logger.error("Database scheme validation failed!", e);
+            return false;
         } finally {
             if (entityManager != null)
                 try {
