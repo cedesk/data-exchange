@@ -40,7 +40,7 @@ public class SpreadsheetCoordinates {
             String col = matcher.group(1);
             int colNumber = 0;
             for (char ch : col.toCharArray()) {
-                colNumber = colNumber * 27 + ch - INIT + 1;
+                colNumber = colNumber * 26 + ch - INIT + 1;
             }
             return new SpreadsheetCoordinates(rowNumber, colNumber);
         } else {
@@ -51,13 +51,12 @@ public class SpreadsheetCoordinates {
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        int col = columnNumber;
-        while (col > 26) {
-            int digit = (col % 27);
-            sb.append((char) (digit - 1 + INIT));
-            col = col / 27;
+        int col = columnNumber - 1;
+        while (col >= 0) {
+            int digit = (col % 26);
+            sb.append((char) (digit + INIT));
+            col = col / 26 - 1;
         }
-        sb.append((char) (col - 1 + INIT));
         sb = sb.reverse();
         sb.append(rowNumber);
         return sb.toString();

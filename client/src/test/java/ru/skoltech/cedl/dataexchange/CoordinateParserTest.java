@@ -32,13 +32,19 @@ public class CoordinateParserTest {
         String aa23_ = "AA23";
         SpreadsheetCoordinates aa23 = SpreadsheetCoordinates.valueOf(aa23_);
         Assert.assertEquals(23, aa23.getRowNumber());
-        Assert.assertEquals(28, aa23.getColumnNumber());
+        Assert.assertEquals(27, aa23.getColumnNumber());
         Assert.assertEquals(aa23_, aa23.toString());
+
+        String az56_ = "AZ56";
+        SpreadsheetCoordinates az56 = SpreadsheetCoordinates.valueOf(az56_);
+        Assert.assertEquals(56, az56.getRowNumber());
+        Assert.assertEquals(26 * 2, az56.getColumnNumber());
+        Assert.assertEquals(az56_, az56.toString());
 
         String bz23_ = "BZ56";
         SpreadsheetCoordinates bz23 = SpreadsheetCoordinates.valueOf(bz23_);
         Assert.assertEquals(56, bz23.getRowNumber());
-        Assert.assertEquals(27 * 2 + 26, bz23.getColumnNumber());
+        Assert.assertEquals(26 * 3, bz23.getColumnNumber());
         Assert.assertEquals(bz23_, bz23.toString());
     }
 }
