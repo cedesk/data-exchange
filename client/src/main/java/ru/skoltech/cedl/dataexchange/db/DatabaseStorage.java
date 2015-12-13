@@ -612,9 +612,12 @@ public class DatabaseStorage implements Repository {
         EntityManager entityManager = null;
         try {
             entityManager = getEntityManager();
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
             entityManager.persist(logEntry);
+            transaction.commit();
         } catch (Exception e) {
-            logger.debug("logging action to database failed: "+ e.getMessage());
+            logger.debug("logging action to database failed: " + e.getMessage());
         } finally {
             try {
                 if (entityManager != null)

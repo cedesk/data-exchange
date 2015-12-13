@@ -150,12 +150,15 @@ public class MainController implements Initializable {
                 ApplicationSettings.setLastUsedProject(project.getProjectName());
                 repositoryWatcher.unpause();
                 StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
+                ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName());
             } else {
                 StatusLogger.getInstance().log("Loading study failed!", false);
+                ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName() + ", loading failed");
             }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading project!", true);
             logger.error(e);
+            ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName() + ", loading failed");
         }
         updateView();
     }
@@ -178,12 +181,15 @@ public class MainController implements Initializable {
             repositoryWatcher.unpause();
             ApplicationSettings.setLastUsedProject(project.getProjectName());
             StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
+            ActionLogger.log(ActionLogger.ActionType.project_save, project.getProjectName());
         } catch (RepositoryException re) {
             logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
             StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
+            ActionLogger.log(ActionLogger.ActionType.project_save, project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
         } catch (Exception e) {
             StatusLogger.getInstance().log("Saving study failed!", true);
             logger.error("Unknown Exception", e);
+            ActionLogger.log(ActionLogger.ActionType.project_save, project.getProjectName() + ", saving failed");
         }
     }
 
@@ -256,6 +262,7 @@ public class MainController implements Initializable {
                 if (!validRepository) return;
                 validateUser();
 
+                ActionLogger.log(ActionLogger.ActionType.application_start, ApplicationProperties.getAppVersion());
                 if (ApplicationSettings.getProjectToImport() != null) {
                     importProject(null);
                 } else if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
@@ -304,6 +311,7 @@ public class MainController implements Initializable {
             Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
                     "Contact the administrator for the creation of a user for you.\n" +
                     "As for now you'lll be given the role of an observer, who can not perform modifications.");
+            ActionLogger.log(ActionLogger.ActionType.user_validate, userName + ", not found");
         }
     }
 
@@ -409,6 +417,7 @@ public class MainController implements Initializable {
                 project.importSystemModel(systemModel);
                 updateView();
                 StatusLogger.getInstance().log("Successfully imported study!", false);
+                ActionLogger.log(ActionLogger.ActionType.project_import, project.getProjectName());
             } catch (IOException e) {
                 logger.error("error importing model from file");
             }
@@ -426,6 +435,7 @@ public class MainController implements Initializable {
             try {
                 fs.storeSystemModel(project.getSystemModel(), outputFile);
                 StatusLogger.getInstance().log("Successfully exported study!", false);
+                ActionLogger.log(ActionLogger.ActionType.project_export, project.getProjectName());
             } catch (IOException e) {
                 logger.error("error exporting model to file", e);
             }
@@ -452,12 +462,14 @@ public class MainController implements Initializable {
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
                             StatusLogger.getInstance().log("Successfully deleted study!", false);
+                            ActionLogger.log(ActionLogger.ActionType.project_delete, studyName);
                         }
                     } else {
                         Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study", "Are you really sure to delete project '" + studyName + "' from the repository?\nWARNING: This is not reversible!");
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
                             StatusLogger.getInstance().log("Successfully deleted study!", false);
+                            ActionLogger.log(ActionLogger.ActionType.project_delete, studyName);
                         }
                     }
                 } catch (RepositoryException re) {
