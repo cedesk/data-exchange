@@ -78,7 +78,7 @@ public class Utils {
 
     public static String getHostname() {
         try {
-            return InetAddress.getLocalHost().getHostName();
+            return InetAddress.getLocalHost().getHostName().toLowerCase();
         } catch (UnknownHostException e) {
             // ignore
         }
