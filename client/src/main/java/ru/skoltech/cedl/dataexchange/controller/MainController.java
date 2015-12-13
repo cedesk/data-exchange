@@ -379,6 +379,7 @@ public class MainController implements Initializable {
     }
 
     public void terminate() {
+        ActionLogger.log(ActionLogger.ActionType.application_stop, "");
         if (repositoryWatcher != null) {
             repositoryWatcher.finish();
         }

@@ -31,11 +31,13 @@ public class ActionLogger {
 
     public enum ActionType {
         application_start,
+        application_stop,
         project_load,
         project_save,
         project_delete,
         project_export,
         project_import,
-        user_validate, model_merge
+        user_validate,
+        model_merge
     }
 }
