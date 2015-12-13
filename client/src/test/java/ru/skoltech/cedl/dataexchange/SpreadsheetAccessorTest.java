@@ -35,6 +35,15 @@ public class SpreadsheetAccessorTest {
 
         Double valueC3 = spreadsheetAccessor.getNumericValue("C3");
         Assert.assertEquals(new Double(42127), valueC3);
+
+        String z1 = spreadsheetAccessor.getValueAsString("Z1");
+        Assert.assertEquals("z", z1);
+
+        String aa = spreadsheetAccessor.getValueAsString("AA2");
+        Assert.assertEquals("aa", aa);
+
+        String ab = spreadsheetAccessor.getValueAsString("AB3");
+        Assert.assertEquals("ab", ab);
     }
 
     @Test
