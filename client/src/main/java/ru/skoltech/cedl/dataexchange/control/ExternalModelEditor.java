@@ -96,7 +96,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
         removeButton.setTooltip(new Tooltip("remove external model"));
         removeButton.setOnAction(ExternalModelEditor.this::deleteExternalModel);
-        removeButton.setMinWidth(20);
+        removeButton.setMinWidth(28);
         HBox extModRow = new HBox(16, editor, removeButton);
         removeButton.setUserData(extModRow);
         externalModelViewContainer.getChildren().add(extModRow);
