@@ -6,6 +6,7 @@ Concurrent Engineering Data Exchange Skoltech is a software made for our our Con
 * Current State: Development
 
 ## Release History ##
+* 2015-12-14 - Version 1.18
 * 2015-12-04 - Version 1.17
 * 2015-12-02 - Version 1.16
 * 2015-11-25 - Version 1.15
