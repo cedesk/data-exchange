@@ -202,6 +202,18 @@
             </properties>
         </profile>
         <profile>
+            <id>mac-os</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <name>mac os x</name>
+                </os>
+            </activation>
+            <properties>
+                <package.output.extension>dmg</package.output.extension>
+            </properties>
+        </profile>
+        <profile>
             <id>windows-os</id>
             <activation>
                 <os>
