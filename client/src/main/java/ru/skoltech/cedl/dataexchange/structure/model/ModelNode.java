@@ -1,6 +1,8 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.annotations.DiscriminatorOptions;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -76,6 +78,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     }
 
     @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
+    @Fetch(FetchMode.SELECT)
     public List<ParameterModel> getParameters() {
         return parameters;
     }
@@ -102,6 +105,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     //TODO: fix EAGER
     @OneToMany(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
+    @Fetch(FetchMode.SELECT)
     public List<ExternalModel> getExternalModels() {
         return externalModels;
     }
@@ -173,20 +177,47 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     public boolean equals(Object obj) {
         if (obj instanceof ModelNode) {
             ModelNode other = (ModelNode) obj;
-            if (!this.name.equals(other.name)) return false;
             if (!this.uuid.equals(other.uuid)) return false;
-            return equalParameters(other.getParameterMap());
+            if (!this.name.equals(other.name)) return false;
+            if (!equalParameters(other)) return false;
+            return equalExternalModels(other);
         }
         return false;
     }
 
-    private boolean equalParameters(Map<String, ParameterModel> otherModelNodeParameterMap) {
-        if (this.parameters.size() != otherModelNodeParameterMap.size())
+    public boolean equalsFlat(ModelNode otherNode) {
+        return equals(otherNode);
+    }
+
+    private boolean equalParameters(ModelNode otherNode) {
+        if (this.parameters.size() != otherNode.parameters.size())
             return false;
+        Map<String, ParameterModel> otherParameterMap = otherNode.getParameters().stream().collect(
+                Collectors.toMap(ParameterModel::getUuid, Function.identity())
+        );
         for (ParameterModel parameterModel : parameters) {
-            String parameterName = parameterModel.getName();
-            if (otherModelNodeParameterMap.containsKey(parameterName)) {
-                if (!parameterModel.equals(otherModelNodeParameterMap.get(parameterName))) {
+            String parameterUuid = parameterModel.getUuid();
+            if (otherParameterMap.containsKey(parameterUuid)) {
+                if (!parameterModel.equals(otherParameterMap.get(parameterUuid))) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean equalExternalModels(ModelNode otherNode) {
+        if (this.externalModels.size() != otherNode.externalModels.size())
+            return false;
+        Map<String, ExternalModel> otherExternalModelMap = otherNode.getExternalModels().stream().collect(
+                Collectors.toMap(ExternalModel::getUuid, Function.identity())
+        );
+        for (ExternalModel externalModel : externalModels) {
+            String externalModelUuid = externalModel.getUuid();
+            if (otherExternalModelMap.containsKey(externalModelUuid)) {
+                if (!externalModel.equals(otherExternalModelMap.get(externalModelUuid))) {
                     return false;
                 }
             } else {

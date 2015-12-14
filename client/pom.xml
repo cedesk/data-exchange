@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.skoltech.cedl</groupId>
     <artifactId>dataexchange-client</artifactId>
-    <version>1.15</version>
+    <version>1.18</version>
     <properties>
         <jar.final.name>cedesk-client</jar.final.name>
         <main.class>ru.skoltech.cedl.dataexchange.ClientApplication</main.class>
@@ -12,7 +12,7 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm'GMT'Z</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <db.schema.version>1.14</db.schema.version>
+        <db.schema.version>1.18</db.schema.version>
     </properties>
     <dependencies>
         <dependency>
@@ -91,6 +91,16 @@
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-core</artifactId>
             <version>0.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.8.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.4</version>
         </dependency>
     </dependencies>
     <build>

@@ -28,11 +28,11 @@ public class UserNotifications {
         });
     }
 
-    public static void showActionableNotification(Window window, String title, String text, Consumer<ActionEvent> onClick) {
+    public static void showActionableNotification(Window window, String title, String text, String buttonText, Consumer<ActionEvent> onClick) {
         Platform.runLater(() -> {
             Notifications notifications = Notifications.create().owner(window);
             notifications.hideAfter(Duration.seconds(5));
-            notifications.action(new Action("View Differences", ae ->
+            notifications.action(new Action(buttonText, ae ->
                     onClick.accept(null)
             ));
             notifications.position(Pos.BOTTOM_LEFT).graphic(new ImageView(FLASH_ICON));

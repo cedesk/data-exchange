@@ -21,37 +21,6 @@ public class Dialogues {
     public static final ButtonType NEW_STUDY_BUTTON = new ButtonType("Create new Study");
     public static final ButtonType LOAD_STUDY_BUTTON = new ButtonType("Load existing Study");
 
-    /*
-        static void showInvalidRepositoryWarning() {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Invalid Repository");
-            alert.setHeaderText(null);
-            alert.setContentText("There is no repository set yet. You will need to specify one!");
-            alert.showAndWait();
-        }
-
-        static void showInvalidRepositoryPath() {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Invalid Repository");
-            alert.setContentText("The selected path does not contain a valid repository!");
-            alert.showAndWait();
-        }
-
-        static File chooseLocalRepositoryPath() {
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setTitle("Select Repository path");
-            return directoryChooser.showDialog(null);
-        }
-
-        static Optional<String> inputRemoteRepositoryURL() {
-            TextInputDialog dialog = new TextInputDialog("https://");
-            dialog.setTitle("Repository URL");
-            dialog.setHeaderText("Please insert the URL for the repository. It shall start with 'http' or 'https'.");
-            dialog.setContentText("URL:");
-            return dialog.showAndWait();
-        }
-    */
-
     public static File chooseExportPath() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setInitialDirectory(StorageUtils.getAppDir());
@@ -70,7 +39,6 @@ public class Dialogues {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(StorageUtils.getAppDir());
         fileChooser.setTitle("Select model file.");
-        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Excel", ".xls"));
         return fileChooser.showOpenDialog(null);
     }
 
@@ -114,25 +82,33 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
+    public static Optional<ButtonType> chooseNewOrLoadStudy() {
+        Alert repositoryTypeDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        repositoryTypeDialog.setTitle("Start with a study");
+        repositoryTypeDialog.setHeaderText("Choose whether to create a new study or load an existing one.");
+        repositoryTypeDialog.setContentText(null);
+        repositoryTypeDialog.getButtonTypes().setAll(NEW_STUDY_BUTTON, LOAD_STUDY_BUTTON, ButtonType.CANCEL);
+        return repositoryTypeDialog.showAndWait();
+    }
+
     public static Optional<ButtonType> chooseYesNo(String title, String text) {
         Alert yesNoDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        yesNoDialog.setTitle(title);
-        yesNoDialog.setHeaderText(text);
-        yesNoDialog.setContentText(null);
+        yesNoDialog.setHeaderText(title);
+        yesNoDialog.setContentText(text);
         yesNoDialog.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
         return yesNoDialog.showAndWait();
     }
 
     public static void showError(String title, String text) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
+        alert.setHeaderText(title);
         alert.setContentText(text);
         alert.showAndWait();
     }
 
     public static void showWarning(String title, String text) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(title);
+        alert.setHeaderText(title);
         alert.setContentText(text);
         alert.showAndWait();
     }
@@ -144,14 +120,5 @@ public class Dialogues {
         dlg.setHeaderText("Choose from available studies");
         dlg.setContentText("Study");
         return dlg.showAndWait();
-    }
-
-    static Optional<ButtonType> chooseNewOrLoadStudy() {
-        Alert repositoryTypeDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        repositoryTypeDialog.setTitle("Start with a study");
-        repositoryTypeDialog.setHeaderText("Choose whether to create a new study or load an existing one.");
-        repositoryTypeDialog.setContentText(null);
-        repositoryTypeDialog.getButtonTypes().setAll(NEW_STUDY_BUTTON, LOAD_STUDY_BUTTON, ButtonType.CANCEL);
-        return repositoryTypeDialog.showAndWait();
     }
 }

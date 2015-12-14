@@ -23,4 +23,16 @@ public class UtilsTest {
 
         Assert.assertEquals(0, Utils.compareVersions("1.14-Snapshot", "1.14-Snapshot"));
     }
+
+    @Test
+    public void hostnameTest() {
+        String computername = System.getenv("COMPUTERNAME"); // only works on WINDOWS
+        if (computername != null) {
+            computername = computername.toLowerCase();
+            System.out.println(computername);
+            String hostname = Utils.getHostname();
+            System.out.println(hostname);
+            Assert.assertEquals(computername, hostname);
+        }
+    }
 }

@@ -1,5 +1,8 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -20,6 +23,7 @@ public class SubSystemModel extends CompositeModelNode<ElementModel> {
 
     @Override
     @OneToMany(targetEntity = ElementModel.class, mappedBy = "parent", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     public List<ElementModel> getSubNodes() {
         return super.getSubNodes();
     }

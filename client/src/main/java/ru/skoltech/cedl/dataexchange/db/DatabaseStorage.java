@@ -8,6 +8,7 @@ import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -98,40 +99,45 @@ public class DatabaseStorage implements Repository {
         try {
             entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
             entityManager = entityManagerFactory.createEntityManager();
-
-            ApplicationProperty targetSchemaVersion = ApplicationProperty.DB_SCHEMA_VERSION;
-            ApplicationProperty actualSchemaVersion = loadApplicationProperty(targetSchemaVersion);
-            if (actualSchemaVersion == null) {
-                logger.error("No DB Schema Version!");
-                return false;
-            }
-            int versionCompare = Utils.compareVersions(actualSchemaVersion.getValue(), targetSchemaVersion.getValue());
-            if (versionCompare == 0) {
-                return true;
-            } else if (versionCompare < 0) {
-                StatusLogger.getInstance().log("Upgrade your CEDESK Client! Current Application Version requires a DB Schema Version " + targetSchemaVersion.getValue()
-                        + ", which is incompatible with current DB Schema Version " + actualSchemaVersion.getValue());
-                return false;
-            } else if (versionCompare > 0) {
-                StatusLogger.getInstance().log("Have the administrator upgrade the DB Schema! Current Application Version requires a DB Schema Version " + targetSchemaVersion.getValue()
-                        + ", which is incompatible with current DB Schema Version " + actualSchemaVersion.getValue());
-                return false;
-            }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme validation failed!", true);
             logger.error("Database scheme validation failed!", e);
+            return false;
         } finally {
-            try {
-                if (entityManager != null)
+            if (entityManager != null)
+                try {
                     entityManager.close();
-            } catch (Exception ignore) {
-            }
+                } catch (Exception ignore) {
+                }
             if (entityManagerFactory != null) {
                 try {
                     entityManagerFactory.close();
                 } catch (Exception ignore) {
                 }
             }
+        }
+        ApplicationProperty targetSchemaVersion = ApplicationProperty.DB_SCHEMA_VERSION;
+        ApplicationProperty actualSchemaVersion = null;
+        try {
+            actualSchemaVersion = loadApplicationProperty(targetSchemaVersion);
+        } catch (RepositoryException e) {
+            logger.debug("error loading the applications version property", e);
+        }
+        if (actualSchemaVersion == null) {
+            logger.error("No DB Schema Version!");
+            return false;
+        }
+        int versionCompare = Utils.compareVersions(actualSchemaVersion.getValue(), targetSchemaVersion.getValue());
+        if (versionCompare == 0) {
+            return true;
+        } else if (versionCompare < 0) {
+            StatusLogger.getInstance().log("Upgrade your CEDESK Client! Current Application Version requires a DB Schema Version " + targetSchemaVersion.getValue()
+                    + ", which is incompatible with current DB Schema Version " + actualSchemaVersion.getValue());
+            return false;
+        } else if (versionCompare > 0) {
+            StatusLogger.getInstance().log("Have the administrator upgrade the DB Schema! Current Application Version requires a DB Schema Version " + targetSchemaVersion.getValue()
+                    + ", which is incompatible with current DB Schema Version " + actualSchemaVersion.getValue());
+            return false;
         }
         return false;
     }
@@ -146,34 +152,48 @@ public class DatabaseStorage implements Repository {
             entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
             entityManager = entityManagerFactory.createEntityManager();
             properties.remove(HIBERNATE_TABLE_MAPPING);
-            ApplicationProperty targetSchemaVersion = ApplicationProperty.DB_SCHEMA_VERSION;
-            ApplicationProperty actualSchemaVersion = loadApplicationProperty(targetSchemaVersion);
-            if (actualSchemaVersion == null) {
-                return storeApplicationProperty(targetSchemaVersion);
-            } else {
-                int versionCompare = Utils.compareVersions(actualSchemaVersion.getValue(), targetSchemaVersion.getValue());
-                if (versionCompare <= 0) {
-                    return storeApplicationProperty(targetSchemaVersion);
-                } else {
-                    StatusLogger.getInstance().log("Downgrade your CEDESK Client! Current Application Version " + targetSchemaVersion.getValue()
-                            + ", is older than current DB Schema Version " + actualSchemaVersion.getValue());
-                    return false;
-                }
-            }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme update failed!", true);
             logger.error("Database scheme update failed!", e);
         } finally {
-            try {
-                if (entityManager != null)
+            if (entityManager != null) {
+                try {
                     entityManager.close();
-            } catch (Exception ignore) {
+                } catch (Exception ignore) {
+                }
             }
             if (entityManagerFactory != null) {
                 try {
                     entityManagerFactory.close();
                 } catch (Exception ignore) {
                 }
+            }
+        }
+        ApplicationProperty targetSchemaVersion = ApplicationProperty.DB_SCHEMA_VERSION;
+        ApplicationProperty actualSchemaVersion = null;
+        try {
+            actualSchemaVersion = loadApplicationProperty(targetSchemaVersion);
+        } catch (RepositoryException e) {
+            logger.debug("error loading the applications version property", e);
+        }
+        if (actualSchemaVersion == null) {
+            try {
+                return storeApplicationProperty(targetSchemaVersion);
+            } catch (RepositoryException e) {
+                logger.debug("error storing the applications version property", e);
+            }
+        } else {
+            int versionCompare = Utils.compareVersions(actualSchemaVersion.getValue(), targetSchemaVersion.getValue());
+            if (versionCompare <= 0) {
+                try {
+                    return storeApplicationProperty(targetSchemaVersion);
+                } catch (RepositoryException e) {
+                    logger.debug("error storing the applications version property", e);
+                }
+            } else {
+                StatusLogger.getInstance().log("Downgrade your CEDESK Client! Current Application Version " + targetSchemaVersion.getValue()
+                        + ", is older than current DB Schema Version " + actualSchemaVersion.getValue());
+                return false;
             }
         }
         return false;
@@ -205,7 +225,7 @@ public class DatabaseStorage implements Repository {
         }
     }
 
-    private ApplicationProperty loadApplicationProperty(ApplicationProperty applicationProperty) throws RepositoryException {
+    private ApplicationProperty loadApplicationProperty(ApplicationProperty applicationProperty) throws RepositoryException {/*
         EntityManager entityManager = null;
         ApplicationProperty appProp = null;
         try {
@@ -220,7 +240,8 @@ public class DatabaseStorage implements Repository {
             } catch (Exception ignore) {
             }
         }
-        return appProp;
+        return appProp;*/
+        return applicationProperty;
     }
 
     @Override
@@ -313,7 +334,7 @@ public class DatabaseStorage implements Repository {
             criteriaQuery.where(namePredicate);
             final TypedQuery query = entityManager.createQuery(criteriaQuery);
             Object singleResult = query.getSingleResult();
-            entityManager.refresh(singleResult);
+            //entityManager.refresh(singleResult);
             return (Study) singleResult;
         } catch (NoResultException e) {
             throw new RepositoryException("Study not found.", e);
@@ -548,7 +569,7 @@ public class DatabaseStorage implements Repository {
         SystemModel systemModel = null;
         try {
             systemModel = entityManager.find(SystemModel.class, systemModelId);
-            entityManager.refresh(systemModel);
+            //entityManager.refresh(systemModel);
         } catch (Exception e) {
             throw new RepositoryException("Loading SystemModel failed.", e);
         } finally {
@@ -587,6 +608,26 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
+    public void storeLog(LogEntry logEntry) {
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            EntityTransaction transaction = entityManager.getTransaction();
+            transaction.begin();
+            entityManager.persist(logEntry);
+            transaction.commit();
+        } catch (Exception e) {
+            logger.debug("logging action to database failed: " + e.getMessage());
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    @Override
     public ExternalModel storeExternalModel(ExternalModel externalModel) throws RepositoryException {
         EntityManager entityManager = null;
         try {
@@ -617,7 +658,7 @@ public class DatabaseStorage implements Repository {
         ExternalModel externalModel = null;
         try {
             externalModel = entityManager.find(ExternalModel.class, externalModelId);
-            entityManager.refresh(externalModel);
+            //entityManager.refresh(externalModel);
         } catch (Exception e) {
             throw new RepositoryException("Loading ExternalModel failed.", e);
         } finally {

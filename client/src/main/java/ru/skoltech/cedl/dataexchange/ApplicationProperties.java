@@ -15,9 +15,18 @@ public class ApplicationProperties {
         load();
     }
 
+    public static String getBuildTimes() {
+        return properties.getProperty("timestamp", "<>");
+    }
+
+    public static String getAppDistributionServerUrl() {
+        return properties.getProperty("app.distribution.server.url", "<>");
+    }
+
     public static String getAppVersion() {
         return properties.getProperty("app.version", "<>");
     }
+
     public static String getDbSchemaVersion() {
         return properties.getProperty("db.schema.version", "<>");
     }

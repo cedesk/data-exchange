@@ -1,15 +1,14 @@
 package ru.skoltech.cedl.dataexchange.users.model;
 
 import org.apache.log4j.Logger;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,6 +55,7 @@ public class UserRoleManagement {
     }
 
     @OneToMany(targetEntity = Discipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     public List<Discipline> getDisciplines() {
         return disciplines;
     }
@@ -65,6 +65,7 @@ public class UserRoleManagement {
     }
 
     @OneToMany(targetEntity = UserDiscipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     public List<UserDiscipline> getUserDisciplines() {
         return userDisciplines;
     }
@@ -106,6 +107,7 @@ public class UserRoleManagement {
     }
 
     @OneToMany(targetEntity = DisciplineSubSystem.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     public List<DisciplineSubSystem> getDisciplineSubSystems() {
         return disciplineSubSystems;
     }
@@ -149,7 +151,7 @@ public class UserRoleManagement {
     public List<User> getUsersOfDiscipline(Discipline discipline) {
         List<User> userList = userDisciplines.stream()
                 .filter(userDiscipline -> userDiscipline.getDiscipline().equals(discipline))
-                .map(UserDiscipline::getUser)
+                .map(UserDiscipline::getUser).distinct()
                 .collect(Collectors.toCollection(() -> new LinkedList<>()));
         return userList;
     }
@@ -158,7 +160,7 @@ public class UserRoleManagement {
     public List<Discipline> getDisciplinesOfUser(User user) {
         List<Discipline> disciplineList = userDisciplines.stream()
                 .filter(userDiscipline -> userDiscipline.getUser().equals(user))
-                .map(UserDiscipline::getDiscipline)
+                .map(UserDiscipline::getDiscipline).distinct()
                 .collect(Collectors.toCollection(() -> new LinkedList<>()));
         return disciplineList;
     }
@@ -176,16 +178,12 @@ public class UserRoleManagement {
         if (modelNode.isRootNode()) {
             return getAdminDiscipline();
         }
-        DisciplineSubSystem associationFound = null;
-        for (DisciplineSubSystem disciplineSubSystem : disciplineSubSystems) {
-            if (disciplineSubSystem.getSubSystem().equals(modelNode)) {
-                associationFound = disciplineSubSystem;
-                break;
-            }
-        }
+        Optional<DisciplineSubSystem> subSystemOptional = disciplineSubSystems.stream()
+                .filter(disciplineSubSystem -> disciplineSubSystem.getSubSystem().getUuid().equals(modelNode.getUuid()))
+                .findAny();
 
-        if (associationFound != null) {
-            return associationFound.getDiscipline();
+        if (subSystemOptional.isPresent()) {
+            return subSystemOptional.get().getDiscipline();
         } else {
             logger.debug("no discipline found for subsystem '" + modelNode.getName() + "'");
             return null;

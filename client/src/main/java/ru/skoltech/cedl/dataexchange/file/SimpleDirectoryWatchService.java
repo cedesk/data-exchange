@@ -67,14 +67,12 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
         return FileSystems.getDefault().getPathMatcher("glob:" + globPattern);
     }
 
-    public static boolean matches(Path input, PathMatcher pattern) {
-        return pattern.matches(input);
-    }
-
     public static boolean matchesAny(Path input, Set<PathMatcher> patterns) {
-        for (PathMatcher pattern : patterns) {
-            if (matches(input, pattern)) {
-                return true;
+        if (patterns != null) {
+            for (PathMatcher pattern : patterns) {
+                if (pattern.matches(input)) {
+                    return true;
+                }
             }
         }
 
@@ -89,14 +87,10 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
         return dirPathToListenersMap.get(dir);
     }
 
-    private Set<PathMatcher> getPatterns(OnFileChangeListener listener) {
-        return listenerToFilePatternsMap.get(listener);
-    }
-
     private Set<OnFileChangeListener> matchedListeners(Path dir, Path file) {
         return getListeners(dir)
                 .stream()
-                .filter(listener -> matchesAny(file, getPatterns(listener)))
+                .filter(listener -> matchesAny(file, listenerToFilePatternsMap.get(listener)))
                 .collect(Collectors.toSet());
     }
 

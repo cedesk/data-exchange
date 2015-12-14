@@ -1,12 +1,10 @@
 package ru.skoltech.cedl.dataexchange;
 
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
@@ -42,13 +40,13 @@ public class ClientApplication extends Application {
         primaryStage.setScene(new Scene(root));
         primaryStage.getIcons().add(IconSet.APP_ICON);
         primaryStage.show();
+/*
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {
-                logger.info("Closing CEDESK ...");
-                mainController.terminate();
-                logger.info("CEDESK closed.");
+            // TODO: ask to save unsaved modification
             }
         });
+*/
     }
 
     @Override

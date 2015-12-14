@@ -30,7 +30,9 @@ import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 03.07.2015.
@@ -80,11 +82,11 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     }
 
     private void updateView() {
-        //String modelNames = modelNode.getExternalModels().stream().map(em -> em.getId() + ":" + em.getName()).collect(Collectors.joining(", "));
-        //externalModelNameText.setText(modelNames);
         ObservableList<Node> externalModelViewerList = externalModelViewContainer.getChildren();
         externalModelViewerList.clear();
-        for (ExternalModel externalModel : modelNode.getExternalModels()) {
+        // TODO: for a strange reason the modelNode.getExternalModels() is not always distinct!
+        List<ExternalModel> externalModels = modelNode.getExternalModels().stream().distinct().collect(Collectors.toList());
+        for (ExternalModel externalModel : externalModels) {
             renderExternalModelView(externalModel);
         }
     }
@@ -94,11 +96,10 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
         removeButton.setTooltip(new Tooltip("remove external model"));
         removeButton.setOnAction(ExternalModelEditor.this::deleteExternalModel);
-        removeButton.setMinWidth(20);
+        removeButton.setMinWidth(28);
         HBox extModRow = new HBox(16, editor, removeButton);
         removeButton.setUserData(extModRow);
         externalModelViewContainer.getChildren().add(extModRow);
-        //getDialogPane().getScene().getWindow().sizeToScene();
     }
 
     public void addExternalModel(ActionEvent actionEvent) {

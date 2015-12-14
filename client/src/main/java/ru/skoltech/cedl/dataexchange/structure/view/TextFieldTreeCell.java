@@ -12,8 +12,6 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
-import ru.skoltech.cedl.dataexchange.users.model.Discipline;
-import ru.skoltech.cedl.dataexchange.users.model.User;
 
 /**
  * Created by D.Knoll on 24.04.2015.
@@ -32,6 +30,7 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
         if (textField == null) {
             createTextField();
         }
+        textField.setText(getString());
         setText(null);
         setGraphic(textField);
         textField.selectAll();
@@ -73,7 +72,7 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
     }
 
     private void createTextField() {
-        textField = new TextField(getString());
+        textField = new TextField();
         textField.setOnKeyReleased(new EventHandler<KeyEvent>() {
 
             @Override

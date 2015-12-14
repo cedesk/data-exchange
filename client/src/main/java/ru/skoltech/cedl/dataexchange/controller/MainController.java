@@ -11,7 +11,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -23,10 +27,7 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.Identifiers;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -36,10 +37,15 @@ import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MainController implements Initializable {
@@ -144,12 +150,15 @@ public class MainController implements Initializable {
                 ApplicationSettings.setLastUsedProject(project.getProjectName());
                 repositoryWatcher.unpause();
                 StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
+                ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName());
             } else {
                 StatusLogger.getInstance().log("Loading study failed!", false);
+                ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName() + ", loading failed");
             }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading project!", true);
             logger.error(e);
+            ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName() + ", loading failed");
         }
         updateView();
     }
@@ -172,12 +181,15 @@ public class MainController implements Initializable {
             repositoryWatcher.unpause();
             ApplicationSettings.setLastUsedProject(project.getProjectName());
             StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
+            ActionLogger.log(ActionLogger.ActionType.project_save, project.getProjectName());
         } catch (RepositoryException re) {
             logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
             StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
+            ActionLogger.log(ActionLogger.ActionType.project_save, project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
         } catch (Exception e) {
             StatusLogger.getInstance().log("Saving study failed!", true);
             logger.error("Unknown Exception", e);
+            ActionLogger.log(ActionLogger.ActionType.project_save, project.getProjectName() + ", saving failed");
         }
     }
 
@@ -229,7 +241,7 @@ public class MainController implements Initializable {
                     String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
                     logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
                     updateRemoteModel();
-                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", MainController.this::openDiffView);
+                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", "View Differences", MainController.this::openDiffView);
                 }
             }
         });
@@ -250,6 +262,7 @@ public class MainController implements Initializable {
                 if (!validRepository) return;
                 validateUser();
 
+                ActionLogger.log(ActionLogger.ActionType.application_start, ApplicationProperties.getAppVersion());
                 if (ApplicationSettings.getProjectToImport() != null) {
                     importProject(null);
                 } else if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
@@ -266,6 +279,13 @@ public class MainController implements Initializable {
                         }
                     }
                 }
+            }
+        });
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                checkForUpdate(null);
             }
         });
     }
@@ -291,6 +311,7 @@ public class MainController implements Initializable {
             Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
                     "Contact the administrator for the creation of a user for you.\n" +
                     "As for now you'lll be given the role of an observer, who can not perform modifications.");
+            ActionLogger.log(ActionLogger.ActionType.user_validate, userName + ", not found");
         }
     }
 
@@ -358,6 +379,7 @@ public class MainController implements Initializable {
     }
 
     public void terminate() {
+        ActionLogger.log(ActionLogger.ActionType.application_stop, "");
         if (repositoryWatcher != null) {
             repositoryWatcher.finish();
         }
@@ -396,6 +418,7 @@ public class MainController implements Initializable {
                 project.importSystemModel(systemModel);
                 updateView();
                 StatusLogger.getInstance().log("Successfully imported study!", false);
+                ActionLogger.log(ActionLogger.ActionType.project_import, project.getProjectName());
             } catch (IOException e) {
                 logger.error("error importing model from file");
             }
@@ -413,6 +436,7 @@ public class MainController implements Initializable {
             try {
                 fs.storeSystemModel(project.getSystemModel(), outputFile);
                 StatusLogger.getInstance().log("Successfully exported study!", false);
+                ActionLogger.log(ActionLogger.ActionType.project_export, project.getProjectName());
             } catch (IOException e) {
                 logger.error("error exporting model to file", e);
             }
@@ -439,12 +463,14 @@ public class MainController implements Initializable {
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
                             StatusLogger.getInstance().log("Successfully deleted study!", false);
+                            ActionLogger.log(ActionLogger.ActionType.project_delete, studyName);
                         }
                     } else {
                         Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study", "Are you really sure to delete project '" + studyName + "' from the repository?\nWARNING: This is not reversible!");
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
                             StatusLogger.getInstance().log("Successfully deleted study!", false);
+                            ActionLogger.log(ActionLogger.ActionType.project_delete, studyName);
                         }
                     }
                 } catch (RepositoryException re) {
@@ -454,6 +480,36 @@ public class MainController implements Initializable {
         } else {
             logger.warn("list of studies is empty!");
             Dialogues.showWarning("Repository empty", "There are no studies available in the repository!");
+        }
+    }
+
+    public void checkForUpdate(ActionEvent actionEvent) {
+        Optional<ApplicationPackage> latestVersionAvailable = UpdateChecker.getLatestVersionAvailable();
+        if (latestVersionAvailable.isPresent()) {
+            ApplicationPackage applicationPackage = latestVersionAvailable.get();
+            logger.info("available package: " + applicationPackage.toString());
+            String packageVersion = applicationPackage.getVersion();
+            String appVersion = ApplicationProperties.getAppVersion();
+            int versionCompare = Utils.compareVersions(appVersion, packageVersion);
+            if (versionCompare < 0) {
+                UserNotifications.showActionableNotification(getAppWindow(), "Application Update",
+                        "You are using " + appVersion + ", while " + packageVersion + " is already available. Please update!",
+                        "Download Update", new UpdateDownloader(applicationPackage));
+            } else if (versionCompare > 0) {
+                UserNotifications.showNotification(getAppWindow(), "Application Update", "You are using " + appVersion + ", which is newer than the latest available " + packageVersion + ". Please publish!");
+            } else {
+                if (actionEvent != null) {
+                    UserNotifications.showNotification(getAppWindow(), "Application Update", "Latest version installed. No need to update.");
+                } else {
+                    StatusLogger.getInstance().log("Latest application version installed. No need to update.");
+                }
+            }
+        } else {
+            if (actionEvent != null) {
+                UserNotifications.showNotification(getAppWindow(), "Update check failed", "Unable to connect to Distribution Server!");
+            } else {
+                StatusLogger.getInstance().log("Update check failed. Unable to connect to Distribution Server!");
+            }
         }
     }
 
@@ -575,5 +631,28 @@ public class MainController implements Initializable {
     public void quit(ActionEvent actionEvent) {
         Stage stage = (Stage) applicationPane.getScene().getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
+    private class UpdateDownloader implements Consumer<ActionEvent> {
+        ApplicationPackage applicationPackage;
+
+        public UpdateDownloader(ApplicationPackage applicationPackage) {
+            this.applicationPackage = applicationPackage;
+        }
+
+        @Override
+        public void accept(ActionEvent actionEvent) {
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                try {
+                    URI uri = new URI(applicationPackage.getUrl());
+                    desktop.browse(uri);
+                } catch (URISyntaxException | IOException e) {
+                    StatusLogger.getInstance().log("Unable to open URL!", true);
+                }
+            } else {
+                StatusLogger.getInstance().log("Unable to open URL!", true);
+            }
+        }
     }
 }

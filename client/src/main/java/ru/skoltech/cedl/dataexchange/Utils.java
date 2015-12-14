@@ -4,6 +4,8 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.jboss.logging.Logger;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -55,6 +57,7 @@ public class Utils {
         // "1.13-snapshot" < "1.13"
         else {
             if (str1.length == 2 && str2.length == 1) return -1;
+            if (str1.length == 1 && str2.length == 2) return 1;
             return str1[1].compareTo(str2[1]);
         }
     }
@@ -71,5 +74,14 @@ public class Utils {
             logger.error("error copying bean " + source.toString(), e);
         }
         return target;
+    }
+
+    public static String getHostname() {
+        try {
+            return InetAddress.getLocalHost().getHostName().toLowerCase();
+        } catch (UnknownHostException e) {
+            // ignore
+        }
+        return "localhost";
     }
 }

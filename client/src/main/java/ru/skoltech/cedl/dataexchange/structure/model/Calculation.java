@@ -1,6 +1,8 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.apache.commons.collections.ListUtils;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Operation;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.OperationRegistry;
@@ -63,6 +65,7 @@ public class Calculation {
 
     @OneToMany(targetEntity = Argument.class,/* mappedBy = "parent", */orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @OrderColumn(name = "id")
+    @Fetch(FetchMode.SELECT)
     public List<Argument> getArguments() {
         return arguments;
     }
