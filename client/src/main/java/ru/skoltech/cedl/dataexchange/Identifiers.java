@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 public class Identifiers {
     private static final Pattern NODE_NAME_RULE = Pattern.compile("^[a-zA-Z\\-]{1,}$");
 
-    private static final Pattern PARAMETER_NAME_RULE = Pattern.compile("^[a-zA-Z\\-_ ]{1,}$");
+    private static final Pattern PARAMETER_NAME_RULE = Pattern.compile("^[a-zA-Z0-9\\-_ ]{1,}$");
 
     private static final Pattern USER_NAME_RULE = Pattern.compile("^[a-z]{1,}[\\.\\-_]?[a-z]{1,}$");
 
@@ -16,7 +16,7 @@ public class Identifiers {
 
     private static final String NODE_NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphabetic characters, minus '-'!";
 
-    private static final String PARAMETER_NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphabetic characters, minus '-', underscore '_', space ' '!";
+    private static final String PARAMETER_NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphanumeric characters, minus '-', underscore '_', space ' '!";
 
     private static final String USER_NAME_RULE_DESCRIPTION = "User names must be at least of 1 character and contain only alphanumeric lowercase characters and minus '-', underscore '_' and dot '.' inside!";
 

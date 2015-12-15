@@ -299,114 +299,117 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     private void updateModel() {
-        if (parameterBean != null && project != null) {
-            String parameterName = nameText.getText();
-            if (!Identifiers.validateParameterName(parameterName)) {
-                Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
-                return;
-            }
+        ParameterModel parameterModel = getParameterModel();
 
-            ParameterModel parameterModel = getParameterModel();
-
-            parameterModel.setNature(natureChoiceBox.getValue());
-            parameterModel.setValueSource(valueSourceChoiceBox.getValue());
-            parameterModel.setUnit(unitChoiceBox.getValue());
-
-            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                if (valueReference != null) {
-                    parameterModel.setValueReference(valueReference);
-                    logger.debug("update parameter value from model");
-                    try {
-                        ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
-                            @Override
-                            public void accept(ParameterUpdate parameterUpdate) {
-                                parameterBean.unBindBidirectional("value", valueText.textProperty());
-                                parameterBean.bindBidirectional("value", valueText.textProperty());
-                                // TODO: update parameter table
-                            }
-                        });
-                    } catch (ExternalModelException e) {
-                        Window window = propertyPane.getScene().getWindow();
-                        UserNotifications.showNotification(window, "Error", "Unable to update value from given target.");
-                    }
-                } else {
-                    Dialogues.showWarning("Empty reference", "No reference has been specified!");
-                }
-            } else {
-                parameterModel.setValueReference(null);
-            }
-            if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
-                ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
-                ParameterModel previousValueLink = parameterModel.getValueLink();
-                if (previousValueLink != null) {
-                    parameterLinkRegistry.removeLink(previousValueLink, originalParameterModel);
-                }
-                if (valueLinkParameter != null) {
-                    parameterLinkRegistry.addLink(valueLinkParameter, originalParameterModel);
-                }
-                parameterModel.setValueLink(valueLinkParameter);
-            } else {
-                parameterModel.setValueLink(null);
-            }
-            if (parameterModel.getValueSource() == ParameterValueSource.CALCULATION) {
-                Calculation previousCalculation = parameterModel.getCalculation();
-                ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
-                if (previousCalculation != null) {
-                    parameterLinkRegistry.removeLinks(calculation.getLinkedParameters(), originalParameterModel);
-                }
-                if (calculation != null) {
-                    parameterLinkRegistry.addLinks(calculation.getLinkedParameters(), originalParameterModel);
-                }
-                parameterModel.setCalculation(calculation);
-            } else {
-                parameterModel.setCalculation(null);
-            }
-            if (parameterModel.getIsExported()) {
-                if (exportReference != null && exportReference.equals(valueReference)) {
-                    Dialogues.showWarning("inconsistency", "value source and export reference must not be equal. ignoring export reference.");
-                    exportReference = null;
-                    parameterModel.setIsExported(false);
-                    parameterModel.setExportReference(null);
-                } else {
-                    parameterModel.setExportReference(exportReference);
-                }
-            } else {
-                parameterModel.setExportReference(null);
-            }
-            if (parameterModel.getValueSource() == ParameterValueSource.MANUAL) {
-                parameterModel.setIsReferenceValueOverridden(false);
-            }
-            if (!parameterModel.getIsReferenceValueOverridden()) {
-                parameterModel.setOverrideValue(null);
-            }
-
-            // TODO: check whether modifications were made
-            try {
-                PropertyUtils.copyProperties(originalParameterModel, parameterModel);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                logger.error("error copying parameter model", e);
-            }
-
-            // UPDATE EXTERNAL MODEL
-            if (parameterModel.getIsExported()) {
-                if (exportReference != null && exportReference.getExternalModel() != null) {
-                    ExternalModel externalModel = exportReference.getExternalModel();
-                    ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
-                    ExternalModelFileWatcher externalModelFileWatcher = project.getExternalModelFileWatcher();
-                    try {
-                        ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler, externalModelFileWatcher);
-                    } catch (ExternalModelException e) {
-                        Dialogues.showError("External Model Error", "Failed to export parameter value to external model. \n" + e.getMessage());
-                    }
-                }
-            }
-
-            // UPDATE LINKING PARAMETERS
-            ProjectContext.getInstance().getProject().getParameterLinkRegistry().updateSinks(originalParameterModel);
-
-            project.markStudyModified();
-            editListener.accept(parameterModel);
+        logger.debug("updating parameter: " + parameterModel.getNodePath());
+        String parameterName = nameText.getText();
+        if (!Identifiers.validateParameterName(parameterName)) {
+            Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
+            return;
         }
+        if (!parameterName.equals(originalParameterModel.getName()) &&
+                parameterModel.getParent().getParameterMap().containsKey(parameterName)) {
+            Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
+            return;
+        }
+
+        parameterModel.setNature(natureChoiceBox.getValue());
+        parameterModel.setValueSource(valueSourceChoiceBox.getValue());
+        parameterModel.setUnit(unitChoiceBox.getValue());
+
+        if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+            if (valueReference != null) {
+                parameterModel.setValueReference(valueReference);
+                logger.debug("update parameter value from model");
+                try {
+                    ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
+                        @Override
+                        public void accept(ParameterUpdate parameterUpdate) {
+                            parameterBean.unBindBidirectional("value", valueText.textProperty());
+                            parameterBean.bindBidirectional("value", valueText.textProperty());
+                        }
+                    });
+                } catch (ExternalModelException e) {
+                    Window window = propertyPane.getScene().getWindow();
+                    UserNotifications.showNotification(window, "Error", "Unable to update value from given target.");
+                }
+            } else {
+                Dialogues.showWarning("Empty reference", "No reference has been specified!");
+            }
+        } else {
+            parameterModel.setValueReference(null);
+        }
+        if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
+            ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
+            ParameterModel previousValueLink = parameterModel.getValueLink();
+            if (previousValueLink != null) {
+                parameterLinkRegistry.removeLink(previousValueLink, originalParameterModel);
+            }
+            if (valueLinkParameter != null) {
+                parameterLinkRegistry.addLink(valueLinkParameter, originalParameterModel);
+            }
+            parameterModel.setValueLink(valueLinkParameter);
+        } else {
+            parameterModel.setValueLink(null);
+        }
+        if (parameterModel.getValueSource() == ParameterValueSource.CALCULATION) {
+            Calculation previousCalculation = parameterModel.getCalculation();
+            ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
+            if (previousCalculation != null) {
+                parameterLinkRegistry.removeLinks(calculation.getLinkedParameters(), originalParameterModel);
+            }
+            if (calculation != null) {
+                parameterLinkRegistry.addLinks(calculation.getLinkedParameters(), originalParameterModel);
+            }
+            parameterModel.setCalculation(calculation);
+        } else {
+            parameterModel.setCalculation(null);
+        }
+        if (parameterModel.getIsExported()) {
+            if (exportReference != null && exportReference.equals(valueReference)) {
+                Dialogues.showWarning("inconsistency", "value source and export reference must not be equal. ignoring export reference.");
+                exportReference = null;
+                parameterModel.setIsExported(false);
+                parameterModel.setExportReference(null);
+            } else {
+                parameterModel.setExportReference(exportReference);
+            }
+        } else {
+            parameterModel.setExportReference(null);
+        }
+        if (parameterModel.getValueSource() == ParameterValueSource.MANUAL) {
+            parameterModel.setIsReferenceValueOverridden(false);
+        }
+        if (!parameterModel.getIsReferenceValueOverridden()) {
+            parameterModel.setOverrideValue(null);
+        }
+
+        // TODO: check whether modifications were made
+        try {
+            PropertyUtils.copyProperties(originalParameterModel, parameterModel);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            logger.error("error copying parameter model", e);
+        }
+
+        // UPDATE EXTERNAL MODEL
+        if (parameterModel.getIsExported()) {
+            if (exportReference != null && exportReference.getExternalModel() != null) {
+                ExternalModel externalModel = exportReference.getExternalModel();
+                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
+                ExternalModelFileWatcher externalModelFileWatcher = project.getExternalModelFileWatcher();
+                try {
+                    ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler, externalModelFileWatcher);
+                } catch (ExternalModelException e) {
+                    Dialogues.showError("External Model Error", "Failed to export parameter value to external model. \n" + e.getMessage());
+                }
+            }
+        }
+
+        // UPDATE LINKING PARAMETERS
+        ProjectContext.getInstance().getProject().getParameterLinkRegistry().updateSinks(originalParameterModel);
+
+        project.markStudyModified();
+        editListener.accept(parameterModel);
     }
 
     public void setEditListener(Consumer<ParameterModel> updateListener) {
