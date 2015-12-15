@@ -103,7 +103,11 @@ public class SpreadsheetAccessor implements Closeable {
             switch (cell.getCellType()) {
                 case Cell.CELL_TYPE_NUMERIC:
                 case Cell.CELL_TYPE_FORMULA:
-                    result = cell.getNumericCellValue();
+                    try {
+                        result = cell.getNumericCellValue();
+                    } catch (Exception e) {
+                        throw new ExternalModelException("unable to get cell value", e);
+                    }
                     break;
                 default:
                     throw new ExternalModelException("invalid cell type: " + cell.getCellType());
