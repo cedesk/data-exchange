@@ -346,6 +346,7 @@ public class ModelEditingController implements Initializable {
         if (selectedItem.getParent() == null) { // is ROOT
             StatusLogger.getInstance().log("Node can not be deleted!", true);
         } else {
+            // TODO: check for dependencies, do not allow if there are dependent nodes
             // view
             TreeItem<ModelNode> parent = selectedItem.getParent();
             parent.getChildren().remove(selectedItem);
@@ -497,8 +498,12 @@ public class ModelEditingController implements Initializable {
     }
 
     public void refreshView(ActionEvent actionEvent) {
-        structureTree.setRoot(null);
+        clearView();
         updateView();
+    }
+
+    public void clearView() {
+        structureTree.setRoot(null);
     }
 
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {

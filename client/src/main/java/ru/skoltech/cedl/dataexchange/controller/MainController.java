@@ -144,6 +144,7 @@ public class MainController implements Initializable {
     }
 
     public void reloadProject(ActionEvent actionEvent) {
+        modelEditingController.clearView();
         try {
             boolean success = project.loadLocalStudy();
             if (success) {
