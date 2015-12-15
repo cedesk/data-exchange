@@ -84,8 +84,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     private void updateView() {
         ObservableList<Node> externalModelViewerList = externalModelViewContainer.getChildren();
         externalModelViewerList.clear();
-        // TODO: for a strange reason the modelNode.getExternalModels() is not always distinct!
-        List<ExternalModel> externalModels = modelNode.getExternalModels().stream().distinct().collect(Collectors.toList());
+        List<ExternalModel> externalModels = modelNode.getExternalModels();
         for (ExternalModel externalModel : externalModels) {
             renderExternalModelView(externalModel);
         }
