@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.external.excel;
 
+import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
@@ -118,15 +119,22 @@ public class SpreadsheetAccessor implements Closeable {
 
     private void setNumericValue(Cell cell, Double value) throws ExternalModelException {
         if (cell != null) {
-            // TODO: iif necessary
-            markModified();
+            boolean change = false;
             try {
-                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue(value);
-            } catch (IllegalArgumentException | IllegalStateException e) {
-                throw new ExternalModelException("writing to cell failed!", e);
+                Double previousValue = getNumericValue(cell);
+                change = !Precision.equals(previousValue, value, 2);
+            } catch (ExternalModelException ignore) {
             }
-            formulaEvaluator.notifyUpdateCell(cell);
+            if (change) {
+                try {
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue(value);
+                } catch (IllegalArgumentException | IllegalStateException e) {
+                    throw new ExternalModelException("writing to cell failed!", e);
+                }
+                markModified();
+                formulaEvaluator.notifyUpdateCell(cell);
+            }
         }
     }
 
