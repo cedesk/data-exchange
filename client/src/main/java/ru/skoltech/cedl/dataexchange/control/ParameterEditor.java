@@ -356,7 +356,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             Calculation previousCalculation = parameterModel.getCalculation();
             ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
             if (previousCalculation != null) {
-                parameterLinkRegistry.removeLinks(calculation.getLinkedParameters(), originalParameterModel);
+                parameterLinkRegistry.removeLinks(previousCalculation.getLinkedParameters(), originalParameterModel);
             }
             if (calculation != null) {
                 parameterLinkRegistry.addLinks(calculation.getLinkedParameters(), originalParameterModel);
