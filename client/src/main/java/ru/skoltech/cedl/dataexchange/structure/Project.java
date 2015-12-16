@@ -28,7 +28,8 @@ import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.io.IOException;
-import java.sql.Timestamp;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -139,8 +140,8 @@ public class Project {
     public void setStudy(Study study) {
         this.study = study;
         if (study != null && study.getSystemModel() != null) {
-            Timestamp latestMod = getSystemModel().findLatestModification();
-            setLatestLoadedModification(latestMod.getTime());
+            long latestMod = getSystemModel().findLatestModification();
+            setLatestLoadedModification(latestMod);
         } else {
             setLatestLoadedModification(Utils.INVALID_TIME);
         }
@@ -152,11 +153,20 @@ public class Project {
 
     public void setRepositoryStudy(Study repositoryStudy) {
         this.repositoryStudy = repositoryStudy;
-        if (repositoryStudy != null && repositoryStudy.getSystemModel() != null) {
-            Timestamp latestMod = repositoryStudy.getSystemModel().findLatestModification();
-            setLatestRepositoryModification(latestMod.getTime());
-        } else {
-            setLatestRepositoryModification(Utils.INVALID_TIME);
+
+        if (repositoryStudy != null) {
+            StudySettings localSettings = getStudy().getStudySettings();
+            StudySettings remoteSettings = repositoryStudy.getStudySettings();
+            if (!localSettings.equals(remoteSettings)) {
+                logger.debug("updating studySettings");
+                setStudySettings(remoteSettings);
+            }
+            UserRoleManagement localURM = getStudy().getUserRoleManagement();
+            UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
+            if (!localURM.isAdmin(getUser()) && !localURM.equals(remoteURM)) {
+                logger.debug("updating userRoleManagement");
+                setUserRoleManagement(remoteURM);
+            }
         }
     }
 
@@ -186,6 +196,20 @@ public class Project {
 
     public LongProperty latestRepositoryModificationProperty() {
         return latestRepositoryModification;
+    }
+
+
+    public void checkStudyInRepository() {
+        LocalTime startTime = LocalTime.now();
+        Long latestMod = repository.getLastStudyModification(projectName);
+        long loadDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
+        logger.info("loaded repository study (" + loadDuration + "ms)");
+
+        if (latestMod != null) {
+            setLatestRepositoryModification(latestMod);
+        } else {
+            setLatestRepositoryModification(Utils.INVALID_TIME);
+        }
     }
 
     public UserManagement getUserManagement() {
@@ -378,8 +402,8 @@ public class Project {
         if (study != null) {
             setStudy(study);
             setRepositoryStudy(study);
-            Timestamp latestMod = getSystemModel().findLatestModification();
-            setLatestLoadedModification(latestMod.getTime());
+            long latestMod = getSystemModel().findLatestModification();
+            setLatestLoadedModification(latestMod);
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
             initializeStateOfExternalModels();
             registerParameterLinks();

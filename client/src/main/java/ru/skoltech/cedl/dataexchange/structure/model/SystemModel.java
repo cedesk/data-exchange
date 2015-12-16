@@ -2,10 +2,10 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import ru.skoltech.cedl.dataexchange.Utils;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 
@@ -49,8 +49,8 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
      *
      * @return
      */
-    public Timestamp findLatestModification() {
-        long latest = 0L;
+    public Long findLatestModification() {
+        Long latest = Utils.INVALID_TIME;
         Iterator<ModelNode> iterator = treeIterator();
         while (iterator.hasNext()) {
             ModelNode modelNode = iterator.next();
@@ -64,6 +64,6 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
                     latest = parameterModelLastModification;
             }
         }
-        return new Timestamp(latest);
+        return latest;
     }
 }

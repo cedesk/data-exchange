@@ -257,6 +257,9 @@ public class DatabaseStorage implements Repository {
             } else {
                 study = entityManager.merge(study);
             }
+            long latestModification = study.getSystemModel().findLatestModification();
+            study.setLatestModelModification(latestModification);
+            study = entityManager.merge(study);
             transaction.commit();
         } catch (OptimisticLockException | RollbackException re) {
             logger.warn("transaction failed", re);
@@ -569,7 +572,6 @@ public class DatabaseStorage implements Repository {
         SystemModel systemModel = null;
         try {
             systemModel = entityManager.find(SystemModel.class, systemModelId);
-            //entityManager.refresh(systemModel);
         } catch (Exception e) {
             throw new RepositoryException("Loading SystemModel failed.", e);
         } finally {
@@ -618,6 +620,32 @@ public class DatabaseStorage implements Repository {
             transaction.commit();
         } catch (Exception e) {
             logger.debug("logging action to database failed: " + e.getMessage());
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    @Override
+    public Long getLastStudyModification(String name) {
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+            final CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
+            final Root<Study> studyRoot = criteriaQuery.from(Study.class);
+            final Predicate namePredicate = criteriaBuilder.equal(studyRoot.get("name"), name);
+            criteriaQuery.where(namePredicate);
+            criteriaQuery.select(criteriaBuilder.tuple(studyRoot.get("latestModelModification")));
+            Tuple result = entityManager.createQuery(criteriaQuery).getSingleResult();
+            Long timestamp = (Long) result.get(0);
+            return timestamp;
+        } catch (Exception e) {
+            logger.warn("loading last modification of study failed.", e);
+            return null;
         } finally {
             try {
                 if (entityManager != null)

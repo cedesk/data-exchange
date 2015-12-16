@@ -26,6 +26,8 @@ public class Study {
     @XmlTransient
     private StudySettings studySettings;
 
+    private Long latestModelModification;
+
     @XmlTransient
     private long version;
 
@@ -85,6 +87,14 @@ public class Study {
         this.studySettings = studySettings;
     }
 
+    public Long getLatestModelModification() {
+        return latestModelModification;
+    }
+
+    public void setLatestModelModification(Long latestModelModification) {
+        this.latestModelModification = latestModelModification;
+    }
+
     @Version
     public long getVersion() {
         return version;
@@ -99,6 +109,7 @@ public class Study {
         final StringBuilder sb = new StringBuilder("Study{");
         sb.append("id=").append(id);
         sb.append(", name=").append(name);
+        sb.append(", latestModelModification").append(latestModelModification);
         sb.append(", version=").append(version);
         sb.append('}');
         return sb.toString();

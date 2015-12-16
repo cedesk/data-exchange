@@ -53,4 +53,6 @@ public interface Repository extends Closeable {
     List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException;
 
     void storeLog(LogEntry logEntry);
+
+    Long getLastStudyModification(String name);
 }
