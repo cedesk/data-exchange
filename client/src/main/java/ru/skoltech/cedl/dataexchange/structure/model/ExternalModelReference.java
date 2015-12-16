@@ -1,6 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import javax.persistence.*;
+import javax.persistence.Column;
 import javax.xml.bind.annotation.*;
 import java.util.Objects;
 

@@ -1,9 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.util.Arrays;
 import java.util.List;
@@ -158,5 +155,4 @@ public class DummySystemBuilder {
     private static int getRandomInt() {
         return (int) (Math.random() * 100);
     }
-
 }

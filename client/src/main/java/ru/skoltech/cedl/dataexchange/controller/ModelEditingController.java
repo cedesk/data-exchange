@@ -255,7 +255,7 @@ public class ModelEditingController implements Initializable {
                 structureTree.setRoot(rootNode);
             } else {
                 TreeItem<ModelNode> currentViewRoot = structureTree.getRoot();
-                if(currentViewRoot != null) {
+                if (currentViewRoot != null) {
                     String currentViewRootUuid = currentViewRoot.getValue().getUuid();
                     String modelRootUuid = project.getSystemModel().getUuid();
                     if (modelRootUuid.equals(currentViewRootUuid)) {

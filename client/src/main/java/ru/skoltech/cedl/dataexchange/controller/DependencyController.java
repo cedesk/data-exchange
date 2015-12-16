@@ -24,15 +24,9 @@ import java.util.stream.Collectors;
  */
 public class DependencyController implements Initializable {
 
-    public enum ViewMode {
-        DSM, N_SQUARE
-    }
-
     private static final Logger logger = Logger.getLogger(DependencyController.class);
-
     @FXML
     private SpreadsheetView spreadsheetView;
-
     private ViewMode mode;
 
     private static Grid getDSMGrid(List<ModelNode> vertices, DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph) {
@@ -147,5 +141,9 @@ public class DependencyController implements Initializable {
             spreadsheetView.setShowColumnHeader(false);
         }
         spreadsheetView.setGrid(grid);
+    }
+
+    public enum ViewMode {
+        DSM, N_SQUARE
     }
 }

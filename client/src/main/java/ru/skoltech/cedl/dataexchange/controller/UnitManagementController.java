@@ -28,19 +28,14 @@ import java.util.ResourceBundle;
 public class UnitManagementController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(UnitManagementController.class);
-
-    @FXML
-    private AnchorPane unitsDetailPane;
-
-    @FXML
-    private AnchorPane quantityKindsDetailPane;
-
-    @FXML
-    private TableView<Unit> unitsTableView;
-
     @FXML
     public TableColumn<Unit, String> unitQuantityKindColumn;
-
+    @FXML
+    private AnchorPane unitsDetailPane;
+    @FXML
+    private AnchorPane quantityKindsDetailPane;
+    @FXML
+    private TableView<Unit> unitsTableView;
     @FXML
     private TableView<QuantityKind> quantityTableView;
 
@@ -68,7 +63,7 @@ public class UnitManagementController implements Initializable {
         unitQuantityKindColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Unit, String>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<Unit, String> param) {
-                if(param != null && param.getValue() != null && param.getValue().getQuantityKind() != null) {
+                if (param != null && param.getValue() != null && param.getValue().getQuantityKind() != null) {
                     return new SimpleStringProperty(param.getValue().getQuantityKind().asText());
                 } else {
                     return new SimpleStringProperty();

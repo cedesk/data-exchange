@@ -5,8 +5,8 @@ import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 
 import java.awt.*;
@@ -228,10 +228,10 @@ public class ExternalModelFileHandler {
         if (spreadsheetFile != null) {
             try {
                 Desktop desktop = Desktop.getDesktop();
-                if(desktop.isSupported(Desktop.Action.EDIT)) {
+                if (desktop.isSupported(Desktop.Action.EDIT)) {
                     desktop.edit(spreadsheetFile);
                 } else {
-                    StatusLogger.getInstance().log("Unable to open file!",true);
+                    StatusLogger.getInstance().log("Unable to open file!", true);
                 }
             } catch (Exception e) {
                 logger.error("Error opening spreadsheet with default editor.", e);

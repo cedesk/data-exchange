@@ -120,7 +120,7 @@ public class ModelUpdateUtil {
 
         ExternalModelExporter exporter = ExternalModelAccessorFactory.getExporter(externalModel, externalModelFileHandler);
         for (ParameterModel parameterModel : modelNode.getParameters()) {
-            // check whether parameter references external model
+            // check whether parameter exports to external model
             if (parameterModel.getIsExported() &&
                     parameterModel.getExportReference() != null && parameterModel.getExportReference().getExternalModel() != null) {
                 String target = parameterModel.getExportReference().getTarget();

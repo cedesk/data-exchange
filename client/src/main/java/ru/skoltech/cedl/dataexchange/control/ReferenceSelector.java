@@ -155,5 +155,4 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
             referenceText.textProperty().setValue(reference.toString());
         }
     }
-
 }

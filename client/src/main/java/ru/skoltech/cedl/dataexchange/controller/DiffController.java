@@ -15,7 +15,6 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 
@@ -30,13 +29,10 @@ import java.util.ResourceBundle;
 public class DiffController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(DiffController.class);
-
-    @FXML
-    private Button acceptAllButton;
-
     @FXML
     public Button revertAllButton;
-
+    @FXML
+    private Button acceptAllButton;
     @FXML
     private TableView<ModelDifference> diffTable;
 

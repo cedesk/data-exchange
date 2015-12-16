@@ -30,7 +30,7 @@ public class ExcelModelEvaluator implements ExternalModelEvaluator {
 
     @Override
     public Double getValue(String target) throws ExternalModelException {
-        if(target == null)
+        if (target == null)
             throw new ExternalModelException("target is null");
         SpreadsheetAccessor spreadsheetAccessor = getSpreadsheetAccessor();
         return spreadsheetAccessor.getNumericValue(target);

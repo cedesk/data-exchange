@@ -35,7 +35,7 @@ public class UserManagement {
     }
 
     @Id
-    @Column(name="id")
+    @Column(name = "id")
     public long getId() {
         return id;
     }
@@ -45,7 +45,7 @@ public class UserManagement {
     }
 
     @OneToMany(targetEntity = User.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name="um_id", referencedColumnName="id")
+    @JoinColumn(name = "um_id", referencedColumnName = "id")
     @Fetch(FetchMode.SELECT)
     public List<User> getUsers() {
         return users;

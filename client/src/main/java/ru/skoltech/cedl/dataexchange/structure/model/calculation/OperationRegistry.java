@@ -1,7 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure.model.calculation;
 
 import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.util.*;
 import java.util.stream.Collectors;

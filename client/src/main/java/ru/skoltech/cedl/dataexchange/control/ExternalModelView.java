@@ -43,12 +43,10 @@ public class ExternalModelView extends HBox implements Initializable {
         externalModelNameText.setText(externalModel.getName());
     }
 
-
     public void openExternalModel(ActionEvent actionEvent) {
         ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
         externalModelFileHandler.openOnDesktop(externalModel);
     }
-
 
     public ExternalModel getExternalModel() {
         return externalModel;

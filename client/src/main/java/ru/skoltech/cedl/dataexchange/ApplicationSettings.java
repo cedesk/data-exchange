@@ -62,6 +62,14 @@ public class ApplicationSettings {
         return projName;
     }
 
+    public static void setLastUsedProject(String projectName) {
+        String projName = properties.getProperty(PROJECT_LAST_NAME);
+        if (projName == null || !projName.equals(projectName)) {
+            properties.setProperty(PROJECT_LAST_NAME, projectName);
+            save();
+        }
+    }
+
     public static String getProjectUser() {
         String userName = properties.getProperty(PROJECT_USER_NAME);
         if (!getUseOsUser() && userName != null && !userName.isEmpty()) {
@@ -79,14 +87,6 @@ public class ApplicationSettings {
             } else {
                 properties.remove(PROJECT_USER_NAME);
             }
-            save();
-        }
-    }
-
-    public static void setLastUsedProject(String projectName) {
-        String projName = properties.getProperty(PROJECT_LAST_NAME);
-        if (projName == null || !projName.equals(projectName)) {
-            properties.setProperty(PROJECT_LAST_NAME, projectName);
             save();
         }
     }

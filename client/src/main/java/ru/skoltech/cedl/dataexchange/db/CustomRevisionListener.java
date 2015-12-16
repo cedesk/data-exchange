@@ -3,7 +3,6 @@ package ru.skoltech.cedl.dataexchange.db;
 import org.hibernate.envers.EntityTrackingRevisionListener;
 import org.hibernate.envers.RevisionType;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 
 import java.io.Serializable;
 
