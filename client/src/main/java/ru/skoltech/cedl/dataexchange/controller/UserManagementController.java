@@ -1,11 +1,9 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
-import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -15,7 +13,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableView;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -42,7 +39,7 @@ public class UserManagementController implements Initializable {
     private static final Logger logger = Logger.getLogger(UserManagementController.class);
 
     @FXML
-    public TableView userTable;
+    public TableView<User> userTable;
 
     @FXML
     public Button addUserButton;
@@ -63,12 +60,9 @@ public class UserManagementController implements Initializable {
         // USERS
         deleteUserButton.disableProperty().bind(noSelectionOnUserTable);
         userTable.setContextMenu(makeUsersContextMenu());
-        userTable.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
-                    UserManagementController.this.openUserEditingView(null);
-                }
+        userTable.setOnMousePressed(event -> {
+            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                UserManagementController.this.openUserEditingView(null);
             }
         });
     }
@@ -83,11 +77,10 @@ public class UserManagementController implements Initializable {
 
     private void updateUsers() {
         if (project.getUserManagement() != null) {
-            // all Users
             List<User> allUsers = project.getUserManagement().getUsers();
-            ObservableList<User> allUserList = FXCollections.observableList(allUsers);
-            allUserList.sort(Comparator.<User>naturalOrder());
-            userTable.setItems(allUserList);
+            userTable.getItems().clear();
+            userTable.getItems().addAll(allUsers);
+            userTable.getItems().sort(Comparator.naturalOrder());
         }
     }
 
@@ -151,9 +144,7 @@ public class UserManagementController implements Initializable {
             UserEditingController controller = loader.getController();
             controller.setUserModel(getSelectedUser());
             stage.showAndWait();
-            Platform.runLater(() -> {
-                updateUsers();
-            });
+            updateUsers();
         } catch (IOException e) {
             logger.error(e);
         }
