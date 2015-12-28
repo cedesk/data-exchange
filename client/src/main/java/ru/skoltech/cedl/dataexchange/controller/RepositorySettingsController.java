@@ -24,27 +24,9 @@ import java.util.ResourceBundle;
 /**
  * Created by D.Knoll on 22.07.2015.
  */
-public class SettingsController implements Initializable {
+public class RepositorySettingsController implements Initializable {
 
-    private static Logger logger = Logger.getLogger(SettingsController.class);
-
-    @FXML
-    public TitledPane studySettingsPane;
-
-    @FXML
-    public CheckBox enableSyncCheckbox;
-
-    @FXML
-    private CheckBox autoloadOnStartupCheckbox;
-
-    @FXML
-    private ComboBox<Integer> modelDepth;
-
-    @FXML
-    private CheckBox useOsUserCheckbox;
-
-    @FXML
-    private TextField userNameText;
+    private static Logger logger = Logger.getLogger(RepositorySettingsController.class);
 
     @FXML
     private TextField appDirText;
@@ -63,31 +45,13 @@ public class SettingsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        modelDepth.setItems(FXCollections.observableArrayList(DummySystemBuilder.getValidModelDepths()));
-        userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
         updateView();
     }
 
     private void updateView() {
-        StudySettings studySettings = getStudySettings();
-        if (studySettings != null) {
-            enableSyncCheckbox.setSelected(studySettings.getSyncEnabled());
-            enableSyncCheckbox.setDisable(false);
-            studySettingsPane.setDisable(false);
-        } else {
-            enableSyncCheckbox.setDisable(true);
-            studySettingsPane.setDisable(true);
-        }
-
-        autoloadOnStartupCheckbox.setSelected(ApplicationSettings.getAutoLoadLastProjectOnStartup());
-        modelDepth.setValue(ApplicationSettings.getStudyModelDepth(DummySystemBuilder.DEFAULT_MODEL_DEPTH));
-
         String appDir = StorageUtils.getAppDir().getAbsolutePath();
         appDirText.setText(appDir);
         repoSchemaText.setText(ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA));
-
-        useOsUserCheckbox.setSelected(ApplicationSettings.getUseOsUser());
-        userNameText.setText(ApplicationSettings.getProjectUser());
 
         dbHostnameText.setText(ApplicationSettings.getRepositoryServerHostname(""));
         dbUsernameText.setText(ApplicationSettings.getRepositoryUserName(""));
@@ -95,28 +59,14 @@ public class SettingsController implements Initializable {
     }
 
     public void applyAndClose(ActionEvent actionEvent) {
-        boolean succcess = updateModel();
-        if (succcess) {
+        boolean success = updateModel();
+        if (success) {
             cancel(actionEvent);
         }
     }
 
     private boolean updateModel() {
         boolean validSettings = false;
-
-        StudySettings studySettings = getStudySettings();
-        if (studySettings != null) {
-            boolean oldSyncEnabled = studySettings.getSyncEnabled();
-            boolean newSyncEnable = enableSyncCheckbox.isSelected();
-            studySettings.setSyncEnabled(newSyncEnable);
-            if (oldSyncEnabled != newSyncEnable) {
-                ProjectContext.getInstance().getProject().markStudyModified();
-            }
-            logger.info(studySettings);
-        }
-
-        ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
-        ApplicationSettings.setStudyModelDepth(modelDepth.getValue());
 
         String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
 
@@ -139,23 +89,6 @@ public class SettingsController implements Initializable {
             Dialogues.showError("Repository Connection Failed", "The given database access credentials did not work! Please verify they are correct, the database server is running and the connection is working.");
         }
 
-        if (!validSettings)
-            return false;
-
-        ApplicationSettings.setUseOsUser(useOsUserCheckbox.isSelected());
-        if (useOsUserCheckbox.isSelected()) {
-            ApplicationSettings.setProjectUser(null);
-        } else {
-            String userName = userNameText.getText();
-            boolean validUser = ProjectContext.getInstance().getProject().getUserManagement().checkUser(userName);
-            validSettings = validUser;
-            if (validUser) {
-                ApplicationSettings.setProjectUser(userName);
-            } else {
-                Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
-            }
-        }
-
         return validSettings;
     }
 
@@ -165,13 +98,4 @@ public class SettingsController implements Initializable {
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
-    private StudySettings getStudySettings() {
-        Project project = ProjectContext.getInstance().getProject();
-        if (project != null && project.getStudy() != null) {
-            boolean isAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
-            if (isAdmin)
-                return project.getStudy().getStudySettings();
-        }
-        return null;
-    }
 }

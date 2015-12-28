@@ -257,7 +257,7 @@ public class MainController implements Initializable {
             public void run() {
                 boolean validRepository = checkRepository();
                 if (!validRepository) {
-                    openSettingsDialog(null);
+                    openRepositorySettingsDialog(null);
                     validRepository = checkRepository();
                 }
                 if (!validRepository) return;
@@ -311,7 +311,7 @@ public class MainController implements Initializable {
             String userName = ApplicationSettings.getProjectUser();
             Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
                     "Contact the administrator for the creation of a user for you.\n" +
-                    "As for now you'lll be given the role of an observer, who can not perform modifications.");
+                    "As for now you'll be given the role of an observer, who can not perform modifications.");
             ActionLogger.log(ActionLogger.ActionType.user_validate, userName + ", not found");
         }
     }
@@ -560,15 +560,37 @@ public class MainController implements Initializable {
         }
     }
 
-    public void openSettingsDialog(ActionEvent actionEvent) {
+    public void openProjectSettingsDialog(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.SETTINGS_VIEW);
+            loader.setLocation(Views.PROJECT_SETTINGS_VIEW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.setTitle("Application settings");
+            stage.setTitle("Project settings");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(getAppWindow());
+            stage.setOnCloseRequest(event -> {
+                validateUser();
+            });
+            stage.showAndWait();
+            updateView();
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void openRepositorySettingsDialog(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.REPOSITORY_SETTINGS_VIEW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Repository settings");
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());

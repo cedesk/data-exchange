@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<AnchorPane stylesheets="@styling.css" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.ProjectSettingsController">
+    <children>
+        <VBox>
+            <children>
+                <TitledPane fx:id="studySettingsPane" animated="false" text="Study">
+                    <content>
+                        <GridPane hgap="8.0" vgap="2.0">
+                            <columnConstraints>
+                                <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0"/>
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                            </rowConstraints>
+                            <children>
+                                <CheckBox fx:id="enableSyncCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                                          GridPane.columnIndex="1"/>
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Enable Team to save"/>
+                            </children>
+                        </GridPane>
+                    </content>
+                </TitledPane>
+                <TitledPane animated="false" text="Project">
+                    <content>
+                        <GridPane hgap="8.0" vgap="2.0">
+                            <columnConstraints>
+                                <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0"/>
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                            </rowConstraints>
+                            <children>
+                                <CheckBox fx:id="autoloadOnStartupCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                                          GridPane.columnIndex="1"/>
+                                <ComboBox fx:id="modelDepth" prefWidth="150.0" GridPane.columnIndex="1"
+                                          GridPane.rowIndex="1"/>
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Autoload last project on startup"/>
+                                <Text layoutX="20.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0"
+                                      text="Model depth" GridPane.rowIndex="1"/>
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Study User" GridPane.rowIndex="3"/>
+                                <TextField fx:id="userNameText" promptText="username" GridPane.columnIndex="1"
+                                           GridPane.rowIndex="3"/>
+                                <CheckBox fx:id="useOsUserCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                                          GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Use OS user" GridPane.rowIndex="2"/>
+                            </children>
+                        </GridPane>
+                    </content>
+                </TitledPane>
+                <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+                    <items>
+                        <Button defaultButton="true" mnemonicParsing="false" onAction="#applyAndClose" text="Ok"/>
+                        <Button cancelButton="true" mnemonicParsing="false" onAction="#cancel" text="Cancel"/>
+                    </items>
+                </ToolBar>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

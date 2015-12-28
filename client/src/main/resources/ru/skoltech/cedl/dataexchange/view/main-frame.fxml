@@ -47,8 +47,10 @@
                                                 <MenuItem mnemonicParsing="true" onAction="#openUnitManagement"
                                                           text="Units and _Measures"/>
                                                 <SeparatorMenuItem mnemonicParsing="true"/>
-                                                <MenuItem mnemonicParsing="true" onAction="#openSettingsDialog"
-                                                          text="_Settings"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#openProjectSettingsDialog"
+                                                          text="_Project Settings"/>
+                                                <MenuItem mnemonicParsing="true" onAction="#openRepositorySettingsDialog"
+                                                          text="_Repository Settings"/>
                                             </items>
                                         </Menu>
                                         <Menu mnemonicParsing="true" text="_Help">
