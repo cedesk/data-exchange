@@ -133,53 +133,22 @@
                                                 <Insets left="16.0"/>
                                             </padding>
                                         </Label>
-                                        <VBox>
-                                            <children>
-                                                <TableView fx:id="userTable" BorderPane.alignment="CENTER">
-                                                    <columns>
-                                                        <TableColumn fx:id="userNameColumn" minWidth="80.0"
-                                                                     prefWidth="-1.0" text="Name">
-                                                            <cellValueFactory>
-                                                                <PropertyValueFactory property="userName"/>
-                                                            </cellValueFactory>
-                                                        </TableColumn>
-                                                        <TableColumn fx:id="userFullNameColumn" minWidth="160.0"
-                                                                     prefWidth="-1.0" text="Full Name">
-                                                            <cellValueFactory>
-                                                                <PropertyValueFactory property="fullName"/>
-                                                            </cellValueFactory>
-                                                        </TableColumn>
-                                                    </columns>
-                                                </TableView>
-                                            </children>
-                                        </VBox>
-                                        <ToolBar>
-                                            <items>
-                                                <Button fx:id="addUserButton" mnemonicParsing="false"
-                                                        onAction="#addUser" minWidth="28" text="">
-                                                    <tooltip>
-                                                        <Tooltip text="Add aser"/>
-                                                    </tooltip>
-                                                    <graphic>
-                                                        <Glyph fontFamily="FontAwesome" icon="PLUS"/>
-                                                    </graphic>
-                                                </Button>
-                                                <Button fx:id="deleteUserButton" mnemonicParsing="false"
-                                                        onAction="#deleteUser" minWidth="28" text="">
-                                                    <tooltip>
-                                                        <Tooltip text="Remove user"/>
-                                                    </tooltip>
-                                                    <graphic>
-                                                        <Glyph fontFamily="FontAwesome" icon="MINUS"/>
-                                                    </graphic>
-                                                </Button>
-                                                <Separator orientation="VERTICAL"/>
-                                                <Button fx:id="reloadUsers" mnemonicParsing="false"
-                                                        onAction="#reloadUsers" text="Reload"/>
-                                                <Button fx:id="saveUsers" mnemonicParsing="false" onAction="#saveUsers"
-                                                        text="Save"/>
-                                            </items>
-                                        </ToolBar>
+                                        <TableView fx:id="userTable" BorderPane.alignment="CENTER">
+                                            <columns>
+                                                <TableColumn fx:id="userNameColumn" minWidth="80.0"
+                                                             prefWidth="-1.0" text="Name">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="userName"/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                                <TableColumn fx:id="userFullNameColumn" minWidth="160.0"
+                                                             prefWidth="-1.0" text="Full Name">
+                                                    <cellValueFactory>
+                                                        <PropertyValueFactory property="fullName"/>
+                                                    </cellValueFactory>
+                                                </TableColumn>
+                                            </columns>
+                                        </TableView>
                                     </children>
                                 </VBox>
                             </right>

@@ -1,6 +1,5 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleStringProperty;
@@ -10,18 +9,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
@@ -29,14 +21,11 @@ import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.DisciplineSubSystem;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserDiscipline;
-import ru.skoltech.cedl.dataexchange.view.Views;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Predicate;
@@ -72,12 +61,6 @@ public class UserRoleManagementController implements Initializable {
 
     @FXML
     public Button deleteSubsystemButton;
-
-    @FXML
-    public Button addUserButton;
-
-    @FXML
-    public Button deleteUserButton;
 
     @FXML
     public TableColumn disciplineNameColumn;
@@ -155,26 +138,6 @@ public class UserRoleManagementController implements Initializable {
         addUserRoleButton.disableProperty().bind(Bindings.or(noSelectionOnUserTable, noSelectionOnDisciplinesTable));
         BooleanBinding noSelectionOnAssignedUsers = userRolesAssignedList.getSelectionModel().selectedItemProperty().isNull();
         deleteUserRoleButton.disableProperty().bind(noSelectionOnAssignedUsers);
-
-        // USERS
-        deleteUserButton.disableProperty().bind(noSelectionOnUserTable);
-        userTable.setContextMenu(makeUsersContextMenu());
-        userTable.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
-                    UserRoleManagementController.this.openUserEditingView(null);
-                }
-            }
-        });
-    }
-
-    private ContextMenu makeUsersContextMenu() {
-        ContextMenu rootContextMenu = new ContextMenu();
-        MenuItem editUserMenuItem = new MenuItem("Edit User");
-        editUserMenuItem.setOnAction(UserRoleManagementController.this::openUserEditingView);
-        rootContextMenu.getItems().add(editUserMenuItem);
-        return rootContextMenu;
     }
 
     public void updateView() {
@@ -188,8 +151,6 @@ public class UserRoleManagementController implements Initializable {
             ObservableList<Discipline> disciplineList = FXCollections.observableList(disciplines);
             disciplineList.sort(Comparator.<Discipline>naturalOrder());
             disciplinesTable.setItems(disciplineList);
-            //boolean editable = project.getUserRoleManagement().isAdmin(project.getUser());
-            //disciplinesTable.setEditable(editable);
         }
     }
 
@@ -282,31 +243,6 @@ public class UserRoleManagementController implements Initializable {
         project.markStudyModified();
     }
 
-    public void addUser(ActionEvent actionEvent) {
-        Optional<String> userNameChoice = Dialogues.inputUserName();
-        if (userNameChoice.isPresent()) {
-            String userName = userNameChoice.get();
-            if (!Identifiers.validateUserName(userName)) {
-                Dialogues.showError("Invalid name", Identifiers.getUserNameValidationDescription());
-                return;
-            }
-            if (project.getUserRoleManagement().getDisciplineMap().containsKey(userName)) {
-                Dialogues.showError("Duplicate user name", "There is already a user named like that!");
-            } else {
-                User user = new User();
-                user.setUserName(userName);
-                StatusLogger.getInstance().log("added user: " + user.getUserName());
-                project.getUserManagement().getUsers().add(user);
-            }
-        }
-        updateUsers();
-    }
-
-    public void deleteUser(ActionEvent actionEvent) {
-        project.getUserManagement().getUsers().remove(getSelectedUser());
-        updateUsers();
-    }
-
     public Discipline getSelectedDiscipline() {
         return (Discipline) disciplinesTable.getSelectionModel().getSelectedItem();
     }
@@ -333,46 +269,6 @@ public class UserRoleManagementController implements Initializable {
         project.getUserRoleManagement().getUserDisciplines().remove(selectedUserDiscipline);
         updateUserDisciplines(getSelectedDiscipline());
         project.markStudyModified();
-    }
-
-    public void reloadUsers(ActionEvent actionEvent) {
-        boolean success = project.loadUserManagement();
-        updateUsers();
-        updateUserDisciplines(getSelectedDiscipline());
-        if (!success) {
-            StatusLogger.getInstance().log("Error loading user list!", true);
-        }
-    }
-
-    public void saveUsers(ActionEvent actionEvent) {
-        boolean success = project.storeUserManagement();
-        if (!success) {
-            StatusLogger.getInstance().log("Error saving user list!", true);
-        }
-    }
-
-    public void openUserEditingView(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.USER_EDITING_PANE);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("User details");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(getAppWindow());
-
-            UserEditingController controller = loader.getController();
-            controller.setUserModel(getSelectedUser());
-            stage.showAndWait();
-            Platform.runLater(() -> {
-                updateUsers();
-            });
-        } catch (IOException e) {
-            logger.error(e);
-        }
     }
 
     public Window getAppWindow() {

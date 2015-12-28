@@ -59,6 +59,9 @@ public class MainController implements Initializable {
     private final RepositoryWatcher repositoryWatcher = new RepositoryWatcher(project);
 
     @FXML
+    private MenuItem usersMenu;
+
+    @FXML
     private MenuItem usersAndDisciplinesMenu;
 
     @FXML
@@ -200,7 +203,7 @@ public class MainController implements Initializable {
         // EDITING PANE
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.MODEL_EDITING_PANE);
+            loader.setLocation(Views.MODEL_EDITING_VIEW);
             Parent editingPane = loader.load();
             layoutPane.setCenter(editingPane);
             modelEditingController = loader.getController();
@@ -351,6 +354,7 @@ public class MainController implements Initializable {
                 userRoleLabel.setStyle("-fx-text-fill: red;");
             }
             boolean userIsAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
+            usersMenu.setDisable(!userIsAdmin);
             usersAndDisciplinesMenu.setDisable(!userIsAdmin);
             modelEditingController.updateView();
         } else {
@@ -358,6 +362,7 @@ public class MainController implements Initializable {
             userNameLabel.setText("--");
             userRoleLabel.setText("--");
             usersAndDisciplinesMenu.setDisable(false);
+            usersMenu.setDisable(false);
         }
     }
 
@@ -611,7 +616,29 @@ public class MainController implements Initializable {
     public void openUserManagement(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.USER_ROLES_EDITING_PANE);
+            loader.setLocation(Views.USER_LIST_EDITING_VIEW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("User Management");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(getAppWindow());
+
+            UserManagementController userManagementController = loader.getController();
+            userManagementController.setProject(project);
+            stage.show();
+            userManagementController.updateView();
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void openUserRoleManagement(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.USER_ROLES_EDITING_VIEW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -633,7 +660,7 @@ public class MainController implements Initializable {
     public void openUnitManagement(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.UNIT_EDITING_PANE);
+            loader.setLocation(Views.UNIT_EDITING_VIEW);
             Parent root = loader.load();
 
             Stage stage = new Stage();

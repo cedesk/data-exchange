@@ -42,8 +42,10 @@
                                         </Menu>
                                         <Menu mnemonicParsing="true" text="_Edit">
                                             <items>
+                                                <MenuItem fx:id="usersMenu" mnemonicParsing="true"
+                                                          onAction="#openUserManagement" text="Users"/>
                                                 <MenuItem fx:id="usersAndDisciplinesMenu" mnemonicParsing="true"
-                                                          onAction="#openUserManagement" text="Users and _Disciplines"/>
+                                                          onAction="#openUserRoleManagement" text="User-Discipline Assignment"/>
                                                 <MenuItem mnemonicParsing="true" onAction="#openUnitManagement"
                                                           text="Units and _Measures"/>
                                                 <SeparatorMenuItem mnemonicParsing="true"/>

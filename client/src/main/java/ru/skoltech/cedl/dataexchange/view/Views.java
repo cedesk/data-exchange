@@ -9,17 +9,19 @@ public class Views {
 
     public static final URL APPLICATION_VIEW = Views.class.getResource("main-frame.fxml");
 
-    public static final URL MODEL_EDITING_PANE = Views.class.getResource("model-editing.fxml");
+    public static final URL MODEL_EDITING_VIEW = Views.class.getResource("model-editing.fxml");
 
     public static final URL MODEL_DIFF_VIEW = Views.class.getResource("model-diff.fxml");
 
     public static final URL DEPENDENCY_VIEW = Views.class.getResource("dependency-view.fxml");
 
-    public static final URL USER_ROLES_EDITING_PANE = Views.class.getResource("user-role-editing.fxml");
+    public static final URL USER_ROLES_EDITING_VIEW = Views.class.getResource("user-role-editing.fxml");
 
-    public static final URL USER_EDITING_PANE = Views.class.getResource("user-editing.fxml");
+    public static final URL USER_LIST_EDITING_VIEW = Views.class.getResource("user-list-editing.fxml");
 
-    public static final URL UNIT_EDITING_PANE = Views.class.getResource("unit-editing.fxml");
+    public static final URL USER_EDITING_VIEW = Views.class.getResource("user-editing.fxml");
+
+    public static final URL UNIT_EDITING_VIEW = Views.class.getResource("unit-editing.fxml");
 
     public static final URL REVISION_HISTORY = Views.class.getResource("revision-history.fxml");
 
