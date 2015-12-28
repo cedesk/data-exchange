@@ -34,7 +34,6 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
-import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.awt.*;
@@ -170,7 +169,7 @@ public class MainController implements Initializable {
     public void saveProject(ActionEvent actionEvent) {
         try {
             boolean isSyncDisabled = !project.getStudy().getStudySettings().getSyncEnabled();
-            boolean isNormalUser = !project.getUserRoleManagement().isAdmin(project.getUser());
+            boolean isNormalUser = !project.isCurrentAdmin();
             if (isSyncDisabled && isNormalUser) {
                 Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\nContact the team lead for him to enable it!");
                 return;
@@ -345,15 +344,17 @@ public class MainController implements Initializable {
         if (project.getStudy() != null) {
             studyNameLabel.setText(project.getStudy().getName());
             userNameLabel.setText(project.getUser().getName());
-            String disciplineNames = getDisciplineNames(project.getUser());
-            if (!disciplineNames.isEmpty()) {
+            List<Discipline> disciplinesOfUser = project.getCurrentUserDisciplines();
+            if (!disciplinesOfUser.isEmpty()) {
+                String disciplineNames = disciplinesOfUser.stream()
+                        .map(Discipline::getName).collect(Collectors.joining(", "));
                 userRoleLabel.setText(disciplineNames);
                 userRoleLabel.setStyle("-fx-text-fill: inherit;");
             } else {
                 userRoleLabel.setText("without permissions");
                 userRoleLabel.setStyle("-fx-text-fill: red;");
             }
-            boolean userIsAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
+            boolean userIsAdmin = project.isCurrentAdmin();
             usersMenu.setDisable(!userIsAdmin);
             usersAndDisciplinesMenu.setDisable(!userIsAdmin);
             modelEditingController.updateView();
@@ -364,13 +365,6 @@ public class MainController implements Initializable {
             usersAndDisciplinesMenu.setDisable(false);
             usersMenu.setDisable(false);
         }
-    }
-
-    private String getDisciplineNames(User user) {
-        List<Discipline> disciplinesOfUser = project.getUserRoleManagement().getDisciplinesOfUser(user);
-        return disciplinesOfUser.stream()
-                .map(Discipline::getName)
-                .collect(Collectors.joining(", "));
     }
 
     public void updateRemoteModel() {

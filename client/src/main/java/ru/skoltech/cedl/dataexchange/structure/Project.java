@@ -23,6 +23,7 @@ import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
+import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -76,7 +77,7 @@ public class Project {
     private void updatePossibleActions() {
         canNew.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
         canLoad.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
-        boolean isAdmin = getUserRoleManagement().isAdmin(getUser());
+        boolean isAdmin = isCurrentAdmin();
         boolean isSyncEnabled = isAdmin || getStudy().getStudySettings().getSyncEnabled();
         boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
         canSync.setValue(isSyncEnabled && isSavePossible);
@@ -582,6 +583,14 @@ public class Project {
 
     public BooleanProperty canSyncProperty() {
         return canSync;
+    }
+
+    public List<Discipline> getCurrentUserDisciplines() {
+        return getUserRoleManagement().getDisciplinesOfUser(getUser());
+    }
+
+    public boolean isCurrentAdmin() {
+        return getUserRoleManagement().isAdmin(getUser());
     }
 
     private class AccessChecker implements Predicate<ModelNode> {

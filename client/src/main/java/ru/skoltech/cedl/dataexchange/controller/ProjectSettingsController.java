@@ -11,9 +11,6 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
@@ -120,7 +117,7 @@ public class ProjectSettingsController implements Initializable {
     private StudySettings getStudySettings() {
         Project project = ProjectContext.getInstance().getProject();
         if (project != null && project.getStudy() != null) {
-            boolean isAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
+            boolean isAdmin = project.isCurrentAdmin();
             if (isAdmin)
                 return project.getStudy().getStudySettings();
         }

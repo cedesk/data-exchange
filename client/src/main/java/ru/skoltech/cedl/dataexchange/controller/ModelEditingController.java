@@ -272,7 +272,7 @@ public class ModelEditingController implements Initializable {
                     structureTree.setRoot(rootNode);
                 }
             }
-            boolean isAdmin = project.getUserRoleManagement().isAdmin(project.getUser());
+            boolean isAdmin = project.isCurrentAdmin();
             structureTree.setEditable(isAdmin);
             if (structureTree.getTreeItem(selectedIndex) != null) {
                 structureTree.getSelectionModel().select(selectedIndex);

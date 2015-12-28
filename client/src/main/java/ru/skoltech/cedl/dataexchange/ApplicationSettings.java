@@ -71,11 +71,12 @@ public class ApplicationSettings {
     }
 
     public static String getProjectUser() {
-        String userName = properties.getProperty(PROJECT_USER_NAME);
-        if (!getUseOsUser() && userName != null && !userName.isEmpty()) {
-            return userName;
+        String userNameFromSettings = properties.getProperty(PROJECT_USER_NAME);
+        if (!getUseOsUser() && userNameFromSettings != null && !userNameFromSettings.isEmpty()) {
+            return userNameFromSettings;
         } else {
-            return System.getProperty("user.name").toLowerCase();
+            String userNameFromProperty = System.getProperty("user.name").toLowerCase();
+            return userNameFromProperty;
         }
     }
 
