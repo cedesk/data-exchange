@@ -164,7 +164,7 @@ public class Project {
             }
             UserRoleManagement localURM = getStudy().getUserRoleManagement();
             UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
-            if (!localURM.isAdmin(getUser()) && !localURM.equals(remoteURM)) {
+            if (!localURM.equals(remoteURM) && !localURM.isAdmin(getUser())) {
                 logger.debug("updating userRoleManagement");
                 setUserRoleManagement(remoteURM);
             }
