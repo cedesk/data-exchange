@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
  * Created by D.Knoll on 23.09.2015.
  */
 @XmlRootElement
-@XmlSeeAlso({Sum.class, Margin.class})
+@XmlSeeAlso({Sum.class, Margin.class, Min.class, Max.class})
 public abstract class Operation implements Comparable<Operation> {
 
     public abstract String name();
