@@ -31,6 +31,14 @@
                                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
                             </graphic>
                         </Button>
+                        <Button fx:id="renameNodeButton" minWidth="28" mnemonicParsing="false" onAction="#renameNode" text="">
+                            <tooltip>
+                                <Tooltip text="Rename node"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
+                            </graphic>
+                        </Button>
                         <Button fx:id="deleteNodeButton" minWidth="28" mnemonicParsing="false" onAction="#deleteNode"
                                 text="">
                             <tooltip>

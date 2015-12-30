@@ -47,7 +47,6 @@ import java.util.stream.Collectors;
 public class ModelEditingController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
-
     @FXML
     private SplitPane viewPane;
 
@@ -74,6 +73,9 @@ public class ModelEditingController implements Initializable {
 
     @FXML
     private Button addNodeButton;
+
+    @FXML
+    private Button renameNodeButton;
 
     @FXML
     private Button deleteNodeButton;
@@ -121,15 +123,16 @@ public class ModelEditingController implements Initializable {
             }
         });
 
-        // STRUCTURE TREE CONTEXT MENU
-        structureTree.setContextMenu(makeStructureTreeContextMenu());
-
         // STRUCTURE MODIFICATION BUTTONS
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
         BooleanBinding noSelectionOnStructureTreeView = structureTree.getSelectionModel().selectedItemProperty().isNull();
         BooleanBinding structureNotEditable = structureTree.editableProperty().not();
         addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCanHaveChildren.or(structureNotEditable)));
+        renameNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
         deleteNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
+
+        // STRUCTURE TREE CONTEXT MENU
+        structureTree.setContextMenu(makeStructureTreeContextMenu(structureNotEditable));
 
         // EXTERNAL MODEL ATTACHMENT
         externalModelPane.disableProperty().bind(selectedNodeIsEditable.not());
@@ -188,18 +191,21 @@ public class ModelEditingController implements Initializable {
         externalModelEditor.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
     }
 
-    private ContextMenu makeStructureTreeContextMenu() {
-        ContextMenu rootContextMenu = new ContextMenu();
+    private ContextMenu makeStructureTreeContextMenu(BooleanBinding structureNotEditable) {
+        ContextMenu structureContextMenu = new ContextMenu();
         MenuItem addNodeMenuItem = new MenuItem("Add subnode");
         addNodeMenuItem.setOnAction(ModelEditingController.this::addNode);
-        rootContextMenu.getItems().add(addNodeMenuItem);
-        MenuItem deleteNodeMenuItem = new MenuItem("Delete node");
-        deleteNodeMenuItem.setOnAction(ModelEditingController.this::deleteNode);
-        rootContextMenu.getItems().add(deleteNodeMenuItem);
+        addNodeMenuItem.disableProperty().bind(structureNotEditable);
+        structureContextMenu.getItems().add(addNodeMenuItem);
         MenuItem renameNodeMenuItem = new MenuItem("Rename node");
         renameNodeMenuItem.setOnAction(ModelEditingController.this::renameNode);
-        rootContextMenu.getItems().add(renameNodeMenuItem);
-        return rootContextMenu;
+        renameNodeMenuItem.disableProperty().bind(Bindings.or(structureNotEditable, selectedNodeIsRoot));
+        structureContextMenu.getItems().add(renameNodeMenuItem);
+        MenuItem deleteNodeMenuItem = new MenuItem("Delete node");
+        deleteNodeMenuItem.setOnAction(ModelEditingController.this::deleteNode);
+        deleteNodeMenuItem.disableProperty().bind(Bindings.or(structureNotEditable, selectedNodeIsRoot));
+        structureContextMenu.getItems().add(deleteNodeMenuItem);
+        return structureContextMenu;
     }
 
     public void setProject(Project project) {
@@ -364,6 +370,10 @@ public class ModelEditingController implements Initializable {
     public void renameNode(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem, "no item selected in tree view");
+        if(selectedItem.getParent() == null) {
+            Dialogues.showError("System can not be renamed", "System can not be renamed!");
+            return;
+        }
         ModelNode modelNode = selectedItem.getValue();
         String oldNodeName = modelNode.getName();
         Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(oldNodeName);
