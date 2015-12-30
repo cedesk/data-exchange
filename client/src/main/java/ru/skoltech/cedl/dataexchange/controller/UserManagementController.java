@@ -39,13 +39,16 @@ public class UserManagementController implements Initializable {
     private static final Logger logger = Logger.getLogger(UserManagementController.class);
 
     @FXML
-    public TableView<User> userTable;
+    private TableView<User> userTable;
 
     @FXML
-    public Button addUserButton;
+    private Button addUserButton;
 
     @FXML
-    public Button deleteUserButton;
+    private Button editUserButton;
+
+    @FXML
+    private Button deleteUserButton;
 
     private Project project;
 
@@ -58,21 +61,13 @@ public class UserManagementController implements Initializable {
         BooleanBinding noSelectionOnUserTable = userTable.getSelectionModel().selectedItemProperty().isNull();
 
         // USERS
+        editUserButton.disableProperty().bind(noSelectionOnUserTable);
         deleteUserButton.disableProperty().bind(noSelectionOnUserTable);
-        userTable.setContextMenu(makeUsersContextMenu());
         userTable.setOnMousePressed(event -> {
             if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
                 UserManagementController.this.openUserEditingView(null);
             }
         });
-    }
-
-    private ContextMenu makeUsersContextMenu() {
-        ContextMenu rootContextMenu = new ContextMenu();
-        MenuItem editUserMenuItem = new MenuItem("Edit User");
-        editUserMenuItem.setOnAction(UserManagementController.this::openUserEditingView);
-        rootContextMenu.getItems().add(editUserMenuItem);
-        return rootContextMenu;
     }
 
     private void updateUsers() {

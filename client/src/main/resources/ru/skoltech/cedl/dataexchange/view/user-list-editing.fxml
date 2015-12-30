@@ -35,7 +35,7 @@
                                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
                             </graphic>
                         </Button>
-                        <Button minWidth="28" mnemonicParsing="false" onAction="#openUserEditingView" text="">
+                        <Button fx:id="editUserButton" minWidth="28" mnemonicParsing="false" onAction="#openUserEditingView" text="">
                             <tooltip>
                                 <Tooltip text="Edit user"/>
                             </tooltip>
