@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.users;
 
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
@@ -26,7 +28,24 @@ public class UserManagementFactory {
         return userManagement;
     }
 
-    public static UserRoleManagement getUserRoleManagement(UserManagement userManagement) {
+    public static UserRoleManagement makeUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement) {
+        UserRoleManagement urm = new UserRoleManagement();
+
+        // add a discipline for each subsystem
+        for (ModelNode modelNode : systemModel.getSubNodes()) {
+            Discipline discipline = new Discipline(modelNode.getName(), urm);
+            urm.getDisciplines().add(discipline);
+        }
+        // add user disciplines
+        if (userManagement != null) {
+            User admin = userManagement.findUser(ADMIN);
+            if (admin != null) {
+                urm.addUserDiscipline(admin, urm.getAdminDiscipline());
+            }
+        }
+        return urm;    }
+
+    public static UserRoleManagement makeDefaultUserRoleManagement(UserManagement userManagement) {
 
         UserRoleManagement urm = new UserRoleManagement();
 

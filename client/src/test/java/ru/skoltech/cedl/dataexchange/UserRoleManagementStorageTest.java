@@ -35,7 +35,7 @@ public class UserRoleManagementStorageTest {
         UserManagement userManagement = UserManagementFactory.getUserManagement();
         UserManagement userManagement1 = databaseStorage.storeUserManagement(userManagement);
 
-        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement1);
+        UserRoleManagement userRoleManagement = UserManagementFactory.makeDefaultUserRoleManagement(userManagement1);
         databaseStorage.storeUserRoleManagement(userRoleManagement);
         long id = userRoleManagement.getId();
 

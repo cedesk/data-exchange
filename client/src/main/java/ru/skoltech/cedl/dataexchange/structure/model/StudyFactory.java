@@ -17,14 +17,11 @@ public class StudyFactory {
     public static Study makeStudy(String projectName, int modelDepth, UserManagement userManagement) {
         Study study = new Study();
         study.setStudySettings(new StudySettings());
-        study.setSystemModel(DummySystemBuilder.getSystemModel(modelDepth));
+        SystemModel systemModel = DummySystemBuilder.getSystemModel(modelDepth);
+        study.setSystemModel(systemModel);
         study.setName(projectName);
-        addUserRoleManagement(study, userManagement);
-        return study;
-    }
-
-    private static void addUserRoleManagement(Study study, UserManagement userManagement) {
-        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
+        UserRoleManagement userRoleManagement = UserManagementFactory.makeUserRoleManagementWithSubsystemDisciplines(systemModel, userManagement);
         study.setUserRoleManagement(userRoleManagement);
+        return study;
     }
 }

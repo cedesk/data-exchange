@@ -21,7 +21,7 @@ public class UserRoleUtilTest {
     @Test
     public void checkAccessAdminTest() {
         UserManagement userManagement = UserManagementFactory.getUserManagement();
-        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
+        UserRoleManagement userRoleManagement = UserManagementFactory.makeDefaultUserRoleManagement(userManagement);
 
         User admin = userManagement.getUsers().get(0);
         Assert.assertTrue(userRoleManagement.isAdmin(admin));
@@ -46,7 +46,7 @@ public class UserRoleUtilTest {
     @Test
     public void checkAccessExpertTest() {
         UserManagement userManagement = UserManagementFactory.getUserManagement();
-        UserRoleManagement userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
+        UserRoleManagement userRoleManagement = UserManagementFactory.makeDefaultUserRoleManagement(userManagement);
 
         String testUserName = "testUSER";
         User testUser = new User(testUserName, "", "");
