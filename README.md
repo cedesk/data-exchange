@@ -1,11 +1,13 @@
-# README #
+# CEDESK - Concurrent Engineering Data Exchange Skoltech #
 
-Concurrent Engineering Data Exchange Skoltech is a software made for our our Concurrent Engineering Design Lab.
+This is a collaboration tool for Parametric System Modeling in Concurrent Engineering Design Lab
+(http://crei.skoltech.ru/space/innovation-projects/concurrent-engineering-design-laboratory/).
 
 ## Quick summary ##
 * Current State: Development
 
 ## Release History ##
+* 2016-05-31 - Version 1.19
 * 2015-12-14 - Version 1.18
 * 2015-12-04 - Version 1.17
 * 2015-12-02 - Version 1.16
@@ -28,6 +30,6 @@ Concurrent Engineering Data Exchange Skoltech is a software made for our our Con
 
 ## Architecture ##
 
-* 3 Tier client server application: rich client, server application, database
+* Client-Server application: rich client + database
 * Rich Client based on JavaFX
 * Server part is an SQL database, accessed via Hibernate ORM
