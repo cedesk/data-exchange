@@ -62,8 +62,6 @@ public class ModelXmlMappingTest {
 
     @Test
     public void compareModelsLoadedFromSimilarFiles() {
-        Assert.assertTrue(m1.equals(m3));
-
         boolean equals = m1.equals(m2);
         assertFalse(equals);
 
