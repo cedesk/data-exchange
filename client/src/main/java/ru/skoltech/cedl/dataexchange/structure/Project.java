@@ -490,7 +490,24 @@ public class Project {
 
     public void importSystemModel(SystemModel systemModel) {
         reinitializeProject(systemModel);
+        reinitializeUniqueIdentifiers(systemModel);
         initializeStateOfExternalModels();
+    }
+
+    private void reinitializeUniqueIdentifiers(ModelNode modelNode) {
+        modelNode.setUuid(UUID.randomUUID().toString());
+        for (ParameterModel parameterModel : modelNode.getParameters()) {
+            parameterModel.setUuid(UUID.randomUUID().toString());
+        }
+        for (ExternalModel externalModel : modelNode.getExternalModels()) {
+            externalModel.setUuid(UUID.randomUUID().toString());
+        }
+        if (modelNode instanceof CompositeModelNode) {
+            CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
+            for (Object node : compositeModelNode.getSubNodes()) {
+                reinitializeUniqueIdentifiers((ModelNode) node);
+            }
+        }
     }
 
     private void reinitializeProject(SystemModel systemModel) {
@@ -503,10 +520,8 @@ public class Project {
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
         parameterLinkRegistry.clear();
 
-        UserRoleManagement userRoleManagement;
-        userRoleManagement = UserManagementFactory.getUserRoleManagement(userManagement);
+        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
         userRoleManagement.addUserDiscipline(getUser(), userRoleManagement.getAdminDiscipline());
-        getStudy().setUserRoleManagement(userRoleManagement);
     }
 
     public Repository getRepository() {
