@@ -155,6 +155,7 @@ public class DatabaseStorage implements Repository {
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme update failed!", true);
             logger.error("Database scheme update failed!", e);
+            return false;
         } finally {
             if (entityManager != null) {
                 try {
@@ -225,7 +226,7 @@ public class DatabaseStorage implements Repository {
         }
     }
 
-    private ApplicationProperty loadApplicationProperty(ApplicationProperty applicationProperty) throws RepositoryException {/*
+    private ApplicationProperty loadApplicationProperty(ApplicationProperty applicationProperty) throws RepositoryException {
         EntityManager entityManager = null;
         ApplicationProperty appProp = null;
         try {
@@ -240,8 +241,7 @@ public class DatabaseStorage implements Repository {
             } catch (Exception ignore) {
             }
         }
-        return appProp;*/
-        return applicationProperty;
+        return appProp;
     }
 
     @Override

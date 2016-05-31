@@ -331,6 +331,10 @@ public class MainController implements Initializable {
             if (!validScheme && ApplicationSettings.getRepositorySchemaCreate()) {
                 validScheme = databaseRepository.updateDatabaseScheme();
             }
+            try {
+                databaseRepository.close();
+            } catch (IOException ignore) {
+            }
             return validScheme;
         }
         return false;
