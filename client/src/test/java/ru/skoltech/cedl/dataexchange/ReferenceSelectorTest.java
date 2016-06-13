@@ -24,12 +24,14 @@ public class ReferenceSelectorTest extends Application {
 
     private static Logger logger = Logger.getLogger(ReferenceSelectorTest.class);
 
+    private static Project project;
+
     public static void main(String[] args) {
         launch(args);
     }
 
     public static ParameterModel getParameterModel() {
-        Project project = new Project("TEST");
+        project = new Project("TEST");
         Study study = new Study("TEST");
         project.setStudy(study);
         SystemModel systemModel = new SystemModel("ROOT-SYS");
@@ -59,13 +61,16 @@ public class ReferenceSelectorTest extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         ParameterModel parameterModel = getParameterModel();
+        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
+
         System.out.println(parameterModel);
-        ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
-            @Override
-            public void accept(ParameterUpdate parameterUpdate) {
-                System.out.println(parameterUpdate);
-            }
-        });
+        ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, externalModelFileHandler,
+                new Consumer<ParameterUpdate>() {
+                    @Override
+                    public void accept(ParameterUpdate parameterUpdate) {
+                        System.out.println(parameterUpdate);
+                    }
+                });
         ExternalModelReference valueReference = parameterModel.getValueReference();
         List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
         Dialog<ExternalModelReference> dialog = new ReferenceSelector(valueReference, externalModels);

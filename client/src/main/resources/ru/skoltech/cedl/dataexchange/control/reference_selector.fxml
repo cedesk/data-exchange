@@ -13,6 +13,7 @@
                         <HBox spacing="24.0" BorderPane.alignment="CENTER_LEFT">
                             <children>
                                 <ComboBox fx:id="attachmentChooser" prefWidth="200.0"/>
+                                <ComboBox fx:id="sheetChooser" prefWidth="200.0"/>
                                 <TextField fx:id="referenceText" editable="false" prefWidth="200.0"
                                            promptText="cellName"/>
                                 <Button fx:id="chooseCellButton" mnemonicParsing="false" onAction="#chooseSelectedCell"

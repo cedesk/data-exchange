@@ -7,42 +7,42 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This object encapsulates Spreadsheet Coordinates as used in Excel (eg. A1, C3)
+ * This object encapsulates spreadsheet coordinates as used in Excel (eg. A1, C3)
  * Column letters and row numbers are transformed in 1-based numbers.
+ * The coordinates are optionally preceded by a sheet name and a colon (e.g. Sheet1:B5).
  * <p>
  * Created by D.Knoll on 06.07.2015.
  */
 public class SpreadsheetCoordinates {
 
-    public static final Pattern PATTERN = Pattern.compile("([A-Z]{1,})([1-9][0-9]*)");
+    public static final Pattern PATTERN = Pattern.compile("((([A-Za-z0-9 \\-\\_]{1,}):)?)([A-Z]{1,})([1-9][0-9]*)");
     private static final int INIT = (int) 'A';
+    private String sheetName;
     private int rowNumber;
     private int columnNumber;
 
-    public SpreadsheetCoordinates(int rowNumber, int columnNumber) {
+    public SpreadsheetCoordinates(String sheetName, int rowNumber, int columnNumber) {
+        this.sheetName = sheetName;
         this.rowNumber = rowNumber;
         this.columnNumber = columnNumber;
     }
 
-    public static String fromPosition(TablePosition tablePosition) {
-        return tablePosition.getTableColumn().getText() + String.valueOf(tablePosition.getRow() + 1);
-    }
-
-    public static SpreadsheetCoordinates valueOf(TablePosition tablePosition) {
-        return new SpreadsheetCoordinates(tablePosition.getRow(), tablePosition.getColumn());
+    public static SpreadsheetCoordinates valueOf(String sheetName, TablePosition tablePosition) {
+        return new SpreadsheetCoordinates(sheetName, tablePosition.getRow() + 1, tablePosition.getColumn() + 1 );
     }
 
     public static SpreadsheetCoordinates valueOf(String coordinates) throws ParseException {
         Matcher matcher = PATTERN.matcher(coordinates);
         if (matcher.matches()) {
-            String row = matcher.group(2);
-            int rowNumber = Integer.valueOf(row);
-            String col = matcher.group(1);
+            String sheet = matcher.group(3);
+            String col = matcher.group(4);
             int colNumber = 0;
+            String row = matcher.group(5);
+            int rowNumber = Integer.valueOf(row);
             for (char ch : col.toCharArray()) {
                 colNumber = colNumber * 26 + ch - INIT + 1;
             }
-            return new SpreadsheetCoordinates(rowNumber, colNumber);
+            return new SpreadsheetCoordinates(sheet, rowNumber, colNumber);
         } else {
             throw new ParseException("invalid coordinate format", 0);
         }
@@ -58,6 +58,10 @@ public class SpreadsheetCoordinates {
             col = col / 26 - 1;
         }
         sb = sb.reverse();
+        if (sheetName != null) {
+            sb.insert(0, ':');
+            sb.insert(0, sheetName);
+        }
         sb.append(rowNumber);
         return sb.toString();
     }
@@ -74,5 +78,13 @@ public class SpreadsheetCoordinates {
      */
     public int getColumnNumber() {
         return columnNumber;
+    }
+
+    public String getSheetName() {
+        return sheetName;
+    }
+
+    public void setSheetName(String sheetName) {
+        this.sheetName = sheetName;
     }
 }

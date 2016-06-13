@@ -2,10 +2,7 @@ package ru.skoltech.cedl.dataexchange.external.excel;
 
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
@@ -16,9 +13,9 @@ import java.text.ParseException;
 /**
  * Created by D.Knoll on 06.07.2015.
  */
-public class SpreadsheetAccessor implements Closeable {
+public class SpreadsheetCellValueAccessor implements Closeable {
 
-    private static Logger logger = Logger.getLogger(SpreadsheetAccessor.class);
+    private static Logger logger = Logger.getLogger(SpreadsheetCellValueAccessor.class);
     private final String fileName;
     private Sheet sheet;
     private Workbook wb;
@@ -28,21 +25,17 @@ public class SpreadsheetAccessor implements Closeable {
     private boolean modified = false;
 
     /**
-     * Opens a XLS file and reads the cells of the given sheet for evaluation
+     * Opens a spreadsheet file and reads the cells of the given sheet for evaluation
      *
      * @param inputStream the stream from which to read the XLS workbook file
      * @param fileName
-     * @param sheetIndex  the spreadheet within the workbook  @throws IOException in case of problems reading the stream
+     * @param sheetName   the spreadsheet within the workbook
+     * @throws IOException in case of problems reading the stream
      */
-    public SpreadsheetAccessor(InputStream inputStream, String fileName, int sheetIndex) throws IOException {
+    public SpreadsheetCellValueAccessor(InputStream inputStream, String fileName, String sheetName) throws IOException {
         this.fileName = fileName;
-        if (fileName.endsWith(".xls")) {
-            NPOIFSFileSystem fs = new NPOIFSFileSystem(inputStream);
-            wb = new HSSFWorkbook(fs.getRoot(), true);
-        } else {
-            wb = new XSSFWorkbook(inputStream);
-        }
-        sheet = wb.getSheetAt(sheetIndex);
+        wb = WorkbookFactory.getWorkbook(inputStream, fileName);
+        sheet = sheetName != null ? wb.getSheet(sheetName) : wb.getSheetAt(0);
         formulaEvaluator = wb.getCreationHelper().createFormulaEvaluator();
         try {
             formulaEvaluator.evaluateAll();
@@ -54,14 +47,14 @@ public class SpreadsheetAccessor implements Closeable {
     }
 
     /**
-     * Opens a XLS file and reads one cell for evaluation
+     * Opens a spreadsheet file and reads one cell for evaluation
      *
      * @param spreadsheetFile the XLS workbook file
-     * @param sheetIndex      the spreadheet within the workbook
+     * @param sheetName       the spreadsheet within the workbook
      * @throws IOException in case of problems reading the file
      */
-    public SpreadsheetAccessor(File spreadsheetFile, int sheetIndex) throws IOException {
-        this(new FileInputStream(spreadsheetFile), spreadsheetFile.getName(), sheetIndex);
+    public SpreadsheetCellValueAccessor(File spreadsheetFile, String sheetName) throws IOException {
+        this(new FileInputStream(spreadsheetFile), spreadsheetFile.getName(), sheetName);
     }
 
     public static String getValueAsString(Cell cell) {
@@ -146,29 +139,22 @@ public class SpreadsheetAccessor implements Closeable {
         return modified;
     }
 
-    public String getValueAsString(String coordinates) {
+    public String getValueAsString(SpreadsheetCoordinates coordinates) {
         return getValueAsString(getCell(coordinates));
     }
 
-    public Double getNumericValue(String coordinates) throws ExternalModelException {
+    public Double getNumericValue(SpreadsheetCoordinates coordinates) throws ExternalModelException {
         return getNumericValue(getCell(coordinates));
     }
 
-    public void setNumericValue(String coordinates, Double value) throws ExternalModelException {
+    public void setNumericValue(SpreadsheetCoordinates coordinates, Double value) throws ExternalModelException {
         setNumericValue(getCell(coordinates), value);
     }
 
-    public Cell getCell(String coordinates) {
-        SpreadsheetCoordinates cellCoordinates = null;
-        try {
-            cellCoordinates = SpreadsheetCoordinates.valueOf(coordinates);
-            Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
-            Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1);
-            return cell;
-        } catch (ParseException e) {
-            logger.error("error parsing coordinates: " + coordinates);
-            return null;
-        }
+    public Cell getCell(SpreadsheetCoordinates cellCoordinates) {
+        Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
+        Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1);
+        return cell;
     }
 
     @Override

@@ -25,10 +25,7 @@ import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ModelUpdate;
-import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
-import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
+import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
@@ -216,8 +213,10 @@ public class ModelEditingController implements Initializable {
             @Override
             public void update(Observable o, Object arg) {
                 ExternalModel externalModel = (ExternalModel) arg;
+                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 try {
-                    ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, new ExternalModelUpdateListener(), new ParameterUpdateListener());
+                    ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler,
+                            new ExternalModelUpdateListener(), new ParameterUpdateListener());
                 } catch (ExternalModelException e) {
                     logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
                 }
@@ -370,7 +369,7 @@ public class ModelEditingController implements Initializable {
     public void renameNode(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem, "no item selected in tree view");
-        if(selectedItem.getParent() == null) {
+        if (selectedItem.getParent() == null) {
             Dialogues.showError("System can not be renamed", "System can not be renamed!");
             return;
         }

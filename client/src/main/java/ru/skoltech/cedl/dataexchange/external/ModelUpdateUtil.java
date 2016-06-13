@@ -18,7 +18,8 @@ public class ModelUpdateUtil {
 
     private static final Logger logger = Logger.getLogger(ModelUpdateUtil.class);
 
-    public static void applyParameterChangesFromExternalModel(ExternalModel externalModel, Consumer<ModelUpdate> modelUpdateListener, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
+    public static void applyParameterChangesFromExternalModel(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler,
+                                                              Consumer<ModelUpdate> modelUpdateListener, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
         ModelUpdate modelUpdate = new ModelUpdate(externalModel);
@@ -27,7 +28,7 @@ public class ModelUpdateUtil {
         }
 
         List<ParameterUpdate> updates = new LinkedList<>();
-        ExternalModelEvaluator evaluator = ExternalModelAccessorFactory.getEvaluator(externalModel);
+        ExternalModelEvaluator evaluator = ExternalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
         try {
             for (ParameterModel parameterModel : modelNode.getParameters()) {
                 // check whether parameter references external model
@@ -66,7 +67,8 @@ public class ModelUpdateUtil {
         }
     }
 
-    public static void applyParameterChangesFromExternalModel(ParameterModel parameterModel, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
+    public static void applyParameterChangesFromExternalModel(ParameterModel parameterModel, ExternalModelFileHandler externalModelFileHandler,
+                                                              Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ParameterUpdate parameterUpdate = null;
 
         // check whether parameter references external model
@@ -74,7 +76,7 @@ public class ModelUpdateUtil {
             ExternalModelReference valueReference = parameterModel.getValueReference();
             if (valueReference != null && valueReference.getExternalModel() != null) {
                 ExternalModel externalModel = valueReference.getExternalModel();
-                ExternalModelEvaluator evaluator = ExternalModelAccessorFactory.getEvaluator(externalModel);
+                ExternalModelEvaluator evaluator = ExternalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
                 try {
                     parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
                 } finally {

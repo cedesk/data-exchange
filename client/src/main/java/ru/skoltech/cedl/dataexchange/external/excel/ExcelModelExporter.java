@@ -5,45 +5,34 @@ import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 
 import java.io.*;
+import java.text.ParseException;
 
 /**
  * Created by D.Knoll on 23.07.2015.
  */
-public class ExcelModelExporter implements ExternalModelExporter {
+public class ExcelModelExporter extends ExcelModelAccessor implements ExternalModelExporter {
 
     private static Logger logger = Logger.getLogger(ExcelModelExporter.class);
-
-    private ExternalModel externalModel;
-    private ExternalModelFileHandler externalModelFileHandler;
 
     /*
     * Lazy initialization only upon need.
      */
-    private SpreadsheetAccessor spreadsheetAccessor;
+    private SpreadsheetCellValueAccessor spreadsheetAccessor;
 
     public ExcelModelExporter(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModel = externalModel;
-        this.externalModelFileHandler = externalModelFileHandler;
+        super.externalModel = externalModel;
+        super.externalModelFileHandler = externalModelFileHandler;
     }
 
     @Override
     public void setValue(String target, Double value) throws ExternalModelException {
-        SpreadsheetAccessor spreadsheetAccessor = getSpreadsheetAccessor();
-        spreadsheetAccessor.setNumericValue(target, value);
-        logger.debug("setting " + value + " on cell " + target + " in " + externalModel.getNodePath());
-    }
-
-    /**
-     * Closes the excel spreadsheet discarding all changes.
-     *
-     * @see ExternalModelExporter#flushModifications(ExternalModelFileWatcher)
-     */
-    @Override
-    public void close() {
         try {
-            spreadsheetAccessor.close();
-        } catch (IOException e) {
-            logger.error("error closing excel model.");
+            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
+            SpreadsheetCellValueAccessor spreadsheetAccessor = getSpreadsheetAccessor(coordinates.getSheetName());
+            spreadsheetAccessor.setNumericValue(coordinates, value);
+            logger.debug("setting " + value + " on cell " + target + " in " + externalModel.getNodePath());
+        } catch (ParseException e) {
+            logger.error("error parsing coordinates: " + target);
         }
     }
 
@@ -83,17 +72,4 @@ public class ExcelModelExporter implements ExternalModelExporter {
         }
     }
 
-    private SpreadsheetAccessor getSpreadsheetAccessor() throws ExternalModelException {
-        if (spreadsheetAccessor == null) {
-            try {
-                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
-                String fileName = externalModel.getName();
-                spreadsheetAccessor = new SpreadsheetAccessor(inputStream, fileName, 0);
-            } catch (IOException e) {
-                logger.error("unable to open spreadsheet");
-                throw new ExternalModelException("unable access excel spreadsheet", e);
-            }
-        }
-        return spreadsheetAccessor;
-    }
 }

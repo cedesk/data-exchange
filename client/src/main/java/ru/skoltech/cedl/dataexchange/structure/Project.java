@@ -441,7 +441,7 @@ public class Project {
 
             try {
                 // silently update model from external model
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, null, null);
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler, null, null);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
             }

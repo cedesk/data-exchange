@@ -75,7 +75,8 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         updateView();
     }
 
-    public void setListeners(ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener, ModelEditingController.ParameterUpdateListener parameterUpdateListener) {
+    public void setListeners(ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener,
+                             ModelEditingController.ParameterUpdateListener parameterUpdateListener) {
         this.externalModelUpdateListener = externalModelUpdateListener;
         this.parameterUpdateListener = parameterUpdateListener;
     }
@@ -158,9 +159,10 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     }
 
     public void reloadExternalModels(ActionEvent actionEvent) {
+        ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
         for (ExternalModel externalModel : modelNode.getExternalModels())
             try {
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelUpdateListener, parameterUpdateListener);
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler, externalModelUpdateListener, parameterUpdateListener);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
             }

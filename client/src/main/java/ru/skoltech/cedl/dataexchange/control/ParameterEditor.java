@@ -319,16 +319,18 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
         if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
             if (valueReference != null) {
+                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 parameterModel.setValueReference(valueReference);
                 logger.debug("update parameter value from model");
                 try {
-                    ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, new Consumer<ParameterUpdate>() {
-                        @Override
-                        public void accept(ParameterUpdate parameterUpdate) {
-                            parameterBean.unBindBidirectional("value", valueText.textProperty());
-                            parameterBean.bindBidirectional("value", valueText.textProperty());
-                        }
-                    });
+                    ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, externalModelFileHandler,
+                            new Consumer<ParameterUpdate>() {
+                                @Override
+                                public void accept(ParameterUpdate parameterUpdate) {
+                                    parameterBean.unBindBidirectional("value", valueText.textProperty());
+                                    parameterBean.bindBidirectional("value", valueText.textProperty());
+                                }
+                            });
                 } catch (ExternalModelException e) {
                     Window window = propertyPane.getScene().getWindow();
                     UserNotifications.showNotification(window, "Error", "Unable to update value from given target.");

@@ -16,7 +16,8 @@ import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
-import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetFactory;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetGridViewFactory;
+import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
@@ -24,6 +25,7 @@ import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -38,6 +40,9 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
     private ComboBox<ExternalModel> attachmentChooser;
 
     @FXML
+    private ComboBox<String> sheetChooser;
+
+    @FXML
     private TextField referenceText;
 
     @FXML
@@ -46,6 +51,8 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
     private ExternalModelReference reference;
 
     private ExternalModel externalModel;
+
+    private String sheetName;
 
     private List<ExternalModel> externalModels;
 
@@ -104,6 +111,13 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
             if (newValue != null) {
                 externalModel = newValue;
                 referenceText.textProperty().setValue(reference.toString());
+                List<String> sheetNames = getSheetNames();
+                sheetChooser.setItems(FXCollections.observableArrayList(sheetNames));
+            }
+        });
+        sheetChooser.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                sheetName = newValue;
                 refreshTable(null);
             }
         });
@@ -118,7 +132,35 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
             referenceText.getScene().getWindow().hide();
         } else {
             attachmentChooser.setValue(externalModel);
+            String targetSheetName = null;
+            if (reference.getTarget() != null) {
+                SpreadsheetCoordinates coordinates = null;
+                try {
+                    coordinates = SpreadsheetCoordinates.valueOf(reference.getTarget());
+                    if (coordinates.getSheetName() != null) {
+                        targetSheetName = coordinates.getSheetName();
+                    }
+                } catch (ParseException e) {
+                    logger.error(e);
+                }
+            }
+            targetSheetName = targetSheetName != null ? targetSheetName : sheetChooser.getItems().get(0);
+            sheetChooser.setValue(targetSheetName);
         }
+    }
+
+    private List<String> getSheetNames() {
+        List<String> sheetNames = null;
+        try {
+            ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+            sheetNames = WorkbookFactory.getSheetNames(inputStream, externalModel.getName());
+            inputStream.close();
+        } catch (IOException e) {
+            Dialogues.showWarning("No sheets found in external model.", "This external model could not be opened to extract sheets.");
+            logger.warn("This external model could not be opened to extract sheets.", e);
+        }
+        return sheetNames;
     }
 
     public void refreshTable(ActionEvent actionEvent) {
@@ -127,7 +169,9 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
                 ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 String fileName = externalModel.getName();
-                Grid grid = SpreadsheetFactory.getGrid(inputStream, fileName, 0);
+                //TODO: handle more than 1 sheet
+                final String sheetName = null;
+                Grid grid = SpreadsheetGridViewFactory.getGrid(inputStream, fileName, sheetName);
                 spreadsheetView.setGrid(grid);
                 if (reference.getTarget() != null) {
                     SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(reference.getTarget());
@@ -150,8 +194,8 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
     public void chooseSelectedCell(ActionEvent actionEvent) {
         TablePosition focusedCell = spreadsheetView.getSelectionModel().getFocusedCell();
         if (focusedCell != null && focusedCell.getRow() >= 0) {
-            String coordinates = SpreadsheetCoordinates.fromPosition(focusedCell);
-            reference = new ExternalModelReference(externalModel, coordinates);
+            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(sheetChooser.getValue(), focusedCell);
+            reference = new ExternalModelReference(externalModel, coordinates.toString());
             referenceText.textProperty().setValue(reference.toString());
         }
     }
