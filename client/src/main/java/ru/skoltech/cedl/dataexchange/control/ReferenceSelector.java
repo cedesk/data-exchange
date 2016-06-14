@@ -105,6 +105,7 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
         });
 
         spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        spreadsheetView.setContextMenu(null);
 
         attachmentChooser.setItems(FXCollections.observableArrayList(externalModels));
         attachmentChooser.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -169,8 +170,6 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
                 ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 String fileName = externalModel.getName();
-                //TODO: handle more than 1 sheet
-                final String sheetName = null;
                 Grid grid = SpreadsheetGridViewFactory.getGrid(inputStream, fileName, sheetName);
                 spreadsheetView.setGrid(grid);
                 if (reference.getTarget() != null) {
