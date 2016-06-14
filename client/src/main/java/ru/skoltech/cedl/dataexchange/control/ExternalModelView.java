@@ -12,17 +12,22 @@ import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetInputOutputExtractor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -71,42 +76,62 @@ public class ExternalModelView extends HBox implements Initializable {
 
     public void openExternalModel(ActionEvent actionEvent) {
         ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
-        externalModelFileHandler.openOnDesktop(externalModel);
+        try {
+            File file = externalModelFileHandler.cacheFile(externalModel);
+            if (file != null) {
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.EDIT)) {
+                    desktop.edit(file);
+                } else {
+                    StatusLogger.getInstance().log("Unable to open file!", true);
+                }
+            }
+        } catch (IOException ioe) {
+            logger.error("Error saving external model to spreadsheet.", ioe);
+        } catch (Exception e) {
+            logger.error("Error opening external model with default editor.", e);
+        }
     }
 
     public void startWizard(ActionEvent actionEvent) {
         ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
-        try {
-            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
-            Workbook workbook = WorkbookFactory.getWorkbook(inputStream, externalModel.getName());
-            //WorkbookFactory.guessInputSheet(workbook);
-            List<String> sheetNames = WorkbookFactory.getSheetNames(workbook);
-            Optional<String> choice = chooseSheet(sheetNames);
-            if (choice.isPresent()) {
-                String sheetName = choice.get();
-                Sheet sheet = workbook.getSheet(sheetName);
-                List<ParameterModel> parameterList = WorkbookFactory.extractParameters(externalModel, sheet);
-                parameterList.sort(new ParameterModelComparator());
+        String filename = externalModel.getName();
+        if (WorkbookFactory.isWorkbookFile(filename)) {
+            try {
+                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+                Workbook workbook = WorkbookFactory.getWorkbook(inputStream, filename);
+                //SpreadsheetInputOutputExtractor.guessInputSheet(workbook);
+                List<String> sheetNames = WorkbookFactory.getSheetNames(workbook);
+                Optional<String> choice = chooseSheet(sheetNames);
+                if (choice.isPresent()) {
+                    String sheetName = choice.get();
+                    Sheet sheet = workbook.getSheet(sheetName);
+                    List<ParameterModel> parameterList = SpreadsheetInputOutputExtractor.extractParameters(externalModel, sheet);
+                    parameterList.sort(new ParameterModelComparator());
 
-                ModelNode modelNode = externalModel.getParent();
-                Map<String, ParameterModel> parameterMap = modelNode.getParameterMap();
+                    ModelNode modelNode = externalModel.getParent();
+                    Map<String, ParameterModel> parameterMap = modelNode.getParameterMap();
 
-                String parameters = parameterList.stream()
-                        .map((parameter) ->
-                                (parameter.getName() + (parameterMap.containsKey(parameter.getName()) ? " DUPLICATE " : " ") +
-                                        parameter.getNature().name()) + " " + Double.toString(parameter.getValue()))
-                        .collect(Collectors.joining("\n"));
-                Optional<ButtonType> addYesNo = Dialogues.chooseYesNo("Add new parameters",
-                        "Choose whether the following parameters extracted from the external model shall be added:\n" + parameters);
-                if (addYesNo.get() == ButtonType.YES) {
-                    parameterList.forEach(modelNode::addParameter);
-                    // TODO: updateView
+                    String parameters = parameterList.stream()
+                            .map((parameter) ->
+                                    (parameter.getName() + (parameterMap.containsKey(parameter.getName()) ? " DUPLICATE " : " ") +
+                                            parameter.getNature().name()) + " " + Double.toString(parameter.getValue()) + " " +
+                                            (parameter.getUnit() != null ? parameter.getUnit().getSymbol() : ""))
+                            .collect(Collectors.joining("\n"));
+                    Optional<ButtonType> addYesNo = Dialogues.chooseYesNo("Add new parameters",
+                            "Choose whether the following parameters extracted from the external model shall be added:\n" + parameters);
+                    if (addYesNo.get() == ButtonType.YES) {
+                        parameterList.forEach(modelNode::addParameter);
+                        // TODO: updateView
+                    }
                 }
+                inputStream.close();
+            } catch (IOException e) {
+                Dialogues.showWarning("No parameters found in external model.", "This external model could not be opened to extract parameters.");
+                logger.warn("This external model could not be opened to extract parameters.", e);
             }
-            inputStream.close();
-        } catch (IOException e) {
-            Dialogues.showWarning("No parameters found in external model.", "This external model could not be opened to extract parameters.");
-            logger.warn("This external model could not be opened to extract parameters.", e);
+        } else {
+            Dialogues.showWarning("No Wizard available.", "This external model could not be analyzed for input/output parameters.");
         }
     }
 
