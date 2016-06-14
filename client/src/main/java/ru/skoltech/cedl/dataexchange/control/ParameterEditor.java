@@ -157,7 +157,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
             @Override
             public Unit fromString(String unitStr) {
-                return project.getUnitManagement().findUnit(unitStr);
+                return project.getUnitManagement().findUnitByText(unitStr);
             }
         });
 

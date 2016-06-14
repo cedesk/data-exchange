@@ -108,7 +108,7 @@ public class UnitManagement {
         return sb.toString();
     }
 
-    public Unit findUnit(String unitStr) {
+    public Unit findUnitByText(String unitStr) {
         Unit result = null;
         for (Unit unit : units) {
             if (unit.asText().equals(unitStr)) {
@@ -118,4 +118,20 @@ public class UnitManagement {
         }
         return result;
     }
+
+    public Unit findUnitBySymbolOrName(String unitStr) {
+        Unit result = null;
+        for (Unit unit : units) {
+            if (unit.getSymbol().equals(unitStr)) {
+                result = unit;
+                break;
+            }
+            if (unit.getName().equals(unitStr)) {
+                result = unit;
+                break;
+            }
+        }
+        return result;
+    }
+
 }

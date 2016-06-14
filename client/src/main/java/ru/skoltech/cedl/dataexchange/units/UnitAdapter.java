@@ -13,7 +13,7 @@ public class UnitAdapter extends XmlAdapter<String, Unit> {
     @Override
     public Unit unmarshal(String unitStr) throws Exception {
         UnitManagement unitManagement = ProjectContext.getInstance().getProject().getUnitManagement();
-        Unit unit = unitManagement.findUnit(unitStr);
+        Unit unit = unitManagement.findUnitByText(unitStr);
         return unit;
     }
 
