@@ -79,6 +79,8 @@ public class ExternalModelAccessorFactory {
     }
 
     private static String getExtension(String fileName) {
-        return fileName.substring(fileName.lastIndexOf('.') + 1);
+        int beginIndex = fileName.lastIndexOf('.');
+        if (beginIndex < 0) return "";
+        return fileName.substring(beginIndex).toLowerCase();
     }
 }
