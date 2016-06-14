@@ -84,4 +84,10 @@ public class Utils {
         }
         return "localhost";
     }
+
+    public static String getExtension(String fileName) {
+        int beginIndex = fileName.lastIndexOf('.');
+        if (beginIndex < 0) return "";
+        return fileName.substring(beginIndex).toLowerCase();
+    }
 }

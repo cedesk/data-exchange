@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.external.excel.ExcelModelEvaluator;
 import ru.skoltech.cedl.dataexchange.external.excel.ExcelModelExporter;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
@@ -39,7 +40,7 @@ public class ExternalModelAccessorFactory {
 
     public static ExternalModelEvaluator getEvaluator(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
         String fileName = externalModel.getName();
-        String fileExtension = getExtension(fileName);
+        String fileExtension = Utils.getExtension(fileName);
         if (evaluators.containsKey(fileExtension)) {
             Class evaluatorClass = evaluators.get(fileExtension);
             try {
@@ -57,7 +58,7 @@ public class ExternalModelAccessorFactory {
 
     public static ExternalModelExporter getExporter(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
         String fileName = externalModel.getName();
-        String fileExtension = getExtension(fileName);
+        String fileExtension = Utils.getExtension(fileName);
         if (exporters.containsKey(fileExtension)) {
             Class exporterClass = exporters.get(fileExtension);
             try {
@@ -74,13 +75,8 @@ public class ExternalModelAccessorFactory {
     }
 
     public static boolean hasEvaluator(String fileName) {
-        String fileExtension = getExtension(fileName);
+        String fileExtension = Utils.getExtension(fileName);
         return evaluators.keySet().contains(fileExtension);
     }
 
-    private static String getExtension(String fileName) {
-        int beginIndex = fileName.lastIndexOf('.');
-        if (beginIndex < 0) return "";
-        return fileName.substring(beginIndex).toLowerCase();
-    }
 }
