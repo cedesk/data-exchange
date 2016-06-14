@@ -2,20 +2,28 @@ package ru.skoltech.cedl.dataexchange.external.excel;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetCell;
 import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
  * Created by D.Knoll on 02.07.2015.
  */
 public class SpreadsheetGridViewFactory {
+
+    private static final Logger logger = Logger.getLogger(SpreadsheetGridViewFactory.class);
 
     /**
      * Opens a XLS/XLSX file and reads the cells of the given sheet for visualization in a <code>org.conrolsfx.spearsheet.SpreadSheetView</code>
@@ -42,7 +50,9 @@ public class SpreadsheetGridViewFactory {
      */
     public static Grid getGrid(InputStream inputStream, String fileName, String sheetName) throws IOException {
         Workbook wb = WorkbookFactory.getWorkbook(inputStream, fileName);
-
+        if (sheetName == null) {
+            logger.warn("sheetName is NULL");
+        }
         Sheet sheet = sheetName != null ? wb.getSheet(sheetName) : wb.getSheetAt(0);
         Grid grid = getGrid(sheet);
         wb.close();
@@ -100,36 +110,4 @@ public class SpreadsheetGridViewFactory {
         return columns;
     }
 
-    public static void writeDummy(File spreadsheetFile) {
-        Workbook wb = new HSSFWorkbook();
-        Sheet sheet = wb.createSheet("sheet-1");
-
-        // Create a row and put some cells in it. Rows are 0 based.
-        Row row = sheet.createRow(1);
-
-        // Create a cell and put a value in it.
-        Cell cell = row.createCell(1);
-        cell.setCellValue(4);
-
-        // Style the cell with borders all around.
-        CellStyle style = wb.createCellStyle();
-        style.setBorderBottom(CellStyle.BORDER_THIN);
-        style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
-        style.setBorderLeft(CellStyle.BORDER_THIN);
-        style.setLeftBorderColor(IndexedColors.GREEN.getIndex());
-        style.setBorderRight(CellStyle.BORDER_THIN);
-        style.setRightBorderColor(IndexedColors.BLUE.getIndex());
-        style.setBorderTop(CellStyle.BORDER_MEDIUM_DASHED);
-        style.setTopBorderColor(IndexedColors.BLACK.getIndex());
-        cell.setCellStyle(style);
-
-        // Write the output to a file
-        try {
-            FileOutputStream fileOut = new FileOutputStream(spreadsheetFile);
-            wb.write(fileOut);
-            fileOut.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

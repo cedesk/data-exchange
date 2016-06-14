@@ -352,7 +352,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         return (parent != null ? parent.getNodePath() : "") + "::" + name;
     }
 
-    /*
+    /**
      * The comparison is done only based on the name, so it enables sorting of parameters by name and identifying changes to values of parameters.
      */
     @Override
