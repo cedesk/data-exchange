@@ -91,7 +91,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         return result;
     }
 
-    private static Double getNumericValue(Cell cell) throws ExternalModelException {
+    public static Double getNumericValue(Cell cell) throws ExternalModelException {
         Double result = Double.NaN;
         if (cell != null) {
             switch (cell.getCellType()) {

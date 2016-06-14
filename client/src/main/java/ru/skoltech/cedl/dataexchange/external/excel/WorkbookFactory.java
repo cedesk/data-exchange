@@ -5,11 +5,9 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -82,46 +80,76 @@ public class WorkbookFactory {
         }
     }
 
-    public static List<ParameterModel> extractParameters(Sheet sheet) {
+    public static List<ParameterModel> extractParameters(ExternalModel externalModel, Sheet sheet) {
         List<ParameterModel> parameters = new LinkedList<>();
         Iterator<Row> rowIterator = sheet.rowIterator();
-
-        Cell parameterNumericCell = null, parameterNameCell = null;
-        do {
+        logger.info("extracting parameters from " + externalModel.getName());
+        try {
+            Cell inputSectionTitle = null, outputSectionTitle = null;
             do {
                 Row row = rowIterator.next();
                 Iterator<Cell> cellIterator = row.cellIterator();
                 Cell previousCell = null;
                 while (cellIterator.hasNext()) {
                     Cell cell = cellIterator.next();
+                    boolean isText = cell.getCellType() == Cell.CELL_TYPE_STRING;
+                    if (isText) {
+                        String stringCellValue = cell.getStringCellValue();
+                        if (inputSectionTitle == null && ("inputs".equalsIgnoreCase(stringCellValue) || "input".equalsIgnoreCase(stringCellValue))) {
+                            inputSectionTitle = cell;
+                        }
+                        if (outputSectionTitle == null && ("outputs".equalsIgnoreCase(stringCellValue) || "output".equalsIgnoreCase(stringCellValue))) {
+                            outputSectionTitle = cell;
+                        }
+                    }
                     boolean containsNumbers = cell.getCellType() == Cell.CELL_TYPE_NUMERIC || cell.getCellType() == Cell.CELL_TYPE_FORMULA;
                     boolean hasName = previousCell != null && previousCell.getCellType() == Cell.CELL_TYPE_STRING;
                     if (containsNumbers && hasName) {
-                        parameterNameCell = previousCell;
-                        parameterNumericCell = cell;
-                        break;
+                        ParameterNature parameterNature = null;
+                        if ((inputSectionTitle != null &&
+                                (cell.getColumnIndex() < outputSectionTitle.getColumnIndex() + 1) &&
+                                (cell.getColumnIndex() >= inputSectionTitle.getColumnIndex() - 1)) ||
+                                (outputSectionTitle != null && cell.getColumnIndex() < outputSectionTitle.getColumnIndex())) {
+                            parameterNature = ParameterNature.INPUT;
+                        }
+                        if (outputSectionTitle != null &&
+                                (cell.getColumnIndex() >= outputSectionTitle.getColumnIndex() - 1)) {
+                            parameterNature = ParameterNature.OUTPUT;
+                        }
+                        ParameterModel parameter = makeParameter(sheet, externalModel, previousCell, parameterNature, cell);
+                        logger.debug("new parameter: " + parameter);
+                        parameters.add(parameter);
                     }
                     previousCell = cell;
                 }
-            } while (parameterNumericCell == null && rowIterator.hasNext());
-            if (parameterNumericCell == null) return parameters;
-
-            ParameterModel parameter = makeParameter(sheet, parameterNumericCell, parameterNameCell);
-            logger.debug("found parameter: " + parameter);
-            parameters.add(parameter);
-        } while (rowIterator.hasNext());
+            } while (rowIterator.hasNext());
+        } catch (Exception e) {
+            logger.error("error while extracting parameters from workbook", e);
+        }
         return parameters;
     }
 
-    private static ParameterModel makeParameter(Sheet sheet, Cell parameterNumericCell, Cell parameterNameCell) {
-        String parameterName = SpreadsheetCellValueAccessor.getValueAsString(parameterNameCell);
-        SpreadsheetCoordinates coordinates = new SpreadsheetCoordinates(sheet.getSheetName(), parameterNumericCell.getRowIndex(), parameterNumericCell.getColumnIndex());
-        logger.info("found parameter '" + parameterName + "' in " + coordinates.toString());
+    private static ParameterModel makeParameter(Sheet sheet, ExternalModel externalModel, Cell nameCell, ParameterNature nature, Cell numberCell) {
+        String parameterName = SpreadsheetCellValueAccessor.getValueAsString(nameCell);
+        SpreadsheetCoordinates coordinates = new SpreadsheetCoordinates(sheet.getSheetName(), numberCell.getRowIndex(), numberCell.getColumnIndex());
+        logger.info("found " + nature.name().toLowerCase() + " parameter '" + parameterName + "' in " + coordinates.toString());
         ParameterModel parameter = new ParameterModel();
         parameter.setName(parameterName);
-        parameter.setNature(ParameterNature.INPUT);
-        parameter.setValueSource(ParameterValueSource.REFERENCE);
-        parameter.setValueReference(new ExternalModelReference(null, coordinates.toString()));
+        parameter.setNature(nature);
+        try {
+            Double numericValue = SpreadsheetCellValueAccessor.getNumericValue(numberCell);
+            parameter.setValue(numericValue);
+        } catch (ExternalModelException e) {
+            logger.warn("error reading value for parameter '" + parameterName + "' in " + coordinates.toString());
+        }
+        if (nature == ParameterNature.INPUT) {
+            parameter.setValueSource(ParameterValueSource.REFERENCE);
+            parameter.setValueReference(new ExternalModelReference(externalModel, coordinates.toString()));
+        }
+        if (nature == ParameterNature.OUTPUT) {
+            parameter.setIsExported(true);
+            parameter.setExportReference(new ExternalModelReference(externalModel, coordinates.toString()));
+        }
         return parameter;
     }
 
@@ -157,4 +185,5 @@ public class WorkbookFactory {
             e.printStackTrace();
         }
     }
+
 }

@@ -9,12 +9,20 @@
          spacing="8.0">
     <children>
         <TextField fx:id="externalModelNameText" editable="false" prefWidth="200.0" promptText="File"/>
-        <Button minWidth="28" mnemonicParsing="false" onAction="#openExternalModel" text="">
+        <Button fx:id="openExternalButton" minWidth="28" mnemonicParsing="false" onAction="#openExternalModel" text="">
             <tooltip>
                 <Tooltip text="Open Externally"/>
             </tooltip>
             <graphic>
                 <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
+            </graphic>
+        </Button>
+        <Button fx:id="startWizardButton" minWidth="28" mnemonicParsing="false" onAction="#startWizard" text="">
+            <tooltip>
+                <Tooltip text="Open Externally"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="FLASH"/>
             </graphic>
         </Button>
     </children>
