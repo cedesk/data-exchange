@@ -91,8 +91,16 @@ public class ParameterLinkRegistry {
     }
 
     private void recalculate(ParameterModel sink) {
-        logger.info("updating sink '" + sink.getNodePath() + "' from calculation");
-        sink.setValue(sink.getCalculation().evaluate());
+        if (sink.getCalculation() != null) {
+            if (sink.getCalculation().valid()) {
+                logger.info("updating sink '" + sink.getNodePath() + "' from calculation");
+                sink.setValue(sink.getCalculation().evaluate());
+            } else {
+                logger.info("invalid calculation '" + sink.getNodePath() + "'");
+            }
+        } else {
+            logger.info("empty calculation '" + sink.getNodePath() + "'");
+        }
     }
 
     public void updateSinks(ParameterModel source) {

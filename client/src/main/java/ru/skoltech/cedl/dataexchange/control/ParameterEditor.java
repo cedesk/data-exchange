@@ -282,9 +282,13 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         Optional<Calculation> calculationOptional = dialog.showAndWait();
         if (calculationOptional.isPresent()) {
             calculation = calculationOptional.get();
-            calculationText.setText(calculation.asText());
-            valueText.setText(String.valueOf(calculation.evaluate()));
-            logger.debug(originalParameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
+            if (calculation.valid()) {
+                calculationText.setText(calculation.asText());
+                valueText.setText(String.valueOf(calculation.evaluate()));
+                logger.debug(originalParameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
+            } else {
+                Dialogues.showError("Invalid calculation", "The composed calculation is invalid and therefor will be ignored.");
+            }
         } else {
             calculationText.setText(calculation != null ? calculation.asText() : null);
         }

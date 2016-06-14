@@ -76,6 +76,7 @@ public class Calculation {
 
     public boolean valid() {
         int args = arguments.size();
+        if (operation == null) return false;
         return operation.minArguments() <= args && operation.maxArguments() >= args;
     }
 

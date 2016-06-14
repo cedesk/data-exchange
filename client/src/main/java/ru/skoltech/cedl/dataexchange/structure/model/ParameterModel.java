@@ -312,7 +312,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     public double getEffectiveValue() {
         if (valueSource == ParameterValueSource.LINK && valueLink != null) {
             setValue(valueLink.getEffectiveValue());
-        } else if (valueSource == ParameterValueSource.CALCULATION && calculation != null) {
+        } else if (valueSource == ParameterValueSource.CALCULATION && calculation != null && calculation.valid()) {
             setValue(calculation.evaluate());
         }
         return isReferenceValueOverridden ? overrideValue : value;
