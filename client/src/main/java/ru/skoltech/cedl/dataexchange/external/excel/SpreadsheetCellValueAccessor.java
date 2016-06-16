@@ -38,7 +38,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         sheet = sheetName != null ? wb.getSheet(sheetName) : wb.getSheetAt(0);
         formulaEvaluator = wb.getCreationHelper().createFormulaEvaluator();
         try {
-            formulaEvaluator.evaluateAll();
+            formulaEvaluator.evaluateAll(); // not guaranteed to work for SXSSF (xlsx)
         } catch (Exception e) {
             logger.error(e);
             StatusLogger.getInstance().log("Error while recalculating " + fileName + ". Make sure it does not have external links!", true);
@@ -164,7 +164,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
 
     public void saveChanges(OutputStream outputStream) throws IOException {
         try {
-            formulaEvaluator.evaluateAll();
+            formulaEvaluator.evaluateAll(); // not guaranteed to work for SXSSF (xlsx)
         } catch (Exception e) {
             logger.error(e);
             StatusLogger.getInstance().log("Error while recalculating " + fileName + ". Make sure it does not have external links!", true);
