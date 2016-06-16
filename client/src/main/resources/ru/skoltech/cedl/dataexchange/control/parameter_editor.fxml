@@ -51,9 +51,9 @@
                 <Label text="Override Value" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
                 <TextField fx:id="valueOverrideText" prefWidth="120.0" promptText="0123.45" GridPane.columnIndex="2"
                            GridPane.rowIndex="4"/>
-                <HBox fx:id="referenceSelectorGroup" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                <HBox fx:id="referenceSelectorGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <children>
-                        <TextField fx:id="valueReferenceText" editable="false" prefWidth="200.0"
+                        <TextField fx:id="valueReferenceText" editable="false" prefWidth="300.0"
                                    promptText="reference"/>
                         <Button mnemonicParsing="false" onAction="#chooseSource" text=""
                                 minWidth="28">
@@ -66,9 +66,9 @@
                         </Button>
                     </children>
                 </HBox>
-                <HBox fx:id="linkSelectorGroup" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                <HBox fx:id="linkSelectorGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <children>
-                        <TextField fx:id="parameterLinkText" editable="false" prefWidth="200.0" promptText="link"/>
+                        <TextField fx:id="parameterLinkText" editable="false" prefWidth="300.0" promptText="link"/>
                         <Button mnemonicParsing="false" onAction="#chooseParameter" text=""
                                 minWidth="28">
                             <tooltip>
@@ -80,9 +80,9 @@
                         </Button>
                     </children>
                 </HBox>
-                <HBox fx:id="calculationGroup" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                <HBox fx:id="calculationGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <children>
-                        <TextField fx:id="calculationText" editable="false" prefWidth="200.0" promptText="calculation"/>
+                        <TextField fx:id="calculationText" editable="false" prefWidth="300.0" promptText="calculation"/>
                         <Button mnemonicParsing="false" onAction="#editCalculation" text="" minWidth="28">
                             <tooltip>
                                 <Tooltip text="Detach External Model"/>
@@ -100,9 +100,9 @@
                         <ChoiceBox fx:id="unitChoiceBox" prefWidth="200.0"/>
                     </children>
                 </HBox>
-                <HBox fx:id="exportSelectorGroup" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
+                <HBox fx:id="exportSelectorGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
                     <children>
-                        <TextField fx:id="exportReferenceText" editable="false" prefWidth="200.0"
+                        <TextField fx:id="exportReferenceText" editable="false" prefWidth="300.0"
                                    promptText="reference"/>
                         <Button mnemonicParsing="false" onAction="#chooseTarget" text=""
                                 minWidth="28">
