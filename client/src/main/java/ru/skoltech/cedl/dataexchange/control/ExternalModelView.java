@@ -107,22 +107,31 @@ public class ExternalModelView extends HBox implements Initializable {
                     String sheetName = choice.get();
                     Sheet sheet = workbook.getSheet(sheetName);
                     List<ParameterModel> parameterList = SpreadsheetInputOutputExtractor.extractParameters(externalModel, sheet);
-                    parameterList.sort(new ParameterModelComparator());
+                    if (parameterList.size() > 1) {
+                        parameterList.sort(new ParameterModelComparator());
 
-                    ModelNode modelNode = externalModel.getParent();
-                    Map<String, ParameterModel> parameterMap = modelNode.getParameterMap();
+                        ModelNode modelNode = externalModel.getParent();
+                        Map<String, ParameterModel> parameterMap = modelNode.getParameterMap();
 
-                    String parameters = parameterList.stream()
-                            .map((parameter) ->
-                                    (parameter.getName() + (parameterMap.containsKey(parameter.getName()) ? " DUPLICATE " : " ") +
-                                            parameter.getNature().name()) + " " + Double.toString(parameter.getValue()) + " " +
-                                            (parameter.getUnit() != null ? parameter.getUnit().getSymbol() : ""))
-                            .collect(Collectors.joining("\n"));
-                    Optional<ButtonType> addYesNo = Dialogues.chooseYesNo("Add new parameters",
-                            "Choose whether the following parameters extracted from the external model shall be added:\n" + parameters);
-                    if (addYesNo.get() == ButtonType.YES) {
-                        parameterList.forEach(modelNode::addParameter);
-                        // TODO: updateView
+                        String parameters = parameterList.stream()
+                                .map((parameter) ->
+                                        (parameter.getName() + (parameterMap.containsKey(parameter.getName()) ? " DUPLICATE " : " ") +
+                                                parameter.getNature().name()) + " " + Double.toString(parameter.getValue()) + " " +
+                                                (parameter.getUnit() != null ? parameter.getUnit().getSymbol() : ""))
+                                .collect(Collectors.joining("\n"));
+                        Optional<ButtonType> addYesNo = Dialogues.chooseYesNo("Add new parameters",
+                                "Choose whether the following parameters extracted from the external model shall be added:\n" + parameters);
+                        if (addYesNo.isPresent() && addYesNo.get() == ButtonType.YES) {
+                            Optional<ButtonType> cleanYesNo = Dialogues.chooseYesNo("Replace existing parameters",
+                                    "Choose whether the existing parameters should be replaced.");
+                            if (cleanYesNo.isPresent() && cleanYesNo.get() == ButtonType.YES) {
+                                modelNode.getParameters().clear();
+                            }
+                            parameterList.forEach(modelNode::addParameter);
+                            // TODO: updateView
+                        }
+                    } else {
+                        Dialogues.showWarning("No parameters found.", "No parameters were found in the spreadsheet!");
                     }
                 }
                 inputStream.close();

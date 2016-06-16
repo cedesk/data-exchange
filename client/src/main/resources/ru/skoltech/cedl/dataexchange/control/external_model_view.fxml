@@ -19,7 +19,7 @@
         </Button>
         <Button fx:id="startWizardButton" minWidth="28" mnemonicParsing="false" onAction="#startWizard" text="">
             <tooltip>
-                <Tooltip text="Open Externally"/>
+                <Tooltip text="Start input/output parameter extraction wizard"/>
             </tooltip>
             <graphic>
                 <Glyph fontFamily="FontAwesome" icon="FLASH"/>
