@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  */
 public class SpreadsheetCoordinates {
 
-    public static final Pattern PATTERN = Pattern.compile("((([A-Za-z0-9 \\-\\_]{1,}):)?)([A-Z]{1,})([1-9][0-9]*)");
+    public static final Pattern PATTERN = Pattern.compile("(([A-Za-z0-9 \\-\\_]{1,})[!:])?([A-Z]{1,})([1-9][0-9]*)");
     private static final int INIT = (int) 'A';
     private String sheetName;
     private int rowNumber;
@@ -34,10 +34,10 @@ public class SpreadsheetCoordinates {
     public static SpreadsheetCoordinates valueOf(String coordinates) throws ParseException {
         Matcher matcher = PATTERN.matcher(coordinates);
         if (matcher.matches()) {
-            String sheet = matcher.group(3);
-            String col = matcher.group(4);
+            String sheet = matcher.group(2);
+            String col = matcher.group(3);
             int colNumber = 0;
-            String row = matcher.group(5);
+            String row = matcher.group(4);
             int rowNumber = Integer.valueOf(row);
             for (char ch : col.toCharArray()) {
                 colNumber = colNumber * 26 + ch - INIT + 1;
@@ -59,7 +59,7 @@ public class SpreadsheetCoordinates {
         }
         sb = sb.reverse();
         if (sheetName != null) {
-            sb.insert(0, ':');
+            sb.insert(0, '!');
             sb.insert(0, sheetName);
         }
         sb.append(rowNumber);
