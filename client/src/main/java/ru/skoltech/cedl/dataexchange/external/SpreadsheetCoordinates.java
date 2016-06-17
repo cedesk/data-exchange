@@ -28,7 +28,7 @@ public class SpreadsheetCoordinates {
     }
 
     public static SpreadsheetCoordinates valueOf(String sheetName, TablePosition tablePosition) {
-        return new SpreadsheetCoordinates(sheetName, tablePosition.getRow() + 1, tablePosition.getColumn() + 1 );
+        return new SpreadsheetCoordinates(sheetName, tablePosition.getRow() + 1, tablePosition.getColumn() + 1);
     }
 
     public static SpreadsheetCoordinates valueOf(String coordinates) throws ParseException {
@@ -86,5 +86,22 @@ public class SpreadsheetCoordinates {
 
     public void setSheetName(String sheetName) {
         this.sheetName = sheetName;
+    }
+
+    public SpreadsheetCoordinates getNeighbour(Neighbour neighbour) {
+        switch (neighbour) {
+            case UP:
+                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber - 1, this.columnNumber);
+            case DOWN:
+                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber + 1, this.columnNumber);
+            case LEFT:
+                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber, this.columnNumber - 1);
+            default:  // RIGHT
+                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber, this.columnNumber + 1);
+        }
+    }
+
+    public enum Neighbour {
+        UP, DOWN, RIGHT, LEFT
     }
 }
