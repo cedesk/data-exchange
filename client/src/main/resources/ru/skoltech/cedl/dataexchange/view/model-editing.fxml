@@ -31,7 +31,8 @@
                                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
                             </graphic>
                         </Button>
-                        <Button fx:id="renameNodeButton" minWidth="28" mnemonicParsing="false" onAction="#renameNode" text="">
+                        <Button fx:id="renameNodeButton" minWidth="28" mnemonicParsing="false" onAction="#renameNode"
+                                text="">
                             <tooltip>
                                 <Tooltip text="Rename node"/>
                             </tooltip>
@@ -176,6 +177,16 @@
                                                             </tooltip>
                                                             <graphic>
                                                                 <Glyph fontFamily="FontAwesome" icon="HISTORY"/>
+                                                            </graphic>
+                                                        </Button>
+                                                        <Button fx:id="startParameterWizardButton" minWidth="28"
+                                                                mnemonicParsing="false"
+                                                                onAction="#startParameterWizard" text="">
+                                                            <tooltip>
+                                                                <Tooltip text="Start Parameter Wizard"/>
+                                                            </tooltip>
+                                                            <graphic>
+                                                                <Glyph fontFamily="FontAwesome" icon="FLASH"/>
                                                             </graphic>
                                                         </Button>
                                                     </items>

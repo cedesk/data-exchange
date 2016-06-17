@@ -22,10 +22,14 @@ import javafx.stage.Window;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetInputOutputExtractor;
+import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
@@ -33,9 +37,13 @@ import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -85,6 +93,9 @@ public class ModelEditingController implements Initializable {
 
     @FXML
     private Button viewParameterHistoryButton;
+
+    @FXML
+    private Button startParameterWizardButton;
 
     @FXML
     private TreeView<ModelNode> structureTree;
@@ -139,6 +150,7 @@ public class ModelEditingController implements Initializable {
         BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
         deleteParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnParameterTableView));
         viewParameterHistoryButton.disableProperty().bind(noSelectionOnParameterTableView);
+        startParameterWizardButton.disableProperty().bind(noSelectionOnParameterTableView);
 
         // NODE PARAMETER TABLE
         parameterTable.editableProperty().bind(selectedNodeIsEditable);
@@ -312,6 +324,108 @@ public class ModelEditingController implements Initializable {
         } catch (IOException e) {
             logger.error(e);
         }
+    }
+
+    public void startParameterWizard(ActionEvent actionEvent) {
+        ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem();
+        Objects.requireNonNull(selectedParameter, "no parameter selected");
+        Pattern pattern = Pattern.compile("\\[(.*)\\](.*)"); // e.g. [Structure.xls]Sheet1!A1
+
+        String description = selectedParameter.getDescription();
+        if (description.startsWith(SpreadsheetInputOutputExtractor.EXT_SRC)) {
+            String formula = description.replace(SpreadsheetInputOutputExtractor.EXT_SRC, "");
+            Matcher matcher = pattern.matcher(formula);
+            if (matcher.find()) {
+                String filename = matcher.group(1);
+                String target = matcher.group(2);
+
+                ExternalModel refExtModel = findExternalModel(filename);
+                if (refExtModel != null) {
+                    ModelNode modelNode = refExtModel.getParent();
+                    ParameterModel source = findParameter(modelNode, target);
+                    if (source != null && source.getNature() == ParameterNature.OUTPUT) {
+                        StatusLogger.getInstance().log("Parameter to link to found '" + source.getNodePath() + "'", false);
+                        selectedParameter.setNature(ParameterNature.INPUT);
+                        selectedParameter.setValueSource(ParameterValueSource.LINK);
+                        selectedParameter.setValueLink(source);
+                        selectedParameter.setValue(source.getEffectiveValue());
+                        selectedParameter.setUnit(source.getUnit());
+                        // TODO: register link, ProjectContext.getInstance().getProject().getParameterLinkRegistry();
+                        // TODO: update view
+                    } else if (source != null && source.getNature() != ParameterNature.INPUT) {
+                        Dialogues.showWarning("Parameter found.", "The parameter '" + source.getNodePath() + "' can not be referenced because it's not an output!");
+                    } else {
+                        String sourceParameterName = findParameterName(refExtModel, target);
+                        if (sourceParameterName != null) {
+                            selectedParameter.setDescription(description + "\n" + refExtModel.getNodePath() + ">" + sourceParameterName);
+                            Dialogues.showWarning("Parameter found.", "The parameter '" + target + "' can not be referenced," +
+                                    " but it should be called '" + sourceParameterName + "' in node '" + modelNode.getName() + "'");
+                        } else {
+                            Dialogues.showWarning("Parameter not found.", "No parameter referencing '" + target + "' found!");
+                        }
+                    }
+
+                } else {
+                    Dialogues.showWarning("External model not found.", "No external model  named '" + filename + "' found!");
+                }
+            }
+        }
+    }
+
+    private String findParameterName(ExternalModel externalModel, String target) {
+        String filename = externalModel.getName();
+        SpreadsheetCoordinates nameCellCoordinates = null;
+        try {
+            SpreadsheetCoordinates targetCoordinates = SpreadsheetCoordinates.valueOf(target);
+            nameCellCoordinates = targetCoordinates.getNeighbour(SpreadsheetCoordinates.Neighbour.LEFT);
+        } catch (ParseException e) {
+            return null;
+        }
+        String parameterName = null;
+        ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+        if (WorkbookFactory.isWorkbookFile(filename)) {
+            try (InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel)) {
+                String sheetName = nameCellCoordinates.getSheetName();
+                SpreadsheetCellValueAccessor cellValueAccessor = new SpreadsheetCellValueAccessor(inputStream, filename, sheetName);
+                parameterName = cellValueAccessor.getValueAsString(nameCellCoordinates);
+            } catch (IOException e) {
+                StatusLogger.getInstance().log("The external model '" + filename + "' could not be opened to extract parameter name!");
+                logger.warn("The external model '" + filename + "' could not be opened to extract parameter name!", e);
+            }
+        }
+        return parameterName;
+    }
+
+    private ExternalModel findExternalModel(String filename) {
+        SystemModel systemModel = project.getStudy().getSystemModel();
+        ExternalModelTreeIterator emti = new ExternalModelTreeIterator(systemModel);
+        ExternalModel refExtModel = null;
+        while (emti.hasNext()) {
+            ExternalModel externalModel = emti.next();
+            if (externalModel.getName().equalsIgnoreCase(filename)) {
+                refExtModel = externalModel;
+                break;
+            }
+        }
+        return refExtModel;
+    }
+
+    private ParameterModel findParameter(ModelNode modelNode, String target) {
+        List<ParameterModel> parameters = modelNode.getParameters();
+        ParameterModel source = null;
+        for (ParameterModel parameter : parameters) {
+            if (parameter.getNature() == ParameterNature.OUTPUT && parameter.getValueReference() != null
+                    && target.equalsIgnoreCase(parameter.getValueReference().getTarget())) {
+                source = parameter;
+                break;
+            }
+            if (parameter.getNature() == ParameterNature.INPUT && parameter.getExportReference() != null
+                    && target.equalsIgnoreCase(parameter.getExportReference().getTarget())) {
+                source = parameter;
+                break;
+            }
+        }
+        return source;
     }
 
     public void addNode(ActionEvent actionEvent) {

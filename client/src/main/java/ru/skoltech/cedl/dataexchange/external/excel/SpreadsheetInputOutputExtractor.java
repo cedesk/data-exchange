@@ -7,7 +7,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.util.StringUtil;
 import org.apache.poi.xssf.model.ExternalLinksTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
@@ -20,7 +19,6 @@ import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +28,8 @@ import java.util.List;
  */
 public class SpreadsheetInputOutputExtractor {
 
+    public static final String EXT_SRC = "EXT.SRC: ";
+    public static final String SOURCE = "SOURCE: ";
     private static final Logger logger = Logger.getLogger(SpreadsheetInputOutputExtractor.class);
 
     public static Sheet guessInputSheet(Workbook wb) {
@@ -63,7 +63,7 @@ public class SpreadsheetInputOutputExtractor {
         Iterator<Row> rowIterator = sheet.rowIterator();
         logger.info("extracting parameters from " + externalModel.getName());
         try {
-            Cell inputSectionTitle = null, outputSectionTitle = null;
+            Cell inputSectionTitle = null, calculationsSectionTitle = null, outputSectionTitle = null;
             do {
                 Row row = rowIterator.next();
                 Iterator<Cell> cellIterator = row.cellIterator();
@@ -75,6 +75,9 @@ public class SpreadsheetInputOutputExtractor {
                         String stringCellValue = cell.getStringCellValue();
                         if (inputSectionTitle == null && ("inputs".equalsIgnoreCase(stringCellValue) || "input".equalsIgnoreCase(stringCellValue))) {
                             inputSectionTitle = cell;
+                        }
+                        if (calculationsSectionTitle == null && ("calculations".equalsIgnoreCase(stringCellValue) || "calculations".equalsIgnoreCase(stringCellValue))) {
+                            calculationsSectionTitle = cell;
                         }
                         if (outputSectionTitle == null && ("outputs".equalsIgnoreCase(stringCellValue) || "output".equalsIgnoreCase(stringCellValue))) {
                             outputSectionTitle = cell;
@@ -94,9 +97,11 @@ public class SpreadsheetInputOutputExtractor {
                                 (cell.getColumnIndex() >= outputSectionTitle.getColumnIndex() - 1)) {
                             parameterNature = ParameterNature.OUTPUT;
                         }
-                        ParameterModel parameter = makeParameter(sheet, externalModel, externalLinks, previousCell, parameterNature, cell);
-                        logger.debug("new parameter: " + parameter);
-                        parameters.add(parameter);
+                        if (parameterNature != ParameterNature.INTERNAL) {
+                            ParameterModel parameter = makeParameter(sheet, externalModel, externalLinks, previousCell, parameterNature, cell);
+                            logger.debug("new parameter: " + parameter);
+                            parameters.add(parameter);
+                        }
                     }
                     previousCell = cell;
                 }
@@ -172,11 +177,11 @@ public class SpreadsheetInputOutputExtractor {
         if (cellFormula.contains("[")) {
             String simpleFormula = cellFormula;
             for (int idx = 0; idx < otherWorkbooks.size(); idx++) {
-                simpleFormula = simpleFormula.replace("[" + (idx + 1) + "]", "[" + otherWorkbooks.get(idx) + "]:");
+                simpleFormula = simpleFormula.replace("[" + (idx + 1) + "]", "[" + otherWorkbooks.get(idx) + "]");
             }
-            result = "EXT.SRC: " + simpleFormula;
+            result = EXT_SRC + simpleFormula;
         } else {
-            result = "SOURCE: " + cellFormula;
+            result = SOURCE + cellFormula;
         }
         result = result.replace("$", ""); // simplify references
         return result;
