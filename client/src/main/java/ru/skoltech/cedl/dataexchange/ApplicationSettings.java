@@ -26,6 +26,7 @@ public class ApplicationSettings {
     private static final String REPOSITORY_SCHEMA_CREATE = "repository.schema.create";
     private static final String REPOSITORY_USER = "repository.user";
     private static final String REPOSITORY_PASSWORD = "repository.password";
+    private static final String REPOSITORY_WATCHER_AUTO_SYNC = "repository.watcher.autosync";
 
     private static final String PROJECT_LAST_AUTOLOAD = "project.last.autoload";
     private static final String PROJECT_LAST_NAME = "project.last.name";
@@ -53,6 +54,23 @@ public class ApplicationSettings {
         String prop = properties.getProperty(PROJECT_LAST_AUTOLOAD);
         if (prop == null || Boolean.parseBoolean(prop) != autoload) {
             properties.setProperty(PROJECT_LAST_AUTOLOAD, Boolean.toString(autoload));
+            save();
+        }
+    }
+
+    public static boolean getAutoSync() {
+        String autosync = properties.getProperty(REPOSITORY_WATCHER_AUTO_SYNC);
+        if (autosync != null) {
+            return Boolean.parseBoolean(autosync);
+        }
+        return true;
+    }
+
+
+    public static void setAutoSync(boolean autoSync) {
+        String prop = properties.getProperty(REPOSITORY_WATCHER_AUTO_SYNC);
+        if (prop == null || Boolean.parseBoolean(prop) != autoSync) {
+            properties.setProperty(REPOSITORY_WATCHER_AUTO_SYNC, Boolean.toString(autoSync));
             save();
         }
     }

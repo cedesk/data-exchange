@@ -249,48 +249,45 @@ public class MainController implements Initializable {
             }
         });
 
-        repositoryWatcher.start();
+        if (ApplicationSettings.getAutoSync()) {
+            repositoryWatcher.start();
+        }
+
         newButton.disableProperty().bind(project.canNewProperty().not());
         loadButton.disableProperty().bind(project.canLoadProperty().not());
         saveButton.disableProperty().bind(project.canSyncProperty().not());
 
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                boolean validRepository = checkRepository();
-                if (!validRepository) {
-                    openRepositorySettingsDialog(null);
-                    validRepository = checkRepository();
-                }
-                if (!validRepository) return;
-                validateUser();
+        Platform.runLater(this::checkRepositoryAndLoadLastProject);
 
-                ActionLogger.log(ActionLogger.ActionType.application_start, ApplicationProperties.getAppVersion());
-                if (ApplicationSettings.getProjectToImport() != null) {
-                    importProject(null);
-                } else if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
-                    String projectName = ApplicationSettings.getLastUsedProject();
-                    if (projectName != null) {
-                        project.setProjectName(projectName);
-                        reloadProject(null);
-                    } else {
-                        Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
-                        if (choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {
-                            openProject(null);
-                        } else if (choice.isPresent() && choice.get() == Dialogues.NEW_STUDY_BUTTON) {
-                            newProject(null);
-                        }
-                    }
+        Platform.runLater(() -> checkForApplicationUpdate(null));
+    }
+
+    private void checkRepositoryAndLoadLastProject() {
+        boolean validRepository = checkRepository();
+        if (!validRepository) {
+            openRepositorySettingsDialog(null);
+            validRepository = checkRepository();
+        }
+        if (!validRepository) return;
+        validateUser();
+
+        ActionLogger.log(ActionLogger.ActionType.application_start, ApplicationProperties.getAppVersion());
+        if (ApplicationSettings.getProjectToImport() != null) {
+            importProject(null);
+        } else if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
+            String projectName = ApplicationSettings.getLastUsedProject();
+            if (projectName != null) {
+                project.setProjectName(projectName);
+                reloadProject(null);
+            } else {
+                Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
+                if (choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {
+                    openProject(null);
+                } else if (choice.isPresent() && choice.get() == Dialogues.NEW_STUDY_BUTTON) {
+                    newProject(null);
                 }
             }
-        });
-
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                checkForUpdate(null);
-            }
-        });
+        }
     }
 
     private void showStatusMessages(MouseEvent mouseEvent) {
@@ -487,7 +484,7 @@ public class MainController implements Initializable {
         }
     }
 
-    public void checkForUpdate(ActionEvent actionEvent) {
+    public void checkForApplicationUpdate(ActionEvent actionEvent) {
         Optional<ApplicationPackage> latestVersionAvailable = UpdateChecker.getLatestVersionAvailable();
         if (latestVersionAvailable.isPresent()) {
             ApplicationPackage applicationPackage = latestVersionAvailable.get();

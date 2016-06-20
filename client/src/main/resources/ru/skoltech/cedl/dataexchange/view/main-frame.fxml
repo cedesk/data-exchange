@@ -57,7 +57,7 @@
                                         </Menu>
                                         <Menu mnemonicParsing="true" text="_Help">
                                             <items>
-                                                <MenuItem mnemonicParsing="true" onAction="#checkForUpdate"
+                                                <MenuItem mnemonicParsing="true" onAction="#checkForApplicationUpdate"
                                                           text="Check for _Update"/>
                                             </items>
                                             <items>

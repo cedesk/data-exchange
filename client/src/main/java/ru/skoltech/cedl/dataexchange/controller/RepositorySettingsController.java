@@ -29,6 +29,9 @@ public class RepositorySettingsController implements Initializable {
     private static Logger logger = Logger.getLogger(RepositorySettingsController.class);
 
     @FXML
+    private CheckBox repoWatcherAutoSyncCheckbox;
+
+    @FXML
     private TextField appDirText;
 
     @FXML
@@ -56,6 +59,7 @@ public class RepositorySettingsController implements Initializable {
         dbHostnameText.setText(ApplicationSettings.getRepositoryServerHostname(""));
         dbUsernameText.setText(ApplicationSettings.getRepositoryUserName(""));
         dbPasswordText.setText(ApplicationSettings.getRepositoryPassword(""));
+        repoWatcherAutoSyncCheckbox.setSelected(ApplicationSettings.getAutoSync());
     }
 
     public void applyAndClose(ActionEvent actionEvent) {
@@ -67,6 +71,8 @@ public class RepositorySettingsController implements Initializable {
 
     private boolean updateModel() {
         boolean validSettings = false;
+
+        ApplicationSettings.setAutoSync(repoWatcherAutoSyncCheckbox.isSelected());
 
         String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
 
