@@ -152,10 +152,11 @@ public class SpreadsheetCellValueAccessor implements Closeable {
 
     public Cell getCell(SpreadsheetCoordinates cellCoordinates) {
         String sheetName = cellCoordinates.getSheetName();
+        if (sheet == null && sheetName != null) {
+            sheet = wb.getSheet(sheetName);
+        }
         if (sheet == null && sheetName == null) {
             sheet = wb.getSheetAt(0);
-        } else if (sheet == null || !sheet.getSheetName().equals(sheetName)) {
-            sheet = wb.getSheet(sheetName);
         }
         Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
         Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1);
