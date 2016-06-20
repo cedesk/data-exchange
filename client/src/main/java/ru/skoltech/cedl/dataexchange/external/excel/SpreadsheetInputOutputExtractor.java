@@ -70,6 +70,10 @@ public class SpreadsheetInputOutputExtractor {
                 Cell previousCell = null;
                 while (cellIterator.hasNext()) {
                     Cell cell = cellIterator.next();
+                    if (sheet.isColumnHidden(cell.getColumnIndex())) {
+                        previousCell = null;
+                        continue;
+                    }
                     boolean isText = cell.getCellType() == Cell.CELL_TYPE_STRING;
                     if (isText) {
                         String stringCellValue = cell.getStringCellValue();
