@@ -172,6 +172,7 @@ public class ModelDifferencesFactory {
         ParameterModel vl1 = p1.getValueLink();
         ParameterModel vl2 = p2.getValueLink();
         if ((vl1 == null && vl2 != null) || (vl1 != null && vl2 == null)) {
+            // TODO: fix NullPointerException
             if ((vl1 != null && !vl1.getUuid().equals(vl2.getUuid()))) { // reference is the same
                 if ((vl1.getValue() == null && vl2.getValue() != null) || (vl1.getValue() != null && vl2.getValue() == null)
                         || (vl1.getValue() != null && !vl1.getValue().equals(vl2.getValue()))) {
