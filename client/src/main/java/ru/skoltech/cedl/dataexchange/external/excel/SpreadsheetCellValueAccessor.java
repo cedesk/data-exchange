@@ -8,7 +8,6 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 
 import java.io.*;
-import java.text.ParseException;
 
 /**
  * Created by D.Knoll on 06.07.2015.
@@ -152,6 +151,12 @@ public class SpreadsheetCellValueAccessor implements Closeable {
     }
 
     public Cell getCell(SpreadsheetCoordinates cellCoordinates) {
+        String sheetName = cellCoordinates.getSheetName();
+        if (sheet == null && sheetName == null) {
+            sheet = wb.getSheetAt(0);
+        } else if (sheet == null || !sheet.getSheetName().equals(sheetName)) {
+            sheet = wb.getSheet(sheetName);
+        }
         Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
         Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1);
         return cell;
