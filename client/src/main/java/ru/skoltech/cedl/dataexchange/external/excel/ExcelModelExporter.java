@@ -28,9 +28,11 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
     public void setValue(String target, Double value) throws ExternalModelException {
         try {
             SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
-            SpreadsheetCellValueAccessor spreadsheetAccessor = getSpreadsheetAccessor(coordinates.getSheetName());
-            spreadsheetAccessor.setNumericValue(coordinates, value);
+            if (spreadsheetAccessor == null) {
+                spreadsheetAccessor = getSpreadsheetAccessor(coordinates.getSheetName());
+            }
             logger.debug("setting " + value + " on cell " + target + " in " + externalModel.getNodePath());
+            spreadsheetAccessor.setNumericValue(coordinates, value);
         } catch (ParseException e) {
             logger.error("error parsing coordinates: " + target);
         }
@@ -42,6 +44,7 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
                 if (spreadsheetAccessor.isModified()) {
                     ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
                     if (cacheState == ExternalModelCacheState.NOT_CACHED) {
+                        logger.debug("Updating " + externalModel.getNodePath() + " with changes from parameters");
                         try (ByteArrayOutputStream bos = new ByteArrayOutputStream(externalModel.getAttachment().length)) {
                             spreadsheetAccessor.saveChanges(bos);
                             externalModel.setAttachment(bos.toByteArray());
@@ -52,7 +55,7 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
                     } else {
                         File file = ExternalModelFileHandler.getFilePathInCache(externalModel);
                         externalModelFileWatcher.maskChangesTo(file);
-                        logger.info("Updating " + file.getAbsolutePath() + " with changes from parameters");
+                        logger.debug("Updating " + file.getAbsolutePath() + " with changes from parameters");
                         try (FileOutputStream fos = new FileOutputStream(file)) {
                             spreadsheetAccessor.saveChanges(fos);
                         } catch (FileNotFoundException e) {
