@@ -564,6 +564,10 @@ public class Project {
         return repositoryStateMachine.wasLoadedOrSaved();
     }
 
+    public boolean hasLocalStudyModifications() {
+        return repositoryStateMachine.hasModifications();
+    }
+
     public ParameterLinkRegistry getParameterLinkRegistry() {
         return parameterLinkRegistry;
     }

@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
 import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.repository.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -676,6 +677,28 @@ public class MainController implements Initializable {
     public void quit(ActionEvent actionEvent) {
         Stage stage = (Stage) applicationPane.getScene().getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
+    public boolean confirmCloseRequest() {
+        if (project.hasLocalStudyModifications()) {
+            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Shall the modifications saved before closing?");
+            if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
+                try {
+                    project.storeLocalStudy();
+                    return true;
+                } catch (RepositoryException | ExternalModelException e) {
+                    Optional<ButtonType> closeAnyway = Dialogues.chooseYesNo("Failed to save", "Shall the program close anyway?");
+                    if (closeAnyway.isPresent() && closeAnyway.get() == ButtonType.YES) {
+                        return true;
+                    }
+                }
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
+        return false;
     }
 
     private class UpdateDownloader implements Consumer<ActionEvent> {

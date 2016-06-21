@@ -64,6 +64,10 @@ public class RepositoryStateMachine extends Observable {
         return wasLoadedOrSaved;
     }
 
+    public boolean hasModifications() {
+        return state == RepositoryState.DIRTY;
+    }
+
     public enum RepositoryState {
 
         INITIAL {
