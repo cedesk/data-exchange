@@ -8,6 +8,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 
 import java.io.*;
+import java.util.Objects;
 
 /**
  * Created by D.Knoll on 06.07.2015.
@@ -109,24 +110,26 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         return result;
     }
 
+    /**
+     * This method writes a value to a cell, and memorizes if changes have been such that the spreadsheet needs to be saved afterwards.
+     */
     private void setNumericValue(Cell cell, Double value) throws ExternalModelException {
-        if (cell != null) {
-            boolean change = false;
+        Objects.requireNonNull(cell);
+        boolean change = true;
+        try {
+            Double previousValue = getNumericValue(cell);
+            change = !Precision.equals(previousValue, value, 2) || cell.getCellType() != Cell.CELL_TYPE_NUMERIC;
+        } catch (ExternalModelException ignore) {
+        }
+        if (change) {
             try {
-                Double previousValue = getNumericValue(cell);
-                change = !Precision.equals(previousValue, value, 2);
-            } catch (ExternalModelException ignore) {
+                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                cell.setCellValue(value);
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                throw new ExternalModelException("writing to cell failed!", e);
             }
-            if (change) {
-                try {
-                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                    cell.setCellValue(value);
-                } catch (IllegalArgumentException | IllegalStateException e) {
-                    throw new ExternalModelException("writing to cell failed!", e);
-                }
-                markModified();
-                formulaEvaluator.notifyUpdateCell(cell);
-            }
+            markModified();
+            formulaEvaluator.notifyUpdateCell(cell);
         }
     }
 
@@ -159,7 +162,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
             sheet = wb.getSheetAt(0);
         }
         Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
-        Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1);
+        Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1, Row.CREATE_NULL_AS_BLANK);
         return cell;
     }
 
