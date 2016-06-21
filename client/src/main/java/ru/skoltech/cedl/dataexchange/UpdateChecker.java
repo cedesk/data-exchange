@@ -24,10 +24,9 @@ public class UpdateChecker {
 
     public static Optional<ApplicationPackage> getLatestVersionAvailable() {
         String serverString = ApplicationProperties.getAppDistributionServerUrl();
-        URL serverUrl = null;
         try {
-            serverUrl = new URL(serverString);
-            Document doc = Jsoup.parse(serverUrl, 3000);
+            URL serverUrl = new URL(serverString);
+            Document doc = getDocument(serverUrl);
             List<String> fileNames = extractFileNames(doc);
 
             ApplicationPackage applicationPackage = getLatest(fileNames);
@@ -69,7 +68,7 @@ public class UpdateChecker {
         return fileList;
     }
 
-    private Document getDocument(URL url) throws IOException {
+    private static Document getDocument(URL url) throws IOException {
         return Jsoup.parse(url, 3000);
     }
 }
