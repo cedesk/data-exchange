@@ -49,8 +49,8 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
                             spreadsheetAccessor.saveChanges(bos);
                             externalModel.setAttachment(bos.toByteArray());
                         } catch (IOException e) {
-                            logger.error("Error saving changes on spreadsheet to external model (in memory).");
-                            throw new ExternalModelException("error saving changes to external model");
+                            logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + "(in memory).");
+                            throw new ExternalModelException("error saving changes to external model" + externalModel.getNodePath());
                         }
                     } else {
                         File file = ExternalModelFileHandler.getFilePathInCache(externalModel);
@@ -59,11 +59,11 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
                         try (FileOutputStream fos = new FileOutputStream(file)) {
                             spreadsheetAccessor.saveChanges(fos);
                         } catch (FileNotFoundException e) {
-                            logger.error("Error saving changes on spreadsheet to external model (on cache file).");
-                            throw new ExternalModelException("external model is opened by other application");
+                            logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
+                            throw new ExternalModelException("external model " + externalModel.getNodePath() + " is opened by other application");
                         } catch (IOException e) {
-                            logger.error("Error saving changes on spreadsheet to external model (on cache file).");
-                            throw new ExternalModelException("error saving changes to external model");
+                            logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
+                            throw new ExternalModelException("error saving changes to external model " + externalModel.getNodePath());
                         } finally {
                             externalModelFileWatcher.unmaskChangesTo(file);
                         }
