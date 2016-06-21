@@ -105,10 +105,10 @@ public class ParameterLinkRegistry {
 
     public void updateSinks(ParameterModel source) {
         SystemModel systemModel = getSystem(source.getParent());
-        Map<String, ParameterModel> parameterDictionary = makeDictionary(systemModel);
 
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
+            Map<String, ParameterModel> parameterDictionary = makeDictionary(systemModel);
             Set<String> sinkIds = valueLinks.get(sourceId);
             for (String sinkId : sinkIds) {
                 ParameterModel sink = parameterDictionary.get(sinkId);
