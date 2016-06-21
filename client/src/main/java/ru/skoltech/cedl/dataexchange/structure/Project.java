@@ -356,10 +356,9 @@ public class Project {
 
     public void updateExternalModelsInStudy() {
         for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
-            ModelNode modelNode = externalModel.getParent();
             ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
             if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
-                logger.debug("storing " + externalModel.getNodePath());
+                logger.debug("updating " + externalModel.getNodePath() + " from file");
                 try {
                     ExternalModelFileHandler.readAttachmentFromFile(externalModel);
                 } catch (IOException e) {
