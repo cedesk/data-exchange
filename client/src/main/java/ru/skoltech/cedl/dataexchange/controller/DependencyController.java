@@ -14,9 +14,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -92,17 +90,16 @@ public class DependencyController implements Initializable {
 
     private static String getLinkedParameters(ModelNode toVertex, ModelNode fromVertex) {
         ParameterTreeIterator it = new ParameterTreeIterator(fromVertex);
-        StringBuilder sb = new StringBuilder();
+        Set<String> sources = new TreeSet<>();
         while (it.hasNext()) {
             ParameterModel pm = it.next();
             if (pm.getValueSource() == ParameterValueSource.LINK &&
                     pm.getValueLink() != null && pm.getValueLink().getParent() != null &&
                     pm.getValueLink().getParent().equals(toVertex)) {
-                if (sb.length() > 0) sb.append('\n');
-                sb.append(pm.getValueLink().getName());
+                sources.add(pm.getValueLink().getName());
             }
         }
-        return sb.toString();
+        return sources.stream().collect(Collectors.joining(",\n"));
     }
 
     public ViewMode getMode() {
