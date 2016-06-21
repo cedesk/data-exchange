@@ -244,7 +244,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void chooseParameter(ActionEvent actionEvent) {
         ModelNode parameterOwningNode = originalParameterModel.getParent();
-        SystemModel systemModel = findRoot(parameterOwningNode);
+        SystemModel systemModel = parameterOwningNode.findRoot();
 
         // filter list of parameters
         List<ParameterModel> parameters = new LinkedList<>();
@@ -265,14 +265,6 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             unitChoiceBox.setValue(valueLinkParameter.getUnit());
         } else {
             parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : null);
-        }
-    }
-
-    private SystemModel findRoot(ModelNode modelNode) {
-        if (modelNode.getParent() == null) {
-            return (SystemModel) modelNode;
-        } else {
-            return findRoot(modelNode.getParent());
         }
     }
 

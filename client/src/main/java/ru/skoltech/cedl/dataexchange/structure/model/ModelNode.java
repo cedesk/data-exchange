@@ -147,6 +147,15 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     }
 
     @Transient
+    public SystemModel findRoot() {
+        if (parent == null) {
+            return (SystemModel) this;
+        } else {
+            return parent.findRoot();
+        }
+    }
+
+    @Transient
     public boolean isRootNode() {
         return parent == null;
     }

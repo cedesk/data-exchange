@@ -104,7 +104,7 @@ public class ParameterLinkRegistry {
     }
 
     public void updateSinks(ParameterModel source) {
-        SystemModel systemModel = getSystem(source.getParent());
+        SystemModel systemModel = source.getParent().findRoot();
 
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
@@ -181,7 +181,7 @@ public class ParameterLinkRegistry {
 
     public List<ParameterModel> getDependentParameters(ParameterModel source) {
         List<ParameterModel> dependentParameters = new LinkedList<>();
-        SystemModel systemModel = getSystem(source.getParent());
+        SystemModel systemModel = source.getParent().findRoot();
         Map<String, ParameterModel> parameterDictionary = makeDictionary(systemModel);
 
         String sourceId = source.getUuid();
@@ -193,17 +193,6 @@ public class ParameterLinkRegistry {
             });
         }
         return dependentParameters;
-    }
-
-    private SystemModel getSystem(ModelNode parent) {
-        SystemModel result = null;
-        if (parent != null) {
-            while (parent.getParent() != null) {
-                parent = parent.getParent();
-            }
-            result = (SystemModel) parent;
-        }
-        return result;
     }
 
     private void printDependencies(DirectedGraph<ModelNode, ModelDependency> modelDependencies) {
