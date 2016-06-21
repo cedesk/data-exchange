@@ -109,6 +109,8 @@ public class ModelUpdateUtil {
                 StatusLogger.getInstance().log("invalid value for parameter '" + parameterModel.getNodePath() + "' from '" + valueReference.toString() + "'", true);
             } else if (!Precision.equals(parameterModel.getValue(), value, 2)) {
                 parameterUpdate = new ParameterUpdate(parameterModel, value);
+            } else {
+                logger.debug("no change for " + parameterModel.getName() + " from " + valueReference.toString());
             }
         } catch (ExternalModelException e) {
             StatusLogger.getInstance().log("unable to evaluate value for parameter '" + parameterModel.getNodePath() + "' from '" + valueReference.toString() + "'");
