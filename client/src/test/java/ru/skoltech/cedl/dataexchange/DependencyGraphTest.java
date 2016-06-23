@@ -16,7 +16,7 @@ import java.net.URL;
  */
 public class DependencyGraphTest {
 
-    @Test
+    //@Test
     public void testGraphLib() throws Exception {
         FileStorage fs = new FileStorage();
 
