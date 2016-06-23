@@ -47,6 +47,7 @@ public class ExternalModelFileHandler {
         File file = getFilePathInCache(externalModel);
         Path path = Paths.get(file.getAbsolutePath());
         externalModel.setAttachment(Files.readAllBytes(path));
+        externalModel.setLastModification(file.lastModified());
         return externalModel;
     }
 
