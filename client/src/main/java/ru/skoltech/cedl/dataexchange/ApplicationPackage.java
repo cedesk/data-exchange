@@ -32,11 +32,15 @@ public class ApplicationPackage implements Comparable<ApplicationPackage> {
         if (matcher.matches()) {
             String versionName = matcher.group(1);
             applicationPackage.version = versionName;
-            applicationPackage.isRelease = !(versionName.endsWith("snapshot") || versionName.endsWith("Snapshot") || versionName.endsWith("SNAPSHOT"));
+            applicationPackage.isRelease = isRelease(versionName);
         } else {
             throw new IllegalArgumentException(fileName + " is not a parseable application package");
         }
         return applicationPackage;
+    }
+
+    public static boolean isRelease(String versionName) {
+        return !versionName.endsWith("snapshot") || versionName.endsWith("Snapshot") || versionName.endsWith("SNAPSHOT");
     }
 
     public static String getExtension() {

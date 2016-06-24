@@ -260,7 +260,13 @@ public class MainController implements Initializable {
 
         Platform.runLater(this::checkRepositoryAndLoadLastProject);
 
-        Platform.runLater(() -> checkForApplicationUpdate(null));
+        Platform.runLater(() -> {
+            String appVersion = ApplicationProperties.getAppVersion();
+            if (ApplicationPackage.isRelease(appVersion)) {
+
+                checkForApplicationUpdate(null);
+            }
+        });
     }
 
     private void checkRepositoryAndLoadLastProject() {
