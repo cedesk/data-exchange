@@ -19,6 +19,7 @@ import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetInputOutputExtrac
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterComparatorByNatureAndName;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
 import java.awt.*;
@@ -56,7 +57,7 @@ public class ExternalModelView extends HBox implements Initializable {
         }
     }
 
-    public static Optional<String> chooseSheet(List<String> sheetNames) {
+    private Optional<String> chooseSheet(List<String> sheetNames) {
         Objects.requireNonNull(sheetNames);
         if (sheetNames.size() > 1) {
             ChoiceDialog<String> dlg = new ChoiceDialog<>(sheetNames.get(0), sheetNames);
@@ -108,7 +109,7 @@ public class ExternalModelView extends HBox implements Initializable {
                     Sheet sheet = workbook.getSheet(sheetName);
                     List<ParameterModel> parameterList = SpreadsheetInputOutputExtractor.extractParameters(externalModel, sheet);
                     if (parameterList.size() > 1) {
-                        parameterList.sort(new ParameterModelComparator());
+                        parameterList.sort(new ParameterComparatorByNatureAndName());
 
                         ModelNode modelNode = externalModel.getParent();
                         Map<String, ParameterModel> parameterMap = modelNode.getParameterMap();
@@ -128,6 +129,7 @@ public class ExternalModelView extends HBox implements Initializable {
                                 modelNode.getParameters().clear();
                             }
                             parameterList.forEach(modelNode::addParameter);
+                            ProjectContext.getInstance().getProject().markStudyModified();
                             // TODO: updateView
                         }
                     } else {
@@ -148,15 +150,4 @@ public class ExternalModelView extends HBox implements Initializable {
         return externalModel;
     }
 
-    private static class ParameterModelComparator implements Comparator<ParameterModel> {
-        /**
-         * The comparison is first based on the parameterNature and then on the name fields.
-         */
-        @Override
-        public int compare(ParameterModel o1, ParameterModel o2) {
-            int natureCompare = o1.getNature().compareTo(o2.getNature());
-            if (natureCompare != 0) return natureCompare;
-            return o1.getName().compareTo(o2.getName());
-        }
-    }
 }

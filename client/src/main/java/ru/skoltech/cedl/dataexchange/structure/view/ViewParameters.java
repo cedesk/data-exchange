@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.structure.view;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterComparatorByNatureAndName;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
 
@@ -29,5 +30,6 @@ public class ViewParameters {
         } else {
             items.addAll(parameters);
         }
+        items.sort(new ParameterComparatorByNatureAndName());
     }
 }

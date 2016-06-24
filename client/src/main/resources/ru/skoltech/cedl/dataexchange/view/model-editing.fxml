@@ -111,6 +111,12 @@
                                                            AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
                                                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                     <columns>
+                                                        <TableColumn fx:id="parameterNatureColumn" editable="false"
+                                                                     prefWidth="60.0" text="Nature">
+                                                            <cellValueFactory>
+                                                                <PropertyValueFactory property="nature"/>
+                                                            </cellValueFactory>
+                                                        </TableColumn>
                                                         <TableColumn fx:id="parameterNameColumn" editable="false"
                                                                      prefWidth="150.0" text="Name">
                                                             <cellValueFactory>
@@ -125,12 +131,6 @@
                                                         </TableColumn>
                                                         <TableColumn fx:id="parameterUnitColumn" prefWidth="100.0"
                                                                      text="Unit">
-                                                        </TableColumn>
-                                                        <TableColumn fx:id="parameterNatureColumn" editable="false"
-                                                                     prefWidth="60.0" text="Nature">
-                                                            <cellValueFactory>
-                                                                <PropertyValueFactory property="nature"/>
-                                                            </cellValueFactory>
                                                         </TableColumn>
                                                         <TableColumn fx:id="parameterValueSourceColumn"
                                                                      prefWidth="100.0" text="Value Source">
