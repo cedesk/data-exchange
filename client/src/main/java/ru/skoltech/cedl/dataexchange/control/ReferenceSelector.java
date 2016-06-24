@@ -170,6 +170,7 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
                 ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 String fileName = externalModel.getName();
+                // TODO: generalize approach for other external model types, now only for SPREADSHEETS
                 Grid grid = SpreadsheetGridViewFactory.getGrid(inputStream, fileName, sheetName);
                 spreadsheetView.setGrid(grid);
                 if (reference.getTarget() != null) {

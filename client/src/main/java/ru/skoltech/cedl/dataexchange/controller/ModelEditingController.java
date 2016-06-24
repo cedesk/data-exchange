@@ -692,7 +692,7 @@ public class ModelEditingController implements Initializable {
             ParameterModel parameterModel = parameterUpdate.getParameterModel();
             if (parameterTable.getSelectionModel().getSelectedItem() != null &&
                     parameterTable.getSelectionModel().getSelectedItem().equals(parameterModel)) {
-                parameterEditor.setParameterModel(parameterModel);
+                parameterEditor.setParameterModel(parameterModel); // overwriting changes made by the user
             }
             TreeItem<ModelNode> selectedTreeItem = getSelectedTreeItem();
             if (selectedTreeItem != null &&
