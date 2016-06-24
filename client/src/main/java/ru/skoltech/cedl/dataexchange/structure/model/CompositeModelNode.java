@@ -8,10 +8,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -59,10 +56,11 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
 
     @Transient
     public Map<String, ModelNode> getSubNodesMap() {
-        Map<String, ModelNode> result = subNodes.stream().collect(
-                Collectors.toMap(ModelNode::getName, Function.identity())
-        );
-        return result;
+        Map<String, ModelNode> subnodeMap = new HashMap<>(subNodes.size());
+        for (ModelNode mn : subNodes) {
+            subnodeMap.put(mn.getName(), mn);
+        }
+        return subnodeMap;
     }
 
     @Transient

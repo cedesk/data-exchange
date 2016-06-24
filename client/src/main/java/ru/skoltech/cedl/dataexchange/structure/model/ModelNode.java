@@ -89,17 +89,19 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     @Transient
     public Map<String, ParameterModel> getParameterMap() {
-        Map<String, ParameterModel> parameterModelMap = getParameters().stream().collect(
-                Collectors.toMap(ParameterModel::getName, Function.identity())
-        );
+        Map<String, ParameterModel> parameterModelMap = new HashMap<>(parameters.size());
+        for (ParameterModel pm : parameters) {
+            parameterModelMap.put(pm.getName(), pm);
+        }
         return parameterModelMap;
     }
 
     @Transient
     public Map<String, ExternalModel> getExternalModelMap() {
-        Map<String, ExternalModel> externalModelMap = getExternalModels().stream().collect(
-                Collectors.toMap(ExternalModel::getName, Function.identity())
-        );
+        Map<String, ExternalModel> externalModelMap = new HashMap<>(externalModels.size());
+        for (ExternalModel em : externalModels) {
+            externalModelMap.put(em.getName(), em);
+        }
         return externalModelMap;
     }
 
