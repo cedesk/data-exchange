@@ -68,11 +68,11 @@ public class ExternalModelFileHandler {
     public static ExternalModelCacheState getCacheState(ExternalModel externalModel) {
         Objects.requireNonNull(externalModel);
         ExternalModelCacheState cacheState = ExternalModelCacheState.NOT_CACHED;
-        File file = getFilePathInCache(externalModel);
+        File modelFile = getFilePathInCache(externalModel);
         Long modelLastStored = externalModel.getLastModification();
-        if (file.exists() && modelLastStored != null) {
-            long checkoutTime = getCheckoutTime(file);
-            long fileLastModified = file.lastModified();
+        if (modelFile.exists() && modelLastStored != null) {
+            long checkoutTime = getCheckoutTime(modelFile);
+            long fileLastModified = modelFile.lastModified();
             boolean newerInRepository = modelLastStored > checkoutTime;
             boolean locallyModified = checkoutTime < fileLastModified;
             if (newerInRepository) {
@@ -115,7 +115,7 @@ public class ExternalModelFileHandler {
         String nodePath = makePath(externalModel);
         File projectDataDir = ProjectContext.getInstance().getProjectDataDir();
         File nodeDir = new File(projectDataDir, nodePath);
-        String rectifiedFileName = externalModel.getName().replace(' ', '_');
+        String rectifiedFileName = externalModel.getId() + "_" + externalModel.getName().replace(' ', '_');
         return new File(nodeDir, rectifiedFileName);
     }
 
