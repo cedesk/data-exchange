@@ -375,16 +375,18 @@ public class Project {
 
     private void updateExternalModelStateInCache() {
         for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
-            logger.debug("timestamping " + externalModel.getNodePath());
-            ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
-            if (logger.isDebugEnabled()) {
-                String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
-                long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
-                String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
-                logger.debug("stored external model '" + externalModel.getName() +
-                        "' (model: " + modelModification + ", file: " + fileModification + ")");
-                ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
-                logger.debug(externalModel.getNodePath() + " is now in state " + cacheState);
+            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+            if (cacheState != ExternalModelCacheState.NOT_CACHED) {
+                logger.debug("timestamping " + externalModel.getNodePath());
+                ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
+                if (logger.isDebugEnabled()) {
+                    String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
+                    long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
+                    String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
+                    logger.debug("stored external model '" + externalModel.getName() +
+                            "' (model: " + modelModification + ", file: " + fileModification + ")");
+                    logger.debug(externalModel.getNodePath() + " is now in state " + cacheState);
+                }
             }
         }
         externalModelFileHandler.getChangedExternalModels().clear();
