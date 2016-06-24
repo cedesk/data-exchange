@@ -22,7 +22,10 @@ public class ModificationInterceptor extends EmptyInterceptor {
                                 Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types) {
 
         if (entity instanceof ModificationTimestamped) {
-            Long timestamp = updateTimestamp(currentState, propertyNames);
+            Long timestamp = null;
+            if (!(entity instanceof ExternalModel)) {
+                timestamp = updateTimestamp(currentState, propertyNames);
+            }
             logger.debug("onFlushDirty " + entity.getClass().getCanonicalName() + "#" + id + ":" + getNodeName(currentState, propertyNames) + ", ts: " + timestamp);
         }
         return false;
@@ -42,7 +45,10 @@ public class ModificationInterceptor extends EmptyInterceptor {
             } else {
                 nodeName = getNodeName(currentState, propertyNames);
             }
-            Long timestamp = updateTimestamp(currentState, propertyNames);
+            Long timestamp = null;
+            if (!(entity instanceof ExternalModel)) {
+                timestamp = updateTimestamp(currentState, propertyNames);
+            }
             logger.debug("onSave " + entity.getClass().getCanonicalName() + "#" + id + ":" + nodeName + ", ts: " + timestamp);
         }
         return false;
