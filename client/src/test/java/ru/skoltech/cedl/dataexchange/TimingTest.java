@@ -22,4 +22,18 @@ public class TimingTest {
         System.out.printf("file: %d, system: %d, diff: %d%n", fileTimestamp, systemTimestamp, diff);
         Assert.assertTrue("time difference between file creation and timestamp is too large!", diff < 50);
     }
+
+    @Test
+    public void testTime() throws IOException {
+        File file = new File("my_random_file.txt");
+        file.deleteOnExit();
+        System.out.println(file.getAbsolutePath());
+        long newTime = file.lastModified();
+        System.out.println("new: " + newTime);
+        Assert.assertTrue(newTime == 0);
+        file.createNewFile();
+        long createdTime = file.lastModified();
+        System.out.println("created: " + createdTime);
+        Assert.assertTrue(createdTime > 0);
+    }
 }
