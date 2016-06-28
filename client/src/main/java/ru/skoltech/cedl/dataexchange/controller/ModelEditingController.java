@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.ActionLogger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -452,6 +453,7 @@ public class ModelEditingController implements Initializable {
                     selectedItem.setExpanded(true);
                     project.markStudyModified();
                     StatusLogger.getInstance().log("added node: " + newNode.getNodePath());
+                    ActionLogger.log(ActionLogger.ActionType.node_add, newNode.getNodePath());
                 }
             }
         } else {
@@ -477,6 +479,7 @@ public class ModelEditingController implements Initializable {
             }
             project.markStudyModified();
             StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
+            ActionLogger.log(ActionLogger.ActionType.node_remove, deleteNode.getNodePath());
         }
     }
 
@@ -535,6 +538,7 @@ public class ModelEditingController implements Initializable {
                 parameter = new ParameterModel(parameterName, 0.0);
                 selectedItem.getValue().addParameter(parameter);
                 StatusLogger.getInstance().log("added parameter: " + parameter.getName());
+                ActionLogger.log(ActionLogger.ActionType.parameter_add, parameter.getNodePath());
                 project.markStudyModified();
             }
         }
@@ -560,6 +564,7 @@ public class ModelEditingController implements Initializable {
             selectedItem.getValue().getParameters().remove(selectedParameterIndex);
             project.getParameterLinkRegistry().removeSink(parameterModel);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
+            ActionLogger.log(ActionLogger.ActionType.parameter_remove, parameterModel.getNodePath());
             updateParameterTable(selectedItem);
             project.markStudyModified();
         }

@@ -32,12 +32,24 @@ public class ActionLogger {
     public enum ActionType {
         application_start,
         application_stop,
+        project_new,
         project_load,
         project_save,
         project_delete,
         project_export,
         project_import,
         user_validate,
-        model_merge
+        node_add,
+        node_remove,
+        parameter_add,
+        parameter_remove,
+        parameter_merge,
+        parameter_modify_manual,
+        parameter_modify_link,
+        parameter_modify_reference,
+        external_model_add,
+        external_model_remove,
+        external_model_merge,
+        external_model_modify
     }
 }

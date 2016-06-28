@@ -132,7 +132,7 @@ public class ModelDifferencesFactory {
         return parameterDifferences;
     }
 
-    private static List<AttributeDifference> parameterDifferences(ParameterModel p1, ParameterModel p2) {
+    public static List<AttributeDifference> parameterDifferences(ParameterModel p1, ParameterModel p2) {
         List<AttributeDifference> differences = new LinkedList<>();
         if ((p1.getUuid() == null && p2.getUuid() != null) || (p1.getUuid() != null && p2.getUuid() == null)
                 || (p1.getUuid() != null && !p1.getUuid().equals(p2.getUuid()))) {

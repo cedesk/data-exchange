@@ -13,4 +13,18 @@ public class AttributeDifference {
         this.value1 = String.valueOf(value1);
         this.value2 = String.valueOf(value2);
     }
+
+    @Override
+    public String toString() {
+        return "AttributeDifference{" +
+                "attributeName='" + attributeName + '\'' +
+                ", value1='" + value1 + '\'' +
+                ", value2='" + value2 + '\'' +
+                '}';
+    }
+
+    public String asText() {
+        return "[" + attributeName + ": v1='" + value1 + '\'' +
+                ", v2='" + value2 + "']";
+    }
 }

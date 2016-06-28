@@ -77,6 +77,8 @@ public class DiffController implements Initializable {
             ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
             parameterDifference.mergeDifference();
             // TODO: update sinks
+            //ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
+            //parameterLinkRegistry.updateSinks(parameterDifference.getParameter());
             return true;
         } else if (modelDifference instanceof NodeDifference) {
             logger.debug("accepting differences on " + modelDifference.getNodeName());
@@ -133,7 +135,7 @@ public class DiffController implements Initializable {
         return modelDifference.getChangeLocation() == ChangeLocation.ARG2;
     }
 
-    public boolean hasLocalChange(ModelDifference modelDifference) {
+    private boolean hasLocalChange(ModelDifference modelDifference) {
         return modelDifference.getChangeLocation() == ChangeLocation.ARG1;
     }
 

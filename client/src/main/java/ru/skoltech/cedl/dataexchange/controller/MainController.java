@@ -120,6 +120,7 @@ public class MainController implements Initializable {
             }
             project.newStudy(projectName);
             StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
+            ActionLogger.log(ActionLogger.ActionType.project_new, projectName);
             updateView();
         }
     }

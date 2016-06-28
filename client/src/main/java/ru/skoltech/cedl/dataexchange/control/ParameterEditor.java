@@ -17,6 +17,7 @@ import javafx.util.StringConverter;
 import jfxtras.labs.scene.control.BeanPathAdapter;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.ActionLogger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
@@ -25,6 +26,8 @@ import ru.skoltech.cedl.dataexchange.controller.UserNotifications;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.structure.view.AttributeDifference;
+import ru.skoltech.cedl.dataexchange.structure.view.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
 
 import java.io.IOException;
@@ -32,6 +35,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 03.07.2015.
@@ -383,6 +387,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         }
 
         // TODO: check whether modifications were made
+        List<AttributeDifference> attributeDifferences = ModelDifferencesFactory.parameterDifferences(originalParameterModel, parameterModel);
+
+
         try {
             PropertyUtils.copyProperties(originalParameterModel, parameterModel);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
@@ -405,6 +412,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
         // UPDATE LINKING PARAMETERS
         ProjectContext.getInstance().getProject().getParameterLinkRegistry().updateSinks(originalParameterModel);
+
+        String attDiffs = attributeDifferences.stream().map(AttributeDifference::asText).collect(Collectors.joining(","));
+        ActionLogger.log(ActionLogger.ActionType.parameter_modify_manual, parameterModel.getNodePath() + ": " + attDiffs);
 
         project.markStudyModified();
         editListener.accept(parameterModel);
