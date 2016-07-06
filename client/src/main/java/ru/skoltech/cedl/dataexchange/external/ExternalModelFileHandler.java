@@ -39,6 +39,7 @@ public class ExternalModelFileHandler {
         ExternalModel externalModel = new ExternalModel();
         externalModel.setName(fileName);
         externalModel.setAttachment(Files.readAllBytes(path));
+        externalModel.setLastModification(file.lastModified());
         externalModel.setParent(parent);
         return externalModel;
     }
@@ -54,6 +55,7 @@ public class ExternalModelFileHandler {
     public static ExternalModel readAttachmentFromFile(ExternalModel externalModel, File file) throws IOException {
         Path path = Paths.get(file.getAbsolutePath());
         externalModel.setAttachment(Files.readAllBytes(path));
+        externalModel.setLastModification(file.lastModified());
         return externalModel;
     }
 
