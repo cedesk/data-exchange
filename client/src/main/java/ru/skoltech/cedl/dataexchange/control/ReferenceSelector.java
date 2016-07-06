@@ -175,7 +175,7 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
             if (invalidSheets.size() > 0) {
                 String invalidSheetNames = invalidSheets.stream().collect(Collectors.joining(","));
                 Dialogues.showWarning("Invalid sheet name found in external model",
-                        "The sheets '" + invalidSheetNames + "' can not be referenced. Make sure it's in latin characters.");
+                        "The sheets '" + invalidSheetNames + "' can not be referenced. Make sure they are named with latin characters and numbers.");
             }
             sheetNames = validSheets;
             inputStream.close();
