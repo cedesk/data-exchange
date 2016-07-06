@@ -26,13 +26,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by dknoll on 01/07/15.
  */
 public class ReferenceSelector extends Dialog<ExternalModelReference> implements Initializable {
+
+    public static final Pattern SHEET_NAME_PATTERN = Pattern.compile("^[A-Za-z0-9 \\-\\_]{1,}$");
 
     private static final Logger logger = Logger.getLogger(ReferenceSelector.class);
 
@@ -156,6 +162,22 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
             ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
             InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
             sheetNames = WorkbookFactory.getSheetNames(inputStream, externalModel.getName());
+            Predicate<String> nameTest = SHEET_NAME_PATTERN.asPredicate();
+            List<String> validSheets = new ArrayList<>(sheetNames.size());
+            List<String> invalidSheets = new ArrayList<>(sheetNames.size());
+            for (String sname : sheetNames) {
+                if (nameTest.test(sname)) {
+                    validSheets.add(sname);
+                } else {
+                    invalidSheets.add(sname);
+                }
+            }
+            if (invalidSheets.size() > 0) {
+                String invalidSheetNames = invalidSheets.stream().collect(Collectors.joining(","));
+                Dialogues.showWarning("Invalid sheet name found in external model",
+                        "The sheets '" + invalidSheetNames + "' can not be referenced. Make sure it's in latin characters.");
+            }
+            sheetNames = validSheets;
             inputStream.close();
         } catch (IOException e) {
             Dialogues.showWarning("No sheets found in external model.", "This external model could not be opened to extract sheets.");
