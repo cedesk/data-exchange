@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 public class Identifiers {
     private static final Pattern NODE_NAME_RULE = Pattern.compile("^[a-zA-Z\\-]{1,}$");
 
-    private static final Pattern PARAMETER_NAME_RULE = Pattern.compile("^[a-zA-Z0-9\\-_ ]{1,}$");
+    private static final Pattern PARAMETER_NAME_RULE = Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9\\(\\)\\.\\-_\\\\ ]{1,}$");
 
     private static final Pattern USER_NAME_RULE = Pattern.compile("^[a-z]{1,}[\\.\\-_]?[a-z]{1,}$");
 
