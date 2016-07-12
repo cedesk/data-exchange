@@ -403,7 +403,7 @@ public class Project {
         }
         if (study != null) {
             setStudy(study);
-            setRepositoryStudy(study);
+            Platform.runLater(this::loadRepositoryStudy);
             long latestMod = getSystemModel().findLatestModification();
             setLatestLoadedModification(latestMod);
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
