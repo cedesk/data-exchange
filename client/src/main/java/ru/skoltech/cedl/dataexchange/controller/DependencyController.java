@@ -5,7 +5,11 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.DataFormat;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.*;
 import org.jgrapht.DirectedGraph;
@@ -23,41 +27,24 @@ import java.util.stream.Collectors;
 public class DependencyController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(DependencyController.class);
+
     @FXML
     private SpreadsheetView spreadsheetView;
+
+    @FXML
+    private CheckBox weightedDsmCheckbox;
+
     private ViewMode mode;
 
     private static Grid getDSMGrid(List<ModelNode> vertices, DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph) {
         final int matrixSize = vertices.size();
         List<String> vertexNames = vertices.stream().map(ModelNode::getName).collect(Collectors.toList());
-
         final GridBase grid = new GridBase(matrixSize, matrixSize);
         grid.getRowHeaders().addAll(vertexNames);
         grid.getColumnHeaders().addAll(vertexNames);
 
-        ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(matrixSize);
-        for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
-            ModelNode toVertex = vertices.get(rowIndex);
-            final ObservableList<SpreadsheetCell> viewRow = FXCollections.observableArrayList();
-            for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
-                ModelNode fromVertex = vertices.get(columnIndex);
-                String value = "";
-                boolean hasDependency = dependencyGraph.getAllEdges(toVertex, fromVertex) != null
-                        && dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0;
-                String style = "";
-                if (rowIndex == columnIndex) {
-                    value = "--";
-                    style = "-fx-text-alignment: center;";
-                } else if (hasDependency) {
-                    value = getLinkedParameters(toVertex, fromVertex);
-                }
-                SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(rowIndex, columnIndex, 1, 1, value);
-                viewCell.setStyle(style);
-                viewRow.add(viewCell);
-            }
-            viewRows.add(viewRow);
-        }
-        grid.setRows(viewRows);
+        fillGrid(vertices, dependencyGraph, matrixSize, grid, ViewMode.DSM);
+
         return grid;
     }
 
@@ -65,6 +52,12 @@ public class DependencyController implements Initializable {
         final int matrixSize = vertices.size();
         final GridBase grid = new GridBase(matrixSize, matrixSize);
 
+        fillGrid(vertices, dependencyGraph, matrixSize, grid, ViewMode.N_SQUARE);
+
+        return grid;
+    }
+
+    private static void fillGrid(List<ModelNode> vertices, DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph, int matrixSize, GridBase grid, ViewMode viewMode) {
         ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(matrixSize);
         for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
             ModelNode toVertex = vertices.get(rowIndex);
@@ -74,32 +67,39 @@ public class DependencyController implements Initializable {
                 String value = "";
                 boolean hasDependency = dependencyGraph.getAllEdges(toVertex, fromVertex) != null
                         && dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0;
+                //String style = ""; // does not work
                 if (rowIndex == columnIndex) {
-                    value = toVertex.getName();
+                    if (viewMode == ViewMode.DSM) {
+                        value = "--";
+                        //style = "-fx-text-alignment: center;";
+                    } else {
+                        value = toVertex.getName();
+                    }
                 } else if (hasDependency) {
-                    value = getLinkedParameters(toVertex, fromVertex);
+                    Set<String> linkedParams = getLinkedParams(toVertex, fromVertex);
+                    value = linkedParams.stream().collect(Collectors.joining(",\n"));
                 }
                 SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(rowIndex, columnIndex, 1, 1, value);
+                //viewCell.setStyle(style);
                 viewRow.add(viewCell);
             }
             viewRows.add(viewRow);
         }
         grid.setRows(viewRows);
-        return grid;
     }
 
-    private static String getLinkedParameters(ModelNode toVertex, ModelNode fromVertex) {
-        ParameterTreeIterator it = new ParameterTreeIterator(fromVertex);
+    private static Set<String> getLinkedParams(ModelNode toVertex, ModelNode fromVertex) {
         Set<String> sources = new TreeSet<>();
+        ParameterTreeIterator it = new ParameterTreeIterator(fromVertex);
         while (it.hasNext()) {
             ParameterModel pm = it.next();
             if (pm.getValueSource() == ParameterValueSource.LINK &&
                     pm.getValueLink() != null && pm.getValueLink().getParent() != null &&
-                    pm.getValueLink().getParent().equals(toVertex)) {
+                    pm.getValueLink().getParent().getUuid().equals(toVertex.getUuid())) {
                 sources.add(pm.getValueLink().getName());
             }
         }
-        return sources.stream().collect(Collectors.joining(",\n"));
+        return sources;
     }
 
     public ViewMode getMode() {
@@ -138,9 +138,91 @@ public class DependencyController implements Initializable {
             spreadsheetView.setShowColumnHeader(false);
         }
         spreadsheetView.setGrid(grid);
+        spreadsheetView.setContextMenu(null);
+    }
+
+    public void generateCode(ActionEvent actionEvent) {
+        final Project project = ProjectContext.getInstance().getProject();
+        final SystemModel systemModel = project.getSystemModel();
+        final List<SubSystemModel> subNodes = systemModel.getSubNodes();
+        final List<ModelNode> modelNodeList = new ArrayList<>(subNodes.size() + 1);
+        modelNodeList.add(systemModel);
+        modelNodeList.addAll(subNodes);
+
+        ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
+        DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph = parameterLinkRegistry.getDependencyGraph();
+
+        final int matrixSize = modelNodeList.size();
+        DSM dsm = new DSM();
+
+        for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
+            ModelNode toVertex = modelNodeList.get(rowIndex);
+            dsm.addElementName(toVertex.getName());
+            for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+                ModelNode fromVertex = modelNodeList.get(columnIndex);
+                if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
+                        dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0) {
+                    Set<String> linkedParams = getLinkedParams(toVertex, fromVertex);
+                    int linkCount = linkedParams.size();
+                    dsm.addLink(rowIndex + 1, columnIndex + 1, linkCount);
+                }
+            }
+        }
+        boolean weighted = weightedDsmCheckbox.isSelected();
+        String code = dsm.getMatlabCode(weighted);
+        copyTextToClipboard(code);
+    }
+
+    private void copyTextToClipboard(String code) {
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        HashMap<DataFormat, Object> content = new HashMap<>();
+        content.put(DataFormat.PLAIN_TEXT, code);
+        clipboard.setContent(content);
     }
 
     public enum ViewMode {
         DSM, N_SQUARE
+    }
+
+    private static class DSM {
+        private List<String> elementNamesList = new LinkedList<>();
+        private List<Triple<Integer, Integer, Float>> linkList = new LinkedList<>();
+
+        void addElementName(String name) {
+            elementNamesList.add(name);
+        }
+
+        void addLink(int to, int from, float weight) {
+            linkList.add(Triple.of(to, from, weight));
+        }
+
+        private String getElementNames() {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < elementNamesList.size(); i++) {
+                sb.append(String.format("DSMLABEL{%d,1} = '%s';", i + 1, elementNamesList.get(i)));
+                sb.append("\n");
+            }
+            return sb.toString();
+        }
+
+        private String getLinkMatrix(boolean weighted) {
+            StringBuilder sb = new StringBuilder();
+            for (Triple<Integer, Integer, Float> link : linkList) {
+                Float weight = weighted ? link.getRight() : Float.valueOf(1);
+                sb.append(String.format(Locale.ENGLISH, "DSM(%d,%d) = %f;", link.getLeft(), link.getMiddle(), weight));
+                sb.append("\n");
+            }
+            return sb.toString();
+        }
+
+        String getMatlabCode(boolean weighted) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("DSM_size = %d;\n", elementNamesList.size()));
+            sb.append("DSMLABEL = cell(DSM_size,1);\n\n");
+            sb.append(getElementNames());
+            sb.append("\nDSM = zeros(DSM_size);\n\n");
+            sb.append(getLinkMatrix(weighted));
+            return sb.toString();
+        }
     }
 }
