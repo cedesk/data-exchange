@@ -46,7 +46,7 @@
                                           GridPane.rowIndex="1"/>
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Autoload last project on startup"/>
                                 <Text layoutX="20.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0"
-                                      text="Model depth" GridPane.rowIndex="1"/>
+                                      text="Default model depth" GridPane.rowIndex="1"/>
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Study User" GridPane.rowIndex="3"/>
                                 <TextField fx:id="userNameText" promptText="username" GridPane.columnIndex="1"
                                            GridPane.rowIndex="3"/>

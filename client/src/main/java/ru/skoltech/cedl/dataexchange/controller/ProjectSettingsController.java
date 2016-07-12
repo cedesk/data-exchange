@@ -5,7 +5,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
@@ -76,7 +79,6 @@ public class ProjectSettingsController implements Initializable {
     }
 
     private boolean updateModel() {
-        boolean validSettings = false;
 
         StudySettings studySettings = getStudySettings();
         if (studySettings != null) {
@@ -92,20 +94,22 @@ public class ProjectSettingsController implements Initializable {
         ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
         ApplicationSettings.setStudyModelDepth(modelDepth.getValue());
         ApplicationSettings.setUseOsUser(useOsUserCheckbox.isSelected());
+        String userName = null;
         if (useOsUserCheckbox.isSelected()) {
             ApplicationSettings.setProjectUser(null);
+            userName = ApplicationSettings.getProjectUser(); // get default value
         } else {
-            String userName = userNameText.getText();
-            boolean validUser = ProjectContext.getInstance().getProject().getUserManagement().checkUser(userName);
-            validSettings = validUser;
-            if (validUser) {
-                ApplicationSettings.setProjectUser(userName);
-            } else {
-                Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
-            }
+            userName = userNameText.getText();
+        }
+        boolean validUser = ProjectContext.getInstance().getProject().getUserManagement().checkUser(userName);
+        logger.info("using user: '" + userName + "', valid: " + validUser);
+        if (validUser) {
+            ApplicationSettings.setProjectUser(userName);
+        } else {
+            Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
         }
 
-        return validSettings;
+        return validUser;
     }
 
     public void cancel(ActionEvent actionEvent) {
