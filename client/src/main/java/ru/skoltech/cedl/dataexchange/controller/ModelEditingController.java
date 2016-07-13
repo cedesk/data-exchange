@@ -550,8 +550,7 @@ public class ModelEditingController implements Initializable {
 
     public void deleteParameter(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        int selectedParameterIndex = parameterTable.getSelectionModel().getSelectedIndex();
-        ParameterModel parameterModel = selectedItem.getValue().getParameters().get(selectedParameterIndex);
+        ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem();
         List<ParameterModel> dependentParameters = project.getParameterLinkRegistry().getDependentParameters(parameterModel);
         if (dependentParameters.size() > 0) {
             String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
@@ -561,7 +560,7 @@ public class ModelEditingController implements Initializable {
 
         Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Parameter deletion", "Are you sure you want to delete this parameter?");
         if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
-            selectedItem.getValue().getParameters().remove(selectedParameterIndex);
+            selectedItem.getValue().getParameters().remove(parameterModel);
             project.getParameterLinkRegistry().removeSink(parameterModel);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
             ActionLogger.log(ActionLogger.ActionType.parameter_remove, parameterModel.getNodePath());
