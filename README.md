@@ -7,6 +7,7 @@ This is a collaboration tool for Parametric System Modeling in Concurrent Engine
 * Current State: Development
 
 ## Release History ##
+* 2016-07-14 - Version 1.22
 * 2016-07-07 - Version 1.21 (bugfix)
 * 2016-07-04 - Version 1.20
 * 2016-05-31 - Version 1.19
