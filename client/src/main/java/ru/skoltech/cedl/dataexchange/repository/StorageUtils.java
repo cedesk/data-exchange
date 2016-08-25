@@ -14,7 +14,7 @@ public class StorageUtils {
 
     private static final Logger logger = Logger.getLogger(StorageUtils.class);
 
-    private static final String APP_DIR = "CEDESK";
+    private static final String APP_DIR = ".cedesk";
 
     private static final String USER_HOME = System.getProperty("user.home");
 
