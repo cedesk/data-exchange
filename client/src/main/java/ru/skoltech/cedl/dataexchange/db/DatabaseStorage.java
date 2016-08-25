@@ -643,6 +643,9 @@ public class DatabaseStorage implements Repository {
             Tuple result = entityManager.createQuery(criteriaQuery).getSingleResult();
             Long timestamp = (Long) result.get(0);
             return timestamp;
+        } catch (NoResultException e) {
+            logger.warn("study not stored!");
+            return null;
         } catch (Exception e) {
             logger.warn("loading last modification of study failed.", e);
             return null;
