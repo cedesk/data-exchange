@@ -56,7 +56,7 @@ public class RepositorySettingsController implements Initializable {
         appDirText.setText(appDir);
         repoSchemaText.setText(ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA));
 
-        dbHostnameText.setText(ApplicationSettings.getRepositoryServerHostname(""));
+        dbHostnameText.setText(ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME));
         dbUsernameText.setText(ApplicationSettings.getRepositoryUserName(""));
         dbPasswordText.setText(ApplicationSettings.getRepositoryPassword(""));
         repoWatcherAutoSyncCheckbox.setSelected(ApplicationSettings.getAutoSync());
