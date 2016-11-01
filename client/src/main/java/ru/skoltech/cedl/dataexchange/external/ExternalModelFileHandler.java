@@ -187,7 +187,7 @@ public class ExternalModelFileHandler {
             case CACHED_MODIFIED_AFTER_CHECKOUT: // overwrite
             case CACHED_CONFLICTING_CHANGES:
                 logger.warn("overwriting cached file: " + file.getAbsolutePath());
-                toFile(externalModel, file.getParentFile());
+                Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
                 updateCheckoutTimestamp(externalModel);
                 break;
             default:

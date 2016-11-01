@@ -20,7 +20,7 @@ public class TimingTest {
         long systemTimestamp = System.currentTimeMillis();
         long diff = systemTimestamp - fileTimestamp;
         System.out.printf("file: %d, system: %d, diff: %d%n", fileTimestamp, systemTimestamp, diff);
-        Assert.assertTrue("time difference between file creation and timestamp is too large!", diff < 50);
+        Assert.assertTrue("time difference between file creation and timestamp is too large!", diff < 2000);
     }
 
     @Test

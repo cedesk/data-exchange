@@ -91,6 +91,7 @@ public class NodeDifference extends ModelDifference {
                 ExternalModel fromExtMo = node2.getExternalModelMap().get(attribute);
                 ExternalModel toExtMo = node1.getExternalModelMap().get(attribute);
                 Utils.copyBean(fromExtMo, toExtMo);
+                //toExtMo.setParent(fromExtMo.getParent());
                 try {
                     ProjectContext.getInstance().getProject().getExternalModelFileHandler().forceCacheUpdate(toExtMo);
                 } catch (IOException e) {
@@ -119,7 +120,7 @@ public class NodeDifference extends ModelDifference {
         if (node2 != null) {
             sb.append(", node2='").append(node1.getName()).append('\'');
         }
-        sb.append(", attribute").append(attribute);
+        sb.append(", attribute='").append(attribute).append('\'');
         sb.append(", changeType=").append(changeType);
         sb.append(", changeLocation=").append(changeLocation);
         sb.append(", value1='").append(value1).append('\'');
