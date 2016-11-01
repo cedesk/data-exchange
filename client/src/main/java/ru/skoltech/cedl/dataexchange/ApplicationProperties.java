@@ -23,6 +23,10 @@ public class ApplicationProperties {
         return properties.getProperty("app.distribution.server.url", "<>");
     }
 
+    public static String getDefaultRepositoryHost() {
+        return properties.getProperty("default.repository.host", "<>");
+    }
+
     public static String getAppVersion() {
         return properties.getProperty("app.version", "<>");
     }

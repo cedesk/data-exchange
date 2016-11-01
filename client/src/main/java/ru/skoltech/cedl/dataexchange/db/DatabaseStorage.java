@@ -6,6 +6,7 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
+import ru.skoltech.cedl.dataexchange.ApplicationProperties;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
@@ -42,7 +43,7 @@ public class DatabaseStorage implements Repository {
     public static final String PERSISTENCE_PASSWORD_PROPERTY = "javax.persistence.jdbc.password";
     public static final String HIBERNATE_TABLE_MAPPING = "hibernate.hbm2ddl.auto";
     public static final String HIBERNATE_TABLE_MAPPING_UPDATE = "update";
-    public static final String DEFAULT_HOST_NAME = "localhost";
+    public static final String DEFAULT_HOST_NAME = ApplicationProperties.getDefaultRepositoryHost();
     public static final String DEFAULT_SCHEMA = "cedesk_repo";
     public static final String DEFAULT_USER_NAME = "cedesk";
     public static final String DEFAULT_PASSWORD = "cedesk";
