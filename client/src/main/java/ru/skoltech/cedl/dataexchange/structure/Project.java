@@ -203,8 +203,8 @@ public class Project {
     public void checkStudyInRepository() {
         LocalTime startTime = LocalTime.now();
         Long latestMod = repository.getLastStudyModification(projectName);
-        long loadDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
-        logger.info("loaded repository study (" + loadDuration + "ms)");
+        long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
+        logger.info("checked repository study (" + checkDuration + "ms)");
 
         if (latestMod != null) {
             setLatestRepositoryModification(latestMod);
