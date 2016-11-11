@@ -141,7 +141,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         return modified;
     }
 
-    public String getValueAsString(SpreadsheetCoordinates coordinates) {
+    public String getValueAsString(SpreadsheetCoordinates coordinates) throws ExternalModelException {
         return getValueAsString(getCell(coordinates));
     }
 
@@ -153,17 +153,21 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         setNumericValue(getCell(coordinates), value);
     }
 
-    public Cell getCell(SpreadsheetCoordinates cellCoordinates) {
-        String sheetName = cellCoordinates.getSheetName();
-        if (sheet == null && sheetName != null) {
-            sheet = wb.getSheet(sheetName);
+    public Cell getCell(SpreadsheetCoordinates cellCoordinates) throws ExternalModelException {
+        try {
+            String sheetName = cellCoordinates.getSheetName();
+            if (sheet == null && sheetName != null) {
+                sheet = wb.getSheet(sheetName);
+            }
+            if (sheet == null && sheetName == null) {
+                sheet = wb.getSheetAt(0);
+            }
+            Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
+            Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1, Row.CREATE_NULL_AS_BLANK);
+            return cell;
+        } catch (Exception e) {
+            throw new ExternalModelException("Error accessing spreadsheet cell: " + cellCoordinates.toString(), e);
         }
-        if (sheet == null && sheetName == null) {
-            sheet = wb.getSheetAt(0);
-        }
-        Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
-        Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1, Row.CREATE_NULL_AS_BLANK);
-        return cell;
     }
 
     @Override

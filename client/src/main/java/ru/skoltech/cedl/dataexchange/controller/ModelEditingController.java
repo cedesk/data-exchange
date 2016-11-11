@@ -389,7 +389,7 @@ public class ModelEditingController implements Initializable {
                 String sheetName = nameCellCoordinates.getSheetName();
                 SpreadsheetCellValueAccessor cellValueAccessor = new SpreadsheetCellValueAccessor(inputStream, filename, sheetName);
                 parameterName = cellValueAccessor.getValueAsString(nameCellCoordinates);
-            } catch (IOException e) {
+            } catch (IOException | ExternalModelException e) {
                 StatusLogger.getInstance().log("The external model '" + filename + "' could not be opened to extract parameter name!");
                 logger.warn("The external model '" + filename + "' could not be opened to extract parameter name!", e);
             }
