@@ -20,7 +20,8 @@
             font-style: italic;
         }
         img {
-            float:right;
+            /*float:right;*/
+            width: 280px;
         }
     </style>
     <script language="JavaScript">
@@ -36,9 +37,9 @@
 <body>
 <h1>CD Process Guide</h1>
 
-<h2>Global Perspective <a href="#" onclick="toggle_visibility('global_perspective');">&gt;&gt;</a></h2>
+<h2>Global Perspective <a href="#1" onclick="toggle_visibility('global_perspective');">&gt;&gt;</a></h2>
 <div id="global_perspective" style="display: none;">
-    <img src="design-study.png" width="160" alt="Global Perspective"/>
+    <img src="design-study.png" alt="Global Perspective"/>
 
     <h3>Preparation</h3>
     <div>Once a customer has expressed his need to perform a concurrent design study, the preparation start with 1)
@@ -92,9 +93,9 @@
         Phase B.</p>
 </div>
 
-<h2>Iteration Perspective <a href="#" onclick="toggle_visibility('iteration_perspective');">&gt;&gt;</a></h2>
-<div id="iteration_perspective" style="display: none;">
-<img src="design-iteration.png" width="160" alt="Iteration Perspective"/>
+<h2>Iteration Perspective <a href="#2" onclick="toggle_visibility('iteration_perspective');">&gt;&gt;</a></h2>
+<div id="iteration_perspective" style="display: block;">
+<img src="design-iteration.png" alt="Iteration Perspective"/>
 <p>From the system model the dependencies among disciplines can be derived and represented as a design structure matrix
     (DSM). To this DSM a clustering algorithms determines an optimal sequence for updating one
     subsystem after the other.
@@ -109,9 +110,9 @@
     and represents a feasible point design and the iteration is finished.</p>
 </div>
 
-<h2>Discipline Perspective <a href="#" onclick="toggle_visibility('discipline_perspective');">&gt;&gt;</a></h2>
+<h2>Discipline Perspective <a href="#3" onclick="toggle_visibility('discipline_perspective');">&gt;&gt;</a></h2>
 <div id="discipline_perspective" style="display: none;">
-<img src="update-discipline-model.png" width="160" alt="Discipline Perspective"/>
+<img src="update-discipline-model.png" alt="Discipline Perspective"/>
 
 <p>A discipline expert updating a subsystem model performs a simple sequence of activities. First the input values which
     are connected to other subsystems need to be updated. Depending on the kind of model, the designer either executes a
