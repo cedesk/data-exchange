@@ -98,7 +98,9 @@ public class Utils {
         try {
             String hostname = InetAddress.getLocalHost().getHostName().toLowerCase();
             String canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
-            return canonicalHostName.replace(hostname, "").substring(1);
+            String tmp = canonicalHostName.replace(hostname, "");
+            if (tmp.length() > 0)
+                return tmp.substring(1);
         } catch (UnknownHostException e) {
             // ignore
         }
