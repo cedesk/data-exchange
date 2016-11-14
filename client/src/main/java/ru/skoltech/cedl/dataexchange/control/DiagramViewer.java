@@ -24,7 +24,7 @@ public class DiagramViewer extends AnchorPane implements Initializable {
     private final Color elementColor = Color.LIGHTGREY;
     private final Color connectionColor = Color.DARKGREY;
 
-    private int elementPadding = 25;
+    private int elementPadding = 15;
     private int elementHeight = 50;
     private int elementWidth = 100;
     private int arrowSize = 10;
@@ -54,6 +54,11 @@ public class DiagramViewer extends AnchorPane implements Initializable {
         DiagramElement toEl = elements.get(to);
         Node connection = new DiagramConnection(fromEl, toEl, description);
         getChildren().add(connection);
+    }
+
+    public void reset() {
+        getChildren().clear();
+        elements.clear();
     }
 
     private class DiagramElement extends Group {

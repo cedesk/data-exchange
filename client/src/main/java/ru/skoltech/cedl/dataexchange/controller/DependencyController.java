@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.*;
 import org.jgrapht.DirectedGraph;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.control.DiagramViewer;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
@@ -30,6 +31,9 @@ public class DependencyController implements Initializable {
 
     @FXML
     private SpreadsheetView spreadsheetView;
+
+    @FXML
+    private DiagramViewer diagramView;
 
     @FXML
     private CheckBox weightedDsmCheckbox;
@@ -127,18 +131,38 @@ public class DependencyController implements Initializable {
         ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
         DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph = parameterLinkRegistry.getDependencyGraph();
 
-        Grid grid = null;
         if (mode == ViewMode.DSM) {
-            grid = getDSMGrid(modelNodeList, dependencyGraph);
+            diagramView.setVisible(false);
+
+            Grid grid = getDSMGrid(modelNodeList, dependencyGraph);
             spreadsheetView.setShowRowHeader(true);
             spreadsheetView.setShowColumnHeader(true);
+            spreadsheetView.setGrid(grid);
+            spreadsheetView.setContextMenu(null);
+            spreadsheetView.setVisible(true);
+
         } else {
-            grid = getNSquareGrid(modelNodeList, dependencyGraph);
-            spreadsheetView.setShowRowHeader(false);
-            spreadsheetView.setShowColumnHeader(false);
+            spreadsheetView.setVisible(false);
+
+            diagramView.reset();
+            modelNodeList.stream().map(ModelNode::getName).forEach(diagramView::addElement);
+            final int matrixSize = modelNodeList.size();
+
+            for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
+                ModelNode fromVertex = modelNodeList.get(rowIndex);
+                diagramView.addElement(fromVertex.getName());
+                for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+                    ModelNode toVertex = modelNodeList.get(columnIndex);
+                    if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
+                            dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
+                        Set<String> linkedParams = getLinkedParams(fromVertex, toVertex);
+                        String parameters = linkedParams.stream().collect(Collectors.joining(",\n"));
+                        diagramView.addConnection(fromVertex.getName(), toVertex.getName(), parameters);
+                    }
+                }
+            }
+            diagramView.setVisible(true);
         }
-        spreadsheetView.setGrid(grid);
-        spreadsheetView.setContextMenu(null);
     }
 
     public void generateCode(ActionEvent actionEvent) {
