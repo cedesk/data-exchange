@@ -42,8 +42,7 @@ import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -61,49 +60,56 @@ public class MainController implements Initializable {
     private final Project project = new Project();
 
     private final RepositoryWatcher repositoryWatcher = new RepositoryWatcher(project);
-
-    @FXML
-    private MenuItem usersMenu;
-
-    @FXML
-    private MenuItem usersAndDisciplinesMenu;
-
-    @FXML
-    private Button newButton;
-
-    @FXML
-    private Button loadButton;
-
-    @FXML
-    private Button saveButton;
-
-    @FXML
-    private Button diffButton;
-
-    @FXML
-    private Label statusbarLabel;
-
-    @FXML
-    private Label studyNameLabel;
-
-    @FXML
-    private Label userNameLabel;
-
-    @FXML
-    private Label userRoleLabel;
-
-    @FXML
-    private AnchorPane applicationPane;
-
-    @FXML
-    private BorderPane layoutPane;
-
     @FXML
     public WebView guideView;
-
+    @FXML
+    private MenuItem usersMenu;
+    @FXML
+    private MenuItem usersAndDisciplinesMenu;
+    @FXML
+    private Button newButton;
+    @FXML
+    private Button loadButton;
+    @FXML
+    private Button saveButton;
+    @FXML
+    private Button diffButton;
+    @FXML
+    private Label statusbarLabel;
+    @FXML
+    private Label studyNameLabel;
+    @FXML
+    private Label userNameLabel;
+    @FXML
+    private Label userRoleLabel;
+    @FXML
+    private AnchorPane applicationPane;
+    @FXML
+    private BorderPane layoutPane;
     private StringProperty statusbarProperty = new SimpleStringProperty();
 
     private ModelEditingController modelEditingController;
+
+    public static void loadWebView(WebView guideView, Class resourceClass, String filename) {
+        URL fileLocation = resourceClass.getResource(filename);
+        String baseLocation = fileLocation.toExternalForm().replace(filename, "");
+        String content = "";
+        try (InputStream in = fileLocation.openStream()) {
+            content = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
+        } catch (IOException e) {
+            logger.error("Error loading web content from ressource", e);
+        }
+        WebEngine webEngine = guideView.getEngine();
+        webEngine.getLoadWorker().exceptionProperty().addListener(new ChangeListener<Throwable>() {
+            @Override
+            public void changed(ObservableValue<? extends Throwable> observableValue, Throwable oldThrowable, Throwable newThrowable) {
+                logger.error("Load exception ", newThrowable);
+            }
+        });
+        content = content.replace("src=\"", "src=\"" + baseLocation);
+
+        webEngine.loadContent(content);
+    }
 
     public void newProject(ActionEvent actionEvent) {
         Optional<String> choice = Dialogues.inputStudyName(Project.DEFAULT_PROJECT_NAME);
@@ -277,20 +283,9 @@ public class MainController implements Initializable {
         });
 
         // GUIDE
-        URI uri = null;
-        try {
-            uri = getClass().getResource("guide.html").toURI();
-        } catch (URISyntaxException e) {
-            logger.error(e);
-        }
-        WebEngine webEngine = guideView.getEngine();
-        webEngine.getLoadWorker().exceptionProperty().addListener(new ChangeListener<Throwable>() {
-            @Override
-            public void changed(ObservableValue<? extends Throwable> observableValue, Throwable oldThrowable, Throwable newThrowable) {
-                logger.error("Load exception ", newThrowable);
-            }
+        Platform.runLater(() -> {
+            loadWebView(guideView, getClass(), "guide.html");
         });
-        webEngine.load(uri.toString());
     }
 
     private void checkRepositoryAndLoadLastProject() {
