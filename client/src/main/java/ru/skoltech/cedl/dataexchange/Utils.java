@@ -85,6 +85,26 @@ public class Utils {
         return "localhost";
     }
 
+    public static String getFullHostname() {
+        try {
+            return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+        } catch (UnknownHostException e) {
+            // ignore
+        }
+        return "localhost.localdomain";
+    }
+
+    public static String getDomain() {
+        try {
+            String hostname = InetAddress.getLocalHost().getHostName().toLowerCase();
+            String canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+            return canonicalHostName.replace(hostname, "").substring(1);
+        } catch (UnknownHostException e) {
+            // ignore
+        }
+        return "localdomain";
+    }
+
     public static String getExtension(String fileName) {
         int beginIndex = fileName.lastIndexOf('.');
         if (beginIndex < 0) return "";

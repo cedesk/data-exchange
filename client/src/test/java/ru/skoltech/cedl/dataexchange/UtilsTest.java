@@ -35,4 +35,12 @@ public class UtilsTest {
             Assert.assertEquals(computername, hostname);
         }
     }
+
+    @Test
+    public void hostAndDomainNameTest() {
+        String hostname = Utils.getHostname();
+        System.out.println(hostname);
+        String domain = Utils.getDomain();
+        System.out.println(domain);
+    }
 }
