@@ -4,6 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
 <?import org.controlsfx.glyphfont.Glyph?>
+<?import ru.skoltech.cedl.dataexchange.control.DiagramViewer?>
 <AnchorPane xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.DependencyController"
             stylesheets="@styling.css" prefHeight="600.0" prefWidth="900.0">
@@ -20,7 +21,7 @@
                             <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
                         </graphic>
                     </Button>
-                    <Pane HBox.hgrow="ALWAYS" />
+                    <Pane HBox.hgrow="ALWAYS"/>
                     <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode" text="">
                         <tooltip>
                             <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
@@ -34,8 +35,12 @@
                 </ToolBar>
             </top>
             <center>
-                <SpreadsheetView fx:id="spreadsheetView" editable="false" prefWidth="500.0" prefHeight="400"
-                                 BorderPane.alignment="CENTER"/>
+                <StackPane>
+                    <SpreadsheetView fx:id="spreadsheetView" editable="false" prefWidth="500.0" prefHeight="400"
+                                     BorderPane.alignment="CENTER" visible="false"/>
+                    <DiagramViewer fx:id="diagramView" prefWidth="500.0" prefHeight="400"
+                                   BorderPane.alignment="TOP_RIGHT" visible="false"/>
+                </StackPane>
             </center>
         </BorderPane>
     </children>

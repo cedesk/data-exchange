@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>About CEDESK</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            font-size: 10pt;
+            width: 280px;
+        }
+        h1 {
+            font-size: 1.6em;
+        }
+        h2 {
+            font-size: 1.4em;
+        }
+        h3 {
+            font-size: 1.2em;
+            font-style: italic;
+        }
+        img {
+            /*float:right;*/
+            width: 280px;
+        }
+    </style>
+    <script language="JavaScript">
+        function toggle_visibility(id) {
+          var e = document.getElementById(id);
+          if(e.style.display == 'none')
+            e.style.display = 'block';
+          else
+            e.style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+<h1>CD Process Guide</h1>
+
+<h2>Global Perspective <a href="#1" onclick="toggle_visibility('global_perspective');">&gt;&gt;</a></h2>
+<div id="global_perspective" style="display: none;">
+    <img src="design-study.png" alt="Global Perspective"/>
+
+    <h3>Preparation</h3>
+    <div>Once a customer has expressed his need to perform a concurrent design study, the preparation start with 1)
+        collecting
+        and documenting mission requirements, 2) identifying study constraints (budget, technology, confidentiality), 3)
+        allocation of resources (people and facility time). The decision on which experts to involve is related to an
+        approximate decomposition of the system and allocation of system functions to subsystems. At the end of the
+        preparation (or start of the design study) a first joint meeting of the full design team is held together with
+        representatives of the customer. The purpose of the meeting is to clarify the mission requirements and the role
+        of
+        each study participant.
+    </div>
+
+    <h3>Systems Decomposition</h3>
+    <p>Based on the high-level functions the system has to fulfill, subsystems are identified and assigned to discipline
+        experts present in the team. The structure of the system is encoded and stored in a system model.</p>
+
+    <h3>Connecting Subsystem Models</h3>
+    <p>After each subsystem has defined it’s input and output parameters, the discipline expert together with the team
+        lead
+        identify the source for each input. When starting with new models from scratch, this is a non-trivial task. It
+        happens that for certain parameters, no other subsystem is yet providing that parameter as an output, and it
+        must be
+        decided which discipline shall produce and own it. For some inputs no other source can be identified, and the
+        value
+        can be determined freely by the discipline expert. It also happens that more than one subsystem claims to
+        produce a
+        certain output, and it must be decided which discipline shall produce and own it and the other disciplines take
+        it
+        as an input. In this step the subsystem model interfaces are refined in order to be able to interconnect
+        them.</p>
+
+    <h3>Design Iterations</h3>
+    <p>The core of the design study are the concurrent design iterations. The goal of each iteration is to consolidate
+        the
+        design by making sure all input parameters take values which are correspondent to the mission requirements or to
+        the
+        output values produced by other subsystems. Since dependency relationships of subsystems are transitive and can
+        form
+        cycles, the design of subsystems potentially needs to re-iterated. The process of a single design iteration is
+        described in the next section. Throughout the design study an arbitrary number of design iterations can occur,
+        and
+        they operate on a storage which keeps the state of the system model.</p>
+
+    <h3>Compile Study Report</h3>
+    <p>In conclusion of a Phase A design study one or more resulting system designs, which were evaluated to satisfy the
+        mission requirements need to be documented and characterized according to common or mission specific performance
+        measures (e.g. mass, cost, risk, schedule). For the continuation of the project, in case of approval of the
+        results
+        of the design study, the system requirements contained in the documentation will serve as starting point for the
+        Phase B.</p>
+</div>
+
+<h2>Iteration Perspective <a href="#2" onclick="toggle_visibility('iteration_perspective');">&gt;&gt;</a></h2>
+<div id="iteration_perspective" style="display: block;">
+<img src="design-iteration.png" alt="Iteration Perspective"/>
+<p>From the system model the dependencies among disciplines can be derived and represented as a design structure matrix
+    (DSM). To this DSM a clustering algorithms determines an optimal sequence for updating one
+    subsystem after the other.
+    Based on this schedule one discipline is taken at a time and the responsible expert is asked to update his subsystem
+    model. The internals of this action are described in a separate procedure in the next section. After that, depending
+    on
+    whether the subsystem’s output parameter values have changed, the schedule is updated or not. More precisely, if the
+    outputs did change, then the disciplines which depend on them are put on the schedule again. In case the update of a
+    discipline model led to changes of subsystem interfaces and thereby also dependencies, the schedule needs to be
+    recalculated. Once there are no more disciplines on the schedule, it means the integrated system models has
+    converged
+    and represents a feasible point design and the iteration is finished.</p>
+</div>
+
+<h2>Discipline Perspective <a href="#3" onclick="toggle_visibility('discipline_perspective');">&gt;&gt;</a></h2>
+<div id="discipline_perspective" style="display: none;">
+<img src="update-discipline-model.png" alt="Discipline Perspective"/>
+
+<p>A discipline expert updating a subsystem model performs a simple sequence of activities. First the input values which
+    are connected to other subsystems need to be updated. Depending on the kind of model, the designer either executes a
+    calculation, runs a simulation, performs decisions based on prior knowledge or a combination of them.
+    After that all the subsystem’s output parameters are updated. In parallel the expert checks the model for integrity,
+    and in case additional input or output parameters are needed the interface is modified accordingly. Changes to the
+    parameters are reflected in the stored system model.</p>
+</div>
+
+</body>
+</html>

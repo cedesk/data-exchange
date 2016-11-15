@@ -24,7 +24,7 @@ public class ActionLogger {
 
     private static LogEntry buildEntry(String action, String description) {
         String user = ApplicationSettings.getProjectUser();
-        String client = Utils.getHostname();
+        String client = Utils.getFullHostname();
         LogEntry logEntry = new LogEntry(user, client, action, description);
         return logEntry;
     }

@@ -145,6 +145,17 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             }
         });
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
+        valueSourceChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ParameterValueSource>() {
+            @Override
+            public void changed(ObservableValue<? extends ParameterValueSource> observable, ParameterValueSource oldValue, ParameterValueSource newValue) {
+                if(newValue == ParameterValueSource.LINK) {
+                    valueReference = null;
+                }
+                else if(newValue == ParameterValueSource.REFERENCE) {
+                   valueLinkParameter = null;
+                }
+            }
+        });
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
         linkSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
         calculationGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.CALCULATION));
