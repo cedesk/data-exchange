@@ -2,22 +2,32 @@ package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.ToolBar;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.*;
 import org.jgrapht.DirectedGraph;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.control.DiagramViewer;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,6 +38,12 @@ import java.util.stream.Collectors;
 public class DependencyController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(DependencyController.class);
+
+    @FXML
+    private ToolBar dsmToolbar;
+
+    @FXML
+    private ToolBar nSquareToolbar;
 
     @FXML
     private SpreadsheetView spreadsheetView;
@@ -112,6 +128,10 @@ public class DependencyController implements Initializable {
 
     public void setMode(ViewMode mode) {
         this.mode = mode;
+        diagramView.setVisible(mode == ViewMode.N_SQUARE);
+        nSquareToolbar.setVisible(mode == ViewMode.N_SQUARE);
+        dsmToolbar.setVisible(mode == ViewMode.DSM);
+        spreadsheetView.setVisible(mode == ViewMode.DSM);
     }
 
     @Override
@@ -132,18 +152,13 @@ public class DependencyController implements Initializable {
         DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph = parameterLinkRegistry.getDependencyGraph();
 
         if (mode == ViewMode.DSM) {
-            diagramView.setVisible(false);
-
             Grid grid = getDSMGrid(modelNodeList, dependencyGraph);
             spreadsheetView.setShowRowHeader(true);
             spreadsheetView.setShowColumnHeader(true);
             spreadsheetView.setGrid(grid);
             spreadsheetView.setContextMenu(null);
-            spreadsheetView.setVisible(true);
 
         } else {
-            spreadsheetView.setVisible(false);
-
             diagramView.reset();
             modelNodeList.stream().map(ModelNode::getName).forEach(diagramView::addElement);
             final int matrixSize = modelNodeList.size();
@@ -161,7 +176,6 @@ public class DependencyController implements Initializable {
                     }
                 }
             }
-            diagramView.setVisible(true);
         }
     }
 
@@ -202,6 +216,25 @@ public class DependencyController implements Initializable {
         HashMap<DataFormat, Object> content = new HashMap<>();
         content.put(DataFormat.PLAIN_TEXT, code);
         clipboard.setContent(content);
+    }
+
+    public void saveDiagram(ActionEvent actionEvent) {
+        FileChooser fc = new FileChooser();
+        //fc.setInitialDirectory(new File("res/maps"));
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
+        fc.setInitialFileName(ProjectContext.getInstance().getProject().getProjectName() + "_NSquare_" + Utils.getFormattedDateAndTime());
+        fc.setTitle("Save Diagram");
+        Window window = diagramView.getScene().getWindow();
+        File file = fc.showSaveDialog(window);
+        if (file != null) {
+            SnapshotParameters snapshotParameters = new SnapshotParameters();
+            WritableImage snapshot = diagramView.snapshot(snapshotParameters, null);
+            try {
+                ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null), "png", file);
+            } catch (IOException e) {
+                logger.error("Error saving diagram to file", e);
+            }
+        }
     }
 
     public enum ViewMode {

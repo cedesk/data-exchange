@@ -12,27 +12,49 @@
         <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                     AnchorPane.topAnchor="0.0">
             <top>
-                <ToolBar>
-                    <Button minWidth="28" mnemonicParsing="false" onAction="#refreshTable" text="">
-                        <tooltip>
-                            <Tooltip text="Refresh"/>
-                        </tooltip>
-                        <graphic>
-                            <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                        </graphic>
-                    </Button>
-                    <Pane HBox.hgrow="ALWAYS"/>
-                    <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode" text="">
-                        <tooltip>
-                            <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
-                        </tooltip>
-                        <graphic>
-                            <Glyph fontFamily="FontAwesome" icon="CODEPEN"/>
-                        </graphic>
-                    </Button>
-                    <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                              GridPane.columnIndex="1" text="Generate weighted DSM"/>
-                </ToolBar>
+                <StackPane>
+                    <ToolBar fx:id="dsmToolbar">
+                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshTable" text="">
+                            <tooltip>
+                                <Tooltip text="Refresh"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                            </graphic>
+                        </Button>
+                        <Label text="IC/FBD convention: inputs shown in columns, outputs in rows; feedback marks appear below the diagonal."/>
+                        <Pane HBox.hgrow="ALWAYS"/>
+                        <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode" text="">
+                            <tooltip>
+                                <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="CODEPEN"/>
+                            </graphic>
+                        </Button>
+                        <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                                  GridPane.columnIndex="1" text="Generate weighted DSM"/>
+                    </ToolBar>
+                    <ToolBar fx:id="nSquareToolbar">
+                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshTable" text="">
+                            <tooltip>
+                                <Tooltip text="Refresh"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                            </graphic>
+                        </Button>
+                        <Pane HBox.hgrow="ALWAYS"/>
+                        <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
+                            <tooltip>
+                                <Tooltip text="Save the diagram as image file"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="SAVE"/>
+                            </graphic>
+                        </Button>
+                    </ToolBar>
+                </StackPane>
             </top>
             <center>
                 <StackPane>

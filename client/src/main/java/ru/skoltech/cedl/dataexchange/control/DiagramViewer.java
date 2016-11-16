@@ -37,7 +37,6 @@ public class DiagramViewer extends AnchorPane implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
     }
 
     public void addElement(String name) {
@@ -46,6 +45,8 @@ public class DiagramViewer extends AnchorPane implements Initializable {
             DiagramElement diagramElement = new DiagramElement(name, size);
             elements.put(name, diagramElement);
             getChildren().add(diagramElement);
+            setPrefWidth(prefWidth(0) + elementPadding);
+            setPrefHeight(prefHeight(0) + elementPadding);
         }
     }
 
