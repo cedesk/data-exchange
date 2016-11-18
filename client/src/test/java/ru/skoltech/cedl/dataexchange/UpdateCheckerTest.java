@@ -16,10 +16,12 @@ import java.util.stream.Collectors;
  */
 public class UpdateCheckerTest {
 
+    public static final String EXT = ApplicationPackage.getExtension();
+
     public static final List<String> FILE_NAMES = Arrays.asList(
-            "cedesk-1.13_2015-11-16_05-57.exe",
-            "cedesk-1.14_2015-11-23_03-24.exe",
-            "cedesk-1.15_2015-11-25_11-23.exe");
+            "cedesk-1.13_2015-11-16_05-57." + EXT,
+            "cedesk-1.14_2015-11-23_03-24." + EXT,
+            "cedesk-1.15_2015-11-25_11-23." + EXT);
 
     @Test
     public void testRemote() {
@@ -45,16 +47,16 @@ public class UpdateCheckerTest {
     public void testVersionComparison() {
         ApplicationPackage latest = UpdateChecker.getLatest(FILE_NAMES);
 
-        Assert.assertEquals("cedesk-1.15_2015-11-25_11-23.exe", latest.getFilename());
+        Assert.assertEquals("cedesk-1.15_2015-11-25_11-23." + EXT, latest.getFilename());
 
         latest = UpdateChecker.getLatest(Arrays.asList(
-                "cedesk-1.13_2015-11-16_05-57.exe", "cedesk-1.14_2015-11-23_03-24.exe",
-                "cedesk-1.15_2015-11-25_11-23.exe", "cedesk-1.15-snapshot_2015-11-27_16-34.exe"));
-        Assert.assertEquals("cedesk-1.15_2015-11-25_11-23.exe", latest.getFilename());
+                "cedesk-1.13_2015-11-16_05-57." + EXT, "cedesk-1.14_2015-11-23_03-24." + EXT,
+                "cedesk-1.15_2015-11-25_11-23." + EXT, "cedesk-1.15-snapshot_2015-11-27_16-34." + EXT));
+        Assert.assertEquals("cedesk-1.15_2015-11-25_11-23." + EXT, latest.getFilename());
 
         latest = UpdateChecker.getLatest(Arrays.asList(
-                "cedesk-1.13_2015-11-16_05-57.exe", "cedesk-1.14_2015-11-23_03-24.exe",
-                "cedesk-1.15_2015-11-25_11-23.exe", "cedesk-1.16_2015-11-28_16-34.exe"));
-        Assert.assertEquals("cedesk-1.16_2015-11-28_16-34.exe", latest.getFilename());
+                "cedesk-1.13_2015-11-16_05-57." + EXT, "cedesk-1.14_2015-11-23_03-24." + EXT,
+                "cedesk-1.15_2015-11-25_11-23." + EXT, "cedesk-1.16_2015-11-28_16-34." + EXT));
+        Assert.assertEquals("cedesk-1.16_2015-11-28_16-34." + EXT, latest.getFilename());
     }
 }
