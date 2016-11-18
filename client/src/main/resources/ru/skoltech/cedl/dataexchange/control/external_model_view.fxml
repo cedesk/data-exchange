@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.HBox?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <fx:root type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/null"
@@ -15,14 +17,6 @@
             </tooltip>
             <graphic>
                 <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
-            </graphic>
-        </Button>
-        <Button fx:id="startWizardButton" minWidth="28" mnemonicParsing="false" onAction="#startWizard" text="">
-            <tooltip>
-                <Tooltip text="Start input/output parameter extraction wizard"/>
-            </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="FLASH"/>
             </graphic>
         </Button>
     </children>

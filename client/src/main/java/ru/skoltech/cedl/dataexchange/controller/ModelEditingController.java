@@ -78,6 +78,9 @@ public class ModelEditingController implements Initializable {
     private TableColumn<ParameterModel, String> parameterUnitColumn;
 
     @FXML
+    private TableColumn<ParameterModel, String> parameterInfoColumn;
+
+    @FXML
     private Button addNodeButton;
 
     @FXML
@@ -151,7 +154,6 @@ public class ModelEditingController implements Initializable {
         BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
         deleteParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnParameterTableView));
         viewParameterHistoryButton.disableProperty().bind(noSelectionOnParameterTableView);
-        startParameterWizardButton.disableProperty().bind(noSelectionOnParameterTableView);
 
         // NODE PARAMETER TABLE
         parameterTable.editableProperty().bind(selectedNodeIsEditable);
@@ -173,6 +175,20 @@ public class ModelEditingController implements Initializable {
                 } else {
                     return new SimpleStringProperty();
                 }
+            }
+        });
+        parameterInfoColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
+                if (param != null && param.getValue() != null) {
+                    if (param.getValue().getValueSource() == ParameterValueSource.LINK) {
+                        return new SimpleStringProperty(param.getValue().getValueLink() != null ? param.getValue().getValueLink().getNodePath() : "--");
+                    }
+                    if (param.getValue().getValueSource() == ParameterValueSource.REFERENCE) {
+                        return new SimpleStringProperty(param.getValue().getValueReference() != null ? param.getValue().getValueReference().toString() : "--");
+                    }
+                }
+                return new SimpleStringProperty();
             }
         });
 
