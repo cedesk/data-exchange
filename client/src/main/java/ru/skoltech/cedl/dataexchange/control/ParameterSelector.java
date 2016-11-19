@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 08.09.2015.
  */
-public class ParameterChooser extends ChoiceDialog<ParameterModel> {
+public class ParameterSelector extends ChoiceDialog<ParameterModel> {
 
     private final Map<ModelNode, List<ParameterModel>> nodeParametersMap;
     @FXML
@@ -34,7 +34,7 @@ public class ParameterChooser extends ChoiceDialog<ParameterModel> {
     @FXML
     private TextArea descriptionText;
 
-    public ParameterChooser(Collection<ParameterModel> choices, ParameterModel defaultValue) {
+    public ParameterSelector(Collection<ParameterModel> choices, ParameterModel defaultValue) {
         nodeParametersMap = choices.stream().collect(Collectors.groupingBy(ParameterModel::getParent));
 
         // load layout

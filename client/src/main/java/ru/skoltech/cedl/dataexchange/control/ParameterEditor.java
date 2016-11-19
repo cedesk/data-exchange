@@ -270,7 +270,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             }
         });
 
-        Dialog<ParameterModel> dialog = new ParameterChooser(parameters, valueLinkParameter);
+        Dialog<ParameterModel> dialog = new ParameterSelector(parameters, valueLinkParameter);
 
         Optional<ParameterModel> parameterChoice = dialog.showAndWait();
         if (parameterChoice.isPresent()) {

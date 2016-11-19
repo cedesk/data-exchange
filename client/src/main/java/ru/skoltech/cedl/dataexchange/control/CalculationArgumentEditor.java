@@ -105,7 +105,7 @@ public class CalculationArgumentEditor extends GridPane implements Initializable
         subsystemParameterIterator.forEachRemaining(parameters::add);
 
         ParameterModel valueLinkParameter = ((Argument.Parameter) argument).getLink();
-        Dialog<ParameterModel> dialog = new ParameterChooser(parameters, valueLinkParameter);
+        Dialog<ParameterModel> dialog = new ParameterSelector(parameters, valueLinkParameter);
 
         Optional<ParameterModel> parameterChoice = dialog.showAndWait();
         if (parameterChoice.isPresent()) {
