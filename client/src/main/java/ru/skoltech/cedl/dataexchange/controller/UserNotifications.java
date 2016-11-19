@@ -28,10 +28,12 @@ public class UserNotifications {
         });
     }
 
-    public static void showActionableNotification(Window window, String title, String text, String buttonText, Consumer<ActionEvent> onClick) {
+    public static void showActionableNotification(Window window, String title, String text, String buttonText, Consumer<ActionEvent> onClick, boolean autohide) {
         Platform.runLater(() -> {
             Notifications notifications = Notifications.create().owner(window);
-            notifications.hideAfter(Duration.seconds(5));
+            if(autohide) {
+                notifications.hideAfter(Duration.seconds(6));
+            }
             notifications.action(new Action(buttonText, ae ->
                     onClick.accept(null)
             ));

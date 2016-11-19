@@ -259,7 +259,7 @@ public class MainController implements Initializable {
                     String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
                     logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
                     updateRemoteModel();
-                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", "View Differences", MainController.this::openDiffView);
+                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", "View Differences", MainController.this::openDiffView, true);
                 }
             }
         });
@@ -521,7 +521,7 @@ public class MainController implements Initializable {
             if (versionCompare < 0) {
                 UserNotifications.showActionableNotification(getAppWindow(), "Application Update",
                         "You are using " + appVersion + ", while " + packageVersion + " is already available. Please update!",
-                        "Download Update", new UpdateDownloader(applicationPackage));
+                        "Download Update", new UpdateDownloader(applicationPackage), false);
             } else if (versionCompare > 0) {
                 UserNotifications.showNotification(getAppWindow(), "Application Update", "You are using " + appVersion + ", which is newer than the latest available " + packageVersion + ". Please publish!");
             } else {
