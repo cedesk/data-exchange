@@ -161,7 +161,7 @@ public class ModelEditingController implements Initializable {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
                 if (param != null) {
-                    return new SimpleStringProperty(String.valueOf(param.getValue().getValue()));
+                    return new SimpleStringProperty(String.valueOf(param.getValue().getEffectiveValue()));
                 } else {
                     return new SimpleStringProperty();
                 }
