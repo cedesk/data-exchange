@@ -3,12 +3,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<AnchorPane stylesheets="@styling.css" xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.ProjectSettingsController">
     <children>
         <VBox>
             <children>
-                <TitledPane fx:id="studySettingsPane" animated="false" text="Study">
+                <TitledPane fx:id="studySettingsPane" animated="false" text="Global Settings">
                     <content>
                         <GridPane hgap="8.0" vgap="2.0">
                             <columnConstraints>
@@ -17,16 +17,20 @@
                             </columnConstraints>
                             <rowConstraints>
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                             </rowConstraints>
                             <children>
                                 <CheckBox fx:id="enableSyncCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                                          GridPane.columnIndex="1"/>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Enable Team to save"/>
+                                          GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Enable Team to save"
+                                      GridPane.rowIndex="1"/>
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Project Name"/>
+                                <TextField fx:id="projectNameText" disable="true" GridPane.columnIndex="1"/>
                             </children>
                         </GridPane>
                     </content>
                 </TitledPane>
-                <TitledPane animated="false" text="Project">
+                <TitledPane animated="false" text="Local settings">
                     <content>
                         <GridPane hgap="8.0" vgap="2.0">
                             <columnConstraints>

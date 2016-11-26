@@ -32,7 +32,10 @@ public class ProjectSettingsController implements Initializable {
     public TitledPane studySettingsPane;
 
     @FXML
-    public CheckBox enableSyncCheckbox;
+    private TextField projectNameText;
+
+    @FXML
+    private CheckBox enableSyncCheckbox;
 
     @FXML
     private CheckBox autoloadOnStartupCheckbox;
@@ -54,6 +57,8 @@ public class ProjectSettingsController implements Initializable {
     }
 
     private void updateView() {
+        String projectName = ProjectContext.getInstance().getProject().getProjectName();
+        projectNameText.setText(projectName);
         StudySettings studySettings = getStudySettings();
         if (studySettings != null) {
             enableSyncCheckbox.setSelected(studySettings.getSyncEnabled());
