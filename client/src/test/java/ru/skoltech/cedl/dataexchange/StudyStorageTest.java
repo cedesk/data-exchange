@@ -34,7 +34,7 @@ public class StudyStorageTest {
     @Test
     public void storeAndRetrieveStudy() throws RepositoryException {
         String name = "testStudy";
-        Study study = StudyFactory.makeStudy(name, null);
+        Study study = StudyFactory.makeStudy(name, 2, null);
         System.out.println(study);
 
         Study study0 = databaseStorage.storeStudy(study);
@@ -57,15 +57,15 @@ public class StudyStorageTest {
     @Test
     public void storeAndListStudies() throws RepositoryException {
         String name1 = "testStudy-1";
-        Study study1 = StudyFactory.makeStudy(name1, null);
+        Study study1 = StudyFactory.makeStudy(name1, 1, null);
         databaseStorage.storeStudy(study1);
 
         String name2 = "testStudy-2";
-        Study study2 = StudyFactory.makeStudy(name2, null);
+        Study study2 = StudyFactory.makeStudy(name2, 1, null);
         databaseStorage.storeStudy(study2);
 
         String name3 = "testStudy-3";
-        Study study3 = StudyFactory.makeStudy(name3, null);
+        Study study3 = StudyFactory.makeStudy(name3, 1, null);
         databaseStorage.storeStudy(study3);
 
         String[] createdStudies = new String[]{name1, name2, name3};

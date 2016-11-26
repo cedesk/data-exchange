@@ -10,8 +10,14 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
  */
 public class StudyFactory {
 
-    public static Study makeStudy(String projectName, UserManagement userManagement) {
-        return makeStudy(projectName, 4, userManagement);
+    public static Study makeStudy(SystemModel systemModel, UserManagement userManagement) {
+        Study study = new Study();
+        study.setStudySettings(new StudySettings());
+        study.setSystemModel(systemModel);
+        study.setName(systemModel.getName());
+        UserRoleManagement userRoleManagement = UserManagementFactory.makeUserRoleManagementWithSubsystemDisciplines(systemModel, userManagement);
+        study.setUserRoleManagement(userRoleManagement);
+        return study;
     }
 
     public static Study makeStudy(String projectName, int modelDepth, UserManagement userManagement) {

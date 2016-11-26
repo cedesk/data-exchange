@@ -513,9 +513,7 @@ public class Project {
 
     private void reinitializeProject(SystemModel systemModel) {
         setProjectName(systemModel.getName());
-        study = StudyFactory.makeStudy(projectName, userManagement);
-        study.setSystemModel(systemModel);
-        study.setName(systemModel.getName());
+        study = StudyFactory.makeStudy(systemModel, userManagement);
         setRepositoryStudy(null);
         externalModelFileWatcher.clear();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);

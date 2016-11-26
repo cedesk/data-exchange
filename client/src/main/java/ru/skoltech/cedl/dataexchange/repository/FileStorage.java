@@ -103,8 +103,15 @@ public class FileStorage {
 
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             parameterModel.setParent(modelNode);
-            parameterModel.setValueReference(new ExternalModelReference(parameterModel.getImportModel(), parameterModel.getImportField()));
-            parameterModel.setExportReference(new ExternalModelReference(parameterModel.getExportModel(), parameterModel.getExportField()));
+            if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
+                logger.info(parameterModel.getNodePath() + " <L- " + (parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "null"));
+            }
+            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+                logger.info(parameterModel.getNodePath() + " <R= " + parameterModel.getValueReference());
+            }
+            if (parameterModel.getIsExported()) {
+                logger.info(parameterModel.getNodePath() + " =E> " + parameterModel.getExportReference());
+            }
             if (parameterModel.getUnit() == null) {
                 logger.warn("parameter " + parameterModel.getNodePath() + " is missing a unit!");
             }

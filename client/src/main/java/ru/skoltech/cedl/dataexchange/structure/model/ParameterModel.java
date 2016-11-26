@@ -178,11 +178,13 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @Transient
     public ExternalModelReference getValueReference() {
-        if (importModel == null || importField == null)
-            return null;
-        if (valueReference == null) {
-            valueReference = new ExternalModelReference();
+        if (valueReference != null) {
+            return valueReference;
         }
+        if (importModel == null || importField == null) {
+            return null;
+        }
+        valueReference = new ExternalModelReference();
         valueReference.setExternalModel(importModel);
         valueReference.setTarget(importField);
         return valueReference;
@@ -261,11 +263,13 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     @Transient
     public ExternalModelReference getExportReference() {
-        if (exportModel == null || exportField == null)
-            return null;
-        if (exportReference == null) {
-            exportReference = new ExternalModelReference();
+        if (exportReference != null) {
+            return exportReference;
         }
+        if (exportModel == null || exportField == null) {
+            return null;
+        }
+        exportReference = new ExternalModelReference();
         exportReference.setExternalModel(exportModel);
         exportReference.setTarget(exportField);
         return exportReference;

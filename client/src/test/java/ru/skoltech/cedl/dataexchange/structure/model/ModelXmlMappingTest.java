@@ -11,6 +11,8 @@ import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.view.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
+import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
+import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,11 +36,10 @@ public class ModelXmlMappingTest {
     @Before
     public void setup() throws IOException, NoSuchFieldException, IllegalAccessException {
         Project project = new Project("project");
-        DatabaseStorage tempRepository = RepositoryFactory.getTempRepository();
-        Field field = Project.class.getDeclaredField("repository");
+        UnitManagement unitManagement = UnitManagementFactory.getUnitManagement();
+        Field field = Project.class.getDeclaredField("unitManagement");
         field.setAccessible(true);
-        field.set(project, tempRepository);
-        project.loadUnitManagement();
+        field.set(project, unitManagement);
 
         FileStorage fs = new FileStorage();
 
@@ -74,13 +75,23 @@ public class ModelXmlMappingTest {
         Assert.assertTrue(m1.equals(m2));
     }
 
-    // @Test TODO: re-enable
+    @Test
     public void exportXmlAndReimport() throws IOException {
         SystemModel s1 = DummySystemBuilder.getSystemModel(1);
         URL url = this.getClass().getResource("/attachment.xls");
         File excelFile = new File(url.getFile());
         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(excelFile, s1);
         s1.addExternalModel(externalModel);
+        ParameterModel p1 = s1.getParameters().get(0);
+        ExternalModelReference er1 = new ExternalModelReference();
+        er1.setExternalModel(externalModel);
+        er1.setTarget("B3");
+        p1.setValueReference(er1);
+        ParameterModel p2 = s1.getParameters().get(1);
+        ExternalModelReference modelReference = new ExternalModelReference();
+        modelReference.setExternalModel(externalModel);
+        modelReference.setTarget("D4");
+        p2.setExportReference(modelReference);
 
         FileStorage fs = new FileStorage();
         File file = new File("target", "DummySystemModel.xml");

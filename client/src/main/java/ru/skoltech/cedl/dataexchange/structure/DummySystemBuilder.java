@@ -54,8 +54,9 @@ public class DummySystemBuilder {
 
     private static SubSystemModel getSubSystem(String name, int level) {
         SubSystemModel subSystem = new SubSystemModel(name);
-        subSystem.addParameter(getParameter());
-        subSystem.addParameter(getParameter());
+        subSystem.addParameter(getMassParameter());
+        subSystem.addParameter(getPowerParameter());
+        //subSystem.addParameter(getParameter());
 
         if (level < 2) return subSystem;
         subSystem.addSubNode(getElement("element" + elementCnt++, level - 1));
@@ -123,13 +124,6 @@ public class DummySystemBuilder {
         parameterModel.setDescription("");
         parameterModel.setNature(ParameterNature.OUTPUT);
         parameterModel.setValueSource(ParameterValueSource.MANUAL);
-        {
-            parameterModel.setIsExported(true);
-            ExternalModelReference modelReference = new ExternalModelReference();
-            modelReference.setExternalModel(null);
-            modelReference.setTarget("B3");
-            parameterModel.setExportReference(modelReference);
-        }
         return parameterModel;
     }
 
@@ -138,13 +132,6 @@ public class DummySystemBuilder {
         parameterModel.setDescription("");
         parameterModel.setNature(ParameterNature.OUTPUT);
         parameterModel.setValueSource(ParameterValueSource.MANUAL);
-        {
-            parameterModel.setIsExported(true);
-            ExternalModelReference modelReference = new ExternalModelReference();
-            modelReference.setExternalModel(null);
-            modelReference.setTarget("D4");
-            parameterModel.setExportReference(modelReference);
-        }
         return parameterModel;
     }
 
