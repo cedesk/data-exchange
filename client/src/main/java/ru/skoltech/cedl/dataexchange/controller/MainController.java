@@ -62,6 +62,11 @@ public class MainController implements Initializable {
     private final RepositoryWatcher repositoryWatcher = new RepositoryWatcher(project);
     @FXML
     public WebView guideView;
+
+    @FXML
+    private MenuItem exportMenu;
+    @FXML
+    private MenuItem deleteMenu;
     @FXML
     private MenuItem usersMenu;
     @FXML
@@ -377,11 +382,14 @@ public class MainController implements Initializable {
                         .map(Discipline::getName).collect(Collectors.joining(", "));
                 userRoleLabel.setText(disciplineNames);
                 userRoleLabel.setStyle("-fx-text-fill: inherit;");
+                exportMenu.setDisable(false);
             } else {
                 userRoleLabel.setText("without permissions");
                 userRoleLabel.setStyle("-fx-text-fill: red;");
+                exportMenu.setDisable(true);
             }
             boolean userIsAdmin = project.isCurrentAdmin();
+            deleteMenu.setDisable(!userIsAdmin);
             usersMenu.setDisable(!userIsAdmin);
             usersAndDisciplinesMenu.setDisable(!userIsAdmin);
             modelEditingController.updateView();
