@@ -317,7 +317,7 @@ public class MainController implements Initializable {
     }
 
     private void showStatusMessages(MouseEvent mouseEvent) {
-        Collection lastMessages = StatusLogger.getInstance().getLastMessages();
+        Collection<String> lastMessages = StatusLogger.getInstance().getLastMessages();
         StringBuilder sb = new StringBuilder();
         lastMessages.forEach(o -> sb.append(o).append('\n'));
         TextArea textArea = new TextArea(sb.toString());
