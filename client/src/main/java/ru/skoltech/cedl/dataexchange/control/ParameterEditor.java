@@ -148,11 +148,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueSourceChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ParameterValueSource>() {
             @Override
             public void changed(ObservableValue<? extends ParameterValueSource> observable, ParameterValueSource oldValue, ParameterValueSource newValue) {
-                if(newValue == ParameterValueSource.LINK) {
+                if (newValue == ParameterValueSource.REFERENCE) {
+                    valueLinkParameter = null;
+                } else {
                     valueReference = null;
-                }
-                else if(newValue == ParameterValueSource.REFERENCE) {
-                   valueLinkParameter = null;
                 }
             }
         });
