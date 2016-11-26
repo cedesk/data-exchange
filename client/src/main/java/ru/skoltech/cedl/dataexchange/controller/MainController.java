@@ -543,7 +543,7 @@ public class MainController implements Initializable {
     public void openAboutDialog(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.ABOUT);
+            loader.setLocation(Views.ABOUT_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -567,7 +567,7 @@ public class MainController implements Initializable {
         }
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.MODEL_DIFF_VIEW);
+            loader.setLocation(Views.MODEL_DIFF_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -589,7 +589,7 @@ public class MainController implements Initializable {
     public void openProjectSettingsDialog(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.PROJECT_SETTINGS_VIEW);
+            loader.setLocation(Views.PROJECT_SETTINGS_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -611,7 +611,7 @@ public class MainController implements Initializable {
     public void openRepositorySettingsDialog(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.REPOSITORY_SETTINGS_VIEW);
+            loader.setLocation(Views.REPOSITORY_SETTINGS_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -637,7 +637,7 @@ public class MainController implements Initializable {
     public void openUserManagement(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.USER_LIST_EDITING_VIEW);
+            loader.setLocation(Views.USER_MANAGEMENT_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -659,7 +659,7 @@ public class MainController implements Initializable {
     public void openUserRoleManagement(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.USER_ROLES_EDITING_VIEW);
+            loader.setLocation(Views.USER_ROLES_EDITING_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -681,7 +681,7 @@ public class MainController implements Initializable {
     public void openUnitManagement(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.UNIT_EDITING_VIEW);
+            loader.setLocation(Views.UNIT_EDITING_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();

@@ -323,7 +323,7 @@ public class ModelEditingController implements Initializable {
 
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.REVISION_HISTORY);
+            loader.setLocation(Views.REVISION_HISTORY_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -614,7 +614,7 @@ public class ModelEditingController implements Initializable {
     private void openDependencyView(String title, DependencyController.ViewMode mode) {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.DEPENDENCY_VIEW);
+            loader.setLocation(Views.DEPENDENCY_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();

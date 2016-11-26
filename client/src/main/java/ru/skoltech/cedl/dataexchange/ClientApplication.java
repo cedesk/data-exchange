@@ -34,7 +34,7 @@ public class ClientApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(Views.APPLICATION_VIEW);
+        loader.setLocation(Views.MAIN_WINDOW);
         Parent root = loader.load();
         mainController = loader.getController();
 

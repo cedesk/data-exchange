@@ -7,27 +7,27 @@ import java.net.URL;
  */
 public class Views {
 
-    public static final URL APPLICATION_VIEW = Views.class.getResource("main-frame.fxml");
+    public static final URL MAIN_WINDOW = Views.class.getResource("main-window.fxml");
 
     public static final URL MODEL_EDITING_VIEW = Views.class.getResource("model-editing.fxml");
 
-    public static final URL MODEL_DIFF_VIEW = Views.class.getResource("model-diff.fxml");
+    public static final URL MODEL_DIFF_WINDOW = Views.class.getResource("model-diff-window.fxml");
 
-    public static final URL DEPENDENCY_VIEW = Views.class.getResource("dependency-view.fxml");
+    public static final URL DEPENDENCY_WINDOW = Views.class.getResource("dependency-window.fxml");
 
-    public static final URL USER_ROLES_EDITING_VIEW = Views.class.getResource("user-role-editing.fxml");
+    public static final URL USER_ROLES_EDITING_WINDOW = Views.class.getResource("user-role-management-window.fxml");
 
-    public static final URL USER_LIST_EDITING_VIEW = Views.class.getResource("user-list-editing.fxml");
+    public static final URL USER_MANAGEMENT_WINDOW = Views.class.getResource("user-management-window.fxml");
 
-    public static final URL USER_EDITING_VIEW = Views.class.getResource("user-editing.fxml");
+    public static final URL USER_EDITING_WINDOW = Views.class.getResource("user-editing-window.fxml");
 
-    public static final URL UNIT_EDITING_VIEW = Views.class.getResource("unit-editing.fxml");
+    public static final URL UNIT_EDITING_WINDOW = Views.class.getResource("unit-editing-window.fxml");
 
-    public static final URL REVISION_HISTORY = Views.class.getResource("revision-history.fxml");
+    public static final URL REVISION_HISTORY_WINDOW = Views.class.getResource("revision-history-window.fxml");
 
-    public static final URL PROJECT_SETTINGS_VIEW = Views.class.getResource("project-settings-view.fxml");
+    public static final URL PROJECT_SETTINGS_WINDOW = Views.class.getResource("project-settings-window.fxml");
 
-    public static final URL REPOSITORY_SETTINGS_VIEW = Views.class.getResource("repository-settings-view.fxml");
+    public static final URL REPOSITORY_SETTINGS_WINDOW = Views.class.getResource("repository-settings-window.fxml");
 
-    public static final URL ABOUT = Views.class.getResource("about.fxml");
+    public static final URL ABOUT_WINDOW = Views.class.getResource("about-window.fxml");
 }
