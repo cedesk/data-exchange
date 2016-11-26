@@ -63,37 +63,4 @@ public class WorkbookFactory {
         return sheetNames;
     }
 
-    public static void writeDummy(File spreadsheetFile) {
-        Workbook wb = new HSSFWorkbook(); // XLS
-        Sheet sheet = wb.createSheet("sheet-1");
-
-        // Create a row and put some cells in it. Rows are 0 based.
-        Row row = sheet.createRow(1);
-
-        // Create a cell and put a value in it.
-        Cell cell = row.createCell(1);
-        cell.setCellValue(4);
-
-        // Style the cell with borders all around.
-        CellStyle style = wb.createCellStyle();
-        style.setBorderBottom(CellStyle.BORDER_THIN);
-        style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
-        style.setBorderLeft(CellStyle.BORDER_THIN);
-        style.setLeftBorderColor(IndexedColors.GREEN.getIndex());
-        style.setBorderRight(CellStyle.BORDER_THIN);
-        style.setRightBorderColor(IndexedColors.BLUE.getIndex());
-        style.setBorderTop(CellStyle.BORDER_MEDIUM_DASHED);
-        style.setTopBorderColor(IndexedColors.BLACK.getIndex());
-        cell.setCellStyle(style);
-
-        // Write the output to a file
-        try {
-            FileOutputStream fileOut = new FileOutputStream(spreadsheetFile);
-            wb.write(fileOut);
-            fileOut.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }
