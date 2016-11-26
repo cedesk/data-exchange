@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.control;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -96,9 +97,43 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         removeButton.setTooltip(new Tooltip("remove external model"));
         removeButton.setOnAction(ExternalModelEditor.this::deleteExternalModel);
         removeButton.setMinWidth(28);
-        HBox extModRow = new HBox(16, editor, removeButton);
+        Button exchangeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.EXCHANGE));
+        exchangeButton.setTooltip(new Tooltip("remove external model"));
+        exchangeButton.setOnAction(ExternalModelEditor.this::exchangeExternalModel);
+        exchangeButton.setMinWidth(28);
+        HBox extModRow = new HBox(6, editor, removeButton, exchangeButton);
         removeButton.setUserData(extModRow);
+        exchangeButton.setUserData(externalModel);
         externalModelViewContainer.getChildren().add(extModRow);
+    }
+
+    private void exchangeExternalModel(ActionEvent actionEvent) {
+        Project project = ProjectContext.getInstance().getProject();
+
+        if (!project.isStudyInRepository()) {
+            Dialogues.showError("Save Project", "Unable to attach an external model, as long as the project has not been saved yet!");
+            return;
+        }
+        Button exchangeButton = (Button) actionEvent.getSource();
+        ExternalModel externalModel = (ExternalModel) exchangeButton.getUserData();
+
+        File externalModelFile = Dialogues.chooseExternalModelFile();
+        if (externalModelFile != null) {
+            String fileName = externalModelFile.getName();
+            if (externalModelFile.isFile() && ExternalModelAccessorFactory.hasEvaluator(fileName)) {
+                try {
+                    ExternalModelFileHandler.readAttachmentFromFile(externalModel, externalModelFile);
+                    externalModel.setName(fileName);
+                    Platform.runLater(ExternalModelEditor.this::updateView);
+                    Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
+                    project.markStudyModified();
+                } catch (IOException e) {
+                    logger.warn("Unable to import model file.", e);
+                }
+            } else {
+                Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
+            }
+        }
     }
 
     public void addExternalModel(ActionEvent actionEvent) {
@@ -119,7 +154,6 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
                     try {
                         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(externalModelFile, modelNode);
                         modelNode.addExternalModel(externalModel);
-                        project.storeExternalModel(externalModel);
                         renderExternalModelView(externalModel);
                         Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
                         project.markStudyModified();
