@@ -25,7 +25,7 @@ public class TimingTest {
 
     @Test
     public void testTime() throws IOException {
-        File file = new File("my_random_file.txt");
+        File file = new File("target", "my_random_file.txt");
         file.deleteOnExit();
         System.out.println(file.getAbsolutePath());
         long newTime = file.lastModified();
