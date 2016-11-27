@@ -608,7 +608,7 @@ public class ModelEditingController implements Initializable {
     }
 
     public void viewNSquaredChart(ActionEvent actionEvent) {
-        openDependencyView("N-square Chart", DependencyController.ViewMode.N_SQUARE);
+        openDependencyView("N-Square Chart", DependencyController.ViewMode.N_SQUARE);
     }
 
     private void openDependencyView(String title, DependencyController.ViewMode mode) {
@@ -625,7 +625,7 @@ public class ModelEditingController implements Initializable {
             stage.initOwner(getAppWindow());
             DependencyController controller = loader.getController();
             controller.setMode(mode);
-            controller.refreshTable(null);
+            controller.refreshView(null);
 
             stage.show();
         } catch (IOException e) {

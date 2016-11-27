@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 14.11.2016.
  */
-public class DiagramViewer extends AnchorPane implements Initializable {
+public class DiagramView extends AnchorPane implements Initializable {
 
     private static final Color elementColor = Color.LIGHTGREY;
     private static final Color connectionColor = Color.DARKGREY;
@@ -36,7 +36,7 @@ public class DiagramViewer extends AnchorPane implements Initializable {
     private MultiValuedMap<String, DiagramConnection> fromConnections = new ArrayListValuedHashMap<>();
     private MultiValuedMap<String, DiagramConnection> toConnections = new ArrayListValuedHashMap<>();
 
-    public DiagramViewer() {
+    public DiagramView() {
     }
 
     @Override

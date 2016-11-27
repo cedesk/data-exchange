@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<?import ru.skoltech.cedl.dataexchange.control.DiagramViewer?>
+<?import ru.skoltech.cedl.dataexchange.control.DiagramView?>
 <AnchorPane xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.DependencyController"
             stylesheets="@styling.css" prefHeight="600.0" prefWidth="900.0">
@@ -14,7 +14,7 @@
             <top>
                 <StackPane>
                     <ToolBar fx:id="dsmToolbar">
-                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshTable" text="">
+                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
                             <tooltip>
                                 <Tooltip text="Refresh"/>
                             </tooltip>
@@ -36,7 +36,7 @@
                                   GridPane.columnIndex="1" text="Generate weighted DSM"/>
                     </ToolBar>
                     <ToolBar fx:id="nSquareToolbar">
-                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshTable" text="">
+                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
                             <tooltip>
                                 <Tooltip text="Refresh"/>
                             </tooltip>
@@ -60,8 +60,8 @@
                 <StackPane>
                     <SpreadsheetView fx:id="spreadsheetView" editable="false" prefWidth="500.0" prefHeight="400"
                                      BorderPane.alignment="CENTER" visible="false"/>
-                    <DiagramViewer fx:id="diagramView" prefWidth="500.0" prefHeight="400"
-                                   BorderPane.alignment="TOP_RIGHT" visible="false"/>
+                    <DiagramView fx:id="diagramView" prefWidth="500.0" prefHeight="400"
+                                 BorderPane.alignment="TOP_RIGHT" visible="false"/>
                 </StackPane>
             </center>
         </BorderPane>

@@ -21,7 +21,7 @@ import org.controlsfx.control.spreadsheet.*;
 import org.jgrapht.DirectedGraph;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.control.DiagramViewer;
+import ru.skoltech.cedl.dataexchange.control.DiagramView;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
@@ -49,7 +49,7 @@ public class DependencyController implements Initializable {
     private SpreadsheetView spreadsheetView;
 
     @FXML
-    private DiagramViewer diagramView;
+    private DiagramView diagramView;
 
     @FXML
     private CheckBox weightedDsmCheckbox;
@@ -68,15 +68,6 @@ public class DependencyController implements Initializable {
         return grid;
     }
 
-    private static Grid getNSquareGrid(List<ModelNode> vertices, DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph) {
-        final int matrixSize = vertices.size();
-        final GridBase grid = new GridBase(matrixSize, matrixSize);
-
-        fillGrid(vertices, dependencyGraph, matrixSize, grid, ViewMode.N_SQUARE);
-
-        return grid;
-    }
-
     private static void fillGrid(List<ModelNode> vertices, DirectedGraph<ModelNode, ParameterLinkRegistry.ModelDependency> dependencyGraph, int matrixSize, GridBase grid, ViewMode viewMode) {
         ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(matrixSize);
         for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
@@ -87,20 +78,13 @@ public class DependencyController implements Initializable {
                 String value = "";
                 boolean hasDependency = dependencyGraph.getAllEdges(toVertex, fromVertex) != null
                         && dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0;
-                //String style = ""; // does not work
                 if (rowIndex == columnIndex) {
-                    if (viewMode == ViewMode.DSM) {
-                        value = "--";
-                        //style = "-fx-text-alignment: center;";
-                    } else {
-                        value = toVertex.getName();
-                    }
+                    value = viewMode == ViewMode.DSM ? "--" : toVertex.getName();
                 } else if (hasDependency) {
                     Set<String> linkedParams = getLinkedParams(toVertex, fromVertex);
                     value = linkedParams.stream().collect(Collectors.joining(",\n"));
                 }
                 SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(rowIndex, columnIndex, 1, 1, value);
-                //viewCell.setStyle(style);
                 viewRow.add(viewCell);
             }
             viewRows.add(viewRow);
@@ -140,7 +124,7 @@ public class DependencyController implements Initializable {
         spreadsheetView.setRowHeaderWidth(60);
     }
 
-    public void refreshTable(ActionEvent actionEvent) {
+    public void refreshView(ActionEvent actionEvent) {
         Project project = ProjectContext.getInstance().getProject();
         SystemModel systemModel = project.getSystemModel();
         List<SubSystemModel> subNodes = systemModel.getSubNodes();
@@ -161,13 +145,9 @@ public class DependencyController implements Initializable {
         } else {
             diagramView.reset();
             modelNodeList.stream().map(ModelNode::getName).forEach(diagramView::addElement);
-            final int matrixSize = modelNodeList.size();
-
-            for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
-                ModelNode fromVertex = modelNodeList.get(rowIndex);
+            for (ModelNode fromVertex : modelNodeList) {
                 diagramView.addElement(fromVertex.getName());
-                for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
-                    ModelNode toVertex = modelNodeList.get(columnIndex);
+                for (ModelNode toVertex : modelNodeList) {
                     if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
                             dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
                         Set<String> linkedParams = getLinkedParams(fromVertex, toVertex);

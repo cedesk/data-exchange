@@ -10,7 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.ArcType;
 import javafx.stage.Stage;
-import ru.skoltech.cedl.dataexchange.control.DiagramViewer;
+import ru.skoltech.cedl.dataexchange.control.DiagramView;
 
 public class DiagramGraphicsTest extends Application {
 
@@ -21,26 +21,26 @@ public class DiagramGraphicsTest extends Application {
     @Override
     public void start(Stage stage) {
 
-        DiagramViewer diagramViewer = new DiagramViewer();
-        diagramViewer.setMinWidth(600);
-        diagramViewer.setMinHeight(400);
+        DiagramView diagramView = new DiagramView();
+        diagramView.setMinWidth(600);
+        diagramView.setMinHeight(400);
 
-        Scene scene = new Scene(diagramViewer);
+        Scene scene = new Scene(diagramView);
         stage.setScene(scene);
         stage.setTitle("Diagram Viewer Test");
         stage.show();
 
-        diagramViewer.addElement("Element 1");
-        diagramViewer.addElement("Element 2");
-        diagramViewer.addConnection("Element 1", "Element 2", "param. A,\nparam. Z", 2);
+        diagramView.addElement("Element 1");
+        diagramView.addElement("Element 2");
+        diagramView.addConnection("Element 1", "Element 2", "param. A,\nparam. Z", 2);
 
-        diagramViewer.addElement("Element 3");
-        diagramViewer.addConnection("Element 1", "Element 3", "parameter B", 1);
-        diagramViewer.addConnection("Element 3", "Element 2", "parameter C", 1);
+        diagramView.addElement("Element 3");
+        diagramView.addConnection("Element 1", "Element 3", "parameter B", 1);
+        diagramView.addConnection("Element 3", "Element 2", "parameter C", 1);
 
-        diagramViewer.addElement("Element 4");
-        diagramViewer.addConnection("Element 3", "Element 4", "param. Y", 1);
-        diagramViewer.addConnection("Element 4", "Element 2", "param. X", 1);
+        diagramView.addElement("Element 4");
+        diagramView.addConnection("Element 3", "Element 4", "param. Y", 1);
+        diagramView.addConnection("Element 4", "Element 2", "param. X", 1);
 
     }
 
