@@ -7,21 +7,9 @@
     -fx-border-color:grey;
 }
 
-.applicationTitle {
-    -fx-font-family: serif;
-    -fx-font-size: 26px;
-    -fx-font-style: italic;
-    -fx-font-weight: bold;
-}
-
-.projectDetailsLabels,
-.projectDetailsText {
-    -fx-font-size: 14px;
-}
-
 .projectDetailsLabels {
-    -fx-font-style: italic;
-    -fx-underline: true;
+/*    -fx-font-style: italic;
+    -fx-underline: true;*/
 }
 
 .projectDetailsText {
