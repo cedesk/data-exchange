@@ -43,7 +43,8 @@ public class UserManagementFactory {
                 urm.addUserDiscipline(admin, urm.getAdminDiscipline());
             }
         }
-        return urm;    }
+        return urm;
+    }
 
     public static UserRoleManagement makeDefaultUserRoleManagement(UserManagement userManagement) {
 

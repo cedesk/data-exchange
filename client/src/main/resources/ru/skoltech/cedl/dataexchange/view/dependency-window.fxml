@@ -5,7 +5,7 @@
 <?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <?import ru.skoltech.cedl.dataexchange.control.DiagramView?>
-<AnchorPane xmlns="http://javafx.com/javafx/null" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/null"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.DependencyController"
             stylesheets="@styling.css" prefHeight="600.0" prefWidth="900.0">
     <children>

@@ -31,7 +31,7 @@ public class UserNotifications {
     public static void showActionableNotification(Window window, String title, String text, String buttonText, Consumer<ActionEvent> onClick, boolean autohide) {
         Platform.runLater(() -> {
             Notifications notifications = Notifications.create().owner(window);
-            if(autohide) {
+            if (autohide) {
                 notifications.hideAfter(Duration.seconds(6));
             }
             notifications.action(new Action(buttonText, ae ->

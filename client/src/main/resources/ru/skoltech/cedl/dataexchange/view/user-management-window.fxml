@@ -4,8 +4,8 @@
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<AnchorPane minHeight="420.0" minWidth="240.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.40"
-            xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="420.0" minWidth="240.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.40"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.UserManagementController">
     <children>
         <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
@@ -35,7 +35,8 @@
                                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
                             </graphic>
                         </Button>
-                        <Button fx:id="editUserButton" minWidth="28" mnemonicParsing="false" onAction="#openUserEditingView" text="">
+                        <Button fx:id="editUserButton" minWidth="28" mnemonicParsing="false"
+                                onAction="#openUserEditingView" text="">
                             <tooltip>
                                 <Tooltip text="Edit user"/>
                             </tooltip>

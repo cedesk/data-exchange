@@ -23,6 +23,7 @@
             /*float:right;*/
             width: 280px;
         }
+
     </style>
     <script language="JavaScript">
         function toggle_visibility(id) {
@@ -32,6 +33,7 @@
           else
             e.style.display = 'none';
         }
+
     </script>
 </head>
 <body>
@@ -95,31 +97,40 @@
 
 <h2>Iteration Perspective <a href="#2" onclick="toggle_visibility('iteration_perspective');">&gt;&gt;</a></h2>
 <div id="iteration_perspective" style="display: block;">
-<img src="design-iteration.png" alt="Iteration Perspective"/>
-<p>From the system model the dependencies among disciplines can be derived and represented as a design structure matrix
-    (DSM). To this DSM a clustering algorithms determines an optimal sequence for updating one
-    subsystem after the other.
-    Based on this schedule one discipline is taken at a time and the responsible expert is asked to update his subsystem
-    model. The internals of this action are described in a separate procedure in the next section. After that, depending
-    on
-    whether the subsystem’s output parameter values have changed, the schedule is updated or not. More precisely, if the
-    outputs did change, then the disciplines which depend on them are put on the schedule again. In case the update of a
-    discipline model led to changes of subsystem interfaces and thereby also dependencies, the schedule needs to be
-    recalculated. Once there are no more disciplines on the schedule, it means the integrated system models has
-    converged
-    and represents a feasible point design and the iteration is finished.</p>
+    <img src="design-iteration.png" alt="Iteration Perspective"/>
+    <p>From the system model the dependencies among disciplines can be derived and represented as a design structure
+        matrix
+        (DSM). To this DSM a clustering algorithms determines an optimal sequence for updating one
+        subsystem after the other.
+        Based on this schedule one discipline is taken at a time and the responsible expert is asked to update his
+        subsystem
+        model. The internals of this action are described in a separate procedure in the next section. After that,
+        depending
+        on
+        whether the subsystem’s output parameter values have changed, the schedule is updated or not. More precisely, if
+        the
+        outputs did change, then the disciplines which depend on them are put on the schedule again. In case the update
+        of a
+        discipline model led to changes of subsystem interfaces and thereby also dependencies, the schedule needs to be
+        recalculated. Once there are no more disciplines on the schedule, it means the integrated system models has
+        converged
+        and represents a feasible point design and the iteration is finished.</p>
 </div>
 
 <h2>Discipline Perspective <a href="#3" onclick="toggle_visibility('discipline_perspective');">&gt;&gt;</a></h2>
 <div id="discipline_perspective" style="display: none;">
-<img src="update-discipline-model.png" alt="Discipline Perspective"/>
+    <img src="update-discipline-model.png" alt="Discipline Perspective"/>
 
-<p>A discipline expert updating a subsystem model performs a simple sequence of activities. First the input values which
-    are connected to other subsystems need to be updated. Depending on the kind of model, the designer either executes a
-    calculation, runs a simulation, performs decisions based on prior knowledge or a combination of them.
-    After that all the subsystem’s output parameters are updated. In parallel the expert checks the model for integrity,
-    and in case additional input or output parameters are needed the interface is modified accordingly. Changes to the
-    parameters are reflected in the stored system model.</p>
+    <p>A discipline expert updating a subsystem model performs a simple sequence of activities. First the input values
+        which
+        are connected to other subsystems need to be updated. Depending on the kind of model, the designer either
+        executes a
+        calculation, runs a simulation, performs decisions based on prior knowledge or a combination of them.
+        After that all the subsystem’s output parameters are updated. In parallel the expert checks the model for
+        integrity,
+        and in case additional input or output parameters are needed the interface is modified accordingly. Changes to
+        the
+        parameters are reflected in the stored system model.</p>
 </div>
 
 </body>

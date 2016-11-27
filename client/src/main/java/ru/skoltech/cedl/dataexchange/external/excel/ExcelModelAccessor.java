@@ -43,6 +43,7 @@ public class ExcelModelAccessor {
         }
         return spreadsheetAccessor;
     }
+
     public void close() {
         if (spreadsheetAccessor != null) {
             try {

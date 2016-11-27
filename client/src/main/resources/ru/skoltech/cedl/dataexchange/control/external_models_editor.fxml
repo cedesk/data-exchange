@@ -4,8 +4,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<fx:root stylesheets="@../view/styling.css" type="javafx.scene.control.ScrollPane"
-         xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../view/styling.css"
+         type="javafx.scene.control.ScrollPane" xmlns="http://javafx.com/javafx/8.0.40">
     <content>
         <HBox spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
               AnchorPane.topAnchor="0.0">

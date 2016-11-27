@@ -5,8 +5,8 @@
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.HBox?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<fx:root type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/null"
-         xmlns:fx="http://javafx.com/fxml/1"
+<fx:root xmlns:fx="http://javafx.com/fxml/1" type="javafx.scene.layout.HBox"
+         xmlns="http://javafx.com/javafx/null"
          stylesheets="@../view/styling.css"
          spacing="8.0">
     <children>
