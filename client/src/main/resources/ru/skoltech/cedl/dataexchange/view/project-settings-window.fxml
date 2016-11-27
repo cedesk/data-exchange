@@ -8,7 +8,7 @@
     <children>
         <VBox>
             <children>
-                <TitledPane fx:id="studySettingsPane" animated="false" text="Global Settings">
+                <TitledPane fx:id="teamSettingsPane" animated="false" text="Team-wide settings">
                     <content>
                         <GridPane hgap="8.0" vgap="2.0">
                             <columnConstraints>
@@ -30,7 +30,7 @@
                         </GridPane>
                     </content>
                 </TitledPane>
-                <TitledPane animated="false" text="Local settings">
+                <TitledPane animated="false" text="Personal settings">
                     <content>
                         <GridPane hgap="8.0" vgap="2.0">
                             <columnConstraints>

@@ -29,7 +29,7 @@ public class ProjectSettingsController implements Initializable {
     private static Logger logger = Logger.getLogger(ProjectSettingsController.class);
 
     @FXML
-    public TitledPane studySettingsPane;
+    public TitledPane teamSettingsPane;
 
     @FXML
     private TextField projectNameText;
@@ -63,10 +63,10 @@ public class ProjectSettingsController implements Initializable {
         if (studySettings != null) {
             enableSyncCheckbox.setSelected(studySettings.getSyncEnabled());
             enableSyncCheckbox.setDisable(false);
-            studySettingsPane.setDisable(false);
+            teamSettingsPane.setDisable(false);
         } else {
             enableSyncCheckbox.setDisable(true);
-            studySettingsPane.setDisable(true);
+            teamSettingsPane.setDisable(true);
         }
 
         autoloadOnStartupCheckbox.setSelected(ApplicationSettings.getAutoLoadLastProjectOnStartup());
