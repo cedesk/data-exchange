@@ -32,15 +32,15 @@ public class DiagramGraphicsTest extends Application {
 
         diagramViewer.addElement("Element 1");
         diagramViewer.addElement("Element 2");
-        diagramViewer.addConnection("Element 1", "Element 2", "param. A,\nparam. Z");
+        diagramViewer.addConnection("Element 1", "Element 2", "param. A,\nparam. Z", 2);
 
         diagramViewer.addElement("Element 3");
-        diagramViewer.addConnection("Element 1", "Element 3", "parameter B");
-        diagramViewer.addConnection("Element 3", "Element 2", "parameter C");
+        diagramViewer.addConnection("Element 1", "Element 3", "parameter B", 1);
+        diagramViewer.addConnection("Element 3", "Element 2", "parameter C", 1);
 
         diagramViewer.addElement("Element 4");
-        diagramViewer.addConnection("Element 3", "Element 4", "param. Y");
-        diagramViewer.addConnection("Element 4", "Element 2", "param. X");
+        diagramViewer.addConnection("Element 3", "Element 4", "param. Y", 1);
+        diagramViewer.addConnection("Element 4", "Element 2", "param. X", 1);
 
     }
 

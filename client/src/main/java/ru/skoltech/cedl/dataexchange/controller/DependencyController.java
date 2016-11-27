@@ -171,8 +171,9 @@ public class DependencyController implements Initializable {
                     if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
                             dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
                         Set<String> linkedParams = getLinkedParams(fromVertex, toVertex);
-                        String parameters = linkedParams.stream().collect(Collectors.joining(",\n"));
-                        diagramView.addConnection(fromVertex.getName(), toVertex.getName(), parameters);
+                        int strength = linkedParams.size();
+                        String parameterNames = linkedParams.stream().collect(Collectors.joining(",\n"));
+                        diagramView.addConnection(fromVertex.getName(), toVertex.getName(), parameterNames, strength);
                     }
                 }
             }
