@@ -10,10 +10,10 @@
          stylesheets="@../view/styling.css"
          spacing="8.0">
     <children>
-        <TextField fx:id="externalModelNameText" editable="false" prefWidth="200.0" promptText="File"/>
+        <TextField fx:id="externalModelNameText" editable="false" prefWidth="300.0" promptText="File"/>
         <Button fx:id="openExternalButton" minWidth="28" mnemonicParsing="false" onAction="#openExternalModel" text="">
             <tooltip>
-                <Tooltip text="Open Externally"/>
+                <Tooltip text="Open with external tool"/>
             </tooltip>
             <graphic>
                 <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>

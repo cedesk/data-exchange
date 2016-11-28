@@ -1,38 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<fx:root xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../view/styling.css"
-         type="javafx.scene.control.ScrollPane" xmlns="http://javafx.com/javafx/8.0.40">
+
+<fx:root stylesheets="@../view/styling.css" type="javafx.scene.control.ScrollPane" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1">
     <content>
-        <HBox spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-              AnchorPane.topAnchor="0.0">
+        <HBox spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
                 <VBox fx:id="externalModelViewContainer" spacing="4.0">
                     <children>
                     </children>
+               <padding>
+                  <Insets right="16.0" />
+               </padding>
                 </VBox>
                 <Button minWidth="28" mnemonicParsing="false" onAction="#addExternalModel" text="">
                     <tooltip>
-                        <Tooltip text="Attach External Model"/>
+                        <Tooltip text="Add external model" />
                     </tooltip>
                     <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                        <Glyph fontFamily="FontAwesome" icon="PLUS" />
                     </graphic>
                 </Button>
                 <Button minWidth="28" mnemonicParsing="false" onAction="#reloadExternalModels" text="">
                     <tooltip>
-                        <Tooltip text="Reload External Models"/>
+                        <Tooltip text="Refresh values from external models" />
                     </tooltip>
                     <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                        <Glyph fontFamily="FontAwesome" icon="REFRESH" />
                     </graphic>
                 </Button>
             </children>
             <padding>
-                <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
+                <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
             </padding>
         </HBox>
     </content>
