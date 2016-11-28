@@ -41,7 +41,7 @@ public class ModelUpdateUtil {
                                 updates.add(parameterUpdate);
                             }
                         } else {
-                            logger.error("reference concerning other external model!"); // TODO: change when more models are possible
+                            //logger.error("reference concerning other external model!"); // TODO: change when more models are possible
                         }
                     } else {
                         logger.warn("parameter " + parameterModel.getNodePath() + " has empty valueReference");
@@ -113,7 +113,7 @@ public class ModelUpdateUtil {
                 logger.debug("no change for " + parameterModel.getName() + " from " + valueReference.toString());
             }
         } catch (ExternalModelException e) {
-            StatusLogger.getInstance().log("unable to evaluate value for parameter '" + parameterModel.getNodePath() + "' from '" + valueReference.toString() + "'");
+            StatusLogger.getInstance().log("unable to evaluate value for parameter '" + parameterModel.getNodePath() + "' from '" + valueReference.toString() + "'", true);
             throw e;
         }
         return parameterUpdate;

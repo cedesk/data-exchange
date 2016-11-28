@@ -403,7 +403,7 @@ public class ModelEditingController implements Initializable {
         if (WorkbookFactory.isWorkbookFile(filename)) {
             try (InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel)) {
                 String sheetName = nameCellCoordinates.getSheetName();
-                SpreadsheetCellValueAccessor cellValueAccessor = new SpreadsheetCellValueAccessor(inputStream, filename, sheetName);
+                SpreadsheetCellValueAccessor cellValueAccessor = new SpreadsheetCellValueAccessor(inputStream, filename);
                 parameterName = cellValueAccessor.getValueAsString(nameCellCoordinates);
             } catch (IOException | ExternalModelException e) {
                 StatusLogger.getInstance().log("The external model '" + filename + "' could not be opened to extract parameter name!");

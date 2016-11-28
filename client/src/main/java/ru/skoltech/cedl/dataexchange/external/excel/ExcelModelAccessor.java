@@ -29,13 +29,13 @@ public class ExcelModelAccessor {
         return WorkbookFactory.KNOWN_FILE_EXTENSIONS;
     }
 
-    protected SpreadsheetCellValueAccessor getSpreadsheetAccessor(String sheetName) throws ExternalModelException {
+    protected SpreadsheetCellValueAccessor getSpreadsheetAccessor() throws ExternalModelException {
         if (spreadsheetAccessor == null) {
             try {
                 ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 String fileName = externalModel.getName();
-                spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName, sheetName);
+                spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName);
             } catch (IOException e) {
                 logger.error("unable to open spreadsheet");
                 throw new ExternalModelException("unable access excel spreadsheet", e);

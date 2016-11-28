@@ -27,7 +27,7 @@ public class ExcelModelEvaluator extends ExcelModelAccessor implements ExternalM
             throw new ExternalModelException("target is null");
         try {
             SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
-            SpreadsheetCellValueAccessor spreadsheetAccessor = getSpreadsheetAccessor(coordinates.getSheetName());
+            SpreadsheetCellValueAccessor spreadsheetAccessor = getSpreadsheetAccessor();
             return spreadsheetAccessor.getNumericValue(coordinates);
         } catch (ParseException e) {
             logger.error("error parsing coordinates: " + target);

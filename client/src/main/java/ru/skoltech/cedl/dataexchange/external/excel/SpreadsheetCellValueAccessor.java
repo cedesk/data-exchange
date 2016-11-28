@@ -7,7 +7,10 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 
 /**
@@ -17,7 +20,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
 
     private static Logger logger = Logger.getLogger(SpreadsheetCellValueAccessor.class);
     private final String fileName;
-    private Sheet sheet;
+    //private Sheet sheet;
     private Workbook wb;
 
     private FormulaEvaluator formulaEvaluator;
@@ -29,13 +32,11 @@ public class SpreadsheetCellValueAccessor implements Closeable {
      *
      * @param inputStream the stream from which to read the XLS workbook file
      * @param fileName
-     * @param sheetName   the spreadsheet within the workbook
      * @throws IOException in case of problems reading the stream
      */
-    public SpreadsheetCellValueAccessor(InputStream inputStream, String fileName, String sheetName) throws IOException {
+    public SpreadsheetCellValueAccessor(InputStream inputStream, String fileName) throws IOException {
         this.fileName = fileName;
         wb = WorkbookFactory.getWorkbook(inputStream, fileName);
-        sheet = sheetName != null ? wb.getSheet(sheetName) : wb.getSheetAt(0);
         formulaEvaluator = wb.getCreationHelper().createFormulaEvaluator();
         try {
             formulaEvaluator.evaluateAll(); // not guaranteed to work for SXSSF (xlsx)
@@ -44,17 +45,6 @@ public class SpreadsheetCellValueAccessor implements Closeable {
             StatusLogger.getInstance().log("Error while recalculating " + fileName + ". Make sure it does not have external links!", true);
         }
         formulaEvaluator.clearAllCachedResultValues();
-    }
-
-    /**
-     * Opens a spreadsheet file and reads one cell for evaluation
-     *
-     * @param spreadsheetFile the XLS workbook file
-     * @param sheetName       the spreadsheet within the workbook
-     * @throws IOException in case of problems reading the file
-     */
-    public SpreadsheetCellValueAccessor(File spreadsheetFile, String sheetName) throws IOException {
-        this(new FileInputStream(spreadsheetFile), spreadsheetFile.getName(), sheetName);
     }
 
     public static String getValueAsString(Cell cell) {
@@ -155,18 +145,20 @@ public class SpreadsheetCellValueAccessor implements Closeable {
 
     public Cell getCell(SpreadsheetCoordinates cellCoordinates) throws ExternalModelException {
         try {
+            Sheet sheet = null;
             String sheetName = cellCoordinates.getSheetName();
-            if (sheet == null && sheetName != null) {
+            if (sheetName != null) {
+                // TODO: handle invalid sheetname
                 sheet = wb.getSheet(sheetName);
-            }
-            if (sheet == null && sheetName == null) {
+            } else {
                 sheet = wb.getSheetAt(0);
+                logger.debug("accessing spreadsheet without sheetName");
             }
             Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
             Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1, Row.CREATE_NULL_AS_BLANK);
             return cell;
         } catch (Exception e) {
-            throw new ExternalModelException("Error accessing spreadsheet cell: " + cellCoordinates.toString(), e);
+            throw new ExternalModelException("error accessing spreadsheet cell: " + cellCoordinates.toString(), e);
         }
     }
 

@@ -29,7 +29,7 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
         try {
             SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
             if (spreadsheetAccessor == null) {
-                spreadsheetAccessor = getSpreadsheetAccessor(coordinates.getSheetName());
+                spreadsheetAccessor = getSpreadsheetAccessor();
             }
             logger.debug("setting " + value + " on cell " + target + " in " + externalModel.getNodePath());
             spreadsheetAccessor.setNumericValue(coordinates, value);

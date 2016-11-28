@@ -20,7 +20,7 @@ public class SpreadsheetCellValueAccessorTest {
         String fileName = "attachment.xls";
         InputStream inputStream = this.getClass().getResourceAsStream("/" + fileName);
 
-        SpreadsheetCellValueAccessor spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName, null);
+        SpreadsheetCellValueAccessor spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName);
 
         String c4 = spreadsheetAccessor.getValueAsString(SpreadsheetCoordinates.valueOf("C4"));
         Assert.assertEquals("C4", c4);
@@ -52,7 +52,7 @@ public class SpreadsheetCellValueAccessorTest {
         String fileName = "attachment2.xlsx";
         InputStream inputStream = this.getClass().getResourceAsStream("/" + fileName);
 
-        SpreadsheetCellValueAccessor spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName, null);
+        SpreadsheetCellValueAccessor spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName);
 
         String c4 = spreadsheetAccessor.getValueAsString(SpreadsheetCoordinates.valueOf("C4"));
         Assert.assertEquals("C4", c4);
