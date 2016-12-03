@@ -17,12 +17,12 @@ public class ParameterLinkRegistry {
 
     private Map<String, Set<String>> valueLinks = new HashMap<>();
 
-    private DirectedGraph<ModelNode, ModelDependency> dependencyGraph = new SimpleDirectedGraph<>(ModelDependency.class);
+    private DependencyGraph dependencyGraph = new DependencyGraph();
 
     public ParameterLinkRegistry() {
     }
 
-    public DirectedGraph<ModelNode, ModelDependency> getDependencyGraph() {
+    public DependencyGraph getDependencyGraph() {
         return dependencyGraph;
     }
 
@@ -154,7 +154,7 @@ public class ParameterLinkRegistry {
 
     public void clear() {
         valueLinks.clear();
-        dependencyGraph = new SimpleDirectedGraph<>(ModelDependency.class);
+        dependencyGraph = new DependencyGraph();
     }
 
     public String getUpstreamDependencies(ModelNode modelNode) {
@@ -236,6 +236,12 @@ public class ParameterLinkRegistry {
         @Override
         protected ModelNode getTarget() {
             return (ModelNode) super.getTarget();
+        }
+    }
+
+    public static class DependencyGraph extends SimpleDirectedGraph<ModelNode, ModelDependency> {
+        DependencyGraph() {
+            super(ModelDependency.class);
         }
     }
 }

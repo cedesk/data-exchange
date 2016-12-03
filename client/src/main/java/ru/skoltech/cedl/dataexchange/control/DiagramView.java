@@ -13,6 +13,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeLineCap;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import ru.skoltech.cedl.dataexchange.dsm.DependencyModel;
 
 import java.net.URL;
 import java.util.*;
@@ -44,11 +45,6 @@ public class DiagramView extends AnchorPane implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-/*
-        Button refreshButton = new Button("refresh");
-        refreshButton.setOnAction(this::redraw);
-        getChildren().add(refreshButton);
-*/
     }
 
 /*
@@ -72,9 +68,13 @@ public class DiagramView extends AnchorPane implements Initializable {
 */
 
     public void addElement(String name) {
+        addElement(new DependencyModel.Element(name, elements.size()));
+    }
+
+    private void addElement(DependencyModel.Element element) {
+        String name = element.getName();
         if (!elements.containsKey(name)) {
-            int size = elements.size();
-            DiagramElement diagramElement = new DiagramElement(name, size);
+            DiagramElement diagramElement = new DiagramElement(element);
             elements.put(name, diagramElement);
             getChildren().add(diagramElement);
             setPrefWidth(prefWidth(0) + elementPadding);
@@ -83,13 +83,20 @@ public class DiagramView extends AnchorPane implements Initializable {
     }
 
     public void addConnection(String from, String to, String description, int strength) {
-        DiagramElement fromEl = elements.get(from);
-        DiagramElement toEl = elements.get(to);
-        DiagramConnection connection = new DiagramConnection(fromEl, toEl, description, strength);
-        fromConnections.put(from, connection);
-        toConnections.put(to, connection);
-        refineStartingPoints(from);
-        refineEndingPoints(to);
+        DependencyModel.Element fromEl = elements.get(from).element;
+        DependencyModel.Element toEl = elements.get(to).element;
+        addConnection(new DependencyModel.Connection(fromEl, toEl, description, strength));
+    }
+
+    private void addConnection(DependencyModel.Connection mc) {
+        DiagramElement fromEl = elements.get(mc.getFromName());
+        DiagramElement toEl = elements.get(mc.getToName());
+
+        DiagramConnection connection = new DiagramConnection(fromEl, toEl, mc);
+        fromConnections.put(fromEl.getName(), connection);
+        toConnections.put(toEl.getName(), connection);
+        refineStartingPoints(fromEl.getName());
+        refineEndingPoints(toEl.getName());
         getChildren().add(connection);
     }
 
@@ -146,34 +153,42 @@ public class DiagramView extends AnchorPane implements Initializable {
         toConnections.clear();
     }
 
+    public void setModel(DependencyModel dependencyModel) {
+        dependencyModel.elementStream()
+                .sorted()
+                .forEach(this::addElement);
+        dependencyModel.connectionStream().forEach(this::addConnection);
+    }
+
     private static class DiagramElement extends Group {
 
         private boolean isSelected = false;
         private Rectangle rect;
-        private String name;
-        private int position;
+        private DependencyModel.Element element;
 
         private DiagramElement() { // disable default constructor
         }
 
         DiagramElement(String name, int i) {
-            this.name = name;
-            this.position = i;
+            this(new DependencyModel.Element(name, i));
+        }
 
+        DiagramElement(DependencyModel.Element element) {
+            this.element = element;
             rect = new Rectangle(elementWidth, elementHeight);
             rect.setArcWidth(elementPadding);
             rect.setArcHeight(elementPadding);
             rect.setFill(ELEMENT_FILL_COLOR);
             rect.setStrokeWidth(lineWidth);
             rect.setStroke(DEFAULT_CONNECTION_COLOR);
-            Label caption = new Label(name);
+            Label caption = new Label(element.getName());
             caption.setLabelFor(rect);
             caption.setMinWidth(elementWidth);
             caption.setMinHeight(elementHeight);
             caption.setAlignment(Pos.CENTER);
             getChildren().addAll(rect, caption);
-            setLayoutX(elementPadding + i * (elementWidth + elementPadding));
-            setLayoutY(elementPadding + i * (elementHeight + elementPadding));
+            setLayoutX(elementPadding + element.getPosition() * (elementWidth + elementPadding));
+            setLayoutY(elementPadding + element.getPosition() * (elementHeight + elementPadding));
             setOnMouseClicked(event -> {
                 toggleSelection();
             });
@@ -193,11 +208,11 @@ public class DiagramView extends AnchorPane implements Initializable {
         }
 
         public String getName() {
-            return name;
+            return element.getName();
         }
 
         public int getPosition() {
-            return position;
+            return element.getPosition();
         }
 
     }
@@ -207,22 +222,26 @@ public class DiagramView extends AnchorPane implements Initializable {
         static Comparator<DiagramConnection> TO_COMPARATOR = (o1, o2) -> Integer.compare(o2.toEl.getPosition(), o1.toEl.getPosition());
         static Comparator<DiagramConnection> FROM_COMPARATOR = (o1, o2) -> Integer.compare(o2.fromEl.getPosition(), o1.fromEl.getPosition());
 
-        private final DiagramElement fromEl;
-        private final DiagramElement toEl;
-        private final Label caption;
-        private final int strength;
-        private final String description;
-        private final Polyline line;
-        private final Polygon arrow;
+        private DiagramElement fromEl;
+        private DiagramElement toEl;
+
+        private DependencyModel.Connection modelConnection;
         private boolean isSelected = false;
 
+        private Polyline line;
+        private Polygon arrow;
+        private Label caption;
+
         DiagramConnection(DiagramElement fromEl, DiagramElement toEl, String description, int strength) {
+            this(fromEl, toEl, new DependencyModel.Connection(fromEl.element, toEl.element, description, strength));
+        }
+
+        public DiagramConnection(DiagramElement fromEl, DiagramElement toEl, DependencyModel.Connection mc) {
             this.fromEl = fromEl;
             this.toEl = toEl;
-            this.description = description;
-            this.strength = strength;
+            this.modelConnection = mc;
 
-            caption = new Label(description);
+            caption = new Label(mc.getDescription());
             if (isUpper()) {
                 double lxs = fromEl.getLayoutX() + fromEl.minWidth(0);
                 double lys = fromEl.getLayoutY() + fromEl.minHeight(0) / 2;
@@ -242,7 +261,7 @@ public class DiagramView extends AnchorPane implements Initializable {
                 caption.setLayoutX(lxe);
                 caption.setLayoutY(lys);
             }
-            line.setStrokeWidth(lineWidth * strength);
+            line.setStrokeWidth(lineWidth * mc.getStrength());
             line.setStrokeLineCap(StrokeLineCap.BUTT);
             line.setStroke(DEFAULT_CONNECTION_COLOR);
             arrow.setStrokeWidth(1);
@@ -251,6 +270,7 @@ public class DiagramView extends AnchorPane implements Initializable {
             caption.setLabelFor(line);
             caption.setScaleX(CAPTION_SCALE);
             caption.setScaleY(CAPTION_SCALE);
+            // caption.setStyle("-fx-border-width: 1; -fx-border-color: black; -fx-border-style: solid;");
             getChildren().addAll(line, arrow, caption);
             setOnMouseClicked(event -> {
                 toggleSelection();
@@ -258,7 +278,7 @@ public class DiagramView extends AnchorPane implements Initializable {
         }
 
         public String getDescription() {
-            return description;
+            return modelConnection.getDescription();
         }
 
         private void toggleSelection() {
@@ -315,7 +335,7 @@ public class DiagramView extends AnchorPane implements Initializable {
         }
 
         public int getStrength() {
-            return strength;
+            return modelConnection.getStrength();
         }
     }
 }

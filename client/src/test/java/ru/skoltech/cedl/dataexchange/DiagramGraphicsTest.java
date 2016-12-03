@@ -44,7 +44,6 @@ public class DiagramGraphicsTest extends Application {
 
     }
 
-
     private Arc getArc() {
         // A CHORD arc with no fill and a stroke
         Arc arc = new Arc(0, 0, 50, 100, 0, 90);
