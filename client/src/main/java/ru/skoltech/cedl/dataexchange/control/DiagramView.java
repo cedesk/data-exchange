@@ -23,8 +23,11 @@ import java.util.stream.Collectors;
  */
 public class DiagramView extends AnchorPane implements Initializable {
 
-    private static final Color elementColor = Color.LIGHTGREY;
-    private static final Color connectionColor = Color.DARKGREY;
+    private static final Color ELEMENT_FILL_COLOR = Color.LIGHTGREY;
+    private static final Color DEFAULT_CONNECTION_COLOR = Color.DARKGREY;
+    private static final Color SELECTED_ELEMENT_COLOR = Color.DARKRED;
+    private static final Color SELECTED_CONNECTION_COLOR = Color.BLUE;
+
     private static double CAPTION_SCALE = .75;
     private static int elementPadding = 15;
     private static int elementHeight = 50;
@@ -41,7 +44,32 @@ public class DiagramView extends AnchorPane implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+/*
+        Button refreshButton = new Button("refresh");
+        refreshButton.setOnAction(this::redraw);
+        getChildren().add(refreshButton);
+*/
     }
+
+/*
+    private void redraw(ActionEvent actionEvent) {
+        HashMap<String, DiagramElement> oldElements = new HashMap<>(elements);
+        MultiValuedMap<String, DiagramConnection> oldConnections = new ArrayListValuedHashMap<>(fromConnections);
+        reset();
+        for (String elementName : oldElements.keySet()) {
+            addElement(elementName);
+        }
+        for (String fromName : oldConnections.keySet()) {
+            Collection<DiagramConnection> diagramConnections = oldConnections.get(fromName);
+            for (DiagramConnection diagramConnection : diagramConnections) {
+                String toName = diagramConnection.getToName();
+                String description = diagramConnection.getDescription();
+                int strength = diagramConnection.getStrength();
+                addConnection(fromName, toName, description, strength);
+            }
+        }
+    }
+*/
 
     public void addElement(String name) {
         if (!elements.containsKey(name)) {
@@ -120,19 +148,24 @@ public class DiagramView extends AnchorPane implements Initializable {
 
     private static class DiagramElement extends Group {
 
+        private boolean isSelected = false;
+        private Rectangle rect;
         private String name;
         private int position;
+
+        private DiagramElement() { // disable default constructor
+        }
 
         DiagramElement(String name, int i) {
             this.name = name;
             this.position = i;
 
-            Rectangle rect = new Rectangle(elementWidth, elementHeight);
+            rect = new Rectangle(elementWidth, elementHeight);
             rect.setArcWidth(elementPadding);
             rect.setArcHeight(elementPadding);
-            rect.setFill(elementColor);
+            rect.setFill(ELEMENT_FILL_COLOR);
             rect.setStrokeWidth(lineWidth);
-            rect.setStroke(connectionColor);
+            rect.setStroke(DEFAULT_CONNECTION_COLOR);
             Label caption = new Label(name);
             caption.setLabelFor(rect);
             caption.setMinWidth(elementWidth);
@@ -141,6 +174,22 @@ public class DiagramView extends AnchorPane implements Initializable {
             getChildren().addAll(rect, caption);
             setLayoutX(elementPadding + i * (elementWidth + elementPadding));
             setLayoutY(elementPadding + i * (elementHeight + elementPadding));
+            setOnMouseClicked(event -> {
+                toggleSelection();
+            });
+        }
+
+        public boolean isSelected() {
+            return this.isSelected;
+        }
+
+        public void setSelected(boolean selected) {
+            this.isSelected = selected;
+            rect.strokeProperty().set(isSelected ? SELECTED_ELEMENT_COLOR : DEFAULT_CONNECTION_COLOR);
+        }
+
+        private void toggleSelection() {
+            setSelected(!isSelected);
         }
 
         public String getName() {
@@ -150,6 +199,7 @@ public class DiagramView extends AnchorPane implements Initializable {
         public int getPosition() {
             return position;
         }
+
     }
 
     private static class DiagramConnection extends Group {
@@ -162,8 +212,9 @@ public class DiagramView extends AnchorPane implements Initializable {
         private final Label caption;
         private final int strength;
         private final String description;
-        private Polyline line;
-        private Polygon arrow;
+        private final Polyline line;
+        private final Polygon arrow;
+        private boolean isSelected = false;
 
         DiagramConnection(DiagramElement fromEl, DiagramElement toEl, String description, int strength) {
             this.fromEl = fromEl;
@@ -193,18 +244,36 @@ public class DiagramView extends AnchorPane implements Initializable {
             }
             line.setStrokeWidth(lineWidth * strength);
             line.setStrokeLineCap(StrokeLineCap.BUTT);
-            line.setStroke(connectionColor);
+            line.setStroke(DEFAULT_CONNECTION_COLOR);
             arrow.setStrokeWidth(1);
-            arrow.setStroke(connectionColor);
-            arrow.setFill(connectionColor);
+            arrow.setStroke(DEFAULT_CONNECTION_COLOR);
+            arrow.setFill(DEFAULT_CONNECTION_COLOR);
             caption.setLabelFor(line);
             caption.setScaleX(CAPTION_SCALE);
             caption.setScaleY(CAPTION_SCALE);
             getChildren().addAll(line, arrow, caption);
+            setOnMouseClicked(event -> {
+                toggleSelection();
+            });
         }
 
         public String getDescription() {
             return description;
+        }
+
+        private void toggleSelection() {
+            setSelected(!isSelected);
+        }
+
+        public boolean isSelected() {
+            return this.isSelected;
+        }
+
+        public void setSelected(boolean selected) {
+            this.isSelected = selected;
+            line.strokeProperty().set(isSelected ? SELECTED_CONNECTION_COLOR : DEFAULT_CONNECTION_COLOR);
+            arrow.strokeProperty().set(isSelected ? SELECTED_CONNECTION_COLOR : DEFAULT_CONNECTION_COLOR);
+            arrow.fillProperty().set(isSelected ? SELECTED_CONNECTION_COLOR : DEFAULT_CONNECTION_COLOR);
         }
 
         void setStartDisplacement(int numberOfConnections, int index) {
@@ -235,6 +304,18 @@ public class DiagramView extends AnchorPane implements Initializable {
 
         boolean isLower() {
             return fromEl.getPosition() > toEl.getPosition();
+        }
+
+        String getFromName() {
+            return fromEl.getName();
+        }
+
+        String getToName() {
+            return toEl.getName();
+        }
+
+        public int getStrength() {
+            return strength;
         }
     }
 }
