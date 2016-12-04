@@ -25,6 +25,7 @@ import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.controller.UserNotifications;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.AttributeDifference;
 import ru.skoltech.cedl.dataexchange.structure.view.ModelDifferencesFactory;

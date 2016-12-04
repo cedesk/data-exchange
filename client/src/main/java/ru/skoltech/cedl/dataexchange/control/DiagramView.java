@@ -13,7 +13,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeLineCap;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import ru.skoltech.cedl.dataexchange.dsm.DependencyModel;
+import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 
 import java.net.URL;
 import java.util.*;
@@ -155,7 +155,7 @@ public class DiagramView extends AnchorPane implements Initializable {
 
     public void setModel(DependencyModel dependencyModel) {
         dependencyModel.elementStream()
-                .sorted()
+                .sorted(DependencyModel.Element.POSITION_COMPARATOR)
                 .forEach(this::addElement);
         dependencyModel.connectionStream().forEach(this::addConnection);
     }
@@ -167,10 +167,6 @@ public class DiagramView extends AnchorPane implements Initializable {
         private DependencyModel.Element element;
 
         private DiagramElement() { // disable default constructor
-        }
-
-        DiagramElement(String name, int i) {
-            this(new DependencyModel.Element(name, i));
         }
 
         DiagramElement(DependencyModel.Element element) {
@@ -231,10 +227,6 @@ public class DiagramView extends AnchorPane implements Initializable {
         private Polyline line;
         private Polygon arrow;
         private Label caption;
-
-        DiagramConnection(DiagramElement fromEl, DiagramElement toEl, String description, int strength) {
-            this(fromEl, toEl, new DependencyModel.Connection(fromEl.element, toEl.element, description, strength));
-        }
 
         public DiagramConnection(DiagramElement fromEl, DiagramElement toEl, DependencyModel.Connection mc) {
             this.fromEl = fromEl;

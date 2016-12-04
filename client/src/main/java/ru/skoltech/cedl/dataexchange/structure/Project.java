@@ -15,6 +15,7 @@ import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.ChangeLocation;
 import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;

@@ -1,12 +1,9 @@
-package ru.skoltech.cedl.dataexchange.dsm;
+package ru.skoltech.cedl.dataexchange.structure.analytics;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -62,6 +59,8 @@ public class DependencyModel {
     }
 
     public static class Element implements Comparable<Element> {
+        public static final Comparator<Element> POSITION_COMPARATOR = (o1, o2) -> Integer.compare(o2.getPosition(), o1.getPosition());
+
         private String name;
         private int position;
 

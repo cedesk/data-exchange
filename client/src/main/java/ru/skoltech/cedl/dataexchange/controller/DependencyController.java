@@ -21,23 +21,18 @@ import org.jgrapht.DirectedGraph;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.control.DiagramView;
-import ru.skoltech.cedl.dataexchange.dsm.DependencyModel;
-import ru.skoltech.cedl.dataexchange.dsm.DependencyModelFactory;
-import ru.skoltech.cedl.dataexchange.dsm.NumericalDSM;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
+import ru.skoltech.cedl.dataexchange.structure.analytics.NumericalDSM;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -124,13 +119,8 @@ public class DependencyController implements Initializable {
     public void refreshView(ActionEvent actionEvent) {
         Project project = ProjectContext.getInstance().getProject();
         SystemModel systemModel = project.getSystemModel();
-        List<SubSystemModel> subNodes = systemModel.getSubNodes();
-        List<ModelNode> modelNodeList = new ArrayList<>(subNodes.size() + 1);
-        modelNodeList.add(systemModel);
-        modelNodeList.addAll(subNodes);
-
-        ParameterLinkRegistry.DependencyGraph dependencyGraph = project.getParameterLinkRegistry().getDependencyGraph();
-        DependencyModel dependencyModel = DependencyModelFactory.makeModel(systemModel, dependencyGraph);
+        ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
+        DependencyModel dependencyModel = parameterLinkRegistry.getDependencyModel(systemModel);
 
         if (mode == ViewMode.DSM) {
             spreadsheetView.setShowRowHeader(true);
@@ -147,7 +137,7 @@ public class DependencyController implements Initializable {
     private Grid getDSMGrid(DependencyModel dependencyModel) {
         List<DependencyModel.Element> vertices = dependencyModel.elementStream().sorted().collect(Collectors.toList());
         final int matrixSize = vertices.size();
-        List<String> vertexNames = vertices.stream().map(DependencyModel.Element::getName).collect(Collectors.toList());
+        Collection<String> vertexNames = vertices.stream().map(DependencyModel.Element::getName).collect(Collectors.toList());
         final GridBase grid = new GridBase(matrixSize, matrixSize);
         grid.getRowHeaders().addAll(vertexNames);
         grid.getColumnHeaders().addAll(vertexNames);
@@ -179,9 +169,9 @@ public class DependencyController implements Initializable {
     public void generateCode(ActionEvent actionEvent) {
         final Project project = ProjectContext.getInstance().getProject();
         final SystemModel systemModel = project.getSystemModel();
-        ParameterLinkRegistry.DependencyGraph dependencyGraph = project.getParameterLinkRegistry().getDependencyGraph();
+        ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
 
-        NumericalDSM dsm = DependencyModelFactory.makeNumericalDSM(systemModel, dependencyGraph);
+        NumericalDSM dsm = parameterLinkRegistry.makeNumericalDSM(systemModel);
         boolean weighted = weightedDsmCheckbox.isSelected();
         String code = dsm.getMatlabCode(weighted);
         copyTextToClipboard(code);

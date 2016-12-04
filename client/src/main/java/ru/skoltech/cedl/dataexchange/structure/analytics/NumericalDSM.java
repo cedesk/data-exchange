@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange.dsm;
+package ru.skoltech.cedl.dataexchange.structure.analytics;
 
 import org.apache.commons.lang3.tuple.Triple;
 
