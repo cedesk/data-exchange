@@ -154,6 +154,7 @@ public class DiagramView extends AnchorPane implements Initializable {
     }
 
     public void setModel(DependencyModel dependencyModel) {
+        reset();
         dependencyModel.elementStream()
                 .sorted(DependencyModel.Element.POSITION_COMPARATOR)
                 .forEach(this::addElement);

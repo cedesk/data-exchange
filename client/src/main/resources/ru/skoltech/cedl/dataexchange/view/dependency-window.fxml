@@ -44,6 +44,12 @@
                                 <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
                             </graphic>
                         </Button>
+                        <fx:define>
+                            <ToggleGroup fx:id="sortOrderGroup"/>
+                        </fx:define>
+                        <RadioButton fx:id="sortOrderDefault" mnemonicParsing="false" selected="true" text="Default" toggleGroup="$sortOrderGroup" />
+                        <RadioButton fx:id="sortOrderPriority" mnemonicParsing="false"  text="Priority" toggleGroup="$sortOrderGroup"/>
+                        <RadioButton fx:id="sortOrderAlphabetical" mnemonicParsing="false" text="Alphabetic" toggleGroup="$sortOrderGroup" />
                         <Pane HBox.hgrow="ALWAYS"/>
                         <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
                             <tooltip>

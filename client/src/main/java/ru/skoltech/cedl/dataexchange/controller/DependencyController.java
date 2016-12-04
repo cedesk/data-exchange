@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.WritableImage;
@@ -26,6 +27,7 @@ import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.NumericalDSM;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import javax.imageio.ImageIO;
@@ -52,10 +54,19 @@ public class DependencyController implements Initializable {
     private SpreadsheetView spreadsheetView;
 
     @FXML
-    private DiagramView diagramView;
+    private CheckBox weightedDsmCheckbox;
 
     @FXML
-    private CheckBox weightedDsmCheckbox;
+    private RadioButton sortOrderDefault;
+
+    @FXML
+    private RadioButton sortOrderAlphabetical;
+
+    @FXML
+    private RadioButton sortOrderPriority;
+
+    @FXML
+    private DiagramView diagramView;
 
     private ViewMode mode;
 
@@ -129,8 +140,27 @@ public class DependencyController implements Initializable {
             spreadsheetView.setContextMenu(null);
 
         } else {
+            if (sortOrderDefault.isSelected()) {
+                HashMap<String, Integer> originalPositions = new HashMap<>();
+                originalPositions.put(systemModel.getName(), 0);
+                List<SubSystemModel> subNodes = systemModel.getSubNodes();
+                for (int i = 0; i < subNodes.size(); i++) {
+                    originalPositions.put(subNodes.get(i).getName(), i + 1);
+                }
+                dependencyModel.elementStream()
+                        .forEach(element -> element.setPosition(originalPositions.get(element.getName())));
+            } else if (sortOrderPriority.isSelected()) {
+                final int[] position = {0};
+                dependencyModel.elementStream()
+                        .sorted(dependencyModel.priorityComparator)
+                        .forEach(element -> element.setPosition(position[0]++));
+            } else {
+                final int[] position = {0};
+                dependencyModel.elementStream()
+                        .sorted(Comparator.comparing(DependencyModel.Element::getName))
+                        .forEach(element -> element.setPosition(position[0]++));
+            }
             diagramView.setModel(dependencyModel);
-
         }
     }
 

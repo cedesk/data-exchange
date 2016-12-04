@@ -11,20 +11,12 @@ import java.util.stream.Stream;
  */
 public class DependencyModel {
 
-    MultiValuedMap<Element, Connection> fromConnections = new ArrayListValuedHashMap<>();
-    MultiValuedMap<Element, Connection> toConnections = new ArrayListValuedHashMap<>();
+    private MultiValuedMap<Element, Connection> fromConnections = new ArrayListValuedHashMap<>();
+    public final Comparator<Element> priorityComparator = Comparator.comparingInt(this::getOutgoingConnections).reversed();
+    private MultiValuedMap<Element, Connection> toConnections = new ArrayListValuedHashMap<>();
     private HashMap<String, Element> elements = new HashMap<>();
 
-    public DependencyModel() {
-    }
-
-    public void reset() {
-        elements.clear();
-        fromConnections.clear();
-        toConnections.clear();
-    }
-
-    public void addElement(String name) {
+    void addElement(String name) {
         if (!elements.containsKey(name)) {
             int size = elements.size();
             Element diagramElement = new Element(name, size);
@@ -32,7 +24,7 @@ public class DependencyModel {
         }
     }
 
-    public void addConnection(String fromName, String toName, String description, int strength) {
+    void addConnection(String fromName, String toName, String description, int strength) {
         Element fromEl = elements.get(fromName);
         Element toEl = elements.get(toName);
         Connection connection = new Connection(fromEl, toEl, description, strength);
@@ -50,6 +42,10 @@ public class DependencyModel {
                 .map(Map.Entry::getValue);
     }
 
+    public int getOutgoingConnections(Element element) {
+        return fromConnections.get(element).stream().mapToInt(Connection::getStrength).sum();
+    }
+
     public Connection getConnection(Element fromEl, Element toEl) {
         Collection<Connection> froms = new ArrayList<>(fromConnections.get(fromEl));
         Collection<Connection> tos = toConnections.get(toEl);
@@ -59,7 +55,7 @@ public class DependencyModel {
     }
 
     public static class Element implements Comparable<Element> {
-        public static final Comparator<Element> POSITION_COMPARATOR = (o1, o2) -> Integer.compare(o2.getPosition(), o1.getPosition());
+        public static final Comparator<Element> POSITION_COMPARATOR = Comparator.comparingInt(Element::getPosition);
 
         private String name;
         private int position;
