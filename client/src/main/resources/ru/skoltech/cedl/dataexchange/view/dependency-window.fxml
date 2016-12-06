@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <?import ru.skoltech.cedl.dataexchange.control.DiagramView?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/null"
-            fx:controller="ru.skoltech.cedl.dataexchange.controller.DependencyController"
-            stylesheets="@styling.css" prefHeight="600.0" prefWidth="900.0">
+<AnchorPane prefHeight="600.0" prefWidth="900.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.DependencyController">
     <children>
         <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                     AnchorPane.topAnchor="0.0">
@@ -33,7 +34,7 @@
                             </graphic>
                         </Button>
                         <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                                  GridPane.columnIndex="1" text="Generate weighted DSM"/>
+                                  text="Generate weighted DSM" GridPane.columnIndex="1"/>
                     </ToolBar>
                     <ToolBar fx:id="nSquareToolbar">
                         <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
@@ -44,12 +45,17 @@
                                 <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
                             </graphic>
                         </Button>
-                        <fx:define>
-                            <ToggleGroup fx:id="sortOrderGroup"/>
-                        </fx:define>
-                        <RadioButton fx:id="sortOrderDefault" mnemonicParsing="false" selected="true" text="Default" toggleGroup="$sortOrderGroup" />
-                        <RadioButton fx:id="sortOrderPriority" mnemonicParsing="false"  text="Priority" toggleGroup="$sortOrderGroup"/>
-                        <RadioButton fx:id="sortOrderAlphabetical" mnemonicParsing="false" text="Alphabetic" toggleGroup="$sortOrderGroup" />
+                        <Label text="Sequence">
+                            <padding>
+                                <Insets left="12.0"/>
+                            </padding>
+                        </Label>
+                        <RadioButton fx:id="sortOrderDefault" mnemonicParsing="false" selected="true" text="Default"
+                                     toggleGroup="$sortOrderGroup"/>
+                        <RadioButton fx:id="sortOrderPriority" mnemonicParsing="false" text="Priority"
+                                     toggleGroup="$sortOrderGroup"/>
+                        <RadioButton fx:id="sortOrderAlphabetical" mnemonicParsing="false" text="Alphabetic"
+                                     toggleGroup="$sortOrderGroup"/>
                         <Pane HBox.hgrow="ALWAYS"/>
                         <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
                             <tooltip>
@@ -59,15 +65,18 @@
                                 <Glyph fontFamily="FontAwesome" icon="SAVE"/>
                             </graphic>
                         </Button>
+                        <fx:define>
+                            <ToggleGroup fx:id="sortOrderGroup"/>
+                        </fx:define>
                     </ToolBar>
                 </StackPane>
             </top>
             <center>
                 <StackPane>
-                    <SpreadsheetView fx:id="spreadsheetView" editable="false" prefWidth="500.0" prefHeight="400"
-                                     BorderPane.alignment="CENTER" visible="false"/>
-                    <DiagramView fx:id="diagramView" prefWidth="500.0" prefHeight="400"
-                                 BorderPane.alignment="TOP_RIGHT" visible="false"/>
+                    <SpreadsheetView fx:id="spreadsheetView" editable="false" prefHeight="400" prefWidth="500.0"
+                                     visible="false" BorderPane.alignment="CENTER"/>
+                    <DiagramView fx:id="diagramView" prefHeight="400" prefWidth="500.0" visible="false"
+                                 BorderPane.alignment="TOP_RIGHT"/>
                 </StackPane>
             </center>
         </BorderPane>
