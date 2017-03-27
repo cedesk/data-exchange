@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.web.WebView;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.GuiUtils;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -20,6 +21,6 @@ public class AboutController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        MainController.loadWebView(contentView, getClass(), "about.html");
+        GuiUtils.loadWebView(contentView, getClass(), "about.html");
     }
 }

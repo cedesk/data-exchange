@@ -5,8 +5,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -23,7 +21,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -60,9 +57,9 @@ public class MainController implements Initializable {
     private final Project project = new Project();
 
     private final RepositoryWatcher repositoryWatcher = new RepositoryWatcher(project);
+
     @FXML
     public WebView guideView;
-
     @FXML
     private MenuItem exportMenu;
     @FXML
@@ -91,30 +88,8 @@ public class MainController implements Initializable {
     private AnchorPane applicationPane;
     @FXML
     private BorderPane layoutPane;
-    private StringProperty statusbarProperty = new SimpleStringProperty();
 
     private ModelEditingController modelEditingController;
-
-    public static void loadWebView(WebView guideView, Class resourceClass, String filename) {
-        URL fileLocation = resourceClass.getResource(filename);
-        String baseLocation = fileLocation.toExternalForm().replace(filename, "");
-        String content = "";
-        try (InputStream in = fileLocation.openStream()) {
-            content = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
-        } catch (IOException e) {
-            logger.error("Error loading web content from ressource", e);
-        }
-        WebEngine webEngine = guideView.getEngine();
-        webEngine.getLoadWorker().exceptionProperty().addListener(new ChangeListener<Throwable>() {
-            @Override
-            public void changed(ObservableValue<? extends Throwable> observableValue, Throwable oldThrowable, Throwable newThrowable) {
-                logger.error("Load exception ", newThrowable);
-            }
-        });
-        content = content.replace("src=\"", "src=\"" + baseLocation);
-
-        webEngine.loadContent(content);
-    }
 
     public void newProject(ActionEvent actionEvent) {
         Optional<String> choice = Dialogues.inputStudyName(Project.DEFAULT_PROJECT_NAME);
@@ -289,7 +264,7 @@ public class MainController implements Initializable {
 
         // GUIDE
         Platform.runLater(() -> {
-            loadWebView(guideView, getClass(), "guide.html");
+            GuiUtils.loadWebView(guideView, getClass(), "guide.html");
         });
     }
 
