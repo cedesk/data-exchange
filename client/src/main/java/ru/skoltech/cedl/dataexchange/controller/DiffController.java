@@ -17,10 +17,10 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.view.ChangeLocation;
-import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.view.ModelDifferencesFactory;
-import ru.skoltech.cedl.dataexchange.structure.view.ParameterDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ChangeLocation;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifferencesFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 
 import java.net.URL;
 import java.util.LinkedList;

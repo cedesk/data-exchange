@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange.structure.view;
+package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
@@ -33,7 +33,6 @@ public class StudyDifference extends ModelDifference {
         ChangeLocation changeLocation = n2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
         return new StudyDifference(study1, study2, attribute, ChangeType.CHANGE_STUDY, changeLocation, value1, value2);
     }
-
 
     @Override
     public String getNodeName() {

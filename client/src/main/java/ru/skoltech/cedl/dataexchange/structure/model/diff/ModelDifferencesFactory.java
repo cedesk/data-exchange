@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange.structure.view;
+package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
