@@ -1,9 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.view;
 
-import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.util.*;
 import java.util.function.Function;
@@ -13,6 +11,37 @@ import java.util.stream.Collectors;
  * Created by D.Knoll on 20.07.2015.
  */
 public class ModelDifferencesFactory {
+
+    public static List<ModelDifference> computeDifferences(Study s1, Study s2) {
+        List<ModelDifference> modelDifferences = new LinkedList<>();
+
+        Long lmm1 = s1.getLatestModelModification();
+        Long lmm2 = s2.getLatestModelModification();
+        if (!Objects.equals(lmm1, lmm2)) {
+            modelDifferences.add(StudyDifference.createStudyAttributesModified(s1, s2, "latestModelModification", lmm1.toString(), lmm2.toString()));
+        }
+
+        long s1Version = s1.getVersion();
+        long s2Version = s2.getVersion();
+        if (s1Version != s2Version) {
+            modelDifferences.add(StudyDifference.createStudyAttributesModified(s1, s2, "version", Long.toString(s1Version), Long.toString(s2Version)));
+        }
+
+        UserRoleManagement urm1 = s1.getUserRoleManagement();
+        UserRoleManagement urm2 = s2.getUserRoleManagement();
+        if (!urm1.equals(urm2)) {
+            modelDifferences.add(StudyDifference.createStudyAttributesModified(s1, s2, "userRoleManagement", "<>", "<>"));
+        }
+
+        StudySettings ss1 = s1.getStudySettings();
+        StudySettings ss2 = s1.getStudySettings();
+        if (!ss1.equals(ss2)) {
+            modelDifferences.add(StudyDifference.createStudyAttributesModified(s1, s2, "studySettings", "<>", "<>"));
+        }
+
+        modelDifferences.addAll(computeDifferences(s1.getSystemModel(), s2.getSystemModel()));
+        return modelDifferences;
+    }
 
     public static List<ModelDifference> computeDifferences(ModelNode m1, ModelNode m2) {
         LinkedList<ModelDifference> modelDifferences = new LinkedList<>();

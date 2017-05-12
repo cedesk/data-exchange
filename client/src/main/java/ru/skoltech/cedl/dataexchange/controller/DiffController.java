@@ -15,7 +15,8 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 
 import java.net.URL;
@@ -39,10 +40,6 @@ public class DiffController implements Initializable {
     @FXML
     private TableColumn<ModelDifference, String> actionColumn;
 
-    private SystemModel localSystemModel;
-
-    private SystemModel remoteSystemModel;
-
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
     @Override
@@ -62,11 +59,11 @@ public class DiffController implements Initializable {
         //revertAllButton.disableProperty().bind(project.canSyncProperty().not());;
     }
 
-    public void setSystemModels(SystemModel local, SystemModel remote) {
-        this.localSystemModel = local;
-        this.remoteSystemModel = remote;
+    public void setProject(Project project) {
+        Study localStudy = project.getStudy();
+        Study remoteStudy = project.getRepositoryStudy();
         ProjectContext.getInstance().getProject().updateExternalModelsInStudy();
-        List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
+        List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localStudy, remoteStudy);
         modelDifferences.clear();
         modelDifferences.addAll(modelDiffs);
     }

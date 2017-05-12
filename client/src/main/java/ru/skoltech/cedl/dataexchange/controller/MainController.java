@@ -3,8 +3,6 @@ package ru.skoltech.cedl.dataexchange.controller;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -39,7 +37,8 @@ import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -560,8 +559,10 @@ public class MainController implements Initializable {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
 
+            // update from repository
+            project.loadRepositoryStudy();
             DiffController controller = loader.getController();
-            controller.setSystemModels(project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
+            controller.setProject(project);
             stage.showAndWait();
             modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
         } catch (IOException e) {
