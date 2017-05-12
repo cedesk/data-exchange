@@ -42,7 +42,7 @@ public class NodeDifference extends ModelDifference {
     public static NodeDifference createNodeAttributesModified(ModelNode node1, ModelNode node2, String attribute,
                                                               String value1, String value2) {
 
-        boolean n2newer = firstIsNewer(node2, node1);
+        boolean n2newer = node2.isNewerThan(node1);
         ChangeLocation changeLocation = n2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
         return new NodeDifference(node1, node2, attribute, ChangeType.CHANGE_NODE_ATTRIBUTE, changeLocation, value1, value2);
     }

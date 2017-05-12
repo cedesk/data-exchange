@@ -51,7 +51,7 @@ public class ParameterDifference extends ModelDifference {
             sbValues1.append(diff.value1);
             sbValues2.append(diff.value2);
         }
-        boolean p2newer = firstIsNewer(parameter2, parameter1);
+        boolean p2newer = parameter2.isNewerThan(parameter1);
         ChangeLocation changeLocation = p2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
         return new ParameterDifference(parameter1, parameter2, ChangeType.MODIFY_PARAMETER, changeLocation, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString());
     }
