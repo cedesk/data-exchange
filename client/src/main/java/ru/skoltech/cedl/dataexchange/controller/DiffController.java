@@ -17,7 +17,10 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.view.*;
+import ru.skoltech.cedl.dataexchange.structure.view.ChangeLocation;
+import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.view.ModelDifferencesFactory;
+import ru.skoltech.cedl.dataexchange.structure.view.ParameterDifference;
 
 import java.net.URL;
 import java.util.LinkedList;
@@ -69,21 +72,15 @@ public class DiffController implements Initializable {
     }
 
     private boolean mergeOne(ModelDifference modelDifference) {
+        logger.debug("merging " + modelDifference.getNodeName() + "::" + modelDifference.getParameterName());
+        modelDifference.mergeDifference();
         if (modelDifference instanceof ParameterDifference) {
-            logger.debug("merging " + modelDifference.getNodeName() + "::" + modelDifference.getParameterName());
             ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
-            parameterDifference.mergeDifference();
             // TODO: update sinks
             //ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
             //parameterLinkRegistry.updateSinks(parameterDifference.getParameter());
-            return true;
-        } else if (modelDifference instanceof NodeDifference) {
-            logger.debug("accepting differences on " + modelDifference.getNodeName());
-            NodeDifference nodeDifference = (NodeDifference) modelDifference;
-            nodeDifference.mergeDifference(); // may fail, inform user about cause
-            return true;
         }
-        return false;
+        return true;
     }
 
     private void handleDifference(ActionEvent actionEvent) {

@@ -23,6 +23,8 @@ public abstract class ModelDifference {
 
     abstract public boolean isMergeable();
 
+    public abstract void mergeDifference();
+
     public String getAttribute() {
         return attribute;
     }

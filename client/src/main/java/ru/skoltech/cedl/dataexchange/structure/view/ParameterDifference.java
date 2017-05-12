@@ -88,6 +88,7 @@ public class ParameterDifference extends ModelDifference {
                 || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.REMOVE_PARAMETER);
     }
 
+    @Override
     public void mergeDifference() {
         if (changeType == ChangeType.MODIFY_PARAMETER) {
             Objects.requireNonNull(parameter1);

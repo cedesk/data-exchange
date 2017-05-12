@@ -82,6 +82,7 @@ public class NodeDifference extends ModelDifference {
         return changeType == ChangeType.CHANGE_EXTERNAL_MODEL;
     }
 
+    @Override
     public void mergeDifference() {
         if (changeType == ChangeType.CHANGE_EXTERNAL_MODEL) {
             Objects.requireNonNull(node1);

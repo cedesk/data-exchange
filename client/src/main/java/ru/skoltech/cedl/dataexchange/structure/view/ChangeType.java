@@ -4,6 +4,11 @@ package ru.skoltech.cedl.dataexchange.structure.view;
  * Created by D.Knoll on 20.07.2015.
  */
 public enum ChangeType {
+    CHANGE_STUDY {
+        public String toString() {
+            return "change study";
+        }
+    },
     ADD_NODE {
         public String toString() {
             return "add node";

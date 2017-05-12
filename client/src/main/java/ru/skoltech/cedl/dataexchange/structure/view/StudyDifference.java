@@ -29,9 +29,9 @@ public class StudyDifference extends ModelDifference {
     public static StudyDifference createStudyAttributesModified(Study study1, Study study2, String attribute,
                                                                 String value1, String value2) {
 
-        boolean n2newer = study2.getLatestModelModification() > study2.getLatestModelModification();
+        boolean n2newer = study2.getLatestModelModification() > study1.getLatestModelModification();
         ChangeLocation changeLocation = n2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
-        return new StudyDifference(study1, study2, attribute, ChangeType.CHANGE_NODE_ATTRIBUTE, changeLocation, value1, value2);
+        return new StudyDifference(study1, study2, attribute, ChangeType.CHANGE_STUDY, changeLocation, value1, value2);
     }
 
 
@@ -50,6 +50,7 @@ public class StudyDifference extends ModelDifference {
         return false;
     }
 
+    @Override
     public void mergeDifference() {
     }
 
