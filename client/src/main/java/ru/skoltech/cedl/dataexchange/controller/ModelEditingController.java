@@ -125,7 +125,7 @@ public class ModelEditingController implements Initializable {
         structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
             @Override
             public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
-                return new TextFieldTreeCell();
+                return new TextFieldTreeCell(false);
             }
         });
         structureTree.setOnEditCommit(new EventHandler<TreeView.EditEvent<ModelNode>>() {
@@ -589,11 +589,8 @@ public class ModelEditingController implements Initializable {
         return structureTree.getSelectionModel().getSelectedItem();
     }
 
-    public Window getAppWindow() {
-        if (appWindow == null) {
-            appWindow = viewPane.getScene().getWindow();
-        }
-        return appWindow;
+    private Window getAppWindow() {
+        return viewPane.getScene().getWindow();
     }
 
     private void lightTableRefresh() {

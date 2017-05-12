@@ -20,11 +20,13 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
 
     private TextField textField;
 
-    public TextFieldTreeCell() {
+    public TextFieldTreeCell(boolean editable) {
+        this.setEditable(editable);
     }
 
     @Override
     public void startEdit() {
+        if (!isEditable()) return;
         super.startEdit();
 
         if (textField == null) {
