@@ -84,7 +84,7 @@ public class DisciplineSubSystem {
         DisciplineSubSystem that = (DisciplineSubSystem) o;
 
         if (!discipline.equals(that.discipline)) return false;
-        return subSystem.equals(that.subSystem);
+        return subSystem.getUuid().equals(that.subSystem.getUuid());
     }
 
     @Override
