@@ -99,6 +99,14 @@ public class Dialogues {
         return yesNoDialog.showAndWait();
     }
 
+    public static Optional<ButtonType> chooseOkCancel(String title, String text) {
+        Alert yesNoDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        yesNoDialog.setHeaderText(title);
+        yesNoDialog.setContentText(text);
+        yesNoDialog.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+        return yesNoDialog.showAndWait();
+    }
+
     public static void showError(String title, String text) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText(title);

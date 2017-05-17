@@ -170,7 +170,10 @@ public class MainController implements Initializable {
             }
             boolean hasRemoteChanges = project.checkRepositoryForChanges();
             if (hasRemoteChanges) {
-                Dialogues.showWarning("Repository has changes", "Please review differences and then retry!");
+                Optional<ButtonType> buttonType = Dialogues.chooseOkCancel("Repository has changes", "Review differences?");
+                if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
+                    openDiffView(actionEvent);
+                }
                 return;
             }
             project.storeLocalStudy();
@@ -648,7 +651,7 @@ public class MainController implements Initializable {
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.setTitle("User Management");
+            stage.setTitle("User Role Management");
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
