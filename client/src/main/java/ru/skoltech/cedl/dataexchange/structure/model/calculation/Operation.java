@@ -1,14 +1,21 @@
 package ru.skoltech.cedl.dataexchange.structure.model.calculation;
 
+import org.hibernate.annotations.Immutable;
+
+import javax.persistence.MappedSuperclass;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import java.io.Serializable;
 
 /**
  * Created by D.Knoll on 23.09.2015.
  */
+
+@MappedSuperclass
+@Immutable
 @XmlRootElement
 @XmlSeeAlso({Sum.class, Margin.class, Min.class, Max.class})
-public abstract class Operation implements Comparable<Operation> {
+public abstract class Operation implements Comparable<Operation>, Serializable {
 
     public abstract String name();
 

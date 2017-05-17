@@ -588,26 +588,36 @@ public class DatabaseStorage implements Repository {
     }
 
     public List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException {
-        final AuditReader reader = AuditReaderFactory.get(getEntityManager());
-        final long pk = parameterModel.getId();
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            final AuditReader reader = AuditReaderFactory.get(entityManager);
+            final long pk = parameterModel.getId();
 
-        List<Object[]> revisions = reader.createQuery()
-                .forRevisionsOfEntity(ParameterModel.class, false, true)
-                .add(AuditEntity.id().eq(pk))
-                .addOrder(AuditEntity.revisionNumber().desc())
-                .getResultList();
+            List<Object[]> revisions = reader.createQuery()
+                    .forRevisionsOfEntity(ParameterModel.class, false, true)
+                    .add(AuditEntity.id().eq(pk))
+                    .addOrder(AuditEntity.revisionNumber().desc())
+                    .getResultList();
 
-        List<ParameterRevision> revisionList = new ArrayList<>(revisions.size());
-        for (Object[] array : revisions) {
-            ParameterModel versionedParameterModel = (ParameterModel) array[0];
-            CustomRevisionEntity revisionEntity = (CustomRevisionEntity) array[1];
-            RevisionType revisionType = (RevisionType) array[2];
+            List<ParameterRevision> revisionList = new ArrayList<>(revisions.size());
+            for (Object[] array : revisions) {
+                ParameterModel versionedParameterModel = (ParameterModel) array[0];
+                CustomRevisionEntity revisionEntity = (CustomRevisionEntity) array[1];
+                RevisionType revisionType = (RevisionType) array[2];
 
-            ParameterRevision parameterRevision = new ParameterRevision(versionedParameterModel, revisionEntity, revisionType);
-            revisionList.add(parameterRevision);
+                ParameterRevision parameterRevision = new ParameterRevision(versionedParameterModel, revisionEntity, revisionType);
+                revisionList.add(parameterRevision);
+            }
+
+            return revisionList;
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
         }
-
-        return revisionList;
     }
 
     @Override
@@ -726,7 +736,7 @@ public class DatabaseStorage implements Repository {
                 '}';
     }
 
-    private EntityManager getEntityManager() throws RepositoryException {
+    public EntityManager getEntityManager() throws RepositoryException {
         if (emf == null) {
             try {
                 emf = Persistence.createEntityManagerFactory(persistenceUnit, properties);
