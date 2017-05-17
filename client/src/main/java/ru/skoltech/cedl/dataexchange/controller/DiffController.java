@@ -16,11 +16,15 @@ import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ChangeLocation;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
+import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
+import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.net.URL;
 import java.util.LinkedList;
@@ -65,8 +69,9 @@ public class DiffController implements Initializable {
     public void setProject(Project project) {
         Study localStudy = project.getStudy();
         Study remoteStudy = project.getRepositoryStudy();
+        long latestLoadedModification = project.getLatestLoadedModification();
         ProjectContext.getInstance().getProject().updateExternalModelsInStudy();
-        List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localStudy, remoteStudy);
+        List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
         modelDifferences.clear();
         modelDifferences.addAll(modelDiffs);
     }
@@ -138,6 +143,13 @@ public class DiffController implements Initializable {
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
+    private boolean isEditable(ModelNode parentNode) {
+        Project project = ProjectContext.getInstance().getProject();
+        UserRoleManagement userRoleManagement = project.getUserRoleManagement();
+        User user = project.getUser();
+        return UserRoleUtil.checkAccess(parentNode, user, userRoleManagement);
+    }
+
     private class ActionCellFactory implements Callback<TableColumn<ModelDifference, String>, TableCell<ModelDifference, String>> {
 
         @Override
@@ -155,7 +167,10 @@ public class DiffController implements Initializable {
                 }
 
                 private Button createAcceptButton(ModelDifference difference) {
-                    String buttonTitle = hasRemoteChange(difference) ? "accept remote" : "revert local";
+                    ModelNode parentNode = difference.getParentNode();
+                    boolean mustAccept = !DiffController.this.isEditable(parentNode);
+                    boolean isRemoteChange = DiffController.this.hasRemoteChange(difference);
+                    String buttonTitle = mustAccept || isRemoteChange ? "accept remote" : "revert local";
                     Button applyButton = new Button(buttonTitle);
                     applyButton.setUserData(difference);
                     applyButton.setOnAction(DiffController.this::handleDifference);

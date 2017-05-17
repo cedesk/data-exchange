@@ -33,7 +33,7 @@ public class ModelDifferencesFactoryTest {
         s2 = s1;
         Assert.assertTrue(s1.equals(s2));
         List<ModelDifference> modelDifferences =
-                ModelDifferencesFactory.computeDifferences(s1, s2);
+                ModelDifferencesFactory.computeDifferences(s1, s2, -1);
         System.err.println(modelDifferences);
         Assert.assertEquals(0, modelDifferences.size());
     }
@@ -41,16 +41,18 @@ public class ModelDifferencesFactoryTest {
     @Test
     public void twoNodeDiffersOnlyInName() {
         List<ModelDifference> modelDifferences =
-                ModelDifferencesFactory.computeDifferences(s1, s2);
+                ModelDifferencesFactory.computeDifferences(s1, s2, -1);
 
         Assert.assertEquals(1, modelDifferences.size());
     }
 
     @Test
     public void twoNodeDiffersOnlyInNameAndOneParameter() {
-        s2.addParameter(new ParameterModel("new-param", 0.24));
+        ParameterModel p3 = new ParameterModel("new-param", 0.24);
+        p3.setLastModification(System.currentTimeMillis());
+        s2.addParameter(p3);
         List<ModelDifference> modelDifferences =
-                ModelDifferencesFactory.computeDifferences(s1, s2);
+                ModelDifferencesFactory.computeDifferences(s1, s2, -1);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(2, modelDifferences.size());
@@ -58,16 +60,27 @@ public class ModelDifferencesFactoryTest {
 
     @Test
     public void twoNodeDiffer3() {
+        long loadTime = System.currentTimeMillis();
+
+        // remote remove ext mo
         s2.setName(s1.getName());
-        ExternalModel externalModel1 = new ExternalModel();
-        externalModel1.setName("filename");
-        s2.addExternalModel(externalModel1);
-        ExternalModel externalModel2 = new ExternalModel();
-        externalModel2.setName("otherfile.tmp");
-        s1.addExternalModel(externalModel2);
-        s1.addParameter(new ParameterModel("new-param", 0.24));
+        ExternalModel externalModel4 = new ExternalModel();
+        externalModel4.setLastModification(loadTime - 1000);
+        externalModel4.setName("filename");
+        s2.addExternalModel(externalModel4);
+
+        // local add ext mo
+        ExternalModel externalModel3 = new ExternalModel();
+        externalModel3.setName("otherfile.tmp");
+        externalModel3.setLastModification(null);
+        s1.addExternalModel(externalModel3);
+
+        // local add param
+        ParameterModel p3 = new ParameterModel("new-param", 0.24);
+        s1.addParameter(p3);
+
         List<ModelDifference> modelDifferences =
-                ModelDifferencesFactory.computeDifferences(s1, s2);
+                ModelDifferencesFactory.computeDifferences(s1, s2, loadTime);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(3, modelDifferences.size());
@@ -85,7 +98,7 @@ public class ModelDifferencesFactoryTest {
         u2.setUuid(u1.getUuid());
         s2.addSubNode(u2);
         List<ModelDifference> modelDifferences =
-                ModelDifferencesFactory.computeDifferences(s1, s2);
+                ModelDifferencesFactory.computeDifferences(s1, s2, -1);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(2, modelDifferences.size());
@@ -108,7 +121,7 @@ public class ModelDifferencesFactoryTest {
         u2.addParameter(p2);
 
         List<ModelDifference> modelDifferences =
-                ModelDifferencesFactory.computeDifferences(s1, s2);
+                ModelDifferencesFactory.computeDifferences(s1, s2, -1);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(2, modelDifferences.size());

@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+
 /**
  * Created by D.Knoll on 20.07.2015.
  */
@@ -17,13 +19,15 @@ public abstract class ModelDifference {
 
     protected String author;
 
+    abstract public ModelNode getParentNode();
+
     abstract public String getNodeName();
 
     abstract public String getParameterName();
 
     abstract public boolean isMergeable();
 
-    public abstract void mergeDifference();
+    abstract public void mergeDifference();
 
     public String getAttribute() {
         return attribute;

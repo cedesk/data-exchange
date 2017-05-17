@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 
 /**
@@ -37,6 +38,11 @@ public class StudyDifference extends ModelDifference {
     @Override
     public String getNodeName() {
         return study1.getName();
+    }
+
+    @Override
+    public ModelNode getParentNode() {
+        return study1.getSystemModel();
     }
 
     @Override

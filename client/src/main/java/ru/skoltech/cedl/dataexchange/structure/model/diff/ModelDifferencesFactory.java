@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  */
 public class ModelDifferencesFactory {
 
-    public static List<ModelDifference> computeDifferences(Study s1, Study s2) {
+    public static List<ModelDifference> computeDifferences(Study s1, Study s2, long latestStudy1Modification) {
         List<ModelDifference> modelDifferences = new LinkedList<>();
 
         Long lmm1 = s1.getLatestModelModification();
@@ -39,26 +39,26 @@ public class ModelDifferencesFactory {
             modelDifferences.add(StudyDifference.createStudyAttributesModified(s1, s2, "studySettings", "<>", "<>"));
         }
 
-        modelDifferences.addAll(computeDifferences(s1.getSystemModel(), s2.getSystemModel()));
+        modelDifferences.addAll(computeDifferences(s1.getSystemModel(), s2.getSystemModel(), latestStudy1Modification));
         return modelDifferences;
     }
 
-    public static List<ModelDifference> computeDifferences(ModelNode m1, ModelNode m2) {
+    public static List<ModelDifference> computeDifferences(ModelNode m1, ModelNode m2, long latestStudy1Modification) {
         LinkedList<ModelDifference> modelDifferences = new LinkedList<>();
         if (!m1.getName().equals(m2.getName())) {
             String value1 = m1.getName();
             String value2 = m2.getName();
             modelDifferences.add(NodeDifference.createNodeAttributesModified(m1, m2, "name", value1, value2));
         }
-        modelDifferences.addAll(differencesOnParameters(m1, m2));
-        modelDifferences.addAll(differencesOnExternalModels(m1, m2));
+        modelDifferences.addAll(differencesOnParameters(m1, m2, latestStudy1Modification));
+        modelDifferences.addAll(differencesOnExternalModels(m1, m2, latestStudy1Modification));
         if (m1 instanceof CompositeModelNode && m2 instanceof CompositeModelNode) {
-            modelDifferences.addAll(differencesOnSubNodes((CompositeModelNode) m1, (CompositeModelNode) m2));
+            modelDifferences.addAll(differencesOnSubNodes((CompositeModelNode) m1, (CompositeModelNode) m2, latestStudy1Modification));
         }
         return modelDifferences;
     }
 
-    private static List<ModelDifference> differencesOnSubNodes(CompositeModelNode m1, CompositeModelNode m2) {
+    private static List<ModelDifference> differencesOnSubNodes(CompositeModelNode m1, CompositeModelNode m2, long latestStudy1Modification) {
         LinkedList<ModelDifference> subnodesDifferences = new LinkedList<>();
         Map<String, Object> m1SubNodesMap = (Map<String, Object>) m1.getSubNodes().stream().collect(
                 Collectors.toMap(ModelNode::getUuid, Function.<ModelNode>identity())
@@ -82,17 +82,20 @@ public class ModelDifferencesFactory {
                     subnodesDifferences.add(NodeDifference.createRemovedNode(s1, s1.getName(), ChangeLocation.ARG2));
                 }
             } else if (s1 == null && s2 != null) {
-                // TODO: distinguish between local remove and remote add
-                subnodesDifferences.add(NodeDifference.createRemovedNode(s2, s2.getName(), ChangeLocation.ARG1));
+                if (s2.getLastModification() <= latestStudy1Modification) { // node 2 was deleted
+                    subnodesDifferences.add(NodeDifference.createRemovedNode(s2, s2.getName(), ChangeLocation.ARG1));
+                } else { // node 2 was added
+                    subnodesDifferences.add(NodeDifference.createAddedNode(s2, s2.getName(), ChangeLocation.ARG2));
+                }
             } else {
                 // depth search
-                subnodesDifferences.addAll(computeDifferences(s1, s2));
+                subnodesDifferences.addAll(computeDifferences(s1, s2, latestStudy1Modification));
             }
         }
         return subnodesDifferences;
     }
 
-    private static List<ModelDifference> differencesOnExternalModels(ModelNode m1, ModelNode m2) {
+    private static List<ModelDifference> differencesOnExternalModels(ModelNode m1, ModelNode m2, Long latestStudy1Modification) {
         LinkedList<ModelDifference> extModelDifferences = new LinkedList<>();
         Map<String, ExternalModel> m1extModels = m1.getExternalModelMap();
         Map<String, ExternalModel> m2extModels = m2.getExternalModelMap();
@@ -112,9 +115,12 @@ public class ModelDifferencesFactory {
                     extModelDifferences.add(NodeDifference.createRemoveExternalModel(e1.getParent(), e1.getName(), ChangeLocation.ARG1));
                 }
             } else if (e1 == null && e2 != null) {
-                // TODO: distinguish between local remove and remote add
-                extModelDifferences.add(NodeDifference.createRemoveExternalModel(e2.getParent(), e2.getName(), ChangeLocation.ARG1));
-            } else {
+                if (e2.getLastModification() <= latestStudy1Modification) { // model 2 was deleted
+                    extModelDifferences.add(NodeDifference.createRemoveExternalModel(e2.getParent(), e2.getName(), ChangeLocation.ARG1));
+                } else { // model 1 was added
+                    extModelDifferences.add(NodeDifference.createAddExternalModel(e2.getParent(), e2.getName(), ChangeLocation.ARG2));
+                }
+            } else if (e1 != null && e2 != null) {
                 if (!Arrays.equals(e1.getAttachment(), e2.getAttachment())) {
                     boolean e2newer = e2.getLastModification() > e1.getLastModification();
                     ChangeLocation changeLocation = e2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
@@ -125,7 +131,7 @@ public class ModelDifferencesFactory {
         return extModelDifferences;
     }
 
-    private static List<ModelDifference> differencesOnParameters(ModelNode m1, ModelNode m2) {
+    private static List<ModelDifference> differencesOnParameters(ModelNode m1, ModelNode m2, long latestStudy1Modification) {
         LinkedList<ModelDifference> parameterDifferences = new LinkedList<>();
         Map<String, ParameterModel> m1params = m1.getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getUuid, Function.identity())
@@ -148,8 +154,11 @@ public class ModelDifferencesFactory {
                     parameterDifferences.add(ParameterDifference.createRemovedParameter(m1, p1, p1.getName(), ChangeLocation.ARG2));
                 }
             } else if (p1 == null && p2 != null) {
-                // TODO: distinguish between local remove and remote add
-                parameterDifferences.add(ParameterDifference.createRemovedParameter(m1, p2, p2.getName(), ChangeLocation.ARG1));
+                if (p2.getLastModification() <= latestStudy1Modification) { // parameter 2 was deleted
+                    parameterDifferences.add(ParameterDifference.createRemovedParameter(m1, p2, p2.getName(), ChangeLocation.ARG1));
+                } else { // parameter 1 was added
+                    parameterDifferences.add(ParameterDifference.createAddedParameter(m1, p2, p2.getName(), ChangeLocation.ARG2));
+                }
             } else if (p1 != null && p2 != null) {
                 List<AttributeDifference> differences = parameterDifferences(p1, p2);
                 if (!differences.isEmpty()) {

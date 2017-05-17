@@ -579,8 +579,9 @@ public class Project {
                 updateExternalModelsInStudy();
                 SystemModel localSystemModel = getStudy().getSystemModel();
                 SystemModel remoteSystemModel = getRepositoryStudy().getSystemModel();
+                long latestStudy1Modification = latestLoadedModification.get();
                 List<ModelDifference> modelDifferences =
-                        ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
+                        ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel, latestStudy1Modification);
                 long remoteDifferenceCounts = modelDifferences.stream()
                         .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2).count();
                 return remoteDifferenceCounts > 0;

@@ -98,7 +98,7 @@ public class ModelXmlMappingTest {
         // Re-import
         SystemModel s2 = fs.loadSystemModel(file);
 
-        List<ModelDifference> modelDifferences = ModelDifferencesFactory.computeDifferences(s1, s2);
+        List<ModelDifference> modelDifferences = ModelDifferencesFactory.computeDifferences(s1, s2, -1);
         for (ModelDifference modelDifference : modelDifferences) {
             System.out.println(modelDifference);
         }

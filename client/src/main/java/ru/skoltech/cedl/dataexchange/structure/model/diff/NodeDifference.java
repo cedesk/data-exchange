@@ -68,6 +68,11 @@ public class NodeDifference extends ModelDifference {
     }
 
     @Override
+    public ModelNode getParentNode() {
+        return node1.getParent() != null ? node1.getParent() : node1;
+    }
+
+    @Override
     public String getNodeName() {
         return node1.getNodePath();
     }
