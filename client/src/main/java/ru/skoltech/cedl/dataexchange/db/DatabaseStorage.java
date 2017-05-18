@@ -607,10 +607,45 @@ public class DatabaseStorage implements Repository {
                 RevisionType revisionType = (RevisionType) array[2];
 
                 ParameterRevision parameterRevision = new ParameterRevision(versionedParameterModel, revisionEntity, revisionType);
+                try {
+                    // dummy operation to ensure properties to be loaded (overcome lazy loading, which would fail due to closed db connection)
+                    int ignore = parameterRevision.toString().length();
+                } catch (Exception e) {
+                    logger.error("problem initializing parameter revision properties, " + e.getMessage());
+                }
                 revisionList.add(parameterRevision);
             }
 
             return revisionList;
+        } catch (Exception e) {
+            throw new RepositoryException("Loading revision history failed.", e);
+        } finally {
+            try {
+                if (entityManager != null)
+                    entityManager.close();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    public CustomRevisionEntity getLastRevision(PersistedEntity persistedEntity) {
+        EntityManager entityManager = null;
+        try {
+            entityManager = getEntityManager();
+            final AuditReader reader = AuditReaderFactory.get(entityManager);
+            final long pk = persistedEntity.getId();
+
+            Object[] array = (Object[]) reader.createQuery()
+                    .forRevisionsOfEntity(persistedEntity.getClass(), false, true)
+                    .add(AuditEntity.id().eq(pk))
+                    .addOrder(AuditEntity.revisionNumber().desc()).setMaxResults(1)
+                    .getSingleResult();
+
+            return (CustomRevisionEntity) array[1];
+        } catch (Exception e) {
+            logger.debug("Loading revision history failed: " +
+                    persistedEntity.getClass().getSimpleName() + "[" + persistedEntity.getId() + "]");
+            return null;
         } finally {
             try {
                 if (entityManager != null)

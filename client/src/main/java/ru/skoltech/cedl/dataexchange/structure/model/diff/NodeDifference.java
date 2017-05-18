@@ -1,13 +1,8 @@
 package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
-import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-
-import java.io.IOException;
-import java.util.Objects;
+import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 
 /**
  * Created by D.Knoll on 17.09.2015.
@@ -55,18 +50,6 @@ public class NodeDifference extends ModelDifference {
         return new NodeDifference(node1, name, ChangeType.REMOVE_NODE, changeLocation);
     }
 
-    public static NodeDifference createRemoveExternalModel(ModelNode node1, String name, ChangeLocation changeLocation) {
-        return new NodeDifference(node1, name, ChangeType.REMOVE_EXTERNAL_MODEL, changeLocation);
-    }
-
-    public static NodeDifference createAddExternalModel(ModelNode node1, String name, ChangeLocation changeLocation) {
-        return new NodeDifference(node1, name, ChangeType.ADD_EXTERNAL_MODEL, changeLocation);
-    }
-
-    public static NodeDifference createExternalModelModified(ModelNode node1, ModelNode node2, String name, ChangeLocation changeLocation) {
-        return new NodeDifference(node1, node2, name, ChangeType.CHANGE_EXTERNAL_MODEL, changeLocation, "", "");
-    }
-
     @Override
     public ModelNode getParentNode() {
         return node1.getParent() != null ? node1.getParent() : node1;
@@ -84,31 +67,12 @@ public class NodeDifference extends ModelDifference {
 
     @Override
     public boolean isMergeable() {
-        return changeType == ChangeType.CHANGE_EXTERNAL_MODEL;
+        return false;
     }
 
     @Override
     public void mergeDifference() {
-        if (changeType == ChangeType.CHANGE_EXTERNAL_MODEL) {
-            Objects.requireNonNull(node1);
-            Objects.requireNonNull(node2);
-            Objects.requireNonNull(attribute);
-            if (node1.getExternalModelMap().containsKey(attribute) && node1.getExternalModelMap().containsKey(attribute)) {
-                ExternalModel fromExtMo = node2.getExternalModelMap().get(attribute);
-                ExternalModel toExtMo = node1.getExternalModelMap().get(attribute);
-                Utils.copyBean(fromExtMo, toExtMo);
-                //toExtMo.setParent(fromExtMo.getParent());
-                try {
-                    ProjectContext.getInstance().getProject().getExternalModelFileHandler().forceCacheUpdate(toExtMo);
-                } catch (IOException e) {
-                    logger.error("failed to update cache for external model: " + toExtMo.getNodePath());
-                }
-            } else {
-                logger.error("MERGE IMPOSSIBLE:\n" + toString());
-            }
-        } else {
-            logger.error("MERGE IMPOSSIBLE:\n" + toString());
-        }
+        logger.error("MERGE IMPOSSIBLE:\n" + toString());
     }
 
     public ModelNode getNode1() {
@@ -124,7 +88,7 @@ public class NodeDifference extends ModelDifference {
         final StringBuilder sb = new StringBuilder("NodeDifference{");
         sb.append("node1='").append(node1.getName()).append('\'');
         if (node2 != null) {
-            sb.append(", node2='").append(node1.getName()).append('\'');
+            sb.append(", node2='").append(node2.getName()).append('\'');
         }
         sb.append(", attribute='").append(attribute).append('\'');
         sb.append(", changeType=").append(changeType);
@@ -134,5 +98,16 @@ public class NodeDifference extends ModelDifference {
         sb.append(", author='").append(author).append('\'');
         sb.append("}\n ");
         return sb.toString();
+    }
+
+    @Override
+    public PersistedEntity getChangedEntity() {
+        if (changeType == ChangeType.CHANGE_NODE_ATTRIBUTE) {
+            return changeLocation == ChangeLocation.ARG1 ? node1 : node2;
+        } else if (changeType == ChangeType.ADD_NODE || changeType == ChangeType.REMOVE_NODE) {
+            return node1;
+        } else {
+            throw new IllegalArgumentException("Unknown change type and location combination");
+        }
     }
 }

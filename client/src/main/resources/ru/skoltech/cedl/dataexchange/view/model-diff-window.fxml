@@ -3,38 +3,44 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="400.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.40"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="400.0" prefWidth="1200.0"
+            xmlns="http://javafx.com/javafx/8.0.40"
             stylesheets="@styling.css" fx:controller="ru.skoltech.cedl.dataexchange.controller.DiffController">
     <children>
         <TableView fx:id="diffTable" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columns>
-                <TableColumn fx:id="changeTypeColumn" prefWidth="180.0" text="Change Type">
+                <TableColumn prefWidth="120.0" text="Author">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="author"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn prefWidth="180.0" text="Change Type">
                     <cellValueFactory>
                         <PropertyValueFactory property="changeType"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="node" prefWidth="160.0" text="Node">
+                <TableColumn prefWidth="160.0" text="Node">
                     <cellValueFactory>
                         <PropertyValueFactory property="nodeName"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="parameter" prefWidth="80.0" text="Parameter">
+                <TableColumn prefWidth="80.0" text="Parameter">
                     <cellValueFactory>
                         <PropertyValueFactory property="parameterName"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="attribute" prefWidth="80.0" text="Attribute">
+                <TableColumn prefWidth="80.0" text="Attribute">
                     <cellValueFactory>
                         <PropertyValueFactory property="attribute"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="fromValueColumn" prefWidth="110.0" text="Local Value">
+                <TableColumn prefWidth="110.0" text="Local Value">
                     <cellValueFactory>
                         <PropertyValueFactory property="value1"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="toValueColumn" prefWidth="110.0" text="Repository Value">
+                <TableColumn prefWidth="110.0" text="Repository Value">
                     <cellValueFactory>
                         <PropertyValueFactory property="value2"/>
                     </cellValueFactory>

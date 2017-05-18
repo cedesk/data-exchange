@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -154,5 +155,16 @@ public class ParameterDifference extends ModelDifference {
         sb.append(", author='").append(author).append('\'');
         sb.append("}\n ");
         return sb.toString();
+    }
+
+    @Override
+    public PersistedEntity getChangedEntity() {
+        if (changeType == ChangeType.MODIFY_PARAMETER) {
+            return changeLocation == ChangeLocation.ARG1 ? parameter1 : parameter2;
+        } else if (changeType == ChangeType.ADD_PARAMETER || changeType == ChangeType.REMOVE_PARAMETER) {
+            return parameter1;
+        } else {
+            throw new IllegalArgumentException("Unknown change type and location combination");
+        }
     }
 }

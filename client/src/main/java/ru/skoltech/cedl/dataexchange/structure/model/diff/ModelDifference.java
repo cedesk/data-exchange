@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 
 /**
  * Created by D.Knoll on 20.07.2015.
@@ -29,6 +30,8 @@ public abstract class ModelDifference {
 
     abstract public void mergeDifference();
 
+    abstract public PersistedEntity getChangedEntity();
+
     public String getAttribute() {
         return attribute;
     }
@@ -51,6 +54,10 @@ public abstract class ModelDifference {
 
     public String getAuthor() {
         return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     @Override

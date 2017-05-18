@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 
 /**
@@ -72,5 +73,14 @@ public class StudyDifference extends ModelDifference {
         sb.append(", study2=").append(study2);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public PersistedEntity getChangedEntity() {
+        if (changeType == ChangeType.CHANGE_STUDY) {
+            return changeLocation == ChangeLocation.ARG1 ? study1 : study2;
+        } else {
+            throw new IllegalArgumentException("Unknown change type and location combination");
+        }
     }
 }

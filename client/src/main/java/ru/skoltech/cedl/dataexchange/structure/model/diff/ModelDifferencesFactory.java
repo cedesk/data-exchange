@@ -110,21 +110,21 @@ public class ModelDifferencesFactory {
 
             if (e1 != null && e2 == null) {
                 if (e1.getLastModification() == null) {
-                    extModelDifferences.add(NodeDifference.createAddExternalModel(e1.getParent(), e1.getName(), ChangeLocation.ARG1));
+                    extModelDifferences.add(ExternalModelDifference.createAddExternalModel(e1, e1.getName(), ChangeLocation.ARG1));
                 } else {
-                    extModelDifferences.add(NodeDifference.createRemoveExternalModel(e1.getParent(), e1.getName(), ChangeLocation.ARG1));
+                    extModelDifferences.add(ExternalModelDifference.createRemoveExternalModel(e1, e1.getName(), ChangeLocation.ARG1));
                 }
             } else if (e1 == null && e2 != null) {
                 if (e2.getLastModification() <= latestStudy1Modification) { // model 2 was deleted
-                    extModelDifferences.add(NodeDifference.createRemoveExternalModel(e2.getParent(), e2.getName(), ChangeLocation.ARG1));
+                    extModelDifferences.add(ExternalModelDifference.createRemoveExternalModel(e2, e2.getName(), ChangeLocation.ARG1));
                 } else { // model 1 was added
-                    extModelDifferences.add(NodeDifference.createAddExternalModel(e2.getParent(), e2.getName(), ChangeLocation.ARG2));
+                    extModelDifferences.add(ExternalModelDifference.createAddExternalModel(e2, e2.getName(), ChangeLocation.ARG2));
                 }
             } else if (e1 != null && e2 != null) {
                 if (!Arrays.equals(e1.getAttachment(), e2.getAttachment())) {
                     boolean e2newer = e2.getLastModification() > e1.getLastModification();
                     ChangeLocation changeLocation = e2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
-                    extModelDifferences.add(NodeDifference.createExternalModelModified(e1.getParent(), e2.getParent(), e1.getName(), changeLocation));
+                    extModelDifferences.add(ExternalModelDifference.createExternalModelModified(e1, e2, e1.getName(), changeLocation));
                 }
             }
         }

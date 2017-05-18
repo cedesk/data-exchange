@@ -15,8 +15,11 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
+import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ChangeLocation;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -49,6 +52,8 @@ public class DiffController implements Initializable {
 
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
+    private Repository repository;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         diffTable.setItems(modelDifferences);
@@ -61,19 +66,34 @@ public class DiffController implements Initializable {
             }
         });
         actionColumn.setCellFactory(new ActionCellFactory());
-        //Project project = ProjectContext.getInstance().getProject();
-        //acceptAllButton.disableProperty().bind(project.canSyncProperty().not());
-        //revertAllButton.disableProperty().bind(project.canSyncProperty().not());;
     }
 
     public void setProject(Project project) {
+        repository = project.getRepository();
+
+        // TODO: move this to an updateView method
         Study localStudy = project.getStudy();
         Study remoteStudy = project.getRepositoryStudy();
         long latestLoadedModification = project.getLatestLoadedModification();
         ProjectContext.getInstance().getProject().updateExternalModelsInStudy();
         List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
+        addChangeAuthors(modelDiffs, repository);
         modelDifferences.clear();
         modelDifferences.addAll(modelDiffs);
+    }
+
+    private void addChangeAuthors(List<ModelDifference> modelDiffs, Repository repository) {
+        for (ModelDifference modelDifference : modelDiffs) {
+            PersistedEntity persistedEntity = modelDifference.getChangedEntity();
+            try {
+                CustomRevisionEntity revisionEntity = repository.getLastRevision(persistedEntity);
+                if (revisionEntity != null) {
+                    modelDifference.setAuthor(revisionEntity.getUsername());
+                }
+            } catch (Exception e) {
+                logger.error("retrieving change author failed", e);
+            }
+        }
     }
 
     private boolean mergeOne(ModelDifference modelDifference) {
@@ -174,8 +194,6 @@ public class DiffController implements Initializable {
                     Button applyButton = new Button(buttonTitle);
                     applyButton.setUserData(difference);
                     applyButton.setOnAction(DiffController.this::handleDifference);
-                    //Project project = ProjectContext.getInstance().getProject();
-                    //applyButton.disableProperty().bind(project.canSyncProperty().not());
                     return applyButton;
                 }
             };
