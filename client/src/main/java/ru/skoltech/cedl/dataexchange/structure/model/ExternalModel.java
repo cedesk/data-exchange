@@ -16,7 +16,7 @@ import java.util.UUID;
 @Entity
 @Access(AccessType.PROPERTY)
 @Audited
-public class ExternalModel implements Comparable<ExternalModel>, ModificationTimestamped {
+public class ExternalModel implements Comparable<ExternalModel>, ModificationTimestamped, PersistedEntity {
 
     @XmlTransient
     private long id;
@@ -43,6 +43,7 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
     public ExternalModel() {
     }
 
+    @Override
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     public long getId() {
@@ -69,7 +70,7 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
         this.name = name;
     }
 
-    @Column(length = 100 * 1024 * 1024)
+    @Column(length = 100 * 1024 * 1024) // 100MB
     public byte[] getAttachment() {
         return attachment;
     }

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @DiscriminatorOptions(force = true)
-public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped {
+public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped, PersistedEntity {
 
     public static final String NODE_SEPARATOR = "\\";
 
@@ -121,6 +121,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         externalModel.setParent(this);
     }
 
+    @Override
     @Id
     @GeneratedValue
     public long getId() {

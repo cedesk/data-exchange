@@ -18,7 +18,7 @@ import java.util.UUID;
 @Entity
 @Access(AccessType.PROPERTY)
 @Audited
-public class ParameterModel implements Comparable<ParameterModel>, ModificationTimestamped {
+public class ParameterModel implements Comparable<ParameterModel>, ModificationTimestamped, PersistedEntity {
 
     public static final ParameterNature DEFAULT_NATURE = ParameterNature.INTERNAL;
 
@@ -115,6 +115,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.description = description;
     }
 
+    @Override
     @Id
     @GeneratedValue
     public long getId() {

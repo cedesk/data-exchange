@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @Entity
 @Access(AccessType.PROPERTY)
 @Table(uniqueConstraints = {@UniqueConstraint(name = "uniqueStudyName", columnNames = {"name"})})
-public class Study {
+public class Study implements PersistedEntity {
 
     private long id;
 
