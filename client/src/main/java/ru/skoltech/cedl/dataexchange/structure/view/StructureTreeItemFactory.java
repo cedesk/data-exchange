@@ -6,10 +6,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -93,6 +90,8 @@ public class StructureTreeItemFactory {
     }
 
     public static Map<String, ModelNode> getSubNodeDictionary(CompositeModelNode compositeModelNode) {
+        if (compositeModelNode == null) // happens if a node was added locally and is not present in remote
+            return new HashMap<>();
         List<ModelNode> subNodes = compositeModelNode.getSubNodes();
         Map<String, ModelNode> result = subNodes.stream().collect(
                 Collectors.toMap(ModelNode::getUuid, Function.identity())
