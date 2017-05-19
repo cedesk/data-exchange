@@ -21,10 +21,9 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.ChangeLocation;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifferencesFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -76,7 +75,7 @@ public class DiffController implements Initializable {
         Study remoteStudy = project.getRepositoryStudy();
         long latestLoadedModification = project.getLatestLoadedModification();
         ProjectContext.getInstance().getProject().updateExternalModelsInStudy();
-        List<ModelDifference> modelDiffs = ModelDifferencesFactory.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
+        List<ModelDifference> modelDiffs = StudyDifference.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
         addChangeAuthors(modelDiffs, repository);
         modelDifferences.clear();
         modelDifferences.addAll(modelDiffs);
@@ -151,11 +150,11 @@ public class DiffController implements Initializable {
     }
 
     private boolean hasRemoteChange(ModelDifference modelDifference) {
-        return modelDifference.getChangeLocation() == ChangeLocation.ARG2;
+        return modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG2;
     }
 
     private boolean hasLocalChange(ModelDifference modelDifference) {
-        return modelDifference.getChangeLocation() == ChangeLocation.ARG1;
+        return modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG1;
     }
 
     public void close(ActionEvent actionEvent) {

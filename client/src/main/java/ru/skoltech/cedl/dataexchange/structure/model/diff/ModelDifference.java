@@ -9,15 +9,10 @@ import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 public abstract class ModelDifference {
 
     protected String attribute;
-
     protected ChangeType changeType;
-
     protected ChangeLocation changeLocation;
-
     protected String value1;
-
     protected String value2;
-
     protected String author;
 
     abstract public ModelNode getParentNode();
@@ -71,5 +66,16 @@ public abstract class ModelDifference {
         sb.append(", author='").append(author).append('\'');
         sb.append("}\n ");
         return sb.toString();
+    }
+
+    public enum ChangeType {
+        ADD,
+        REMOVE,
+        MODIFY
+    }
+
+    public enum ChangeLocation {
+        ARG1,
+        ARG2
     }
 }

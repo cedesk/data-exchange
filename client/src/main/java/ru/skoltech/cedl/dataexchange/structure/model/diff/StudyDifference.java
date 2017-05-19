@@ -4,6 +4,12 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
+import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by D.Knoll on 12.05.2016.
@@ -33,7 +39,38 @@ public class StudyDifference extends ModelDifference {
 
         boolean n2newer = study2.getLatestModelModification() > study1.getLatestModelModification();
         ChangeLocation changeLocation = n2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
-        return new StudyDifference(study1, study2, attribute, ChangeType.CHANGE_STUDY, changeLocation, value1, value2);
+        return new StudyDifference(study1, study2, attribute, ChangeType.MODIFY, changeLocation, value1, value2);
+    }
+
+    public static List<ModelDifference> computeDifferences(Study s1, Study s2, long latestStudy1Modification) {
+        List<ModelDifference> modelDifferences = new LinkedList<>();
+
+        Long lmm1 = s1.getLatestModelModification();
+        Long lmm2 = s2.getLatestModelModification();
+        if (!Objects.equals(lmm1, lmm2)) {
+            modelDifferences.add(createStudyAttributesModified(s1, s2, "latestModelModification", lmm1.toString(), lmm2.toString()));
+        }
+
+        long s1Version = s1.getVersion();
+        long s2Version = s2.getVersion();
+        if (s1Version != s2Version) {
+            modelDifferences.add(createStudyAttributesModified(s1, s2, "version", Long.toString(s1Version), Long.toString(s2Version)));
+        }
+
+        UserRoleManagement urm1 = s1.getUserRoleManagement();
+        UserRoleManagement urm2 = s2.getUserRoleManagement();
+        if (!urm1.equals(urm2)) {
+            modelDifferences.add(createStudyAttributesModified(s1, s2, "userRoleManagement", "<>", "<>"));
+        }
+
+        StudySettings ss1 = s1.getStudySettings();
+        StudySettings ss2 = s1.getStudySettings();
+        if (!ss1.equals(ss2)) {
+            modelDifferences.add(createStudyAttributesModified(s1, s2, "studySettings", "<>", "<>"));
+        }
+
+        modelDifferences.addAll(NodeDifference.computeDifferences(s1.getSystemModel(), s2.getSystemModel(), latestStudy1Modification));
+        return modelDifferences;
     }
 
     @Override
@@ -77,7 +114,7 @@ public class StudyDifference extends ModelDifference {
 
     @Override
     public PersistedEntity getChangedEntity() {
-        if (changeType == ChangeType.CHANGE_STUDY) {
+        if (changeType == ChangeType.MODIFY) {
             return changeLocation == ChangeLocation.ARG1 ? study1 : study2;
         } else {
             throw new IllegalArgumentException("Unknown change type and location combination");

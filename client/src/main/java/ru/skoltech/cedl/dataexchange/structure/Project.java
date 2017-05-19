@@ -17,9 +17,8 @@ import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.ChangeLocation;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifferencesFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
@@ -581,9 +580,9 @@ public class Project {
                 SystemModel remoteSystemModel = getRepositoryStudy().getSystemModel();
                 long latestStudy1Modification = latestLoadedModification.get();
                 List<ModelDifference> modelDifferences =
-                        ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel, latestStudy1Modification);
+                        NodeDifference.computeDifferences(localSystemModel, remoteSystemModel, latestStudy1Modification);
                 long remoteDifferenceCounts = modelDifferences.stream()
-                        .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2).count();
+                        .filter(md -> md.getChangeLocation() == ModelDifference.ChangeLocation.ARG2).count();
                 return remoteDifferenceCounts > 0;
             } catch (Exception e) {
                 StatusLogger.getInstance().log("Error checking repository for changes");

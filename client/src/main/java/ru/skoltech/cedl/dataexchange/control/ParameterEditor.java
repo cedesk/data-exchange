@@ -28,7 +28,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifferencesFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
 
 import java.io.IOException;
@@ -398,7 +398,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         }
 
         // TODO: check whether modifications were made
-        List<AttributeDifference> attributeDifferences = ModelDifferencesFactory.parameterDifferences(originalParameterModel, parameterModel);
+        List<AttributeDifference> attributeDifferences = ParameterDifference.parameterDifferences(originalParameterModel, parameterModel);
 
         try {
             PropertyUtils.copyProperties(originalParameterModel, parameterModel);

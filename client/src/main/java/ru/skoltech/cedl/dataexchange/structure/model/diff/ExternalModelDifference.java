@@ -8,7 +8,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 
 import java.io.IOException;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Created by D.Knoll on 17.09.2015.
@@ -41,15 +41,51 @@ public class ExternalModelDifference extends ModelDifference {
     }
 
     public static ExternalModelDifference createRemoveExternalModel(ExternalModel externalModel1, String name, ChangeLocation changeLocation) {
-        return new ExternalModelDifference(externalModel1, name, ChangeType.REMOVE_EXTERNAL_MODEL, changeLocation);
+        return new ExternalModelDifference(externalModel1, name, ChangeType.REMOVE, changeLocation);
     }
 
     public static ExternalModelDifference createAddExternalModel(ExternalModel externalModel1, String name, ChangeLocation changeLocation) {
-        return new ExternalModelDifference(externalModel1, name, ChangeType.ADD_EXTERNAL_MODEL, changeLocation);
+        return new ExternalModelDifference(externalModel1, name, ChangeType.ADD, changeLocation);
     }
 
     public static ExternalModelDifference createExternalModelModified(ExternalModel externalModel1, ExternalModel externalModel2, String name, ChangeLocation changeLocation) {
-        return new ExternalModelDifference(externalModel1, externalModel2, name, ChangeType.CHANGE_EXTERNAL_MODEL, changeLocation, "", "");
+        return new ExternalModelDifference(externalModel1, externalModel2, name, ChangeType.MODIFY, changeLocation, "", "");
+    }
+
+    static List<ModelDifference> differencesOnExternalModels(ModelNode m1, ModelNode m2, Long latestStudy1Modification) {
+        LinkedList<ModelDifference> extModelDifferences = new LinkedList<>();
+        Map<String, ExternalModel> m1extModels = m1.getExternalModelMap();
+        Map<String, ExternalModel> m2extModels = m2.getExternalModelMap();
+
+        Set<String> allExtMods = new HashSet<>();
+        allExtMods.addAll(m1extModels.keySet());
+        allExtMods.addAll(m2extModels.keySet());
+
+        for (String extMod : allExtMods) {
+            ExternalModel e1 = m1extModels.get(extMod);
+            ExternalModel e2 = m2extModels.get(extMod);
+
+            if (e1 != null && e2 == null) {
+                if (e1.getLastModification() == null) { // model 1 was newly added
+                    extModelDifferences.add(createAddExternalModel(e1, e1.getName(), ChangeLocation.ARG1));
+                } else { // parameter 2 was deleted
+                    extModelDifferences.add(createRemoveExternalModel(e1, e1.getName(), ChangeLocation.ARG1));
+                }
+            } else if (e1 == null && e2 != null) {
+                if (e2.getLastModification() <= latestStudy1Modification) { // model 2 was deleted
+                    extModelDifferences.add(createRemoveExternalModel(e2, e2.getName(), ChangeLocation.ARG1));
+                } else { // model 1 was added
+                    extModelDifferences.add(createAddExternalModel(e2, e2.getName(), ChangeLocation.ARG2));
+                }
+            } else if (e1 != null && e2 != null) {
+                if (!Arrays.equals(e1.getAttachment(), e2.getAttachment())) {
+                    boolean e2newer = e2.getLastModification() > e1.getLastModification();
+                    ChangeLocation changeLocation = e2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
+                    extModelDifferences.add(createExternalModelModified(e1, e2, e1.getName(), changeLocation));
+                }
+            }
+        }
+        return extModelDifferences;
     }
 
     @Override
@@ -69,12 +105,12 @@ public class ExternalModelDifference extends ModelDifference {
 
     @Override
     public boolean isMergeable() {
-        return changeType == ChangeType.CHANGE_EXTERNAL_MODEL;
+        return changeType == ChangeType.MODIFY;
     }
 
     @Override
     public void mergeDifference() {
-        if (changeType == ChangeType.CHANGE_EXTERNAL_MODEL) {
+        if (changeType == ChangeType.MODIFY) {
             Objects.requireNonNull(externalModel1);
             Objects.requireNonNull(externalModel2);
             Objects.requireNonNull(attribute);
@@ -116,9 +152,9 @@ public class ExternalModelDifference extends ModelDifference {
 
     @Override
     public PersistedEntity getChangedEntity() {
-        if (changeType == ChangeType.CHANGE_EXTERNAL_MODEL) {
+        if (changeType == ChangeType.MODIFY) {
             return changeLocation == ChangeLocation.ARG1 ? externalModel1 : externalModel2;
-        } else if (changeType == ChangeType.ADD_EXTERNAL_MODEL || changeType == ChangeType.REMOVE_EXTERNAL_MODEL) {
+        } else if (changeType == ChangeType.ADD || changeType == ChangeType.REMOVE) {
             return externalModel1;
         } else {
             throw new IllegalArgumentException("Unknown change type and location combination");

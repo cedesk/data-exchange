@@ -8,7 +8,7 @@ import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifferencesFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
@@ -98,7 +98,7 @@ public class ModelXmlMappingTest {
         // Re-import
         SystemModel s2 = fs.loadSystemModel(file);
 
-        List<ModelDifference> modelDifferences = ModelDifferencesFactory.computeDifferences(s1, s2, -1);
+        List<ModelDifference> modelDifferences = NodeDifference.computeDifferences(s1, s2, -1);
         for (ModelDifference modelDifference : modelDifferences) {
             System.out.println(modelDifference);
         }
