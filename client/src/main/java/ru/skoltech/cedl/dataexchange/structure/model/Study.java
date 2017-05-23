@@ -48,12 +48,33 @@ public class Study implements PersistedEntity {
         this.id = id;
     }
 
+    public Long getLatestModelModification() {
+        return latestModelModification;
+    }
+
+    public void setLatestModelModification(Long latestModelModification) {
+        this.latestModelModification = latestModelModification;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @NotFound(action = NotFoundAction.IGNORE)
+    @OneToOne(targetEntity = StudySettings.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    public StudySettings getStudySettings() {
+        if (studySettings == null) {
+            studySettings = new StudySettings();
+        }
+        return studySettings;
+    }
+
+    public void setStudySettings(StudySettings studySettings) {
+        this.studySettings = studySettings;
     }
 
     @OneToOne(targetEntity = SystemModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -74,27 +95,6 @@ public class Study implements PersistedEntity {
         this.userRoleManagement = userRoleManagement;
     }
 
-    @NotFound(action = NotFoundAction.IGNORE)
-    @OneToOne(targetEntity = StudySettings.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
-    public StudySettings getStudySettings() {
-        if (studySettings == null) {
-            studySettings = new StudySettings();
-        }
-        return studySettings;
-    }
-
-    public void setStudySettings(StudySettings studySettings) {
-        this.studySettings = studySettings;
-    }
-
-    public Long getLatestModelModification() {
-        return latestModelModification;
-    }
-
-    public void setLatestModelModification(Long latestModelModification) {
-        this.latestModelModification = latestModelModification;
-    }
-
     @Version
     public long getVersion() {
         return version;
@@ -102,17 +102,6 @@ public class Study implements PersistedEntity {
 
     public void setVersion(long version) {
         this.version = version;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Study{");
-        sb.append("id=").append(id);
-        sb.append(", name=").append(name);
-        sb.append(", latestModelModification").append(latestModelModification);
-        sb.append(", version=").append(version);
-        sb.append('}');
-        return sb.toString();
     }
 
     @Override
@@ -136,5 +125,16 @@ public class Study implements PersistedEntity {
         result = 31 * result + (systemModel != null ? systemModel.hashCode() : 0);
         result = 31 * result + (userRoleManagement != null ? userRoleManagement.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Study{");
+        sb.append("id=").append(id);
+        sb.append(", name=").append(name);
+        sb.append(", latestModelModification=").append(latestModelModification);
+        sb.append(", version=").append(version);
+        sb.append('}');
+        return sb.toString();
     }
 }

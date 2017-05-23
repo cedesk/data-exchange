@@ -41,6 +41,47 @@ public class NodeDifference extends ModelDifference {
         this.changeLocation = changeLocation;
     }
 
+    @Override
+    public PersistedEntity getChangedEntity() {
+        if (changeType == ChangeType.MODIFY) {
+            return changeLocation == ChangeLocation.ARG1 ? node1 : node2;
+        } else if (changeType == ChangeType.ADD || changeType == ChangeType.REMOVE) {
+            return node1;
+        } else {
+            throw new IllegalArgumentException("Unknown change type and location combination");
+        }
+    }
+
+    public ModelNode getNode1() {
+        return node1;
+    }
+
+    public void setNode1(ModelNode node1) {
+        this.node1 = node1;
+    }
+
+    @Override
+    public String getNodeName() {
+        return node1.getNodePath();
+    }
+
+    @Override
+    public String getParameterName() {
+        return "";
+    }
+
+    @Override
+    public ModelNode getParentNode() {
+        return node1.getParent() != null ? node1.getParent() : node1;
+    }
+
+    @Override
+    public boolean isMergeable() {
+        return changeType == ChangeType.MODIFY;
+        // TODO
+        // changeType == ChangeType.ADD_NODE || changeType == ChangeType.REMOVE_NODE;
+    }
+
     public static NodeDifference createNodeAttributesModified(ModelNode node1, ModelNode node2, String attribute,
                                                               String value1, String value2) {
         boolean n2newer = node2.isNewerThan(node1);
@@ -94,6 +135,8 @@ public class NodeDifference extends ModelDifference {
     }
 
     public static List<ModelDifference> computeDifferences(ModelNode m1, ModelNode m2, long latestStudy1Modification) {
+        Objects.requireNonNull(m1);
+        Objects.requireNonNull(m2);
         LinkedList<ModelDifference> modelDifferences = new LinkedList<>();
         if (!m1.getName().equals(m2.getName())) {
             String value1 = m1.getName();
@@ -109,42 +152,12 @@ public class NodeDifference extends ModelDifference {
     }
 
     @Override
-    public ModelNode getParentNode() {
-        return node1.getParent() != null ? node1.getParent() : node1;
-    }
-
-    @Override
-    public String getNodeName() {
-        return node1.getNodePath();
-    }
-
-    @Override
-    public String getParameterName() {
-        return "";
-    }
-
-    @Override
-    public boolean isMergeable() {
-        return changeType == ChangeType.MODIFY;
-        // TODO
-        // changeType == ChangeType.ADD_NODE || changeType == ChangeType.REMOVE_NODE;
-    }
-
-    @Override
     public void mergeDifference() {
         if (changeType == ChangeType.MODIFY) {
 
         } else {
             logger.error("MERGE IMPOSSIBLE:\n" + toString());
         }
-    }
-
-    public ModelNode getNode1() {
-        return node1;
-    }
-
-    public void setNode1(ModelNode node1) {
-        this.node1 = node1;
     }
 
     @Override
@@ -165,16 +178,5 @@ public class NodeDifference extends ModelDifference {
         sb.append(", author='").append(author).append('\'');
         sb.append("}\n ");
         return sb.toString();
-    }
-
-    @Override
-    public PersistedEntity getChangedEntity() {
-        if (changeType == ChangeType.MODIFY) {
-            return changeLocation == ChangeLocation.ARG1 ? node1 : node2;
-        } else if (changeType == ChangeType.ADD || changeType == ChangeType.REMOVE) {
-            return node1;
-        } else {
-            throw new IllegalArgumentException("Unknown change type and location combination");
-        }
     }
 }

@@ -6,7 +6,6 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by D.Knoll on 12.05.2016.
@@ -31,6 +30,35 @@ public class StudyDifference extends ModelDifference {
         this.value2 = value2;
     }
 
+    @Override
+    public PersistedEntity getChangedEntity() {
+        if (changeType == ChangeType.MODIFY) {
+            return changeLocation == ChangeLocation.ARG1 ? study1 : study2;
+        } else {
+            throw new IllegalArgumentException("Unknown change type and location combination");
+        }
+    }
+
+    @Override
+    public String getNodeName() {
+        return study1.getName();
+    }
+
+    @Override
+    public String getParameterName() {
+        return "";
+    }
+
+    @Override
+    public ModelNode getParentNode() {
+        return study1.getSystemModel();
+    }
+
+    @Override
+    public boolean isMergeable() {
+        return false;
+    }
+
     public static StudyDifference createStudyAttributesModified(Study study1, Study study2, String attribute,
                                                                 String value1, String value2) {
 
@@ -41,12 +69,6 @@ public class StudyDifference extends ModelDifference {
 
     public static List<ModelDifference> computeDifferences(Study s1, Study s2, long latestStudy1Modification) {
         List<ModelDifference> modelDifferences = new LinkedList<>();
-
-        Long lmm1 = s1.getLatestModelModification();
-        Long lmm2 = s2.getLatestModelModification();
-        if (!Objects.equals(lmm1, lmm2)) {
-            modelDifferences.add(createStudyAttributesModified(s1, s2, "latestModelModification", lmm1.toString(), lmm2.toString()));
-        }
 
         long s1Version = s1.getVersion();
         long s2Version = s2.getVersion();
@@ -75,26 +97,6 @@ public class StudyDifference extends ModelDifference {
     }
 
     @Override
-    public String getNodeName() {
-        return study1.getName();
-    }
-
-    @Override
-    public ModelNode getParentNode() {
-        return study1.getSystemModel();
-    }
-
-    @Override
-    public String getParameterName() {
-        return "";
-    }
-
-    @Override
-    public boolean isMergeable() {
-        return false;
-    }
-
-    @Override
     public void mergeDifference() {
     }
 
@@ -111,14 +113,5 @@ public class StudyDifference extends ModelDifference {
         sb.append(", study2=").append(study2);
         sb.append('}');
         return sb.toString();
-    }
-
-    @Override
-    public PersistedEntity getChangedEntity() {
-        if (changeType == ChangeType.MODIFY) {
-            return changeLocation == ChangeLocation.ARG1 ? study1 : study2;
-        } else {
-            throw new IllegalArgumentException("Unknown change type and location combination");
-        }
     }
 }
