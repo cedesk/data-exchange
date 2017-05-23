@@ -33,9 +33,9 @@ public class UpdateChecker {
             applicationPackage.setBaseUrl(serverString);
             return Optional.of(applicationPackage);
         } catch (MalformedURLException e) {
-            logger.error("error with application distribution server url");
+            logger.error("error with application distribution server url: " + e.getMessage(), e);
         } catch (IOException e) {
-            logger.error("problem accessing application distribution server");
+            logger.error("problem accessing application distribution server: " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("unknown problem while checking available software on distribution server", e);
         }

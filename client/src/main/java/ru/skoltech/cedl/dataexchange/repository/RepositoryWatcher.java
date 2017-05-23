@@ -26,6 +26,7 @@ public class RepositoryWatcher extends Thread {
 
     @Override
     public void run() {
+        logger.info("RepositoryWatcher started.");
         try {
             sleep(SECONDS_OF_CHECK_PERIODICITY * 100); // willingly shorter
         } catch (InterruptedException ignore) {
@@ -49,13 +50,16 @@ public class RepositoryWatcher extends Thread {
 
     public void pause() {
         pausedRunning.set(true);
+        logger.info("RepositoryWatcher paused.");
     }
 
     public void unpause() {
         pausedRunning.set(false);
+        logger.info("RepositoryWatcher unpaused.");
     }
 
     public void finish() {
+        logger.info("RepositoryWatcher finishing...");
         quitRunning.set(true);
         super.interrupt();
         try {
