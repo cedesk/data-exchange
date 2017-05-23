@@ -45,7 +45,7 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
     }
 
     /**
-     * Find the most recent modification time of any of the sub-nodes or any of their parameters.
+     * Find the most recent modification time of any of the sub-nodes, external models or any of their parameters.
      *
      * @return
      */
@@ -57,6 +57,12 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
             Long modelNodeLastModification = modelNode.getLastModification();
             if (modelNodeLastModification != null && modelNodeLastModification > latest)
                 latest = modelNodeLastModification;
+
+            for (ExternalModel externalModel : modelNode.getExternalModels()) {
+                Long externalModelLastModification = externalModel.getLastModification();
+                if (externalModelLastModification != null && externalModelLastModification > latest)
+                    latest = externalModelLastModification;
+            }
 
             for (ParameterModel parameterModel : modelNode.getParameters()) {
                 Long parameterModelLastModification = parameterModel.getLastModification();
