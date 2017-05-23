@@ -13,6 +13,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -26,14 +27,13 @@ public class ReferenceSelectorTest extends Application {
 
     private static Project project;
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
-    public static ParameterModel getParameterModel() {
+    public static ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
         project = new Project("TEST");
         Study study = new Study("TEST");
-        project.setStudy(study);
+        Field field = Project.class.getDeclaredField("study");
+        field.setAccessible(true);
+        field.set(project, study);
+
         SystemModel systemModel = new SystemModel("ROOT-SYS");
         study.setSystemModel(systemModel);
         ParameterModel parameterModel = new ParameterModel("param", 123.45);
@@ -55,6 +55,10 @@ public class ReferenceSelectorTest extends Application {
             System.exit(-1);
         }
         return parameterModel;
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 
     @Override
@@ -80,5 +84,6 @@ public class ReferenceSelectorTest extends Application {
             System.out.println(externalModelReference);
         }
         primaryStage.fireEvent(new WindowEvent(primaryStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+        System.exit(1);
     }
 }
