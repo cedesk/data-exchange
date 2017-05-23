@@ -1,10 +1,7 @@
 package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.util.LinkedList;
@@ -59,17 +56,21 @@ public class StudyDifference extends ModelDifference {
 
         UserRoleManagement urm1 = s1.getUserRoleManagement();
         UserRoleManagement urm2 = s2.getUserRoleManagement();
-        if (!urm1.equals(urm2)) {
+        if (urm1 != null && !urm1.equals(urm2)) {
             modelDifferences.add(createStudyAttributesModified(s1, s2, "userRoleManagement", "<>", "<>"));
         }
 
         StudySettings ss1 = s1.getStudySettings();
         StudySettings ss2 = s1.getStudySettings();
-        if (!ss1.equals(ss2)) {
+        if (urm1 != null & !ss1.equals(ss2)) {
             modelDifferences.add(createStudyAttributesModified(s1, s2, "studySettings", "<>", "<>"));
         }
 
-        modelDifferences.addAll(NodeDifference.computeDifferences(s1.getSystemModel(), s2.getSystemModel(), latestStudy1Modification));
+        SystemModel m1 = s1.getSystemModel();
+        SystemModel m2 = s2.getSystemModel();
+        if (m1 != null && m2 != null) {
+            modelDifferences.addAll(NodeDifference.computeDifferences(m1, m2, latestStudy1Modification));
+        }
         return modelDifferences;
     }
 
