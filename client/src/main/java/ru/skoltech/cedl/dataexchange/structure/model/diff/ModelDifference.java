@@ -55,6 +55,14 @@ public abstract class ModelDifference {
         this.author = author;
     }
 
+    public boolean hasChangeOnSecond() {
+        return changeLocation == ModelDifference.ChangeLocation.ARG2;
+    }
+
+    public boolean hasChangeOnFirst() {
+        return changeLocation == ModelDifference.ChangeLocation.ARG1;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ModelDifference{");

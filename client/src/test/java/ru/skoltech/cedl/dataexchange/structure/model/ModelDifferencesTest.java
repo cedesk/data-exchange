@@ -44,14 +44,22 @@ public class ModelDifferencesTest {
         st2.setLatestModelModification(st2.getLatestModelModification() + 100);
         Assert.assertEquals(st1, st2);
 
-        List<ModelDifference> differences = StudyDifference.computeDifferences(st1, st2, -1);
+        List<ModelDifference> differences;
+        differences = StudyDifference.computeDifferences(st1, st2, -1);
         Assert.assertEquals(0, differences.size());
 
         st2.setVersion(2);
-        List<ModelDifference> diff2 = StudyDifference.computeDifferences(st1, st2, -1);
-        Assert.assertEquals(1, diff2.size());
-        Assert.assertEquals("version", diff2.get(0).getAttribute());
-        Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, diff2.get(0).getChangeLocation());
+        differences = StudyDifference.computeDifferences(st1, st2, -1);
+        Assert.assertEquals(1, differences.size());
+        Assert.assertEquals("version", differences.get(0).getAttribute());
+        Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, differences.get(0).getChangeLocation());
+
+        st2.setStudySettings(new StudySettings());
+        st2.getStudySettings().setSyncEnabled(false);
+        differences = StudyDifference.computeDifferences(st1, st2, -1);
+        Assert.assertEquals(1, differences.size());
+        Assert.assertEquals("version\nstudySettings", differences.get(0).getAttribute());
+        Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, differences.get(0).getChangeLocation());
     }
 
     @Before

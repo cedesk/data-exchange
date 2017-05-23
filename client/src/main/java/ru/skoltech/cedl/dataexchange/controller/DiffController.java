@@ -51,8 +51,6 @@ public class DiffController implements Initializable {
 
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
-    private Repository repository;
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         diffTable.setItems(modelDifferences);
@@ -68,7 +66,7 @@ public class DiffController implements Initializable {
     }
 
     public void setProject(Project project) {
-        repository = project.getRepository();
+        Repository repository = project.getRepository();
 
         // TODO: move this to an updateView method
         Study localStudy = project.getStudy();
@@ -120,7 +118,7 @@ public class DiffController implements Initializable {
     public void acceptAll(ActionEvent actionEvent) {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
-            if (hasRemoteChange(modelDifference)) {
+            if (modelDifference.hasChangeOnSecond()) {
                 boolean success = mergeOne(modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
@@ -136,7 +134,7 @@ public class DiffController implements Initializable {
     public void revertAll(ActionEvent actionEvent) {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
-            if (hasLocalChange(modelDifference)) {
+            if (modelDifference.hasChangeOnFirst()) {
                 boolean success = mergeOne(modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
@@ -147,14 +145,6 @@ public class DiffController implements Initializable {
         if (removed) {
             ProjectContext.getInstance().getProject().markStudyModified();
         }
-    }
-
-    private boolean hasRemoteChange(ModelDifference modelDifference) {
-        return modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG2;
-    }
-
-    private boolean hasLocalChange(ModelDifference modelDifference) {
-        return modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG1;
     }
 
     public void close(ActionEvent actionEvent) {
@@ -188,7 +178,7 @@ public class DiffController implements Initializable {
                 private Button createAcceptButton(ModelDifference difference) {
                     ModelNode parentNode = difference.getParentNode();
                     boolean mustAccept = !DiffController.this.isEditable(parentNode);
-                    boolean isRemoteChange = DiffController.this.hasRemoteChange(difference);
+                    boolean isRemoteChange = difference.hasChangeOnSecond();
                     String buttonTitle = mustAccept || isRemoteChange ? "accept remote" : "revert local";
                     Button applyButton = new Button(buttonTitle);
                     applyButton.setUserData(difference);

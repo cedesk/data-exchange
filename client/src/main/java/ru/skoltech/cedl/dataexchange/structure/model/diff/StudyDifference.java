@@ -4,8 +4,11 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import static ru.skoltech.cedl.dataexchange.Utils.TIME_AND_DATE_FOR_USER_INTERFACE;
 
 /**
  * Created by D.Knoll on 12.05.2016.
@@ -18,9 +21,8 @@ public class StudyDifference extends ModelDifference {
 
     protected Study study2;
 
-    private StudyDifference(Study study1, Study study2, String attribute,
-                            ChangeType changeType, ChangeLocation changeLocation,
-                            String value1, String value2) {
+    private StudyDifference(Study study1, Study study2, ChangeType changeType, ChangeLocation changeLocation,
+                            String attribute, String value1, String value2) {
         this.study1 = study1;
         this.study2 = study2;
         this.attribute = attribute;
@@ -30,13 +32,85 @@ public class StudyDifference extends ModelDifference {
         this.value2 = value2;
     }
 
-    @Override
-    public PersistedEntity getChangedEntity() {
-        if (changeType == ChangeType.MODIFY) {
-            return changeLocation == ChangeLocation.ARG1 ? study1 : study2;
-        } else {
-            throw new IllegalArgumentException("Unknown change type and location combination");
+    public static List<ModelDifference> computeDifferences(Study s1, Study s2, long latestStudy1Modification) {
+        List<ModelDifference> modelDifferences = new LinkedList<>();
+
+        // attributes
+        List<AttributeDifference> attributeDifferences = getAttributeDifferences(s1, s2);
+        if (!attributeDifferences.isEmpty()) {
+            modelDifferences.add(createStudyAttributesModified(s1, s2, attributeDifferences));
         }
+        // system model
+        SystemModel systemModel1 = s1.getSystemModel();
+        SystemModel sSystemModel2 = s2.getSystemModel();
+        if (systemModel1 != null && sSystemModel2 != null) {
+            modelDifferences.addAll(NodeDifference.computeDifferences(systemModel1, sSystemModel2, latestStudy1Modification));
+        }
+        return modelDifferences;
+    }
+
+    /**
+     * compacting all attributes differences into one study modification
+     */
+    public static ModelDifference createStudyAttributesModified(Study study1, Study study2, List<AttributeDifference> differences) {
+        StringBuilder sbAttributes = new StringBuilder(), sbValues1 = new StringBuilder(), sbValues2 = new StringBuilder();
+        for (AttributeDifference diff : differences) {
+            if (sbAttributes.length() > 0) {
+                sbAttributes.append('\n');
+                sbValues1.append('\n');
+                sbValues2.append('\n');
+            }
+            sbAttributes.append(diff.attributeName);
+            sbValues1.append(diff.value1);
+            sbValues2.append(diff.value2);
+        }
+        boolean p2newer = isNewer(study1, study2);
+        ChangeLocation changeLocation = p2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
+        return new StudyDifference(study1, study2, ChangeType.MODIFY, changeLocation, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString());
+    }
+
+    /**
+     * @return true if s2 is newer than s1
+     */
+    private static boolean isNewer(Study s1, Study s2) {
+        Long mod1 = s1.getLatestModelModification();
+        Long mod2 = s2.getLatestModelModification();
+        mod1 = mod1 != null ? mod1 : 0L;
+        mod2 = mod2 != null ? mod2 : 0L;
+        return mod1 < mod2;
+    }
+
+    private static List<AttributeDifference> getAttributeDifferences(Study study1, Study study2) {
+        List<AttributeDifference> differences = new LinkedList<>();
+  /*      if ((study1.getLatestModelModification() == null && study2.getLatestModelModification() != null) || (study1.getLatestModelModification() != null && study2.getLatestModelModification() == null)
+                || (study1.getLatestModelModification() != null && !study1.getLatestModelModification().equals(study2.getLatestModelModification()))) {
+            differences.add(new AttributeDifference("latestModelModification",
+                    toTime(study1.getLatestModelModification()), toTime(study2.getLatestModelModification())));
+        } */
+        if (study1.getVersion() != study2.getVersion()) {
+            differences.add(new AttributeDifference("version", study1.getVersion(), study2.getVersion()));
+        }
+        if ((study1.getUserRoleManagement() == null && study2.getUserRoleManagement() != null) || (study1.getUserRoleManagement() != null && study2.getUserRoleManagement() == null)
+                || (study1.getUserRoleManagement() != null && !study1.getUserRoleManagement().equals(study2.getUserRoleManagement()))) {
+            differences.add(new AttributeDifference("userRoleManagement", toHash(study1.getUserRoleManagement()), toHash(study2.getUserRoleManagement())));
+        }
+        if ((study1.getStudySettings() == null && study2.getStudySettings() != null) || (study1.getStudySettings() != null && study2.getStudySettings() == null)
+                || (study1.getStudySettings() != null && !study1.getStudySettings().equals(study2.getStudySettings()))) {
+            differences.add(new AttributeDifference("studySettings", extractSync(study1.getStudySettings()), extractSync(study2.getStudySettings())));
+        }
+        return differences;
+    }
+
+    private static String extractSync(StudySettings studySettings) {
+        return studySettings != null ? "isSyncEnabled=" + String.valueOf(studySettings.getSyncEnabled()) : null;
+    }
+
+    private static String toHash(UserRoleManagement userRoleManagement) {
+        return userRoleManagement != null ? String.valueOf(userRoleManagement.hashCode()) : null;
+    }
+
+    private static String toTime(Long timestamp) {
+        return timestamp != null ? TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timestamp)) : null;
     }
 
     @Override
@@ -45,55 +119,18 @@ public class StudyDifference extends ModelDifference {
     }
 
     @Override
-    public String getParameterName() {
-        return "";
-    }
-
-    @Override
     public ModelNode getParentNode() {
         return study1.getSystemModel();
     }
 
     @Override
+    public String getParameterName() {
+        return "";
+    }
+
+    @Override
     public boolean isMergeable() {
         return false;
-    }
-
-    public static StudyDifference createStudyAttributesModified(Study study1, Study study2, String attribute,
-                                                                String value1, String value2) {
-
-        boolean n2newer = study2.getLatestModelModification() > study1.getLatestModelModification();
-        ChangeLocation changeLocation = n2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
-        return new StudyDifference(study1, study2, attribute, ChangeType.MODIFY, changeLocation, value1, value2);
-    }
-
-    public static List<ModelDifference> computeDifferences(Study s1, Study s2, long latestStudy1Modification) {
-        List<ModelDifference> modelDifferences = new LinkedList<>();
-
-        long s1Version = s1.getVersion();
-        long s2Version = s2.getVersion();
-        if (s1Version != s2Version) {
-            modelDifferences.add(createStudyAttributesModified(s1, s2, "version", Long.toString(s1Version), Long.toString(s2Version)));
-        }
-
-        UserRoleManagement urm1 = s1.getUserRoleManagement();
-        UserRoleManagement urm2 = s2.getUserRoleManagement();
-        if (urm1 != null && !urm1.equals(urm2)) {
-            modelDifferences.add(createStudyAttributesModified(s1, s2, "userRoleManagement", "<>", "<>"));
-        }
-
-        StudySettings ss1 = s1.getStudySettings();
-        StudySettings ss2 = s1.getStudySettings();
-        if (urm1 != null & !ss1.equals(ss2)) {
-            modelDifferences.add(createStudyAttributesModified(s1, s2, "studySettings", "<>", "<>"));
-        }
-
-        SystemModel m1 = s1.getSystemModel();
-        SystemModel m2 = s2.getSystemModel();
-        if (m1 != null && m2 != null) {
-            modelDifferences.addAll(NodeDifference.computeDifferences(m1, m2, latestStudy1Modification));
-        }
-        return modelDifferences;
     }
 
     @Override
@@ -113,5 +150,14 @@ public class StudyDifference extends ModelDifference {
         sb.append(", study2=").append(study2);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public PersistedEntity getChangedEntity() {
+        if (changeType == ChangeType.MODIFY) {
+            return changeLocation == ChangeLocation.ARG1 ? study1 : study2;
+        } else {
+            throw new IllegalArgumentException("Unknown change type and location combination");
+        }
     }
 }
