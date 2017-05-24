@@ -24,9 +24,13 @@ public class DifferenceMerger {
         return true;
     }
 
-    public static List<ModelDifference> applyChangesOnSecondToFirst(List<ModelDifference> allDifferences) {
+    /**
+     * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
+     * @return the list of merged differences
+     */
+    public static List<ModelDifference> applyChangesOnSecondToFirst(List<ModelDifference> modelDifferences) {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
-        for (ModelDifference modelDifference : allDifferences) {
+        for (ModelDifference modelDifference : modelDifferences) {
             if (modelDifference.hasChangeOnSecond()) {
                 boolean success = mergeOne(modelDifference);
                 if (success) {
@@ -34,9 +38,14 @@ public class DifferenceMerger {
                 }
             }
         }
+        modelDifferences.removeAll(appliedDifferences);
         return appliedDifferences;
     }
 
+    /**
+     * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
+     * @return the list of merged differences
+     */
     public static List<ModelDifference> revertChangesOnFirst(List<ModelDifference> modelDifferences) {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
@@ -47,6 +56,7 @@ public class DifferenceMerger {
                 }
             }
         }
+        modelDifferences.removeAll(appliedDifferences);
         return appliedDifferences;
     }
 }

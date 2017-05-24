@@ -50,6 +50,32 @@ public class DiffController implements Initializable {
 
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
+    public void setProject(Project project) {
+        Repository repository = project.getRepository();
+
+        // TODO: move this to an updateView method
+        Study localStudy = project.getStudy();
+        Study remoteStudy = project.getRepositoryStudy();
+        long latestLoadedModification = project.getLatestLoadedModification();
+        ProjectContext.getInstance().getProject().updateExternalModelsInStudy();
+        List<ModelDifference> modelDiffs = StudyDifference.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
+        addChangeAuthors(modelDiffs, repository);
+        modelDifferences.clear();
+        modelDifferences.addAll(modelDiffs);
+    }
+
+    public void acceptAll(ActionEvent actionEvent) {
+        List<ModelDifference> appliedDifferences = DifferenceMerger.applyChangesOnSecondToFirst(modelDifferences);
+        if (appliedDifferences.size() > 0) {
+            ProjectContext.getInstance().getProject().markStudyModified();
+        }
+    }
+
+    public void close(ActionEvent actionEvent) {
+        Stage stage = (Stage) diffTable.getScene().getWindow();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         diffTable.setItems(modelDifferences);
@@ -64,18 +90,8 @@ public class DiffController implements Initializable {
         actionColumn.setCellFactory(new ActionCellFactory());
     }
 
-    public void setProject(Project project) {
-        Repository repository = project.getRepository();
-
-        // TODO: move this to an updateView method
-        Study localStudy = project.getStudy();
-        Study remoteStudy = project.getRepositoryStudy();
-        long latestLoadedModification = project.getLatestLoadedModification();
-        ProjectContext.getInstance().getProject().updateExternalModelsInStudy();
-        List<ModelDifference> modelDiffs = StudyDifference.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
-        addChangeAuthors(modelDiffs, repository);
-        modelDifferences.clear();
-        modelDifferences.addAll(modelDiffs);
+    public void revertAll(ActionEvent actionEvent) {
+        List<ModelDifference> appliedDifferences = DifferenceMerger.revertChangesOnFirst(modelDifferences);
     }
 
     private void addChangeAuthors(List<ModelDifference> modelDiffs, Repository repository) {
@@ -102,27 +118,6 @@ public class DiffController implements Initializable {
         }
     }
 
-    public void acceptAll(ActionEvent actionEvent) {
-        List<ModelDifference> appliedDifferences = DifferenceMerger.applyChangesOnSecondToFirst(modelDifferences);
-        boolean removed = modelDifferences.removeAll(appliedDifferences);
-        if (removed) {
-            ProjectContext.getInstance().getProject().markStudyModified();
-        }
-    }
-
-    public void revertAll(ActionEvent actionEvent) {
-        List<ModelDifference> appliedDifferences = DifferenceMerger.revertChangesOnFirst(modelDifferences);
-        boolean removed = modelDifferences.removeAll(appliedDifferences);
-        if (removed) {
-            ProjectContext.getInstance().getProject().markStudyModified();
-        }
-    }
-
-    public void close(ActionEvent actionEvent) {
-        Stage stage = (Stage) diffTable.getScene().getWindow();
-        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
-    }
-
     private boolean isEditable(ModelNode parentNode) {
         Project project = ProjectContext.getInstance().getProject();
         UserRoleManagement userRoleManagement = project.getUserRoleManagement();
@@ -135,17 +130,6 @@ public class DiffController implements Initializable {
         @Override
         public TableCell<ModelDifference, String> call(TableColumn<ModelDifference, String> param) {
             return new TableCell<ModelDifference, String>() {
-                @Override
-                protected void updateItem(String item, boolean empty) {
-                    super.updateItem(item, empty);
-                    ModelDifference difference = (ModelDifference) getTableRow().getItem();
-                    if (!empty && difference != null && difference.isMergeable()) {
-                        setGraphic(createAcceptButton(difference));
-                    } else {
-                        setGraphic(null);
-                    }
-                }
-
                 private Button createAcceptButton(ModelDifference difference) {
                     ModelNode parentNode = difference.getParentNode();
                     boolean mustAccept = !DiffController.this.isEditable(parentNode);
@@ -155,6 +139,17 @@ public class DiffController implements Initializable {
                     applyButton.setUserData(difference);
                     applyButton.setOnAction(DiffController.this::handleDifference);
                     return applyButton;
+                }
+
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    ModelDifference difference = (ModelDifference) getTableRow().getItem();
+                    if (!empty && difference != null && difference.isMergeable()) {
+                        setGraphic(createAcceptButton(difference));
+                    } else {
+                        setGraphic(null);
+                    }
                 }
             };
         }
