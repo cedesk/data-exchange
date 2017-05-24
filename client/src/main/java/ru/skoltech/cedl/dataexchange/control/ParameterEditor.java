@@ -70,6 +70,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private TextField valueText;
 
     @FXML
+    private TextField dependentsText;
+
+    @FXML
     private ChoiceBox<Unit> unitChoiceBox;
 
     @FXML
@@ -130,6 +133,104 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         }
     }
 
+    public ParameterModel getParameterModel() {
+        return parameterBean.getBean();
+    }
+
+    public void setParameterModel(ParameterModel parameterModel) {
+        this.originalParameterModel = parameterModel;
+        updateView(originalParameterModel);
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public void setEditListener(Consumer<ParameterModel> updateListener) {
+        this.editListener = updateListener;
+    }
+
+    public void applyChanges(ActionEvent actionEvent) {
+        updateModel();
+    }
+
+    public void chooseParameter(ActionEvent actionEvent) {
+        ModelNode parameterOwningNode = originalParameterModel.getParent();
+        SystemModel systemModel = parameterOwningNode.findRoot();
+
+        // filter list of parameters
+        List<ParameterModel> parameters = new LinkedList<>();
+        systemModel.parametersTreeIterator().forEachRemaining(parameter -> {
+            if (parameter.getParent() != parameterOwningNode &&
+                    parameter.getNature() == ParameterNature.OUTPUT) {
+                parameters.add(parameter);
+            }
+        });
+
+        Dialog<ParameterModel> dialog = new ParameterSelector(parameters, valueLinkParameter);
+
+        Optional<ParameterModel> parameterChoice = dialog.showAndWait();
+        if (parameterChoice.isPresent()) {
+            valueLinkParameter = parameterChoice.get();
+            parameterLinkText.setText(valueLinkParameter.getNodePath());
+            valueText.setText(String.valueOf(valueLinkParameter.getValue()));
+            unitChoiceBox.setValue(valueLinkParameter.getUnit());
+        } else {
+            parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : null);
+        }
+    }
+
+    public void chooseSource(ActionEvent actionEvent) {
+        ParameterModel parameterModel = getParameterModel();
+        List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
+        Dialog<ExternalModelReference> dialog = new ReferenceSelector(valueReference, externalModels);
+        Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
+        if (referenceOptional.isPresent()) {
+            ExternalModelReference newValueReference = referenceOptional.get();
+            valueReference = newValueReference;
+            valueReferenceText.setText(newValueReference.toString());
+            //valueText.setText("?");
+        } else {
+            valueReferenceText.setText(valueReference != null ? valueReference.toString() : null);
+        }
+    }
+
+    public void chooseTarget(ActionEvent actionEvent) {
+        ParameterModel parameterModel = getParameterModel();
+        List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
+        Dialog<ExternalModelReference> dialog = new ReferenceSelector(exportReference, externalModels);
+        Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
+        if (referenceOptional.isPresent()) {
+            ExternalModelReference newExportReference = referenceOptional.get();
+            exportReference = newExportReference;
+            exportReferenceText.setText(newExportReference.toString());
+        } else {
+            exportReferenceText.setText(exportReference != null ? exportReference.toString() : null);
+        }
+    }
+
+    public void editCalculation(ActionEvent actionEvent) {
+
+        Dialog<Calculation> dialog = new CalculationEditor(getParameterModel(), calculation);
+        Optional<Calculation> calculationOptional = dialog.showAndWait();
+        if (calculationOptional.isPresent()) {
+            calculation = calculationOptional.get();
+            if (calculation.valid()) {
+                calculationText.setText(calculation.asText());
+                valueText.setText(String.valueOf(calculation.evaluate()));
+                logger.debug(originalParameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
+            } else {
+                Dialogues.showError("Invalid calculation", "The composed calculation is invalid and therefor will be ignored.");
+            }
+        } else {
+            calculationText.setText(calculation != null ? calculation.asText() : null);
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         valueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
@@ -162,17 +263,18 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
         unitChoiceBox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
         isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
+        dependentsText.visibleProperty().bind(natureChoiceBox.valueProperty().isEqualTo(ParameterNature.OUTPUT));
         valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.selectedProperty().not());
         exportSelectorGroup.disableProperty().bind(isExportedCheckbox.selectedProperty().not());
         unitChoiceBox.setConverter(new StringConverter<Unit>() {
             @Override
-            public String toString(Unit unit) {
-                return unit.asText();
+            public Unit fromString(String unitStr) {
+                return project.getUnitManagement().findUnitByText(unitStr);
             }
 
             @Override
-            public Unit fromString(String unitStr) {
-                return project.getUnitManagement().findUnitByText(unitStr);
+            public String toString(Unit unit) {
+                return unit.asText();
             }
         });
 
@@ -188,121 +290,6 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                 parameterBean.bindBidirectional("overrideValue", valueOverrideText.textProperty());
             }
         });
-    }
-
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public ParameterModel getParameterModel() {
-        return parameterBean.getBean();
-    }
-
-    public void setParameterModel(ParameterModel parameterModel) {
-        this.originalParameterModel = parameterModel;
-        updateView(originalParameterModel);
-    }
-
-    private void updateView(ParameterModel parameterModel) {
-        if (unitChoiceBox.getItems().size() == 0) { // first time only, units are independent of a study
-            List<Unit> units = project.getUnitManagement().getUnits();
-            units.sort((o1, o2) -> o1.asText().compareTo(o2.asText()));
-            unitChoiceBox.setItems(FXCollections.observableArrayList(units));
-        }
-        ParameterModel localParameterModel = Utils.copyBean(parameterModel, new ParameterModel());
-        parameterBean.setBean(localParameterModel);
-        valueReference = localParameterModel.getValueReference();
-        exportReference = localParameterModel.getExportReference();
-        valueLinkParameter = localParameterModel.getValueLink();
-        calculation = localParameterModel.getCalculation();
-        natureChoiceBox.valueProperty().setValue(localParameterModel.getNature());
-        valueSourceChoiceBox.valueProperty().setValue(localParameterModel.getValueSource());
-        unitChoiceBox.valueProperty().setValue(localParameterModel.getUnit());
-        valueReferenceText.setText(localParameterModel.getValueReference() != null ? localParameterModel.getValueReference().toString() : "");
-        parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : "");
-        calculationText.setText(calculation != null ? calculation.asText() : "");
-        exportReferenceText.setText(exportReference != null ? exportReference.toString() : "");
-    }
-
-    public void chooseSource(ActionEvent actionEvent) {
-        ParameterModel parameterModel = getParameterModel();
-        List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
-        Dialog<ExternalModelReference> dialog = new ReferenceSelector(valueReference, externalModels);
-        Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
-        if (referenceOptional.isPresent()) {
-            ExternalModelReference newValueReference = referenceOptional.get();
-            valueReference = newValueReference;
-            valueReferenceText.setText(newValueReference.toString());
-            //valueText.setText("?");
-        } else {
-            valueReferenceText.setText(valueReference != null ? valueReference.toString() : null);
-        }
-    }
-
-    public void chooseTarget(ActionEvent actionEvent) {
-        ParameterModel parameterModel = getParameterModel();
-        List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
-        Dialog<ExternalModelReference> dialog = new ReferenceSelector(exportReference, externalModels);
-        Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
-        if (referenceOptional.isPresent()) {
-            ExternalModelReference newExportReference = referenceOptional.get();
-            exportReference = newExportReference;
-            exportReferenceText.setText(newExportReference.toString());
-        } else {
-            exportReferenceText.setText(exportReference != null ? exportReference.toString() : null);
-        }
-    }
-
-    public void chooseParameter(ActionEvent actionEvent) {
-        ModelNode parameterOwningNode = originalParameterModel.getParent();
-        SystemModel systemModel = parameterOwningNode.findRoot();
-
-        // filter list of parameters
-        List<ParameterModel> parameters = new LinkedList<>();
-        systemModel.parametersTreeIterator().forEachRemaining(parameter -> {
-            if (parameter.getParent() != parameterOwningNode &&
-                    parameter.getNature() == ParameterNature.OUTPUT) {
-                parameters.add(parameter);
-            }
-        });
-
-        Dialog<ParameterModel> dialog = new ParameterSelector(parameters, valueLinkParameter);
-
-        Optional<ParameterModel> parameterChoice = dialog.showAndWait();
-        if (parameterChoice.isPresent()) {
-            valueLinkParameter = parameterChoice.get();
-            parameterLinkText.setText(valueLinkParameter.getNodePath());
-            valueText.setText(String.valueOf(valueLinkParameter.getValue()));
-            unitChoiceBox.setValue(valueLinkParameter.getUnit());
-        } else {
-            parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : null);
-        }
-    }
-
-    public void editCalculation(ActionEvent actionEvent) {
-
-        Dialog<Calculation> dialog = new CalculationEditor(getParameterModel(), calculation);
-        Optional<Calculation> calculationOptional = dialog.showAndWait();
-        if (calculationOptional.isPresent()) {
-            calculation = calculationOptional.get();
-            if (calculation.valid()) {
-                calculationText.setText(calculation.asText());
-                valueText.setText(String.valueOf(calculation.evaluate()));
-                logger.debug(originalParameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
-            } else {
-                Dialogues.showError("Invalid calculation", "The composed calculation is invalid and therefor will be ignored.");
-            }
-        } else {
-            calculationText.setText(calculation != null ? calculation.asText() : null);
-        }
-    }
-
-    public void applyChanges(ActionEvent actionEvent) {
-        updateModel();
     }
 
     public void revertChanges(ActionEvent actionEvent) {
@@ -430,7 +417,35 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         editListener.accept(parameterModel);
     }
 
-    public void setEditListener(Consumer<ParameterModel> updateListener) {
-        this.editListener = updateListener;
+    private void updateView(ParameterModel parameterModel) {
+        if (unitChoiceBox.getItems().size() == 0) { // first time only, units are independent of a study
+            List<Unit> units = project.getUnitManagement().getUnits();
+            units.sort((o1, o2) -> o1.asText().compareTo(o2.asText()));
+            unitChoiceBox.setItems(FXCollections.observableArrayList(units));
+        }
+        ParameterModel localParameterModel = Utils.copyBean(parameterModel, new ParameterModel());
+        parameterBean.setBean(localParameterModel);
+        valueReference = localParameterModel.getValueReference();
+        exportReference = localParameterModel.getExportReference();
+        valueLinkParameter = localParameterModel.getValueLink();
+        calculation = localParameterModel.getCalculation();
+        natureChoiceBox.valueProperty().setValue(localParameterModel.getNature());
+        valueSourceChoiceBox.valueProperty().setValue(localParameterModel.getValueSource());
+        unitChoiceBox.valueProperty().setValue(localParameterModel.getUnit());
+        valueReferenceText.setText(localParameterModel.getValueReference() != null ? localParameterModel.getValueReference().toString() : "");
+        parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : "");
+        calculationText.setText(calculation != null ? calculation.asText() : "");
+        exportReferenceText.setText(exportReference != null ? exportReference.toString() : "");
+        if (localParameterModel.getNature() == ParameterNature.OUTPUT) {
+            List<ParameterModel> dependentParameters = project.getParameterLinkRegistry().getDependentParameters(localParameterModel);
+            String dependentParamNames = "<not linked>";
+            if (dependentParameters.size() > 0) {
+                dependentParamNames = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
+            }
+            dependentsText.setText(dependentParamNames);
+            dependentsText.setTooltip(new Tooltip(dependentParamNames));
+        } else {
+            dependentsText.setText("");
+        }
     }
 }
