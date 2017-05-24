@@ -15,22 +15,22 @@
                         <PropertyValueFactory property="author"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn prefWidth="180.0" text="Change Type">
+                <TableColumn prefWidth="80.0" text="Change Type">
                     <cellValueFactory>
                         <PropertyValueFactory property="changeType"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn prefWidth="160.0" text="Node">
+                <TableColumn prefWidth="80.0" text="Node">
                     <cellValueFactory>
                         <PropertyValueFactory property="nodeName"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn prefWidth="80.0" text="Parameter">
+                <TableColumn prefWidth="180.0" text="Parameter">
                     <cellValueFactory>
                         <PropertyValueFactory property="parameterName"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn prefWidth="80.0" text="Attribute">
+                <TableColumn prefWidth="180.0" text="Attribute">
                     <cellValueFactory>
                         <PropertyValueFactory property="attribute"/>
                     </cellValueFactory>
