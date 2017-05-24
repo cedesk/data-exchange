@@ -443,7 +443,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                 dependentParamNames = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
             }
             dependentsText.setText(dependentParamNames);
-            dependentsText.setTooltip(new Tooltip(dependentParamNames));
+            dependentsText.setTooltip(new Tooltip(dependentParamNames.replace(", ", ",\n")));
         } else {
             dependentsText.setText("");
         }
