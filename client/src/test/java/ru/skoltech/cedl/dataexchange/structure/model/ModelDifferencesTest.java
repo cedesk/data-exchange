@@ -60,6 +60,8 @@ public class ModelDifferencesTest {
         Assert.assertEquals(1, differences.size());
         Assert.assertEquals("version\nstudySettings", differences.get(0).getAttribute());
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, differences.get(0).getChangeLocation());
+
+        differences.get(0).mergeDifference();
     }
 
     @Before

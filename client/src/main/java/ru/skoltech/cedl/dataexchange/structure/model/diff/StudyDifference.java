@@ -130,11 +130,18 @@ public class StudyDifference extends ModelDifference {
 
     @Override
     public boolean isMergeable() {
-        return false;
+        return changeType == ChangeType.MODIFY && changeLocation == ChangeLocation.ARG2;
     }
 
     @Override
     public void mergeDifference() {
+        if (changeType == ChangeType.MODIFY && changeLocation == ChangeLocation.ARG2) {
+            study1.setVersion(study2.getVersion());
+            study1.setUserRoleManagement(study2.getUserRoleManagement());
+            study1.setStudySettings(study2.getStudySettings());
+        } else {
+            logger.error("MERGE IMPOSSIBLE:\n" + toString());
+        }
     }
 
     @Override

@@ -21,15 +21,14 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.DifferenceMerger;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.net.URL;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -93,22 +92,10 @@ public class DiffController implements Initializable {
         }
     }
 
-    private boolean mergeOne(ModelDifference modelDifference) {
-        logger.debug("merging " + modelDifference.getNodeName() + "::" + modelDifference.getParameterName());
-        modelDifference.mergeDifference();
-        if (modelDifference instanceof ParameterDifference) {
-            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
-            // TODO: update sinks
-            //ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
-            //parameterLinkRegistry.updateSinks(parameterDifference.getParameter());
-        }
-        return true;
-    }
-
     private void handleDifference(ActionEvent actionEvent) {
         Button acceptButton = (Button) actionEvent.getTarget();
         ModelDifference modelDifference = (ModelDifference) acceptButton.getUserData();
-        boolean success = mergeOne(modelDifference);
+        boolean success = DifferenceMerger.mergeOne(modelDifference);
         if (success) {
             modelDifferences.remove(modelDifference);
             ProjectContext.getInstance().getProject().markStudyModified();
@@ -116,15 +103,7 @@ public class DiffController implements Initializable {
     }
 
     public void acceptAll(ActionEvent actionEvent) {
-        List<ModelDifference> appliedDifferences = new LinkedList<>();
-        for (ModelDifference modelDifference : modelDifferences) {
-            if (modelDifference.hasChangeOnSecond()) {
-                boolean success = mergeOne(modelDifference);
-                if (success) {
-                    appliedDifferences.add(modelDifference);
-                }
-            }
-        }
+        List<ModelDifference> appliedDifferences = DifferenceMerger.applyChangesOnSecondToFirst(modelDifferences);
         boolean removed = modelDifferences.removeAll(appliedDifferences);
         if (removed) {
             ProjectContext.getInstance().getProject().markStudyModified();
@@ -132,15 +111,7 @@ public class DiffController implements Initializable {
     }
 
     public void revertAll(ActionEvent actionEvent) {
-        List<ModelDifference> appliedDifferences = new LinkedList<>();
-        for (ModelDifference modelDifference : modelDifferences) {
-            if (modelDifference.hasChangeOnFirst()) {
-                boolean success = mergeOne(modelDifference);
-                if (success) {
-                    appliedDifferences.add(modelDifference);
-                }
-            }
-        }
+        List<ModelDifference> appliedDifferences = DifferenceMerger.revertChangesOnFirst(modelDifferences);
         boolean removed = modelDifferences.removeAll(appliedDifferences);
         if (removed) {
             ProjectContext.getInstance().getProject().markStudyModified();
