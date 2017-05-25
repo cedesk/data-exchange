@@ -27,6 +27,28 @@ public class SpreadsheetCoordinates {
         this.columnNumber = columnNumber;
     }
 
+    /**
+     * @return column number 1-based
+     */
+    public int getColumnNumber() {
+        return columnNumber;
+    }
+
+    /**
+     * @return row number 1-based
+     */
+    public int getRowNumber() {
+        return rowNumber;
+    }
+
+    public String getSheetName() {
+        return sheetName;
+    }
+
+    public void setSheetName(String sheetName) {
+        this.sheetName = sheetName;
+    }
+
     public static SpreadsheetCoordinates valueOf(String sheetName, TablePosition tablePosition) {
         return new SpreadsheetCoordinates(sheetName, tablePosition.getRow() + 1, tablePosition.getColumn() + 1);
     }
@@ -48,9 +70,22 @@ public class SpreadsheetCoordinates {
         }
     }
 
+    public SpreadsheetCoordinates getNeighbour(Neighbour neighbour) {
+        switch (neighbour) {
+            case UP:
+                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber - 1, this.columnNumber);
+            case DOWN:
+                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber + 1, this.columnNumber);
+            case LEFT:
+                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber, this.columnNumber - 1);
+            default:  // RIGHT
+                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber, this.columnNumber + 1);
+        }
+    }
+
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int col = columnNumber - 1;
         while (col >= 0) {
             int digit = (col % 26);
@@ -64,41 +99,6 @@ public class SpreadsheetCoordinates {
         }
         sb.append(rowNumber);
         return sb.toString();
-    }
-
-    /**
-     * @return row number 1-based
-     */
-    public int getRowNumber() {
-        return rowNumber;
-    }
-
-    /**
-     * @return column number 1-based
-     */
-    public int getColumnNumber() {
-        return columnNumber;
-    }
-
-    public String getSheetName() {
-        return sheetName;
-    }
-
-    public void setSheetName(String sheetName) {
-        this.sheetName = sheetName;
-    }
-
-    public SpreadsheetCoordinates getNeighbour(Neighbour neighbour) {
-        switch (neighbour) {
-            case UP:
-                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber - 1, this.columnNumber);
-            case DOWN:
-                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber + 1, this.columnNumber);
-            case LEFT:
-                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber, this.columnNumber - 1);
-            default:  // RIGHT
-                return new SpreadsheetCoordinates(this.sheetName, this.rowNumber, this.columnNumber + 1);
-        }
     }
 
     public enum Neighbour {
