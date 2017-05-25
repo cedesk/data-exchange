@@ -33,7 +33,7 @@ public class ParameterDifferenceTest {
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
         Assert.assertEquals(ChangeType.ADD, pd.getChangeType());
 
-        Assert.assertTrue(pd.isRevertable());
+        Assert.assertTrue(pd.isRevertible());
 
         pd.revertDifference();
 
@@ -62,7 +62,7 @@ public class ParameterDifferenceTest {
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
         Assert.assertEquals(ChangeType.MODIFY, pd.getChangeType());
 
-        Assert.assertTrue(pd.isRevertable());
+        Assert.assertTrue(pd.isRevertible());
 
         pd.revertDifference();
 
@@ -86,7 +86,7 @@ public class ParameterDifferenceTest {
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
         Assert.assertEquals(ChangeType.REMOVE, pd.getChangeType());
 
-        Assert.assertTrue(pd.isRevertable());
+        Assert.assertTrue(pd.isRevertible());
 
         pd.revertDifference();
 

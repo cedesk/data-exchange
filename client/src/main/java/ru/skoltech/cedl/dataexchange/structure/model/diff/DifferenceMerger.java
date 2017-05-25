@@ -24,14 +24,26 @@ public class DifferenceMerger {
         return true;
     }
 
+    public static boolean revertOne(ModelDifference modelDifference) {
+        logger.debug("reverting " + modelDifference.getNodeName() + "::" + modelDifference.getParameterName());
+        modelDifference.mergeDifference();
+        if (modelDifference instanceof ParameterDifference) {
+            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
+            // TODO: update sinks
+            //ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
+            //parameterLinkRegistry.updateSinks(parameterDifference.getParameter());
+        }
+        return true;
+    }
+
     /**
      * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
      * @return the list of merged differences
      */
-    public static List<ModelDifference> applyChangesOnSecondToFirst(List<ModelDifference> modelDifferences) {
+    public static List<ModelDifference> mergeChangesOntoFirst(List<ModelDifference> modelDifferences) {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
-            if (modelDifference.hasChangeOnSecond()) {
+            if (modelDifference.isMergeable()) {
                 boolean success = mergeOne(modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
@@ -49,8 +61,8 @@ public class DifferenceMerger {
     public static List<ModelDifference> revertChangesOnFirst(List<ModelDifference> modelDifferences) {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
-            if (modelDifference.hasChangeOnFirst()) {
-                boolean success = mergeOne(modelDifference);
+            if (modelDifference.isRevertible()) {
+                boolean success = revertOne(modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
                 }

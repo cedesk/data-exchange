@@ -5,6 +5,7 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 import java.util.function.Function;
@@ -72,7 +73,8 @@ public class ParameterDifference extends ModelDifference {
                 ((changeType == ChangeType.MODIFY) || (changeType == ChangeType.ADD) || (changeType == ChangeType.REMOVE));
     }
 
-    public boolean isRevertable() {
+    @Override
+    public boolean isRevertible() {
         return changeLocation == ChangeLocation.ARG1 &&
                 ((changeType == ChangeType.MODIFY) || (changeType == ChangeType.ADD) || (changeType == ChangeType.REMOVE));
     }
@@ -220,21 +222,20 @@ public class ParameterDifference extends ModelDifference {
         if (changeLocation != ChangeLocation.ARG2)
             throw new IllegalStateException("non-remote difference can not be merged");
 
-        String uuid = parameter1.getUuid();
         switch (changeType) {
             case ADD: {
-                // TODO: block changes that make the model inconsistent (name duplicates, ...)
                 Objects.requireNonNull(parent);
-                List<ParameterModel> parentParameters = parent.getParameters();
-                ParameterModel param = new ParameterModel();
-                Utils.copyBean(parameter1, param);
-                parentParameters.add(param);
+                // TODO: block changes that make the model inconsistent (name duplicates, ...)
+                ParameterModel newParameter = new ParameterModel();
+                Utils.copyBean(parameter1, newParameter);
+                parent.addParameter(newParameter);
                 break;
             }
             case REMOVE: {
-                // TODO: block changes that make the model inconsistent (links to this parameter, ...)
                 Objects.requireNonNull(parent);
-                List<ParameterModel> parentParameters = parent.getParameters();
+                final List<ParameterModel> parentParameters = parent.getParameters();
+                final String uuid = parameter1.getUuid();
+                // TODO: block changes that make the model inconsistent (links to this parameter, ...)
                 boolean removed = parentParameters.removeIf(pm -> pm.getUuid().equals(uuid));
                 if (!removed) {
                     logger.warn("parameter to remove not present: " + parameter1.getNodePath());
@@ -249,22 +250,19 @@ public class ParameterDifference extends ModelDifference {
                 // TODO: update dependent parameters
                 break;
             }
-            default:
+            default: {
                 logger.error("MERGE IMPOSSIBLE:\n" + toString());
+                throw new NotImplementedException();
+            }
         }
     }
 
+    @Override
     public void revertDifference() {
         if (changeLocation != ChangeLocation.ARG1)
             throw new IllegalStateException("non-local difference can not be reverted");
 
         switch (changeType) {
-            case MODIFY: { // copy remote over local
-                Objects.requireNonNull(parameter1);
-                Objects.requireNonNull(parameter2);
-                Utils.copyBean(parameter2, parameter1);
-                break;
-            }
             case ADD: { // remove local again
                 Objects.requireNonNull(parent);
                 String uuid = parameter1.getUuid();
@@ -284,8 +282,19 @@ public class ParameterDifference extends ModelDifference {
                 if (parent.getParameterMap().containsKey(parameter1.getName())) {
                     logger.error("unable to re-add parameter, because another parameter of same name is already there");
                 } else {
-                    parent.getParameters().add(parameter1);
+                    parent.addParameter(parameter1);
                 }
+                break;
+            }
+            case MODIFY: { // copy remote over local
+                Objects.requireNonNull(parameter1);
+                Objects.requireNonNull(parameter2);
+                Utils.copyBean(parameter2, parameter1);
+                break;
+            }
+            default: {
+                logger.error("MERGE IMPOSSIBLE:\n" + toString());
+                throw new NotImplementedException();
             }
         }
     }

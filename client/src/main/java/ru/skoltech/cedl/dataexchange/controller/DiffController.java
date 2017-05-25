@@ -65,7 +65,7 @@ public class DiffController implements Initializable {
     }
 
     public void acceptAll(ActionEvent actionEvent) {
-        List<ModelDifference> appliedDifferences = DifferenceMerger.applyChangesOnSecondToFirst(modelDifferences);
+        List<ModelDifference> appliedDifferences = DifferenceMerger.mergeChangesOntoFirst(modelDifferences);
         if (appliedDifferences.size() > 0) {
             ProjectContext.getInstance().getProject().markStudyModified();
         }
@@ -133,8 +133,8 @@ public class DiffController implements Initializable {
                 private Button createAcceptButton(ModelDifference difference) {
                     ModelNode parentNode = difference.getParentNode();
                     boolean mustAccept = !DiffController.this.isEditable(parentNode);
-                    boolean isRemoteChange = difference.hasChangeOnSecond();
-                    String buttonTitle = mustAccept || isRemoteChange ? "accept remote" : "revert local";
+                    boolean canMerge = difference.isMergeable();
+                    String buttonTitle = mustAccept || canMerge ? "accept remote" : "revert local";
                     Button applyButton = new Button(buttonTitle);
                     applyButton.setUserData(difference);
                     applyButton.setOnAction(DiffController.this::handleDifference);
@@ -145,7 +145,7 @@ public class DiffController implements Initializable {
                 protected void updateItem(String item, boolean empty) {
                     super.updateItem(item, empty);
                     ModelDifference difference = (ModelDifference) getTableRow().getItem();
-                    if (!empty && difference != null && difference.isMergeable()) {
+                    if (!empty && difference != null) {
                         setGraphic(createAcceptButton(difference));
                     } else {
                         setGraphic(null);

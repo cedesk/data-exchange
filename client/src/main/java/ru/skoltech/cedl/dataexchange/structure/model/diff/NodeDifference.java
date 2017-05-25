@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 import java.util.function.Function;
@@ -77,9 +78,12 @@ public class NodeDifference extends ModelDifference {
 
     @Override
     public boolean isMergeable() {
-        return changeType == ChangeType.MODIFY;
-        // TODO
-        // changeType == ChangeType.ADD_NODE || changeType == ChangeType.REMOVE_NODE;
+        return changeLocation == ChangeLocation.ARG2;
+    }
+
+    @Override
+    public boolean isRevertible() {
+        return changeLocation == ChangeLocation.ARG1;
     }
 
     public static NodeDifference createNodeAttributesModified(ModelNode node1, ModelNode node2, String attribute,
@@ -97,7 +101,7 @@ public class NodeDifference extends ModelDifference {
         return new NodeDifference(parent, node1, name, ChangeType.REMOVE, changeLocation);
     }
 
-    static List<ModelDifference> differencesOnSubNodes(CompositeModelNode m1, CompositeModelNode m2, long latestStudy1Modification) {
+    public static List<ModelDifference> differencesOnSubNodes(CompositeModelNode m1, CompositeModelNode m2, long latestStudy1Modification) {
         LinkedList<ModelDifference> subnodesDifferences = new LinkedList<>();
         Map<String, Object> m1SubNodesMap = (Map<String, Object>) m1.getSubNodes().stream().collect(
                 Collectors.toMap(ModelNode::getUuid, Function.<ModelNode>identity())
@@ -115,16 +119,17 @@ public class NodeDifference extends ModelDifference {
             ModelNode s2 = (ModelNode) m2SubNodesMap.get(nodeUuid);
 
             if (s1 != null && s2 == null) {
-                if (s1.getLastModification() == null) {
+                if (s1.getLastModification() == null) {  // model 1 was newly added
                     subnodesDifferences.add(createAddedNode(m1, s1, s1.getName(), ChangeLocation.ARG1));
-                } else {
+                } else {  // model 2 was deleted
                     subnodesDifferences.add(createRemovedNode(m1, s1, s1.getName(), ChangeLocation.ARG2));
                 }
             } else if (s1 == null && s2 != null) {
-                if (s2.getLastModification() <= latestStudy1Modification) { // node 2 was deleted
-                    subnodesDifferences.add(createRemovedNode(m1, s2, s2.getName(), ChangeLocation.ARG1));
-                } else { // node 2 was added
+                Objects.requireNonNull(s2.getLastModification(), "persisted parameters always should have the timestamp set");
+                if (s2.getLastModification() > latestStudy1Modification) { // node 2 was added
                     subnodesDifferences.add(createAddedNode(m1, s2, s2.getName(), ChangeLocation.ARG2));
+                } else { // node 2 was deleted
+                    subnodesDifferences.add(createRemovedNode(m1, s2, s2.getName(), ChangeLocation.ARG1));
                 }
             } else {
                 // depth search
@@ -144,7 +149,7 @@ public class NodeDifference extends ModelDifference {
             modelDifferences.add(createNodeAttributesModified(m1, m2, "name", value1, value2));
         }
         modelDifferences.addAll(ParameterDifference.computeDifferences(m1, m2, latestStudy1Modification));
-        modelDifferences.addAll(ExternalModelDifference.differencesOnExternalModels(m1, m2, latestStudy1Modification));
+        modelDifferences.addAll(ExternalModelDifference.computeDifferences(m1, m2, latestStudy1Modification));
         if (m1 instanceof CompositeModelNode && m2 instanceof CompositeModelNode) {
             modelDifferences.addAll(differencesOnSubNodes((CompositeModelNode) m1, (CompositeModelNode) m2, latestStudy1Modification));
         }
@@ -153,10 +158,84 @@ public class NodeDifference extends ModelDifference {
 
     @Override
     public void mergeDifference() {
-        if (changeType == ChangeType.MODIFY) {
+        if (changeLocation != ChangeLocation.ARG2) // handling only remote changes
+            throw new IllegalStateException("local difference can not be merged");
 
-        } else {
-            logger.error("MERGE IMPOSSIBLE:\n" + toString());
+        switch (changeType) {
+            case ADD: { // add node to local parent
+                Objects.requireNonNull(parent);
+                CompositeModelNode compositeParent = (CompositeModelNode) parent;
+                if (compositeParent.getSubNodesMap().containsKey(node1.getName())) {
+                    logger.error("unable to add parameter, because another parameter of same name is already there");
+                } else {
+                    compositeParent.addSubNode(node1);
+                }
+                break;
+            }
+            case REMOVE: { // remove node from local parent
+                Objects.requireNonNull(parent);
+                final String uuid = node1.getUuid();
+                final List<ModelNode> siblingNodes = ((CompositeModelNode) parent).getSubNodes();
+                // TODO: block changes that make the model inconsistent (links to this parameter, ...)
+                boolean removed = siblingNodes.removeIf(mn -> mn.getUuid().equals(uuid));
+                if (!removed) {
+                    logger.warn("node to remove not present: " + node1.getNodePath());
+                } else {
+                    // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
+                    ((CompositeModelNode) parent).setSubNodes(new LinkedList<>(siblingNodes));
+                }
+                break;
+            }
+            case MODIFY: { // copy remote over local
+                Objects.requireNonNull(node1);
+                Objects.requireNonNull(node2);
+                node1.setLastModification(node2.getLastModification());
+                node1.setName(node2.getName());
+                break;
+            }
+            default: {
+                logger.error("MERGE IMPOSSIBLE:\n" + toString());
+                throw new NotImplementedException();
+            }
+        }
+    }
+
+    @Override
+    public void revertDifference() {
+        if (changeLocation != ChangeLocation.ARG1) // handling only local changes
+            throw new IllegalStateException("non-local difference can not be reverted");
+
+        switch (changeType) {
+            case MODIFY: { // copy remote over local
+                Objects.requireNonNull(node1);
+                Objects.requireNonNull(node2);
+                node1.setLastModification(node2.getLastModification());
+                node1.setName(node2.getName());
+                break;
+            }
+            case ADD: { // remove local again
+                Objects.requireNonNull(parent);
+                String uuid = node1.getUuid();
+                List<ModelNode> siblingNodes = ((CompositeModelNode) parent).getSubNodes();
+                // TODO: block changes that make the model inconsistent (links to this parameter, ...)
+                boolean removed = siblingNodes.removeIf(mn -> mn.getUuid().equals(uuid));
+                if (!removed) {
+                    logger.warn("node to remove not present: " + node1.getNodePath());
+                } else {
+                    // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
+                    ((CompositeModelNode) parent).setSubNodes(new LinkedList<>(siblingNodes));
+                }
+                break;
+            }
+            case REMOVE: { // re-add local again
+                Objects.requireNonNull(parent);
+                CompositeModelNode compositeParent = (CompositeModelNode) parent;
+                if (compositeParent.getSubNodesMap().containsKey(node1.getName())) {
+                    logger.error("unable to re-add parameter, because another parameter of same name is already there");
+                } else {
+                    compositeParent.addSubNode(node1);
+                }
+            }
         }
     }
 

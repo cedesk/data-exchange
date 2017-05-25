@@ -15,36 +15,8 @@ public abstract class ModelDifference {
     protected String value2;
     protected String author;
 
-    abstract public ModelNode getParentNode();
-
-    abstract public String getNodeName();
-
-    abstract public String getParameterName();
-
-    abstract public boolean isMergeable();
-
-    abstract public void mergeDifference();
-
-    abstract public PersistedEntity getChangedEntity();
-
     public String getAttribute() {
         return attribute;
-    }
-
-    public ChangeType getChangeType() {
-        return changeType;
-    }
-
-    public ChangeLocation getChangeLocation() {
-        return changeLocation;
-    }
-
-    public String getValue1() {
-        return value1;
-    }
-
-    public String getValue2() {
-        return value2;
     }
 
     public String getAuthor() {
@@ -55,13 +27,37 @@ public abstract class ModelDifference {
         this.author = author;
     }
 
-    public boolean hasChangeOnSecond() {
-        return changeLocation == ModelDifference.ChangeLocation.ARG2;
+    public ChangeLocation getChangeLocation() {
+        return changeLocation;
     }
 
-    public boolean hasChangeOnFirst() {
-        return changeLocation == ModelDifference.ChangeLocation.ARG1;
+    public ChangeType getChangeType() {
+        return changeType;
     }
+
+    abstract public PersistedEntity getChangedEntity();
+
+    abstract public String getNodeName();
+
+    abstract public String getParameterName();
+
+    abstract public ModelNode getParentNode();
+
+    public String getValue1() {
+        return value1;
+    }
+
+    public String getValue2() {
+        return value2;
+    }
+
+    abstract public boolean isMergeable();
+
+    abstract public boolean isRevertible();
+
+    abstract public void mergeDifference();
+
+    abstract public void revertDifference();
 
     @Override
     public String toString() {

@@ -1,15 +1,12 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import static ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference.ChangeType;
@@ -19,8 +16,6 @@ import static ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference
  */
 public class ModelDifferencesTest {
 
-    private Study st1;
-    private Study st2;
     private SystemModel s1;
     private SystemModel s2;
 
@@ -35,42 +30,8 @@ public class ModelDifferencesTest {
         Assert.assertEquals(0, modelDifferences.size());
     }
 
-    @Test
-    public void equalStudies() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        st2 = st1;
-        Assert.assertEquals(st1, st2);
-
-        st2 = (Study) BeanUtils.cloneBean(st1);
-        st2.setLatestModelModification(st2.getLatestModelModification() + 100);
-        Assert.assertEquals(st1, st2);
-
-        List<ModelDifference> differences;
-        differences = StudyDifference.computeDifferences(st1, st2, -1);
-        Assert.assertEquals(0, differences.size());
-
-        st2.setVersion(2);
-        differences = StudyDifference.computeDifferences(st1, st2, -1);
-        Assert.assertEquals(1, differences.size());
-        Assert.assertEquals("version", differences.get(0).getAttribute());
-        Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, differences.get(0).getChangeLocation());
-
-        st2.setStudySettings(new StudySettings());
-        st2.getStudySettings().setSyncEnabled(false);
-        differences = StudyDifference.computeDifferences(st1, st2, -1);
-        Assert.assertEquals(1, differences.size());
-        Assert.assertEquals("version\nstudySettings", differences.get(0).getAttribute());
-        Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, differences.get(0).getChangeLocation());
-
-        differences.get(0).mergeDifference();
-    }
-
     @Before
     public void prepare() {
-        st1 = new Study();
-        st1.setName("s1");
-        st1.setVersion(1);
-        st1.setLatestModelModification(System.currentTimeMillis());
-
         s1 = new SystemModel();
         s1.setName("S-1");
         s2 = new SystemModel();
@@ -82,12 +43,9 @@ public class ModelDifferencesTest {
     public void twoNodeDiffer3() {
         long loadTime = System.currentTimeMillis();
 
-        // remote remove ext mo
-        s2.setName(s1.getName());
-        ExternalModel externalModel4 = new ExternalModel();
-        externalModel4.setLastModification(loadTime - 1000);
-        externalModel4.setName("filename");
-        s2.addExternalModel(externalModel4);
+        // local add param
+        ParameterModel p3 = new ParameterModel("new-param", 0.24);
+        s1.addParameter(p3);
 
         // local add ext mo
         ExternalModel externalModel3 = new ExternalModel();
@@ -95,9 +53,11 @@ public class ModelDifferencesTest {
         externalModel3.setLastModification(null);
         s1.addExternalModel(externalModel3);
 
-        // local add param
-        ParameterModel p3 = new ParameterModel("new-param", 0.24);
-        s1.addParameter(p3);
+        // remote remove subnode
+        s2.setName(s1.getName());
+        SubSystemModel su1 = new SubSystemModel("subnode");
+        su1.setLastModification(loadTime - 1000);
+        s2.addSubNode(su1);
 
         List<ModelDifference> modelDifferences =
                 NodeDifference.computeDifferences(s1, s2, loadTime);
@@ -105,8 +65,8 @@ public class ModelDifferencesTest {
 
         Assert.assertEquals(3, modelDifferences.size());
         Assert.assertEquals(ChangeType.ADD, modelDifferences.get(0).getChangeType());
-        Assert.assertEquals(ChangeType.REMOVE, modelDifferences.get(1).getChangeType());
-        Assert.assertEquals(ChangeType.ADD, modelDifferences.get(2).getChangeType());
+        Assert.assertEquals(ChangeType.ADD, modelDifferences.get(1).getChangeType());
+        Assert.assertEquals(ChangeType.REMOVE, modelDifferences.get(2).getChangeType());
     }
 
     @Test

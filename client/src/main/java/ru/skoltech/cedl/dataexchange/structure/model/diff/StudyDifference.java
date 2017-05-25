@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.structure.model.diff;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -30,6 +31,41 @@ public class StudyDifference extends ModelDifference {
         this.changeLocation = changeLocation;
         this.value1 = value1;
         this.value2 = value2;
+    }
+
+    @Override
+    public PersistedEntity getChangedEntity() {
+        if (changeType == ChangeType.MODIFY) {
+            return changeLocation == ChangeLocation.ARG1 ? study1 : study2;
+        } else {
+            throw new IllegalArgumentException("Unknown change type and location combination");
+        }
+    }
+
+    @Override
+    public String getNodeName() {
+        return study1.getName();
+    }
+
+    @Override
+    public String getParameterName() {
+        return "";
+    }
+
+    @Override
+    public ModelNode getParentNode() {
+        return study1.getSystemModel();
+    }
+
+    @Override
+    public boolean isMergeable() {
+        return changeType == ChangeType.MODIFY && changeLocation == ChangeLocation.ARG2;
+    }
+
+    @Override
+    public boolean isRevertible() {
+        //TODO implement
+        return false;
     }
 
     public static List<ModelDifference> computeDifferences(Study s1, Study s2, long latestStudy1Modification) {
@@ -114,26 +150,6 @@ public class StudyDifference extends ModelDifference {
     }
 
     @Override
-    public String getNodeName() {
-        return study1.getName();
-    }
-
-    @Override
-    public ModelNode getParentNode() {
-        return study1.getSystemModel();
-    }
-
-    @Override
-    public String getParameterName() {
-        return "";
-    }
-
-    @Override
-    public boolean isMergeable() {
-        return changeType == ChangeType.MODIFY && changeLocation == ChangeLocation.ARG2;
-    }
-
-    @Override
     public void mergeDifference() {
         if (changeType == ChangeType.MODIFY && changeLocation == ChangeLocation.ARG2) {
             study1.setVersion(study2.getVersion());
@@ -142,6 +158,11 @@ public class StudyDifference extends ModelDifference {
         } else {
             logger.error("MERGE IMPOSSIBLE:\n" + toString());
         }
+    }
+
+    @Override
+    public void revertDifference() {
+        throw new NotImplementedException();
     }
 
     @Override
@@ -157,14 +178,5 @@ public class StudyDifference extends ModelDifference {
         sb.append(", study2=").append(study2);
         sb.append('}');
         return sb.toString();
-    }
-
-    @Override
-    public PersistedEntity getChangedEntity() {
-        if (changeType == ChangeType.MODIFY) {
-            return changeLocation == ChangeLocation.ARG1 ? study1 : study2;
-        } else {
-            throw new IllegalArgumentException("Unknown change type and location combination");
-        }
     }
 }

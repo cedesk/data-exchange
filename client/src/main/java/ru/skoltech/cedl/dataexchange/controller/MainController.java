@@ -570,7 +570,7 @@ public class MainController implements Initializable {
                 if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
                     // TODO merge remote changes
                     List<ModelDifference> modelDifferences = StudyDifference.computeDifferences(project.getStudy(), project.getRepositoryStudy(), project.getLatestLoadedModification());
-                    List<ModelDifference> appliedChanges = DifferenceMerger.applyChangesOnSecondToFirst(modelDifferences);
+                    List<ModelDifference> appliedChanges = DifferenceMerger.mergeChangesOntoFirst(modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
                         openDiffView(actionEvent);
                     }
