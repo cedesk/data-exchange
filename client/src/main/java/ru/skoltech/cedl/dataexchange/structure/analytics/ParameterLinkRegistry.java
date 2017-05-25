@@ -5,6 +5,7 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +46,97 @@ public class ParameterLinkRegistry {
         return modelNodeList;
     }
 
+    public void addLink(ParameterModel source, ParameterModel sink) {
+        logger.debug("sink '" + sink.getNodePath() + "' is linking to source '" + source.getNodePath() + "'");
+        String sourceId = source.getUuid();
+        if (valueLinks.containsKey(sourceId)) {
+            valueLinks.get(sourceId).add(sink.getUuid());
+        } else {
+            Set<String> sinks = new TreeSet<>();
+            sinks.add(sink.getUuid());
+            valueLinks.put(sourceId, sinks);
+        }
+
+        ModelNode sourceModel = source.getParent();
+        ModelNode sinkModel = sink.getParent();
+        if (sourceModel != sinkModel) { // do not record self-references to keep the graph acyclic
+            dependencyGraph.addVertex(sinkModel);
+            dependencyGraph.addVertex(sourceModel);
+            // dependency goes from SOURCE to SINK
+            dependencyGraph.addEdge(sourceModel, sinkModel);
+        }
+    }
+
+    public void addLinks(List<ParameterModel> sources, ParameterModel sink) {
+        for (ParameterModel source : sources) {
+            addLink(source, sink);
+        }
+    }
+
+    public void clear() {
+        valueLinks.clear();
+        dependencyGraph = new DependencyGraph();
+    }
+
+    public DependencyModel getDependencyModel(SystemModel rootNode) {
+        DependencyModel dependencyModel = new DependencyModel();
+        List<ModelNode> modelNodeList = getModelNodes(rootNode);
+        modelNodeList.forEach(modelNode -> dependencyModel.addElement(modelNode.getName()));
+
+        for (ModelNode fromVertex : modelNodeList) {
+            String fromVertexName = fromVertex.getName();
+            for (ModelNode toVertex : modelNodeList) {
+                if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
+                        dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
+                    Set<String> linkedParams = getLinkedParams(fromVertex, toVertex);
+                    int strength = linkedParams.size();
+                    String parameterNames = linkedParams.stream().collect(Collectors.joining(",\n"));
+                    String toVertexName = toVertex.getName();
+                    dependencyModel.addConnection(fromVertexName, toVertexName, parameterNames, strength);
+                }
+            }
+        }
+        return dependencyModel;
+    }
+
+    public List<ParameterModel> getDependentParameters(ParameterModel source) {
+        List<ParameterModel> dependentParameters = new LinkedList<>();
+        SystemModel systemModel = source.getParent().findRoot();
+        Map<String, ParameterModel> parameterDictionary = makeDictionary(systemModel);
+
+        String sourceId = source.getUuid();
+        if (valueLinks.containsKey(sourceId)) {
+            Set<String> sinks = valueLinks.get(sourceId);
+            sinks.forEach(sinkUuid -> {
+                ParameterModel sink = parameterDictionary.get(sinkUuid);
+                dependentParameters.add(sink);
+            });
+        }
+        return dependentParameters;
+    }
+
+    public String getDownstreamDependencies(ModelNode modelNode) {
+        if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.outDegreeOf(modelNode) > 0) {
+            Set<ModelDependency> sinkDependencies = dependencyGraph.outgoingEdgesOf(modelNode);
+            String sinkNames = sinkDependencies.stream().map(
+                    dependency -> dependency.getTarget().getName()
+            ).collect(Collectors.joining(", "));
+            return sinkNames;
+        }
+        return "";
+    }
+
+    public String getUpstreamDependencies(ModelNode modelNode) {
+        if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.inDegreeOf(modelNode) > 0) {
+            Set<ModelDependency> sourceDependencies = dependencyGraph.incomingEdgesOf(modelNode);
+            String sourceNames = sourceDependencies.stream().map(
+                    dependency -> dependency.getSource().getName()
+            ).collect(Collectors.joining(", "));
+            return sourceNames;
+        }
+        return "";
+    }
+
     public NumericalDSM makeNumericalDSM(SystemModel systemModel) {
         final List<ModelNode> modelNodeList = getModelNodes(systemModel);
 
@@ -82,39 +174,77 @@ public class ParameterLinkRegistry {
         //printDependencies(dependencyGraph);
     }
 
-    private ParameterTreeIterator getLinkedParameters(SystemModel systemModel) {
-        Objects.requireNonNull(systemModel);
-        return new ParameterTreeIterator(systemModel,
-                sink -> sink.getNature() == ParameterNature.INPUT &&
-                        sink.getValueSource() == ParameterValueSource.LINK &&
-                        sink.getValueLink() != null);
+    public void relinkCalculations(SystemModel systemModel) {
+        Map<String, ParameterModel> dictionary = makeDictionary(systemModel);
+        ParameterTreeIterator pmi = getCalculatedParameters(systemModel);
+        List<ParameterModel> issues = new LinkedList<>();
+        pmi.forEachRemaining(calculatedParam -> {
+            List<Argument> arguments = calculatedParam.getCalculation().getArguments();
+            for (Argument argument : arguments) {
+                if (argument instanceof Argument.Parameter) {
+                    Argument.Parameter argParam = (Argument.Parameter) argument;
+                    String uuid = argParam.getLink().getUuid();
+                    if (dictionary.containsKey(uuid)) {
+                        ParameterModel source = dictionary.get(uuid);
+                        argParam.setLink(source);
+                    } else {
+                        issues.add(calculatedParam);
+                        logger.error("relinking failed for calculated parameter:" + calculatedParam.getNodePath());
+                    }
+                }
+            }
+        });
+        if (issues.size() > 0) {
+            String issuesMsg = issues.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
+            throw new IllegalStateException("relinking calculation failed for: " + issuesMsg);
+        }
     }
 
-    private ParameterTreeIterator getCalculatedParameters(SystemModel systemModel) {
-        Objects.requireNonNull(systemModel);
-        return new ParameterTreeIterator(systemModel,
-                sink -> sink.getValueSource() == ParameterValueSource.CALCULATION &&
-                        sink.getCalculation() != null);
+    public void relinkParameters(SystemModel systemModel) {
+        Map<String, ParameterModel> dictionary = makeDictionary(systemModel);
+        ParameterTreeIterator pmi = getLinkedParameters(systemModel);
+        List<ParameterModel> issues = new LinkedList<>();
+        pmi.forEachRemaining(sink -> {
+            String uuid = sink.getValueLink().getUuid();
+            if (dictionary.containsKey(uuid)) {
+                ParameterModel source = dictionary.get(uuid);
+                sink.setValueLink(source);
+            } else {
+                issues.add(sink);
+                logger.error("relinking failed for parameter:" + sink.getNodePath());
+            }
+        });
+        if (issues.size() > 0) {
+            String issuesMsg = issues.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
+            throw new IllegalStateException("relinking parameter failed for: " + issuesMsg);
+        }
     }
 
-    public void addLink(ParameterModel source, ParameterModel sink) {
-        logger.debug("sink '" + sink.getNodePath() + "' is linking to source '" + source.getNodePath() + "'");
+    public void removeLink(ParameterModel source, ParameterModel sink) {
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
-            valueLinks.get(sourceId).add(sink.getUuid());
-        } else {
-            Set<String> sinks = new TreeSet<>();
-            sinks.add(sink.getUuid());
-            valueLinks.put(sourceId, sinks);
+            Set<String> sinks = valueLinks.get(sourceId);
+            sinks.remove(sink.getUuid());
+            if (sinks.isEmpty()) {
+                valueLinks.remove(sourceId);
+            }
         }
-
+        // dependency goes from SOURCE to SINK
         ModelNode sourceModel = source.getParent();
         ModelNode sinkModel = sink.getParent();
-        if (sourceModel != sinkModel) { // do not record self-references to keep the graph acyclic
-            dependencyGraph.addVertex(sinkModel);
-            dependencyGraph.addVertex(sourceModel);
-            // dependency goes from SOURCE to SINK
-            dependencyGraph.addEdge(sourceModel, sinkModel);
+        dependencyGraph.removeEdge(sourceModel, sinkModel);
+    }
+
+    public void removeLinks(List<ParameterModel> sources, ParameterModel sink) {
+        for (ParameterModel source : sources) {
+            removeLink(source, sink);
+        }
+    }
+
+    public void removeSink(ParameterModel sink) {
+        if (sink.getValueSource() == ParameterValueSource.LINK && sink.getValueLink() != null) {
+            ParameterModel source = sink.getValueLink();
+            removeLink(source, sink);
         }
     }
 
@@ -126,22 +256,7 @@ public class ParameterLinkRegistry {
             updateSinks(source);
         });
         pmi = getCalculatedParameters(systemModel);
-        pmi.forEachRemaining(sink -> {
-            recalculate(sink);
-        });
-    }
-
-    private void recalculate(ParameterModel sink) {
-        if (sink.getCalculation() != null) {
-            if (sink.getCalculation().valid()) {
-                logger.info("updating sink '" + sink.getNodePath() + "' from calculation");
-                sink.setValue(sink.getCalculation().evaluate());
-            } else {
-                logger.info("invalid calculation '" + sink.getNodePath() + "'");
-            }
-        } else {
-            logger.info("empty calculation '" + sink.getNodePath() + "'");
-        }
+        pmi.forEachRemaining(this::recalculate);
     }
 
     public void updateSinks(ParameterModel source) {
@@ -171,69 +286,26 @@ public class ParameterLinkRegistry {
         }
     }
 
+    private ParameterTreeIterator getCalculatedParameters(SystemModel systemModel) {
+        Objects.requireNonNull(systemModel);
+        return new ParameterTreeIterator(systemModel,
+                sink -> sink.getValueSource() == ParameterValueSource.CALCULATION &&
+                        sink.getCalculation() != null);
+    }
+
+    private ParameterTreeIterator getLinkedParameters(SystemModel systemModel) {
+        Objects.requireNonNull(systemModel);
+        return new ParameterTreeIterator(systemModel,
+                sink -> sink.getNature() == ParameterNature.INPUT &&
+                        sink.getValueSource() == ParameterValueSource.LINK &&
+                        sink.getValueLink() != null);
+    }
+
     private Map<String, ParameterModel> makeDictionary(SystemModel systemModel) {
         Map<String, ParameterModel> dictionary = new HashMap<>();
         Iterator<ParameterModel> pmi = systemModel.parametersTreeIterator();
         pmi.forEachRemaining(parameterModel -> dictionary.put(parameterModel.getUuid(), parameterModel));
         return dictionary;
-    }
-
-    public void removeLink(ParameterModel source, ParameterModel sink) {
-        String sourceId = source.getUuid();
-        if (valueLinks.containsKey(sourceId)) {
-            Set<String> sinks = valueLinks.get(sourceId);
-            sinks.remove(sink.getUuid());
-            if (sinks.isEmpty()) {
-                valueLinks.remove(sourceId);
-            }
-        }
-        // dependency goes from SOURCE to SINK
-        ModelNode sourceModel = source.getParent();
-        ModelNode sinkModel = sink.getParent();
-        dependencyGraph.removeEdge(sourceModel, sinkModel);
-    }
-
-    public void clear() {
-        valueLinks.clear();
-        dependencyGraph = new DependencyGraph();
-    }
-
-    public String getUpstreamDependencies(ModelNode modelNode) {
-        if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.inDegreeOf(modelNode) > 0) {
-            Set<ModelDependency> sourceDependencies = dependencyGraph.incomingEdgesOf(modelNode);
-            String sourceNames = sourceDependencies.stream().map(
-                    dependency -> dependency.getSource().getName()
-            ).collect(Collectors.joining(", "));
-            return sourceNames;
-        }
-        return "";
-    }
-
-    public String getDownstreamDependencies(ModelNode modelNode) {
-        if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.outDegreeOf(modelNode) > 0) {
-            Set<ModelDependency> sinkDependencies = dependencyGraph.outgoingEdgesOf(modelNode);
-            String sinkNames = sinkDependencies.stream().map(
-                    dependency -> dependency.getTarget().getName()
-            ).collect(Collectors.joining(", "));
-            return sinkNames;
-        }
-        return "";
-    }
-
-    public List<ParameterModel> getDependentParameters(ParameterModel source) {
-        List<ParameterModel> dependentParameters = new LinkedList<>();
-        SystemModel systemModel = source.getParent().findRoot();
-        Map<String, ParameterModel> parameterDictionary = makeDictionary(systemModel);
-
-        String sourceId = source.getUuid();
-        if (valueLinks.containsKey(sourceId)) {
-            Set<String> sinks = valueLinks.get(sourceId);
-            sinks.forEach(sinkUuid -> {
-                ParameterModel sink = parameterDictionary.get(sinkUuid);
-                dependentParameters.add(sink);
-            });
-        }
-        return dependentParameters;
     }
 
     private void printDependencies(DirectedGraph<ModelNode, ModelDependency> modelDependencies) {
@@ -249,44 +321,17 @@ public class ParameterLinkRegistry {
                 });
     }
 
-    public void removeLinks(List<ParameterModel> sources, ParameterModel sink) {
-        for (ParameterModel source : sources) {
-            removeLink(source, sink);
-        }
-    }
-
-    public void addLinks(List<ParameterModel> sources, ParameterModel sink) {
-        for (ParameterModel source : sources) {
-            addLink(source, sink);
-        }
-    }
-
-    public void removeSink(ParameterModel sink) {
-        if (sink.getValueSource() == ParameterValueSource.LINK && sink.getValueLink() != null) {
-            ParameterModel source = sink.getValueLink();
-            removeLink(source, sink);
-        }
-    }
-
-    public DependencyModel getDependencyModel(SystemModel rootNode) {
-        DependencyModel dependencyModel = new DependencyModel();
-        List<ModelNode> modelNodeList = getModelNodes(rootNode);
-        modelNodeList.forEach(modelNode -> dependencyModel.addElement(modelNode.getName()));
-
-        for (ModelNode fromVertex : modelNodeList) {
-            String fromVertexName = fromVertex.getName();
-            for (ModelNode toVertex : modelNodeList) {
-                if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
-                        dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
-                    Set<String> linkedParams = getLinkedParams(fromVertex, toVertex);
-                    int strength = linkedParams.size();
-                    String parameterNames = linkedParams.stream().collect(Collectors.joining(",\n"));
-                    String toVertexName = toVertex.getName();
-                    dependencyModel.addConnection(fromVertexName, toVertexName, parameterNames, strength);
-                }
+    private void recalculate(ParameterModel sink) {
+        if (sink.getCalculation() != null) {
+            if (sink.getCalculation().valid()) {
+                logger.info("updating sink '" + sink.getNodePath() + "' from calculation");
+                sink.setValue(sink.getCalculation().evaluate());
+            } else {
+                logger.info("invalid calculation '" + sink.getNodePath() + "'");
             }
+        } else {
+            logger.info("empty calculation '" + sink.getNodePath() + "'");
         }
-        return dependencyModel;
     }
 
     public static class ModelDependency extends DefaultEdge {
