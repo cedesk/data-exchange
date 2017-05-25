@@ -143,7 +143,7 @@ public class NodeDifference extends ModelDifference {
             String value2 = m2.getName();
             modelDifferences.add(createNodeAttributesModified(m1, m2, "name", value1, value2));
         }
-        modelDifferences.addAll(ParameterDifference.differencesOnParameters(m1, m2, latestStudy1Modification));
+        modelDifferences.addAll(ParameterDifference.computeDifferences(m1, m2, latestStudy1Modification));
         modelDifferences.addAll(ExternalModelDifference.differencesOnExternalModels(m1, m2, latestStudy1Modification));
         if (m1 instanceof CompositeModelNode && m2 instanceof CompositeModelNode) {
             modelDifferences.addAll(differencesOnSubNodes((CompositeModelNode) m1, (CompositeModelNode) m2, latestStudy1Modification));

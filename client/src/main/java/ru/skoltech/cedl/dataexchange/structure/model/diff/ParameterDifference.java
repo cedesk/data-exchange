@@ -40,6 +40,41 @@ public class ParameterDifference extends ModelDifference {
         this.value2 = value2;
     }
 
+    @Override
+    public PersistedEntity getChangedEntity() {
+        if (changeType == ChangeType.MODIFY) {
+            return changeLocation == ChangeLocation.ARG1 ? parameter1 : parameter2;
+        } else if (changeType == ChangeType.ADD || changeType == ChangeType.REMOVE) {
+            return parameter1;
+        } else {
+            throw new IllegalArgumentException("Unknown change type and location combination");
+        }
+    }
+
+    @Override
+    public String getNodeName() {
+        return parameter1.getParent().getNodePath();
+    }
+
+    @Override
+    public String getParameterName() {
+        return parameter1.getName();
+    }
+
+    @Override
+    public ModelNode getParentNode() {
+        return parameter1.getParent();
+    }
+
+    @Override
+    public boolean isMergeable() {
+        return changeType == ChangeType.MODIFY
+                || (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.ADD)
+                //missing        || (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.REMOVE)
+                || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.ADD)
+                || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.REMOVE);
+    }
+
     public static ModelDifference createParameterAttributesModified(ParameterModel parameter1, ParameterModel parameter2, List<AttributeDifference> differences) {
         StringBuilder sbAttributes = new StringBuilder(), sbValues1 = new StringBuilder(), sbValues2 = new StringBuilder();
         for (AttributeDifference diff : differences) {
@@ -138,7 +173,7 @@ public class ParameterDifference extends ModelDifference {
         return differences;
     }
 
-    static List<ModelDifference> differencesOnParameters(ModelNode m1, ModelNode m2, long latestStudy1Modification) {
+    public static List<ModelDifference> computeDifferences(ModelNode m1, ModelNode m2, long latestStudy1Modification) {
         LinkedList<ModelDifference> parameterDifferences = new LinkedList<>();
         Map<String, ParameterModel> m1params = m1.getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getUuid, Function.identity())
@@ -161,10 +196,11 @@ public class ParameterDifference extends ModelDifference {
                     parameterDifferences.add(createRemovedParameter(m1, p1, p1.getName(), ChangeLocation.ARG2));
                 }
             } else if (p1 == null && p2 != null) {
-                if (p2.getLastModification() <= latestStudy1Modification) { // parameter 2 was deleted
-                    parameterDifferences.add(createRemovedParameter(m1, p2, p2.getName(), ChangeLocation.ARG1));
-                } else { // parameter 1 was added
+                Objects.requireNonNull(p2.getLastModification(), "persisted parameters always should have the timestamp set");
+                if (p2.getLastModification() > latestStudy1Modification) { // parameter 2 was added
                     parameterDifferences.add(createAddedParameter(m1, p2, p2.getName(), ChangeLocation.ARG2));
+                } else { // parameter 1 was deleted
+                    parameterDifferences.add(createRemovedParameter(m1, p2, p2.getName(), ChangeLocation.ARG1));
                 }
             } else if (p1 != null && p2 != null) {
                 List<AttributeDifference> differences = parameterDifferences(p1, p2);
@@ -178,36 +214,24 @@ public class ParameterDifference extends ModelDifference {
     }
 
     @Override
-    public ModelNode getParentNode() {
-        return parameter1.getParent();
-    }
-
-    @Override
-    public String getNodeName() {
-        return parameter1.getParent().getNodePath();
-    }
-
-    @Override
-    public String getParameterName() {
-        return parameter1.getName();
-    }
-
-    @Override
-    public boolean isMergeable() {
-        return changeType == ChangeType.MODIFY
-                || (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.ADD)
-                //missing        || (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.REMOVE)
-                || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.ADD)
-                || (changeLocation == ChangeLocation.ARG2 && changeType == ChangeType.REMOVE);
-    }
-
-    @Override
     public void mergeDifference() {
-        if (changeType == ChangeType.MODIFY) {
+        if (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.MODIFY) {
             // TODO respect the change location / then only meaningful direction is copy remote to local
             Objects.requireNonNull(parameter1);
             Objects.requireNonNull(parameter2);
             Utils.copyBean(parameter2, parameter1);
+        } else if (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.ADD) { // remove local again
+            Objects.requireNonNull(parent);
+            String uuid = parameter1.getUuid();
+            List<ParameterModel> parentParameters = parent.getParameters();
+            // TODO: block changes that make the model inconsistent (links to this parameter, ...)
+            boolean removed = parentParameters.removeIf(pm -> pm.getUuid().equals(uuid));
+            if (!removed) {
+                logger.warn("parameter to remove not present: " + parameter1.getNodePath());
+            } else {
+                // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
+                parent.setParameters(new LinkedList<>(parentParameters));
+            }
         } else if (changeLocation == ChangeLocation.ARG2) {
             Objects.requireNonNull(parent);
             String uuid = parameter1.getUuid();
@@ -228,18 +252,7 @@ public class ParameterDifference extends ModelDifference {
                     parent.setParameters(new LinkedList<>(parentParameters));
                 }
             }
-        } else if (changeLocation == ChangeLocation.ARG1 && changeType == ChangeType.ADD) { // remove local again
-            Objects.requireNonNull(parent);
-            String uuid = parameter1.getUuid();
-            List<ParameterModel> parentParameters = parent.getParameters();
-            // TODO: block changes that make the model inconsistent (links to this parameter, ...)
-            boolean removed = parentParameters.removeIf(pm -> pm.getUuid().equals(uuid));
-            if (!removed) {
-                logger.warn("parameter to remove not present: " + parameter1.getNodePath());
-            } else {
-                // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
-                parent.setParameters(new LinkedList<>(parentParameters));
-            }
+
         } else {
             logger.error("MERGE IMPOSSIBLE:\n" + toString());
         }
@@ -263,16 +276,5 @@ public class ParameterDifference extends ModelDifference {
         sb.append(", author='").append(author).append('\'');
         sb.append("}\n ");
         return sb.toString();
-    }
-
-    @Override
-    public PersistedEntity getChangedEntity() {
-        if (changeType == ChangeType.MODIFY) {
-            return changeLocation == ChangeLocation.ARG1 ? parameter1 : parameter2;
-        } else if (changeType == ChangeType.ADD || changeType == ChangeType.REMOVE) {
-            return parameter1;
-        } else {
-            throw new IllegalArgumentException("Unknown change type and location combination");
-        }
     }
 }
