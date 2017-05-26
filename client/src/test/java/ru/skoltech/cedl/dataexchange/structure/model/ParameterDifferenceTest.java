@@ -74,6 +74,43 @@ public class ParameterDifferenceTest {
     }
 
     @Test
+    public void localParameterModifyLink() {
+        ParameterModel param1 = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
+        param1.setLastModification(System.currentTimeMillis());
+        remoteSystem.addParameter(param1);
+        ParameterModel param3 = new ParameterModel("param3", 13.0, ParameterNature.INPUT, ParameterValueSource.MANUAL);
+        param1.setNature(ParameterNature.INPUT);
+        param1.setValueSource(ParameterValueSource.LINK);
+        param1.setValueLink(param3);
+
+        ParameterModel param2 = new ParameterModel();
+        Utils.copyBean(param1, param2);
+        localSystem.addParameter(param2);
+        ParameterModel param4 = new ParameterModel("param4", 51.0, ParameterNature.INPUT, ParameterValueSource.MANUAL);
+        param2.setNature(ParameterNature.INPUT);
+        param2.setValueSource(ParameterValueSource.LINK);
+        param2.setValueLink(param4);
+
+        List<ParameterDifference> differences;
+        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        Assert.assertEquals(1, differences.size());
+        ParameterDifference pd = differences.get(0);
+        System.out.println(pd);
+        Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
+        Assert.assertEquals(ChangeType.MODIFY, pd.getChangeType());
+
+        Assert.assertTrue(pd.isRevertible());
+
+        pd.revertDifference();
+
+        Assert.assertEquals(1, localSystem.getParameters().size());
+        Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
+
+        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        Assert.assertEquals(0, differences.size());
+    }
+
+    @Test
     public void localParameterRemove() {
         ParameterModel existingRemoteParam = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
         existingRemoteParam.setLastModification(remoteSystem.getLastModification() - 100);// parameter it was part of last modification

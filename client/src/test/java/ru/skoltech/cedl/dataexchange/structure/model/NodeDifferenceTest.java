@@ -139,7 +139,7 @@ public class NodeDifferenceTest {
     @Test
     public void remoteNodeModify() {
         SubSystemModel subsystem1 = new SubSystemModel("subsystem1");
-        subsystem1.setLastModification(System.currentTimeMillis());
+        subsystem1.setLastModification(System.currentTimeMillis() - 1000);
         remoteSystem.addSubNode(subsystem1);
         SubSystemModel subsystem2 = new SubSystemModel();
         Utils.copyBean(subsystem1, subsystem2);
