@@ -119,6 +119,142 @@ public class ModelEditingController implements Initializable {
 
     private Window appWindow;
 
+    private Window getAppWindow() {
+        return viewPane.getScene().getWindow();
+    }
+
+    private TreeItem<ModelNode> getSelectedTreeItem() {
+        return structureTree.getSelectionModel().getSelectedItem();
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+        parameterEditor.setProject(project);
+
+        project.addExternalModelChangeObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                ExternalModel externalModel = (ExternalModel) arg;
+                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
+                try {
+                    ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler,
+                            new ExternalModelUpdateListener(), new ParameterUpdateListener());
+                } catch (ExternalModelException e) {
+                    logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
+                }
+            }
+        });
+    }
+
+    public void addNode(ActionEvent actionEvent) {
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
+
+        if (selectedItem.getValue() instanceof CompositeModelNode) {
+            CompositeModelNode node = (CompositeModelNode) selectedItem.getValue();
+            Optional<String> nodeNameChoice = Dialogues.inputModelNodeName("new-node");
+            if (nodeNameChoice.isPresent()) {
+                String subNodeName = nodeNameChoice.get();
+                if (!Identifiers.validateNodeName(subNodeName)) {
+                    Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
+                    return;
+                }
+                if (node.getSubNodesMap().containsKey(subNodeName)) {
+                    Dialogues.showError("Duplicate node name", "There is already a sub-node named like that!");
+                } else {
+                    // model
+                    ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
+                    // view
+                    StructureTreeItem structureTreeItem = new StructureTreeItem(newNode);
+                    selectedItem.getChildren().add(structureTreeItem);
+                    selectedItem.setExpanded(true);
+                    project.markStudyModified();
+                    StatusLogger.getInstance().log("added node: " + newNode.getNodePath());
+                    ActionLogger.log(ActionLogger.ActionType.node_add, newNode.getNodePath());
+                }
+            }
+        } else {
+            StatusLogger.getInstance().log("The selected node may not have subnodes.");
+        }
+    }
+
+    public void addParameter(ActionEvent actionEvent) {
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
+
+        ParameterModel parameter = null;
+        Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
+        if (parameterNameChoice.isPresent()) {
+            String parameterName = parameterNameChoice.get();
+            if (!Identifiers.validateParameterName(parameterName)) {
+                Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
+                return;
+            }
+            if (selectedItem.getValue().hasParameter(parameterName)) {
+                Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
+            } else {
+                // TODO: use factory
+
+                parameter = new ParameterModel(parameterName, 0.0);
+                selectedItem.getValue().addParameter(parameter);
+                StatusLogger.getInstance().log("added parameter: " + parameter.getName());
+                ActionLogger.log(ActionLogger.ActionType.parameter_add, parameter.getNodePath());
+                project.markStudyModified();
+            }
+        }
+        updateParameterTable(selectedItem);
+        if (parameter != null) {
+            parameterTable.getSelectionModel().select(parameter);
+        }
+    }
+
+    public void clearView() {
+        structureTree.setRoot(null);
+    }
+
+    public void deleteNode(ActionEvent actionEvent) {
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
+        if (selectedItem.getParent() == null) { // is ROOT
+            StatusLogger.getInstance().log("Node can not be deleted!", true);
+        } else {
+            // TODO: check for dependencies, do not allow if there are dependent nodes
+            // view
+            TreeItem<ModelNode> parent = selectedItem.getParent();
+            parent.getChildren().remove(selectedItem);
+            // model
+            ModelNode deleteNode = selectedItem.getValue();
+            if (parent.getValue() instanceof CompositeModelNode) {
+                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
+                parentNode.removeSubNode(deleteNode);
+            }
+            project.markStudyModified();
+            StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
+            ActionLogger.log(ActionLogger.ActionType.node_remove, deleteNode.getNodePath());
+        }
+    }
+
+    public void deleteParameter(ActionEvent actionEvent) {
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem();
+        List<ParameterModel> dependentParameters = project.getParameterLinkRegistry().getDependentParameters(parameterModel);
+        if (dependentParameters.size() > 0) {
+            String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
+            Dialogues.showWarning("Parameter deletion impossible!", "This parameter is referenced by " + dependentParams);
+            return;
+        }
+
+        Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Parameter deletion", "Are you sure you want to delete this parameter?");
+        if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
+            selectedItem.getValue().getParameters().remove(parameterModel);
+            project.getParameterLinkRegistry().removeSink(parameterModel);
+            StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
+            ActionLogger.log(ActionLogger.ActionType.parameter_remove, parameterModel.getNodePath());
+            updateParameterTable(selectedItem);
+            project.markStudyModified();
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // STRUCTURE TREE VIEW
@@ -217,106 +353,6 @@ public class ModelEditingController implements Initializable {
         externalModelEditor.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
     }
 
-    private ContextMenu makeStructureTreeContextMenu(BooleanBinding structureNotEditable) {
-        ContextMenu structureContextMenu = new ContextMenu();
-        MenuItem addNodeMenuItem = new MenuItem("Add subnode");
-        addNodeMenuItem.setOnAction(ModelEditingController.this::addNode);
-        addNodeMenuItem.disableProperty().bind(structureNotEditable);
-        structureContextMenu.getItems().add(addNodeMenuItem);
-        MenuItem renameNodeMenuItem = new MenuItem("Rename node");
-        renameNodeMenuItem.setOnAction(ModelEditingController.this::renameNode);
-        renameNodeMenuItem.disableProperty().bind(Bindings.or(structureNotEditable, selectedNodeIsRoot));
-        structureContextMenu.getItems().add(renameNodeMenuItem);
-        MenuItem deleteNodeMenuItem = new MenuItem("Delete node");
-        deleteNodeMenuItem.setOnAction(ModelEditingController.this::deleteNode);
-        deleteNodeMenuItem.disableProperty().bind(Bindings.or(structureNotEditable, selectedNodeIsRoot));
-        structureContextMenu.getItems().add(deleteNodeMenuItem);
-        return structureContextMenu;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-        parameterEditor.setProject(project);
-
-        project.addExternalModelChangeObserver(new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                ExternalModel externalModel = (ExternalModel) arg;
-                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
-                try {
-                    ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler,
-                            new ExternalModelUpdateListener(), new ParameterUpdateListener());
-                } catch (ExternalModelException e) {
-                    logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
-                }
-            }
-        });
-    }
-
-    private void updateParameterTable(TreeItem<ModelNode> treeItem) {
-        int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
-
-        ModelNode modelNode = treeItem.getValue();
-        boolean showOnlyOutputParameters = !selectedNodeIsEditable.getValue();
-        viewParameters.displayParameters(modelNode.getParameters(), showOnlyOutputParameters);
-        logger.debug("updateParameterTable " + showOnlyOutputParameters + " #" + viewParameters.getItems().size());
-
-        parameterTable.autosize();
-        // TODO: maybe redo selection only if same node
-        if (selectedIndex < parameterTable.getItems().size()) {
-            parameterTable.getSelectionModel().select(selectedIndex);
-        } else if (parameterTable.getItems().size() > 0) {
-            parameterTable.getSelectionModel().select(0);
-        }
-    }
-
-    private void clearParameterTable() {
-        parameterTable.getItems().clear();
-    }
-
-    private void updateDependencies(ModelNode modelNode) {
-        String upstreamDependencies = project.getParameterLinkRegistry().getUpstreamDependencies(modelNode);
-        upstreamDependenciesText.setText(upstreamDependencies);
-        String downstreamDependencies = project.getParameterLinkRegistry().getDownstreamDependencies(modelNode);
-        downstreamDependenciesText.setText(downstreamDependencies);
-    }
-
-    public void updateView() {
-        if (project.getSystemModel() != null) {
-            int selectedIndex = structureTree.getSelectionModel().getSelectedIndex();
-            if (project.getRepositoryStudy() == null || project.getRepositoryStudy().getSystemModel() == null) {
-                StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
-                structureTree.setRoot(rootNode);
-            } else {
-                TreeItem<ModelNode> currentViewRoot = structureTree.getRoot();
-                if (currentViewRoot != null) {
-                    String currentViewRootUuid = currentViewRoot.getValue().getUuid();
-                    String modelRootUuid = project.getSystemModel().getUuid();
-                    if (modelRootUuid.equals(currentViewRootUuid)) {
-                        StructureTreeItemFactory.updateTreeView(currentViewRoot,
-                                project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
-                    } else { // different system model
-                        StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
-                                project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
-                        structureTree.setRoot(rootNode);
-                    }
-                } else {
-                    StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
-                            project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
-                    structureTree.setRoot(rootNode);
-                }
-            }
-            boolean isAdmin = project.isCurrentAdmin();
-            structureTree.setEditable(isAdmin);
-            if (structureTree.getTreeItem(selectedIndex) != null) {
-                structureTree.getSelectionModel().select(selectedIndex);
-            }
-        } else {
-            structureTree.setRoot(null);
-            clearParameterTable();
-        }
-    }
-
     public void openParameterHistoryDialog(ActionEvent actionEvent) {
         ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem();
         Objects.requireNonNull(selectedParameter, "no parameter selected");
@@ -340,6 +376,46 @@ public class ModelEditingController implements Initializable {
             stage.show();
         } catch (IOException e) {
             logger.error(e);
+        }
+    }
+
+    public void refreshView(ActionEvent actionEvent) {
+        clearView();
+        updateView();
+    }
+
+    public void renameNode(ActionEvent actionEvent) {
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
+        if (selectedItem.getParent() == null) {
+            Dialogues.showError("System can not be renamed", "System can not be renamed!");
+            return;
+        }
+        ModelNode modelNode = selectedItem.getValue();
+        String oldNodeName = modelNode.getName();
+        Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(oldNodeName);
+        if (nodeNameChoice.isPresent()) {
+            String newNodeName = nodeNameChoice.get();
+            if (!Identifiers.validateNodeName(newNodeName)) {
+                Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
+                return;
+            }
+
+            if (newNodeName.equals(oldNodeName)) return;
+            TreeItem<ModelNode> parent = selectedItem.getParent();
+            if (parent != null) {
+                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
+                Map subNodesMap = parentNode.getSubNodesMap();
+                if (subNodesMap.containsKey(newNodeName)) {
+                    Dialogues.showError("Duplicate node name", "There is already a sibling node named like that!");
+                    return;
+                }
+            }
+            // model
+            modelNode.setName(newNodeName);
+            // view
+            selectedItem.valueProperty().setValue(modelNode);
+            project.markStudyModified();
         }
     }
 
@@ -389,28 +465,52 @@ public class ModelEditingController implements Initializable {
         }
     }
 
-    private String findParameterName(ExternalModel externalModel, String target) {
-        String filename = externalModel.getName();
-        SpreadsheetCoordinates nameCellCoordinates = null;
-        try {
-            SpreadsheetCoordinates targetCoordinates = SpreadsheetCoordinates.valueOf(target);
-            nameCellCoordinates = targetCoordinates.getNeighbour(SpreadsheetCoordinates.Neighbour.LEFT);
-        } catch (ParseException e) {
-            return null;
-        }
-        String parameterName = null;
-        ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
-        if (WorkbookFactory.isWorkbookFile(filename)) {
-            try (InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel)) {
-                String sheetName = nameCellCoordinates.getSheetName();
-                SpreadsheetCellValueAccessor cellValueAccessor = new SpreadsheetCellValueAccessor(inputStream, filename);
-                parameterName = cellValueAccessor.getValueAsString(nameCellCoordinates);
-            } catch (IOException | ExternalModelException e) {
-                StatusLogger.getInstance().log("The external model '" + filename + "' could not be opened to extract parameter name!");
-                logger.warn("The external model '" + filename + "' could not be opened to extract parameter name!", e);
+    public void updateView() {
+        if (project.getSystemModel() != null) {
+            int selectedIndex = structureTree.getSelectionModel().getSelectedIndex();
+            if (project.getRepositoryStudy() == null || project.getRepositoryStudy().getSystemModel() == null) {
+                StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(project.getSystemModel());
+                structureTree.setRoot(rootNode);
+            } else {
+                TreeItem<ModelNode> currentViewRoot = structureTree.getRoot();
+                if (currentViewRoot != null) {
+                    String currentViewRootUuid = currentViewRoot.getValue().getUuid();
+                    String modelRootUuid = project.getSystemModel().getUuid();
+                    if (modelRootUuid.equals(currentViewRootUuid)) {
+                        StructureTreeItemFactory.updateTreeView(currentViewRoot,
+                                project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
+                    } else { // different system model
+                        StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
+                                project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
+                        structureTree.setRoot(rootNode);
+                    }
+                } else {
+                    StructureTreeItem rootNode = StructureTreeItemFactory.getTreeView(
+                            project.getSystemModel(), project.getRepositoryStudy().getSystemModel());
+                    structureTree.setRoot(rootNode);
+                }
             }
+            boolean isAdmin = project.isCurrentAdmin();
+            structureTree.setEditable(isAdmin);
+            if (structureTree.getTreeItem(selectedIndex) != null) {
+                structureTree.getSelectionModel().select(selectedIndex);
+            }
+        } else {
+            structureTree.setRoot(null);
+            clearParameterTable();
         }
-        return parameterName;
+    }
+
+    public void viewDSM(ActionEvent actionEvent) {
+        openDependencyView("Dependency Structure Matrix", DependencyController.ViewMode.DSM);
+    }
+
+    public void viewNSquaredChart(ActionEvent actionEvent) {
+        openDependencyView("N-Square Chart", DependencyController.ViewMode.N_SQUARE);
+    }
+
+    private void clearParameterTable() {
+        parameterTable.getItems().clear();
     }
 
     private ExternalModel findExternalModel(String filename) {
@@ -445,152 +545,28 @@ public class ModelEditingController implements Initializable {
         return source;
     }
 
-    public void addNode(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        Objects.requireNonNull(selectedItem, "no item selected in tree view");
-
-        if (selectedItem.getValue() instanceof CompositeModelNode) {
-            CompositeModelNode node = (CompositeModelNode) selectedItem.getValue();
-            Optional<String> nodeNameChoice = Dialogues.inputModelNodeName("new-node");
-            if (nodeNameChoice.isPresent()) {
-                String subNodeName = nodeNameChoice.get();
-                if (!Identifiers.validateNodeName(subNodeName)) {
-                    Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
-                    return;
-                }
-                if (node.getSubNodesMap().containsKey(subNodeName)) {
-                    Dialogues.showError("Duplicate node name", "There is already a sub-node named like that!");
-                } else {
-                    // model
-                    ModelNode newNode = ModelNodeFactory.addSubNode(node, subNodeName);
-                    // view
-                    StructureTreeItem structureTreeItem = new StructureTreeItem(newNode);
-                    selectedItem.getChildren().add(structureTreeItem);
-                    selectedItem.setExpanded(true);
-                    project.markStudyModified();
-                    StatusLogger.getInstance().log("added node: " + newNode.getNodePath());
-                    ActionLogger.log(ActionLogger.ActionType.node_add, newNode.getNodePath());
-                }
-            }
-        } else {
-            StatusLogger.getInstance().log("The selected node may not have subnodes.");
+    private String findParameterName(ExternalModel externalModel, String target) {
+        String filename = externalModel.getName();
+        SpreadsheetCoordinates nameCellCoordinates = null;
+        try {
+            SpreadsheetCoordinates targetCoordinates = SpreadsheetCoordinates.valueOf(target);
+            nameCellCoordinates = targetCoordinates.getNeighbour(SpreadsheetCoordinates.Neighbour.LEFT);
+        } catch (ParseException e) {
+            return null;
         }
-    }
-
-    public void deleteNode(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        Objects.requireNonNull(selectedItem, "no item selected in tree view");
-        if (selectedItem.getParent() == null) { // is ROOT
-            StatusLogger.getInstance().log("Node can not be deleted!", true);
-        } else {
-            // TODO: check for dependencies, do not allow if there are dependent nodes
-            // view
-            TreeItem<ModelNode> parent = selectedItem.getParent();
-            parent.getChildren().remove(selectedItem);
-            // model
-            ModelNode deleteNode = selectedItem.getValue();
-            if (parent.getValue() instanceof CompositeModelNode) {
-                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                parentNode.removeSubNode(deleteNode);
-            }
-            project.markStudyModified();
-            StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
-            ActionLogger.log(ActionLogger.ActionType.node_remove, deleteNode.getNodePath());
-        }
-    }
-
-    public void renameNode(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        Objects.requireNonNull(selectedItem, "no item selected in tree view");
-        if (selectedItem.getParent() == null) {
-            Dialogues.showError("System can not be renamed", "System can not be renamed!");
-            return;
-        }
-        ModelNode modelNode = selectedItem.getValue();
-        String oldNodeName = modelNode.getName();
-        Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(oldNodeName);
-        if (nodeNameChoice.isPresent()) {
-            String newNodeName = nodeNameChoice.get();
-            if (!Identifiers.validateNodeName(newNodeName)) {
-                Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
-                return;
-            }
-
-            if (newNodeName.equals(oldNodeName)) return;
-            TreeItem<ModelNode> parent = selectedItem.getParent();
-            if (parent != null) {
-                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                Map subNodesMap = parentNode.getSubNodesMap();
-                if (subNodesMap.containsKey(newNodeName)) {
-                    Dialogues.showError("Duplicate node name", "There is already a sibling node named like that!");
-                    return;
-                }
-            }
-            // model
-            modelNode.setName(newNodeName);
-            // view
-            selectedItem.valueProperty().setValue(modelNode);
-            project.markStudyModified();
-        }
-    }
-
-    public void addParameter(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        Objects.requireNonNull(selectedItem, "no item selected in tree view");
-
-        ParameterModel parameter = null;
-        Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
-        if (parameterNameChoice.isPresent()) {
-            String parameterName = parameterNameChoice.get();
-            if (!Identifiers.validateParameterName(parameterName)) {
-                Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
-                return;
-            }
-            if (selectedItem.getValue().hasParameter(parameterName)) {
-                Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
-            } else {
-                // TODO: use factory
-
-                parameter = new ParameterModel(parameterName, 0.0);
-                selectedItem.getValue().addParameter(parameter);
-                StatusLogger.getInstance().log("added parameter: " + parameter.getName());
-                ActionLogger.log(ActionLogger.ActionType.parameter_add, parameter.getNodePath());
-                project.markStudyModified();
+        String parameterName = null;
+        ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+        if (WorkbookFactory.isWorkbookFile(filename)) {
+            try (InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel)) {
+                String sheetName = nameCellCoordinates.getSheetName();
+                SpreadsheetCellValueAccessor cellValueAccessor = new SpreadsheetCellValueAccessor(inputStream, filename);
+                parameterName = cellValueAccessor.getValueAsString(nameCellCoordinates);
+            } catch (IOException | ExternalModelException e) {
+                StatusLogger.getInstance().log("The external model '" + filename + "' could not be opened to extract parameter name!");
+                logger.warn("The external model '" + filename + "' could not be opened to extract parameter name!", e);
             }
         }
-        updateParameterTable(selectedItem);
-        if (parameter != null) {
-            parameterTable.getSelectionModel().select(parameter);
-        }
-    }
-
-    public void deleteParameter(ActionEvent actionEvent) {
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem();
-        List<ParameterModel> dependentParameters = project.getParameterLinkRegistry().getDependentParameters(parameterModel);
-        if (dependentParameters.size() > 0) {
-            String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
-            Dialogues.showWarning("Parameter deletion impossible!", "This parameter is referenced by " + dependentParams);
-            return;
-        }
-
-        Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Parameter deletion", "Are you sure you want to delete this parameter?");
-        if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
-            selectedItem.getValue().getParameters().remove(parameterModel);
-            project.getParameterLinkRegistry().removeSink(parameterModel);
-            StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
-            ActionLogger.log(ActionLogger.ActionType.parameter_remove, parameterModel.getNodePath());
-            updateParameterTable(selectedItem);
-            project.markStudyModified();
-        }
-    }
-
-    private TreeItem<ModelNode> getSelectedTreeItem() {
-        return structureTree.getSelectionModel().getSelectedItem();
-    }
-
-    private Window getAppWindow() {
-        return viewPane.getScene().getWindow();
+        return parameterName;
     }
 
     private void lightTableRefresh() {
@@ -600,12 +576,21 @@ public class ModelEditingController implements Initializable {
         });
     }
 
-    public void viewDSM(ActionEvent actionEvent) {
-        openDependencyView("Dependency Structure Matrix", DependencyController.ViewMode.DSM);
-    }
-
-    public void viewNSquaredChart(ActionEvent actionEvent) {
-        openDependencyView("N-Square Chart", DependencyController.ViewMode.N_SQUARE);
+    private ContextMenu makeStructureTreeContextMenu(BooleanBinding structureNotEditable) {
+        ContextMenu structureContextMenu = new ContextMenu();
+        MenuItem addNodeMenuItem = new MenuItem("Add subnode");
+        addNodeMenuItem.setOnAction(ModelEditingController.this::addNode);
+        addNodeMenuItem.disableProperty().bind(structureNotEditable);
+        structureContextMenu.getItems().add(addNodeMenuItem);
+        MenuItem renameNodeMenuItem = new MenuItem("Rename node");
+        renameNodeMenuItem.setOnAction(ModelEditingController.this::renameNode);
+        renameNodeMenuItem.disableProperty().bind(Bindings.or(structureNotEditable, selectedNodeIsRoot));
+        structureContextMenu.getItems().add(renameNodeMenuItem);
+        MenuItem deleteNodeMenuItem = new MenuItem("Delete node");
+        deleteNodeMenuItem.setOnAction(ModelEditingController.this::deleteNode);
+        deleteNodeMenuItem.disableProperty().bind(Bindings.or(structureNotEditable, selectedNodeIsRoot));
+        structureContextMenu.getItems().add(deleteNodeMenuItem);
+        return structureContextMenu;
     }
 
     private void openDependencyView(String title, DependencyController.ViewMode mode) {
@@ -630,6 +615,15 @@ public class ModelEditingController implements Initializable {
         }
     }
 
+    private void updateDependencies(ModelNode modelNode) {
+        String upstreamDependencies = project.getParameterLinkRegistry().getUpstreamDependencies(modelNode);
+        upstreamDependenciesText.setText(upstreamDependencies);
+        upstreamDependenciesText.setTooltip(new Tooltip(upstreamDependencies));
+        String downstreamDependencies = project.getParameterLinkRegistry().getDownstreamDependencies(modelNode);
+        downstreamDependenciesText.setText(downstreamDependencies);
+        downstreamDependenciesText.setTooltip(new Tooltip(downstreamDependencies));
+    }
+
     private void updateExternalModelEditor(ModelNode modelNode) {
         externalModelEditor.setModelNode(modelNode);
         boolean hasExtModels = modelNode.getExternalModels().size() > 0;
@@ -637,13 +631,21 @@ public class ModelEditingController implements Initializable {
         externalModelPane.setExpanded(hasExtModels);
     }
 
-    public void refreshView(ActionEvent actionEvent) {
-        clearView();
-        updateView();
-    }
+    private void updateParameterTable(TreeItem<ModelNode> treeItem) {
+        int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
 
-    public void clearView() {
-        structureTree.setRoot(null);
+        ModelNode modelNode = treeItem.getValue();
+        boolean showOnlyOutputParameters = !selectedNodeIsEditable.getValue();
+        viewParameters.displayParameters(modelNode.getParameters(), showOnlyOutputParameters);
+        logger.debug("updateParameterTable " + showOnlyOutputParameters + " #" + viewParameters.getItems().size());
+
+        parameterTable.autosize();
+        // TODO: maybe redo selection only if same node
+        if (selectedIndex < parameterTable.getItems().size()) {
+            parameterTable.getSelectionModel().select(selectedIndex);
+        } else if (parameterTable.getItems().size() > 0) {
+            parameterTable.getSelectionModel().select(0);
+        }
     }
 
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
