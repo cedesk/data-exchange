@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -20,9 +22,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.DifferenceMerger;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -37,7 +37,6 @@ import java.util.ResourceBundle;
 public class DiffController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(DiffController.class);
-
     @FXML
     private Button revertAllButton;
 
@@ -49,6 +48,9 @@ public class DiffController implements Initializable {
 
     @FXML
     private TableColumn<ModelDifference, String> actionColumn;
+
+    @FXML
+    private TableColumn<ModelDifference, String> elementTypeColumn;
 
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
@@ -78,6 +80,27 @@ public class DiffController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         diffTable.setItems(modelDifferences);
         actionColumn.setCellFactory(new ActionCellFactory());
+        elementTypeColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ModelDifference, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<ModelDifference, String> valueFactory) {
+                if (valueFactory != null) {
+                    ModelDifference modelDifference = valueFactory.getValue();
+                    String elementType = "<unknown>";
+                    if (modelDifference instanceof StudyDifference) {
+                        elementType = "Study";
+                    } else if (modelDifference instanceof NodeDifference) {
+                        elementType = "Node";
+                    } else if (modelDifference instanceof ParameterDifference) {
+                        elementType = "Parameter";
+                    } else if (modelDifference instanceof ExternalModelDifference) {
+                        elementType = "External Model";
+                    }
+                    return new SimpleStringProperty(elementType);
+                } else {
+                    return new SimpleStringProperty();
+                }
+            }
+        });
     }
 
     public void refreshView(ActionEvent actionEvent) {
@@ -161,4 +184,6 @@ public class DiffController implements Initializable {
             };
         }
     }
+
+
 }

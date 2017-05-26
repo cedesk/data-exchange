@@ -37,6 +37,8 @@
                                 <PropertyValueFactory property="changeType"/>
                             </cellValueFactory>
                         </TableColumn>
+                        <TableColumn fx:id="elementTypeColumn" prefWidth="80.0" text="Element Type">
+                        </TableColumn>
                         <TableColumn prefWidth="240.0" text="Element Path">
                             <cellValueFactory>
                                 <PropertyValueFactory property="elementPath"/>
