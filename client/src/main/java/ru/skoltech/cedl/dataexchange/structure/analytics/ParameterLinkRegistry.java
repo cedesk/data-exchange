@@ -4,8 +4,13 @@ import org.apache.log4j.Logger;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
+import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -253,21 +258,28 @@ public class ParameterLinkRegistry {
         ParameterTreeIterator pmi = getLinkedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
             ParameterModel source = sink.getValueLink();
-            updateSinks(source);
+            updateSinks(source); // TODO each call does a lot of common work
         });
         pmi = getCalculatedParameters(systemModel);
         pmi.forEachRemaining(this::recalculate);
     }
 
     public void updateSinks(ParameterModel source) {
-        SystemModel systemModel = source.getParent().findRoot();
 
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
+            SystemModel systemModel = source.getParent().findRoot();
             Map<String, ParameterModel> parameterDictionary = makeDictionary(systemModel);
+
+            Project project = ProjectContext.getInstance().getProject();
+            UserRoleManagement userRoleManagement = project.getUserRoleManagement();
+            User user = project.getUser();
+
             Set<String> sinkIds = valueLinks.get(sourceId);
             for (String sinkId : sinkIds) {
                 ParameterModel sink = parameterDictionary.get(sinkId);
+                boolean editable = UserRoleUtil.checkAccess(sink.getParent(), user, userRoleManagement);
+                if (!editable) continue;
                 if (sink.getValueSource() == ParameterValueSource.LINK) {
                     if (sink.getValueLink() == source) {
                         logger.info("updating sink '" + sink.getNodePath() + "' from source '" + source.getNodePath() + "'");
