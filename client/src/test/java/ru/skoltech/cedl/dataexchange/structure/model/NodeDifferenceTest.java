@@ -33,7 +33,7 @@ public class NodeDifferenceTest {
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
         Assert.assertEquals(ChangeType.ADD, md.getChangeType());
-        Assert.assertEquals(md.getNodeName(), newLocalSub.getNodePath());
+        Assert.assertEquals(md.getElementPath(), newLocalSub.getNodePath());
 
         Assert.assertTrue(md.isRevertible());
 

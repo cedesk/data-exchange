@@ -37,9 +37,7 @@ public abstract class ModelDifference {
 
     abstract public PersistedEntity getChangedEntity();
 
-    abstract public String getNodeName();
-
-    abstract public String getParameterName();
+    abstract public String getElementPath();
 
     abstract public ModelNode getParentNode();
 

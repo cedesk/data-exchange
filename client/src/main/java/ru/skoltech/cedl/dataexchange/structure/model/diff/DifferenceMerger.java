@@ -13,7 +13,7 @@ public class DifferenceMerger {
     private static final Logger logger = Logger.getLogger(DifferenceMerger.class);
 
     public static boolean mergeOne(ModelDifference modelDifference) {
-        logger.debug("merging " + modelDifference.getNodeName() + "::" + modelDifference.getParameterName());
+        logger.debug("merging " + modelDifference.getElementPath());
         modelDifference.mergeDifference();
         if (modelDifference instanceof ParameterDifference) {
             ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
@@ -25,8 +25,8 @@ public class DifferenceMerger {
     }
 
     public static boolean revertOne(ModelDifference modelDifference) {
-        logger.debug("reverting " + modelDifference.getNodeName() + "::" + modelDifference.getParameterName());
-        modelDifference.mergeDifference();
+        logger.debug("reverting " + modelDifference.getElementPath());
+        modelDifference.revertDifference();
         if (modelDifference instanceof ParameterDifference) {
             ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
             // TODO: update sinks

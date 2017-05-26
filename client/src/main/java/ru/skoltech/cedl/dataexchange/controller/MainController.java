@@ -387,7 +387,7 @@ public class MainController implements Initializable {
             // update from repository
             project.loadRepositoryStudy();
             DiffController controller = loader.getController();
-            controller.setProject(project);
+            controller.refreshView(null);
             stage.showAndWait();
             modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
         } catch (IOException e) {

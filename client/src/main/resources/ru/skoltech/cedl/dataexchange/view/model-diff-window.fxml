@@ -3,61 +3,77 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="400.0" prefWidth="1200.0"
-            xmlns="http://javafx.com/javafx/8.0.40"
-            stylesheets="@styling.css" fx:controller="ru.skoltech.cedl.dataexchange.controller.DiffController">
+<?import org.controlsfx.glyphfont.Glyph?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="400.0" prefWidth="1200.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.112"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.DiffController">
     <children>
-        <TableView fx:id="diffTable" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
-                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <columns>
-                <TableColumn prefWidth="120.0" text="Author">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="author"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn prefWidth="80.0" text="Change Type">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="changeType"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn prefWidth="80.0" text="Node">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="nodeName"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn prefWidth="180.0" text="Parameter">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="parameterName"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn prefWidth="180.0" text="Attribute">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="attribute"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn prefWidth="110.0" text="Local Value">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="value1"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn prefWidth="110.0" text="Repository Value">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="value2"/>
-                    </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="actionColumn" prefWidth="120.0" text="Action">
-                </TableColumn>
-            </columns>
-        </TableView>
-        <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="200.0"
-                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <items>
-                <Button onAction="#close" mnemonicParsing="false" cancelButton="true" text="Cancel"/>
-                <Button fx:id="acceptAllButton" onAction="#acceptAll" mnemonicParsing="true"
-                        text="_Accept all remote remote changes"/>
-                <Button fx:id="revertAllButton" onAction="#revertAll" mnemonicParsing="true"
-                        text="_Revert all local changes"/>
-            </items>
-        </ToolBar>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                    AnchorPane.topAnchor="0.0">
+            <top>
+                <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                    <items>
+                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
+                            <tooltip>
+                                <Tooltip text="Refresh"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                            </graphic>
+                        </Button>
+                    </items>
+                </ToolBar>
+            </top>
+            <center>
+                <TableView fx:id="diffTable" BorderPane.alignment="CENTER" prefHeight="400" prefWidth="500.0">
+                    <columns>
+                        <TableColumn prefWidth="120.0" text="Author">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="author"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn prefWidth="80.0" text="Change Type">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="changeType"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn prefWidth="240.0" text="Element Path">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="elementPath"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn prefWidth="180.0" text="Attribute">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="attribute"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn prefWidth="140.0" text="Local Value">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="value1"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn prefWidth="140.0" text="Repository Value">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="value2"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="actionColumn" prefWidth="140.0" text="Action">
+                        </TableColumn>
+                    </columns>
+                </TableView>
+            </center>
+            <bottom>
+                <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="200.0"
+                         BorderPane.alignment="CENTER">
+                    <items>
+                        <Button cancelButton="true" mnemonicParsing="false" onAction="#close" text="Cancel"/>
+                        <Button fx:id="acceptAllButton" mnemonicParsing="true" onAction="#acceptAll"
+                                text="_Accept all remote remote changes"/>
+                        <Button fx:id="revertAllButton" mnemonicParsing="true" onAction="#revertAll"
+                                text="_Revert all local changes"/>
+                    </items>
+                </ToolBar>
+            </bottom>
+        </BorderPane>
     </children>
 </AnchorPane>

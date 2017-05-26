@@ -1,7 +1,6 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -38,10 +37,13 @@ import java.util.ResourceBundle;
 public class DiffController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(DiffController.class);
+
     @FXML
-    public Button revertAllButton;
+    private Button revertAllButton;
+
     @FXML
     private Button acceptAllButton;
+
     @FXML
     private TableView<ModelDifference> diffTable;
 
@@ -50,24 +52,13 @@ public class DiffController implements Initializable {
 
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
-    public void setProject(Project project) {
-        Repository repository = project.getRepository();
-
-        // TODO: move this to an updateView method
-        Study localStudy = project.getStudy();
-        Study remoteStudy = project.getRepositoryStudy();
-        long latestLoadedModification = project.getLatestLoadedModification();
-        ProjectContext.getInstance().getProject().updateExternalModelsInStudy();
-        List<ModelDifference> modelDiffs = StudyDifference.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
-        addChangeAuthors(modelDiffs, repository);
-        modelDifferences.clear();
-        modelDifferences.addAll(modelDiffs);
-    }
-
     public void acceptAll(ActionEvent actionEvent) {
         List<ModelDifference> appliedDifferences = DifferenceMerger.mergeChangesOntoFirst(modelDifferences);
         if (appliedDifferences.size() > 0) {
             ProjectContext.getInstance().getProject().markStudyModified();
+        }
+        if (modelDifferences.size() == 0) {
+            close(null);
         }
     }
 
@@ -79,19 +70,27 @@ public class DiffController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         diffTable.setItems(modelDifferences);
-        modelDifferences.addListener(new ListChangeListener<ModelDifference>() {
-            @Override
-            public void onChanged(Change<? extends ModelDifference> c) {
-                if (c.getList().size() == 0) {
-                    close(null);
-                }
-            }
-        });
         actionColumn.setCellFactory(new ActionCellFactory());
+    }
+
+    public void refreshView(ActionEvent actionEvent) {
+        Project project = ProjectContext.getInstance().getProject();
+        Repository repository = ProjectContext.getInstance().getProject().getRepository();
+        Study localStudy = ProjectContext.getInstance().getProject().getStudy();
+        Study remoteStudy = project.getRepositoryStudy();
+        long latestLoadedModification = project.getLatestLoadedModification();
+        project.updateExternalModelsInStudy();
+        List<ModelDifference> modelDiffs = StudyDifference.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
+        addChangeAuthors(modelDiffs, repository);
+        modelDifferences.clear();
+        modelDifferences.addAll(modelDiffs);
     }
 
     public void revertAll(ActionEvent actionEvent) {
         List<ModelDifference> appliedDifferences = DifferenceMerger.revertChangesOnFirst(modelDifferences);
+        if (modelDifferences.size() == 0) {
+            close(null);
+        }
     }
 
     private void addChangeAuthors(List<ModelDifference> modelDiffs, Repository repository) {

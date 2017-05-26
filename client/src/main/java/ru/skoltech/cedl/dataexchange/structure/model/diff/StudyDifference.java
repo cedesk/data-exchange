@@ -43,13 +43,8 @@ public class StudyDifference extends ModelDifference {
     }
 
     @Override
-    public String getNodeName() {
+    public String getElementPath() {
         return study1.getName();
-    }
-
-    @Override
-    public String getParameterName() {
-        return "";
     }
 
     @Override

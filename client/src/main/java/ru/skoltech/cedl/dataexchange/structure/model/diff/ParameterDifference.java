@@ -53,13 +53,8 @@ public class ParameterDifference extends ModelDifference {
     }
 
     @Override
-    public String getNodeName() {
-        return parameter1.getParent().getNodePath();
-    }
-
-    @Override
-    public String getParameterName() {
-        return parameter1.getName();
+    public String getElementPath() {
+        return parameter1.getNodePath();
     }
 
     @Override

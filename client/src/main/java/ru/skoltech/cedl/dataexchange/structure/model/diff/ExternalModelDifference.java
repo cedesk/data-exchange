@@ -56,13 +56,8 @@ public class ExternalModelDifference extends ModelDifference {
     }
 
     @Override
-    public String getNodeName() {
+    public String getElementPath() {
         return externalModel1.getNodePath();
-    }
-
-    @Override
-    public String getParameterName() {
-        return "";
     }
 
     @Override

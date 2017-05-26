@@ -38,7 +38,7 @@ public class ExternalModelDifferenceTest {
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
         Assert.assertEquals(ChangeType.ADD, md.getChangeType());
-        Assert.assertEquals(md.getNodeName(), extMod.getNodePath());
+        Assert.assertEquals(md.getElementPath(), extMod.getNodePath());
 
         Assert.assertTrue(md.isRevertible());
 
