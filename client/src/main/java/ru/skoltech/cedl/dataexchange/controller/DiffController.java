@@ -67,6 +67,13 @@ public class DiffController implements Initializable {
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
+    public void displayDifferences(List<ModelDifference> modelDiffs) {
+        Repository repository = ProjectContext.getInstance().getProject().getRepository();
+        addChangeAuthors(modelDiffs, repository);
+        modelDifferences.clear();
+        modelDifferences.addAll(modelDiffs);
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         diffTable.setItems(modelDifferences);
@@ -75,15 +82,12 @@ public class DiffController implements Initializable {
 
     public void refreshView(ActionEvent actionEvent) {
         Project project = ProjectContext.getInstance().getProject();
-        Repository repository = ProjectContext.getInstance().getProject().getRepository();
         Study localStudy = ProjectContext.getInstance().getProject().getStudy();
         Study remoteStudy = project.getRepositoryStudy();
         long latestLoadedModification = project.getLatestLoadedModification();
         project.updateExternalModelsInStudy();
         List<ModelDifference> modelDiffs = StudyDifference.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
-        addChangeAuthors(modelDiffs, repository);
-        modelDifferences.clear();
-        modelDifferences.addAll(modelDiffs);
+        displayDifferences(modelDiffs);
     }
 
     public void revertAll(ActionEvent actionEvent) {
@@ -98,9 +102,8 @@ public class DiffController implements Initializable {
             PersistedEntity persistedEntity = modelDifference.getChangedEntity();
             try {
                 CustomRevisionEntity revisionEntity = repository.getLastRevision(persistedEntity);
-                if (revisionEntity != null) {
-                    modelDifference.setAuthor(revisionEntity.getUsername());
-                }
+                String author = revisionEntity != null ? revisionEntity.getUsername() : "<none>";
+                modelDifference.setAuthor(author);
             } catch (Exception e) {
                 logger.error("retrieving change author failed", e);
             }
@@ -110,7 +113,12 @@ public class DiffController implements Initializable {
     private void handleDifference(ActionEvent actionEvent) {
         Button acceptButton = (Button) actionEvent.getTarget();
         ModelDifference modelDifference = (ModelDifference) acceptButton.getUserData();
-        boolean success = DifferenceMerger.mergeOne(modelDifference);
+        boolean success = false;
+        if (modelDifference.isMergeable()) {
+            success = DifferenceMerger.mergeOne(modelDifference);
+        } else if (modelDifference.isRevertible()) {
+            success = DifferenceMerger.revertOne(modelDifference);
+        }
         if (success) {
             modelDifferences.remove(modelDifference);
             ProjectContext.getInstance().getProject().markStudyModified();
