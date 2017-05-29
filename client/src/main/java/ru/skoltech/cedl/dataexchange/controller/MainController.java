@@ -19,7 +19,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -60,8 +59,6 @@ public class MainController implements Initializable {
 
     private final RepositoryWatcher repositoryWatcher = new RepositoryWatcher(project);
 
-    @FXML
-    public WebView guideView;
     @FXML
     private MenuItem exportMenu;
     @FXML
@@ -313,11 +310,6 @@ public class MainController implements Initializable {
                 checkForApplicationUpdate(null);
             }
         });
-
-        // GUIDE
-        Platform.runLater(() -> {
-            GuiUtils.loadWebView(guideView, getClass(), "guide.html");
-        });
     }
 
     public void newProject(ActionEvent actionEvent) {
@@ -390,6 +382,28 @@ public class MainController implements Initializable {
             controller.refreshView(null);
             stage.showAndWait();
             modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void openGuideDialog(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.GUIDE_WINDOW);
+            Parent root = loader.load();
+            Stage currentStage = (Stage) getAppWindow();
+
+            Stage stage = new Stage();
+            stage.setX(currentStage.getX() + currentStage.getWidth());
+            stage.setY(currentStage.getY());
+            stage.setScene(new Scene(root));
+            stage.setTitle("Process Guide");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.NONE);
+            stage.initOwner(getAppWindow());
+
+            stage.show();
         } catch (IOException e) {
             logger.error(e);
         }

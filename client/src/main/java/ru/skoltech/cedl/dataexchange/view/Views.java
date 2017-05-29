@@ -30,4 +30,7 @@ public class Views {
     public static final URL REPOSITORY_SETTINGS_WINDOW = Views.class.getResource("repository-settings-window.fxml");
 
     public static final URL ABOUT_WINDOW = Views.class.getResource("about-window.fxml");
+
+    public static final URL GUIDE_WINDOW = Views.class.getResource("guide-window.fxml");
+
 }

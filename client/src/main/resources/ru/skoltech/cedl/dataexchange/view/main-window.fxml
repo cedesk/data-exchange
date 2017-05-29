@@ -5,9 +5,8 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.web.WebView?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="applicationPane" maxHeight="-Infinity" maxWidth="-Infinity"
-            minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0"
+            minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1000.0"
             stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
@@ -61,6 +60,10 @@
                                             <items>
                                                 <MenuItem mnemonicParsing="true" onAction="#checkForApplicationUpdate"
                                                           text="Check for _Update"/>
+                                            </items>
+                                            <items>
+                                                <MenuItem mnemonicParsing="true" onAction="#openGuideDialog"
+                                                          text="_Process Guide"/>
                                             </items>
                                             <items>
                                                 <MenuItem mnemonicParsing="true" onAction="#openAboutDialog"
@@ -132,16 +135,6 @@
             <center>
             </center>
             <right>
-                <AnchorPane prefWidth="300.0" BorderPane.alignment="CENTER">
-                    <children>
-                        <TitledPane collapsible="false" minWidth="-Infinity" AnchorPane.bottomAnchor="0.0"
-                                    AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0"
-                                    text="Process Guide">
-                            <WebView fx:id="guideView" prefWidth="-1.0">
-                            </WebView>
-                        </TitledPane>
-                    </children>
-                </AnchorPane>
             </right>
             <bottom>
                 <AnchorPane prefHeight="20.0" BorderPane.alignment="CENTER">

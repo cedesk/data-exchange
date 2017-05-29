@@ -618,10 +618,12 @@ public class ModelEditingController implements Initializable {
     private void updateDependencies(ModelNode modelNode) {
         String upstreamDependencies = project.getParameterLinkRegistry().getUpstreamDependencies(modelNode);
         upstreamDependenciesText.setText(upstreamDependencies);
-        upstreamDependenciesText.setTooltip(new Tooltip(upstreamDependencies));
+        if (upstreamDependencies.length() > 0)
+            upstreamDependenciesText.setTooltip(new Tooltip(upstreamDependencies));
         String downstreamDependencies = project.getParameterLinkRegistry().getDownstreamDependencies(modelNode);
         downstreamDependenciesText.setText(downstreamDependencies);
-        downstreamDependenciesText.setTooltip(new Tooltip(downstreamDependencies));
+        if (downstreamDependencies.length() > 0)
+            downstreamDependenciesText.setTooltip(new Tooltip(downstreamDependencies));
     }
 
     private void updateExternalModelEditor(ModelNode modelNode) {
