@@ -495,6 +495,7 @@ public class ModelEditingController implements Initializable {
             if (structureTree.getTreeItem(selectedIndex) != null) {
                 structureTree.getSelectionModel().select(selectedIndex);
             }
+            structureTree.refresh();
         } else {
             structureTree.setRoot(null);
             clearParameterTable();
