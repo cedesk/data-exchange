@@ -1,11 +1,13 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * Created by D.Knoll on 17.03.2015.
@@ -29,6 +31,9 @@ public class StorageUtils {
         }
         cedeskAppDirProperty = appHome.getAbsolutePath();
         System.setProperty("cedesk.data.dir", cedeskAppDirProperty); // re-write in any case for log4j
+
+        String projectStartDate = Utils.TIME_AND_DATE_FOR_FILENAMES.format(new Date());
+        System.setProperty("app.start.time", projectStartDate);
 
         if (!appHome.exists()) {
             boolean dirCreated = appHome.mkdirs();
