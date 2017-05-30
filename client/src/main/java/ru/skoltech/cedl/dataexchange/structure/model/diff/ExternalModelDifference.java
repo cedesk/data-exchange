@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Created by D.Knoll on 17.09.2015.
+ * Created by D.Knoll on 19.05.2017.
  */
 public class ExternalModelDifference extends ModelDifference {
 
@@ -35,6 +35,7 @@ public class ExternalModelDifference extends ModelDifference {
     private ExternalModelDifference(ExternalModel externalModel1, ExternalModel externalModel2, String name,
                                     ChangeType changeType, ChangeLocation changeLocation,
                                     String value1, String value2) {
+        this.parent = externalModel1.getParent();
         this.externalModel1 = externalModel1;
         this.externalModel2 = externalModel2;
         this.attribute = name;
@@ -58,6 +59,10 @@ public class ExternalModelDifference extends ModelDifference {
     @Override
     public String getElementPath() {
         return externalModel1.getNodePath();
+    }
+
+    public ExternalModel getExternalModel1() {
+        return externalModel1;
     }
 
     @Override
@@ -171,6 +176,7 @@ public class ExternalModelDifference extends ModelDifference {
                 Objects.requireNonNull(externalModel1);
                 Objects.requireNonNull(externalModel2);
                 Utils.copyBean(externalModel2, externalModel1);
+                externalModel1.setParent(parent); // link new item to actual new parent
                 break;
             }
             default: {
@@ -213,6 +219,7 @@ public class ExternalModelDifference extends ModelDifference {
                 Objects.requireNonNull(externalModel1);
                 Objects.requireNonNull(externalModel2);
                 Utils.copyBean(externalModel2, externalModel1);
+                externalModel1.setParent(parent); // link new item to actual new parent
                 break;
             }
             default: {

@@ -75,6 +75,7 @@ public class ExternalModelDifferenceTest {
 
         Assert.assertEquals(1, localSystem.getExternalModels().size());
         Assert.assertTrue(localSystem.getExternalModels().get(0).equals(remoteSystem.getExternalModels().get(0)));
+        Assert.assertTrue(localSystem.getExternalModels().get(0).getParent() == localSystem);
 
         differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
@@ -170,6 +171,7 @@ public class ExternalModelDifferenceTest {
 
         Assert.assertEquals(1, localSystem.getExternalModels().size());
         Assert.assertTrue(localSystem.getExternalModels().get(0).equals(remoteSystem.getExternalModels().get(0)));
+        Assert.assertTrue(localSystem.getExternalModels().get(0).getParent() == localSystem);
 
         differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());

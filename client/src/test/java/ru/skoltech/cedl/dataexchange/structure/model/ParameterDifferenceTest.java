@@ -68,6 +68,8 @@ public class ParameterDifferenceTest {
 
         Assert.assertEquals(1, localSystem.getParameters().size());
         Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
+        Assert.assertTrue(localSystem.getParameters().get(0).getParent() == localSystem);
+
 
         differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
@@ -174,7 +176,7 @@ public class ParameterDifferenceTest {
     @Test
     public void remoteParameterModify() {
         ParameterModel param1 = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
-        param1.setLastModification(System.currentTimeMillis());
+        param1.setLastModification(System.currentTimeMillis() - 100);
         remoteSystem.addParameter(param1);
         ParameterModel param2 = new ParameterModel();
         Utils.copyBean(param1, param2);

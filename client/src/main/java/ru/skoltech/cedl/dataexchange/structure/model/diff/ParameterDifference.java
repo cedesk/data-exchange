@@ -23,6 +23,7 @@ public class ParameterDifference extends ModelDifference {
 
     private ParameterDifference(ParameterModel parameter1, ParameterModel parameter2, ChangeType changeType,
                                 ChangeLocation changeLocation, String attributes, String values1, String values2) {
+        this.parent = parameter1.getParent();
         this.parameter1 = parameter1;
         this.parameter2 = parameter2;
         this.changeLocation = changeLocation;
@@ -237,6 +238,7 @@ public class ParameterDifference extends ModelDifference {
             }
             case MODIFY: { // copy remote over local
                 Utils.copyBean(parameter2, parameter1);
+                parameter1.setParent(parent); // link parameter to actual new parent
                 // TODO: update dependent parameters
                 break;
             }
@@ -280,6 +282,7 @@ public class ParameterDifference extends ModelDifference {
                 Objects.requireNonNull(parameter1);
                 Objects.requireNonNull(parameter2);
                 Utils.copyBean(parameter2, parameter1);
+                parameter1.setParent(parent); // link parameter to actual new parent
                 break;
             }
             default: {
