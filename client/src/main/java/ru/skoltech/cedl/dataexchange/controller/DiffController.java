@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -117,6 +118,16 @@ public class DiffController implements Initializable {
         List<ModelDifference> appliedDifferences = DifferenceMerger.revertChangesOnFirst(modelDifferences);
         if (modelDifferences.size() == 0) {
             close(null);
+        } else if (appliedDifferences.size() > 0) {
+            int modelsReverted = 0;
+            for (ModelDifference modelDifference : appliedDifferences) {
+                if (modelDifference instanceof ExternalModelDifference) {
+                    modelsReverted++;
+                }
+            }
+            if (modelsReverted > 0) { // reverting models may have affected parameters referencing values in them
+                refreshView(null);
+            }
         }
     }
 
@@ -144,6 +155,10 @@ public class DiffController implements Initializable {
         }
         if (success) {
             modelDifferences.remove(modelDifference);
+            if (modelDifference instanceof ExternalModelDifference) {
+                // reverting models may have affected parameters referencing values in them
+                Platform.runLater(() -> this.refreshView(null));
+            }
             ProjectContext.getInstance().getProject().markStudyModified();
         }
     }
