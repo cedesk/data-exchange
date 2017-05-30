@@ -61,6 +61,10 @@ public class ExternalModelDifference extends ModelDifference {
         return externalModel1.getNodePath();
     }
 
+    public ExternalModel getExternalModel1() {
+        return externalModel1;
+    }
+
     @Override
     public ModelNode getParentNode() {
         return externalModel1.getParent();
