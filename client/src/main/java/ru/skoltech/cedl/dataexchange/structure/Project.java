@@ -250,7 +250,7 @@ public class Project {
     }
 
     public boolean checkRepositoryForChanges() {
-        if (getRepositoryStudy() != null) {
+        if (getRepositoryStudy() != null) { // already saved or retrieved from repository
             try {
                 loadRepositoryStudy();
                 updateExternalModelsInStudy();
@@ -344,9 +344,6 @@ public class Project {
         if (study != null) {
             setStudy(study);
             Platform.runLater(this::loadRepositoryStudy);
-            // redundant already done in setStudy
-            //long latestMod = getSystemModel().findLatestModification();
-            //setLatestLoadedModification(latestMod);
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
             initializeStateOfExternalModels();
             registerParameterLinks();
@@ -419,7 +416,7 @@ public class Project {
         Study study = repository.storeStudy(this.study);
         updateExternalModelStateInCache();
         setStudy(study);
-        setRepositoryStudy(study);
+        setRepositoryStudy(study); // FIX: doesn't this cause troubles with later checks for update?
         initializeStateOfExternalModels();
         registerParameterLinks();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);

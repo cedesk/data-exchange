@@ -99,9 +99,6 @@ public class ModelEditingController implements Initializable {
     private Button viewParameterHistoryButton;
 
     @FXML
-    private Button startParameterWizardButton;
-
-    @FXML
     private TreeView<ModelNode> structureTree;
 
     @FXML
@@ -218,19 +215,34 @@ public class ModelEditingController implements Initializable {
         if (selectedItem.getParent() == null) { // is ROOT
             StatusLogger.getInstance().log("Node can not be deleted!", true);
         } else {
-            // TODO: check for dependencies, do not allow if there are dependent nodes
-            // view
-            TreeItem<ModelNode> parent = selectedItem.getParent();
-            parent.getChildren().remove(selectedItem);
-            // model
             ModelNode deleteNode = selectedItem.getValue();
-            if (parent.getValue() instanceof CompositeModelNode) {
-                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                parentNode.removeSubNode(deleteNode);
+            List<ParameterModel> dependentParameters = new LinkedList<>();
+            for (ParameterModel parameterModel : deleteNode.getParameters()) {
+                if (parameterModel.getNature() == ParameterNature.OUTPUT) {
+                    dependentParameters.addAll(project.getParameterLinkRegistry().getDependentParameters(parameterModel));
+                }
             }
-            project.markStudyModified();
-            StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
-            ActionLogger.log(ActionLogger.ActionType.node_remove, deleteNode.getNodePath());
+            if (dependentParameters.size() > 0) {
+                String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
+                Dialogues.showWarning("Node deletion impossible!", "It's parameters are referenced by " + dependentParams);
+                return;
+            }
+
+            Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Node deletion", "Are you sure you want to delete this node?");
+            if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
+                // view
+                TreeItem<ModelNode> parent = selectedItem.getParent();
+                parent.getChildren().remove(selectedItem);
+                // model
+
+                if (parent.getValue() instanceof CompositeModelNode) {
+                    CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
+                    parentNode.removeSubNode(deleteNode);
+                }
+                project.markStudyModified();
+                StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
+                ActionLogger.log(ActionLogger.ActionType.node_remove, deleteNode.getNodePath());
+            }
         }
     }
 
@@ -491,7 +503,7 @@ public class ModelEditingController implements Initializable {
                 }
             }
             boolean isAdmin = project.isCurrentAdmin();
-            structureTree.setEditable(isAdmin);
+            structureTree.setEditable(isAdmin); // TODO: overcome limitation that only admin can change structure
             if (structureTree.getTreeItem(selectedIndex) != null) {
                 structureTree.getSelectionModel().select(selectedIndex);
             }
