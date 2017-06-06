@@ -20,7 +20,6 @@ public class SpreadsheetCellValueAccessor implements Closeable {
 
     private static Logger logger = Logger.getLogger(SpreadsheetCellValueAccessor.class);
     private final String fileName;
-    //private Sheet sheet;
     private Workbook wb;
 
     private FormulaEvaluator formulaEvaluator;
@@ -47,24 +46,28 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         formulaEvaluator.clearAllCachedResultValues();
     }
 
+    public boolean isModified() {
+        return modified;
+    }
+
     public static String getValueAsString(Cell cell) {
         String result = "";
         if (cell != null) {
             try {
-                switch (cell.getCellType()) {
-                    case Cell.CELL_TYPE_BLANK:
+                switch (cell.getCellTypeEnum()) {
+                    case BLANK:
                         result = "";
                         break;
-                    case Cell.CELL_TYPE_BOOLEAN:
+                    case BOOLEAN:
                         result = String.valueOf(cell.getBooleanCellValue());
                         break;
-                    case Cell.CELL_TYPE_STRING:
+                    case STRING:
                         result = cell.getStringCellValue();
                         break;
-                    case Cell.CELL_TYPE_NUMERIC:
+                    case NUMERIC:
                         result = String.valueOf(cell.getNumericCellValue());
                         break;
-                    case Cell.CELL_TYPE_FORMULA:
+                    case FORMULA:
                         result = String.valueOf(cell.getNumericCellValue());
                         break;
                     default:
@@ -84,9 +87,9 @@ public class SpreadsheetCellValueAccessor implements Closeable {
     public static Double getNumericValue(Cell cell) throws ExternalModelException {
         Double result = Double.NaN;
         if (cell != null) {
-            switch (cell.getCellType()) {
-                case Cell.CELL_TYPE_NUMERIC:
-                case Cell.CELL_TYPE_FORMULA:
+            switch (cell.getCellTypeEnum()) {
+                case NUMERIC:
+                case FORMULA:
                     try {
                         result = cell.getNumericCellValue();
                     } catch (Exception e) {
@@ -94,53 +97,15 @@ public class SpreadsheetCellValueAccessor implements Closeable {
                     }
                     break;
                 default:
-                    throw new ExternalModelException("invalid cell type: " + cell.getCellType());
+                    throw new ExternalModelException("invalid cell type: " + cell.getCellTypeEnum());
             }
         }
         return result;
     }
 
-    /**
-     * This method writes a value to a cell, and memorizes if changes have been such that the spreadsheet needs to be saved afterwards.
-     */
-    private void setNumericValue(Cell cell, Double value) throws ExternalModelException {
-        Objects.requireNonNull(cell);
-        boolean change = true;
-        try {
-            Double previousValue = getNumericValue(cell);
-            change = !Precision.equals(previousValue, value, 2) || cell.getCellType() != Cell.CELL_TYPE_NUMERIC;
-        } catch (ExternalModelException ignore) {
-        }
-        if (change) {
-            try {
-                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue(value);
-            } catch (IllegalArgumentException | IllegalStateException e) {
-                throw new ExternalModelException("writing to cell failed!", e);
-            }
-            markModified();
-            formulaEvaluator.notifyUpdateCell(cell);
-        }
-    }
-
-    private void markModified() {
-        this.modified = true;
-    }
-
-    public boolean isModified() {
-        return modified;
-    }
-
-    public String getValueAsString(SpreadsheetCoordinates coordinates) throws ExternalModelException {
-        return getValueAsString(getCell(coordinates));
-    }
-
-    public Double getNumericValue(SpreadsheetCoordinates coordinates) throws ExternalModelException {
-        return getNumericValue(getCell(coordinates));
-    }
-
-    public void setNumericValue(SpreadsheetCoordinates coordinates, Double value) throws ExternalModelException {
-        setNumericValue(getCell(coordinates), value);
+    @Override
+    public void close() throws IOException {
+        wb.close();
     }
 
     public Cell getCell(SpreadsheetCoordinates cellCoordinates) throws ExternalModelException {
@@ -155,16 +120,19 @@ public class SpreadsheetCellValueAccessor implements Closeable {
                 logger.debug("accessing spreadsheet without sheetName");
             }
             Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
-            Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1, Row.CREATE_NULL_AS_BLANK);
+            Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
             return cell;
         } catch (Exception e) {
             throw new ExternalModelException("error accessing spreadsheet cell: " + cellCoordinates.toString(), e);
         }
     }
 
-    @Override
-    public void close() throws IOException {
-        wb.close();
+    public Double getNumericValue(SpreadsheetCoordinates coordinates) throws ExternalModelException {
+        return getNumericValue(getCell(coordinates));
+    }
+
+    public String getValueAsString(SpreadsheetCoordinates coordinates) throws ExternalModelException {
+        return getValueAsString(getCell(coordinates));
     }
 
     public void saveChanges(OutputStream outputStream) throws IOException {
@@ -175,5 +143,36 @@ public class SpreadsheetCellValueAccessor implements Closeable {
             StatusLogger.getInstance().log("Error while recalculating " + fileName + ". Make sure it does not have external links!", true);
         }
         wb.write(outputStream);
+    }
+
+    public void setNumericValue(SpreadsheetCoordinates coordinates, Double value) throws ExternalModelException {
+        setNumericValue(getCell(coordinates), value);
+    }
+
+    private void markModified() {
+        this.modified = true;
+    }
+
+    /**
+     * This method writes a value to a cell, and memorizes if changes have been such that the spreadsheet needs to be saved afterwards.
+     */
+    private void setNumericValue(Cell cell, Double value) throws ExternalModelException {
+        Objects.requireNonNull(cell);
+        boolean change = true;
+        try {
+            Double previousValue = getNumericValue(cell);
+            change = !Precision.equals(previousValue, value, 2) || cell.getCellTypeEnum() != CellType.NUMERIC;
+        } catch (ExternalModelException ignore) {
+        }
+        if (change) {
+            try {
+                cell.setCellType(CellType.NUMERIC);
+                cell.setCellValue(value);
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                throw new ExternalModelException("writing to cell failed!", e);
+            }
+            markModified();
+            formulaEvaluator.notifyUpdateCell(cell);
+        }
     }
 }
