@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
+ * This class represents the settings that are stored on the client and can be changed by the user.
+ * <p>
  * Created by D.Knoll on 18.03.2015.
  */
 public class ApplicationSettings {
@@ -44,10 +46,7 @@ public class ApplicationSettings {
 
     public static boolean getAutoLoadLastProjectOnStartup() {
         String autoload = properties.getProperty(PROJECT_LAST_AUTOLOAD);
-        if (autoload != null) {
-            return Boolean.parseBoolean(autoload);
-        }
-        return true;
+        return autoload == null || Boolean.parseBoolean(autoload);
     }
 
     public static void setAutoLoadLastProjectOnStartup(boolean autoload) {
@@ -60,10 +59,7 @@ public class ApplicationSettings {
 
     public static boolean getAutoSync() {
         String autosync = properties.getProperty(REPOSITORY_WATCHER_AUTO_SYNC);
-        if (autosync != null) {
-            return Boolean.parseBoolean(autosync);
-        }
-        return true;
+        return autosync == null || Boolean.parseBoolean(autosync);
     }
 
 
@@ -76,8 +72,7 @@ public class ApplicationSettings {
     }
 
     public static String getLastUsedProject() {
-        String projName = properties.getProperty(PROJECT_LAST_NAME);
-        return projName;
+        return properties.getProperty(PROJECT_LAST_NAME);
     }
 
     public static void setLastUsedProject(String projectName) {
@@ -88,13 +83,16 @@ public class ApplicationSettings {
         }
     }
 
+    public static String getProjectToImport() {
+        return properties.getProperty(PROJECT_IMPORT_NAME);
+    }
+
     public static String getProjectUser() {
         String userNameFromSettings = properties.getProperty(PROJECT_USER_NAME);
         if (!getUseOsUser() && userNameFromSettings != null && !userNameFromSettings.isEmpty()) {
             return userNameFromSettings;
         } else {
-            String userNameFromProperty = System.getProperty("user.name").toLowerCase();
-            return userNameFromProperty;
+            return System.getProperty("user.name").toLowerCase();
         }
     }
 
@@ -110,8 +108,70 @@ public class ApplicationSettings {
         }
     }
 
+    public static boolean getRepositorySchemaCreate() {
+        String schemaCreate = properties.getProperty(REPOSITORY_SCHEMA_CREATE);
+        return schemaCreate != null && Boolean.parseBoolean(schemaCreate);
+    }
+
     private static File getSettingsFile() {
         return new File(StorageUtils.getAppDir(), SETTINGS_FILE);
+    }
+
+    public static boolean getUseOsUser() {
+        String useOsUser = properties.getProperty(PROJECT_USE_OS_USER);
+        return useOsUser == null || Boolean.parseBoolean(useOsUser);
+    }
+
+    public static void setUseOsUser(boolean useOsUser) {
+        String prop = properties.getProperty(PROJECT_USE_OS_USER);
+        if (prop == null || Boolean.parseBoolean(prop) != useOsUser) {
+            properties.setProperty(PROJECT_USE_OS_USER, Boolean.toString(useOsUser));
+            save();
+        }
+    }
+
+    public static void setRepositoryPassword(String password) {
+        if (password == null) return;
+        String previousPassword = properties.getProperty(REPOSITORY_PASSWORD);
+        if (previousPassword == null || !previousPassword.equals(password)) {
+            if (password.equals(DatabaseStorage.DEFAULT_PASSWORD)) {
+                properties.remove(REPOSITORY_PASSWORD);
+            } else {
+                properties.setProperty(REPOSITORY_PASSWORD, password);
+            }
+            save();
+        }
+    }
+
+    public static void setRepositoryServerHostname(String repository) {
+        if (repository == null) return;
+        String previousRepository = properties.getProperty(REPOSITORY_HOST);
+        if (previousRepository == null || !previousRepository.equals(repository)) {
+            properties.setProperty(REPOSITORY_HOST, repository);
+            save();
+        }
+    }
+
+    public static void setRepositoryUserName(String userName) {
+        if (userName == null) return;
+        String previousUser = properties.getProperty(REPOSITORY_USER);
+        if (previousUser == null || !previousUser.equals(userName)) {
+            if (userName.equals(DatabaseStorage.DEFAULT_USER_NAME)) {
+                properties.remove(REPOSITORY_USER);
+            } else {
+                properties.setProperty(REPOSITORY_USER, userName);
+            }
+            save();
+        }
+    }
+
+    public static void setStudyModelDepth(Integer studyModelDepth) {
+        if (studyModelDepth == null) return;
+        String previousValue = properties.getProperty(STUDY_MODEL_DEPTH);
+        if (previousValue == null || !previousValue.equals(String.valueOf(studyModelDepth))) {
+            properties.setProperty(STUDY_MODEL_DEPTH, String.valueOf(studyModelDepth));
+            save();
+        }
     }
 
     private static synchronized void load() {
@@ -141,15 +201,6 @@ public class ApplicationSettings {
         return repo;
     }
 
-    public static void setRepositoryServerHostname(String repository) {
-        if (repository == null) return;
-        String previousRepository = properties.getProperty(REPOSITORY_HOST);
-        if (previousRepository == null || !previousRepository.equals(repository)) {
-            properties.setProperty(REPOSITORY_HOST, repository);
-            save();
-        }
-    }
-
     public static String getRepositorySchema(String defaultRepositorySchema) {
         String schema = properties.getProperty(REPOSITORY_SCHEMA_NAME);
         if (schema == null) {
@@ -157,14 +208,6 @@ public class ApplicationSettings {
             schema = defaultRepositorySchema;
         }
         return schema;
-    }
-
-    public static boolean getRepositorySchemaCreate() {
-        String schemaCreate = properties.getProperty(REPOSITORY_SCHEMA_CREATE);
-        if (schemaCreate != null) {
-            return Boolean.parseBoolean(schemaCreate);
-        }
-        return false;
     }
 
     public static String getRepositoryUserName(String defaultUserName) {
@@ -176,19 +219,6 @@ public class ApplicationSettings {
         return repositoryUser;
     }
 
-    public static void setRepositoryUserName(String userName) {
-        if (userName == null) return;
-        String previousUser = properties.getProperty(REPOSITORY_USER);
-        if (previousUser == null || !previousUser.equals(userName)) {
-            if (userName.equals(DatabaseStorage.DEFAULT_USER_NAME)) {
-                properties.remove(REPOSITORY_USER);
-            } else {
-                properties.setProperty(REPOSITORY_USER, userName);
-            }
-            save();
-        }
-    }
-
     public static String getRepositoryPassword(String defaultPassword) {
         String repositoryPassword = properties.getProperty(REPOSITORY_PASSWORD);
         if (repositoryPassword == null) {
@@ -196,19 +226,6 @@ public class ApplicationSettings {
             repositoryPassword = defaultPassword;
         }
         return repositoryPassword;
-    }
-
-    public static void setRepositoryPassword(String password) {
-        if (password == null) return;
-        String previousPassword = properties.getProperty(REPOSITORY_PASSWORD);
-        if (previousPassword == null || !previousPassword.equals(password)) {
-            if (password.equals(DatabaseStorage.DEFAULT_PASSWORD)) {
-                properties.remove(REPOSITORY_PASSWORD);
-            } else {
-                properties.setProperty(REPOSITORY_PASSWORD, password);
-            }
-            save();
-        }
     }
 
     public static int getStudyModelDepth(int defaultValue) {
@@ -225,34 +242,5 @@ public class ApplicationSettings {
             }
         }
         return studyModelDepth;
-    }
-
-    public static void setStudyModelDepth(Integer studyModelDepth) {
-        if (studyModelDepth == null) return;
-        String previousValue = properties.getProperty(STUDY_MODEL_DEPTH);
-        if (previousValue == null || !previousValue.equals(String.valueOf(studyModelDepth))) {
-            properties.setProperty(STUDY_MODEL_DEPTH, String.valueOf(studyModelDepth));
-            save();
-        }
-    }
-
-    public static String getProjectToImport() {
-        return properties.getProperty(PROJECT_IMPORT_NAME);
-    }
-
-    public static boolean getUseOsUser() {
-        String useOsUser = properties.getProperty(PROJECT_USE_OS_USER);
-        if (useOsUser != null) {
-            return Boolean.parseBoolean(useOsUser);
-        }
-        return true;
-    }
-
-    public static void setUseOsUser(boolean useOsUser) {
-        String prop = properties.getProperty(PROJECT_USE_OS_USER);
-        if (prop == null || Boolean.parseBoolean(prop) != useOsUser) {
-            properties.setProperty(PROJECT_USE_OS_USER, Boolean.toString(useOsUser));
-            save();
-        }
     }
 }

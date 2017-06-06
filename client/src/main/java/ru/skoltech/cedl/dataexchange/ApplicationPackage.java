@@ -6,6 +6,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * This class represents the deployment package of the application for different platforms.
+ * <p>
  * Created by D.Knoll on 28.11.2015.
  */
 public class ApplicationPackage implements Comparable<ApplicationPackage> {
@@ -25,6 +27,53 @@ public class ApplicationPackage implements Comparable<ApplicationPackage> {
         this.filename = fileName;
     }
 
+    public static String getExtension() {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            return "exe";
+        } else if (SystemUtils.IS_OS_MAC) {
+            return "dmg";
+        } else if (SystemUtils.IS_OS_LINUX) {
+            return "deb";
+        }
+        return "NONE";
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public boolean isRelease() {
+        return isRelease;
+    }
+
+    public void setRelease(boolean release) {
+        isRelease = release;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.url = baseUrl + filename;
+    }
+
     public static ApplicationPackage fromFileName(String baseUrl, String fileName) {
         ApplicationPackage applicationPackage = new ApplicationPackage(baseUrl + fileName, fileName);
         Pattern pattern = Pattern.compile(DIST_PACKAGE_FILE_NAME_START + "([^_]*)_.*");
@@ -41,41 +90,6 @@ public class ApplicationPackage implements Comparable<ApplicationPackage> {
 
     public static boolean isRelease(String versionName) {
         return !versionName.endsWith("snapshot") || versionName.endsWith("Snapshot") || versionName.endsWith("SNAPSHOT");
-    }
-
-    public static String getExtension() {
-        if (SystemUtils.IS_OS_WINDOWS) {
-            return "exe";
-        } else if (SystemUtils.IS_OS_MAC) {
-            return "dmg";
-        } else if (SystemUtils.IS_OS_LINUX) {
-            return "deb";
-        }
-        return "NONE";
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     @Override
@@ -116,17 +130,5 @@ public class ApplicationPackage implements Comparable<ApplicationPackage> {
         sb.append(", isRelease=").append(isRelease);
         sb.append('}');
         return sb.toString();
-    }
-
-    public boolean isRelease() {
-        return isRelease;
-    }
-
-    public void setRelease(boolean release) {
-        isRelease = release;
-    }
-
-    public void setBaseUrl(String baseUrl) {
-        this.url = baseUrl + filename;
     }
 }
