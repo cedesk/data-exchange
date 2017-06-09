@@ -538,6 +538,11 @@ public class MainController implements Initializable {
 
             UserRoleManagementController userRoleManagementController = loader.getController();
             userRoleManagementController.setProject(project);
+
+            stage.setOnCloseRequest(event -> {
+                userRoleManagementController.onCloseRequest(event);
+            });
+
             stage.show();
             userRoleManagementController.updateView();
         } catch (IOException e) {

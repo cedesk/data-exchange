@@ -381,11 +381,11 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public UserRoleManagement loadUserRoleManagement(long studyId) throws RepositoryException {
+    public UserRoleManagement loadUserRoleManagement(long id) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         UserRoleManagement userRoleManagement = null;
         try {
-            userRoleManagement = entityManager.find(UserRoleManagement.class, studyId);
+            userRoleManagement = entityManager.find(UserRoleManagement.class, id);
         } catch (Exception e) {
             throw new RepositoryException("Loading UserRoleManagement failed.", e);
         } finally {

@@ -31,6 +31,13 @@
                                 <Glyph fontFamily="FontAwesome" icon="MINUS"/>
                             </graphic>
                         </Button>
+                        <Pane HBox.hgrow="ALWAYS" />
+                        <Button fx:id="saveDisciplineButton" mnemonicParsing="false" onAction="#saveRoles"
+                                minWidth="28" text="Save">
+                            <tooltip>
+                                <Tooltip text="Save changes"/>
+                            </tooltip>
+                        </Button>
                     </items>
                 </ToolBar>
                 <Label text="Disciplines" styleClass="sectionTitle" AnchorPane.leftAnchor="0.0"

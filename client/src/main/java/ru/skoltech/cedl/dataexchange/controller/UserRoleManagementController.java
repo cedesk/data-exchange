@@ -2,6 +2,9 @@ package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -10,11 +13,13 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -25,7 +30,9 @@ import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.DisciplineSubSystem;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserDiscipline;
+import ru.skoltech.cedl.dataexchange.view.Views;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Predicate;
@@ -49,6 +56,9 @@ public class UserRoleManagementController implements Initializable {
 
     @FXML
     public Button deleteDisciplineButton;
+
+    @FXML
+    public Button saveDisciplineButton;
 
     @FXML
     public ListView subsystemsAssignedList;
@@ -82,6 +92,8 @@ public class UserRoleManagementController implements Initializable {
 
     @FXML
     public TableColumn subsystemCountColumn;
+
+    private BooleanProperty changed = new SimpleBooleanProperty(false);
 
     private Project project;
 
@@ -121,6 +133,8 @@ public class UserRoleManagementController implements Initializable {
         BooleanBinding noSelectionOnDisciplinesTable = disciplinesTable.getSelectionModel().selectedItemProperty().isNull();
         deleteDisciplineButton.disableProperty().bind(noSelectionOnDisciplinesTable);
 
+        saveDisciplineButton.disableProperty().bind(Bindings.not(changed));
+
         // SUB-SYSTEMS
         subsystemsPane.disableProperty().bind(noSelectionOnDisciplinesTable);
 
@@ -138,6 +152,29 @@ public class UserRoleManagementController implements Initializable {
         addUserRoleButton.disableProperty().bind(Bindings.or(noSelectionOnUserTable, noSelectionOnDisciplinesTable));
         BooleanBinding noSelectionOnAssignedUsers = userRolesAssignedList.getSelectionModel().selectedItemProperty().isNull();
         deleteUserRoleButton.disableProperty().bind(noSelectionOnAssignedUsers);
+    }
+
+    public void onCloseRequest(WindowEvent windowEvent) {
+        if (!changed.getValue()) {
+            return;
+        }
+        ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+        ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Current roles is modified");
+        alert.setContentText("Save modification?");
+        alert.getButtonTypes().setAll(yesButton, noButton, cancelButton);
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == cancelButton) {
+            windowEvent.consume();
+        } else if (result.get() == yesButton) {
+            saveRoles();
+        } else if (result.get() == noButton){
+            project.loadUserRoleManagement();
+            return;
+        }
     }
 
     public void updateView() {
@@ -212,7 +249,7 @@ public class UserRoleManagementController implements Initializable {
             } else {
                 Discipline discipline = new Discipline(disciplineName, project.getUserRoleManagement());
                 project.getUserRoleManagement().getDisciplines().add(discipline);
-                project.markStudyModified();
+                changed.setValue(true);
                 StatusLogger.getInstance().log("added discipline: " + discipline.getName());
             }
         }
@@ -223,9 +260,17 @@ public class UserRoleManagementController implements Initializable {
         Discipline selectedDiscipline = getSelectedDiscipline();
         Objects.requireNonNull(selectedDiscipline, "no discipline in table view");
         project.getUserRoleManagement().removeDiscipline(selectedDiscipline);
-        project.markStudyModified();
+        changed.setValue(true);
         StatusLogger.getInstance().log("removed discipline: " + selectedDiscipline.getName());
         updateDisciplineTable();
+    }
+
+    public void saveRoles() {
+        boolean success = project.storeUserRoleManagement();
+        if (!success) {
+            StatusLogger.getInstance().log("Error saving user role management!", true);
+        }
+        changed.setValue(false);
     }
 
     public void addDisciplineSubsystem(ActionEvent actionEvent) {
@@ -233,14 +278,14 @@ public class UserRoleManagementController implements Initializable {
         Discipline discipline = getSelectedDiscipline();
         project.getUserRoleManagement().addDisciplineSubsystem(discipline, subsystem);
         updateSubsystems(discipline);
-        project.markStudyModified();
+        changed.setValue(true);
     }
 
     public void deleteDisciplineSubsystem(ActionEvent actionEvent) {
         DisciplineSubSystem disciplineSubsystem = (DisciplineSubSystem) subsystemsAssignedList.getSelectionModel().getSelectedItem();
         project.getUserRoleManagement().getDisciplineSubSystems().remove(disciplineSubsystem);
         updateSubsystems(getSelectedDiscipline());
-        project.markStudyModified();
+        changed.setValue(true);
     }
 
     public Discipline getSelectedDiscipline() {
@@ -261,14 +306,14 @@ public class UserRoleManagementController implements Initializable {
             StatusLogger.getInstance().log("user '" + user.getUserName() + "' can not be added twice to a discipline '" + discipline.getName() + "'");
         }
         updateUserDisciplines(discipline);
-        project.markStudyModified();
+        changed.setValue(true);
     }
 
     public void deleteUserRole(ActionEvent actionEvent) {
         UserDiscipline selectedUserDiscipline = (UserDiscipline) userRolesAssignedList.getSelectionModel().getSelectedItem();
         project.getUserRoleManagement().getUserDisciplines().remove(selectedUserDiscipline);
         updateUserDisciplines(getSelectedDiscipline());
-        project.markStudyModified();
+        changed.setValue(true);
     }
 
     public Window getAppWindow() {

@@ -387,6 +387,17 @@ public class Project {
         return false;
     }
 
+    public boolean loadUserRoleManagement() {
+        try {
+            getStudy().setUserRoleManagement(repository.loadUserRoleManagement(getStudy().getUserRoleManagement().getId()));
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error loading user role management. recreating new user role management.");
+//            initializeUserRoleManagement(); //TODO initialize default UserRoleManagement?
+        }
+        return false;
+    }
+
     public void markStudyModified() {
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
     }
@@ -441,6 +452,17 @@ public class Project {
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing user management.", e);
+        }
+        return false;
+    }
+
+    public boolean storeUserRoleManagement() {
+        try {
+            repository.storeUserRoleManagement(getStudy().getUserRoleManagement());
+            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error storing user role management.", e);
         }
         return false;
     }
