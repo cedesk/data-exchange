@@ -23,6 +23,8 @@ public class Views {
 
     public static final URL UNIT_EDITING_WINDOW = Views.class.getResource("unit-editing-window.fxml");
 
+    public static final URL UNIT_ADD_WINDOW = Views.class.getResource("add-unit-dialog.fxml");
+
     public static final URL REVISION_HISTORY_WINDOW = Views.class.getResource("revision-history-window.fxml");
 
     public static final URL PROJECT_SETTINGS_WINDOW = Views.class.getResource("project-settings-window.fxml");
