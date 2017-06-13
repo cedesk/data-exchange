@@ -418,11 +418,11 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     }
 
     private void updateView(ParameterModel parameterModel) {
-        if (unitChoiceBox.getItems().size() == 0) { // first time only, units are independent of a study
-            List<Unit> units = project.getUnitManagement().getUnits();
-            units.sort((o1, o2) -> o1.asText().compareTo(o2.asText()));
-            unitChoiceBox.setItems(FXCollections.observableArrayList(units));
-        }
+        // refresh unit's list, since list can be changed
+        List<Unit> units = project.getUnitManagement().getUnits();
+        units.sort((o1, o2) -> o1.asText().compareTo(o2.asText()));
+        unitChoiceBox.setItems(FXCollections.observableArrayList(units));
+
         ParameterModel localParameterModel = Utils.copyBean(parameterModel, new ParameterModel());
         parameterBean.setBean(localParameterModel);
         valueReference = localParameterModel.getValueReference();
