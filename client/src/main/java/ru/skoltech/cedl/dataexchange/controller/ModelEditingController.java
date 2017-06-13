@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.external.*;
@@ -309,7 +310,9 @@ public class ModelEditingController implements Initializable {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
                 if (param != null) {
-                    return new SimpleStringProperty(String.valueOf(param.getValue().getEffectiveValue()));
+                    double valueToDisplay = param.getValue().getEffectiveValue();
+                    String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
+                    return new SimpleStringProperty(formattedValue);
                 } else {
                     return new SimpleStringProperty();
                 }
