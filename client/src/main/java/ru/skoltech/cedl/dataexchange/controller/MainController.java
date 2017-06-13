@@ -495,6 +495,8 @@ public class MainController implements Initializable {
 
             UnitManagementController unitManagementController = loader.getController();
             unitManagementController.setProject(project);
+
+            stage.setOnCloseRequest(event -> unitManagementController.onCloseRequest(event));
             stage.show();
         } catch (IOException e) {
             logger.error(e);
@@ -539,10 +541,7 @@ public class MainController implements Initializable {
             UserRoleManagementController userRoleManagementController = loader.getController();
             userRoleManagementController.setProject(project);
 
-            stage.setOnCloseRequest(event -> {
-                userRoleManagementController.onCloseRequest(event);
-            });
-
+            stage.setOnCloseRequest(event -> userRoleManagementController.onCloseRequest(event));
             stage.show();
             userRoleManagementController.updateView();
         } catch (IOException e) {
