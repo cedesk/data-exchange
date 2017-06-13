@@ -54,10 +54,10 @@ public class AddUnitController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        quantityKindComboBox.setCellFactory(new Callback<ListView<QuantityKind>, ListCell<QuantityKind>>(){
+        quantityKindComboBox.setCellFactory(new Callback<ListView<QuantityKind>, ListCell<QuantityKind>>() {
             @Override
             public ListCell<QuantityKind> call(ListView<QuantityKind> p) {
-                final ListCell<QuantityKind> cell = new ListCell<QuantityKind>(){
+                final ListCell<QuantityKind> cell = new ListCell<QuantityKind>() {
                     @Override
                     protected void updateItem(QuantityKind item, boolean empty) {
                         super.updateItem(item, empty);
@@ -75,7 +75,7 @@ public class AddUnitController implements Initializable {
                 super.updateItem(item, empty);
                 String text = (item == null || empty) ? null : item.getName();
                 setText(text);
-                }
+            }
         });
 
         addUnitButton.disableProperty().bind(Bindings.or(nameText.textProperty().isEmpty(), symbolText.textProperty().isEmpty()));
