@@ -43,14 +43,19 @@ public class UnitManagementController implements Initializable {
 
     @FXML
     private AnchorPane unitManagementPane;
+
     @FXML
     public TableColumn<Unit, String> unitQuantityKindColumn;
+
     @FXML
     private AnchorPane unitsDetailPane;
+
     @FXML
     private AnchorPane quantityKindsDetailPane;
+
     @FXML
     private TableView<Unit> unitsTableView;
+
     @FXML
     private TableView<QuantityKind> quantityTableView;
 
@@ -91,13 +96,9 @@ public class UnitManagementController implements Initializable {
             }
         });
 
-        BooleanBinding noUnitSelected = unitsTableView.getSelectionModel().selectedItemProperty().isNull();
-        //deleteUnitButton.disableProperty().bind(noUnitSelected);
         deleteUnitButton.setDisable(true);
         saveUnitsButton.disableProperty().bind(Bindings.not(changed));
 
-        BooleanBinding noQuantityKindSelected = quantityTableView.getSelectionModel().selectedItemProperty().isNull();
-        //deleteQuantityKindButton.disableProperty().bind(noQuantityKindSelected);
         deleteQuantityKindButton.setDisable(true);
         addQuantityKindButton.setDisable(true);
     }
@@ -144,7 +145,7 @@ public class UnitManagementController implements Initializable {
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.setTitle("Add Unit");
+            stage.setTitle("Add new unit of measure");
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(unitManagementPane.getScene().getWindow());

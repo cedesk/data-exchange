@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <?import javafx.scene.text.Text?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.cell.PropertyValueFactory?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.AddUnitController">
     <children>
         <VBox>
             <children>
                 <GridPane>
-                    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
                     <GridPane hgap="8.0" vgap="2.0">
                         <columnConstraints>
                             <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0"/>
@@ -29,19 +26,19 @@
                         </rowConstraints>
                         <children>
                             <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Name" GridPane.rowIndex="0"/>
-                            <TextField fx:id="nameText" promptText="name" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Sumbol" GridPane.rowIndex="1"/>
-                            <TextField fx:id="symbolText" promptText="symbol" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            <TextField fx:id="nameText" promptText="name" GridPane.columnIndex="1"
+                                       GridPane.rowIndex="0"/>
+                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Symbol" GridPane.rowIndex="1"/>
+                            <TextField fx:id="symbolText" promptText="symbol" GridPane.columnIndex="1"
+                                       GridPane.rowIndex="1"/>
                             <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Description" GridPane.rowIndex="2"/>
-                            <TextField fx:id="descriptionText" promptText="description" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            <TextField fx:id="descriptionText" promptText="description" GridPane.columnIndex="1"
+                                       GridPane.rowIndex="2"/>
 
-                            <Text layoutX="20.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quantity kind" GridPane.rowIndex="3"/>
-                            <ComboBox fx:id="quantityKindComboBox"  prefWidth="150.0"
+                            <Text layoutX="20.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0"
+                                  text="Quantity kind" GridPane.rowIndex="3"/>
+                            <ComboBox fx:id="quantityKindComboBox" prefWidth="150.0"
                                       GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                <!--cellFactory>
-                                    <ComboBoxTableCellFactory />
-                                    <PropertyValueFactory property="name"/>
-                                </cellFactory-->
                             </ComboBox>
                         </children>
                     </GridPane>
@@ -50,7 +47,8 @@
                     <items>
                         <Button fx:id="addUnitButton" defaultButton="true" mnemonicParsing="false"
                                 onAction="#addUnit" text="Add"/>
-                        <Button cancelButton="true" mnemonicParsing="false" onAction="#closeAddUnitDialog" text="Cancel"/>
+                        <Button cancelButton="true" mnemonicParsing="false" onAction="#closeAddUnitDialog"
+                                text="Cancel"/>
                     </items>
                 </ToolBar>
             </children>
