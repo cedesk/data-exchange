@@ -54,20 +54,10 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
         Iterator<ModelNode> iterator = treeIterator();
         while (iterator.hasNext()) {
             ModelNode modelNode = iterator.next();
-            Long modelNodeLastModification = modelNode.getLastModification();
-            if (modelNodeLastModification != null && modelNodeLastModification > latest)
+
+            Long modelNodeLastModification = modelNode.findLatestModificationCurrentNode();
+            if (modelNodeLastModification != null && modelNodeLastModification > latest) {
                 latest = modelNodeLastModification;
-
-            for (ExternalModel externalModel : modelNode.getExternalModels()) {
-                Long externalModelLastModification = externalModel.getLastModification();
-                if (externalModelLastModification != null && externalModelLastModification > latest)
-                    latest = externalModelLastModification;
-            }
-
-            for (ParameterModel parameterModel : modelNode.getParameters()) {
-                Long parameterModelLastModification = parameterModel.getLastModification();
-                if (parameterModelLastModification != null && parameterModelLastModification > latest)
-                    latest = parameterModelLastModification;
             }
         }
         return latest;
