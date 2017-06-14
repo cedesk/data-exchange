@@ -4,9 +4,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.type.Type;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModificationTimestamped;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
 import java.io.Serializable;
 
@@ -25,31 +23,12 @@ public class ModificationInterceptor extends EmptyInterceptor {
             Long timestamp = null;
             if (!(entity instanceof ExternalModel)) {
                 timestamp = updateTimestamp(currentState, propertyNames);
+                ((ModificationTimestamped) entity).setLastModification(timestamp);
             }
-            logger.debug("onFlushDirty " + entity.getClass().getCanonicalName() + "#" + id + ":" + getNodeName(currentState, propertyNames) + ", ts: " + timestamp);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onSave(Object entity, Serializable id,
-                          Object[] currentState, String[] propertyNames, Type[] types) {
-        if (entity instanceof ModificationTimestamped) {
-            String nodeName = null;
-            if (entity instanceof ModelNode) {
-                nodeName = ((ModelNode) entity).getNodePath();
-            } else if (entity instanceof ParameterModel) {
-                nodeName = ((ParameterModel) entity).getNodePath();
-            } else if (entity instanceof ExternalModel) {
-                nodeName = ((ExternalModel) entity).getNodePath();
-            } else {
-                nodeName = getNodeName(currentState, propertyNames);
+            if (logger.isDebugEnabled()) {
+                logger.debug("onFlushDirty " + entity.getClass().getCanonicalName() + "#" + id
+                        + ":" + getNodeName(currentState, propertyNames) + ", ts: " + timestamp);
             }
-            Long timestamp = null;
-            if (!(entity instanceof ExternalModel)) {
-                timestamp = updateTimestamp(currentState, propertyNames);
-            }
-            logger.debug("onSave " + entity.getClass().getCanonicalName() + "#" + id + ":" + nodeName + ", ts: " + timestamp);
         }
         return false;
     }
@@ -60,7 +39,7 @@ public class ModificationInterceptor extends EmptyInterceptor {
                 return (String) currentState[i];
             }
         }
-        return null;
+        return null; // better throw exception
     }
 
     private Long updateTimestamp(Object[] currentState, String[] propertyNames) {
@@ -71,6 +50,6 @@ public class ModificationInterceptor extends EmptyInterceptor {
                 return timestamp;
             }
         }
-        return 0L;
+        return 0L; // better throw exception
     }
 }
