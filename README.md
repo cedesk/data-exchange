@@ -1,9 +1,17 @@
 # CEDESK - Concurrent Engineering Data Exchange Skoltech #
 
-This is a collaboration tool for Parametric System Modeling in Concurrent Engineering Design Lab
+This is a collaboration tool for parametric system modeling in Concurrent Engineering Design Lab
 (http://crei.skoltech.ru/space/research/labs/concurrent-engineering-design-laboratory/).
 
+## General Concept ##
+CEDESK was conceived as a data exchange tool for concurrent engineering design studies. It is meant to support the collaboration between engineers working together through a common model of the system. Each engineer uses specific tools to elaborate on aspects or parts of the system. These domain specific models can be arbitrary complex and use different specialized tools to work with them, whereas the common system model most and for all contains those design parameters through which the parts are interconnected/interdependent.
+
+A goal in the development of the data exchange is not to duplicate functionality of engineering tools, but rather interconnect existing ones in a way to provide fast and easy-to-use integration. 
+
 ## Quick summary ##
+* Architecture: 2 tier (Client application + Database)
+* Rich Client based on JavaFX
+* Server part is an SQL database, accessed via Hibernate ORM
 * Current State: Development
 
 ## Release History ##
@@ -34,9 +42,3 @@ This is a collaboration tool for Parametric System Modeling in Concurrent Engine
 * 2015-06-26 - Version 1.2
 * 2015-06-09 - Version 1.1
 * 2015-05-25 - Version 1.0
-
-## Architecture ##
-
-* Client-Server application: rich client + database
-* Rich Client based on JavaFX
-* Server part is an SQL database, accessed via Hibernate ORM
