@@ -355,6 +355,7 @@ public class ModelEditingController implements Initializable {
         parameterContextMenu.getItems().add(deleteParameterMenuItem);
         MenuItem addNodeMenuItem = new MenuItem("View history");
         addNodeMenuItem.setOnAction(ModelEditingController.this::openParameterHistoryDialog);
+        addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
         parameterEditor.setVisible(false);
@@ -509,6 +510,7 @@ public class ModelEditingController implements Initializable {
             structureTree.setEditable(isAdmin); // TODO: overcome limitation that only admin can change structure
             if (structureTree.getTreeItem(selectedIndex) != null) {
                 structureTree.getSelectionModel().select(selectedIndex);
+                // this is necessary since setting the selection does not always result in a selection change!
                 updateParameterTable(structureTree.getTreeItem(selectedIndex));
             }
             structureTree.refresh();
@@ -650,6 +652,20 @@ public class ModelEditingController implements Initializable {
         externalModelPane.setExpanded(hasExtModels);
     }
 
+    private void updateParameterEditor(ParameterModel parameterModel) {
+        if (parameterModel != null) {
+            ModelNode modelNode = parameterModel.getParent();
+            boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
+            logger.debug("selected parameter: " + parameterModel.getNodePath() + ", editable: " + editable);
+            parameterEditor.setVisible(editable); // TODO: allow read only
+            if (editable) {
+                parameterEditor.setParameterModel(parameterModel);
+            }
+        } else {
+            parameterEditor.setVisible(false);
+        }
+    }
+
     private void updateParameterTable(TreeItem<ModelNode> treeItem) {
         int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
 
@@ -662,34 +678,22 @@ public class ModelEditingController implements Initializable {
         // TODO: maybe redo selection only if same node
         if (selectedIndex < parameterTable.getItems().size()) {
             parameterTable.getSelectionModel().select(selectedIndex);
-            if(parameterTable.getSelectionModel().getSelectedItem() != null) {
-                String parameterName = parameterTable.getSelectionModel().getSelectedItem().getName();
-                ParameterModel currentParameterModel = modelNode.getParameterMap().get(parameterName);
-                parameterEditor.setParameterModel(currentParameterModel);
-            }
         } else if (parameterTable.getItems().size() > 0) {
             parameterTable.getSelectionModel().select(0);
         }
+        // this is necessary since setting the selection does not always result in a selection change!
+        updateParameterEditor(parameterTable.getSelectionModel().getSelectedItem());
+
     }
 
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
-            if (newValue != null) {
-                ModelNode modelNode = newValue.getParent();
-                boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
-                logger.debug("selected parameter: " + newValue.getNodePath() + ", editable: " + editable);
-
-                parameterEditor.setParameterModel(newValue);
-                parameterEditor.setVisible(editable); // TODO: allow viewing
-            } else {
-                parameterEditor.setVisible(false);
-            }
+            updateParameterEditor(newValue);
         }
     }
 
     private class TreeItemSelectionListener implements ChangeListener<TreeItem<ModelNode>> {
-
         @Override
         public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable,
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {

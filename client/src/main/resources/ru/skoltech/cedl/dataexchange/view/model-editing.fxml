@@ -128,7 +128,7 @@
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn fx:id="parameterInfoColumn" editable="false"
-                                                             prefWidth="100.0" text="Information">
+                                                             prefWidth="160.0" text="Information">
                                                 </TableColumn>
                                                 <TableColumn fx:id="parameterDescriptionColumn" editable="false"
                                                              prefWidth="100.0" text="Description">
