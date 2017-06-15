@@ -509,6 +509,7 @@ public class ModelEditingController implements Initializable {
             structureTree.setEditable(isAdmin); // TODO: overcome limitation that only admin can change structure
             if (structureTree.getTreeItem(selectedIndex) != null) {
                 structureTree.getSelectionModel().select(selectedIndex);
+                updateParameterTable(structureTree.getTreeItem(selectedIndex));
             }
             structureTree.refresh();
         } else {
@@ -661,6 +662,11 @@ public class ModelEditingController implements Initializable {
         // TODO: maybe redo selection only if same node
         if (selectedIndex < parameterTable.getItems().size()) {
             parameterTable.getSelectionModel().select(selectedIndex);
+            if(parameterTable.getSelectionModel().getSelectedItem() != null) {
+                String parameterName = parameterTable.getSelectionModel().getSelectedItem().getName();
+                ParameterModel currentParameterModel = modelNode.getParameterMap().get(parameterName);
+                parameterEditor.setParameterModel(currentParameterModel);
+            }
         } else if (parameterTable.getItems().size() > 0) {
             parameterTable.getSelectionModel().select(0);
         }
