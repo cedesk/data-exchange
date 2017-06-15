@@ -88,14 +88,14 @@
                 </TitledPane>
             </children>
         </AnchorPane>
-        <VBox>
+        <AnchorPane>
             <children>
-                <TitledPane fx:id="externalModelPane" animated="false" expanded="true" text="External Model">
+                <TitledPane fx:id="externalModelPane" animated="false" expanded="true" text="External Model" AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <content>
                         <ExternalModelEditor fx:id="externalModelEditor" minHeight="70.0"/>
                     </content>
                 </TitledPane>
-                <TitledPane animated="false" expanded="true" text="Parameters">
+                <TitledPane animated="false" expanded="true" text="Parameters" AnchorPane.topAnchor="70.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <content>
                         <SplitPane dividerPositions="0.5" orientation="VERTICAL">
                             <items>
@@ -175,7 +175,7 @@
                                 </AnchorPane>
                                 <TitledPane collapsible="false" expanded="true" text="Parameter Details">
                                     <content>
-                                        <ParameterEditor fx:id="parameterEditor" minHeight="260.0" prefHeight="340.0"/>
+                                        <ParameterEditor fx:id="parameterEditor" minHeight="280.0" prefHeight="340.0"/>
                                     </content>
                                 </TitledPane>
                             </items>
@@ -183,6 +183,6 @@
                     </content>
                 </TitledPane>
             </children>
-        </VBox>
+        </AnchorPane>
     </items>
 </SplitPane>
