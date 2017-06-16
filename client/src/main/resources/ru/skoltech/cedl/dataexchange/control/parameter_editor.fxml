@@ -98,7 +98,7 @@
                       alignment="CENTER_LEFT">
                     <children>
                         <Label text="Unit"/>
-                        <ChoiceBox fx:id="unitChoiceBox" prefWidth="200.0"/>
+                        <ComboBox fx:id="unitComboBox" editable="true" visibleRowCount="10" prefWidth="200.0"/>
                     </children>
                 </HBox>
                 <HBox fx:id="exportSelectorGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="5">

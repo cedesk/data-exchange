@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.control;
 
+import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -9,12 +10,16 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Window;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
+import org.controlsfx.control.textfield.AutoCompletionBinding;
+import org.controlsfx.control.textfield.TextFields;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
@@ -70,7 +75,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private TextField dependentsText;
 
     @FXML
-    private ChoiceBox<Unit> unitChoiceBox;
+    private ComboBox<Unit> unitComboBox;
 
     @FXML
     private CheckBox isReferenceValueOverriddenCheckbox;
@@ -117,6 +122,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private Calculation calculation;
 
     private Consumer<ParameterModel> editListener;
+
+    private AutoCompletionBinding<String> binding;
 
     public ParameterEditor() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("parameter_editor.fxml"));
@@ -171,7 +178,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             valueLinkParameter = parameterChoice.get();
             parameterLinkText.setText(valueLinkParameter.getNodePath());
             valueText.setText(convertToText(valueLinkParameter.getValue()));
-            unitChoiceBox.setValue(valueLinkParameter.getUnit());
+            unitComboBox.setValue(valueLinkParameter.getUnit());
         } else {
             parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : null);
         }
@@ -250,12 +257,16 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         linkSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
         calculationGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.CALCULATION));
         valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
-        unitChoiceBox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
+        unitComboBox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
         isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
         dependentsText.visibleProperty().bind(natureChoiceBox.valueProperty().isEqualTo(ParameterNature.OUTPUT));
         valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.disableProperty().or(isReferenceValueOverriddenCheckbox.selectedProperty().not()));
         exportSelectorGroup.disableProperty().bind(isExportedCheckbox.selectedProperty().not());
-        unitChoiceBox.setConverter(new StringConverter<Unit>() {
+
+        List<String> unitsTexts = unitComboBox.getItems().stream().map(unit -> unit.asText()).collect(Collectors.toList());
+        binding = TextFields.bindAutoCompletion(unitComboBox.getEditor(), unitsTexts);
+
+        unitComboBox.setConverter(new StringConverter<Unit>() {
             @Override
             public Unit fromString(String unitStr) {
                 return project.getUnitManagement().findUnitByText(unitStr);
@@ -263,7 +274,43 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
             @Override
             public String toString(Unit unit) {
+                if (unit == null) {
+                    return null;
+                }
                 return unit.asText();
+            }
+        });
+
+
+        ListCell unitListCell = new ListCell<Unit>() {
+            @Override
+            protected void updateItem(Unit unit, boolean empty) {
+                super.updateItem(unit, empty);
+                if (empty) {
+                    setText("");
+                } else {
+                    setText(unit.getName());
+                }
+            }
+        };
+        unitComboBox.setButtonCell(unitListCell);
+
+
+        unitComboBox.setCellFactory(new Callback<ListView<Unit>, ListCell<Unit>>() {
+            @Override
+            public ListCell<Unit> call(ListView<Unit> p) {
+                ListCell cell = new ListCell<Unit>() {
+                    @Override
+                    protected void updateItem(Unit item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setText("");
+                        } else {
+                            setText(item.getName());
+                        }
+                    }
+                };
+                return cell;
             }
         });
     }
@@ -294,7 +341,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
         editingParameterModel.setNature(natureChoiceBox.getValue());
         editingParameterModel.setValueSource(valueSourceChoiceBox.getValue());
-        editingParameterModel.setUnit(unitChoiceBox.getValue());
+        editingParameterModel.setUnit(unitComboBox.getValue());
 
         if (editingParameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
             if (valueReference != null) {
@@ -303,12 +350,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                 logger.debug("update parameter value from model");
                 try {
                     ModelUpdateUtil.applyParameterChangesFromExternalModel(editingParameterModel, externalModelFileHandler,
-                            new Consumer<ParameterUpdate>() {
-                                @Override
-                                public void accept(ParameterUpdate parameterUpdate) {
-                                    valueText.setText(convertToText(parameterUpdate.getValue()));
-                                }
-                            });
+                            parameterUpdate -> valueText.setText(convertToText(parameterUpdate.getValue())));
                 } catch (ExternalModelException e) {
                     Window window = propertyPane.getScene().getWindow();
                     UserNotifications.showNotification(window, "Error", "Unable to update value from given target.");
@@ -407,7 +449,9 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         // refresh unit's list, since list can be changed
         List<Unit> units = project.getUnitManagement().getUnits();
         units.sort((o1, o2) -> o1.asText().compareTo(o2.asText()));
-        unitChoiceBox.setItems(FXCollections.observableArrayList(units));
+        unitComboBox.setItems(FXCollections.observableArrayList(units));
+        List<String> unitsTexts = unitComboBox.getItems().stream().map(unit -> unit.asText()).collect(Collectors.toList());
+        binding = TextFields.bindAutoCompletion(unitComboBox.getEditor(), unitsTexts);
 
         // make local copy of the parameter model
         editingParameterModel = Utils.copyBean(parameterModel, new ParameterModel());
@@ -425,7 +469,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         calculation = editingParameterModel.getCalculation();
         natureChoiceBox.valueProperty().setValue(editingParameterModel.getNature());
         valueSourceChoiceBox.valueProperty().setValue(editingParameterModel.getValueSource());
-        unitChoiceBox.valueProperty().setValue(editingParameterModel.getUnit());
+        unitComboBox.valueProperty().setValue(editingParameterModel.getUnit());
         valueReferenceText.setText(editingParameterModel.getValueReference() != null ? editingParameterModel.getValueReference().toString() : "");
         parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : "");
         calculationText.setText(calculation != null ? calculation.asText() : "");
