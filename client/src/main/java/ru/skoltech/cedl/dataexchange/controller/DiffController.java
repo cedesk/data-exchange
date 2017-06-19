@@ -133,13 +133,17 @@ public class DiffController implements Initializable {
 
     private void addChangeAuthors(List<ModelDifference> modelDiffs, Repository repository) {
         for (ModelDifference modelDifference : modelDiffs) {
-            PersistedEntity persistedEntity = modelDifference.getChangedEntity();
-            try {
-                CustomRevisionEntity revisionEntity = repository.getLastRevision(persistedEntity);
-                String author = revisionEntity != null ? revisionEntity.getUsername() : "<none>";
-                modelDifference.setAuthor(author);
-            } catch (Exception e) {
-                logger.error("retrieving change author failed", e);
+            if (modelDifference.isMergeable()) {
+                PersistedEntity persistedEntity = modelDifference.getChangedEntity();
+                try {
+                    CustomRevisionEntity revisionEntity = repository.getLastRevision(persistedEntity);
+                    String author = revisionEntity != null ? revisionEntity.getUsername() : "<none>";
+                    modelDifference.setAuthor(author);
+                } catch (Exception e) {
+                    logger.error("retrieving change author failed", e);
+                }
+            } else if (modelDifference.isRevertible()) {
+                modelDifference.setAuthor("<you>");
             }
         }
     }
