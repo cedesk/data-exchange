@@ -1180,7 +1180,7 @@
                       <ownedParameter xmi:type="uml:Parameter" xmi:id="_U_SYAUeUEee3VbM3lSYVWA" type="_-aO74EeBEee3VbM3lSYVWA" direction="return"/>
                     </ownedOperation>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_5_PGgEedEee3VbM3lSYVWA" name="userRoleManagement" memberEnd="_U-59gEeUEee3VbM3lSYVWA _5_Q7sEedEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_5_PGgEedEee3VbM3lSYVWA" memberEnd="_U-59gEeUEee3VbM3lSYVWA _5_Q7sEedEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_5_Q7sEedEee3VbM3lSYVWA" name="study" type="_U-zP0EeUEee3VbM3lSYVWA" association="_5_PGgEedEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_5_Q7sUedEee3VbM3lSYVWA" value="1"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_5_RiwEedEee3VbM3lSYVWA" value="1"/>
@@ -1188,28 +1188,28 @@
                     <ownedEnd xmi:type="uml:Property" xmi:id="_U-59gEeUEee3VbM3lSYVWA" name="userRoleManagement" visibility="private" type="_Y8Y00EeWEee3VbM3lSYVWA" isUnique="false" aggregation="composite" association="_5_PGgEedEee3VbM3lSYVWA"/>
                   </packagedElement>
                 </packagedElement>
-                <packagedElement xmi:type="uml:Association" xmi:id="_qoOwAEeMEee3VbM3lSYVWA" name="study" memberEnd="_cxo_MEeCEee3VbM3lSYVWA _qoRzUEeMEee3VbM3lSYVWA">
+                <packagedElement xmi:type="uml:Association" xmi:id="_qoOwAEeMEee3VbM3lSYVWA" memberEnd="_cxo_MEeCEee3VbM3lSYVWA _qoRzUEeMEee3VbM3lSYVWA">
                   <ownedEnd xmi:type="uml:Property" xmi:id="_qoRzUEeMEee3VbM3lSYVWA" type="_cxjfoEeCEee3VbM3lSYVWA" association="_qoOwAEeMEee3VbM3lSYVWA">
                     <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_qoSaYEeMEee3VbM3lSYVWA" value="1"/>
                     <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_qoSaYUeMEee3VbM3lSYVWA" value="1"/>
                   </ownedEnd>
                   <ownedEnd xmi:type="uml:Property" xmi:id="_cxo_MEeCEee3VbM3lSYVWA" name="study" visibility="private" type="_U-zP0EeUEee3VbM3lSYVWA" isUnique="false" aggregation="composite" association="_qoOwAEeMEee3VbM3lSYVWA"/>
                 </packagedElement>
-                <packagedElement xmi:type="uml:Association" xmi:id="_YOF6gEeNEee3VbM3lSYVWA" name="repositoryStudy" memberEnd="_cxsCgEeCEee3VbM3lSYVWA _YOIWwEeNEee3VbM3lSYVWA">
+                <packagedElement xmi:type="uml:Association" xmi:id="_YOF6gEeNEee3VbM3lSYVWA" memberEnd="_cxsCgEeCEee3VbM3lSYVWA _YOIWwEeNEee3VbM3lSYVWA">
                   <ownedEnd xmi:type="uml:Property" xmi:id="_YOIWwEeNEee3VbM3lSYVWA" type="_cxjfoEeCEee3VbM3lSYVWA" association="_YOF6gEeNEee3VbM3lSYVWA">
                     <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_YOI90EeNEee3VbM3lSYVWA" value="1"/>
                     <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_YOI90UeNEee3VbM3lSYVWA" value="1"/>
                   </ownedEnd>
                   <ownedEnd xmi:type="uml:Property" xmi:id="_cxsCgEeCEee3VbM3lSYVWA" name="repositoryStudy" visibility="private" type="_U-zP0EeUEee3VbM3lSYVWA" isUnique="false" aggregation="composite" association="_YOF6gEeNEee3VbM3lSYVWA"/>
                 </packagedElement>
-                <packagedElement xmi:type="uml:Association" xmi:id="_Du2SUEeREee3VbM3lSYVWA" name="userManagement" memberEnd="_cxqNUEeCEee3VbM3lSYVWA _Du4ukEeREee3VbM3lSYVWA">
+                <packagedElement xmi:type="uml:Association" xmi:id="_Du2SUEeREee3VbM3lSYVWA" memberEnd="_cxqNUEeCEee3VbM3lSYVWA _Du4ukEeREee3VbM3lSYVWA">
                   <ownedEnd xmi:type="uml:Property" xmi:id="_Du4ukEeREee3VbM3lSYVWA" name="project" type="_cxjfoEeCEee3VbM3lSYVWA" association="_Du2SUEeREee3VbM3lSYVWA">
                     <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_Du5VoEeREee3VbM3lSYVWA" value="1"/>
                     <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_Du5VoUeREee3VbM3lSYVWA" value="1"/>
                   </ownedEnd>
                   <ownedEnd xmi:type="uml:Property" xmi:id="_cxqNUEeCEee3VbM3lSYVWA" name="userManagement" visibility="private" type="_1vHBAEeQEee3VbM3lSYVWA" isUnique="false" aggregation="composite" association="_Du2SUEeREee3VbM3lSYVWA"/>
                 </packagedElement>
-                <packagedElement xmi:type="uml:Association" xmi:id="_Hyji4EeSEee3VbM3lSYVWA" name="currentUser" memberEnd="_cxrbcEeCEee3VbM3lSYVWA _Hyl_IEeSEee3VbM3lSYVWA">
+                <packagedElement xmi:type="uml:Association" xmi:id="_Hyji4EeSEee3VbM3lSYVWA" memberEnd="_cxrbcEeCEee3VbM3lSYVWA _Hyl_IEeSEee3VbM3lSYVWA">
                   <ownedEnd xmi:type="uml:Property" xmi:id="_Hyl_IEeSEee3VbM3lSYVWA" name="project" type="_cxjfoEeCEee3VbM3lSYVWA" association="_Hyji4EeSEee3VbM3lSYVWA">
                     <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_Hyl_IUeSEee3VbM3lSYVWA" value="1"/>
                     <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_Hyl_IkeSEee3VbM3lSYVWA" value="1"/>
@@ -1348,7 +1348,7 @@
                       <ownedParameter xmi:type="uml:Parameter" xmi:id="_1vv6MEeQEee3VbM3lSYVWA" name="o" type="_E3IG0UeCEee3VbM3lSYVWA"/>
                     </ownedOperation>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_hLXlQEeSEee3VbM3lSYVWA" name="users" memberEnd="_1vYt0EeQEee3VbM3lSYVWA _hLaBgEeSEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_hLXlQEeSEee3VbM3lSYVWA" memberEnd="_1vYt0EeQEee3VbM3lSYVWA _hLaBgEeSEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_hLaBgEeSEee3VbM3lSYVWA" name="userManagement" type="_1vHBAEeQEee3VbM3lSYVWA" association="_hLXlQEeSEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_hLaBgUeSEee3VbM3lSYVWA" value="1"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_hLaBgkeSEee3VbM3lSYVWA" value="1"/>
@@ -2379,35 +2379,35 @@
                       </ownedParameter>
                     </ownedOperation>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_D_fx4EebEee3VbM3lSYVWA" name="disciplines" memberEnd="_Y8Zb4EeWEee3VbM3lSYVWA _D_jcQEebEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_D_fx4EebEee3VbM3lSYVWA" memberEnd="_Y8Zb4EeWEee3VbM3lSYVWA _D_jcQEebEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_D_jcQEebEee3VbM3lSYVWA" name="disciplines" type="_Y8VxgEeWEee3VbM3lSYVWA" aggregation="composite" association="_D_fx4EebEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_D_kDUEebEee3VbM3lSYVWA"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_D_kDUUebEee3VbM3lSYVWA" value="*"/>
                     </ownedEnd>
                     <ownedEnd xmi:type="uml:Property" xmi:id="_Y8Zb4EeWEee3VbM3lSYVWA" name="userRoleManagement" visibility="private" type="_Y8Y00EeWEee3VbM3lSYVWA" isUnique="false" association="_D_fx4EebEee3VbM3lSYVWA"/>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_Y_eWUEecEee3VbM3lSYVWA" name="adminDiscipline" memberEnd="_Y9foEEeWEee3VbM3lSYVWA _Y_gLgEecEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_Y_eWUEecEee3VbM3lSYVWA" memberEnd="_Y9foEEeWEee3VbM3lSYVWA _Y_gLgEecEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_Y_gLgEecEee3VbM3lSYVWA" name="userRoleManagement" type="_Y8Y00EeWEee3VbM3lSYVWA" association="_Y_eWUEecEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_Y_gykEecEee3VbM3lSYVWA" value="1"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_Y_gykUecEee3VbM3lSYVWA" value="1"/>
                     </ownedEnd>
                     <ownedEnd xmi:type="uml:Property" xmi:id="_Y9foEEeWEee3VbM3lSYVWA" name="adminDiscipline" visibility="private" type="_Y8VxgEeWEee3VbM3lSYVWA" isUnique="false" aggregation="composite" association="_Y_eWUEecEee3VbM3lSYVWA"/>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_s_akoEeeEee3VbM3lSYVWA" name="userRoleManagement" memberEnd="_s_akpEeeEee3VbM3lSYVWA _s_akoUeeEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_s_akoEeeEee3VbM3lSYVWA" memberEnd="_s_akpEeeEee3VbM3lSYVWA _s_akoUeeEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_s_akoUeeEee3VbM3lSYVWA" name="study" type="_Y8VxgEeWEee3VbM3lSYVWA" association="_s_akoEeeEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_s_akokeeEee3VbM3lSYVWA" value="1"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_s_ako0eeEee3VbM3lSYVWA" value="1"/>
                     </ownedEnd>
                     <ownedEnd xmi:type="uml:Property" xmi:id="_s_akpEeeEee3VbM3lSYVWA" name="userRoleManagement" visibility="private" type="_Y8Y00EeWEee3VbM3lSYVWA" isUnique="false" aggregation="composite" association="_s_akoEeeEee3VbM3lSYVWA"/>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_G5mOsEefEee3VbM3lSYVWA" name="userRoleManagement" memberEnd="_G5mOtEefEee3VbM3lSYVWA _G5mOsUefEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_G5mOsEefEee3VbM3lSYVWA" memberEnd="_G5mOtEefEee3VbM3lSYVWA _G5mOsUefEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_G5mOsUefEee3VbM3lSYVWA" name="study" type="_Y9KQ4EeWEee3VbM3lSYVWA" association="_G5mOsEefEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_G5mOskefEee3VbM3lSYVWA" value="1"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_G5mOs0efEee3VbM3lSYVWA" value="1"/>
                     </ownedEnd>
                     <ownedEnd xmi:type="uml:Property" xmi:id="_G5mOtEefEee3VbM3lSYVWA" name="userRoleManagement" visibility="private" type="_Y8Y00EeWEee3VbM3lSYVWA" isUnique="false" aggregation="composite" association="_G5mOsEefEee3VbM3lSYVWA"/>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_jJ1KIEefEee3VbM3lSYVWA" name="user" memberEnd="_Y9LfAEeWEee3VbM3lSYVWA _jJ3mYEefEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_jJ1KIEefEee3VbM3lSYVWA" memberEnd="_Y9LfAEeWEee3VbM3lSYVWA _jJ3mYEefEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_jJ3mYEefEee3VbM3lSYVWA" name="userDiscipline" type="_Y9KQ4EeWEee3VbM3lSYVWA" association="_jJ1KIEefEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_jJ3mYUefEee3VbM3lSYVWA" value="1"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_jJ3mYkefEee3VbM3lSYVWA" value="1"/>
@@ -2417,7 +2417,7 @@
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_fPvdsEegEee3VbM3lSYVWA" value="*"/>
                     </ownedEnd>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_jJ4NcEefEee3VbM3lSYVWA" name="discipline" memberEnd="_Y9LfAUeWEee3VbM3lSYVWA _jJ6CoEefEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_jJ4NcEefEee3VbM3lSYVWA" memberEnd="_Y9LfAUeWEee3VbM3lSYVWA _jJ6CoEefEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_jJ6CoEefEee3VbM3lSYVWA" name="userDiscipline" type="_Y9KQ4EeWEee3VbM3lSYVWA" association="_jJ4NcEefEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_jJ6CoUefEee3VbM3lSYVWA" value="1"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_jJ6CokefEee3VbM3lSYVWA" value="1"/>
@@ -2427,7 +2427,7 @@
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_M_fZcEegEee3VbM3lSYVWA" value="*"/>
                     </ownedEnd>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_w-L1YEegEee3VbM3lSYVWA" name="userDisciplines" memberEnd="_Y9foEUeWEee3VbM3lSYVWA _w-ORoEegEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_w-L1YEegEee3VbM3lSYVWA" memberEnd="_Y9foEUeWEee3VbM3lSYVWA _w-ORoEegEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_w-ORoEegEee3VbM3lSYVWA" name="userRoleManagement" type="_Y8Y00EeWEee3VbM3lSYVWA" association="_w-L1YEegEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_w-O4sEegEee3VbM3lSYVWA" value="1"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_w-O4sUegEee3VbM3lSYVWA" value="1"/>
@@ -2441,14 +2441,14 @@
                       </defaultValue>
                     </ownedEnd>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_1GDNMEehEee3VbM3lSYVWA" name="userRoleManagement" memberEnd="_1GD0Q0ehEee3VbM3lSYVWA _1GD0QEehEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_1GDNMEehEee3VbM3lSYVWA" memberEnd="_1GD0Q0ehEee3VbM3lSYVWA _1GD0QEehEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_1GD0QEehEee3VbM3lSYVWA" name="study" type="_Y8qhoEeWEee3VbM3lSYVWA" association="_1GDNMEehEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_1GD0QUehEee3VbM3lSYVWA" value="1"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_1GD0QkehEee3VbM3lSYVWA" value="1"/>
                     </ownedEnd>
                     <ownedEnd xmi:type="uml:Property" xmi:id="_1GD0Q0ehEee3VbM3lSYVWA" name="userRoleManagement" visibility="private" type="_Y8Y00EeWEee3VbM3lSYVWA" isUnique="false" aggregation="composite" association="_1GDNMEehEee3VbM3lSYVWA"/>
                   </packagedElement>
-                  <packagedElement xmi:type="uml:Association" xmi:id="_LeenwEeiEee3VbM3lSYVWA" name="discipline" memberEnd="_Y8rIsUeWEee3VbM3lSYVWA _LehrEEeiEee3VbM3lSYVWA">
+                  <packagedElement xmi:type="uml:Association" xmi:id="_LeenwEeiEee3VbM3lSYVWA" memberEnd="_Y8rIsUeWEee3VbM3lSYVWA _LehrEEeiEee3VbM3lSYVWA">
                     <ownedEnd xmi:type="uml:Property" xmi:id="_LehrEEeiEee3VbM3lSYVWA" name="disciplineSubSystem" type="_Y8qhoEeWEee3VbM3lSYVWA" association="_LeenwEeiEee3VbM3lSYVWA">
                       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_LeiSIEeiEee3VbM3lSYVWA" value="1"/>
                       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_LeiSIUeiEee3VbM3lSYVWA" value="1"/>
@@ -2530,7 +2530,7 @@
         </packagedElement>
       </packagedElement>
     </packagedElement>
-    <packagedElement xmi:type="uml:Association" xmi:id="_w5iUAEeiEee3VbM3lSYVWA" name="subSystem" memberEnd="_w5i7EkeiEee3VbM3lSYVWA _w5jiIEeiEee3VbM3lSYVWA" navigableOwnedEnd="_w5i7EkeiEee3VbM3lSYVWA">
+    <packagedElement xmi:type="uml:Association" xmi:id="_w5iUAEeiEee3VbM3lSYVWA" memberEnd="_w5i7EkeiEee3VbM3lSYVWA _w5jiIEeiEee3VbM3lSYVWA" navigableOwnedEnd="_w5i7EkeiEee3VbM3lSYVWA">
       <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_w5i7EEeiEee3VbM3lSYVWA" source="org.eclipse.papyrus">
         <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_w5i7EUeiEee3VbM3lSYVWA" key="nature" value="UML_Nature"/>
       </eAnnotations>

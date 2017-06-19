@@ -6402,14 +6402,14 @@
                     <appliedProfile xmi:type="uml:Profile" href=".#/"/>
                   </profileApplication>
                 </packagedElement>
-                <packagedElement xmi:type="uml:Association" xmi:id="_MBrOgEneEee3VbM3lSYVWA" name="study" memberEnd="_x0JKoUndEee3VbM3lSYVWA _MBuR0EneEee3VbM3lSYVWA">
+                <packagedElement xmi:type="uml:Association" xmi:id="_MBrOgEneEee3VbM3lSYVWA" memberEnd="_x0JKoUndEee3VbM3lSYVWA _MBuR0EneEee3VbM3lSYVWA">
                   <ownedEnd xmi:type="uml:Property" xmi:id="_MBuR0EneEee3VbM3lSYVWA" name="project" type="_x0AnwEndEee3VbM3lSYVWA" association="_MBrOgEneEee3VbM3lSYVWA">
                     <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_MBuR0UneEee3VbM3lSYVWA" value="1"/>
                     <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_MBuR0kneEee3VbM3lSYVWA" value="1"/>
                   </ownedEnd>
                   <ownedEnd xmi:type="uml:Property" xmi:id="_x0JKoUndEee3VbM3lSYVWA" name="study" visibility="private" type="_AbgcoEneEee3VbM3lSYVWA" isUnique="false" aggregation="composite" association="_MBrOgEneEee3VbM3lSYVWA"/>
                 </packagedElement>
-                <packagedElement xmi:type="uml:Association" xmi:id="_mxgHIEneEee3VbM3lSYVWA" name="repositoryStudy" memberEnd="_x0S7oEndEee3VbM3lSYVWA _mxjKcEneEee3VbM3lSYVWA">
+                <packagedElement xmi:type="uml:Association" xmi:id="_mxgHIEneEee3VbM3lSYVWA" memberEnd="_x0S7oEndEee3VbM3lSYVWA _mxjKcEneEee3VbM3lSYVWA">
                   <ownedEnd xmi:type="uml:Property" xmi:id="_mxjKcEneEee3VbM3lSYVWA" name="project" type="_x0AnwEndEee3VbM3lSYVWA" association="_mxgHIEneEee3VbM3lSYVWA">
                     <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_mxjKcUneEee3VbM3lSYVWA" value="1"/>
                     <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_mxjKckneEee3VbM3lSYVWA" value="1"/>
@@ -8207,7 +8207,7 @@ new PersistenceUtil() {&#xD;
         <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_j8Q6MEnwEee3VbM3lSYVWA" value="*"/>
       </ownedEnd>
     </packagedElement>
-    <packagedElement xmi:type="uml:Association" xmi:id="_x8j9cEn2Eee3VbM3lSYVWA" name="exportModel" memberEnd="_x8lyokn2Eee3VbM3lSYVWA _x8nAwEn2Eee3VbM3lSYVWA">
+    <packagedElement xmi:type="uml:Association" xmi:id="_x8j9cEn2Eee3VbM3lSYVWA" memberEnd="_x8lyokn2Eee3VbM3lSYVWA _x8nAwEn2Eee3VbM3lSYVWA">
       <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_x8lyoEn2Eee3VbM3lSYVWA" source="org.eclipse.papyrus">
         <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_x8lyoUn2Eee3VbM3lSYVWA" key="nature" value="UML_Nature"/>
       </eAnnotations>
@@ -8384,10 +8384,8 @@ new PersistenceUtil() {&#xD;
   <PapyrusJava:External xmi:id="_ugfRcEnxEee3VbM3lSYVWA" name="ParameterValueSource" base_Classifier="_AZ_ZsEneEee3VbM3lSYVWA"/>
   <PapyrusJava:External xmi:id="_ugkxAEnxEee3VbM3lSYVWA" name="ExternalModelReference" base_Classifier="_AfFVEEneEee3VbM3lSYVWA"/>
   <PapyrusJava:External xmi:id="_cek_oEn7EeePBIKM4W9IOQ" name="java.util.Collection" base_Classifier="_cebOoEn7EeePBIKM4W9IOQ"/>
-  <PapyrusJava:StaticClassifier xmi:id="_cfrL0En7EeePBIKM4W9IOQ" base_Classifier="_cffloEn7EeePBIKM4W9IOQ"/>
   <standard:Create xmi:id="_cf3ZEEn7EeePBIKM4W9IOQ" base_BehavioralFeature="_cfwrYEn7EeePBIKM4W9IOQ"/>
   <standard:Create xmi:id="_cgDmUEn7EeePBIKM4W9IOQ" base_BehavioralFeature="_cf9fsEn7EeePBIKM4W9IOQ"/>
-  <PapyrusJava:StaticClassifier xmi:id="_chHWQEn7EeePBIKM4W9IOQ" base_Classifier="_chB2sEn7EeePBIKM4W9IOQ"/>
   <standard:Create xmi:id="_chXN4En7EeePBIKM4W9IOQ" base_BehavioralFeature="_chSVYEn7EeePBIKM4W9IOQ"/>
   <standard:Create xmi:id="_chhl8En7EeePBIKM4W9IOQ" base_BehavioralFeature="_chctcEn7EeePBIKM4W9IOQ"/>
   <PapyrusJava:External xmi:id="_cicL8En7EeePBIKM4W9IOQ" name="Comparable" base_Classifier="_ciXTcEn7EeePBIKM4W9IOQ"/>
