@@ -134,6 +134,7 @@ public class Project {
         this.repositoryStudy = repositoryStudy;
 
         if (repositoryStudy != null) {
+            setLatestRepositoryModification(repositoryStudy.getLatestModelModification());
             StudySettings localSettings = getStudy().getStudySettings();
             StudySettings remoteSettings = repositoryStudy.getStudySettings();
             if (!localSettings.equals(remoteSettings)) {
@@ -274,7 +275,7 @@ public class Project {
         LocalTime startTime = LocalTime.now();
         Long latestMod = repository.getLastStudyModification(projectName);
         long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
-        logger.info("checked repository study (" + checkDuration + "ms)");
+        logger.info("checked repository study (" + checkDuration + "ms), last modification: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
 
         if (latestMod != null) {
             setLatestRepositoryModification(latestMod);
@@ -409,25 +410,14 @@ public class Project {
         reinitializeProject(systemModel);
     }
 
-    public boolean storeExternalModel(ExternalModel externalModel) {
-        try {
-            repository.storeExternalModel(externalModel);
-            // TODO: confirm repo url is working
-            return true;
-        } catch (RepositoryException e) {
-            logger.error("Error storing external model: " + externalModel.getParent().getNodePath() + "\\" + externalModel.getName(), e);
-        }
-        return false;
-    }
-
     public void storeLocalStudy() throws RepositoryException, ExternalModelException {
         updateParameterValuesFromLinks();
         exportValuesToExternalModels();
         updateExternalModelsInStudy();
-        Study study = repository.storeStudy(this.study);
+        Study newStudy = repository.storeStudy(this.study);
         updateExternalModelStateInCache();
-        setStudy(study);
-        setRepositoryStudy(study); // FIX: doesn't this cause troubles with later checks for update?
+        setStudy(newStudy);
+        setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
         initializeStateOfExternalModels();
         registerParameterLinks();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
