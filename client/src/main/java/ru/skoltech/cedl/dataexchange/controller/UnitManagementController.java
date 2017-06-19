@@ -121,7 +121,7 @@ public class UnitManagementController implements Initializable {
         ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Current roles is modified");
+        alert.setTitle("Current units are modified");
         alert.setContentText("Save modification?");
         alert.getButtonTypes().setAll(yesButton, noButton, cancelButton);
         Optional<ButtonType> result = alert.showAndWait();
@@ -130,7 +130,7 @@ public class UnitManagementController implements Initializable {
         } else if (result.get() == yesButton) {
             saveUnits();
         } else if (result.get() == noButton){
-            project.loadUserRoleManagement();
+            project.loadUnitManagement();
             return;
         }
     }
