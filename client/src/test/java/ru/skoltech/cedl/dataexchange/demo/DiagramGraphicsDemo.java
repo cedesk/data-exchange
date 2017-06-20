@@ -6,9 +6,6 @@ package ru.skoltech.cedl.dataexchange.demo;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.ArcType;
 import javafx.stage.Stage;
 import ru.skoltech.cedl.dataexchange.control.DiagramView;
 
@@ -42,15 +39,6 @@ public class DiagramGraphicsDemo extends Application {
         diagramView.addConnection("Element 3", "Element 4", "param. Y", 1);
         diagramView.addConnection("Element 4", "Element 2", "param. X", 1);
 
-    }
-
-    private Arc getArc() {
-        // A CHORD arc with no fill and a stroke
-        Arc arc = new Arc(0, 0, 50, 100, 0, 90);
-        arc.setFill(Color.TRANSPARENT);
-        arc.setStroke(Color.BLACK);
-        arc.setType(ArcType.CHORD);
-        return arc;
     }
 
 }

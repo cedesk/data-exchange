@@ -43,38 +43,35 @@ public class DiagramView extends AnchorPane implements Initializable {
     public DiagramView() {
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void setModel(DependencyModel dependencyModel) {
+        reset();
+        dependencyModel.elementStream()
+                .sorted(DependencyModel.Element.POSITION_COMPARATOR)
+                .forEach(element -> {
+                    addElement(element.getName());
+                });
+        dependencyModel.connectionStream().forEach(conn -> {
+            addConnection(conn.getFromName(), conn.getToName(), conn.getDescription(), conn.getStrength());
+        });
     }
 
-/*
-    private void redraw(ActionEvent actionEvent) {
-        HashMap<String, DiagramElement> oldElements = new HashMap<>(elements);
-        MultiValuedMap<String, DiagramConnection> oldConnections = new ArrayListValuedHashMap<>(fromConnections);
-        reset();
-        for (String elementName : oldElements.keySet()) {
-            addElement(elementName);
-        }
-        for (String fromName : oldConnections.keySet()) {
-            Collection<DiagramConnection> diagramConnections = oldConnections.get(fromName);
-            for (DiagramConnection diagramConnection : diagramConnections) {
-                String toName = diagramConnection.getToName();
-                String description = diagramConnection.getDescription();
-                int strength = diagramConnection.getStrength();
-                addConnection(fromName, toName, description, strength);
-            }
-        }
+    public void addConnection(String from, String to, String description, int strength) {
+        DiagramElement fromDiagEl = elements.get(from);
+        String fromName = fromDiagEl.getName();
+        DiagramElement toDiagEl = elements.get(to);
+        String toName = toDiagEl.getName();
+
+        DiagramConnection connection = new DiagramConnection(fromDiagEl, toDiagEl, description, strength);
+        fromConnections.put(fromName, connection);
+        toConnections.put(toName, connection);
+        refineStartingPoints(fromName);
+        refineEndingPoints(toName);
+        getChildren().add(connection);
     }
-*/
 
     public void addElement(String name) {
-        addElement(new DependencyModel.Element(name, elements.size()));
-    }
-
-    private void addElement(DependencyModel.Element element) {
-        String name = element.getName();
         if (!elements.containsKey(name)) {
-            DiagramElement diagramElement = new DiagramElement(element);
+            DiagramElement diagramElement = new DiagramElement(name, elements.size());
             elements.put(name, diagramElement);
             getChildren().add(diagramElement);
             setPrefWidth(prefWidth(0) + elementPadding);
@@ -82,22 +79,15 @@ public class DiagramView extends AnchorPane implements Initializable {
         }
     }
 
-    public void addConnection(String from, String to, String description, int strength) {
-        DependencyModel.Element fromEl = elements.get(from).element;
-        DependencyModel.Element toEl = elements.get(to).element;
-        addConnection(new DependencyModel.Connection(fromEl, toEl, description, strength));
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
     }
 
-    private void addConnection(DependencyModel.Connection mc) {
-        DiagramElement fromEl = elements.get(mc.getFromName());
-        DiagramElement toEl = elements.get(mc.getToName());
-
-        DiagramConnection connection = new DiagramConnection(fromEl, toEl, mc);
-        fromConnections.put(fromEl.getName(), connection);
-        toConnections.put(toEl.getName(), connection);
-        refineStartingPoints(fromEl.getName());
-        refineEndingPoints(toEl.getName());
-        getChildren().add(connection);
+    public void reset() {
+        getChildren().clear();
+        elements.clear();
+        fromConnections.clear();
+        toConnections.clear();
     }
 
     private void refineEndingPoints(String to) {
@@ -146,49 +136,44 @@ public class DiagramView extends AnchorPane implements Initializable {
         }
     }
 
-    public void reset() {
-        getChildren().clear();
-        elements.clear();
-        fromConnections.clear();
-        toConnections.clear();
-    }
-
-    public void setModel(DependencyModel dependencyModel) {
-        reset();
-        dependencyModel.elementStream()
-                .sorted(DependencyModel.Element.POSITION_COMPARATOR)
-                .forEach(this::addElement);
-        dependencyModel.connectionStream().forEach(this::addConnection);
-    }
-
     private static class DiagramElement extends Group {
 
         private boolean isSelected = false;
         private Rectangle rect;
-        private DependencyModel.Element element;
+        private String name;
+        private int position;
 
         private DiagramElement() { // disable default constructor
         }
 
-        DiagramElement(DependencyModel.Element element) {
-            this.element = element;
+        DiagramElement(String name, int position) {
+            this.name = name;
+            this.position = position;
             rect = new Rectangle(elementWidth, elementHeight);
             rect.setArcWidth(elementPadding);
             rect.setArcHeight(elementPadding);
             rect.setFill(ELEMENT_FILL_COLOR);
             rect.setStrokeWidth(lineWidth);
             rect.setStroke(DEFAULT_CONNECTION_COLOR);
-            Label caption = new Label(element.getName());
+            Label caption = new Label(name);
             caption.setLabelFor(rect);
             caption.setMinWidth(elementWidth);
             caption.setMinHeight(elementHeight);
             caption.setAlignment(Pos.CENTER);
             getChildren().addAll(rect, caption);
-            setLayoutX(elementPadding + element.getPosition() * (elementWidth + elementPadding));
-            setLayoutY(elementPadding + element.getPosition() * (elementHeight + elementPadding));
+            setLayoutX(elementPadding + position * (elementWidth + elementPadding));
+            setLayoutY(elementPadding + position * (elementHeight + elementPadding));
             setOnMouseClicked(event -> {
                 toggleSelection();
             });
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getPosition() {
+            return position;
         }
 
         public boolean isSelected() {
@@ -204,14 +189,6 @@ public class DiagramView extends AnchorPane implements Initializable {
             setSelected(!isSelected);
         }
 
-        public String getName() {
-            return element.getName();
-        }
-
-        public int getPosition() {
-            return element.getPosition();
-        }
-
     }
 
     private static class DiagramConnection extends Group {
@@ -222,19 +199,21 @@ public class DiagramView extends AnchorPane implements Initializable {
         private DiagramElement fromEl;
         private DiagramElement toEl;
 
-        private DependencyModel.Connection modelConnection;
+        private String description;
+        private int strength;
         private boolean isSelected = false;
 
         private Polyline line;
         private Polygon arrow;
         private Label caption;
 
-        public DiagramConnection(DiagramElement fromEl, DiagramElement toEl, DependencyModel.Connection mc) {
+        public DiagramConnection(DiagramElement fromEl, DiagramElement toEl, String description, int strength) {
             this.fromEl = fromEl;
             this.toEl = toEl;
-            this.modelConnection = mc;
+            this.description = description;
+            this.strength = strength;
 
-            caption = new Label(mc.getDescription());
+            caption = new Label(description);
             if (isUpper()) {
                 double lxs = fromEl.getLayoutX() + fromEl.minWidth(0);
                 double lys = fromEl.getLayoutY() + fromEl.minHeight(0) / 2;
@@ -254,7 +233,7 @@ public class DiagramView extends AnchorPane implements Initializable {
                 caption.setLayoutX(lxe);
                 caption.setLayoutY(lys);
             }
-            line.setStrokeWidth(lineWidth * mc.getStrength());
+            line.setStrokeWidth(lineWidth * strength);
             line.setStrokeLineCap(StrokeLineCap.BUTT);
             line.setStroke(DEFAULT_CONNECTION_COLOR);
             arrow.setStrokeWidth(1);
@@ -271,11 +250,23 @@ public class DiagramView extends AnchorPane implements Initializable {
         }
 
         public String getDescription() {
-            return modelConnection.getDescription();
+            return description;
         }
 
-        private void toggleSelection() {
-            setSelected(!isSelected);
+        String getFromName() {
+            return fromEl.getName();
+        }
+
+        public int getStrength() {
+            return strength;
+        }
+
+        String getToName() {
+            return toEl.getName();
+        }
+
+        boolean isLower() {
+            return fromEl.getPosition() > toEl.getPosition();
         }
 
         public boolean isSelected() {
@@ -289,13 +280,8 @@ public class DiagramView extends AnchorPane implements Initializable {
             arrow.fillProperty().set(isSelected ? SELECTED_CONNECTION_COLOR : DEFAULT_CONNECTION_COLOR);
         }
 
-        void setStartDisplacement(int numberOfConnections, int index) {
-            double displacement = fromEl.minHeight(0) / numberOfConnections;
-            ObservableList<Double> points = line.getPoints();
-            double lys = fromEl.getLayoutY() + displacement / 2 + index * displacement;
-            points.set(1, lys);
-            points.set(3, lys);
-            caption.setLayoutY(lys);
+        boolean isUpper() {
+            return fromEl.getPosition() < toEl.getPosition();
         }
 
         void setEndDisplacement(int numberOfConnections, int index) {
@@ -311,24 +297,17 @@ public class DiagramView extends AnchorPane implements Initializable {
             caption.setLayoutX(lxe);
         }
 
-        boolean isUpper() {
-            return fromEl.getPosition() < toEl.getPosition();
+        void setStartDisplacement(int numberOfConnections, int index) {
+            double displacement = fromEl.minHeight(0) / numberOfConnections;
+            ObservableList<Double> points = line.getPoints();
+            double lys = fromEl.getLayoutY() + displacement / 2 + index * displacement;
+            points.set(1, lys);
+            points.set(3, lys);
+            caption.setLayoutY(lys);
         }
 
-        boolean isLower() {
-            return fromEl.getPosition() > toEl.getPosition();
-        }
-
-        String getFromName() {
-            return fromEl.getName();
-        }
-
-        String getToName() {
-            return toEl.getName();
-        }
-
-        public int getStrength() {
-            return modelConnection.getStrength();
+        private void toggleSelection() {
+            setSelected(!isSelected);
         }
     }
 }
