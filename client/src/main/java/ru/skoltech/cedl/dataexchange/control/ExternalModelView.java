@@ -16,6 +16,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetInputOutputExtractor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
@@ -160,7 +161,7 @@ public class ExternalModelView extends HBox implements Initializable {
                     }
                 }
                 inputStream.close();
-            } catch (IOException e) {
+            } catch (IOException | ExternalModelException e) {
                 Dialogues.showWarning("No parameters found in external model.", "This external model could not be opened to extract parameters.");
                 logger.warn("This external model could not be opened to extract parameters.", e);
             }
