@@ -14,6 +14,7 @@ import org.controlsfx.control.spreadsheet.SpreadsheetColumn;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetGridViewFactory;
@@ -179,7 +180,7 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
             }
             sheetNames = validSheets;
             inputStream.close();
-        } catch (IOException e) {
+        } catch (IOException | ExternalModelException e) {
             Dialogues.showWarning("No sheets found in external model.", "This external model could not be opened to extract sheets.");
             logger.warn("This external model could not be opened to extract sheets.", e);
         }

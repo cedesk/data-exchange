@@ -148,7 +148,7 @@ public class ExternalModelFileHandler {
         return getCheckoutTime(getFilePathInCache(externalModel));
     }
 
-    public File cacheFile(ExternalModel externalModel) throws IOException {
+    public File cacheFile(ExternalModel externalModel) throws IOException, ExternalModelException {
         Objects.requireNonNull(externalModel);
         File file = getFilePathInCache(externalModel);
         StorageUtils.makeDirectory(file.getParentFile());
@@ -159,6 +159,7 @@ public class ExternalModelFileHandler {
                 // TODO: handle file opened by other process
                 if (file.canWrite() || !file.exists()) {
                     logger.debug("caching: " + file.getAbsolutePath());
+                    if(externalModel.getAttachment() == null) throw new ExternalModelException("external model has empty attachment");
                     Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
                     updateCheckoutTimestamp(externalModel);
                     project.addExternalModelFileWatcher(externalModel);
@@ -195,7 +196,7 @@ public class ExternalModelFileHandler {
         return file;
     }
 
-    public InputStream getAttachmentAsStream(ExternalModel externalModel) throws IOException {
+    public InputStream getAttachmentAsStream(ExternalModel externalModel) throws IOException, ExternalModelException {
         switch (ExternalModelFileHandler.getCacheState(externalModel)) {
             case CACHED_UP_TO_DATE:
             case CACHED_MODIFIED_AFTER_CHECKOUT:
@@ -206,6 +207,7 @@ public class ExternalModelFileHandler {
                 File writtenFile = cacheFile(externalModel);
                 return new FileInputStream(writtenFile);
             default:
+                if (externalModel.getAttachment() == null) throw new ExternalModelException("external model has empty attachment");
                 return new ByteArrayInputStream(externalModel.getAttachment());
         }
     }

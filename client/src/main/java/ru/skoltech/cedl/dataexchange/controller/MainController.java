@@ -569,7 +569,7 @@ public class MainController implements Initializable {
             }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading project!", true);
-            logger.error(e);
+            logger.error("Error loading project", e);
             ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName() + ", loading failed");
         }
         updateView();
