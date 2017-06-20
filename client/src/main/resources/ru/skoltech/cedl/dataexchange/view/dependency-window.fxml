@@ -12,6 +12,9 @@
         <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                     AnchorPane.topAnchor="0.0">
             <top>
+                <fx:define>
+                    <ToggleGroup fx:id="sortOrderGroup"/>
+                </fx:define>
                 <ToolBar fx:id="nSquareToolbar">
                     <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
                         <tooltip>
@@ -27,11 +30,11 @@
                         </padding>
                     </Label>
                     <RadioButton fx:id="sortOrderDefault" mnemonicParsing="false" selected="true" text="Default"
-                                 toggleGroup="$sortOrderGroup"/>
+                                 toggleGroup="$sortOrderGroup" userData="default"/>
                     <RadioButton fx:id="sortOrderPriority" mnemonicParsing="false" text="Priority"
-                                 toggleGroup="$sortOrderGroup"/>
+                                 toggleGroup="$sortOrderGroup" userData="priority"/>
                     <RadioButton fx:id="sortOrderAlphabetical" mnemonicParsing="false" text="Alphabetic"
-                                 toggleGroup="$sortOrderGroup"/>
+                                 toggleGroup="$sortOrderGroup" userData="alphabetical"/>
                     <Pane HBox.hgrow="ALWAYS"/>
                     <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
                         <tooltip>
@@ -41,9 +44,6 @@
                             <Glyph fontFamily="FontAwesome" icon="SAVE"/>
                         </graphic>
                     </Button>
-                    <fx:define>
-                        <ToggleGroup fx:id="sortOrderGroup"/>
-                    </fx:define>
                 </ToolBar>
             </top>
             <center>
