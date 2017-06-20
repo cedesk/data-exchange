@@ -3,81 +3,51 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <?import ru.skoltech.cedl.dataexchange.control.DiagramView?>
-<AnchorPane prefHeight="600.0" prefWidth="900.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112"
-            xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="900.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.112"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.DependencyController">
     <children>
         <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                     AnchorPane.topAnchor="0.0">
             <top>
-                <StackPane>
-                    <ToolBar fx:id="dsmToolbar">
-                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
-                            <tooltip>
-                                <Tooltip text="Refresh"/>
-                            </tooltip>
-                            <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                            </graphic>
-                        </Button>
-                        <Label text="IC/FBD convention: inputs shown in columns, outputs in rows; feedback marks appear below the diagonal."/>
-                        <Pane HBox.hgrow="ALWAYS"/>
-                        <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode" text="">
-                            <tooltip>
-                                <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
-                            </tooltip>
-                            <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="CODEPEN"/>
-                            </graphic>
-                        </Button>
-                        <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                                  text="Generate weighted DSM" GridPane.columnIndex="1"/>
-                    </ToolBar>
-                    <ToolBar fx:id="nSquareToolbar">
-                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
-                            <tooltip>
-                                <Tooltip text="Refresh"/>
-                            </tooltip>
-                            <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                            </graphic>
-                        </Button>
-                        <Label text="Sequence">
-                            <padding>
-                                <Insets left="12.0"/>
-                            </padding>
-                        </Label>
-                        <RadioButton fx:id="sortOrderDefault" mnemonicParsing="false" selected="true" text="Default"
-                                     toggleGroup="$sortOrderGroup"/>
-                        <RadioButton fx:id="sortOrderPriority" mnemonicParsing="false" text="Priority"
-                                     toggleGroup="$sortOrderGroup"/>
-                        <RadioButton fx:id="sortOrderAlphabetical" mnemonicParsing="false" text="Alphabetic"
-                                     toggleGroup="$sortOrderGroup"/>
-                        <Pane HBox.hgrow="ALWAYS"/>
-                        <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
-                            <tooltip>
-                                <Tooltip text="Save the diagram as image file"/>
-                            </tooltip>
-                            <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="SAVE"/>
-                            </graphic>
-                        </Button>
-                        <fx:define>
-                            <ToggleGroup fx:id="sortOrderGroup"/>
-                        </fx:define>
-                    </ToolBar>
-                </StackPane>
+                <ToolBar fx:id="nSquareToolbar">
+                    <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
+                        <tooltip>
+                            <Tooltip text="Refresh"/>
+                        </tooltip>
+                        <graphic>
+                            <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                        </graphic>
+                    </Button>
+                    <Label text="Sequence">
+                        <padding>
+                            <Insets left="12.0"/>
+                        </padding>
+                    </Label>
+                    <RadioButton fx:id="sortOrderDefault" mnemonicParsing="false" selected="true" text="Default"
+                                 toggleGroup="$sortOrderGroup"/>
+                    <RadioButton fx:id="sortOrderPriority" mnemonicParsing="false" text="Priority"
+                                 toggleGroup="$sortOrderGroup"/>
+                    <RadioButton fx:id="sortOrderAlphabetical" mnemonicParsing="false" text="Alphabetic"
+                                 toggleGroup="$sortOrderGroup"/>
+                    <Pane HBox.hgrow="ALWAYS"/>
+                    <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
+                        <tooltip>
+                            <Tooltip text="Save the diagram as image file"/>
+                        </tooltip>
+                        <graphic>
+                            <Glyph fontFamily="FontAwesome" icon="SAVE"/>
+                        </graphic>
+                    </Button>
+                    <fx:define>
+                        <ToggleGroup fx:id="sortOrderGroup"/>
+                    </fx:define>
+                </ToolBar>
             </top>
             <center>
-                <StackPane>
-                    <SpreadsheetView fx:id="spreadsheetView" editable="false" prefHeight="400" prefWidth="500.0"
-                                     visible="false" BorderPane.alignment="CENTER"/>
-                    <DiagramView fx:id="diagramView" prefHeight="400" prefWidth="500.0" visible="false"
-                                 BorderPane.alignment="TOP_RIGHT"/>
-                </StackPane>
+                <DiagramView fx:id="diagramView" prefHeight="400" prefWidth="500.0" BorderPane.alignment="TOP_RIGHT"/>
             </center>
         </BorderPane>
     </children>

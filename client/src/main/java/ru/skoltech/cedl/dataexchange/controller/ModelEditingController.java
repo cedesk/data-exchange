@@ -21,10 +21,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.Identifiers;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.external.*;
@@ -114,8 +111,6 @@ public class ModelEditingController implements Initializable {
     private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(true);
 
     private Project project;
-
-    private Window appWindow;
 
     private Window getAppWindow() {
         return viewPane.getScene().getWindow();
@@ -520,12 +515,12 @@ public class ModelEditingController implements Initializable {
         }
     }
 
-    public void viewDSM(ActionEvent actionEvent) {
-        openDependencyView("Dependency Structure Matrix", DependencyController.ViewMode.DSM);
+    public void openDsmView(ActionEvent actionEvent) {
+        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
     }
 
-    public void viewNSquaredChart(ActionEvent actionEvent) {
-        openDependencyView("N-Square Chart", DependencyController.ViewMode.N_SQUARE);
+    public void openDepencencyView(ActionEvent actionEvent) {
+        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
     }
 
     private void clearParameterTable() {
@@ -610,28 +605,6 @@ public class ModelEditingController implements Initializable {
         deleteNodeMenuItem.disableProperty().bind(Bindings.or(structureNotEditable, selectedNodeIsRoot));
         structureContextMenu.getItems().add(deleteNodeMenuItem);
         return structureContextMenu;
-    }
-
-    private void openDependencyView(String title, DependencyController.ViewMode mode) {
-        try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.DEPENDENCY_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle(title);
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.NONE);
-            stage.initOwner(getAppWindow());
-            DependencyController controller = loader.getController();
-            controller.setMode(mode);
-            controller.refreshView(null);
-
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
     }
 
     private void updateDependencies(ModelNode modelNode) {

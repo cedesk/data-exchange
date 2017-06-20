@@ -70,9 +70,9 @@
                                 <TextField fx:id="downstreamDependenciesText" editable="false"/>
                                 <HBox>
                                     <children>
-                                        <Button mnemonicParsing="false" onAction="#viewDSM" text="View DSM">
+                                        <Button mnemonicParsing="false" onAction="#openDsmView" text="View DSM">
                                         </Button>
-                                        <Button mnemonicParsing="false" onAction="#viewNSquaredChart" text="View N2">
+                                        <Button mnemonicParsing="false" onAction="#openDepencencyView" text="View N2">
                                             <HBox.margin>
                                                 <Insets left="8.0"/>
                                             </HBox.margin>
