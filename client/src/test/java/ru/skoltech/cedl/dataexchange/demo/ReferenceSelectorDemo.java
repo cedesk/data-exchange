@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.demo;
 
 import javafx.application.Application;
 import javafx.scene.control.Dialog;
@@ -21,9 +21,9 @@ import java.util.function.Consumer;
 /**
  * Created by D.Knoll on 25.09.2015.
  */
-public class ReferenceSelectorTest extends Application {
+public class ReferenceSelectorDemo extends Application {
 
-    private static Logger logger = Logger.getLogger(ReferenceSelectorTest.class);
+    private static Logger logger = Logger.getLogger(ReferenceSelectorDemo.class);
 
     private static Project project;
 
@@ -42,12 +42,12 @@ public class ReferenceSelectorTest extends Application {
 
         try {
             SystemModel testSat = new SystemModel("testSat");
-            File file = new File(ReferenceSelectorTest.class.getResource("/simple-model.xls").toURI());
+            File file = new File(ReferenceSelectorDemo.class.getResource("/simple-model.xls").toURI());
             ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
             systemModel.addExternalModel(externalModel);
             parameterModel.setValueReference(new ExternalModelReference(externalModel, "G4"));
 
-            file = new File(ReferenceSelectorTest.class.getResource("/attachment.xls").toURI());
+            file = new File(ReferenceSelectorDemo.class.getResource("/attachment.xls").toURI());
             externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
             systemModel.addExternalModel(externalModel);
         } catch (Exception e) {

@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.demo;
 
 /**
  * Created by d.knoll on 14.11.2016.
@@ -12,7 +12,7 @@ import javafx.scene.shape.ArcType;
 import javafx.stage.Stage;
 import ru.skoltech.cedl.dataexchange.control.DiagramView;
 
-public class DiagramGraphicsTest extends Application {
+public class DiagramGraphicsDemo extends Application {
 
     public static void main(String[] args) {
         Application.launch(args);
