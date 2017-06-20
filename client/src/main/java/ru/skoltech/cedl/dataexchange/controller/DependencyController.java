@@ -40,24 +40,45 @@ public class DependencyController implements Initializable {
     private ToggleGroup sortOrderGroup;
 
     @FXML
+    private ToggleGroup sourceGroup;
+
+    @FXML
     private DiagramView diagramView;
+
+    private Project project;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        project = ProjectContext.getInstance().getProject();
+
         Platform.runLater(() -> refreshView(null));
 
         sortOrderGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
-            if(newValue != null) {
+            if (newValue != null) {
+                refreshView(null);
+            }
+        });
+        sourceGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
                 refreshView(null);
             }
         });
     }
 
     public void refreshView(ActionEvent actionEvent) {
-        Project project = ProjectContext.getInstance().getProject();
-        SystemModel systemModel = project.getSystemModel();
-        ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
-        DependencyModel dependencyModel = parameterLinkRegistry.getDependencyModel(systemModel);
+        DependencyModel dependencyModel;
+        SystemModel systemModel;
+        String source = (String) sourceGroup.getSelectedToggle().getUserData();
+        if (source.equals("local")) {
+            systemModel = project.getSystemModel();
+            ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
+            dependencyModel = parameterLinkRegistry.getDependencyModel(systemModel);
+        } else {
+            systemModel = project.getRepositoryStudy().getSystemModel();
+            ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
+            parameterLinkRegistry.registerAllParameters(systemModel);
+            dependencyModel = parameterLinkRegistry.getDependencyModel(systemModel);
+        }
 
         String sortOrder = (String) sortOrderGroup.getSelectedToggle().getUserData();
         if (sortOrder.equals("default")) {

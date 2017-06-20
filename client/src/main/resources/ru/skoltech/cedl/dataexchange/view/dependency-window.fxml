@@ -14,8 +14,9 @@
             <top>
                 <fx:define>
                     <ToggleGroup fx:id="sortOrderGroup"/>
+                    <ToggleGroup fx:id="sourceGroup"/>
                 </fx:define>
-                <ToolBar fx:id="nSquareToolbar">
+                <ToolBar>
                     <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
                         <tooltip>
                             <Tooltip text="Refresh"/>
@@ -29,12 +30,22 @@
                             <Insets left="12.0"/>
                         </padding>
                     </Label>
-                    <RadioButton fx:id="sortOrderDefault" mnemonicParsing="false" selected="true" text="Default"
+                    <RadioButton mnemonicParsing="false" selected="true" text="Default"
                                  toggleGroup="$sortOrderGroup" userData="default"/>
-                    <RadioButton fx:id="sortOrderPriority" mnemonicParsing="false" text="Priority"
+                    <RadioButton mnemonicParsing="false" text="Priority"
                                  toggleGroup="$sortOrderGroup" userData="priority"/>
-                    <RadioButton fx:id="sortOrderAlphabetical" mnemonicParsing="false" text="Alphabetic"
-                                 toggleGroup="$sortOrderGroup" userData="alphabetical"/>
+                    <RadioButton mnemonicParsing="false" text="Alphabetic"
+                                 toggleGroup="$sortOrderGroup" userData="alphabetic"/>
+                    <Separator />
+                    <Label text="Source">
+                        <padding>
+                            <Insets left="12.0"/>
+                        </padding>
+                    </Label>
+                    <RadioButton mnemonicParsing="false" selected="true" text="Local"
+                                 toggleGroup="$sourceGroup" userData="local"/>
+                    <RadioButton mnemonicParsing="false" text="Repository"
+                                 toggleGroup="$sourceGroup" userData="repository"/>
                     <Pane HBox.hgrow="ALWAYS"/>
                     <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
                         <tooltip>
