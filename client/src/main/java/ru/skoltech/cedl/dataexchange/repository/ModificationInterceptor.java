@@ -24,10 +24,34 @@ public class ModificationInterceptor extends EmptyInterceptor {
             if (!(entity instanceof ExternalModel)) {
                 timestamp = updateTimestamp(currentState, propertyNames);
                 ((ModificationTimestamped) entity).setLastModification(timestamp);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("onFlushDirty " + entity.getClass().getCanonicalName() + "#" + id
+                            + ":" + getNodeName(currentState, propertyNames) + ", ts: " + timestamp);
+                }
+                return true;
+            } else if (logger.isDebugEnabled()) {
+                logger.debug("onFlushDirty Ext.Mod." + entity.getClass().getCanonicalName() + "#" + id
+                        + ":" + getNodeName(currentState, propertyNames));
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("onFlushDirty " + entity.getClass().getCanonicalName() + "#" + id
-                        + ":" + getNodeName(currentState, propertyNames) + ", ts: " + timestamp);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onSave(Object entity, Serializable id, Object[] currentState, String[] propertyNames, Type[] types) {
+        if (entity instanceof ModificationTimestamped) {
+            Long timestamp = null;
+            if (!(entity instanceof ExternalModel)) {
+                timestamp = updateTimestamp(currentState, propertyNames);
+                ((ModificationTimestamped) entity).setLastModification(timestamp);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("onSave " + entity.getClass().getCanonicalName() + "#" + id
+                            + ":" + getNodeName(currentState, propertyNames) + ", ts: " + timestamp);
+                }
+                return true;
+            } else if (logger.isDebugEnabled()) {
+                logger.debug("onSave Ext.Mod." + entity.getClass().getCanonicalName() + "#" + id
+                        + ":" + getNodeName(currentState, propertyNames));
             }
         }
         return false;
