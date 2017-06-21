@@ -5,15 +5,15 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Polyline;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.StrokeLineCap;
+import javafx.scene.shape.*;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.commons.math3.util.Precision;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
 import java.net.URL;
 import java.util.*;
@@ -24,11 +24,11 @@ import java.util.stream.Collectors;
  */
 public class DiagramView extends AnchorPane implements Initializable {
 
+    public static final Color LEGEND_BACKROUND = Color.WHITE;
     private static final Color ELEMENT_FILL_COLOR = Color.LIGHTGREY;
     private static final Color DEFAULT_CONNECTION_COLOR = Color.DARKGREY;
     private static final Color SELECTED_ELEMENT_COLOR = Color.DARKRED;
-    private static final Color SELECTED_CONNECTION_COLOR = Color.BLUE;
-
+    private static final Color HIGHLIGHT_CONNECTION_COLOR = Color.BLUE;
     private static double CAPTION_SCALE = .75;
     private static int elementPadding = 15;
     private static int elementHeight = 50;
@@ -51,8 +51,23 @@ public class DiagramView extends AnchorPane implements Initializable {
                     addElement(element.getName());
                 });
         dependencyModel.connectionStream().forEach(conn -> {
-            addConnection(conn.getFromName(), conn.getToName(), conn.getDescription(), conn.getStrength());
+            EnumSet<ConnectionState> states = getStates(conn.getLinkingParameters());
+            addConnection(conn.getFromName(), conn.getToName(), conn.getDescription(), conn.getStrength(), states);
         });
+    }
+
+    public void addConnection(String from, String to, String description, int strength, EnumSet<ConnectionState> connectionState) {
+        DiagramElement fromDiagEl = elements.get(from);
+        String fromName = fromDiagEl.getName();
+        DiagramElement toDiagEl = elements.get(to);
+        String toName = toDiagEl.getName();
+
+        DiagramConnection connection = new DiagramConnection(fromDiagEl, toDiagEl, description, strength, connectionState);
+        fromConnections.put(fromName, connection);
+        toConnections.put(toName, connection);
+        refineStartingPoints(fromName);
+        refineEndingPoints(toName);
+        getChildren().add(connection);
     }
 
     public void addConnection(String from, String to, String description, int strength) {
@@ -81,6 +96,12 @@ public class DiagramView extends AnchorPane implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        drawLegend();
+        /*setOnMouseClicked(event -> {
+            if(event.getClickCount() > 1) {
+                System.out.println("DOUBLECLICL");
+            }
+        });*/
     }
 
     public void reset() {
@@ -88,13 +109,68 @@ public class DiagramView extends AnchorPane implements Initializable {
         elements.clear();
         fromConnections.clear();
         toConnections.clear();
+        drawLegend();
+    }
+
+    private void drawLegend() {
+        Rectangle rect = new Rectangle(elementWidth, elementPadding * 6);
+        // legend box
+        //rect.setArcWidth(elementPadding);
+        //rect.setArcHeight(elementPadding);
+        rect.setFill(LEGEND_BACKROUND);
+        rect.setStrokeWidth(lineWidth);
+        rect.setStroke(DEFAULT_CONNECTION_COLOR);
+        rect.setLayoutX(getWidth() - elementWidth - elementPadding);
+        rect.setLayoutY(elementPadding);
+        getChildren().add(rect);
+        // legend title
+        Label caption = new Label("Legend");
+        caption.setLabelFor(rect);
+        caption.setMinWidth(elementWidth);
+        caption.setAlignment(Pos.CENTER);
+        caption.setLayoutX(getWidth() - elementWidth - elementPadding);
+        caption.setLayoutY(elementPadding);
+        getChildren().add(caption);
+        // connections DEFAULT
+        double layoutY = caption.getLayoutY() + elementPadding * 2;
+        Line line = new Line(caption.getLayoutX() + elementPadding, layoutY, caption.getLayoutX() + elementWidth / 2, layoutY);
+        line.setStrokeWidth(lineWidth);
+        line.setStroke(DEFAULT_CONNECTION_COLOR);
+        getChildren().add(line);
+        // connections NOT_PROP
+        layoutY = caption.getLayoutY() + elementPadding * 3;
+        line = new Line(caption.getLayoutX() + elementPadding, layoutY, caption.getLayoutX() + elementWidth / 2, layoutY);
+        line.setStrokeWidth(lineWidth);
+        line.setStroke(HIGHLIGHT_CONNECTION_COLOR);
+        getChildren().add(line);
+        // connections OVERRIDDEN
+        layoutY = caption.getLayoutY() + elementPadding * 3;
+        line = new Line(caption.getLayoutX() + elementPadding, layoutY, caption.getLayoutX() + elementWidth / 2, layoutY);
+        line.setStrokeWidth(lineWidth);
+        line.setStroke(HIGHLIGHT_CONNECTION_COLOR);
+        getChildren().add(line);
+
+    }
+
+    private EnumSet<ConnectionState> getStates(Collection<ParameterModel> linkingParameters) {
+        EnumSet<ConnectionState> result = EnumSet.noneOf(ConnectionState.class);
+        for (ParameterModel pm : linkingParameters) {
+            if (pm.getIsReferenceValueOverridden()) {
+                result.add(ConnectionState.OVERRIDDEN);
+            }
+            if (!Precision.equals(pm.getValue(), pm.getValueLink().getEffectiveValue(), 2)) {
+                result.add(ConnectionState.NOT_PROPAGATED);
+            }
+        }
+        return result;
     }
 
     private void refineEndingPoints(String to) {
         Collection<DiagramConnection> toConn = toConnections.get(to);
 
         // from the top
-        List<DiagramConnection> upperConnections = toConn.stream().filter(DiagramConnection::isUpper).sorted(DiagramConnection.FROM_COMPARATOR).collect(Collectors.toList());
+        List<DiagramConnection> upperConnections = toConn.stream()
+                .filter(DiagramConnection::isUpper).sorted(DiagramConnection.FROM_COMPARATOR).collect(Collectors.toList());
         int upperOutConnections = upperConnections.size();
         if (upperOutConnections > 1) {
             int con = 0;
@@ -103,7 +179,8 @@ public class DiagramView extends AnchorPane implements Initializable {
             }
         }
         // from the bottom
-        List<DiagramConnection> lowerConnections = toConn.stream().filter(DiagramConnection::isLower).sorted(DiagramConnection.FROM_COMPARATOR).collect(Collectors.toList());
+        List<DiagramConnection> lowerConnections = toConn.stream()
+                .filter(DiagramConnection::isLower).sorted(DiagramConnection.FROM_COMPARATOR).collect(Collectors.toList());
         int lowerOutConnections = lowerConnections.size();
         if (lowerOutConnections > 1) {
             int con = 0;
@@ -117,7 +194,8 @@ public class DiagramView extends AnchorPane implements Initializable {
         Collection<DiagramConnection> fromConn = fromConnections.get(from);
 
         // out to the right
-        List<DiagramConnection> upperConnections = fromConn.stream().filter(DiagramConnection::isUpper).sorted(DiagramConnection.TO_COMPARATOR).collect(Collectors.toList());
+        List<DiagramConnection> upperConnections = fromConn.stream()
+                .filter(DiagramConnection::isUpper).sorted(DiagramConnection.TO_COMPARATOR).collect(Collectors.toList());
         int upperOutConnections = upperConnections.size();
         if (upperOutConnections > 1) {
             int con = 0;
@@ -126,7 +204,8 @@ public class DiagramView extends AnchorPane implements Initializable {
             }
         }
         // out to the left
-        List<DiagramConnection> lowerConnections = fromConn.stream().filter(DiagramConnection::isLower).sorted(DiagramConnection.TO_COMPARATOR).collect(Collectors.toList());
+        List<DiagramConnection> lowerConnections = fromConn.stream()
+                .filter(DiagramConnection::isLower).sorted(DiagramConnection.TO_COMPARATOR).collect(Collectors.toList());
         int lowerOutConnections = lowerConnections.size();
         if (lowerOutConnections > 1) {
             int con = 0;
@@ -134,6 +213,10 @@ public class DiagramView extends AnchorPane implements Initializable {
                 diagramConnection.setStartDisplacement(lowerOutConnections, con++);
             }
         }
+    }
+
+    public enum ConnectionState {
+        CONSISTENT, NOT_PROPAGATED, OVERRIDDEN
     }
 
     private static class DiagramElement extends Group {
@@ -182,7 +265,11 @@ public class DiagramView extends AnchorPane implements Initializable {
 
         public void setSelected(boolean selected) {
             this.isSelected = selected;
-            rect.strokeProperty().set(isSelected ? SELECTED_ELEMENT_COLOR : DEFAULT_CONNECTION_COLOR);
+            if (selected) {
+                rect.getStrokeDashArray().setAll(10d, 7d);
+            } else {
+                rect.getStrokeDashArray().clear();
+            }
         }
 
         private void toggleSelection() {
@@ -206,6 +293,12 @@ public class DiagramView extends AnchorPane implements Initializable {
         private Polyline line;
         private Polygon arrow;
         private Label caption;
+        private EnumSet<ConnectionState> connectionStates;
+
+        public DiagramConnection(DiagramElement fromEl, DiagramElement toEl, String description, int strength, EnumSet<ConnectionState> states) {
+            this(fromEl, toEl, description, strength);
+            setConnectionStates(states);
+        }
 
         public DiagramConnection(DiagramElement fromEl, DiagramElement toEl, String description, int strength) {
             this.fromEl = fromEl;
@@ -247,6 +340,29 @@ public class DiagramView extends AnchorPane implements Initializable {
             setOnMouseClicked(event -> {
                 toggleSelection();
             });
+            Tooltip tp = new Tooltip(description);
+            Tooltip.install(line, tp);
+        }
+
+        public EnumSet<ConnectionState> getConnectionStates() {
+            return connectionStates;
+        }
+
+        public void setConnectionStates(EnumSet<ConnectionState> connectionStates) {
+            this.connectionStates = connectionStates;
+            line.strokeProperty().set(DEFAULT_CONNECTION_COLOR);
+            arrow.strokeProperty().set(DEFAULT_CONNECTION_COLOR);
+            arrow.fillProperty().set(DEFAULT_CONNECTION_COLOR);
+            caption.textProperty().setValue(description);
+            if (connectionStates.contains(ConnectionState.NOT_PROPAGATED)) {
+                line.strokeProperty().set(HIGHLIGHT_CONNECTION_COLOR);
+                caption.textProperty().setValue("[p] " + caption.getText());
+            }
+            if (connectionStates.contains(ConnectionState.OVERRIDDEN)) {
+                arrow.strokeProperty().set(HIGHLIGHT_CONNECTION_COLOR);
+                arrow.fillProperty().set(HIGHLIGHT_CONNECTION_COLOR);
+                caption.textProperty().setValue("[o] " + caption.getText());
+            }
         }
 
         public String getDescription() {
@@ -275,9 +391,11 @@ public class DiagramView extends AnchorPane implements Initializable {
 
         public void setSelected(boolean selected) {
             this.isSelected = selected;
-            line.strokeProperty().set(isSelected ? SELECTED_CONNECTION_COLOR : DEFAULT_CONNECTION_COLOR);
-            arrow.strokeProperty().set(isSelected ? SELECTED_CONNECTION_COLOR : DEFAULT_CONNECTION_COLOR);
-            arrow.fillProperty().set(isSelected ? SELECTED_CONNECTION_COLOR : DEFAULT_CONNECTION_COLOR);
+            if (selected) {
+                line.getStrokeDashArray().setAll(10d, 7d);
+            } else {
+                line.getStrokeDashArray().clear();
+            }
         }
 
         boolean isUpper() {
@@ -309,5 +427,6 @@ public class DiagramView extends AnchorPane implements Initializable {
         private void toggleSelection() {
             setSelected(!isSelected);
         }
+
     }
 }
