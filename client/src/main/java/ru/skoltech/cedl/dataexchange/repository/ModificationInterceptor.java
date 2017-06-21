@@ -5,8 +5,11 @@ import org.hibernate.EmptyInterceptor;
 import org.hibernate.type.Type;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModificationTimestamped;
+import ru.skoltech.cedl.dataexchange.structure.model.Study;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.Serializable;
+import java.util.Iterator;
 
 /**
  * Created by D.Knoll on 25.06.2015.
@@ -18,7 +21,6 @@ public class ModificationInterceptor extends EmptyInterceptor {
     @Override
     public boolean onFlushDirty(Object entity, Serializable id,
                                 Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types) {
-
         if (entity instanceof ModificationTimestamped) {
             Long timestamp = null;
             if (!(entity instanceof ExternalModel)) {
@@ -55,6 +57,19 @@ public class ModificationInterceptor extends EmptyInterceptor {
             }
         }
         return false;
+    }
+
+    @Override
+    public void preFlush(Iterator entities) {
+        for (; entities.hasNext(); ) {
+            Object element = entities.next();
+            if (element instanceof Study) {
+                Study study = (Study) element;
+                long latestModification = study.getSystemModel().findLatestModification();
+                study.setLatestModelModification(latestModification);
+                return;
+            }
+        }
     }
 
     private String getNodeName(Object[] currentState, String[] propertyNames) {

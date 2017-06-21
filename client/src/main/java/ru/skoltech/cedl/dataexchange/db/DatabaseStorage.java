@@ -460,9 +460,6 @@ public class DatabaseStorage implements Repository {
             } else {
                 study = entityManager.merge(study);
             }
-            long latestModification = study.getSystemModel().findLatestModification();
-            study.setLatestModelModification(latestModification);
-            study = entityManager.merge(study);
             transaction.commit();
         } catch (OptimisticLockException | RollbackException re) {
             logger.warn("transaction failed", re);
