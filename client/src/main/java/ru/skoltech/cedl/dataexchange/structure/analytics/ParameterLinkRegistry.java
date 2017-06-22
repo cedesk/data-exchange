@@ -29,15 +29,15 @@ public class ParameterLinkRegistry {
     public ParameterLinkRegistry() {
     }
 
-    private static Set<String> getLinkedParams(ModelNode toVertex, ModelNode fromVertex) {
-        Set<String> sources = new TreeSet<>();
+    private Collection<ParameterModel> getLinkingParams(ModelNode toVertex, ModelNode fromVertex) {
+        List<ParameterModel> sources = new LinkedList<>();
         ParameterTreeIterator it = new ParameterTreeIterator(fromVertex);
         while (it.hasNext()) {
             ParameterModel pm = it.next();
             if (pm.getValueSource() == ParameterValueSource.LINK &&
                     pm.getValueLink() != null && pm.getValueLink().getParent() != null &&
                     pm.getValueLink().getParent().getUuid().equals(toVertex.getUuid())) {
-                sources.add(pm.getValueLink().getName());
+                sources.add(pm);
             }
         }
         return sources;
@@ -69,6 +69,8 @@ public class ParameterLinkRegistry {
             dependencyGraph.addVertex(sourceModel);
             // dependency goes from SOURCE to SINK
             dependencyGraph.addEdge(sourceModel, sinkModel);
+        } else {
+            logger.warn("trying to add self reference on node " + sourceModel.getNodePath());
         }
     }
 
@@ -93,11 +95,9 @@ public class ParameterLinkRegistry {
             for (ModelNode toVertex : modelNodeList) {
                 if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
                         dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
-                    Set<String> linkedParams = getLinkedParams(fromVertex, toVertex);
-                    int strength = linkedParams.size();
-                    String parameterNames = linkedParams.stream().collect(Collectors.joining(",\n"));
+                    Collection<ParameterModel> linkingParams = getLinkingParams(fromVertex, toVertex);
                     String toVertexName = toVertex.getName();
-                    dependencyModel.addConnection(fromVertexName, toVertexName, parameterNames, strength);
+                    dependencyModel.addConnection(fromVertexName, toVertexName, linkingParams);
                 }
             }
         }
@@ -155,8 +155,7 @@ public class ParameterLinkRegistry {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
                 if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
                         dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0) {
-                    Set<String> linkedParams = getLinkedParams(toVertex, fromVertex);
-                    int linkCount = linkedParams.size();
+                    int linkCount = getLinkingParams(toVertex, fromVertex).size();
                     dsm.addLink(rowIndex + 1, columnIndex + 1, linkCount);
                 }
             }

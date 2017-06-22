@@ -2,8 +2,10 @@ package ru.skoltech.cedl.dataexchange.structure.analytics;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -16,34 +18,14 @@ public class DependencyModel {
     private MultiValuedMap<Element, Connection> toConnections = new ArrayListValuedHashMap<>();
     private HashMap<String, Element> elements = new HashMap<>();
 
-    void addElement(String name) {
-        if (!elements.containsKey(name)) {
-            int size = elements.size();
-            Element diagramElement = new Element(name, size);
-            elements.put(name, diagramElement);
-        }
-    }
-
-    void addConnection(String fromName, String toName, String description, int strength) {
-        Element fromEl = elements.get(fromName);
-        Element toEl = elements.get(toName);
-        Connection connection = new Connection(fromEl, toEl, description, strength);
-        fromConnections.put(fromEl, connection);
-        toConnections.put(toEl, connection);
-    }
-
-    public Stream<Element> elementStream() {
-        return elements.entrySet().stream()
-                .map(Map.Entry::getValue);
-    }
-
     public Stream<Connection> connectionStream() {
         return fromConnections.entries().stream()
                 .map(Map.Entry::getValue);
     }
 
-    public int getOutgoingConnections(Element element) {
-        return fromConnections.get(element).stream().mapToInt(Connection::getStrength).sum();
+    public Stream<Element> elementStream() {
+        return elements.entrySet().stream()
+                .map(Map.Entry::getValue);
     }
 
     public Connection getConnection(Element fromEl, Element toEl) {
@@ -52,6 +34,26 @@ public class DependencyModel {
         froms.retainAll(tos);
         Connection[] connection = froms.toArray(new Connection[1]);
         return connection.length == 1 ? connection[0] : null;
+    }
+
+    public int getOutgoingConnections(Element element) {
+        return fromConnections.get(element).stream().mapToInt(Connection::getStrength).sum();
+    }
+
+    void addConnection(String fromName, String toName, Collection<ParameterModel> linkingParameters) {
+        Element fromEl = elements.get(fromName);
+        Element toEl = elements.get(toName);
+        Connection connection = new Connection(fromEl, toEl, linkingParameters);
+        fromConnections.put(fromEl, connection);
+        toConnections.put(toEl, connection);
+    }
+
+    void addElement(String name) {
+        if (!elements.containsKey(name)) {
+            int size = elements.size();
+            Element diagramElement = new Element(name, size);
+            elements.put(name, diagramElement);
+        }
     }
 
     public static class Element implements Comparable<Element> {
@@ -88,48 +90,43 @@ public class DependencyModel {
     }
 
     public static class Connection {
-        private Element from;
-        private Element to;
-        private String description;
-        private int strength;
+        private final Element from;
+        private final Element to;
+        private Collection<ParameterModel> linkingParameters;
 
-        public Connection(Element from, Element to, String description, int strength) {
+        public Connection(Element from, Element to, Collection<ParameterModel> linkingParameters) {
             this.from = from;
             this.to = to;
-            this.description = description;
-            this.strength = strength;
+            this.linkingParameters = linkingParameters;
+        }
+
+        public String getDescription() {
+            return linkingParameters.stream()
+                    .map(ParameterModel::getName).collect(Collectors.joining(",\n"));
         }
 
         public Element getFrom() {
             return from;
         }
 
-        public Element getTo() {
-            return to;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        public int getStrength() {
-            return strength;
-        }
-
-        public void setStrength(int strength) {
-            this.strength = strength;
-        }
-
         public String getFromName() {
             return from.getName();
         }
 
+        public int getStrength() {
+            return linkingParameters.size();
+        }
+
+        public Element getTo() {
+            return to;
+        }
+
         public String getToName() {
             return to.getName();
+        }
+
+        public Collection<ParameterModel> getLinkingParameters() {
+            return linkingParameters;
         }
     }
 }

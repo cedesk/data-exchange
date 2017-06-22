@@ -549,6 +549,14 @@ public class MainController implements Initializable {
         }
     }
 
+    public void openDsmView(ActionEvent actionEvent) {
+        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
+    }
+
+    public void openDepencencyView(ActionEvent actionEvent) {
+        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
+    }
+
     public void quit(ActionEvent actionEvent) {
         Stage stage = (Stage) applicationPane.getScene().getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));

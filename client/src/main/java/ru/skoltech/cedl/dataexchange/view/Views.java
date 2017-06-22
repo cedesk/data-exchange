@@ -13,6 +13,8 @@ public class Views {
 
     public static final URL MODEL_DIFF_WINDOW = Views.class.getResource("model-diff-window.fxml");
 
+    public static final URL DSM_WINDOW = Views.class.getResource("dsm-window.fxml");
+
     public static final URL DEPENDENCY_WINDOW = Views.class.getResource("dependency-window.fxml");
 
     public static final URL USER_ROLES_EDITING_WINDOW = Views.class.getResource("user-role-management-window.fxml");
