@@ -24,18 +24,18 @@ import java.util.stream.Collectors;
  */
 public class DiagramView extends AnchorPane implements Initializable {
 
-    public static final Color LEGEND_BACKROUND = Color.WHITE;
+    public static final Color LEGEND_BACKGROUND = Color.WHITE;
     private static final Color ELEMENT_FILL_COLOR = Color.LIGHTGREY;
     private static final Color DEFAULT_CONNECTION_COLOR = Color.DARKGREY;
-    private static final Color SELECTED_ELEMENT_COLOR = Color.DARKRED;
     private static final Color HIGHLIGHT_CONNECTION_COLOR = Color.BLUE;
+    private static final Double[] DASHED_STROKE = new Double[]{10d, 7d};
     private static double CAPTION_SCALE = .75;
-    private static int elementPadding = 15;
-    private static int elementHeight = 50;
-    private static int elementWidth = 100;
-    private static int arrowSize = 10;
-    private static int lineWidth = 2;
+    private static int ELEMENT_PADDING = 15;
+    private static int ELEMENT_HEIGHT = 50;
+    private static int ELEMENT_WIDTH = 100;
+    private static int ARROW_SIZE = 10;
 
+    private static int LINE_WIDTH = 2;
     private HashMap<String, DiagramElement> elements = new HashMap<>();
     private MultiValuedMap<String, DiagramConnection> fromConnections = new ArrayListValuedHashMap<>();
     private MultiValuedMap<String, DiagramConnection> toConnections = new ArrayListValuedHashMap<>();
@@ -89,19 +89,14 @@ public class DiagramView extends AnchorPane implements Initializable {
             DiagramElement diagramElement = new DiagramElement(name, elements.size());
             elements.put(name, diagramElement);
             getChildren().add(diagramElement);
-            setPrefWidth(prefWidth(0) + elementPadding);
-            setPrefHeight(prefHeight(0) + elementPadding);
+            setPrefWidth(prefWidth(0) + ELEMENT_PADDING);
+            setPrefHeight(prefHeight(0) + ELEMENT_PADDING);
         }
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         drawLegend();
-        /*setOnMouseClicked(event -> {
-            if(event.getClickCount() > 1) {
-                System.out.println("DOUBLECLICL");
-            }
-        });*/
     }
 
     public void reset() {
@@ -113,42 +108,61 @@ public class DiagramView extends AnchorPane implements Initializable {
     }
 
     private void drawLegend() {
-        Rectangle rect = new Rectangle(elementWidth, elementPadding * 6);
+        Rectangle rect = new Rectangle(ELEMENT_WIDTH, ELEMENT_PADDING * 6);
         // legend box
-        //rect.setArcWidth(elementPadding);
-        //rect.setArcHeight(elementPadding);
-        rect.setFill(LEGEND_BACKROUND);
-        rect.setStrokeWidth(lineWidth);
+        rect.setFill(LEGEND_BACKGROUND);
+        rect.setStrokeWidth(LINE_WIDTH);
         rect.setStroke(DEFAULT_CONNECTION_COLOR);
-        rect.setLayoutX(getWidth() - elementWidth - elementPadding);
-        rect.setLayoutY(elementPadding);
+        rect.setLayoutX(getWidth() - ELEMENT_WIDTH - ELEMENT_PADDING);
+        rect.setLayoutY(ELEMENT_PADDING);
         getChildren().add(rect);
         // legend title
-        Label caption = new Label("Legend");
+        Label caption = new Label("Link status");
         caption.setLabelFor(rect);
-        caption.setMinWidth(elementWidth);
+        caption.setMinWidth(ELEMENT_WIDTH);
         caption.setAlignment(Pos.CENTER);
-        caption.setLayoutX(getWidth() - elementWidth - elementPadding);
-        caption.setLayoutY(elementPadding);
+        caption.setLayoutX(getWidth() - ELEMENT_WIDTH - ELEMENT_PADDING);
+        caption.setLayoutY(ELEMENT_PADDING);
         getChildren().add(caption);
         // connections DEFAULT
-        double layoutY = caption.getLayoutY() + elementPadding * 2;
-        Line line = new Line(caption.getLayoutX() + elementPadding, layoutY, caption.getLayoutX() + elementWidth / 2, layoutY);
-        line.setStrokeWidth(lineWidth);
+        double layoutY = caption.getLayoutY() + ELEMENT_PADDING * 2;
+        Line line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING*2, layoutY);
+        line.setStrokeWidth(LINE_WIDTH);
         line.setStroke(DEFAULT_CONNECTION_COLOR);
-        getChildren().add(line);
+        Label lbl = new Label("consistent");
+        lbl.setLabelFor(line);
+        lbl.setMinWidth(ELEMENT_WIDTH / 2);
+        lbl.setLayoutX(line.getEndX() + ELEMENT_PADDING / 2);
+        lbl.setLayoutY(line.getEndY() - ELEMENT_PADDING / 2);
+        getChildren().addAll(line, lbl);
         // connections NOT_PROP
-        layoutY = caption.getLayoutY() + elementPadding * 3;
-        line = new Line(caption.getLayoutX() + elementPadding, layoutY, caption.getLayoutX() + elementWidth / 2, layoutY);
-        line.setStrokeWidth(lineWidth);
+        layoutY = caption.getLayoutY() + ELEMENT_PADDING * 3.4;
+        line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING*2, layoutY);
+        line.setStrokeWidth(LINE_WIDTH);
         line.setStroke(HIGHLIGHT_CONNECTION_COLOR);
-        getChildren().add(line);
+        lbl = new Label("not prop.");
+        lbl.setLabelFor(line);
+        lbl.setMinWidth(ELEMENT_WIDTH / 2);
+        lbl.setLayoutX(line.getEndX() + ELEMENT_PADDING / 2);
+        lbl.setLayoutY(line.getEndY() - ELEMENT_PADDING / 2);
+        getChildren().addAll(line, lbl);
         // connections OVERRIDDEN
-        layoutY = caption.getLayoutY() + elementPadding * 3;
-        line = new Line(caption.getLayoutX() + elementPadding, layoutY, caption.getLayoutX() + elementWidth / 2, layoutY);
-        line.setStrokeWidth(lineWidth);
-        line.setStroke(HIGHLIGHT_CONNECTION_COLOR);
-        getChildren().add(line);
+        layoutY = caption.getLayoutY() + ELEMENT_PADDING * 4.8;
+        line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING*2, layoutY);
+        line.setStrokeWidth(LINE_WIDTH);
+        line.setStroke(DEFAULT_CONNECTION_COLOR);
+        double lxe = line.getEndX();
+        double lye = line.getEndY();
+        Polygon arrow = new Polygon(lxe, lye, lxe - ARROW_SIZE, lye - ARROW_SIZE / 2, lxe - ARROW_SIZE, lye + ARROW_SIZE / 2);
+        arrow.setStroke(HIGHLIGHT_CONNECTION_COLOR);
+        arrow.setStrokeWidth(1);
+        arrow.setFill(HIGHLIGHT_CONNECTION_COLOR);
+        lbl = new Label("overridden");
+        lbl.setLabelFor(line);
+        lbl.setMinWidth(ELEMENT_WIDTH / 2);
+        lbl.setLayoutX(line.getEndX() + ELEMENT_PADDING / 2);
+        lbl.setLayoutY(line.getEndY() - ELEMENT_PADDING / 2);
+        getChildren().addAll(line, arrow, lbl);
 
     }
 
@@ -232,20 +246,20 @@ public class DiagramView extends AnchorPane implements Initializable {
         DiagramElement(String name, int position) {
             this.name = name;
             this.position = position;
-            rect = new Rectangle(elementWidth, elementHeight);
-            rect.setArcWidth(elementPadding);
-            rect.setArcHeight(elementPadding);
+            rect = new Rectangle(ELEMENT_WIDTH, ELEMENT_HEIGHT);
+            rect.setArcWidth(ELEMENT_PADDING);
+            rect.setArcHeight(ELEMENT_PADDING);
             rect.setFill(ELEMENT_FILL_COLOR);
-            rect.setStrokeWidth(lineWidth);
+            rect.setStrokeWidth(LINE_WIDTH);
             rect.setStroke(DEFAULT_CONNECTION_COLOR);
             Label caption = new Label(name);
             caption.setLabelFor(rect);
-            caption.setMinWidth(elementWidth);
-            caption.setMinHeight(elementHeight);
+            caption.setMinWidth(ELEMENT_WIDTH);
+            caption.setMinHeight(ELEMENT_HEIGHT);
             caption.setAlignment(Pos.CENTER);
             getChildren().addAll(rect, caption);
-            setLayoutX(elementPadding + position * (elementWidth + elementPadding));
-            setLayoutY(elementPadding + position * (elementHeight + elementPadding));
+            setLayoutX(ELEMENT_PADDING + position * (ELEMENT_WIDTH + ELEMENT_PADDING));
+            setLayoutY(ELEMENT_PADDING + position * (ELEMENT_HEIGHT + ELEMENT_PADDING));
             setOnMouseClicked(event -> {
                 toggleSelection();
             });
@@ -266,7 +280,7 @@ public class DiagramView extends AnchorPane implements Initializable {
         public void setSelected(boolean selected) {
             this.isSelected = selected;
             if (selected) {
-                rect.getStrokeDashArray().setAll(10d, 7d);
+                rect.getStrokeDashArray().setAll(DASHED_STROKE);
             } else {
                 rect.getStrokeDashArray().clear();
             }
@@ -312,8 +326,8 @@ public class DiagramView extends AnchorPane implements Initializable {
                 double lys = fromEl.getLayoutY() + fromEl.minHeight(0) / 2;
                 double lxe = toEl.getLayoutX() + toEl.minWidth(0) / 2;
                 double lye = toEl.getLayoutY();
-                line = new Polyline(lxs, lys, lxe, lys, lxe, lye - arrowSize);
-                arrow = new Polygon(lxe, lye, lxe - arrowSize / 2, lye - arrowSize, lxe + arrowSize / 2, lye - arrowSize);
+                line = new Polyline(lxs, lys, lxe, lys, lxe, lye - ARROW_SIZE);
+                arrow = new Polygon(lxe, lye, lxe - ARROW_SIZE / 2, lye - ARROW_SIZE, lxe + ARROW_SIZE / 2, lye - ARROW_SIZE);
                 caption.setLayoutX(lxe);
                 caption.setLayoutY(lys);
             } else {
@@ -321,12 +335,12 @@ public class DiagramView extends AnchorPane implements Initializable {
                 double lys = fromEl.getLayoutY() + fromEl.minHeight(0) / 2;
                 double lxe = toEl.getLayoutX() + toEl.minWidth(0) / 2;
                 double lye = toEl.getLayoutY() + toEl.minHeight(0);
-                line = new Polyline(lxs, lys, lxe, lys, lxe, lye + arrowSize);
-                arrow = new Polygon(lxe, lye, lxe - arrowSize / 2, lye + arrowSize, lxe + arrowSize / 2, lye + arrowSize);
+                line = new Polyline(lxs, lys, lxe, lys, lxe, lye + ARROW_SIZE);
+                arrow = new Polygon(lxe, lye, lxe - ARROW_SIZE / 2, lye + ARROW_SIZE, lxe + ARROW_SIZE / 2, lye + ARROW_SIZE);
                 caption.setLayoutX(lxe);
                 caption.setLayoutY(lys);
             }
-            line.setStrokeWidth(lineWidth * strength);
+            line.setStrokeWidth(LINE_WIDTH * strength);
             line.setStrokeLineCap(StrokeLineCap.BUTT);
             line.setStroke(DEFAULT_CONNECTION_COLOR);
             arrow.setStrokeWidth(1);
@@ -392,7 +406,7 @@ public class DiagramView extends AnchorPane implements Initializable {
         public void setSelected(boolean selected) {
             this.isSelected = selected;
             if (selected) {
-                line.getStrokeDashArray().setAll(10d, 7d);
+                line.getStrokeDashArray().setAll(DASHED_STROKE);
             } else {
                 line.getStrokeDashArray().clear();
             }
@@ -410,8 +424,8 @@ public class DiagramView extends AnchorPane implements Initializable {
             linePoints.set(4, lxe);
             ObservableList<Double> arrowPoints = arrow.getPoints();
             arrowPoints.set(0, lxe);
-            arrowPoints.set(2, lxe - arrowSize / 2);
-            arrowPoints.set(4, lxe + arrowSize / 2);
+            arrowPoints.set(2, lxe - ARROW_SIZE / 2);
+            arrowPoints.set(4, lxe + ARROW_SIZE / 2);
             caption.setLayoutX(lxe);
         }
 

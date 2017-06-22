@@ -27,6 +27,7 @@ public class DiagramGraphicsDemo extends Application {
         stage.setTitle("Diagram Viewer Test");
         stage.show();
 
+        diagramView.initialize(null, null);
         diagramView.addElement("Element 1");
         diagramView.addElement("Element 2");
         diagramView.addConnection("Element 1", "Element 2", "param. A,\nparam. Z", 2);
