@@ -30,22 +30,22 @@
                             <Insets left="12.0"/>
                         </padding>
                     </Label>
-                    <RadioButton mnemonicParsing="false" selected="true" text="Default"
-                                 toggleGroup="$sortOrderGroup" userData="default"/>
-                    <RadioButton mnemonicParsing="false" text="Priority"
-                                 toggleGroup="$sortOrderGroup" userData="priority"/>
-                    <RadioButton mnemonicParsing="false" text="Alphabetic"
-                                 toggleGroup="$sortOrderGroup" userData="alphabetic"/>
+                    <RadioButton fx:id="sortDefaultRadio" selected="true" text="_Default"
+                                 toggleGroup="$sortOrderGroup"/>
+                    <RadioButton fx:id="sortByPriorityRadio" text="_Priority"
+                                 toggleGroup="$sortOrderGroup"/>
+                    <RadioButton fx:id="sortAlphabeticRadio" text="_Alphabetic"
+                                 toggleGroup="$sortOrderGroup"/>
                     <Separator />
                     <Label text="Source">
                         <padding>
                             <Insets left="12.0"/>
                         </padding>
                     </Label>
-                    <RadioButton mnemonicParsing="false" selected="true" text="Local"
-                                 toggleGroup="$sourceGroup" userData="local"/>
-                    <RadioButton mnemonicParsing="false" text="Repository"
-                                 toggleGroup="$sourceGroup" userData="repository"/>
+                    <RadioButton fx:id="sourceLocalRadio" selected="true" text="_Local"
+                                 toggleGroup="$sourceGroup"/>
+                    <RadioButton fx:id="sourceRepositoryRadio" text="_Repository"
+                                 toggleGroup="$sourceGroup"/>
                     <Pane HBox.hgrow="ALWAYS"/>
                     <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
                         <tooltip>

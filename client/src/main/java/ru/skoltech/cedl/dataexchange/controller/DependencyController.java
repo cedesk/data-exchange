@@ -1,11 +1,14 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
@@ -37,6 +40,21 @@ public class DependencyController implements Initializable {
     private static final Logger logger = Logger.getLogger(DependencyController.class);
 
     @FXML
+    private RadioButton sortDefaultRadio;
+
+    @FXML
+    private RadioButton sortByPriorityRadio;
+
+    @FXML
+    private RadioButton sortAlphabeticRadio;
+
+    @FXML
+    private RadioButton sourceLocalRadio;
+
+    @FXML
+    private RadioButton sourceRepositoryRadio;
+
+    @FXML
     private ToggleGroup sortOrderGroup;
 
     @FXML
@@ -50,9 +68,6 @@ public class DependencyController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         project = ProjectContext.getInstance().getProject();
-
-        Platform.runLater(() -> refreshView(null));
-
         sortOrderGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 refreshView(null);
@@ -63,25 +78,28 @@ public class DependencyController implements Initializable {
                 refreshView(null);
             }
         });
+        Platform.runLater(() -> {
+            refreshView(null);
+            registerListeners();
+        });
+
     }
 
     public void refreshView(ActionEvent actionEvent) {
         DependencyModel dependencyModel;
         SystemModel systemModel;
-        String source = (String) sourceGroup.getSelectedToggle().getUserData();
-        if (source.equals("local")) {
+        if (sourceGroup.getSelectedToggle() == sourceLocalRadio) {
             systemModel = project.getSystemModel();
             ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
             dependencyModel = parameterLinkRegistry.getDependencyModel(systemModel);
-        } else {
+        } else { // if (sourceGroup.getSelectedToggle() == sourceRepositoryRadio) {
             systemModel = project.getRepositoryStudy().getSystemModel();
             ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
             parameterLinkRegistry.registerAllParameters(systemModel);
             dependencyModel = parameterLinkRegistry.getDependencyModel(systemModel);
         }
 
-        String sortOrder = (String) sortOrderGroup.getSelectedToggle().getUserData();
-        if (sortOrder.equals("default")) {
+        if (sortOrderGroup.getSelectedToggle() == sortDefaultRadio) {
             HashMap<String, Integer> originalPositions = new HashMap<>();
             originalPositions.put(systemModel.getName(), 0);
             List<SubSystemModel> subNodes = systemModel.getSubNodes();
@@ -90,12 +108,12 @@ public class DependencyController implements Initializable {
             }
             dependencyModel.elementStream()
                     .forEach(element -> element.setPosition(originalPositions.get(element.getName())));
-        } else if (sortOrder.equals("priority")) {
+        } else if (sortOrderGroup.getSelectedToggle() == sortByPriorityRadio) {
             final int[] position = {0};
             dependencyModel.elementStream()
                     .sorted(dependencyModel.priorityComparator)
                     .forEach(element -> element.setPosition(position[0]++));
-        } else { // alphabetical
+        } else { // if (sortOrderGroup.getSelectedToggle() == sortAlphabeticRadio) {
             final int[] position = {0};
             dependencyModel.elementStream()
                     .sorted(Comparator.comparing(DependencyModel.Element::getName))
@@ -124,4 +142,20 @@ public class DependencyController implements Initializable {
         }
     }
 
+    private void registerListeners() {
+        RepositoryUpdateListener listener = new RepositoryUpdateListener();
+        project.latestRepositoryModificationProperty().addListener(listener);
+        diagramView.getScene().getWindow().setOnCloseRequest(event -> {
+            project.latestRepositoryModificationProperty().removeListener(listener);
+        });
+    }
+
+    private class RepositoryUpdateListener implements ChangeListener<Number> {
+        @Override
+        public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+            if (sourceGroup.getSelectedToggle() == sourceRepositoryRadio) {
+                refreshView(null);
+            }
+        }
+    }
 }

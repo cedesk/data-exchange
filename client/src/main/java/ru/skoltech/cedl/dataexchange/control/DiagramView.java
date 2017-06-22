@@ -52,7 +52,14 @@ public class DiagramView extends AnchorPane implements Initializable {
                 });
         dependencyModel.connectionStream().forEach(conn -> {
             EnumSet<ConnectionState> states = getStates(conn.getLinkingParameters());
-            addConnection(conn.getFromName(), conn.getToName(), conn.getDescription(), conn.getStrength(), states);
+            String statefulDescription = conn.getLinkingParameters().stream()
+                    .map(pm -> {
+                        String stateAbbr = getParameterLinkState(pm).getAbbreviation();
+                        if (stateAbbr.equals("")) return pm.getName();
+                        else return "[" + stateAbbr + "] " + pm.getName();
+                    })
+                    .collect(Collectors.joining(",\n"));
+            addConnection(conn.getFromName(), conn.getToName(), statefulDescription, conn.getStrength(), states);
         });
     }
 
@@ -126,7 +133,7 @@ public class DiagramView extends AnchorPane implements Initializable {
         getChildren().add(caption);
         // connections DEFAULT
         double layoutY = caption.getLayoutY() + ELEMENT_PADDING * 2;
-        Line line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING*2, layoutY);
+        Line line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING * 2, layoutY);
         line.setStrokeWidth(LINE_WIDTH);
         line.setStroke(DEFAULT_CONNECTION_COLOR);
         Label lbl = new Label("consistent");
@@ -137,7 +144,7 @@ public class DiagramView extends AnchorPane implements Initializable {
         getChildren().addAll(line, lbl);
         // connections NOT_PROP
         layoutY = caption.getLayoutY() + ELEMENT_PADDING * 3.4;
-        line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING*2, layoutY);
+        line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING * 2, layoutY);
         line.setStrokeWidth(LINE_WIDTH);
         line.setStroke(HIGHLIGHT_CONNECTION_COLOR);
         lbl = new Label("not prop.");
@@ -148,7 +155,7 @@ public class DiagramView extends AnchorPane implements Initializable {
         getChildren().addAll(line, lbl);
         // connections OVERRIDDEN
         layoutY = caption.getLayoutY() + ELEMENT_PADDING * 4.8;
-        line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING*2, layoutY);
+        line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING * 2, layoutY);
         line.setStrokeWidth(LINE_WIDTH);
         line.setStroke(DEFAULT_CONNECTION_COLOR);
         double lxe = line.getEndX();
@@ -166,15 +173,20 @@ public class DiagramView extends AnchorPane implements Initializable {
 
     }
 
+    private ConnectionState getParameterLinkState(ParameterModel pm) {
+        if (pm.getIsReferenceValueOverridden()) {
+            return ConnectionState.OVERRIDDEN;
+        }
+        if (!Precision.equals(pm.getValue(), pm.getValueLink().getEffectiveValue(), 2)) {
+            return ConnectionState.NOT_PROPAGATED;
+        }
+        return ConnectionState.CONSISTENT;
+    }
+
     private EnumSet<ConnectionState> getStates(Collection<ParameterModel> linkingParameters) {
         EnumSet<ConnectionState> result = EnumSet.noneOf(ConnectionState.class);
         for (ParameterModel pm : linkingParameters) {
-            if (pm.getIsReferenceValueOverridden()) {
-                result.add(ConnectionState.OVERRIDDEN);
-            }
-            if (!Precision.equals(pm.getValue(), pm.getValueLink().getEffectiveValue(), 2)) {
-                result.add(ConnectionState.NOT_PROPAGATED);
-            }
+            result.add(getParameterLinkState(pm));
         }
         return result;
     }
@@ -230,7 +242,19 @@ public class DiagramView extends AnchorPane implements Initializable {
     }
 
     public enum ConnectionState {
-        CONSISTENT, NOT_PROPAGATED, OVERRIDDEN
+        CONSISTENT(""),
+        NOT_PROPAGATED("p"),
+        OVERRIDDEN("o");
+
+        private String abbreviation;
+
+        ConnectionState(String abbreviation) {
+            this.abbreviation = abbreviation;
+        }
+
+        public String getAbbreviation() {
+            return abbreviation;
+        }
     }
 
     private static class DiagramElement extends Group {
@@ -367,15 +391,12 @@ public class DiagramView extends AnchorPane implements Initializable {
             line.strokeProperty().set(DEFAULT_CONNECTION_COLOR);
             arrow.strokeProperty().set(DEFAULT_CONNECTION_COLOR);
             arrow.fillProperty().set(DEFAULT_CONNECTION_COLOR);
-            caption.textProperty().setValue(description);
             if (connectionStates.contains(ConnectionState.NOT_PROPAGATED)) {
                 line.strokeProperty().set(HIGHLIGHT_CONNECTION_COLOR);
-                caption.textProperty().setValue("[p] " + caption.getText());
             }
             if (connectionStates.contains(ConnectionState.OVERRIDDEN)) {
                 arrow.strokeProperty().set(HIGHLIGHT_CONNECTION_COLOR);
                 arrow.fillProperty().set(HIGHLIGHT_CONNECTION_COLOR);
-                caption.textProperty().setValue("[o] " + caption.getText());
             }
         }
 
