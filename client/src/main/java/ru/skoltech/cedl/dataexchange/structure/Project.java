@@ -414,6 +414,7 @@ public class Project {
         updateParameterValuesFromLinks();
         exportValuesToExternalModels();
         updateExternalModelsInStudy();
+        storeUserRoleManagement();
         Study newStudy = repository.storeStudy(this.study);
         updateExternalModelStateInCache();
         setStudy(newStudy);

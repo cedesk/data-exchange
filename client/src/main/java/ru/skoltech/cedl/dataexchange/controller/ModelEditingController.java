@@ -237,8 +237,12 @@ public class ModelEditingController implements Initializable {
                 // model
 
                 if (parent.getValue() instanceof CompositeModelNode) {
+                    project.getUserRoleManagement().getDisciplineSubSystems()
+                            .removeIf(disciplineSubSystem -> disciplineSubSystem.getSubSystem() == deleteNode);
+
                     CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                     parentNode.removeSubNode(deleteNode);
+
                 }
                 project.markStudyModified();
                 StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
