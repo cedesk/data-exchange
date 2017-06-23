@@ -158,23 +158,7 @@ public class UserRoleManagementController implements Initializable {
         if (!changed.getValue()) {
             return;
         }
-        ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.YES);
-        ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
-        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Current roles is modified");
-        alert.setContentText("Save modification?");
-        alert.getButtonTypes().setAll(yesButton, noButton, cancelButton);
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == cancelButton) {
-            windowEvent.consume();
-        } else if (result.get() == yesButton) {
-            saveRoles();
-        } else if (result.get() == noButton){
-            project.loadUserRoleManagement();
-            return;
-        }
+        project.markStudyModified();
     }
 
     public void updateView() {
@@ -263,14 +247,6 @@ public class UserRoleManagementController implements Initializable {
         changed.setValue(true);
         StatusLogger.getInstance().log("removed discipline: " + selectedDiscipline.getName());
         updateDisciplineTable();
-    }
-
-    public void saveRoles() {
-        boolean success = project.storeUserRoleManagement();
-        if (!success) {
-            StatusLogger.getInstance().log("Error saving user role management!", true);
-        }
-        changed.setValue(false);
     }
 
     public void addDisciplineSubsystem(ActionEvent actionEvent) {
