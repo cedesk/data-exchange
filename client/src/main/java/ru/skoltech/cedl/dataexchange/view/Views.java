@@ -37,4 +37,5 @@ public class Views {
 
     public static final URL GUIDE_WINDOW = Views.class.getResource("guide-window.fxml");
 
+    public static final URL TRADESPACE_WINDOW = Views.class.getResource("tradespace-window.fxml");
 }

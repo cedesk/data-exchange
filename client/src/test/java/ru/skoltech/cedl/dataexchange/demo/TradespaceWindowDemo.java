@@ -1,30 +1,49 @@
 package ru.skoltech.cedl.dataexchange.demo;
 
-import ru.skoltech.cedl.dataexchange.DependencyGraphTest;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.tradespace.*;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import ru.skoltech.cedl.dataexchange.controller.TradespaceController;
+import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
+import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;
+import ru.skoltech.cedl.dataexchange.tradespace.TradespaceFactory;
+import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by d.knoll on 6/23/2017.
  */
-public class TradespaceDemo {
+public class TradespaceWindowDemo extends Application {
 
     public static void main(String... args) {
+        launch(args);
+    }
 
-        URL url = TradespaceDemo.class.getResource("/GPUdataset_2015.csv");
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        URL url = TradespaceWindowDemo.class.getResource("/GPUdataset_2015.csv");
         File file = new File(url.getFile());
 
         MultitemporalTradespace multitemporalTradespace = TradespaceFactory.buildFromCSV(file);
         System.out.println(multitemporalTradespace.toString());
 
-    }
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(Views.TRADESPACE_WINDOW);
+        Parent root = loader.load();
+        TradespaceController controller = (TradespaceController) loader.getController();
+        controller.setModel(multitemporalTradespace);
 
+        primaryStage.setTitle("Tradespace Window Demo");
+        primaryStage.setScene(new Scene(root));
+        primaryStage.getIcons().add(IconSet.APP_ICON);
+        primaryStage.show();
+
+    }
+/*
     private static MultitemporalTradespace buildTradespace() {
         MultitemporalTradespace multitemporalTradespace = new MultitemporalTradespace();
         List<Epoch> epoches = Epoch.buildEpochs(2017, 2020, 2025, 2030);
@@ -62,5 +81,5 @@ public class TradespaceDemo {
         foms.add(new FigureOfMeritDefinition("duty cycles", "number"));
         return foms;
     }
-
+*/
 }
