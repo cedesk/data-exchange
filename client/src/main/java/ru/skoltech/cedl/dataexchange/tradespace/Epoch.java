@@ -1,5 +1,8 @@
 package ru.skoltech.cedl.dataexchange.tradespace;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by d.knoll on 6/23/2017.
  */
@@ -17,6 +20,14 @@ public class Epoch {
 
     public void setYear(int year) {
         this.year = year;
+    }
+
+    public static List<Epoch> buildEpochs(Integer... years) {
+        List<Epoch> epochs = new ArrayList<>(years.length);
+        for (Integer year : years) {
+            epochs.add(new Epoch(year));
+        }
+        return epochs;
     }
 
     @Override

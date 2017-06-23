@@ -46,7 +46,7 @@ public class MultitemporalTradespace {
         return "MultitemporalTradespace{" +
                 "epochs=" + epochs +
                 ", definitions=" + definitions +
-                ", designPoints=" + designPoints +
+                ", designPoints=\n" + designPoints +
                 '}';
     }
 }

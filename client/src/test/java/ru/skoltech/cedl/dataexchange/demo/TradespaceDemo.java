@@ -1,7 +1,11 @@
 package ru.skoltech.cedl.dataexchange.demo;
 
+import ru.skoltech.cedl.dataexchange.DependencyGraphTest;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.tradespace.*;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,11 +17,17 @@ public class TradespaceDemo {
 
     public static void main(String... args) {
 
+        URL url = TradespaceDemo.class.getResource("/GPUdataset_2015.csv");
+        File file = new File(url.getFile());
+
+        MultitemporalTradespace multitemporalTradespace = TradespaceFactory.buildFromCSV(file);
+        System.out.println(multitemporalTradespace.toString());
+
     }
 
     private static MultitemporalTradespace buildTradespace() {
         MultitemporalTradespace multitemporalTradespace = new MultitemporalTradespace();
-        List<Epoch> epoches = buildEpochs(2017, 2020, 2025, 2030);
+        List<Epoch> epoches = Epoch.buildEpochs(2017, 2020, 2025, 2030);
         multitemporalTradespace.setEpochs(epoches);
 
         List<FigureOfMeritDefinition> definitions = buildFigureOfMeritDefinitions();
@@ -53,11 +63,4 @@ public class TradespaceDemo {
         return foms;
     }
 
-    private static List<Epoch> buildEpochs(Integer... years) {
-        List<Epoch> epochs = new ArrayList<>(years.length);
-        for (Integer year : years) {
-            epochs.add(new Epoch(year));
-        }
-        return epochs;
-    }
 }

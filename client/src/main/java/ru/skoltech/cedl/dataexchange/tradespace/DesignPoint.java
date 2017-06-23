@@ -70,10 +70,10 @@ public class DesignPoint {
 
     @Override
     public String toString() {
-        return "DesignPoint{" +
+        return "\tDesignPoint{" +
                 "description='" + description + '\'' +
                 ", epoch=" + epoch +
                 ", values=" + values +
-                '}';
+                "}\n";
     }
 }

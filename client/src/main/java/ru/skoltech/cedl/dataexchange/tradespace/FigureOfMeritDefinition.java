@@ -1,5 +1,8 @@
 package ru.skoltech.cedl.dataexchange.tradespace;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by d.knoll on 6/23/2017.
  */
@@ -29,6 +32,14 @@ public class FigureOfMeritDefinition {
 
     public void setUnitOfMeasure(String unitOfMeasure) {
         this.unitOfMeasure = unitOfMeasure;
+    }
+
+    public static List<FigureOfMeritDefinition> buildFigureOfMeritDefinitions(String... names) {
+        List<FigureOfMeritDefinition> definitions = new ArrayList<>(names.length);
+        for (String name : names) {
+            definitions.add(new FigureOfMeritDefinition(name, ""));
+        }
+        return definitions;
     }
 
     @Override
