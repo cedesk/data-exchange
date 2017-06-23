@@ -67,7 +67,7 @@ public class DisciplineSubSystem {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UserDiscipline{");
+        final StringBuilder sb = new StringBuilder("DisciplineSubSystem{");
         sb.append("id=").append(id);
         sb.append(", userRoleManagementId=").append(userRoleManagement.getId());
         sb.append(", disciplineId=").append(discipline.getId());
