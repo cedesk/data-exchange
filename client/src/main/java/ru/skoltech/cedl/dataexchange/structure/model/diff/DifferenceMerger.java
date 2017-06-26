@@ -19,14 +19,11 @@ public class DifferenceMerger {
 
     private static final Logger logger = Logger.getLogger(DifferenceMerger.class);
 
-    public static boolean mergeOne(ModelDifference modelDifference) {
+    public static boolean mergeOne(ModelDifference modelDifference) throws MergeException {
         logger.debug("merging " + modelDifference.getElementPath());
         modelDifference.mergeDifference();
         if (modelDifference instanceof ParameterDifference) {
             ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
-            // TODO: update sinks
-            //ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
-            //parameterLinkRegistry.updateSinks(parameterDifference.getParameter());
         } else if (modelDifference instanceof ExternalModelDifference) {
             ExternalModelDifference emd = (ExternalModelDifference) modelDifference;
             ExternalModel externalModel = emd.getExternalModel1();
@@ -52,14 +49,11 @@ public class DifferenceMerger {
         return true;
     }
 
-    public static boolean revertOne(ModelDifference modelDifference) {
+    public static boolean revertOne(ModelDifference modelDifference) throws MergeException {
         logger.debug("reverting " + modelDifference.getElementPath());
         modelDifference.revertDifference();
         if (modelDifference instanceof ParameterDifference) {
             ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
-            // TODO: update sinks
-            //ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
-            //parameterLinkRegistry.updateSinks(parameterDifference.getParameter());
         } else if (modelDifference instanceof ExternalModelDifference) {
             ExternalModelDifference emd = (ExternalModelDifference) modelDifference;
             ExternalModel externalModel = emd.getExternalModel1();
@@ -72,7 +66,7 @@ public class DifferenceMerger {
      * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
      * @return the list of merged differences
      */
-    public static List<ModelDifference> mergeChangesOntoFirst(List<ModelDifference> modelDifferences) {
+    public static List<ModelDifference> mergeChangesOntoFirst(List<ModelDifference> modelDifferences) throws MergeException {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
             if (modelDifference.isMergeable()) {
@@ -90,7 +84,7 @@ public class DifferenceMerger {
      * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
      * @return the list of merged differences
      */
-    public static List<ModelDifference> revertChangesOnFirst(List<ModelDifference> modelDifferences) {
+    public static List<ModelDifference> revertChangesOnFirst(List<ModelDifference> modelDifferences) throws MergeException {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
             if (modelDifference.isRevertible()) {

@@ -20,7 +20,7 @@ public class ParameterDifferenceTest {
     private SystemModel remoteSystem;
 
     @Test
-    public void localParameterAdd() {
+    public void localParameterAdd() throws Exception {
         ParameterModel newLocalParam = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
         localSystem.addParameter(newLocalParam);
 
@@ -45,7 +45,7 @@ public class ParameterDifferenceTest {
     }
 
     @Test
-    public void localParameterModify() {
+    public void localParameterModify() throws Exception {
         ParameterModel param1 = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
         param1.setLastModification(System.currentTimeMillis());
         remoteSystem.addParameter(param1);
@@ -76,22 +76,28 @@ public class ParameterDifferenceTest {
     }
 
     @Test
-    public void localParameterModifyLink() {
-        ParameterModel param1 = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
-        param1.setLastModification(System.currentTimeMillis());
-        remoteSystem.addParameter(param1);
-        ParameterModel param3 = new ParameterModel("param3", 13.0, ParameterNature.INPUT, ParameterValueSource.MANUAL);
-        param1.setNature(ParameterNature.INPUT);
-        param1.setValueSource(ParameterValueSource.LINK);
-        param1.setValueLink(param3);
+    public void localParameterModifyLink() throws Exception {
+        ParameterModel paramR1 = new ParameterModel("paramR1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
+        paramR1.setLastModification(System.currentTimeMillis());
+        remoteSystem.addParameter(paramR1);
+        ParameterModel paramR2 = new ParameterModel("paramR2", 13.0, ParameterNature.INPUT, ParameterValueSource.MANUAL);
+        paramR2.setLastModification(System.currentTimeMillis());
+        remoteSystem.addParameter(paramR2);
+        paramR1.setNature(ParameterNature.INPUT);
+        paramR1.setValueSource(ParameterValueSource.LINK);
+        paramR1.setValueLink(paramR2); // unrealistic that paramR1 and paramR2 belong to the same system node
 
-        ParameterModel param2 = new ParameterModel();
-        Utils.copyBean(param1, param2);
-        localSystem.addParameter(param2);
-        ParameterModel param4 = new ParameterModel("param4", 51.0, ParameterNature.INPUT, ParameterValueSource.MANUAL);
-        param2.setNature(ParameterNature.INPUT);
-        param2.setValueSource(ParameterValueSource.LINK);
-        param2.setValueLink(param4);
+        ParameterModel paramL1 = new ParameterModel();
+        Utils.copyBean(paramR1, paramL1);
+        localSystem.addParameter(paramL1);
+        ParameterModel paramL2 = new ParameterModel();
+        Utils.copyBean(paramR2, paramL2);
+        localSystem.addParameter(paramL2);
+
+        ParameterModel paramLx = new ParameterModel("paramLx", 51.0, ParameterNature.INPUT, ParameterValueSource.MANUAL);
+        paramLx.setUuid(paramR1.getUuid());
+        paramL1.setValueLink(paramLx);
+        Assert.assertNotEquals(remoteSystem.getParameters().get(0).getValueLink(), localSystem.getParameters().get(0).getValueLink());
 
         List<ParameterDifference> differences;
         differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
@@ -100,20 +106,25 @@ public class ParameterDifferenceTest {
         System.out.println(pd);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
         Assert.assertEquals(ChangeType.MODIFY, pd.getChangeType());
+        Assert.assertEquals("paramR1", pd.getParameter1().getName());
 
         Assert.assertTrue(pd.isRevertible());
-
         pd.revertDifference();
 
-        Assert.assertEquals(1, localSystem.getParameters().size());
-        Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
+        Assert.assertEquals(2, localSystem.getParameters().size());
+        Assert.assertEquals(localSystem.getParameters().get(0), remoteSystem.getParameters().get(0));
+        Assert.assertEquals(paramR1, localSystem.getParameters().get(0));
+        Assert.assertEquals(paramL1, localSystem.getParameters().get(0));
+        Assert.assertEquals(paramR2, localSystem.getParameters().get(1));
+        Assert.assertEquals(paramL2, localSystem.getParameters().get(1));
+        Assert.assertEquals(paramR2, localSystem.getParameters().get(0).getValueLink());
 
         differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
     }
 
     @Test
-    public void localParameterRemove() {
+    public void localParameterRemove() throws Exception {
         ParameterModel existingRemoteParam = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
         existingRemoteParam.setLastModification(remoteSystem.getLastModification() - 100);// parameter it was part of last modification
         remoteSystem.addParameter(existingRemoteParam);
@@ -149,7 +160,7 @@ public class ParameterDifferenceTest {
     }
 
     @Test
-    public void remoteParameterAdd() {
+    public void remoteParameterAdd() throws Exception {
         ParameterModel paramRemote = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
         paramRemote.setLastModification(System.currentTimeMillis());
         remoteSystem.addParameter(paramRemote);
@@ -174,7 +185,7 @@ public class ParameterDifferenceTest {
     }
 
     @Test
-    public void remoteParameterModify() {
+    public void remoteParameterModify() throws Exception {
         ParameterModel param1 = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
         param1.setLastModification(System.currentTimeMillis() - 100);
         remoteSystem.addParameter(param1);
@@ -203,7 +214,7 @@ public class ParameterDifferenceTest {
     }
 
     @Test
-    public void remoteParameterRemove() {
+    public void remoteParameterRemove() throws Exception {
         ParameterModel existingLocalParam = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
         existingLocalParam.setLastModification(localSystem.getLastModification() - 100); // parameter was part of last modification
         localSystem.addParameter(existingLocalParam);

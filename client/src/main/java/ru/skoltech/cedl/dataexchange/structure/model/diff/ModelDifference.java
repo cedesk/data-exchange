@@ -53,9 +53,9 @@ public abstract class ModelDifference {
 
     abstract public boolean isRevertible();
 
-    abstract public void mergeDifference();
+    abstract public void mergeDifference() throws MergeException;
 
-    abstract public void revertDifference();
+    abstract public void revertDifference() throws MergeException;
 
     @Override
     public String toString() {
