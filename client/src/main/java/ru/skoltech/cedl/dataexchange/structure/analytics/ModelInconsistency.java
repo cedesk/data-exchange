@@ -1,11 +1,14 @@
 package ru.skoltech.cedl.dataexchange.structure.analytics;
 
 import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by d.knoll on 6/26/2017.
@@ -46,7 +49,10 @@ public class ModelInconsistency {
         List<ModelInconsistency> modelInconsistencies = analyzeModel(systemModel, parameterDictionary);
         Long systemModelLatestModification = systemModel.findLatestModification();
         if (study.getLatestModelModification() < systemModelLatestModification) {
-            modelInconsistencies.add(new ModelInconsistency("Study latest modification is earlier than system model last modification.", Severity.ERROR, "study", study));
+            modelInconsistencies.add(new ModelInconsistency("Study latest modification is earlier than system model last modification", Severity.ERROR, "study", study));
+        }
+        if (!study.getName().equals(study.getSystemModel().getName())) {
+            modelInconsistencies.add(new ModelInconsistency("Study name and system model name differ", Severity.WARNING, "study", study));
         }
         return modelInconsistencies;
     }
@@ -115,7 +121,7 @@ public class ModelInconsistency {
                 String sourceUuid = actualSource.getUuid();
                 ParameterModel sourceFromDictionary = parameterDictionary.get(sourceUuid);
                 if (sourceFromDictionary == null) {
-                    modelInconsistencies.add(new ModelInconsistency("Linked parameter points to source outside of the model", Severity.ERROR, pm.getNodePath(), pm));
+                    modelInconsistencies.add(new ModelInconsistency("Linked parameter points to source no longer part of the model", Severity.ERROR, pm.getNodePath(), pm));
                 } else if (actualSource.getId() != sourceFromDictionary.getId()) {
                     modelInconsistencies.add(new ModelInconsistency("Linked parameter points to source outside of the model", Severity.ERROR, pm.getNodePath(), pm));
                 } else if (actualSource != sourceFromDictionary) {
@@ -135,7 +141,18 @@ public class ModelInconsistency {
             if (pm.getValueReference() == null) {
                 modelInconsistencies.add(new ModelInconsistency("Reference parameter must a have import reference", Severity.ERROR, pm.getNodePath(), pm));
             } else {
-                // TODO: check reference details
+                List<ExternalModel> externalModels = pm.getParent().getExternalModels();
+                Map<String, ExternalModel> externalModelDictionary = externalModels.stream().collect(Collectors.toMap(ExternalModel::getUuid, Function.identity()));
+                ExternalModel actualExternalModel = pm.getValueReference().getExternalModel();
+                String uuid = actualExternalModel.getUuid();
+                ExternalModel modelFromDictionary = externalModelDictionary.get(uuid);
+                if (modelFromDictionary == null) {
+                    modelInconsistencies.add(new ModelInconsistency("Referencing parameter points to an external model (" + actualExternalModel.getName() + ") no longer part of the model", Severity.ERROR, pm.getNodePath(), pm));
+                } else if (actualExternalModel.getId() != modelFromDictionary.getId()) {
+                    modelInconsistencies.add(new ModelInconsistency("Referencing parameter points to an external model outside of the model", Severity.ERROR, pm.getNodePath(), pm));
+                } else if (actualExternalModel != modelFromDictionary) {
+                    modelInconsistencies.add(new ModelInconsistency("Referencing parameter points to an external model outside of the model", Severity.ERROR, pm.getNodePath(), pm));
+                }
             }
             if (pm.getIsReferenceValueOverridden() && pm.getOverrideValue() == null) {
                 modelInconsistencies.add(new ModelInconsistency("Reference parameter with override, must have an override value", Severity.ERROR, pm.getNodePath(), pm));
@@ -147,7 +164,21 @@ public class ModelInconsistency {
             if (pm.getCalculation() == null) {
                 modelInconsistencies.add(new ModelInconsistency("Calculated parameter must have a calculation", Severity.ERROR, pm.getNodePath(), pm));
             } else {
-                //  TODO: check calculation details, and all argument parameter links
+                Calculation calculation = pm.getCalculation();
+                for (Argument argument : calculation.getArguments()) {
+                    if (argument instanceof Argument.Parameter) {
+                        ParameterModel actualSource = ((Argument.Parameter) argument).getLink();
+                        String sourceUuid = actualSource.getUuid();
+                        ParameterModel sourceFromDictionary = parameterDictionary.get(sourceUuid);
+                        if (sourceFromDictionary == null) {
+                            modelInconsistencies.add(new ModelInconsistency("Calculation points to source no longer part of the model", Severity.ERROR, pm.getNodePath(), pm));
+                        } else if (actualSource.getId() != sourceFromDictionary.getId()) {
+                            modelInconsistencies.add(new ModelInconsistency("Calculation points to source outside of the model", Severity.ERROR, pm.getNodePath(), pm));
+                        } else if (actualSource != sourceFromDictionary) {
+                            modelInconsistencies.add(new ModelInconsistency("Calculation points to source outside of the model", Severity.ERROR, pm.getNodePath(), pm));
+                        }
+                    }
+                }
             }
             if (pm.getIsReferenceValueOverridden() && pm.getOverrideValue() == null) {
                 modelInconsistencies.add(new ModelInconsistency("Calculated parameter with override, must have an override value", Severity.ERROR, pm.getNodePath(), pm));

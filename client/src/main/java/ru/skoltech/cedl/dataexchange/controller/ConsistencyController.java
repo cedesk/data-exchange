@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ModelInconsistency;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 
 import java.net.URL;
 import java.util.List;
@@ -31,7 +30,7 @@ public class ConsistencyController implements Initializable {
     public void refreshView(ActionEvent actionEvent) {
         Study localStudy = ProjectContext.getInstance().getProject().getStudy();
         inconsistenciesTable.getItems().clear();
-        List<ModelInconsistency> modelInconsistencies = ModelInconsistency.analyzeModel(localStudy.getSystemModel());
+        List<ModelInconsistency> modelInconsistencies = ModelInconsistency.analyzeModel(localStudy);
         inconsistenciesTable.getItems().addAll(modelInconsistencies);
     }
 
