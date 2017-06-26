@@ -156,8 +156,8 @@ public class Project {
 
     private void setStudy(Study study) {
         this.study = study;
-        if (study != null && study.getSystemModel() != null) {
-            long latestMod = study.getSystemModel().findLatestModification();
+        if (study != null) {
+            long latestMod = study.getLatestModelModification();
             setLatestLoadedModification(latestMod);
         } else {
             setLatestLoadedModification(Utils.INVALID_TIME);
@@ -414,7 +414,6 @@ public class Project {
         updateParameterValuesFromLinks();
         exportValuesToExternalModels();
         updateExternalModelsInStudy();
-        storeUserRoleManagement();
         Study newStudy = repository.storeStudy(this.study);
         updateExternalModelStateInCache();
         setStudy(newStudy);
@@ -449,7 +448,8 @@ public class Project {
 
     public boolean storeUserRoleManagement() {
         try {
-            repository.storeUserRoleManagement(getStudy().getUserRoleManagement());
+            UserRoleManagement userRoleManagement = repository.storeUserRoleManagement(getStudy().getUserRoleManagement());
+            getStudy().setUserRoleManagement(userRoleManagement);
             ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException e) {

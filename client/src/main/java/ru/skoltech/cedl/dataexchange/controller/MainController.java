@@ -125,6 +125,25 @@ public class MainController implements Initializable {
         }
     }
 
+    public boolean checkUnsavedModifications() {
+        if (project.hasLocalStudyModifications()) {
+            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Shall the modifications saved before closing?");
+            if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
+                try {
+                    project.storeLocalStudy();
+                    return true;
+                } catch (RepositoryException | ExternalModelException e) {
+                    UserNotifications.showNotification(getAppWindow(), "Failed to save", "Failed to save");
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
     public boolean confirmCloseRequest() {
         if (project.hasLocalStudyModifications()) {
             Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Shall the modifications saved before closing?");
@@ -527,6 +546,11 @@ public class MainController implements Initializable {
 
     public void openUserRoleManagement(ActionEvent actionEvent) {
         try {
+            if (!checkUnsavedModifications()) {
+                Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\nContact the team lead for him to enable it!");
+                return;
+            }
+
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.USER_ROLES_EDITING_WINDOW);
             Parent root = loader.load();

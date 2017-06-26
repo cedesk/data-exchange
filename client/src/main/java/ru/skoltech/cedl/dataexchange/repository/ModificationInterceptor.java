@@ -65,8 +65,10 @@ public class ModificationInterceptor extends EmptyInterceptor {
             Object element = entities.next();
             if (element instanceof Study) {
                 Study study = (Study) element;
-                long latestModification = study.getSystemModel().findLatestModification();
-                study.setLatestModelModification(latestModification);
+                Long currentModelModification = study.getLatestModelModification().longValue();
+                long newModelModification = study.getSystemModel().findLatestModification();
+                long latestModelModification = Math.max(currentModelModification + 1, newModelModification);
+                study.setLatestModelModification(latestModelModification);
                 return;
             }
         }

@@ -229,11 +229,13 @@ public class ModelEditingController implements Initializable {
                 // view
                 TreeItem<ModelNode> parent = selectedItem.getParent();
                 parent.getChildren().remove(selectedItem);
-                // model
 
+                project.getStudy().getUserRoleManagement().getDisciplineSubSystems()
+                        .removeIf(disciplineSubSystem -> disciplineSubSystem.getSubSystem() == deleteNode);
+                project.storeUserRoleManagement();
+
+                // model
                 if (parent.getValue() instanceof CompositeModelNode) {
-                    project.getUserRoleManagement().getDisciplineSubSystems()
-                            .removeIf(disciplineSubSystem -> disciplineSubSystem.getSubSystem() == deleteNode);
 
                     CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                     parentNode.removeSubNode(deleteNode);
