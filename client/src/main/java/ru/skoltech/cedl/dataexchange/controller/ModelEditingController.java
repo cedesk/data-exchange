@@ -33,6 +33,9 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
+import ru.skoltech.cedl.dataexchange.users.model.Discipline;
+import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
@@ -51,6 +54,10 @@ import java.util.stream.Collectors;
 public class ModelEditingController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
+
+    @FXML
+    private TextField ownersText;
+
     @FXML
     private SplitPane viewPane;
 
@@ -369,6 +376,14 @@ public class ModelEditingController implements Initializable {
         externalModelEditor.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
     }
 
+    public void openDepencencyView(ActionEvent actionEvent) {
+        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
+    }
+
+    public void openDsmView(ActionEvent actionEvent) {
+        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
+    }
+
     public void openParameterHistoryDialog(ActionEvent actionEvent) {
         ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem();
         Objects.requireNonNull(selectedParameter, "no parameter selected");
@@ -520,14 +535,6 @@ public class ModelEditingController implements Initializable {
         }
     }
 
-    public void openDsmView(ActionEvent actionEvent) {
-        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
-    }
-
-    public void openDepencencyView(ActionEvent actionEvent) {
-        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
-    }
-
     private void clearParameterTable() {
         parameterTable.getItems().clear();
     }
@@ -630,6 +637,14 @@ public class ModelEditingController implements Initializable {
         externalModelPane.setExpanded(hasExtModels);
     }
 
+    private void updateOwners(ModelNode modelNode) {
+        UserRoleManagement userRoleManagement = project.getUserRoleManagement();
+        Discipline disciplineOfSubSystem = userRoleManagement.getDisciplineOfSubSystem(modelNode);
+        List<User> usersOfDiscipline = userRoleManagement.getUsersOfDiscipline(disciplineOfSubSystem);
+        String userNames = usersOfDiscipline.stream().map(User::getName).collect(Collectors.joining(", "));
+        ownersText.setText(userNames);
+    }
+
     private void updateParameterEditor(ParameterModel parameterModel) {
         if (parameterModel != null) {
             ModelNode modelNode = parameterModel.getParent();
@@ -685,6 +700,7 @@ public class ModelEditingController implements Initializable {
                 selectedNodeIsEditable.setValue(editable);
 
                 ModelEditingController.this.updateParameterTable(newValue);
+                ModelEditingController.this.updateOwners(modelNode);
                 ModelEditingController.this.updateDependencies(modelNode);
                 ModelEditingController.this.updateExternalModelEditor(modelNode);
             } else {
