@@ -69,6 +69,6 @@ public class UpdateChecker {
     }
 
     private static Document getDocument(URL url) throws IOException {
-        return Jsoup.parse(url, 3000);
+        return Jsoup.parse(url, 10000);
     }
 }
