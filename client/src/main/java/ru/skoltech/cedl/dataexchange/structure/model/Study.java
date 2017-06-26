@@ -98,21 +98,10 @@ public class Study implements PersistedEntity {
 
     public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
         this.userRoleManagement = userRoleManagement;
-        List<DisciplineSubSystem> disciplineSubSystems = userRoleManagement.getDisciplineSubSystems();
-        relinkSubSystems(this.systemModel, disciplineSubSystems);
-    }
-
-    private void relinkSubSystems(SystemModel systemModel, List<DisciplineSubSystem> disciplineSubSystems) {
-        // build a map of the subsystems of the systemModel by UUID
-        Map<String, SubSystemModel> subsystems = systemModel.getSubNodes().stream().collect(Collectors.toMap(SubSystemModel::getUuid, Function.identity()));
-        for (DisciplineSubSystem disciplineSubSystem : disciplineSubSystems) {
-            String subsystemUuid = disciplineSubSystem.getSubSystem().getUuid();
-            // lookup subsystem by UUID
-            SubSystemModel oldSubsystem = subsystems.get(subsystemUuid);
-            disciplineSubSystem.setSubSystem(oldSubsystem);
+        if (userRoleManagement != null) {
+            List<DisciplineSubSystem> disciplineSubSystems = userRoleManagement.getDisciplineSubSystems();
+            relinkSubSystems(this.systemModel, disciplineSubSystems);
         }
-        // remove invalid links
-        disciplineSubSystems.removeIf(disciplineSubSystem -> disciplineSubSystem.getSubSystem() == null);
     }
 
     @Version
@@ -156,5 +145,18 @@ public class Study implements PersistedEntity {
         sb.append(", version=").append(version);
         sb.append('}');
         return sb.toString();
+    }
+
+    private void relinkSubSystems(SystemModel systemModel, List<DisciplineSubSystem> disciplineSubSystems) {
+        // build a map of the subsystems of the systemModel by UUID
+        Map<String, SubSystemModel> subsystems = systemModel.getSubNodes().stream().collect(Collectors.toMap(SubSystemModel::getUuid, Function.identity()));
+        for (DisciplineSubSystem disciplineSubSystem : disciplineSubSystems) {
+            String subsystemUuid = disciplineSubSystem.getSubSystem().getUuid();
+            // lookup subsystem by UUID
+            SubSystemModel oldSubsystem = subsystems.get(subsystemUuid);
+            disciplineSubSystem.setSubSystem(oldSubsystem);
+        }
+        // remove invalid links
+        disciplineSubSystems.removeIf(disciplineSubSystem -> disciplineSubSystem.getSubSystem() == null);
     }
 }
