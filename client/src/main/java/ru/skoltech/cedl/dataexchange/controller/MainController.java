@@ -378,6 +378,32 @@ public class MainController implements Initializable {
         }
     }
 
+    public void openConsistencyView(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.MODEL_CONSISTENCY_WINDOW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Model consistency");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.NONE);
+            stage.initOwner(getAppWindow());
+
+            ConsistencyController controller = loader.getController();
+            controller.refreshView(null);
+            stage.showAndWait();
+            modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void openDepencencyView(ActionEvent actionEvent) {
+        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
+    }
+
     public void openDiffView(ActionEvent actionEvent) {
         if (project.getSystemModel() == null
                 || project.getRepositoryStudy() == null
@@ -405,6 +431,10 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             logger.error(e);
         }
+    }
+
+    public void openDsmView(ActionEvent actionEvent) {
+        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
     }
 
     public void openGuideDialog(ActionEvent actionEvent) {
@@ -571,14 +601,6 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
-    }
-
-    public void openDsmView(ActionEvent actionEvent) {
-        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
-    }
-
-    public void openDepencencyView(ActionEvent actionEvent) {
-        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
     }
 
     public void quit(ActionEvent actionEvent) {
