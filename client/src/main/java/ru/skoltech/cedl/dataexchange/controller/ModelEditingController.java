@@ -232,7 +232,6 @@ public class ModelEditingController implements Initializable {
 
                 project.getStudy().getUserRoleManagement().getDisciplineSubSystems()
                         .removeIf(disciplineSubSystem -> disciplineSubSystem.getSubSystem() == deleteNode);
-                project.storeUserRoleManagement();
 
                 // model
                 if (parent.getValue() instanceof CompositeModelNode) {

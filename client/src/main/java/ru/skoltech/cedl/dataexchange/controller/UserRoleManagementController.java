@@ -58,9 +58,6 @@ public class UserRoleManagementController implements Initializable {
     public Button deleteDisciplineButton;
 
     @FXML
-    public Button saveDisciplineButton;
-
-    @FXML
     public ListView subsystemsAssignedList;
 
     @FXML
@@ -132,8 +129,6 @@ public class UserRoleManagementController implements Initializable {
         });
         BooleanBinding noSelectionOnDisciplinesTable = disciplinesTable.getSelectionModel().selectedItemProperty().isNull();
         deleteDisciplineButton.disableProperty().bind(noSelectionOnDisciplinesTable);
-
-        saveDisciplineButton.disableProperty().bind(Bindings.not(changed));
 
         // SUB-SYSTEMS
         subsystemsPane.disableProperty().bind(noSelectionOnDisciplinesTable);

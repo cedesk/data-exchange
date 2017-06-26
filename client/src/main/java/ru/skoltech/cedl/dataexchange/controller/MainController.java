@@ -599,7 +599,7 @@ public class MainController implements Initializable {
             stage.show();
             userRoleManagementController.updateView();
         } catch (IOException e) {
-            logger.error(e);
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -651,6 +651,7 @@ public class MainController implements Initializable {
                     return;
                 }
             }
+            project.storeUserRoleManagement();
             project.storeLocalStudy();
             updateView();
             repositoryWatcher.unpause();
