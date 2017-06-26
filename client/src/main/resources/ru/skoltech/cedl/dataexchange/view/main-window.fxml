@@ -59,6 +59,8 @@
                                         <Menu text="_View">
                                             <items>
                                                 <MenuItem
+                                                        onAction="#openConsistencyView" text="Consistency"/>
+                                                <MenuItem
                                                         onAction="#openDiffView" text="Differences"/>
                                                 <MenuItem
                                                         onAction="#openDsmView" text="Design Structure Matrix"/>
