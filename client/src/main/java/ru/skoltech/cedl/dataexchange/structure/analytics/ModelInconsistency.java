@@ -1,5 +1,8 @@
 package ru.skoltech.cedl.dataexchange.structure.analytics;
 
+import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 
@@ -73,7 +76,6 @@ public class ModelInconsistency {
                 modelInconsistencies.addAll(analyzeModel((CompositeModelNode<? extends ModelNode>) modelNode, parameterDictionary));
             }
         }
-
         return modelInconsistencies;
     }
 
@@ -82,7 +84,14 @@ public class ModelInconsistency {
         if (em.getAttachment() == null) {
             modelInconsistencies.add(new ModelInconsistency("External model has empty attachment", Severity.CRITICAL, em.getNodePath(), em));
         }
-        // TODO: check consistency with cache
+        ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(em);
+        if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
+            modelInconsistencies.add(new ModelInconsistency("External model has be updated locally and remotely", Severity.CRITICAL, em.getNodePath(), em));
+        } else if (cacheState == ExternalModelCacheState.CACHED_OUTDATED) {
+            modelInconsistencies.add(new ModelInconsistency("External model is outdated", Severity.WARNING, em.getNodePath(), em));
+        } else if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
+            modelInconsistencies.add(new ModelInconsistency("External model has changes that need to be stored to the repository", Severity.WARNING, em.getNodePath(), em));
+        }
         return modelInconsistencies;
     }
 
@@ -188,11 +197,12 @@ public class ModelInconsistency {
             }
         }
 
-        if (pm.getNature() == ParameterNature.INPUT) {
-            // parameter must NOT be linked, ERROR
-        }
         if (pm.getNature() == ParameterNature.INPUT || pm.getNature() == ParameterNature.INTERNAL) {
-            // parameter must NOT be linked, ERROR
+            List<ParameterModel> dependentParameters = ProjectContext.getInstance().getProject().getParameterLinkRegistry().getDependentParameters(pm);
+            if (dependentParameters.size() > 0) {
+                String parameterNames = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
+                modelInconsistencies.add(new ModelInconsistency("Input parameter must not be used as a source by other parameters: " + parameterNames, Severity.ERROR, pm.getNodePath(), pm));
+            }
         }
         if (pm.getNature() == ParameterNature.INTERNAL || pm.getNature() == ParameterNature.OUTPUT) {
             if (pm.getValueSource() == ParameterValueSource.LINK) {
@@ -200,7 +210,10 @@ public class ModelInconsistency {
             }
         }
         if (pm.getNature() == ParameterNature.OUTPUT) {
-            // parameter should be linked (used as a source by another parameter), WARNING
+            List<ParameterModel> dependentParameters = ProjectContext.getInstance().getProject().getParameterLinkRegistry().getDependentParameters(pm);
+            if (dependentParameters.size() == 0) {
+                modelInconsistencies.add(new ModelInconsistency("Output parameter is not linked by any other parameter", Severity.WARNING, pm.getNodePath(), pm));
+            }
         }
 
         return modelInconsistencies;
@@ -214,13 +227,15 @@ public class ModelInconsistency {
         ModelInconsistency that = (ModelInconsistency) o;
 
         if (!description.equals(that.description)) return false;
-        return severity == that.severity;
+        if (severity != that.severity) return false;
+        return sourceName.equals(that.sourceName);
     }
 
     @Override
     public int hashCode() {
         int result = description.hashCode();
         result = 31 * result + severity.hashCode();
+        result = 31 * result + sourceName.hashCode();
         return result;
     }
 
@@ -229,7 +244,7 @@ public class ModelInconsistency {
         return "ModelInconsistency{" +
                 "description='" + description + '\'' +
                 ", severity=" + severity +
-                ", source=" + source +
+                ", sourceName='" + sourceName + '\'' +
                 '}';
     }
 
