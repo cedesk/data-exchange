@@ -131,8 +131,6 @@ public class ModelInconsistency {
                 ParameterModel sourceFromDictionary = parameterDictionary.get(sourceUuid);
                 if (sourceFromDictionary == null) {
                     modelInconsistencies.add(new ModelInconsistency("Linked parameter points to source no longer part of the model", Severity.ERROR, pm.getNodePath(), pm));
-                } else if (actualSource.getId() != sourceFromDictionary.getId()) {
-                    modelInconsistencies.add(new ModelInconsistency("Linked parameter points to source outside of the model", Severity.ERROR, pm.getNodePath(), pm));
                 } else if (actualSource != sourceFromDictionary) {
                     modelInconsistencies.add(new ModelInconsistency("Linked parameter points to source outside of the model", Severity.ERROR, pm.getNodePath(), pm));
                 }
@@ -157,8 +155,6 @@ public class ModelInconsistency {
                 ExternalModel modelFromDictionary = externalModelDictionary.get(uuid);
                 if (modelFromDictionary == null) {
                     modelInconsistencies.add(new ModelInconsistency("Referencing parameter points to an external model (" + actualExternalModel.getName() + ") no longer part of the model", Severity.ERROR, pm.getNodePath(), pm));
-                } else if (actualExternalModel.getId() != modelFromDictionary.getId()) {
-                    modelInconsistencies.add(new ModelInconsistency("Referencing parameter points to an external model outside of the model", Severity.ERROR, pm.getNodePath(), pm));
                 } else if (actualExternalModel != modelFromDictionary) {
                     modelInconsistencies.add(new ModelInconsistency("Referencing parameter points to an external model outside of the model", Severity.ERROR, pm.getNodePath(), pm));
                 }
@@ -181,8 +177,6 @@ public class ModelInconsistency {
                         ParameterModel sourceFromDictionary = parameterDictionary.get(sourceUuid);
                         if (sourceFromDictionary == null) {
                             modelInconsistencies.add(new ModelInconsistency("Calculation points to source no longer part of the model", Severity.ERROR, pm.getNodePath(), pm));
-                        } else if (actualSource.getId() != sourceFromDictionary.getId()) {
-                            modelInconsistencies.add(new ModelInconsistency("Calculation points to source outside of the model", Severity.ERROR, pm.getNodePath(), pm));
                         } else if (actualSource != sourceFromDictionary) {
                             modelInconsistencies.add(new ModelInconsistency("Calculation points to source outside of the model", Severity.ERROR, pm.getNodePath(), pm));
                         }
