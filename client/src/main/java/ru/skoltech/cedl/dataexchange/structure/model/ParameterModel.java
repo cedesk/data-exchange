@@ -320,7 +320,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         } else if (valueSource == ParameterValueSource.CALCULATION && calculation != null && calculation.valid()) {
             return isReferenceValueOverridden ? overrideValue : calculation.evaluate();
         }
-        return value;
+        return isReferenceValueOverridden ? overrideValue : value; // OUTPUT CAN BE OVERRIDDEN
     }
 
     @Version()
