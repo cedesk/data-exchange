@@ -133,6 +133,7 @@ public class ModelUpdateUtil {
                     try {
                         exporter.setValue(target, parameterModel.getEffectiveValue()); // TODO: document behavior
                     } catch (ExternalModelException e) {
+                        logger.warn("failed to export parameter " + parameterModel.getNodePath(), e);
                         StatusLogger.getInstance().log("failed to export parameter " + parameterModel.getNodePath());
                     }
                 } else {
