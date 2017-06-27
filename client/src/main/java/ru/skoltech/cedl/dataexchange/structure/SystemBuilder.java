@@ -4,6 +4,8 @@ import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
+import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 /**
  * Created by d.knoll on 27/06/2017.
@@ -16,28 +18,42 @@ public abstract class SystemBuilder {
     static int parameterCnt = 1;
     static int elementCnt = 1;
     static int instrumentCnt = 1;
-
-    static ParameterModel getMassParameter() {
-        ParameterModel parameterModel = new ParameterModel("mass", getRandomDouble());
-        parameterModel.setDescription("");
-        parameterModel.setNature(ParameterNature.OUTPUT);
-        parameterModel.setValueSource(ParameterValueSource.MANUAL);
-        return parameterModel;
-    }
+    private UnitManagement unitManagement;
 
     public abstract String getName();
-
-    static ParameterModel getPowerParameter() {
-        ParameterModel parameterModel = new ParameterModel("power", getRandomDouble());
-        parameterModel.setDescription("");
-        parameterModel.setNature(ParameterNature.OUTPUT);
-        parameterModel.setValueSource(ParameterValueSource.MANUAL);
-        return parameterModel;
-    }
 
     static double getRandomDouble() {
         return Math.round(Math.random() * 1000) / 10;
     }
 
-    public abstract SystemModel build();
+    public void setUnitManagement(UnitManagement unitManagement) {
+        this.unitManagement = unitManagement;
+    }
+
+    static ParameterModel getMassParameter(Unit unit) {
+        ParameterModel parameterModel = new ParameterModel("mass", getRandomDouble());
+        parameterModel.setDescription("");
+        parameterModel.setNature(ParameterNature.OUTPUT);
+        parameterModel.setValueSource(ParameterValueSource.MANUAL);
+        parameterModel.setUnit(unit);
+        return parameterModel;
+    }
+
+    static ParameterModel getPowerParameter(Unit unit) {
+        ParameterModel parameterModel = new ParameterModel("power", getRandomDouble());
+        parameterModel.setDescription("");
+        parameterModel.setNature(ParameterNature.OUTPUT);
+        parameterModel.setValueSource(ParameterValueSource.MANUAL);
+        parameterModel.setUnit(unit);
+        return parameterModel;
+    }
+
+    public abstract SystemModel build(String systemName);
+
+    protected Unit getUnit(String name) {
+        if (unitManagement != null) {
+            return unitManagement.findUnitBySymbolOrName(name);
+        }
+        return null;
+    }
 }

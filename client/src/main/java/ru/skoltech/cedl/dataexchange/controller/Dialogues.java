@@ -66,6 +66,14 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
+    public static Optional<String> inputSubsystemNames(String defaultValue) {
+        TextInputDialog dialog = new TextInputDialog(defaultValue);
+        dialog.setTitle("Subsystem Names");
+        dialog.setHeaderText("Please insert the names of the subsystems, separated by comma.");
+        dialog.setContentText("Names");
+        return dialog.showAndWait();
+    }
+
     public static Optional<String> inputParameterName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Parameter Name");
