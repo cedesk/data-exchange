@@ -321,7 +321,6 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     private void updateModel() {
         editingParameterModel.setName(nameText.getText());
-        editingParameterModel.setValue(convertTextToDouble(valueText.getText()));
         editingParameterModel.setIsReferenceValueOverridden(isReferenceValueOverriddenCheckbox.isSelected());
         editingParameterModel.setOverrideValue(convertTextToDouble(valueOverrideText.getText()));
         editingParameterModel.setIsExported(isExportedCheckbox.isSelected());
@@ -371,6 +370,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                 parameterLinkRegistry.addLink(valueLinkParameter, originalParameterModel);
             }
             editingParameterModel.setValueLink(valueLinkParameter);
+            editingParameterModel.setValue(valueLinkParameter.getEffectiveValue());
         } else {
             editingParameterModel.setValueLink(null);
         }
@@ -400,6 +400,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             editingParameterModel.setExportReference(null);
         }
         if (editingParameterModel.getValueSource() == ParameterValueSource.MANUAL) {
+            editingParameterModel.setValue(convertTextToDouble(valueText.getText()));
             editingParameterModel.setIsReferenceValueOverridden(false);
         }
         if (!editingParameterModel.getIsReferenceValueOverridden()) {
