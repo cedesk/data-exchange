@@ -47,9 +47,7 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
     }
 
     /**
-     * Find the most recent modification time of any of the sub-nodes, external models or any of their parameters.
-     *
-     * @return
+     * @return the most recent modification time of any of the sub-nodes, external models or any of their parameters.
      */
     public Long findLatestModification() {
         Long latest = Utils.INVALID_TIME;
@@ -65,6 +63,9 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
         return latest;
     }
 
+    /**
+     * @return a map for looking up any parameter in the system model (tree) by it's UUID.
+     */
     public Map<String, ParameterModel> makeParameterDictionary() {
         Map<String, ParameterModel> dictionary = new HashMap<>();
         Iterator<ParameterModel> pmi = parametersTreeIterator();
