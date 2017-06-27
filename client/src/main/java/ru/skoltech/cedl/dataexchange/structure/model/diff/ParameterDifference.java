@@ -2,9 +2,8 @@ package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
@@ -56,6 +55,10 @@ public class ParameterDifference extends ModelDifference {
     @Override
     public String getElementPath() {
         return parameter1.getNodePath();
+    }
+
+    public ParameterModel getParameter1() {
+        return parameter1;
     }
 
     @Override
@@ -208,11 +211,79 @@ public class ParameterDifference extends ModelDifference {
         return parameterDifferences;
     }
 
+    /**
+     * Parameters which have been overwritten with the repository copy, need to be relinked.
+     * That means:
+     * * parameters which linked to another parameters, need to link to same (identified by UUID) parameter in the actual system model.
+     * * parameters which obtain their value from a reference to an external model, need to reference an external model (identified by UUID) of the actual model node.
+     * * parameters which are calculated, need to point their arguments to parameters (identified by UUID) of the actual system model.
+     * * parameters which export their value to an external model, need to point an external model (identified by UUID) of the actual model node.
+     *
+     * @param sink
+     */
+    private static void relinkParameter(ParameterModel sink) throws MergeException {
+        if (sink.getValueSource() == ParameterValueSource.LINK && sink.getValueLink() != null) {
+            SystemModel systemModel = sink.getParent().findRoot();
+            Map<String, ParameterModel> parameterDictionary = systemModel.makeParameterDictionary();
+            String uuid = sink.getValueLink().getUuid();
+            if (parameterDictionary.containsKey(uuid)) {
+                ParameterModel source = parameterDictionary.get(uuid);
+                sink.setValueLink(source);
+            } else {
+                logger.error("relinking failed for value link of parameter:" + sink.getNodePath());
+                throw new MergeException("relinking value link of parameter failed for: " + sink.getNodePath());
+            }
+        } else if (sink.getValueSource() == ParameterValueSource.REFERENCE && sink.getValueReference() != null) {
+            Map<String, ExternalModel> externalModelDictionary = sink.getParent().getExternalModels().stream()
+                    .collect(Collectors.toMap(ExternalModel::getUuid, Function.identity()));
+            ExternalModelReference valueReference = sink.getValueReference();
+            String uuid = valueReference.getExternalModel().getUuid();
+            if (externalModelDictionary.containsKey(uuid)) {
+                ExternalModel externalModel = externalModelDictionary.get(uuid);
+                valueReference.setExternalModel(externalModel);
+                sink.setValueReference(valueReference);
+            } else {
+                logger.error("relinking failed for import reference of parameter:" + sink.getNodePath());
+                throw new MergeException("relinking import reference of parameter failed for: " + sink.getNodePath());
+            }
+        } else if (sink.getValueSource() == ParameterValueSource.CALCULATION && sink.getCalculation() != null) {
+            SystemModel systemModel = sink.getParent().findRoot();
+            Map<String, ParameterModel> parameterDictionary = systemModel.makeParameterDictionary();
+            List<Argument> arguments = sink.getCalculation().getArguments();
+            for (Argument argument : arguments) {
+                if (argument instanceof Argument.Parameter) {
+                    Argument.Parameter argParam = (Argument.Parameter) argument;
+                    String uuid = argParam.getLink().getUuid();
+                    if (parameterDictionary.containsKey(uuid)) {
+                        ParameterModel source = parameterDictionary.get(uuid);
+                        argParam.setLink(source);
+                    } else {
+                        logger.error("relinking failed for calculation of parameter:" + sink.getNodePath());
+                        throw new MergeException("relinking calculation of parameter failed for: " + sink.getNodePath());
+                    }
+                }
+            }
+        }
+        if (sink.getIsExported() && sink.getExportReference() != null) {
+            Map<String, ExternalModel> externalModelDictionary = sink.getParent().getExternalModels().stream()
+                    .collect(Collectors.toMap(ExternalModel::getUuid, Function.identity()));
+            ExternalModelReference exportReference = sink.getExportReference();
+            String uuid = exportReference.getExternalModel().getUuid();
+            if (externalModelDictionary.containsKey(uuid)) {
+                ExternalModel externalModel = externalModelDictionary.get(uuid);
+                exportReference.setExternalModel(externalModel);
+                sink.setExportReference(exportReference);
+            } else {
+                logger.error("relinking failed for export reference of parameter:" + sink.getNodePath());
+                throw new IllegalStateException("relinking export reference of parameter failed for: " + sink.getNodePath());
+            }
+        }
+    }
+
     @Override
-    public void mergeDifference() {
+    public void mergeDifference() throws MergeException {
         if (changeLocation != ChangeLocation.ARG2)
             throw new IllegalStateException("non-remote difference can not be merged");
-
         switch (changeType) {
             case ADD: {
                 Objects.requireNonNull(parent);
@@ -239,18 +310,17 @@ public class ParameterDifference extends ModelDifference {
             case MODIFY: { // copy remote over local
                 Utils.copyBean(parameter2, parameter1);
                 parameter1.setParent(parent); // link parameter to actual new parent
-                // TODO: update dependent parameters
+                relinkParameter(parameter1);
                 break;
             }
             default: {
-                logger.error("MERGE IMPOSSIBLE:\n" + toString());
-                throw new NotImplementedException();
+                throw new MergeException("Merge Impossible");
             }
         }
     }
 
     @Override
-    public void revertDifference() {
+    public void revertDifference() throws MergeException {
         if (changeLocation != ChangeLocation.ARG1)
             throw new IllegalStateException("non-local difference can not be reverted");
 
@@ -283,11 +353,11 @@ public class ParameterDifference extends ModelDifference {
                 Objects.requireNonNull(parameter2);
                 Utils.copyBean(parameter2, parameter1);
                 parameter1.setParent(parent); // link parameter to actual new parent
+                relinkParameter(parameter1);
                 break;
             }
             default: {
-                logger.error("MERGE IMPOSSIBLE:\n" + toString());
-                throw new NotImplementedException();
+                throw new MergeException("Merge Impossible");
             }
         }
     }
@@ -311,4 +381,5 @@ public class ParameterDifference extends ModelDifference {
         sb.append("}\n ");
         return sb.toString();
     }
+
 }

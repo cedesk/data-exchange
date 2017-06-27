@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.Grid;
+import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetColumn;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
@@ -28,6 +29,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
@@ -93,9 +95,53 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
         });
     }
 
+    private List<String> getSheetNames() {
+        List<String> sheetNames = new LinkedList<>();
+        try {
+            ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+            sheetNames = WorkbookFactory.getSheetNames(inputStream, externalModel.getName());
+            Predicate<String> nameTest = SHEET_NAME_PATTERN.asPredicate();
+            List<String> validSheets = new ArrayList<>(sheetNames.size());
+            List<String> invalidSheets = new ArrayList<>(sheetNames.size());
+            for (String sname : sheetNames) {
+                if (nameTest.test(sname)) {
+                    validSheets.add(sname);
+                } else {
+                    invalidSheets.add(sname);
+                }
+            }
+            if (invalidSheets.size() > 0) {
+                String invalidSheetNames = invalidSheets.stream().collect(Collectors.joining(","));
+                Dialogues.showWarning("Invalid sheet name found in external model",
+                        "The sheets '" + invalidSheetNames + "' can not be referenced. Make sure they are named with latin characters and numbers.");
+            }
+            sheetNames = validSheets;
+            inputStream.close();
+        } catch (IOException | ExternalModelException e) {
+            Dialogues.showWarning("No sheets found in external model.", "This external model could not be opened to extract sheets.");
+            logger.warn("This external model could not be opened to extract sheets.", e);
+        }
+        return sheetNames;
+    }
+
+    public void chooseSelectedCell(ActionEvent actionEvent) {
+        TablePosition focusedCell = spreadsheetView.getSelectionModel().getFocusedCell();
+        if (focusedCell != null && focusedCell.getRow() >= 0) {
+            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(sheetChooser.getValue(), focusedCell);
+            reference = new ExternalModelReference(externalModel, coordinates.toString());
+            referenceText.textProperty().setValue(reference.toString());
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         attachmentChooser.setConverter(new StringConverter<ExternalModel>() {
+            @Override
+            public ExternalModel fromString(String string) {
+                return null;
+            }
+
             @Override
             public String toString(ExternalModel externalModel) {
                 if (externalModel == null) {
@@ -103,11 +149,6 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
                 } else {
                     return externalModel.getName();
                 }
-            }
-
-            @Override
-            public ExternalModel fromString(String string) {
-                return null;
             }
         });
 
@@ -121,6 +162,9 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
                 referenceText.textProperty().setValue(reference.toString());
                 List<String> sheetNames = getSheetNames();
                 sheetChooser.setItems(FXCollections.observableArrayList(sheetNames));
+                if(sheetNames.isEmpty()) {
+                    clearGrid();
+                }
             }
         });
         sheetChooser.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -152,39 +196,15 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
                     logger.error(e);
                 }
             }
-            targetSheetName = targetSheetName != null ? targetSheetName : sheetChooser.getItems().get(0);
-            sheetChooser.setValue(targetSheetName);
+            if (sheetChooser.getItems().size() > 0) {
+                targetSheetName = targetSheetName != null ? targetSheetName : sheetChooser.getItems().get(0);
+                sheetChooser.setValue(targetSheetName);
+            }
         }
     }
 
-    private List<String> getSheetNames() {
-        List<String> sheetNames = null;
-        try {
-            ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
-            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
-            sheetNames = WorkbookFactory.getSheetNames(inputStream, externalModel.getName());
-            Predicate<String> nameTest = SHEET_NAME_PATTERN.asPredicate();
-            List<String> validSheets = new ArrayList<>(sheetNames.size());
-            List<String> invalidSheets = new ArrayList<>(sheetNames.size());
-            for (String sname : sheetNames) {
-                if (nameTest.test(sname)) {
-                    validSheets.add(sname);
-                } else {
-                    invalidSheets.add(sname);
-                }
-            }
-            if (invalidSheets.size() > 0) {
-                String invalidSheetNames = invalidSheets.stream().collect(Collectors.joining(","));
-                Dialogues.showWarning("Invalid sheet name found in external model",
-                        "The sheets '" + invalidSheetNames + "' can not be referenced. Make sure they are named with latin characters and numbers.");
-            }
-            sheetNames = validSheets;
-            inputStream.close();
-        } catch (IOException | ExternalModelException e) {
-            Dialogues.showWarning("No sheets found in external model.", "This external model could not be opened to extract sheets.");
-            logger.warn("This external model could not be opened to extract sheets.", e);
-        }
-        return sheetNames;
+    private void clearGrid() {
+        spreadsheetView.setGrid(new GridBase(0, 0));
     }
 
     public void refreshTable(ActionEvent actionEvent) {
@@ -212,15 +232,6 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
             }
         } catch (Exception ex) {
             logger.error("Error reading external model spreadsheet.", ex);
-        }
-    }
-
-    public void chooseSelectedCell(ActionEvent actionEvent) {
-        TablePosition focusedCell = spreadsheetView.getSelectionModel().getFocusedCell();
-        if (focusedCell != null && focusedCell.getRow() >= 0) {
-            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(sheetChooser.getValue(), focusedCell);
-            reference = new ExternalModelReference(externalModel, coordinates.toString());
-            referenceText.textProperty().setValue(reference.toString());
         }
     }
 }

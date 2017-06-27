@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.glyphfont.Glyph?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="400.0" prefWidth="800.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.112"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.ConsistencyController">
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                    AnchorPane.topAnchor="0.0">
+            <top>
+                <ToolBar prefHeight="40.0" prefWidth="200.0">
+                    <items>
+                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
+                            <tooltip>
+                                <Tooltip text="Refresh"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                            </graphic>
+                        </Button>
+                    </items>
+                </ToolBar>
+            </top>
+            <center>
+                <TableView fx:id="inconsistenciesTable" prefHeight="400" prefWidth="700.0">
+                    <columns>
+                        <TableColumn prefWidth="80.0" text="Severity">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="severity"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn prefWidth="180.0" text="Source">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="sourceName"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn prefWidth="500.0" text="Inconsistency Description">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="description"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                    </columns>
+                </TableView>
+            </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

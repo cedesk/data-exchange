@@ -33,6 +33,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -142,7 +143,8 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
         for (ExternalModel externalModel : modelNode.getExternalModels())
             try {
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler, externalModelUpdateListener, parameterUpdateListener);
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler,
+                        Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
             }

@@ -21,7 +21,7 @@ public class NodeDifferenceTest {
     private SystemModel remoteSystem;
 
     @Test
-    public void localNodeAdd() {
+    public void localNodeAdd() throws Exception {
         SubSystemModel newLocalSub = new SubSystemModel("subsys1");
         localSystem.addSubNode(newLocalSub);
 
@@ -47,7 +47,7 @@ public class NodeDifferenceTest {
     }
 
     @Test
-    public void localNodeModify() {
+    public void localNodeModify() throws Exception {
         SubSystemModel subSystem1 = new SubSystemModel("subSystem1");
         subSystem1.setLastModification(System.currentTimeMillis());
         remoteSystem.addSubNode(subSystem1);
@@ -76,7 +76,7 @@ public class NodeDifferenceTest {
     }
 
     @Test
-    public void localNodeRemove() {
+    public void localNodeRemove() throws Exception {
         SubSystemModel existingRemoteNode = new SubSystemModel("subsystem1");
         existingRemoteNode.setLastModification(remoteSystem.getLastModification() - 100);// parameter it was part of last modification
         remoteSystem.addSubNode(existingRemoteNode);
@@ -112,7 +112,7 @@ public class NodeDifferenceTest {
     }
 
     @Test
-    public void remoteNodeAdd() {
+    public void remoteNodeAdd() throws Exception {
         SubSystemModel subsystem1 = new SubSystemModel("subsystem1");
         subsystem1.setLastModification(System.currentTimeMillis());
         remoteSystem.addSubNode(subsystem1);
@@ -137,7 +137,7 @@ public class NodeDifferenceTest {
     }
 
     @Test
-    public void remoteNodeModify() {
+    public void remoteNodeModify() throws Exception {
         SubSystemModel subsystem1 = new SubSystemModel("subsystem1");
         subsystem1.setLastModification(System.currentTimeMillis() - 1000);
         remoteSystem.addSubNode(subsystem1);
@@ -166,7 +166,7 @@ public class NodeDifferenceTest {
     }
 
     @Test
-    public void remoteNodeRemove() {
+    public void remoteNodeRemove() throws Exception {
         SubSystemModel existingLocalNode = new SubSystemModel("subsystem1");
         existingLocalNode.setLastModification(localSystem.getLastModification() - 100); // parameter was part of last modification
         localSystem.addSubNode(existingLocalNode);

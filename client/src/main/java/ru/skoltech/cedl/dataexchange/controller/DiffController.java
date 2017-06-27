@@ -17,6 +17,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -56,12 +57,16 @@ public class DiffController implements Initializable {
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
     public void acceptAll(ActionEvent actionEvent) {
-        List<ModelDifference> appliedDifferences = DifferenceMerger.mergeChangesOntoFirst(modelDifferences);
-        if (appliedDifferences.size() > 0) {
-            ProjectContext.getInstance().getProject().markStudyModified();
-        }
-        if (modelDifferences.size() == 0) {
-            close(null);
+        try {
+            List<ModelDifference> appliedDifferences = DifferenceMerger.mergeChangesOntoFirst(modelDifferences);
+            if (appliedDifferences.size() > 0) {
+                ProjectContext.getInstance().getProject().markStudyModified();
+            }
+            if (modelDifferences.size() == 0) {
+                close(null);
+            }
+        } catch (MergeException me) {
+            StatusLogger.getInstance().log(me.getMessage(), true);
         }
     }
 
@@ -115,19 +120,23 @@ public class DiffController implements Initializable {
     }
 
     public void revertAll(ActionEvent actionEvent) {
-        List<ModelDifference> appliedDifferences = DifferenceMerger.revertChangesOnFirst(modelDifferences);
-        if (modelDifferences.size() == 0) {
-            close(null);
-        } else if (appliedDifferences.size() > 0) {
-            int modelsReverted = 0;
-            for (ModelDifference modelDifference : appliedDifferences) {
-                if (modelDifference instanceof ExternalModelDifference) {
-                    modelsReverted++;
+        try {
+            List<ModelDifference> appliedDifferences = DifferenceMerger.revertChangesOnFirst(modelDifferences);
+            if (modelDifferences.size() == 0) {
+                close(null);
+            } else if (appliedDifferences.size() > 0) {
+                int modelsReverted = 0;
+                for (ModelDifference modelDifference : appliedDifferences) {
+                    if (modelDifference instanceof ExternalModelDifference) {
+                        modelsReverted++;
+                    }
+                }
+                if (modelsReverted > 0) { // reverting models may have affected parameters referencing values in them
+                    refreshView(null);
                 }
             }
-            if (modelsReverted > 0) { // reverting models may have affected parameters referencing values in them
-                refreshView(null);
-            }
+        } catch (MergeException me) {
+            StatusLogger.getInstance().log(me.getMessage(), true);
         }
     }
 
@@ -152,10 +161,14 @@ public class DiffController implements Initializable {
         Button acceptButton = (Button) actionEvent.getTarget();
         ModelDifference modelDifference = (ModelDifference) acceptButton.getUserData();
         boolean success = false;
-        if (modelDifference.isMergeable()) {
-            success = DifferenceMerger.mergeOne(modelDifference);
-        } else if (modelDifference.isRevertible()) {
-            success = DifferenceMerger.revertOne(modelDifference);
+        try {
+            if (modelDifference.isMergeable()) {
+                success = DifferenceMerger.mergeOne(modelDifference);
+            } else if (modelDifference.isRevertible()) {
+                success = DifferenceMerger.revertOne(modelDifference);
+            }
+        } catch (MergeException me) {
+            StatusLogger.getInstance().log(me.getMessage(), true);
         }
         if (success) {
             modelDifferences.remove(modelDifference);

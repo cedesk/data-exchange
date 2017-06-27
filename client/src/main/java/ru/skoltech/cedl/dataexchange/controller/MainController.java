@@ -127,7 +127,7 @@ public class MainController implements Initializable {
 
     public boolean checkUnsavedModifications() {
         if (project.hasLocalStudyModifications()) {
-            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Shall the modifications saved before closing?");
+            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Modifications to the model must to be saved before managing user discipline assignment. Shall it be saved now?");
             if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
                 try {
                     project.storeLocalStudy();
@@ -378,6 +378,32 @@ public class MainController implements Initializable {
         }
     }
 
+    public void openConsistencyView(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.MODEL_CONSISTENCY_WINDOW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Model consistency");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.NONE);
+            stage.initOwner(getAppWindow());
+
+            ConsistencyController controller = loader.getController();
+            controller.refreshView(null);
+            stage.showAndWait();
+            modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void openDepencencyView(ActionEvent actionEvent) {
+        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
+    }
+
     public void openDiffView(ActionEvent actionEvent) {
         if (project.getSystemModel() == null
                 || project.getRepositoryStudy() == null
@@ -405,6 +431,10 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             logger.error(e);
         }
+    }
+
+    public void openDsmView(ActionEvent actionEvent) {
+        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
     }
 
     public void openGuideDialog(ActionEvent actionEvent) {
@@ -546,10 +576,7 @@ public class MainController implements Initializable {
 
     public void openUserRoleManagement(ActionEvent actionEvent) {
         try {
-            if (!checkUnsavedModifications()) {
-                Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\nContact the team lead for him to enable it!");
-                return;
-            }
+            if (!checkUnsavedModifications()) return;
 
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.USER_ROLES_EDITING_WINDOW);
@@ -569,7 +596,7 @@ public class MainController implements Initializable {
             stage.show();
             userRoleManagementController.updateView();
         } catch (IOException e) {
-            logger.error(e);
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -621,6 +648,7 @@ public class MainController implements Initializable {
                     return;
                 }
             }
+            project.storeUserRoleManagement();
             project.storeLocalStudy();
             updateView();
             repositoryWatcher.unpause();

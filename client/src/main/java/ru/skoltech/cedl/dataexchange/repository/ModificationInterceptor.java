@@ -6,7 +6,6 @@ import org.hibernate.type.Type;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModificationTimestamped;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -61,11 +60,11 @@ public class ModificationInterceptor extends EmptyInterceptor {
 
     @Override
     public void preFlush(Iterator entities) {
-        for (; entities.hasNext(); ) {
+        while (entities.hasNext()) {
             Object element = entities.next();
             if (element instanceof Study) {
                 Study study = (Study) element;
-                Long currentModelModification = study.getLatestModelModification().longValue();
+                Long currentModelModification = study.getLatestModelModification() != null ? study.getLatestModelModification() : -1;
                 long newModelModification = study.getSystemModel().findLatestModification();
                 long latestModelModification = Math.max(currentModelModification + 1, newModelModification);
                 study.setLatestModelModification(latestModelModification);

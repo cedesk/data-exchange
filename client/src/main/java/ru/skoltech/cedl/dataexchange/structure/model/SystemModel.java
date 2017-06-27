@@ -6,8 +6,10 @@ import ru.skoltech.cedl.dataexchange.Utils;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by D.Knoll on 11.03.2015.
@@ -26,10 +28,9 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
     }
 
     @Override
-    @OneToMany(targetEntity = SubSystemModel.class, mappedBy = "parent", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @Fetch(FetchMode.SELECT)
-    public List<SubSystemModel> getSubNodes() {
-        return super.getSubNodes();
+    @Transient
+    public String getNodePath() {
+        return name;
     }
 
     @Override
@@ -39,15 +40,14 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
     }
 
     @Override
-    @Transient
-    public String getNodePath() {
-        return name;
+    @OneToMany(targetEntity = SubSystemModel.class, mappedBy = "parent", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
+    public List<SubSystemModel> getSubNodes() {
+        return super.getSubNodes();
     }
 
     /**
-     * Find the most recent modification time of any of the sub-nodes, external models or any of their parameters.
-     *
-     * @return
+     * @return the most recent modification time of any of the sub-nodes, external models or any of their parameters.
      */
     public Long findLatestModification() {
         Long latest = Utils.INVALID_TIME;
@@ -61,5 +61,15 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
             }
         }
         return latest;
+    }
+
+    /**
+     * @return a map for looking up any parameter in the system model (tree) by it's UUID.
+     */
+    public Map<String, ParameterModel> makeParameterDictionary() {
+        Map<String, ParameterModel> dictionary = new HashMap<>();
+        Iterator<ParameterModel> pmi = parametersTreeIterator();
+        pmi.forEachRemaining(parameterModel -> dictionary.put(parameterModel.getUuid(), parameterModel));
+        return dictionary;
     }
 }

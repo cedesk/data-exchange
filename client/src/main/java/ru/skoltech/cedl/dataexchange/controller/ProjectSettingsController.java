@@ -18,6 +18,7 @@ import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -29,7 +30,10 @@ public class ProjectSettingsController implements Initializable {
     private static Logger logger = Logger.getLogger(ProjectSettingsController.class);
 
     @FXML
-    public TitledPane teamSettingsPane;
+    private TitledPane teamSettingsPane;
+
+    @FXML
+    private TextField projectDirectoryText;
 
     @FXML
     private TextField projectNameText;
@@ -56,6 +60,10 @@ public class ProjectSettingsController implements Initializable {
         updateView();
     }
 
+    public void cleanupProjectCache(ActionEvent actionEvent) {
+        ProjectContext.getInstance().getProject().getExternalModelFileHandler().cleanupCache();
+    }
+
     private void updateView() {
         String projectName = ProjectContext.getInstance().getProject().getProjectName();
         projectNameText.setText(projectName);
@@ -68,6 +76,9 @@ public class ProjectSettingsController implements Initializable {
             enableSyncCheckbox.setDisable(true);
             teamSettingsPane.setDisable(true);
         }
+
+        File projectDataDir = ProjectContext.getInstance().getProjectDataDir();
+        projectDirectoryText.setText(projectDataDir.getAbsolutePath());
 
         autoloadOnStartupCheckbox.setSelected(ApplicationSettings.getAutoLoadLastProjectOnStartup());
         modelDepth.setValue(ApplicationSettings.getStudyModelDepth(DummySystemBuilder.DEFAULT_MODEL_DEPTH));
