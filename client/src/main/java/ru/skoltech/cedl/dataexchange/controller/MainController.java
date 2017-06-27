@@ -127,7 +127,7 @@ public class MainController implements Initializable {
 
     public boolean checkUnsavedModifications() {
         if (project.hasLocalStudyModifications()) {
-            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Shall the modifications saved before closing?");
+            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Modifications to the model must to be saved before managing user discipline assignment. Shall it be saved now?");
             if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
                 try {
                     project.storeLocalStudy();
@@ -576,10 +576,7 @@ public class MainController implements Initializable {
 
     public void openUserRoleManagement(ActionEvent actionEvent) {
         try {
-            if (!checkUnsavedModifications()) {
-                Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\nContact the team lead for him to enable it!");
-                return;
-            }
+            if (!checkUnsavedModifications()) return;
 
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.USER_ROLES_EDITING_WINDOW);
