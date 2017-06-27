@@ -31,6 +31,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.DifferenceMerger;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -352,7 +353,14 @@ public class MainController implements Initializable {
                 Dialogues.showError("Invalid name", "A study with this name already exists in the repository!");
                 return;
             }
-            project.newStudy(projectName);
+
+            Optional<String> builderName = Dialogues.chooseStudyBuilder(SystemBuilderFactory.getBuilderNames());
+            if (!builderName.isPresent()) {
+                return;
+            }
+            SystemModel systemModel = SystemBuilderFactory.getBuilder(builderName.get()).build();
+            systemModel.setName(projectName);
+            project.newStudy(systemModel);
             StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
             ActionLogger.log(ActionLogger.ActionType.project_new, projectName);
             updateView();

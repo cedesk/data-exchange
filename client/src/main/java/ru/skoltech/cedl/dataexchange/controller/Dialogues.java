@@ -129,4 +129,13 @@ public class Dialogues {
         dlg.setContentText("Study");
         return dlg.showAndWait();
     }
+
+    public static Optional<String> chooseStudyBuilder(List<String> builderNames) {
+        Objects.requireNonNull(builderNames);
+        ChoiceDialog<String> dlg = new ChoiceDialog<>(builderNames.get(0), builderNames);
+        dlg.setTitle("Choose a study builder");
+        dlg.setHeaderText("Choose from available builders");
+        dlg.setContentText("Builder");
+        return dlg.showAndWait();
+    }
 }
