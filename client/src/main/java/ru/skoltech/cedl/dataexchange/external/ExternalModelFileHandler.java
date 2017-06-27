@@ -6,13 +6,12 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelTreeIterator;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
@@ -31,6 +30,10 @@ public class ExternalModelFileHandler {
 
     public ExternalModelFileHandler(Project project) {
         this.project = project;
+    }
+
+    public Set<ExternalModel> getChangedExternalModels() {
+        return changedExternalModels;
     }
 
     public static ExternalModel newFromFile(File file, ModelNode parent) throws IOException {
@@ -148,6 +151,10 @@ public class ExternalModelFileHandler {
         return getCheckoutTime(getFilePathInCache(externalModel));
     }
 
+    public void addChangedExternalModel(ExternalModel externalModel) {
+        changedExternalModels.add(externalModel);
+    }
+
     public File cacheFile(ExternalModel externalModel) throws IOException, ExternalModelException {
         Objects.requireNonNull(externalModel);
         File file = getFilePathInCache(externalModel);
@@ -159,7 +166,8 @@ public class ExternalModelFileHandler {
                 // TODO: handle file opened by other process
                 if (file.canWrite() || !file.exists()) {
                     logger.debug("caching: " + file.getAbsolutePath());
-                    if(externalModel.getAttachment() == null) throw new ExternalModelException("external model has empty attachment");
+                    if (externalModel.getAttachment() == null)
+                        throw new ExternalModelException("external model has empty attachment");
                     Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
                     updateCheckoutTimestamp(externalModel);
                     project.addExternalModelFileWatcher(externalModel);
@@ -177,6 +185,44 @@ public class ExternalModelFileHandler {
                 break;
         }
         return file;
+    }
+
+    public void cleanupCache() {
+        Set<String> toBeKept = new HashSet<>();
+        SystemModel systemModel = project.getStudy().getSystemModel();
+        ExternalModelTreeIterator emi = new ExternalModelTreeIterator(systemModel);
+        while (emi.hasNext()) {
+            ExternalModel em = emi.next();
+            ExternalModelCacheState cacheState = getCacheState(em);
+            File emf = getFilePathInCache(em);
+            boolean needToKeep = false;
+            //if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT ||
+            //        cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
+            needToKeep = true;
+            toBeKept.add(emf.getAbsolutePath());
+            File emc = getTimestampFile(emf);
+            toBeKept.add(emc.getAbsolutePath());
+            //}
+            logger.info("file: '" + emf.getAbsolutePath() + "', [" + cacheState + "], needToKeep: " + needToKeep);
+        }
+        // go through cache directory, check if to keep, otherwise delete
+        File projectDataDir = ProjectContext.getInstance().getProjectDataDir();
+        try {
+            Files.walk(projectDataDir.toPath(), FileVisitOption.FOLLOW_LINKS).forEach(path -> {
+                File file = path.toFile();
+                if (file.isFile() && !toBeKept.contains(file.getAbsolutePath())) { // files not to be kept
+                    logger.info("deleting: '" + file.getAbsolutePath() + "'");
+                    file.delete();
+                } else if (file.isDirectory() && file.list() != null&& file.list().length == 0) { // empty directories
+                    logger.info("deleting: '" + file.getAbsolutePath() + "'");
+                    file.delete();
+                } else {
+                    logger.info("keeping: '" + file.getAbsolutePath() + "'");
+                }
+            });
+        } catch (IOException e) {
+            logger.error("error traversing project directory", e);
+        }
     }
 
     public File forceCacheUpdate(ExternalModel externalModel) throws IOException {
@@ -207,17 +253,10 @@ public class ExternalModelFileHandler {
                 File writtenFile = cacheFile(externalModel);
                 return new FileInputStream(writtenFile);
             default:
-                if (externalModel.getAttachment() == null) throw new ExternalModelException("external model has empty attachment");
+                if (externalModel.getAttachment() == null)
+                    throw new ExternalModelException("external model has empty attachment");
                 return new ByteArrayInputStream(externalModel.getAttachment());
         }
-    }
-
-    public Set<ExternalModel> getChangedExternalModels() {
-        return changedExternalModels;
-    }
-
-    public void addChangedExternalModel(ExternalModel externalModel) {
-        changedExternalModels.add(externalModel);
     }
 
 }
