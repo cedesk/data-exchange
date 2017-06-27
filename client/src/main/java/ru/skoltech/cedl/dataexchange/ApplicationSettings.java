@@ -3,7 +3,7 @@ package ru.skoltech.cedl.dataexchange;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
-import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
 import java.io.File;
 import java.io.FileReader;
@@ -234,8 +234,8 @@ public class ApplicationSettings {
         if (studyModelDepthStr != null) {
             try {
                 studyModelDepth = Integer.valueOf(studyModelDepthStr);
-                if (studyModelDepth < DummySystemBuilder.MIN_MODEL_DEPTH || studyModelDepth > DummySystemBuilder.MAX_MODEL_DEPTH) {
-                    logger.warn("Invalid value of setting " + STUDY_MODEL_DEPTH + ", it must be >= " + DummySystemBuilder.MIN_MODEL_DEPTH + " and <=" + DummySystemBuilder.MAX_MODEL_DEPTH);
+                if (studyModelDepth < SystemBuilder.MIN_MODEL_DEPTH || studyModelDepth > SystemBuilder.MAX_MODEL_DEPTH) {
+                    logger.warn("Invalid value of setting " + STUDY_MODEL_DEPTH + ", it must be >= " + SystemBuilder.MIN_MODEL_DEPTH + " and <=" + SystemBuilder.MAX_MODEL_DEPTH);
                 }
             } catch (NumberFormatException nfe) {
                 logger.warn("Not parseable value of setting " + STUDY_MODEL_DEPTH);

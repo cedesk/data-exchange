@@ -7,7 +7,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
-import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.SimpleSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
@@ -20,11 +20,6 @@ public class ModelStorageTest {
 
     private DatabaseStorage databaseStorage;
 
-    @Before
-    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        databaseStorage = RepositoryFactory.getTempRepository();
-    }
-
     @After
     public void cleanup() {
         databaseStorage.close();
@@ -32,7 +27,7 @@ public class ModelStorageTest {
 
     @Test
     public void compareStoredAndRetrievedModel() throws RepositoryException {
-        SystemModel systemModel = DummySystemBuilder.getSystemModel(2);
+        SystemModel systemModel = SimpleSpaceSystemBuilder.getSystemModel(2);
         System.out.println(systemModel);
         databaseStorage.storeSystemModel(systemModel);
         long systemModelId = systemModel.getId();
@@ -46,32 +41,14 @@ public class ModelStorageTest {
 
     }
 
-    @Test
-    public void testTimeStamping() throws RepositoryException {
-        SystemModel systemModel = DummySystemBuilder.getSystemModel(1);
-        System.out.println(systemModel);
-        System.out.println("----------------------------------------------------------------");
-
-        systemModel = databaseStorage.storeSystemModel(systemModel);
-        long systemModelId = systemModel.getId();
-        System.out.println(systemModel);
-        System.out.println("----------------------------------------------------------------");
-
-        SystemModel systemModel1 = databaseStorage.loadSystemModel(systemModelId);
-        System.out.println(systemModel1);
-
-        Assert.assertEquals(systemModel1.getName(), systemModel.getName());
-
-        Long lastModification = systemModel.getLastModification();
-        System.out.println("systemModel.lastModification: " + lastModification);
-        Long lastModification1 = systemModel1.getLastModification();
-        System.out.println("systemModel1.lastModification: " + lastModification1);
-        Assert.assertTrue(lastModification <= lastModification1); // TODO: fix to strictly smaller!
+    @Before
+    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        databaseStorage = RepositoryFactory.getTempRepository();
     }
 
     @Test
     public void storeModifyAndStore() throws RepositoryException {
-        SystemModel generatedModel = DummySystemBuilder.getSystemModel(1);
+        SystemModel generatedModel = SimpleSpaceSystemBuilder.getSystemModel(1);
         System.out.println(generatedModel);
 
         SystemModel storedModel = databaseStorage.storeSystemModel(generatedModel);
@@ -101,7 +78,7 @@ public class ModelStorageTest {
 
     @Test
     public void storeModifyAndStore2() throws RepositoryException {
-        SystemModel storedModel = DummySystemBuilder.getSystemModel(2);
+        SystemModel storedModel = SimpleSpaceSystemBuilder.getSystemModel(2);
         System.out.println(storedModel);
 
         SystemModel system0 = databaseStorage.storeSystemModel(storedModel);
@@ -132,7 +109,7 @@ public class ModelStorageTest {
 
     @Test
     public void storeModifyAndStoreNames() throws RepositoryException {
-        SystemModel storedModel = DummySystemBuilder.getSystemModel(2);
+        SystemModel storedModel = SimpleSpaceSystemBuilder.getSystemModel(2);
         System.out.println(storedModel);
 
         databaseStorage.storeSystemModel(storedModel);
@@ -152,5 +129,28 @@ public class ModelStorageTest {
 
         Assert.assertEquals(newValue, storedValue);
         Assert.assertEquals(parameterModel, parameterModel1);
+    }
+
+    @Test
+    public void testTimeStamping() throws RepositoryException {
+        SystemModel systemModel = SimpleSpaceSystemBuilder.getSystemModel(1);
+        System.out.println(systemModel);
+        System.out.println("----------------------------------------------------------------");
+
+        systemModel = databaseStorage.storeSystemModel(systemModel);
+        long systemModelId = systemModel.getId();
+        System.out.println(systemModel);
+        System.out.println("----------------------------------------------------------------");
+
+        SystemModel systemModel1 = databaseStorage.loadSystemModel(systemModelId);
+        System.out.println(systemModel1);
+
+        Assert.assertEquals(systemModel1.getName(), systemModel.getName());
+
+        Long lastModification = systemModel.getLastModification();
+        System.out.println("systemModel.lastModification: " + lastModification);
+        Long lastModification1 = systemModel1.getLastModification();
+        System.out.println("systemModel1.lastModification: " + lastModification1);
+        Assert.assertTrue(lastModification <= lastModification1); // TODO: fix to strictly smaller!
     }
 }
