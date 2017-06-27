@@ -63,17 +63,8 @@ public class ExternalModelView extends HBox implements Initializable {
         }
     }
 
-    private Optional<String> chooseSheet(List<String> sheetNames) {
-        Objects.requireNonNull(sheetNames);
-        if (sheetNames.size() > 1) {
-            ChoiceDialog<String> dlg = new ChoiceDialog<>(sheetNames.get(0), sheetNames);
-            dlg.setTitle("Choose a sheet");
-            dlg.setHeaderText("Choose a sheets from the workbook");
-            dlg.setContentText("Spreadsheet");
-            return dlg.showAndWait();
-        } else {
-            return Optional.of(sheetNames.get(0));
-        }
+    public ExternalModel getExternalModel() {
+        return externalModel;
     }
 
     @Override
@@ -98,23 +89,12 @@ public class ExternalModelView extends HBox implements Initializable {
         try {
             File file = externalModelFileHandler.cacheFile(externalModel);
             openFile(file);
-        } catch (IOException ioe) {
+        } catch (ExternalModelException | IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);
+            StatusLogger.getInstance().log("Unable to cache external model", true);
         } catch (Exception e) {
             logger.error("Error opening external model with default editor.", e);
-        }
-    }
-
-    private void openFile(File file) throws IOException {
-        if (file != null) {
-            Desktop desktop = Desktop.getDesktop();
-            if (file.isFile() && desktop.isSupported(Desktop.Action.EDIT)) {
-                desktop.edit(file);
-            } else if (file.isDirectory() && desktop.isSupported(Desktop.Action.BROWSE)) {
-                desktop.browse(file.toURI());
-            } else {
-                StatusLogger.getInstance().log("Unable to open file!", true);
-            }
+            StatusLogger.getInstance().log("Unable to open external model", true);
         }
     }
 
@@ -170,8 +150,30 @@ public class ExternalModelView extends HBox implements Initializable {
         }
     }
 
-    public ExternalModel getExternalModel() {
-        return externalModel;
+    private Optional<String> chooseSheet(List<String> sheetNames) {
+        Objects.requireNonNull(sheetNames);
+        if (sheetNames.size() > 1) {
+            ChoiceDialog<String> dlg = new ChoiceDialog<>(sheetNames.get(0), sheetNames);
+            dlg.setTitle("Choose a sheet");
+            dlg.setHeaderText("Choose a sheets from the workbook");
+            dlg.setContentText("Spreadsheet");
+            return dlg.showAndWait();
+        } else {
+            return Optional.of(sheetNames.get(0));
+        }
+    }
+
+    private void openFile(File file) throws IOException {
+        if (file != null) {
+            Desktop desktop = Desktop.getDesktop();
+            if (file.isFile() && desktop.isSupported(Desktop.Action.EDIT)) {
+                desktop.edit(file);
+            } else if (file.isDirectory() && desktop.isSupported(Desktop.Action.BROWSE)) {
+                desktop.browse(file.toURI());
+            } else {
+                StatusLogger.getInstance().log("Unable to open file!", true);
+            }
+        }
     }
 
 }
