@@ -138,7 +138,7 @@ public class ModelEditingController implements Initializable {
                 ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 try {
                     ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler,
-                            new ExternalModelUpdateListener(), new ParameterUpdateListener());
+                            Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ParameterUpdateListener());
                 } catch (ExternalModelException e) {
                     logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
                 }
@@ -721,6 +721,13 @@ public class ModelEditingController implements Initializable {
         public void accept(ModelUpdate modelUpdate) {
             ExternalModel externalModel = modelUpdate.getExternalModel();
             project.addChangedExternalModel(externalModel);
+        }
+    }
+
+    public class ExternalModelLogListener implements Consumer<ModelUpdate> {
+        @Override
+        public void accept(ModelUpdate modelUpdate) {
+            ExternalModel externalModel = modelUpdate.getExternalModel();
             String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
             logger.info(message);
             UserNotifications.showNotification(getAppWindow(), "External model modified", message);
