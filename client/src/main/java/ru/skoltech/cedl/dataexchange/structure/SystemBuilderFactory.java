@@ -14,7 +14,7 @@ public class SystemBuilderFactory {
 
     static {
         register(new SimpleSystemBuilder());
-        register(new SimpleSpaceSystemBuilder());
+        register(new BasicSpaceSystemBuilder());
     }
 
     public static List<String> getBuilderNames() {

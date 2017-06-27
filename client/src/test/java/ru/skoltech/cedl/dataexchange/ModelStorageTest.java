@@ -7,7 +7,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
-import ru.skoltech.cedl.dataexchange.structure.SimpleSpaceSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
@@ -27,7 +27,7 @@ public class ModelStorageTest {
 
     @Test
     public void compareStoredAndRetrievedModel() throws RepositoryException {
-        SystemModel systemModel = SimpleSpaceSystemBuilder.getSystemModel(2);
+        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(2);
         System.out.println(systemModel);
         databaseStorage.storeSystemModel(systemModel);
         long systemModelId = systemModel.getId();
@@ -48,7 +48,7 @@ public class ModelStorageTest {
 
     @Test
     public void storeModifyAndStore() throws RepositoryException {
-        SystemModel generatedModel = SimpleSpaceSystemBuilder.getSystemModel(1);
+        SystemModel generatedModel = BasicSpaceSystemBuilder.getSystemModel(1);
         System.out.println(generatedModel);
 
         SystemModel storedModel = databaseStorage.storeSystemModel(generatedModel);
@@ -78,7 +78,7 @@ public class ModelStorageTest {
 
     @Test
     public void storeModifyAndStore2() throws RepositoryException {
-        SystemModel storedModel = SimpleSpaceSystemBuilder.getSystemModel(2);
+        SystemModel storedModel = BasicSpaceSystemBuilder.getSystemModel(2);
         System.out.println(storedModel);
 
         SystemModel system0 = databaseStorage.storeSystemModel(storedModel);
@@ -109,7 +109,7 @@ public class ModelStorageTest {
 
     @Test
     public void storeModifyAndStoreNames() throws RepositoryException {
-        SystemModel storedModel = SimpleSpaceSystemBuilder.getSystemModel(2);
+        SystemModel storedModel = BasicSpaceSystemBuilder.getSystemModel(2);
         System.out.println(storedModel);
 
         databaseStorage.storeSystemModel(storedModel);
@@ -133,7 +133,7 @@ public class ModelStorageTest {
 
     @Test
     public void testTimeStamping() throws RepositoryException {
-        SystemModel systemModel = SimpleSpaceSystemBuilder.getSystemModel(1);
+        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(1);
         System.out.println(systemModel);
         System.out.println("----------------------------------------------------------------");
 

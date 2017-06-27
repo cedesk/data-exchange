@@ -7,7 +7,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
-import ru.skoltech.cedl.dataexchange.structure.SimpleSpaceSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -27,7 +27,7 @@ public class StudyStorageTest {
     private static Study makeStudy(String projectName, int modelDepth) {
         Study study = new Study();
         study.setStudySettings(new StudySettings());
-        SystemModel systemModel = SimpleSpaceSystemBuilder.getSystemModel(modelDepth);
+        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(modelDepth);
         study.setSystemModel(systemModel);
         study.setName(projectName);
         UserRoleManagement userRoleManagement = UserManagementFactory.makeUserRoleManagementWithSubsystemDisciplines(systemModel, null);

@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by D.Knoll on 12.03.2015.
  */
-public class SimpleSpaceSystemBuilder extends SystemBuilder {
+public class BasicSpaceSystemBuilder extends SystemBuilder {
 
     public static final int DEFAULT_MODEL_DEPTH = 2;
 
@@ -24,7 +24,7 @@ public class SimpleSpaceSystemBuilder extends SystemBuilder {
 
     @Override
     public String getName() {
-        return "Simple Space System";
+        return "Basic Space System";
     }
 
     static ParameterModel getParameter() {
@@ -83,8 +83,8 @@ public class SimpleSpaceSystemBuilder extends SystemBuilder {
             throw new IllegalArgumentException("model depth must be >= " + MIN_MODEL_DEPTH + " and <=" + MAX_MODEL_DEPTH);
 
         SystemModel system = new SystemModel("Spacecraft " + systemsCnt++);
-        system.addParameter(getMassParameter());
-        system.addParameter(getPowerParameter());
+        system.addParameter(getMassParameter(null));
+        system.addParameter(getPowerParameter(null));
 
         if (modelDepth < 2) return system;
         system.addSubNode(getSubSystem("Mission", modelDepth - 1));
@@ -110,8 +110,8 @@ public class SimpleSpaceSystemBuilder extends SystemBuilder {
 
     private static SubSystemModel getSubSystem(String name, int level) {
         SubSystemModel subSystem = new SubSystemModel(name);
-        subSystem.addParameter(getMassParameter());
-        subSystem.addParameter(getPowerParameter());
+        subSystem.addParameter(getMassParameter(null));
+        subSystem.addParameter(getPowerParameter(null));
         //subSystem.addParameter(getParameter());
 
         if (level < 2) return subSystem;
@@ -127,7 +127,9 @@ public class SimpleSpaceSystemBuilder extends SystemBuilder {
     }
 
     @Override
-    public SystemModel build() {
-        return getSystemModel(modelDepth);
+    public SystemModel build(String systemName) {
+        SystemModel systemModel = getSystemModel(modelDepth);
+        systemModel.setName(systemName);
+        return systemModel;
     }
 }

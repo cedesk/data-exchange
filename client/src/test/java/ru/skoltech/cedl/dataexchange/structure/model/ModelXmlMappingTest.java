@@ -5,8 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.SimpleSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
@@ -52,7 +52,7 @@ public class ModelXmlMappingTest {
 
     @Test
     public void exportXmlAndReimport() throws IOException {
-        SystemModel s1 = SimpleSpaceSystemBuilder.getSystemModel(1);
+        SystemModel s1 = BasicSpaceSystemBuilder.getSystemModel(1);
         URL url = this.getClass().getResource("/attachment.xls");
         File excelFile = new File(url.getFile());
         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(excelFile, s1);

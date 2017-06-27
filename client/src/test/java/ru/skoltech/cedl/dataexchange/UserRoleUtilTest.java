@@ -2,7 +2,7 @@ package ru.skoltech.cedl.dataexchange;
 
 import org.junit.Assert;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.structure.SimpleSpaceSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ElementModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -29,7 +29,7 @@ public class UserRoleUtilTest {
         String testUserName = "test user";
         UserManagementFactory.addUserWithAllPower(userRoleManagement, userManagement, testUserName);
 
-        SystemModel systemModel = SimpleSpaceSystemBuilder.getSystemModel(3);
+        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(3);
 
         SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
@@ -52,7 +52,7 @@ public class UserRoleUtilTest {
         User testUser = new User(testUserName, "", "");
         userManagement.getUsers().add(testUser);
 
-        SystemModel systemModel = SimpleSpaceSystemBuilder.getSystemModel(3);
+        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(3);
         SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
         Discipline secondDiscipline = userRoleManagement.getDisciplines().get(1);

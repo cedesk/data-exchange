@@ -7,7 +7,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
-import ru.skoltech.cedl.dataexchange.structure.SimpleSpaceSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -38,7 +38,7 @@ public class VersioningStorageTest {
 
     @Test
     public void test() throws RepositoryException {
-        SystemModel systemModel = SimpleSpaceSystemBuilder.getSystemModel(1);
+        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(1);
         System.out.println(systemModel);
         databaseStorage.storeSystemModel(systemModel);
 
