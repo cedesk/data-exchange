@@ -79,4 +79,14 @@ public class DesignPoint {
         result = 31 * result + values.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "DesignPoint{" +
+                "description='" + description + '\'' +
+                ", epoch=" + epoch +
+                ", modelStateLink=" + modelStateLink +
+                ", values=" + values +
+                '}';
+    }
 }

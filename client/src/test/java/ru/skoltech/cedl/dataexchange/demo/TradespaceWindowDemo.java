@@ -5,13 +5,21 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.controller.TradespaceController;
+import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.SimpleSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.model.Study;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;
 import ru.skoltech.cedl.dataexchange.tradespace.TradespaceFactory;
+import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
+import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.net.URL;
 
 /**
@@ -25,11 +33,11 @@ public class TradespaceWindowDemo extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        setupContext();
+
         URL url = TradespaceWindowDemo.class.getResource("/GPUdataset_2015.csv");
         File file = new File(url.getFile());
-
         MultitemporalTradespace multitemporalTradespace = TradespaceFactory.buildFromCSV(file);
-        System.out.println(multitemporalTradespace.toString());
 
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Views.TRADESPACE_WINDOW);
@@ -42,44 +50,37 @@ public class TradespaceWindowDemo extends Application {
         primaryStage.getIcons().add(IconSet.APP_ICON);
         primaryStage.show();
 
-    }
-/*
-    private static MultitemporalTradespace buildTradespace() {
-        MultitemporalTradespace multitemporalTradespace = new MultitemporalTradespace();
-        List<Epoch> epoches = Epoch.buildEpochs(2017, 2020, 2025, 2030);
-        multitemporalTradespace.setEpochs(epoches);
-
-        List<FigureOfMeritDefinition> definitions = buildFigureOfMeritDefinitions();
-        multitemporalTradespace.setDefinitions(definitions);
-
-        List<DesignPoint> points = buildDesignPoints(epoches, definitions);
-        multitemporalTradespace.setDesignPoints(points);
-
-        return multitemporalTradespace;
+        closeContext();
     }
 
-    private static List<DesignPoint> buildDesignPoints(List<Epoch> epoches, List<FigureOfMeritDefinition> definitions) {
-        List<DesignPoint> points = new LinkedList<>();
-        Epoch currentEpoch = epoches.get(0);
-
-        // 1 design point
-        List<FigureOfMeritValue> values = new ArrayList<>(definitions.size());
-        values.add(new FigureOfMeritValue(definitions.get(0), 123d));
-        values.add(new FigureOfMeritValue(definitions.get(1), 47.4));
-        values.add(new FigureOfMeritValue(definitions.get(2), 40.0));
-        values.add(new FigureOfMeritValue(definitions.get(3), 240000d));
-        points.add(new DesignPoint(currentEpoch, values));
-
-        return points;
+    private void closeContext() {
+        try {
+            ProjectContext.getInstance().getProject().finalize();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
-    private static List<FigureOfMeritDefinition> buildFigureOfMeritDefinitions() {
-        List<FigureOfMeritDefinition> foms = new ArrayList<>();
-        foms.add(new FigureOfMeritDefinition("cost", "USD"));
-        foms.add(new FigureOfMeritDefinition("energy density", "Wh/kg"));
-        foms.add(new FigureOfMeritDefinition("depth of discharge", "percent"));
-        foms.add(new FigureOfMeritDefinition("duty cycles", "number"));
-        return foms;
+    private void setupContext() {
+        try {
+            Project project = new Project("TS Demo");
+            UnitManagement unitManagement = UnitManagementFactory.getUnitManagement();
+
+            Study study = new Study("TS Demo");
+            Field sField = Project.class.getDeclaredField("study");
+            sField.setAccessible(true);
+            sField.set(project, study);
+
+            SimpleSystemBuilder simpleSystemBuilder = new SimpleSystemBuilder();
+            simpleSystemBuilder.setUnitManagement(unitManagement);
+            SystemModel systemModel = simpleSystemBuilder.build(study.getName());
+            study.setSystemModel(systemModel);
+
+            ProjectContext.getInstance().setProject(project);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
-*/
+
 }

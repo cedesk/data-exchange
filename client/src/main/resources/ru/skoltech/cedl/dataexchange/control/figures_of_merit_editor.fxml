@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.glyphfont.Glyph?>
+<?import ru.skoltech.cedl.dataexchange.control.FigureOfMeritView?>
+<fx:root xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../view/styling.css"
+         type="javafx.scene.control.ScrollPane" xmlns="http://javafx.com/javafx/8.0.112" fitToHeight="true"
+         fitToWidth="true" prefWidth="300.0">
+    <content>
+        <HBox spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+              AnchorPane.topAnchor="0.0">
+            <children>
+                <VBox fx:id="figuresOfMeritsViewContainer" spacing="4.0">
+                    <children>
+                        <FigureOfMeritView prefWidth="200"/>
+                    </children>
+                    <padding>
+                        <Insets right="16.0"/>
+                    </padding>
+                </VBox>
+                <Button minWidth="28" mnemonicParsing="false" onAction="#addFigureOfMerit" text="">
+                    <tooltip>
+                        <Tooltip text="Add external model"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                    </graphic>
+                </Button>
+                <Button minWidth="28" disable="true" mnemonicParsing="false" onAction="#reloadValues" text="">
+                    <tooltip>
+                        <Tooltip text="Refresh values from external models"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                    </graphic>
+                </Button>
+            </children>
+            <padding>
+                <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
+            </padding>
+        </HBox>
+    </content>
+</fx:root>

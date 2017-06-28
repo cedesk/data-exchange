@@ -10,6 +10,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.control.FiguresOfMeritEditor;
 import ru.skoltech.cedl.dataexchange.control.TradespaceView;
 import ru.skoltech.cedl.dataexchange.tradespace.FigureOfMeritChartDefinition;
 import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;
@@ -30,6 +31,9 @@ public class TradespaceController implements Initializable {
     @FXML
     private TradespaceView tradespaceView;
 
+    @FXML
+    private FiguresOfMeritEditor figuresOfMeritEditor;
+
     private MultitemporalTradespace model;
 
     public TradespaceController() {
@@ -41,6 +45,7 @@ public class TradespaceController implements Initializable {
 
     public void setModel(MultitemporalTradespace model) {
         this.model = model;
+        figuresOfMeritEditor.setTradespace(model);
         FigureOfMeritChartDefinition chartDef = new FigureOfMeritChartDefinition(model.getDefinitions().get(0), model.getDefinitions().get(1));
         tradespaceView.setModel(model, chartDef);
     }
