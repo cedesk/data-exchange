@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
+<?import org.controlsfx.glyphfont.Glyph?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="900.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.112"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.DsmController">
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                    AnchorPane.topAnchor="0.0">
+            <top>
+                <ToolBar>
+                    <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
+                        <tooltip>
+                            <Tooltip text="Refresh"/>
+                        </tooltip>
+                        <graphic>
+                            <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                        </graphic>
+                    </Button>
+                    <Label text="IC/FBD convention: inputs shown in columns, outputs in rows; feedback marks appear below the diagonal."/>
+                    <Pane HBox.hgrow="ALWAYS"/>
+                    <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode" text="">
+                        <tooltip>
+                            <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
+                        </tooltip>
+                        <graphic>
+                            <Glyph fontFamily="FontAwesome" icon="CODEPEN"/>
+                        </graphic>
+                    </Button>
+                    <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                              text="Generate weighted DSM" GridPane.columnIndex="1"/>
+                </ToolBar>
+            </top>
+            <center>
+                <SpreadsheetView fx:id="spreadsheetView" editable="false" prefHeight="400" prefWidth="500.0"
+                                 BorderPane.alignment="CENTER"/>
+            </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

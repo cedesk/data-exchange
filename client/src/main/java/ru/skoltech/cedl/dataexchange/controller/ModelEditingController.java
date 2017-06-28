@@ -21,20 +21,21 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ActionLogger;
-import ru.skoltech.cedl.dataexchange.Identifiers;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetInputOutputExtractor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
+import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
+import ru.skoltech.cedl.dataexchange.users.model.Discipline;
+import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
@@ -53,6 +54,10 @@ import java.util.stream.Collectors;
 public class ModelEditingController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
+
+    @FXML
+    private TextField ownersText;
+
     @FXML
     private SplitPane viewPane;
 
@@ -99,9 +104,6 @@ public class ModelEditingController implements Initializable {
     private Button viewParameterHistoryButton;
 
     @FXML
-    private Button startParameterWizardButton;
-
-    @FXML
     private TreeView<ModelNode> structureTree;
 
     @FXML
@@ -111,13 +113,11 @@ public class ModelEditingController implements Initializable {
 
     private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(true);
 
-    private BooleanProperty selectedNodeCanHaveChildren = new SimpleBooleanProperty(true);
+    private BooleanProperty selectedNodeCannotHaveChildren = new SimpleBooleanProperty(true);
 
     private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(true);
 
     private Project project;
-
-    private Window appWindow;
 
     private Window getAppWindow() {
         return viewPane.getScene().getWindow();
@@ -138,7 +138,7 @@ public class ModelEditingController implements Initializable {
                 ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 try {
                     ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler,
-                            new ExternalModelUpdateListener(), new ParameterUpdateListener());
+                            Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ParameterUpdateListener());
                 } catch (ExternalModelException e) {
                     logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
                 }
@@ -218,19 +218,39 @@ public class ModelEditingController implements Initializable {
         if (selectedItem.getParent() == null) { // is ROOT
             StatusLogger.getInstance().log("Node can not be deleted!", true);
         } else {
-            // TODO: check for dependencies, do not allow if there are dependent nodes
-            // view
-            TreeItem<ModelNode> parent = selectedItem.getParent();
-            parent.getChildren().remove(selectedItem);
-            // model
             ModelNode deleteNode = selectedItem.getValue();
-            if (parent.getValue() instanceof CompositeModelNode) {
-                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                parentNode.removeSubNode(deleteNode);
+            List<ParameterModel> dependentParameters = new LinkedList<>();
+            for (ParameterModel parameterModel : deleteNode.getParameters()) {
+                if (parameterModel.getNature() == ParameterNature.OUTPUT) {
+                    dependentParameters.addAll(project.getParameterLinkRegistry().getDependentParameters(parameterModel));
+                }
             }
-            project.markStudyModified();
-            StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
-            ActionLogger.log(ActionLogger.ActionType.node_remove, deleteNode.getNodePath());
+            if (dependentParameters.size() > 0) {
+                String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
+                Dialogues.showWarning("Node deletion impossible!", "It's parameters are referenced by " + dependentParams);
+                return;
+            }
+
+            Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Node deletion", "Are you sure you want to delete this node?");
+            if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
+                // view
+                TreeItem<ModelNode> parent = selectedItem.getParent();
+                parent.getChildren().remove(selectedItem);
+
+                project.getStudy().getUserRoleManagement().getDisciplineSubSystems()
+                        .removeIf(disciplineSubSystem -> disciplineSubSystem.getSubSystem() == deleteNode);
+
+                // model
+                if (parent.getValue() instanceof CompositeModelNode) {
+
+                    CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
+                    parentNode.removeSubNode(deleteNode);
+
+                }
+                project.markStudyModified();
+                StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
+                ActionLogger.log(ActionLogger.ActionType.node_remove, deleteNode.getNodePath());
+            }
         }
     }
 
@@ -272,10 +292,11 @@ public class ModelEditingController implements Initializable {
         });
 
         // STRUCTURE MODIFICATION BUTTONS
+        structureTree.editableProperty().bind(selectedNodeIsEditable);
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
         BooleanBinding noSelectionOnStructureTreeView = structureTree.getSelectionModel().selectedItemProperty().isNull();
         BooleanBinding structureNotEditable = structureTree.editableProperty().not();
-        addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCanHaveChildren.or(structureNotEditable)));
+        addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCannotHaveChildren.or(structureNotEditable)));
         renameNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
         deleteNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
 
@@ -297,7 +318,9 @@ public class ModelEditingController implements Initializable {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
                 if (param != null) {
-                    return new SimpleStringProperty(String.valueOf(param.getValue().getEffectiveValue()));
+                    double valueToDisplay = param.getValue().getEffectiveValue();
+                    String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
+                    return new SimpleStringProperty(formattedValue);
                 } else {
                     return new SimpleStringProperty();
                 }
@@ -340,6 +363,7 @@ public class ModelEditingController implements Initializable {
         parameterContextMenu.getItems().add(deleteParameterMenuItem);
         MenuItem addNodeMenuItem = new MenuItem("View history");
         addNodeMenuItem.setOnAction(ModelEditingController.this::openParameterHistoryDialog);
+        addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
         parameterEditor.setVisible(false);
@@ -351,6 +375,14 @@ public class ModelEditingController implements Initializable {
         });
 
         externalModelEditor.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
+    }
+
+    public void openDepencencyView(ActionEvent actionEvent) {
+        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
+    }
+
+    public void openDsmView(ActionEvent actionEvent) {
+        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
     }
 
     public void openParameterHistoryDialog(ActionEvent actionEvent) {
@@ -490,24 +522,17 @@ public class ModelEditingController implements Initializable {
                     structureTree.setRoot(rootNode);
                 }
             }
-            boolean isAdmin = project.isCurrentAdmin();
-            structureTree.setEditable(isAdmin);
+
             if (structureTree.getTreeItem(selectedIndex) != null) {
                 structureTree.getSelectionModel().select(selectedIndex);
+                // this is necessary since setting the selection does not always result in a selection change!
+                updateParameterTable(structureTree.getTreeItem(selectedIndex));
             }
             structureTree.refresh();
         } else {
             structureTree.setRoot(null);
             clearParameterTable();
         }
-    }
-
-    public void viewDSM(ActionEvent actionEvent) {
-        openDependencyView("Dependency Structure Matrix", DependencyController.ViewMode.DSM);
-    }
-
-    public void viewNSquaredChart(ActionEvent actionEvent) {
-        openDependencyView("N-Square Chart", DependencyController.ViewMode.N_SQUARE);
     }
 
     private void clearParameterTable() {
@@ -594,28 +619,6 @@ public class ModelEditingController implements Initializable {
         return structureContextMenu;
     }
 
-    private void openDependencyView(String title, DependencyController.ViewMode mode) {
-        try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.DEPENDENCY_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle(title);
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.NONE);
-            stage.initOwner(getAppWindow());
-            DependencyController controller = loader.getController();
-            controller.setMode(mode);
-            controller.refreshView(null);
-
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
-    }
-
     private void updateDependencies(ModelNode modelNode) {
         String upstreamDependencies = project.getParameterLinkRegistry().getUpstreamDependencies(modelNode);
         upstreamDependenciesText.setText(upstreamDependencies);
@@ -634,6 +637,28 @@ public class ModelEditingController implements Initializable {
         externalModelPane.setExpanded(hasExtModels);
     }
 
+    private void updateOwners(ModelNode modelNode) {
+        UserRoleManagement userRoleManagement = project.getUserRoleManagement();
+        Discipline disciplineOfSubSystem = userRoleManagement.getDisciplineOfSubSystem(modelNode);
+        List<User> usersOfDiscipline = userRoleManagement.getUsersOfDiscipline(disciplineOfSubSystem);
+        String userNames = usersOfDiscipline.stream().map(User::getName).collect(Collectors.joining(", "));
+        ownersText.setText(userNames);
+    }
+
+    private void updateParameterEditor(ParameterModel parameterModel) {
+        if (parameterModel != null) {
+            ModelNode modelNode = parameterModel.getParent();
+            boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
+            logger.debug("selected parameter: " + parameterModel.getNodePath() + ", editable: " + editable);
+            parameterEditor.setVisible(editable); // TODO: allow read only
+            if (editable) {
+                parameterEditor.setParameterModel(parameterModel);
+            }
+        } else {
+            parameterEditor.setVisible(false);
+        }
+    }
+
     private void updateParameterTable(TreeItem<ModelNode> treeItem) {
         int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
 
@@ -649,26 +674,19 @@ public class ModelEditingController implements Initializable {
         } else if (parameterTable.getItems().size() > 0) {
             parameterTable.getSelectionModel().select(0);
         }
+        // this is necessary since setting the selection does not always result in a selection change!
+        updateParameterEditor(parameterTable.getSelectionModel().getSelectedItem());
+
     }
 
     private class ParameterModelSelectionListener implements ChangeListener<ParameterModel> {
         @Override
         public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
-            if (newValue != null) {
-                ModelNode modelNode = newValue.getParent();
-                boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
-                logger.debug("selected parameter: " + newValue.getNodePath() + ", editable: " + editable);
-
-                parameterEditor.setParameterModel(newValue);
-                parameterEditor.setVisible(editable); // TODO: allow viewing
-            } else {
-                parameterEditor.setVisible(false);
-            }
+            updateParameterEditor(newValue);
         }
     }
 
     private class TreeItemSelectionListener implements ChangeListener<TreeItem<ModelNode>> {
-
         @Override
         public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable,
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
@@ -677,18 +695,19 @@ public class ModelEditingController implements Initializable {
                 boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
                 logger.debug("selected node: " + modelNode.getNodePath() + ", editable: " + editable);
 
-                selectedNodeCanHaveChildren.setValue(!(modelNode instanceof CompositeModelNode));
+                selectedNodeCannotHaveChildren.setValue(!(modelNode instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(modelNode.isRootNode());
                 selectedNodeIsEditable.setValue(editable);
 
                 ModelEditingController.this.updateParameterTable(newValue);
+                ModelEditingController.this.updateOwners(modelNode);
                 ModelEditingController.this.updateDependencies(modelNode);
                 ModelEditingController.this.updateExternalModelEditor(modelNode);
             } else {
                 ModelEditingController.this.clearParameterTable();
                 upstreamDependenciesText.setText(null);
                 downstreamDependenciesText.setText(null);
-                selectedNodeCanHaveChildren.setValue(false);
+                selectedNodeCannotHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
                 selectedNodeIsEditable.setValue(false);
                 externalModelPane.setExpanded(false);
@@ -702,6 +721,13 @@ public class ModelEditingController implements Initializable {
         public void accept(ModelUpdate modelUpdate) {
             ExternalModel externalModel = modelUpdate.getExternalModel();
             project.addChangedExternalModel(externalModel);
+        }
+    }
+
+    public class ExternalModelLogListener implements Consumer<ModelUpdate> {
+        @Override
+        public void accept(ModelUpdate modelUpdate) {
+            ExternalModel externalModel = modelUpdate.getExternalModel();
             String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
             logger.info(message);
             UserNotifications.showNotification(getAppWindow(), "External model modified", message);

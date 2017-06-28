@@ -316,11 +316,11 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @Transient
     public double getEffectiveValue() {
         if (valueSource == ParameterValueSource.LINK && valueLink != null) {
-            setValue(valueLink.getEffectiveValue());
+            return isReferenceValueOverridden ? overrideValue : valueLink.getEffectiveValue();
         } else if (valueSource == ParameterValueSource.CALCULATION && calculation != null && calculation.valid()) {
-            setValue(calculation.evaluate());
+            return isReferenceValueOverridden ? overrideValue : calculation.evaluate();
         }
-        return isReferenceValueOverridden ? overrideValue : value;
+        return isReferenceValueOverridden ? overrideValue : value; // OUTPUT CAN BE OVERRIDDEN
     }
 
     @Version()

@@ -134,6 +134,7 @@ public class Project {
         this.repositoryStudy = repositoryStudy;
 
         if (repositoryStudy != null) {
+            setLatestRepositoryModification(repositoryStudy.getLatestModelModification());
             StudySettings localSettings = getStudy().getStudySettings();
             StudySettings remoteSettings = repositoryStudy.getStudySettings();
             if (!localSettings.equals(remoteSettings)) {
@@ -155,8 +156,8 @@ public class Project {
 
     private void setStudy(Study study) {
         this.study = study;
-        if (study != null && study.getSystemModel() != null) {
-            long latestMod = study.getSystemModel().findLatestModification();
+        if (study != null) {
+            long latestMod = study.getLatestModelModification();
             setLatestLoadedModification(latestMod);
         } else {
             setLatestLoadedModification(Utils.INVALID_TIME);
@@ -250,7 +251,7 @@ public class Project {
     }
 
     public boolean checkRepositoryForChanges() {
-        if (getRepositoryStudy() != null) {
+        if (getRepositoryStudy() != null) { // already saved or retrieved from repository
             try {
                 loadRepositoryStudy();
                 updateExternalModelsInStudy();
@@ -274,7 +275,7 @@ public class Project {
         LocalTime startTime = LocalTime.now();
         Long latestMod = repository.getLastStudyModification(projectName);
         long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
-        logger.info("checked repository study (" + checkDuration + "ms)");
+        logger.info("checked repository study (" + checkDuration + "ms), last modification: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
 
         if (latestMod != null) {
             setLatestRepositoryModification(latestMod);
@@ -344,9 +345,6 @@ public class Project {
         if (study != null) {
             setStudy(study);
             Platform.runLater(this::loadRepositoryStudy);
-            // redundant already done in setStudy
-            //long latestMod = getSystemModel().findLatestModification();
-            //setLatestLoadedModification(latestMod);
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
             initializeStateOfExternalModels();
             registerParameterLinks();
@@ -390,36 +388,33 @@ public class Project {
         return false;
     }
 
+    public boolean loadUserRoleManagement() {
+        try {
+            getStudy().setUserRoleManagement(repository.loadUserRoleManagement(getStudy().getUserRoleManagement().getId()));
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error loading user role management. recreating new user role management.");
+//            initializeUserRoleManagement(); //TODO initialize default UserRoleManagement?
+        }
+        return false;
+    }
+
     public void markStudyModified() {
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
     }
 
-    public void newStudy(String studyName) {
-        int studyModelDepth = ApplicationSettings.getStudyModelDepth(DummySystemBuilder.DEFAULT_MODEL_DEPTH);
-        SystemModel systemModel = DummySystemBuilder.getSystemModel(studyModelDepth);
-        systemModel.setName(studyName);
+    public void newStudy(SystemModel systemModel) {
         reinitializeProject(systemModel);
-    }
-
-    public boolean storeExternalModel(ExternalModel externalModel) {
-        try {
-            repository.storeExternalModel(externalModel);
-            // TODO: confirm repo url is working
-            return true;
-        } catch (RepositoryException e) {
-            logger.error("Error storing external model: " + externalModel.getParent().getNodePath() + "\\" + externalModel.getName(), e);
-        }
-        return false;
     }
 
     public void storeLocalStudy() throws RepositoryException, ExternalModelException {
         updateParameterValuesFromLinks();
         exportValuesToExternalModels();
         updateExternalModelsInStudy();
-        Study study = repository.storeStudy(this.study);
+        Study newStudy = repository.storeStudy(this.study);
         updateExternalModelStateInCache();
-        setStudy(study);
-        setRepositoryStudy(study);
+        setStudy(newStudy);
+        setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
         initializeStateOfExternalModels();
         registerParameterLinks();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
@@ -444,6 +439,18 @@ public class Project {
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing user management.", e);
+        }
+        return false;
+    }
+
+    public boolean storeUserRoleManagement() {
+        try {
+            UserRoleManagement userRoleManagement = repository.storeUserRoleManagement(getStudy().getUserRoleManagement());
+            getStudy().setUserRoleManagement(userRoleManagement);
+            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error storing user role management.", e);
         }
         return false;
     }

@@ -8,9 +8,11 @@ import java.util.LinkedList;
  */
 public class ModelTreeIterator implements Iterator<ModelNode> {
     private LinkedList<ModelNode> list = new LinkedList<ModelNode>();
+    private Iterator<ModelNode> iterator;
 
     public ModelTreeIterator(ModelNode modelNode) {
         buildList(modelNode);
+        iterator = list.iterator();
     }
 
     private void buildList(ModelNode modelNode) {
@@ -25,12 +27,12 @@ public class ModelTreeIterator implements Iterator<ModelNode> {
 
     @Override
     public boolean hasNext() {
-        return !list.isEmpty();
+        return iterator.hasNext();
     }
 
     @Override
     public ModelNode next() {
-        return list.poll();
+        return iterator.next();
     }
 
     @Override

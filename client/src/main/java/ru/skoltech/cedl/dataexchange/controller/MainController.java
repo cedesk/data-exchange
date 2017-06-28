@@ -28,8 +28,11 @@ import org.controlsfx.control.PopOver;
 import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.DifferenceMerger;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -121,6 +124,25 @@ public class MainController implements Initializable {
             } else {
                 StatusLogger.getInstance().log("Update check failed. Unable to connect to Distribution Server!");
             }
+        }
+    }
+
+    public boolean checkUnsavedModifications() {
+        if (project.hasLocalStudyModifications()) {
+            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Modifications to the model must to be saved before managing user discipline assignment. Shall it be saved now?");
+            if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
+                try {
+                    project.storeLocalStudy();
+                    return true;
+                } catch (RepositoryException | ExternalModelException e) {
+                    UserNotifications.showNotification(getAppWindow(), "Failed to save", "Failed to save");
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return true;
         }
     }
 
@@ -332,7 +354,15 @@ public class MainController implements Initializable {
                 Dialogues.showError("Invalid name", "A study with this name already exists in the repository!");
                 return;
             }
-            project.newStudy(projectName);
+
+            Optional<String> builderName = Dialogues.chooseStudyBuilder(SystemBuilderFactory.getBuilderNames());
+            if (!builderName.isPresent()) {
+                return;
+            }
+            SystemBuilder builder = SystemBuilderFactory.getBuilder(builderName.get());
+            builder.setUnitManagement(project.getUnitManagement());
+            SystemModel systemModel = builder.build(projectName);
+            project.newStudy(systemModel);
             StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
             ActionLogger.log(ActionLogger.ActionType.project_new, projectName);
             updateView();
@@ -356,6 +386,32 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             logger.error(e);
         }
+    }
+
+    public void openConsistencyView(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.MODEL_CONSISTENCY_WINDOW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Model consistency");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.NONE);
+            stage.initOwner(getAppWindow());
+
+            ConsistencyController controller = loader.getController();
+            controller.refreshView(null);
+            stage.showAndWait();
+            modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void openDepencencyView(ActionEvent actionEvent) {
+        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
     }
 
     public void openDiffView(ActionEvent actionEvent) {
@@ -385,6 +441,10 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             logger.error(e);
         }
+    }
+
+    public void openDsmView(ActionEvent actionEvent) {
+        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
     }
 
     public void openGuideDialog(ActionEvent actionEvent) {
@@ -494,6 +554,8 @@ public class MainController implements Initializable {
 
             UnitManagementController unitManagementController = loader.getController();
             unitManagementController.setProject(project);
+
+            stage.setOnCloseRequest(event -> unitManagementController.onCloseRequest(event));
             stage.show();
         } catch (IOException e) {
             logger.error(e);
@@ -524,6 +586,8 @@ public class MainController implements Initializable {
 
     public void openUserRoleManagement(ActionEvent actionEvent) {
         try {
+            if (!checkUnsavedModifications()) return;
+
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.USER_ROLES_EDITING_WINDOW);
             Parent root = loader.load();
@@ -537,10 +601,12 @@ public class MainController implements Initializable {
 
             UserRoleManagementController userRoleManagementController = loader.getController();
             userRoleManagementController.setProject(project);
+
+            stage.setOnCloseRequest(event -> userRoleManagementController.onCloseRequest(event));
             stage.show();
             userRoleManagementController.updateView();
         } catch (IOException e) {
-            logger.error(e);
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -564,7 +630,7 @@ public class MainController implements Initializable {
             }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading project!", true);
-            logger.error(e);
+            logger.error("Error loading project", e);
             ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName() + ", loading failed");
         }
         updateView();
@@ -592,6 +658,7 @@ public class MainController implements Initializable {
                     return;
                 }
             }
+            project.storeUserRoleManagement();
             project.storeLocalStudy();
             updateView();
             repositoryWatcher.unpause();

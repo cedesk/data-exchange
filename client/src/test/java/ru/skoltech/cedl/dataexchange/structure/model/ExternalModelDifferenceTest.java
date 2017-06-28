@@ -26,7 +26,7 @@ public class ExternalModelDifferenceTest {
     private ExternalModel extMod;
 
     @Test
-    public void localNodeAdd() throws IOException {
+    public void localNodeAdd() throws Exception {
         // extMod.setLastModification(System.currentTimeMillis()); // is already initialized by reading from file
         localSystem.addExternalModel(extMod);
 
@@ -52,7 +52,7 @@ public class ExternalModelDifferenceTest {
     }
 
     @Test
-    public void localNodeModify() {
+    public void localNodeModify() throws Exception {
         ExternalModel extModel1 = extMod;
         extModel1.setLastModification(System.currentTimeMillis());
         remoteSystem.addExternalModel(extModel1);
@@ -82,7 +82,7 @@ public class ExternalModelDifferenceTest {
     }
 
     @Test
-    public void localNodeRemove() {
+    public void localNodeRemove() throws Exception {
         ExternalModel existingRemoteNode = extMod;
         existingRemoteNode.setLastModification(remoteSystem.getLastModification() - 100);// parameter it was part of last modification
         remoteSystem.addExternalModel(existingRemoteNode);
@@ -124,7 +124,7 @@ public class ExternalModelDifferenceTest {
     }
 
     @Test
-    public void remoteNodeAdd() {
+    public void remoteNodeAdd() throws Exception {
         ExternalModel extModel1 = extMod;
         extModel1.setLastModification(System.currentTimeMillis());
         remoteSystem.addExternalModel(extModel1);
@@ -149,7 +149,7 @@ public class ExternalModelDifferenceTest {
     }
 
     @Test
-    public void remoteNodeModify() {
+    public void remoteNodeModify() throws Exception {
         ExternalModel extModel1 = extMod;
         remoteSystem.addExternalModel(extModel1);
         ExternalModel extModel2 = new ExternalModel();
@@ -179,7 +179,7 @@ public class ExternalModelDifferenceTest {
 
     //TODO: enable
     //@Test
-    public void remoteNodeRemove() {
+    public void remoteNodeRemove() throws Exception {
         ExternalModel existingLocalNode = extMod;
         existingLocalNode.setLastModification(localSystem.getLastModification() - 100); // parameter was part of last modification
         localSystem.addExternalModel(existingLocalNode);

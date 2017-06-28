@@ -71,6 +71,7 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
     }
 
     @Column(length = 100 * 1024 * 1024) // 100MB
+    @Lob
     public byte[] getAttachment() {
         return attachment;
     }

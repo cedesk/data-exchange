@@ -7,7 +7,6 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -19,7 +18,7 @@ public class StudyDifferencesTest {
     private Study st2;
 
     @Test
-    public void equalStudies() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public void equalStudies() throws Exception {
         st2 = st1;
         Assert.assertEquals(st1, st2);
 

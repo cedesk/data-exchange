@@ -29,20 +29,6 @@ public class ParameterLinkRegistry {
     public ParameterLinkRegistry() {
     }
 
-    private static Set<String> getLinkedParams(ModelNode toVertex, ModelNode fromVertex) {
-        Set<String> sources = new TreeSet<>();
-        ParameterTreeIterator it = new ParameterTreeIterator(fromVertex);
-        while (it.hasNext()) {
-            ParameterModel pm = it.next();
-            if (pm.getValueSource() == ParameterValueSource.LINK &&
-                    pm.getValueLink() != null && pm.getValueLink().getParent() != null &&
-                    pm.getValueLink().getParent().getUuid().equals(toVertex.getUuid())) {
-                sources.add(pm.getValueLink().getName());
-            }
-        }
-        return sources;
-    }
-
     private static List<ModelNode> getModelNodes(SystemModel systemModel) {
         final List<SubSystemModel> subNodes = systemModel.getSubNodes();
         final List<ModelNode> modelNodeList = new ArrayList<>(subNodes.size() + 1);
@@ -69,6 +55,8 @@ public class ParameterLinkRegistry {
             dependencyGraph.addVertex(sourceModel);
             // dependency goes from SOURCE to SINK
             dependencyGraph.addEdge(sourceModel, sinkModel);
+        } else {
+            logger.warn("trying to add self reference on node " + sourceModel.getNodePath());
         }
     }
 
@@ -93,11 +81,9 @@ public class ParameterLinkRegistry {
             for (ModelNode toVertex : modelNodeList) {
                 if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
                         dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
-                    Set<String> linkedParams = getLinkedParams(fromVertex, toVertex);
-                    int strength = linkedParams.size();
-                    String parameterNames = linkedParams.stream().collect(Collectors.joining(",\n"));
+                    Collection<ParameterModel> linkingParams = getLinkingParams(fromVertex, toVertex);
                     String toVertexName = toVertex.getName();
-                    dependencyModel.addConnection(fromVertexName, toVertexName, parameterNames, strength);
+                    dependencyModel.addConnection(fromVertexName, toVertexName, linkingParams);
                 }
             }
         }
@@ -107,7 +93,7 @@ public class ParameterLinkRegistry {
     public List<ParameterModel> getDependentParameters(ParameterModel source) {
         List<ParameterModel> dependentParameters = new LinkedList<>();
         SystemModel systemModel = source.getParent().findRoot();
-        Map<String, ParameterModel> parameterDictionary = makeDictionary(systemModel);
+        Map<String, ParameterModel> parameterDictionary = systemModel.makeParameterDictionary();
 
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
@@ -155,8 +141,7 @@ public class ParameterLinkRegistry {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
                 if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
                         dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0) {
-                    Set<String> linkedParams = getLinkedParams(toVertex, fromVertex);
-                    int linkCount = linkedParams.size();
+                    int linkCount = getLinkingParams(toVertex, fromVertex).size();
                     dsm.addLink(rowIndex + 1, columnIndex + 1, linkCount);
                 }
             }
@@ -177,52 +162,6 @@ public class ParameterLinkRegistry {
             addLinks(calculation.getLinkedParameters(), sink);
         });
         //printDependencies(dependencyGraph);
-    }
-
-    public void relinkCalculations(SystemModel systemModel) {
-        Map<String, ParameterModel> dictionary = makeDictionary(systemModel);
-        ParameterTreeIterator pmi = getCalculatedParameters(systemModel);
-        List<ParameterModel> issues = new LinkedList<>();
-        pmi.forEachRemaining(calculatedParam -> {
-            List<Argument> arguments = calculatedParam.getCalculation().getArguments();
-            for (Argument argument : arguments) {
-                if (argument instanceof Argument.Parameter) {
-                    Argument.Parameter argParam = (Argument.Parameter) argument;
-                    String uuid = argParam.getLink().getUuid();
-                    if (dictionary.containsKey(uuid)) {
-                        ParameterModel source = dictionary.get(uuid);
-                        argParam.setLink(source);
-                    } else {
-                        issues.add(calculatedParam);
-                        logger.error("relinking failed for calculated parameter:" + calculatedParam.getNodePath());
-                    }
-                }
-            }
-        });
-        if (issues.size() > 0) {
-            String issuesMsg = issues.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
-            throw new IllegalStateException("relinking calculation failed for: " + issuesMsg);
-        }
-    }
-
-    public void relinkParameters(SystemModel systemModel) {
-        Map<String, ParameterModel> dictionary = makeDictionary(systemModel);
-        ParameterTreeIterator pmi = getLinkedParameters(systemModel);
-        List<ParameterModel> issues = new LinkedList<>();
-        pmi.forEachRemaining(sink -> {
-            String uuid = sink.getValueLink().getUuid();
-            if (dictionary.containsKey(uuid)) {
-                ParameterModel source = dictionary.get(uuid);
-                sink.setValueLink(source);
-            } else {
-                issues.add(sink);
-                logger.error("relinking failed for parameter:" + sink.getNodePath());
-            }
-        });
-        if (issues.size() > 0) {
-            String issuesMsg = issues.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
-            throw new IllegalStateException("relinking parameter failed for: " + issuesMsg);
-        }
     }
 
     public void removeLink(ParameterModel source, ParameterModel sink) {
@@ -269,7 +208,7 @@ public class ParameterLinkRegistry {
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
             SystemModel systemModel = source.getParent().findRoot();
-            Map<String, ParameterModel> parameterDictionary = makeDictionary(systemModel);
+            Map<String, ParameterModel> parameterDictionary = systemModel.makeParameterDictionary();
 
             Project project = ProjectContext.getInstance().getProject();
             UserRoleManagement userRoleManagement = project.getUserRoleManagement();
@@ -313,11 +252,18 @@ public class ParameterLinkRegistry {
                         sink.getValueLink() != null);
     }
 
-    private Map<String, ParameterModel> makeDictionary(SystemModel systemModel) {
-        Map<String, ParameterModel> dictionary = new HashMap<>();
-        Iterator<ParameterModel> pmi = systemModel.parametersTreeIterator();
-        pmi.forEachRemaining(parameterModel -> dictionary.put(parameterModel.getUuid(), parameterModel));
-        return dictionary;
+    private Collection<ParameterModel> getLinkingParams(ModelNode toVertex, ModelNode fromVertex) {
+        List<ParameterModel> sources = new LinkedList<>();
+        ParameterTreeIterator it = new ParameterTreeIterator(fromVertex);
+        while (it.hasNext()) {
+            ParameterModel pm = it.next();
+            if (pm.getValueSource() == ParameterValueSource.LINK &&
+                    pm.getValueLink() != null && pm.getValueLink().getParent() != null &&
+                    pm.getValueLink().getParent().getUuid().equals(toVertex.getUuid())) {
+                sources.add(pm);
+            }
+        }
+        return sources;
     }
 
     private void printDependencies(DirectedGraph<ModelNode, ModelDependency> modelDependencies) {

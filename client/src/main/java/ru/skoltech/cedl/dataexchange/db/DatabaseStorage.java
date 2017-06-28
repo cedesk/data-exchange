@@ -52,7 +52,8 @@ public class DatabaseStorage implements Repository {
     private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
     private static final String HOST_NAME = "HOSTNAME";
     private static final String SCHEMA = "SCHEMA";
-    private static final String DEFAULT_JDBC_URL = "jdbc:mysql://" + HOST_NAME + ":3306/" + SCHEMA;
+    private static final String DEFAULT_JDBC_URL = "jdbc:mysql://" + HOST_NAME + ":3306/" + SCHEMA + "?serverTimezone=UTC";
+
     private String hostName;
     private String schema;
     private EntityManagerFactory emf;
@@ -381,11 +382,11 @@ public class DatabaseStorage implements Repository {
     }
 
     @Override
-    public UserRoleManagement loadUserRoleManagement(long studyId) throws RepositoryException {
+    public UserRoleManagement loadUserRoleManagement(long id) throws RepositoryException {
         EntityManager entityManager = getEntityManager();
         UserRoleManagement userRoleManagement = null;
         try {
-            userRoleManagement = entityManager.find(UserRoleManagement.class, studyId);
+            userRoleManagement = entityManager.find(UserRoleManagement.class, id);
         } catch (Exception e) {
             throw new RepositoryException("Loading UserRoleManagement failed.", e);
         } finally {
@@ -459,9 +460,6 @@ public class DatabaseStorage implements Repository {
             } else {
                 study = entityManager.merge(study);
             }
-            long latestModification = study.getSystemModel().findLatestModification();
-            study.setLatestModelModification(latestModification);
-            study = entityManager.merge(study);
             transaction.commit();
         } catch (OptimisticLockException | RollbackException re) {
             logger.warn("transaction failed", re);

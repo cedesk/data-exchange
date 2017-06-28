@@ -54,12 +54,16 @@ public class SpreadsheetGridViewFactory {
             logger.warn("sheetName is NULL");
         }
         Sheet sheet = sheetName != null ? wb.getSheet(sheetName) : wb.getSheetAt(0);
+        if (sheet == null) {
+            logger.warn("sheet '" + sheetName + "' not available");
+        }
         Grid grid = getGrid(sheet);
         wb.close();
         return grid;
     }
 
     private static Grid getGrid(Sheet sheet) {
+        if (sheet == null) return new GridBase(0, 0);
         final int maxRows = sheet.getLastRowNum() + 1;
         final int maxColumns = extractColumns(sheet);
         ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(maxRows);

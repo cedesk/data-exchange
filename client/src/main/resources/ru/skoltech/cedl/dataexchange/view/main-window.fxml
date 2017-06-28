@@ -6,7 +6,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="applicationPane" maxHeight="-Infinity" maxWidth="-Infinity"
-            minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1000.0"
+            minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0"
             stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
     <children>
@@ -21,52 +21,64 @@
                             <children>
                                 <MenuBar>
                                     <menus>
-                                        <Menu mnemonicParsing="true" text="_Project">
+                                        <Menu text="_Project">
                                             <items>
-                                                <MenuItem mnemonicParsing="true" onAction="#newProject" text="_New..."/>
-                                                <MenuItem mnemonicParsing="true" onAction="#openProject"
+                                                <MenuItem onAction="#newProject" text="_New..."/>
+                                                <MenuItem onAction="#openProject"
                                                           text="_Open..."/>
-                                                <MenuItem mnemonicParsing="true" onAction="#saveProject" text="_Save"/>
-                                                <SeparatorMenuItem mnemonicParsing="true"/>
-                                                <MenuItem mnemonicParsing="true" onAction="#importProject"
+                                                <MenuItem onAction="#saveProject" text="_Save"/>
+                                                <SeparatorMenuItem/>
+                                                <MenuItem onAction="#importProject"
                                                           text="_Import"/>
-                                                <MenuItem fx:id="exportMenu" mnemonicParsing="true"
+                                                <MenuItem fx:id="exportMenu"
                                                           onAction="#exportProject" text="_Export"/>
-                                                <SeparatorMenuItem mnemonicParsing="true"/>
-                                                <MenuItem fx:id="deleteMenu" mnemonicParsing="true"
+                                                <SeparatorMenuItem/>
+                                                <MenuItem fx:id="deleteMenu"
                                                           onAction="#deleteProject" text="_Delete..."/>
-                                                <SeparatorMenuItem mnemonicParsing="true"/>
-                                                <MenuItem mnemonicParsing="true" onAction="#quit" text="_Quit"/>
+                                                <SeparatorMenuItem/>
+                                                <MenuItem onAction="#quit" text="_Quit"/>
                                             </items>
                                         </Menu>
-                                        <Menu mnemonicParsing="true" text="_Edit">
+                                        <Menu text="_Edit">
                                             <items>
-                                                <MenuItem fx:id="usersMenu" mnemonicParsing="true"
+                                                <MenuItem fx:id="usersMenu"
                                                           onAction="#openUserManagement" text="Users"/>
-                                                <MenuItem fx:id="usersAndDisciplinesMenu" mnemonicParsing="true"
+                                                <MenuItem fx:id="usersAndDisciplinesMenu"
                                                           onAction="#openUserRoleManagement"
                                                           text="User-Discipline Assignment"/>
-                                                <MenuItem mnemonicParsing="true" onAction="#openUnitManagement"
+                                                <MenuItem onAction="#openUnitManagement"
                                                           text="Units and _Measures"/>
-                                                <SeparatorMenuItem mnemonicParsing="true"/>
-                                                <MenuItem mnemonicParsing="true" onAction="#openProjectSettingsDialog"
+                                                <SeparatorMenuItem/>
+                                                <MenuItem onAction="#openProjectSettingsDialog"
                                                           text="_Project Settings"/>
-                                                <MenuItem mnemonicParsing="true"
-                                                          onAction="#openRepositorySettingsDialog"
-                                                          text="_Repository Settings"/>
+                                                <MenuItem
+                                                        onAction="#openRepositorySettingsDialog"
+                                                        text="_Repository Settings"/>
                                             </items>
                                         </Menu>
-                                        <Menu mnemonicParsing="true" text="_Help">
+                                        <Menu text="_View">
                                             <items>
-                                                <MenuItem mnemonicParsing="true" onAction="#checkForApplicationUpdate"
+                                                <MenuItem
+                                                        onAction="#openConsistencyView" text="Consistency"/>
+                                                <MenuItem
+                                                        onAction="#openDiffView" text="Differences"/>
+                                                <MenuItem
+                                                        onAction="#openDsmView" text="Design Structure Matrix"/>
+                                                <MenuItem
+                                                        onAction="#openDepencencyView" text="N-square Chart"/>
+                                            </items>
+                                        </Menu>
+                                        <Menu text="_Help">
+                                            <items>
+                                                <MenuItem onAction="#checkForApplicationUpdate"
                                                           text="Check for _Update"/>
                                             </items>
                                             <items>
-                                                <MenuItem mnemonicParsing="true" onAction="#openGuideDialog"
+                                                <MenuItem onAction="#openGuideDialog"
                                                           text="_Process Guide"/>
                                             </items>
                                             <items>
-                                                <MenuItem mnemonicParsing="true" onAction="#openAboutDialog"
+                                                <MenuItem onAction="#openAboutDialog"
                                                           text="_About"/>
                                             </items>
                                         </Menu>
@@ -75,15 +87,15 @@
                                 </MenuBar>
                                 <ToolBar>
                                     <items>
-                                        <Button fx:id="newButton" mnemonicParsing="true" onAction="#newProject"
+                                        <Button fx:id="newButton" onAction="#newProject"
                                                 text="_New"/>
                                         <Separator orientation="VERTICAL"/>
-                                        <Button fx:id="loadButton" mnemonicParsing="true" onAction="#reloadProject"
+                                        <Button fx:id="loadButton" onAction="#reloadProject"
                                                 text="_Reload"/>
-                                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" mnemonicParsing="true"
+                                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0"
                                                 onAction="#saveProject" text="_Save"/>
                                         <Separator orientation="VERTICAL"/>
-                                        <Button fx:id="diffButton" mnemonicParsing="true" onAction="#openDiffView"
+                                        <Button fx:id="diffButton" onAction="#openDiffView"
                                                 text="View _Changes"/>
                                         <Separator orientation="VERTICAL"/>
                                         <HBox fillHeight="false">

@@ -7,7 +7,8 @@
 <?import org.controlsfx.glyphfont.*?>
 <?import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor?>
 <?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
-<SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="700.0" prefWidth="900.0"
+<SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="700.0"
+           prefWidth="900.0"
            stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
            fx:controller="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
     <items>
@@ -19,7 +20,7 @@
                         <TreeView fx:id="structureTree"/>
                     </content>
                 </TitledPane>
-                <ToolBar layoutY="500.0" prefHeight="40.0" AnchorPane.bottomAnchor="170.0" AnchorPane.leftAnchor="0.0"
+                <ToolBar layoutY="500.0" prefHeight="40.0" AnchorPane.bottomAnchor="240.0" AnchorPane.leftAnchor="0.0"
                          AnchorPane.rightAnchor="0.0">
                     <items>
                         <Button fx:id="addNodeButton" minWidth="28" mnemonicParsing="false" onAction="#addNode" text="">
@@ -58,7 +59,18 @@
                         </Button>
                     </items>
                 </ToolBar>
-                <TitledPane fx:id="dependencyPane" collapsible="false" expanded="true" prefHeight="170.0"
+                <TitledPane fx:id="ownerPane" collapsible="false" prefHeight="70.0"
+                            text="Owners" AnchorPane.bottomAnchor="170.0" AnchorPane.leftAnchor="0.0"
+                            AnchorPane.rightAnchor="0.0">
+                    <content>
+                        <VBox>
+                            <children>
+                                <TextField fx:id="ownersText" editable="false"/>
+                            </children>
+                        </VBox>
+                    </content>
+                </TitledPane>
+                <TitledPane fx:id="dependencyPane" collapsible="false" prefHeight="170.0"
                             text="Dependencies" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                             AnchorPane.rightAnchor="0.0">
                     <content>
@@ -70,9 +82,9 @@
                                 <TextField fx:id="downstreamDependenciesText" editable="false"/>
                                 <HBox>
                                     <children>
-                                        <Button mnemonicParsing="false" onAction="#viewDSM" text="View DSM">
+                                        <Button mnemonicParsing="false" onAction="#openDsmView" text="View DSM">
                                         </Button>
-                                        <Button mnemonicParsing="false" onAction="#viewNSquaredChart" text="View N2">
+                                        <Button mnemonicParsing="false" onAction="#openDepencencyView" text="View N2">
                                             <HBox.margin>
                                                 <Insets left="8.0"/>
                                             </HBox.margin>
@@ -88,14 +100,16 @@
                 </TitledPane>
             </children>
         </AnchorPane>
-        <VBox>
-            <children>
-                <TitledPane fx:id="externalModelPane" animated="false" expanded="true" text="External Model">
+        <SplitPane dividerPositions="0.5" orientation="VERTICAL">
+            <items>
+                <TitledPane fx:id="externalModelPane" animated="false" expanded="true" text="External Model"
+                            AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <content>
                         <ExternalModelEditor fx:id="externalModelEditor" minHeight="70.0"/>
                     </content>
                 </TitledPane>
-                <TitledPane animated="false" expanded="true" text="Parameters">
+                <TitledPane animated="false" expanded="true" text="Parameters" AnchorPane.topAnchor="70.0"
+                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <content>
                         <SplitPane dividerPositions="0.5" orientation="VERTICAL">
                             <items>
@@ -128,7 +142,7 @@
                                                     </cellValueFactory>
                                                 </TableColumn>
                                                 <TableColumn fx:id="parameterInfoColumn" editable="false"
-                                                             prefWidth="100.0" text="Information">
+                                                             prefWidth="160.0" text="Information">
                                                 </TableColumn>
                                                 <TableColumn fx:id="parameterDescriptionColumn" editable="false"
                                                              prefWidth="100.0" text="Description">
@@ -175,14 +189,14 @@
                                 </AnchorPane>
                                 <TitledPane collapsible="false" expanded="true" text="Parameter Details">
                                     <content>
-                                        <ParameterEditor fx:id="parameterEditor" minHeight="260.0" prefHeight="340.0"/>
+                                        <ParameterEditor fx:id="parameterEditor" minHeight="280.0" prefHeight="340.0"/>
                                     </content>
                                 </TitledPane>
                             </items>
                         </SplitPane>
                     </content>
                 </TitledPane>
-            </children>
-        </VBox>
+            </items>
+        </SplitPane>
     </items>
 </SplitPane>

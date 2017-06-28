@@ -103,6 +103,7 @@ public class CalculationArgumentEditor extends GridPane implements Initializable
         ParameterTreeIterator subsystemParameterIterator =
                 new ParameterTreeIterator(parameterModel.getParent(), param -> param != parameterModel);
         subsystemParameterIterator.forEachRemaining(parameters::add);
+        parameters.removeIf(pm -> pm.getUuid() == parameterModel.getUuid());
 
         ParameterModel valueLinkParameter = ((Argument.Parameter) argument).getLink();
         Dialog<ParameterModel> dialog = new ParameterSelector(parameters, valueLinkParameter);

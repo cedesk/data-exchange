@@ -2,7 +2,7 @@
 
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="800.0" prefWidth="340.0" stylesheets="@styling.css"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="700.0" prefWidth="340.0" stylesheets="@styling.css"
             xmlns="http://javafx.com/javafx/8.0.40"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.GuideController">
     <children>

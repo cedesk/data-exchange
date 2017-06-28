@@ -16,9 +16,9 @@
                 <VBox fx:id="externalModelViewContainer" spacing="4.0">
                     <children>
                     </children>
-               <padding>
-                  <Insets right="16.0" />
-               </padding>
+                    <padding>
+                        <Insets right="16.0" />
+                    </padding>
                 </VBox>
                 <Button minWidth="28" mnemonicParsing="false" onAction="#addExternalModel" text="">
                     <tooltip>

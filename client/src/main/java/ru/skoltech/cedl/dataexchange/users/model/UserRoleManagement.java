@@ -219,9 +219,9 @@ public class UserRoleManagement {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("UserRoleManagement{");
-        sb.append("disciplines=").append(disciplines);
-        sb.append("disciplineSubSystems").append(disciplineSubSystems);
-        sb.append("userDisciplines").append(userDisciplines);
+        sb.append(",disciplines=").append(disciplines);
+        sb.append(",disciplineSubSystems=").append(disciplineSubSystems);
+        sb.append(",userDisciplines=").append(userDisciplines);
         sb.append('}');
         return sb.toString();
     }
