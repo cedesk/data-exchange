@@ -113,7 +113,7 @@ public class ModelEditingController implements Initializable {
 
     private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(true);
 
-    private BooleanProperty selectedNodeCanHaveChildren = new SimpleBooleanProperty(true);
+    private BooleanProperty selectedNodeCannotHaveChildren = new SimpleBooleanProperty(true);
 
     private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(true);
 
@@ -292,10 +292,11 @@ public class ModelEditingController implements Initializable {
         });
 
         // STRUCTURE MODIFICATION BUTTONS
+        structureTree.editableProperty().bind(selectedNodeIsEditable);
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
         BooleanBinding noSelectionOnStructureTreeView = structureTree.getSelectionModel().selectedItemProperty().isNull();
         BooleanBinding structureNotEditable = structureTree.editableProperty().not();
-        addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCanHaveChildren.or(structureNotEditable)));
+        addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCannotHaveChildren.or(structureNotEditable)));
         renameNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
         deleteNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
 
@@ -521,8 +522,7 @@ public class ModelEditingController implements Initializable {
                     structureTree.setRoot(rootNode);
                 }
             }
-            boolean isAdmin = project.isCurrentAdmin();
-            structureTree.setEditable(isAdmin); // TODO: overcome limitation that only admin can change structure
+
             if (structureTree.getTreeItem(selectedIndex) != null) {
                 structureTree.getSelectionModel().select(selectedIndex);
                 // this is necessary since setting the selection does not always result in a selection change!
@@ -695,7 +695,7 @@ public class ModelEditingController implements Initializable {
                 boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
                 logger.debug("selected node: " + modelNode.getNodePath() + ", editable: " + editable);
 
-                selectedNodeCanHaveChildren.setValue(!(modelNode instanceof CompositeModelNode));
+                selectedNodeCannotHaveChildren.setValue(!(modelNode instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(modelNode.isRootNode());
                 selectedNodeIsEditable.setValue(editable);
 
@@ -707,7 +707,7 @@ public class ModelEditingController implements Initializable {
                 ModelEditingController.this.clearParameterTable();
                 upstreamDependenciesText.setText(null);
                 downstreamDependenciesText.setText(null);
-                selectedNodeCanHaveChildren.setValue(false);
+                selectedNodeCannotHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
                 selectedNodeIsEditable.setValue(false);
                 externalModelPane.setExpanded(false);
