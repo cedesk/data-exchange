@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
@@ -52,6 +53,7 @@ public class FiguresOfMeritEditor extends ScrollPane implements Initializable {
 
     public void setTradespace(MultitemporalTradespace tradespace) {
         this.tradespace = tradespace;
+        updateView();
     }
 
     public void addFigureOfMerit(ActionEvent actionEvent) {
@@ -74,17 +76,19 @@ public class FiguresOfMeritEditor extends ScrollPane implements Initializable {
         HBox argumentRow = (HBox) deleteButton.getUserData();
         FigureOfMeritView viewer = (FigureOfMeritView) argumentRow.getChildren().get(0);
         FigureOfMeritDefinition fomDef = viewer.getFigureOfMeritDefinition();
-        tradespace.getDefinitions().remove(fomDef); // TODO: remove also data from design points?
-        figuresOfMeritsViewContainer.getChildren().remove(argumentRow);
+        Optional<ButtonType> yesNo = Dialogues.chooseYesNo("Delete Figure of Merit", "Are you sure you want to delete the figure of merit '" + fomDef.getName() + "'?");
+        if (yesNo.isPresent() && yesNo.get() == ButtonType.YES) {
+            tradespace.getDefinitions().remove(fomDef); // TODO: remove also data from design points?
+            figuresOfMeritsViewContainer.getChildren().remove(argumentRow);
+        }
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
     }
 
     public void reloadValues(ActionEvent actionEvent) {
-
+        // update FOMvalues from Model
     }
 
     private void renderFigureOfMerit(FigureOfMeritDefinition figureOfMeritDefinition) {
