@@ -12,14 +12,23 @@ public class FigureOfMeritDefinition {
 
     private String unitOfMeasure;
 
+    private String parameterModelLink;
+
     public FigureOfMeritDefinition(String name, String unitOfMeasure) {
         this.name = name;
         this.unitOfMeasure = unitOfMeasure;
     }
 
     public String getName() {
-
         return name;
+    }
+
+    public String getParameterModelLink() {
+        return parameterModelLink;
+    }
+
+    public void setParameterModelLink(String parameterModelLink) {
+        this.parameterModelLink = parameterModelLink;
     }
 
     public void setName(String name) {

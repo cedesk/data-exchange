@@ -11,6 +11,8 @@ public class DesignPoint {
 
     private Epoch epoch;
 
+    private ModelStateLink modelStateLink;
+
     private List<FigureOfMeritValue> values;
 
     public DesignPoint(Epoch epoch, List<FigureOfMeritValue> values) {
@@ -40,6 +42,14 @@ public class DesignPoint {
         this.epoch = epoch;
     }
 
+    public ModelStateLink getModelStateLink() {
+        return modelStateLink;
+    }
+
+    public void setModelStateLink(ModelStateLink modelStateLink) {
+        this.modelStateLink = modelStateLink;
+    }
+
     public List<FigureOfMeritValue> getValues() {
         return values;
     }
@@ -57,6 +67,7 @@ public class DesignPoint {
 
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (!epoch.equals(that.epoch)) return false;
+        if (modelStateLink != null ? !modelStateLink.equals(that.modelStateLink) : that.modelStateLink != null) return false;
         return values.equals(that.values);
     }
 
@@ -64,16 +75,8 @@ public class DesignPoint {
     public int hashCode() {
         int result = description != null ? description.hashCode() : 0;
         result = 31 * result + epoch.hashCode();
+        result = 31 * result + (modelStateLink != null ? modelStateLink.hashCode() : 0);
         result = 31 * result + values.hashCode();
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "\tDesignPoint{" +
-                "description='" + description + '\'' +
-                ", epoch=" + epoch +
-                ", values=" + values +
-                "}\n";
     }
 }
