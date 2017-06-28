@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
-import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
@@ -31,29 +31,6 @@ public class ModelXmlMappingTest {
 
     private SystemModel m3;
 
-    @Before
-    public void setup() throws IOException, NoSuchFieldException, IllegalAccessException {
-        Project project = new Project("project");
-        UnitManagement unitManagement = UnitManagementFactory.getUnitManagement();
-        Field field = Project.class.getDeclaredField("unitManagement");
-        field.setAccessible(true);
-        field.set(project, unitManagement);
-
-        FileStorage fs = new FileStorage();
-
-        URL url1 = this.getClass().getResource("/model1.xml");
-        File file1 = new File(url1.getFile());
-        m1 = fs.loadSystemModel(file1);
-
-        URL url3 = this.getClass().getResource("/model1.xml");
-        File file3 = new File(url3.getFile());
-        m3 = fs.loadSystemModel(file3);
-
-        URL url2 = this.getClass().getResource("/model2.xml");
-        File file2 = new File(url2.getFile());
-        m2 = fs.loadSystemModel(file2);
-    }
-
     @Test
     public void compareModelsLoadedFromSameFile() {
         Assert.assertTrue(m1.equals(m3));
@@ -75,7 +52,7 @@ public class ModelXmlMappingTest {
 
     @Test
     public void exportXmlAndReimport() throws IOException {
-        SystemModel s1 = DummySystemBuilder.getSystemModel(1);
+        SystemModel s1 = BasicSpaceSystemBuilder.getSystemModel(1);
         URL url = this.getClass().getResource("/attachment.xls");
         File excelFile = new File(url.getFile());
         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(excelFile, s1);
@@ -104,5 +81,28 @@ public class ModelXmlMappingTest {
         }
 
         Assert.assertEquals(s1, s2);
+    }
+
+    @Before
+    public void setup() throws IOException, NoSuchFieldException, IllegalAccessException {
+        Project project = new Project("project");
+        UnitManagement unitManagement = UnitManagementFactory.getUnitManagement();
+        Field field = Project.class.getDeclaredField("unitManagement");
+        field.setAccessible(true);
+        field.set(project, unitManagement);
+
+        FileStorage fs = new FileStorage();
+
+        URL url1 = this.getClass().getResource("/model1.xml");
+        File file1 = new File(url1.getFile());
+        m1 = fs.loadSystemModel(file1);
+
+        URL url3 = this.getClass().getResource("/model1.xml");
+        File file3 = new File(url3.getFile());
+        m3 = fs.loadSystemModel(file3);
+
+        URL url2 = this.getClass().getResource("/model2.xml");
+        File file2 = new File(url2.getFile());
+        m2 = fs.loadSystemModel(file2);
     }
 }
