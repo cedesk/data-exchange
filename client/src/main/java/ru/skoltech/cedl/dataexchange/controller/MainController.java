@@ -31,6 +31,8 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.DifferenceMerger;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -127,7 +129,7 @@ public class MainController implements Initializable {
 
     public boolean checkUnsavedModifications() {
         if (project.hasLocalStudyModifications()) {
-            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Shall the modifications saved before closing?");
+            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Modifications to the model must to be saved before managing user discipline assignment. Shall it be saved now?");
             if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
                 try {
                     project.storeLocalStudy();
@@ -352,7 +354,15 @@ public class MainController implements Initializable {
                 Dialogues.showError("Invalid name", "A study with this name already exists in the repository!");
                 return;
             }
-            project.newStudy(projectName);
+
+            Optional<String> builderName = Dialogues.chooseStudyBuilder(SystemBuilderFactory.getBuilderNames());
+            if (!builderName.isPresent()) {
+                return;
+            }
+            SystemBuilder builder = SystemBuilderFactory.getBuilder(builderName.get());
+            builder.setUnitManagement(project.getUnitManagement());
+            SystemModel systemModel = builder.build(projectName);
+            project.newStudy(systemModel);
             StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
             ActionLogger.log(ActionLogger.ActionType.project_new, projectName);
             updateView();
@@ -576,10 +586,7 @@ public class MainController implements Initializable {
 
     public void openUserRoleManagement(ActionEvent actionEvent) {
         try {
-            if (!checkUnsavedModifications()) {
-                Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\nContact the team lead for him to enable it!");
-                return;
-            }
+            if (!checkUnsavedModifications()) return;
 
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Views.USER_ROLES_EDITING_WINDOW);

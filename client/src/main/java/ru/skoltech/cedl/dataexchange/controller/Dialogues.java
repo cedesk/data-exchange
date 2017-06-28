@@ -66,6 +66,14 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
+    public static Optional<String> inputSubsystemNames(String defaultValue) {
+        TextInputDialog dialog = new TextInputDialog(defaultValue);
+        dialog.setTitle("Subsystem Names");
+        dialog.setHeaderText("Please insert the names of the subsystems, separated by comma.");
+        dialog.setContentText("Names");
+        return dialog.showAndWait();
+    }
+
     public static Optional<String> inputParameterName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Parameter Name");
@@ -127,6 +135,15 @@ public class Dialogues {
         dlg.setTitle("Choose a study");
         dlg.setHeaderText("Choose from available studies");
         dlg.setContentText("Study");
+        return dlg.showAndWait();
+    }
+
+    public static Optional<String> chooseStudyBuilder(List<String> builderNames) {
+        Objects.requireNonNull(builderNames);
+        ChoiceDialog<String> dlg = new ChoiceDialog<>(builderNames.get(0), builderNames);
+        dlg.setTitle("Choose a study builder");
+        dlg.setHeaderText("Choose from available builders");
+        dlg.setContentText("Builder");
         return dlg.showAndWait();
     }
 }

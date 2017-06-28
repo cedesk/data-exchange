@@ -120,6 +120,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
                 logger.debug("accessing spreadsheet without sheetName");
             }
             Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
+            if(sheetRow == null) sheetRow = sheet.createRow(cellCoordinates.getRowNumber() - 1);
             Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
             return cell;
         } catch (Exception e) {

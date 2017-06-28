@@ -403,10 +403,7 @@ public class Project {
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
     }
 
-    public void newStudy(String studyName) {
-        int studyModelDepth = ApplicationSettings.getStudyModelDepth(DummySystemBuilder.DEFAULT_MODEL_DEPTH);
-        SystemModel systemModel = DummySystemBuilder.getSystemModel(studyModelDepth);
-        systemModel.setName(studyName);
+    public void newStudy(SystemModel systemModel) {
         reinitializeProject(systemModel);
     }
 

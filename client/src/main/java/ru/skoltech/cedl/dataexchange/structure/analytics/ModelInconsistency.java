@@ -51,7 +51,7 @@ public class ModelInconsistency {
         Map<String, ParameterModel> parameterDictionary = systemModel.makeParameterDictionary();
         List<ModelInconsistency> modelInconsistencies = analyzeModel(systemModel, parameterDictionary);
         Long systemModelLatestModification = systemModel.findLatestModification();
-        if (study.getLatestModelModification() < systemModelLatestModification) {
+        if (study.getLatestModelModification() != null && study.getLatestModelModification() < systemModelLatestModification) {
             modelInconsistencies.add(new ModelInconsistency("Study latest modification is earlier than system model last modification", Severity.ERROR, "study", study));
         }
         if (!study.getName().equals(study.getSystemModel().getName())) {
