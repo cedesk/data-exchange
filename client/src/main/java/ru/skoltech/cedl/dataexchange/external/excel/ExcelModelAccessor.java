@@ -36,7 +36,7 @@ public class ExcelModelAccessor {
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 String fileName = externalModel.getName();
                 spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName);
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 logger.error("unable to open spreadsheet");
                 throw new ExternalModelException("unable access excel spreadsheet", e);
             }
