@@ -15,6 +15,7 @@ A goal in the development of the data exchange is not to duplicate functionality
 * Current State: Development
 
 ## Release History ##
+* 2017-06-29 - Version 1.27.1 (fixed bug, critical for first time installations)
 * 2017-06-28 - Version 1.27 (bug fixes, N2 chart improvements, consistency verification)
 * 2017-05-31 - Version 1.26 (bug fixes, diff viewing and merging improvements)
 * 2016-11-28 - Version 1.25 (bug fixes, layout improvement, library upgrade, external model replacement, N2 chart improvement)
