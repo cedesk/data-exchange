@@ -174,8 +174,9 @@ public class DatabaseStorage implements Repository {
 
                 ParameterRevision parameterRevision = new ParameterRevision(versionedParameterModel, revisionEntity, revisionType);
                 try {
-                    // dummy operation to ensure properties to be loaded (overcome lazy loading, which would fail due to closed db connection)
-                    int ignore = parameterRevision.toString().length();
+                    // dummy operations to ensure properties to be loaded (overcome lazy loading, which would fail due to closed db connection)
+                    parameterRevision.toString().length();
+                    parameterRevision.getSourceDetails().length();
                 } catch (Exception e) {
                     logger.error("problem initializing parameter revision properties, " + e.getMessage());
                 }
