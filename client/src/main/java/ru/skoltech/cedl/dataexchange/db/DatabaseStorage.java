@@ -598,6 +598,7 @@ public class DatabaseStorage implements Repository {
             entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
             entityManager = entityManagerFactory.createEntityManager();
             properties.remove(HIBERNATE_TABLE_MAPPING);
+            StatusLogger.getInstance().log("Database scheme updated!");
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme update failed!", true);
             logger.error("Database scheme update failed!", e);
