@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.AbstractDatabaseTest;
-import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
@@ -20,11 +20,11 @@ import java.util.ArrayList;
  */
 public class CalculationPersistenceTest extends AbstractDatabaseTest {
 
-    private DatabaseStorage databaseStorage;
+    private DatabaseRepository databaseRepository;
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        databaseStorage = (DatabaseStorage) repository;
+        databaseRepository = (DatabaseRepository) repository;
     }
 
     @Test
@@ -33,7 +33,7 @@ public class CalculationPersistenceTest extends AbstractDatabaseTest {
 
         EntityManager entityManager = null;
         try {
-            entityManager = databaseStorage.getEntityManager();
+            entityManager = databaseRepository.getEntityManager();
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
             entityManager.persist(calculation1);

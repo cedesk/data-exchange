@@ -2,7 +2,7 @@ package ru.skoltech.cedl.dataexchange;
 
 import org.junit.After;
 import org.junit.Before;
-import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 
@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
  */
 public abstract class AbstractDatabaseTest {
 
-    protected Repository repository = new DatabaseStorage(DatabaseStorage.MEM_PERSISTENCE_UNIT_NAME);
+    protected Repository repository = new DatabaseRepository(DatabaseRepository.MEM_PERSISTENCE_UNIT_NAME);
     protected RepositoryFactory repositoryFactory;
 
     @Before

@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.file.DirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.file.SimpleDirectoryWatchService;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 
 import java.io.File;
@@ -30,8 +31,8 @@ public class ExternalModelFileWatcher extends Observable {
         SimpleDirectoryWatchService.getInstance().start();
     }
 
-    public void add(ExternalModel externalModel) {
-        File file = ExternalModelFileHandler.getFilePathInCache(externalModel);
+    public void add(Project project, ExternalModel externalModel) {
+        File file = ExternalModelFileHandler.getFilePathInCache(project, externalModel);
         watchedExternalModels.put(file, externalModel);
         String filePattern = file.getName();
         try {

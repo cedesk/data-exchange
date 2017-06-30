@@ -8,7 +8,7 @@ import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import ru.skoltech.cedl.dataexchange.*;
-import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.*;
@@ -25,6 +25,7 @@ import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -249,7 +250,7 @@ public class Project {
     }
 
     public void addExternalModelFileWatcher(ExternalModel externalModel) {
-        externalModelFileWatcher.add(externalModel);
+        externalModelFileWatcher.add(this, externalModel);
     }
 
     public BooleanProperty canLoadProperty() {
@@ -309,12 +310,12 @@ public class Project {
     }
 
     public boolean checkRepository() {
-        String hostname = applicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
-        String schema = applicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
-        String repoUser = applicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
-        String repoPassword = applicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
+        String hostname = applicationSettings.getRepositoryServerHostname(DatabaseRepository.DEFAULT_HOST_NAME);
+        String schema = applicationSettings.getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA);
+        String repoUser = applicationSettings.getRepositoryUserName(DatabaseRepository.DEFAULT_USER_NAME);
+        String repoPassword = applicationSettings.getRepositoryPassword(DatabaseRepository.DEFAULT_PASSWORD);
 
-        boolean connectionValid = DatabaseStorage.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
+        boolean connectionValid = DatabaseRepository.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
         if (connectionValid) {
             Repository repository = context.getBean("repository", Repository.class);
             boolean validScheme = repository.validateDatabaseScheme();
@@ -454,13 +455,11 @@ public class Project {
         initializeStateOfExternalModels();
         registerParameterLinks();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
-        applicationSettings.setRepositoryServerHostname(repository.getUrl());
     }
 
     public boolean storeUnitManagement() {
         try {
             unitManagement = repository.storeUnitManagement(unitManagement);
-            applicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing unit management.", e);
@@ -471,7 +470,6 @@ public class Project {
     public boolean storeUserManagement() {
         try {
             userManagement = repository.storeUserManagement(userManagement);
-            applicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing user management.", e);
@@ -483,7 +481,6 @@ public class Project {
         try {
             UserRoleManagement userRoleManagement = repository.storeUserRoleManagement(getStudy().getUserRoleManagement());
             getStudy().setUserRoleManagement(userRoleManagement);
-            applicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing user role management.", e);
@@ -510,11 +507,11 @@ public class Project {
      */
     public void updateExternalModelsInStudy() {
         for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
-            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(this, externalModel);
             if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
                 logger.debug("updating " + externalModel.getNodePath() + " from file");
                 try {
-                    ExternalModelFileHandler.readAttachmentFromFile(externalModel);
+                    ExternalModelFileHandler.readAttachmentFromFile(this, externalModel);
                 } catch (IOException e) {
                     logger.error("error updating external model from file!", e);
                 }
@@ -534,7 +531,7 @@ public class Project {
         while (externalModelsIterator.hasNext()) {
             ExternalModel externalModel = externalModelsIterator.next();
             try {
-                ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler, externalModelFileWatcher);
+                ModelUpdateUtil.applyParameterChangesToExternalModel(this, externalModel, externalModelFileHandler, externalModelFileWatcher);
             } catch (ExternalModelException e) {
                 exceptions.add(e);
             }
@@ -561,7 +558,7 @@ public class Project {
             ModelNode modelNode = externalModel.getParent();
 
             // check cache state and add file watcher if cached
-            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(this, externalModel);
             if (cacheState != ExternalModelCacheState.NOT_CACHED) {
                 addExternalModelFileWatcher(externalModel);
             }
@@ -631,13 +628,13 @@ public class Project {
      */
     private void updateExternalModelStateInCache() {
         for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
-            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(this, externalModel);
             if (cacheState != ExternalModelCacheState.NOT_CACHED) {
                 logger.debug("timestamping " + externalModel.getNodePath());
-                ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
+                ExternalModelFileHandler.updateCheckoutTimestamp(this, externalModel);
                 if (logger.isDebugEnabled()) {
                     String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
-                    long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
+                    long checkoutTime = ExternalModelFileHandler.getCheckoutTime(this, externalModel);
                     String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
                     logger.debug("stored external model '" + externalModel.getName() +
                             "' (model: " + modelModification + ", file: " + fileModification + ")");
@@ -666,5 +663,12 @@ public class Project {
         public boolean test(ModelNode modelNode) {
             return UserRoleUtil.checkAccess(modelNode, getUser(), getUserRoleManagement());
         }
+    }
+
+    public File getProjectDataDir() {
+        String projectName = this.getProjectName();
+        String hostname = applicationSettings.getRepositoryServerHostname(DatabaseRepository.DEFAULT_HOST_NAME);
+        String schema = applicationSettings.getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA);
+        return StorageUtils.getDataDir(hostname, schema, projectName);
     }
 }

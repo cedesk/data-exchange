@@ -60,7 +60,6 @@ public class ProjectSettingsController implements Initializable {
     }
 
     private StudySettings getStudySettings() {
-        Project project = ProjectContext.getInstance().getProject();
         if (project != null && project.getStudy() != null) {
             boolean isAdmin = project.isCurrentAdmin();
             if (isAdmin)
@@ -132,7 +131,7 @@ public class ProjectSettingsController implements Initializable {
             teamSettingsPane.setDisable(true);
         }
 
-        File projectDataDir = ProjectContext.getInstance().getProjectDataDir();
+        File projectDataDir = project.getProjectDataDir();
         projectDirectoryText.setText(projectDataDir.getAbsolutePath());
 
         autoloadOnStartupCheckbox.setSelected(project.getApplicationSettings().getAutoLoadLastProjectOnStartup());

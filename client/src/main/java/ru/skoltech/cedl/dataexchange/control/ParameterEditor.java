@@ -417,7 +417,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                 ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 ExternalModelFileWatcher externalModelFileWatcher = project.getExternalModelFileWatcher();
                 try {
-                    ModelUpdateUtil.applyParameterChangesToExternalModel(externalModel, externalModelFileHandler, externalModelFileWatcher);
+                    ModelUpdateUtil.applyParameterChangesToExternalModel(project, externalModel, externalModelFileHandler, externalModelFileWatcher);
                 } catch (ExternalModelException e) {
                     Dialogues.showError("External Model Error", "Failed to export parameter value to external model. \n" + e.getMessage());
                 }

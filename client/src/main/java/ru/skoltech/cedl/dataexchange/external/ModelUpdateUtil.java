@@ -4,6 +4,7 @@ import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
@@ -120,7 +121,7 @@ public class ModelUpdateUtil {
         return parameterUpdate;
     }
 
-    public static void applyParameterChangesToExternalModel(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
+    public static void applyParameterChangesToExternalModel(Project project, ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
         ExternalModelExporter exporter = ExternalModelAccessorFactory.getExporter(externalModel, externalModelFileHandler);
@@ -141,6 +142,6 @@ public class ModelUpdateUtil {
                 }
             }
         }
-        exporter.flushModifications(externalModelFileWatcher);
+        exporter.flushModifications(project, externalModelFileWatcher);
     }
 }

@@ -2,6 +2,7 @@ package ru.skoltech.cedl.dataexchange.external.excel;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 
 import java.io.*;
@@ -38,11 +39,11 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
         }
     }
 
-    public void flushModifications(ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
+    public void flushModifications(Project project, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
         if (spreadsheetAccessor != null) {
             try {
                 if (spreadsheetAccessor.isModified()) {
-                    ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+                    ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(project, externalModel);
                     if (cacheState == ExternalModelCacheState.NOT_CACHED) {
                         logger.debug("Updating " + externalModel.getNodePath() + " with changes from parameters");
                         try (ByteArrayOutputStream bos = new ByteArrayOutputStream(externalModel.getAttachment().length)) {
@@ -53,7 +54,7 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
                             throw new ExternalModelException("error saving changes to external model" + externalModel.getNodePath());
                         }
                     } else {
-                        File file = ExternalModelFileHandler.getFilePathInCache(externalModel);
+                        File file = ExternalModelFileHandler.getFilePathInCache(project, externalModel);
                         externalModelFileWatcher.maskChangesTo(file);
                         logger.debug("Updating " + file.getAbsolutePath() + " with changes from parameters");
                         try (FileOutputStream fos = new FileOutputStream(file)) {

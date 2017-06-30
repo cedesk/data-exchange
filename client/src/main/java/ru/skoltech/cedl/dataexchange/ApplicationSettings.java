@@ -1,7 +1,7 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
@@ -151,7 +151,7 @@ public class ApplicationSettings {
         if (password == null) return;
         String previousPassword = properties.getProperty(REPOSITORY_PASSWORD);
         if (previousPassword == null || !previousPassword.equals(password)) {
-            if (password.equals(DatabaseStorage.DEFAULT_PASSWORD)) {
+            if (password.equals(DatabaseRepository.DEFAULT_PASSWORD)) {
                 properties.remove(REPOSITORY_PASSWORD);
             } else {
                 properties.setProperty(REPOSITORY_PASSWORD, password);
@@ -173,7 +173,7 @@ public class ApplicationSettings {
         if (userName == null) return;
         String previousUser = properties.getProperty(REPOSITORY_USER);
         if (previousUser == null || !previousUser.equals(userName)) {
-            if (userName.equals(DatabaseStorage.DEFAULT_USER_NAME)) {
+            if (userName.equals(DatabaseRepository.DEFAULT_USER_NAME)) {
                 properties.remove(REPOSITORY_USER);
             } else {
                 properties.setProperty(REPOSITORY_USER, userName);

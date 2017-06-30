@@ -20,6 +20,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetInputOutputExtractor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterComparatorByNatureAndName;
@@ -42,6 +43,7 @@ public class ExternalModelView extends HBox implements Initializable {
     private static final Logger logger = Logger.getLogger(ExternalModelView.class);
 
     private ExternalModel externalModel;
+    private Project project;
 
     @FXML
     private TextField externalModelNameText;
@@ -49,7 +51,8 @@ public class ExternalModelView extends HBox implements Initializable {
     @FXML
     private Button openExternalButton;
 
-    public ExternalModelView(ExternalModel externalModel) {
+    public ExternalModelView(Project project, ExternalModel externalModel) {
+        this.project = project;
         this.externalModel = externalModel;
         // load layout
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("external_model_view.fxml"));
@@ -70,7 +73,7 @@ public class ExternalModelView extends HBox implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         externalModelNameText.setText(externalModel.getName());
-        File filePathInCache = ExternalModelFileHandler.getFilePathInCache(externalModel);
+        File filePathInCache = ExternalModelFileHandler.getFilePathInCache(project, externalModel);
         File pathInCache = filePathInCache.getParentFile();
         openExternalButton.addEventFilter(MouseEvent.MOUSE_PRESSED, (MouseEvent event) -> {
             if (event.isSecondaryButtonDown())
@@ -87,7 +90,7 @@ public class ExternalModelView extends HBox implements Initializable {
     public void openExternalModel(ActionEvent actionEvent) {
         ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
         try {
-            File file = externalModelFileHandler.cacheFile(externalModel);
+            File file = externalModelFileHandler.cacheFile(project, externalModel);
             openFile(file);
         } catch (ExternalModelException | IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);

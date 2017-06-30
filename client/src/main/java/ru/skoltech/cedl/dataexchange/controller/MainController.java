@@ -401,6 +401,8 @@ public class MainController implements Initializable {
             stage.initOwner(getAppWindow());
 
             ConsistencyController controller = loader.getController();
+            controller.setProject(project);
+
             controller.refreshView(null);
             stage.showAndWait();
             modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane

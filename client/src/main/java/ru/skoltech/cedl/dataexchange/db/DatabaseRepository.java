@@ -6,7 +6,6 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
-import ru.skoltech.cedl.dataexchange.ApplicationProperties;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
@@ -28,55 +27,47 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by dknoll on 24/05/15.
  */
-public class DatabaseStorage implements Repository {
+public class DatabaseRepository implements Repository {
 
-    public static final String PERSISTENCE_URL_PROPERTY = "javax.persistence.jdbc.url";
-    public static final String PERSISTENCE_USER_PROPERTY = "javax.persistence.jdbc.user";
-    public static final String PERSISTENCE_PASSWORD_PROPERTY = "javax.persistence.jdbc.password";
-    public static final String HIBERNATE_TABLE_MAPPING = "hibernate.hbm2ddl.auto";
-    public static final String HIBERNATE_TABLE_MAPPING_UPDATE = "update";
-    public static final String DEFAULT_HOST_NAME = ApplicationProperties.getDefaultRepositoryHost();
-    public static final String DEFAULT_SCHEMA = "cedesk_repo";
-    public static final String DEFAULT_USER_NAME = "cedesk";
-    public static final String DEFAULT_PASSWORD = "cedesk";
-    public static final String DB_PERSISTENCE_UNIT_NAME = "db";
-    public static final String MEM_PERSISTENCE_UNIT_NAME = "mem";
-    private static final Logger logger = Logger.getLogger(DatabaseStorage.class);
-    private static final String HOST_NAME = "HOSTNAME";
-    private static final String SCHEMA = "SCHEMA";
-    private static final String DEFAULT_JDBC_URL = "jdbc:mysql://" + HOST_NAME + ":3306/" + SCHEMA + "?serverTimezone=UTC";
+    private static final Logger logger = Logger.getLogger(DatabaseRepository.class);
 
-    private String hostName;
-    private String schema;
+    private static final String JDBC_URL_PATTERN = "jdbc:mysql://%s:3306/%s?serverTimezone=UTC";
+
+    private final String persistenceUnit;
+    private final String hostName;
+    private final String schema;
+    private final Map<String, Object> properties;
+
     private EntityManagerFactory emf;
-    private String persistenceUnit;
-    private Map<String, Object> properties = new HashMap<>();
 
     /**
      * The default backend uses a DB on the localhost.
      */
-    public DatabaseStorage(String persistenceUnit) {
+    public DatabaseRepository(String persistenceUnit) {
         this.persistenceUnit = persistenceUnit;
+        this.hostName = null;
+        this.schema = null;
+        this.properties = Collections.emptyMap();
     }
 
-    public DatabaseStorage(String persistenceUnit, String hostName, String schema, String userName, String password) {
+    public DatabaseRepository(String persistenceUnit, String hostName, String schema, String userName, String password) {
         this.persistenceUnit = persistenceUnit;
         this.hostName = hostName;
         this.schema = schema;
-        String url = DEFAULT_JDBC_URL.replace(HOST_NAME, hostName);
-        url = url.replace(SCHEMA, schema);
+
+        final String url = String.format(JDBC_URL_PATTERN, hostName, schema);
         logger.debug("repository url: " + url + ", user: " + userName);
+
+        Map<String, Object> properties = new HashMap<>(3);
         properties.put(PERSISTENCE_URL_PROPERTY, url);
         properties.put(PERSISTENCE_USER_PROPERTY, userName);
         properties.put(PERSISTENCE_PASSWORD_PROPERTY, password);
+        this.properties = Collections.unmodifiableMap(properties);
     }
 
     public EntityManager getEntityManager() throws RepositoryException {
@@ -91,19 +82,8 @@ public class DatabaseStorage implements Repository {
         return emf.createEntityManager();
     }
 
-    @Override
-    public String getSchema() {
-        return schema;
-    }
-
-    @Override
-    public String getUrl() {
-        return hostName;
-    }
-
     public static boolean checkDatabaseConnection(String hostName, String schema, String userName, String password) {
-        String url = DEFAULT_JDBC_URL.replace(HOST_NAME, hostName);
-        url = url.replace(SCHEMA, schema);
+        final String url = String.format(JDBC_URL_PATTERN, hostName, schema);
         logger.debug("repository url: " + url + ", user: " + userName);
         try {
             DriverManager.getConnection(url, userName, password).close();
@@ -579,7 +559,7 @@ public class DatabaseStorage implements Repository {
 
     @Override
     public String toString() {
-        return "DatabaseStorage{" +
+        return "DatabaseRepository{" +
                 "hostName='" + hostName + '\'' +
                 "schema='" + schema + '\'' +
                 "persistenceUnit='" + persistenceUnit + '\'' +
@@ -593,10 +573,11 @@ public class DatabaseStorage implements Repository {
         EntityManager entityManager = null;
         logger.info("updating database scheme");
         try {
+            Properties properties = new Properties();
+            properties.putAll(this.properties);
             properties.put(HIBERNATE_TABLE_MAPPING, HIBERNATE_TABLE_MAPPING_UPDATE);
             entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
             entityManager = entityManagerFactory.createEntityManager();
-            properties.remove(HIBERNATE_TABLE_MAPPING);
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme update failed!", true);
             logger.error("Database scheme update failed!", e);
@@ -651,6 +632,8 @@ public class DatabaseStorage implements Repository {
         EntityManager entityManager = null;
         logger.info("validating database scheme");
         try {
+            Properties properties = new Properties();
+            properties.putAll(this.properties);
             entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnit, properties);
             entityManager = entityManagerFactory.createEntityManager();
         } catch (Exception e) {

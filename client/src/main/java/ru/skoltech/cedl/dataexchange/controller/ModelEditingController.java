@@ -130,6 +130,7 @@ public class ModelEditingController implements Initializable {
     public void setProject(Project project) {
         this.project = project;
         parameterEditor.setProject(project);
+        externalModelEditor.setProject(project);
 
         project.addExternalModelChangeObserver(new Observer() {
             @Override
@@ -374,6 +375,7 @@ public class ModelEditingController implements Initializable {
             }
         });
 
+        externalModelEditor.setProject(project);
         externalModelEditor.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
     }
 

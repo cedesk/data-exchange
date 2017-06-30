@@ -46,6 +46,8 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
 
     private ModelNode modelNode;
 
+    private Project project;
+
     @FXML
     private VBox externalModelViewContainer;
 
@@ -73,9 +75,11 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         updateView();
     }
 
-    public void addExternalModel(ActionEvent actionEvent) {
-        Project project = ProjectContext.getInstance().getProject();
+    public void setProject(Project project) {
+        this.project = project;
+    }
 
+    public void addExternalModel(ActionEvent actionEvent) {
         if (!project.isStudyInRepository()) {
             Dialogues.showError("Save Project", "Unable to attach an external model, as long as the project has not been saved yet!");
             return;
@@ -126,7 +130,6 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         } else {
             modelNode.getExternalModels().remove(externalModel);
             externalModelViewContainer.getChildren().remove(argumentRow);
-            Project project = ProjectContext.getInstance().getProject();
             project.markStudyModified();
             StatusLogger.getInstance().log("removed external model: " + externalModel.getName());
             project.getActionLogger().log(ActionLogger.ActionType.EXTERNAL_MODEL_REMOVE, externalModel.getNodePath());
@@ -139,7 +142,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     }
 
     public void reloadExternalModels(ActionEvent actionEvent) {
-        ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         for (ExternalModel externalModel : modelNode.getExternalModels())
             try {
                 ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler,
@@ -156,8 +159,6 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     }
 
     private void exchangeExternalModel(ActionEvent actionEvent) {
-        Project project = ProjectContext.getInstance().getProject();
-
         if (!project.isStudyInRepository()) {
             Dialogues.showError("Save Project", "Unable to attach an external model, as long as the project has not been saved yet!");
             return;
@@ -189,7 +190,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     }
 
     private void renderExternalModelView(ExternalModel externalModel) {
-        ExternalModelView editor = new ExternalModelView(externalModel);
+        ExternalModelView editor = new ExternalModelView(project, externalModel);
         Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
         removeButton.setTooltip(new Tooltip("Remove external model"));
         removeButton.setOnAction(ExternalModelEditor.this::deleteExternalModel);

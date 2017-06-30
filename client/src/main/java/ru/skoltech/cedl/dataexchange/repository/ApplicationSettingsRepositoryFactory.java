@@ -1,7 +1,7 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 
 /**
  * Constructs {@link Repository} object depends on the {@link ApplicationSettings} properties.
@@ -18,10 +18,11 @@ public class ApplicationSettingsRepositoryFactory implements RepositoryFactory {
 
     @Override
     public Repository createDatabaseRepository() {
-        String hostname = applicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
-        String schema = applicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
-        String repoUser = applicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
-        String repoPassword = applicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
-        return new DatabaseStorage(DatabaseStorage.DB_PERSISTENCE_UNIT_NAME, hostname, schema, repoUser, repoPassword);
+        String persistenceUnit = DatabaseRepository.DB_PERSISTENCE_UNIT_NAME;
+        String hostname = applicationSettings.getRepositoryServerHostname(DatabaseRepository.DEFAULT_HOST_NAME);
+        String schema = applicationSettings.getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA);
+        String repoUser = applicationSettings.getRepositoryUserName(DatabaseRepository.DEFAULT_USER_NAME);
+        String repoPassword = applicationSettings.getRepositoryPassword(DatabaseRepository.DEFAULT_PASSWORD);
+        return new DatabaseRepository(persistenceUnit, hostname, schema, repoUser, repoPassword);
     }
 }

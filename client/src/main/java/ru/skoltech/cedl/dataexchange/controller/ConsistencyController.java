@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableView;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ModelInconsistency;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 
@@ -23,14 +23,20 @@ public class ConsistencyController implements Initializable {
     @FXML
     private TableView<ModelInconsistency> inconsistenciesTable;
 
+    private Project project;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
     }
 
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     public void refreshView(ActionEvent actionEvent) {
-        Study localStudy = ProjectContext.getInstance().getProject().getStudy();
+        Study localStudy = project.getStudy();
         inconsistenciesTable.getItems().clear();
-        List<ModelInconsistency> modelInconsistencies = ModelInconsistency.analyzeModel(localStudy);
+        List<ModelInconsistency> modelInconsistencies = ModelInconsistency.analyzeModel(project, localStudy);
         inconsistenciesTable.getItems().addAll(modelInconsistencies);
     }
 
