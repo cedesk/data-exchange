@@ -11,7 +11,7 @@
         <constructor-arg ref="applicationSettings"/>
     </bean>
 
-    <bean id="repositoryFactory" class="ru.skoltech.cedl.dataexchange.repository.RepositoryFactory">
+    <bean id="repositoryFactory" class="ru.skoltech.cedl.dataexchange.repository.ApplicationSettingsRepositoryFactory">
         <constructor-arg ref="applicationSettings" />
     </bean>
 </beans>

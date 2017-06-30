@@ -1,12 +1,8 @@
 package ru.skoltech.cedl.dataexchange;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
@@ -14,15 +10,12 @@ import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
  * Created by dknoll on 23/05/15.
  */
-public class StudyStorageTest {
-
-    private DatabaseStorage databaseStorage;
+public class StudyStorageTest extends AbstractDatabaseTest {
 
     private static Study makeStudy(String projectName, int modelDepth) {
         Study study = new Study();
@@ -35,33 +28,22 @@ public class StudyStorageTest {
         return study;
     }
 
-    @Before
-    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        RepositoryFactory repositoryFactory = new RepositoryFactory(null);
-        databaseStorage = repositoryFactory.getTempRepository();
-    }
-
-    @After
-    public void cleanup() {
-        databaseStorage.close();
-    }
-
     @Test
     public void storeAndListStudies() throws RepositoryException {
         String name1 = "testStudy-1";
         Study study1 = makeStudy(name1, 1);
-        databaseStorage.storeStudy(study1);
+        repository.storeStudy(study1);
 
         String name2 = "testStudy-2";
         Study study2 = makeStudy(name2, 1);
-        databaseStorage.storeStudy(study2);
+        repository.storeStudy(study2);
 
         String name3 = "testStudy-3";
         Study study3 = makeStudy(name3, 1);
-        databaseStorage.storeStudy(study3);
+        repository.storeStudy(study3);
 
         String[] createdStudies = new String[]{name1, name2, name3};
-        List<String> storedStudies = databaseStorage.listStudies();
+        List<String> storedStudies = repository.listStudies();
 
         Assert.assertArrayEquals(createdStudies, storedStudies.toArray());
     }
@@ -72,9 +54,9 @@ public class StudyStorageTest {
         Study study = makeStudy(name, 2);
         System.out.println(study);
 
-        Study study0 = databaseStorage.storeStudy(study);
+        Study study0 = repository.storeStudy(study);
 
-        Study study1 = databaseStorage.loadStudy(name);
+        Study study1 = repository.loadStudy(name);
         System.out.println(study1);
 
         Assert.assertEquals(study.getId(), study1.getId());

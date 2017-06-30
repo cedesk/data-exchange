@@ -1,44 +1,19 @@
 package ru.skoltech.cedl.dataexchange;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 
 /**
  * Created by D.Knoll on 02.07.2015.
  */
-public class ExternalModelTest {
-
-    private Repository repository;
-
-    @Before
-    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        RepositoryFactory repositoryFactory = new RepositoryFactory(null);
-        repository = repositoryFactory.getTempRepository();
-    }
-
-    @After
-    public void cleanup() {
-        try {
-            repository.close();
-        } catch (IOException ignore) {
-        }
-    }
+public class ExternalModelTest extends AbstractDatabaseTest {
 
     @Test()
     public void storeAndRetrieveAttachment() throws URISyntaxException, IOException, RepositoryException {

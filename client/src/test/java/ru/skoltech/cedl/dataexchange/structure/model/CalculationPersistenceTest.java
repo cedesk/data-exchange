@@ -1,12 +1,11 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.AbstractDatabaseTest;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
 
@@ -19,19 +18,13 @@ import java.util.ArrayList;
 /**
  * Created by D.Knoll on 13.05.2015.
  */
-public class CalculationPersistenceTest {
+public class CalculationPersistenceTest extends AbstractDatabaseTest {
 
     private DatabaseStorage databaseStorage;
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        RepositoryFactory repositoryFactory = new RepositoryFactory(null);
-        databaseStorage = repositoryFactory.getTempRepository();
-    }
-
-    @After
-    public void cleanup() {
-        databaseStorage.close();
+        databaseStorage = (DatabaseStorage) repository;
     }
 
     @Test

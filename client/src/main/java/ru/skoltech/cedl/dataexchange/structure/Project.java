@@ -10,10 +10,7 @@ import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.repository.Repository;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
+import ru.skoltech.cedl.dataexchange.repository.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -318,7 +315,7 @@ public class Project {
 
         boolean connectionValid = DatabaseStorage.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
         if (connectionValid) {
-            Repository databaseRepository = repositoryFactory.getDatabaseRepository();
+            Repository databaseRepository = repositoryFactory.createDatabaseRepository();
             boolean validScheme = databaseRepository.validateDatabaseScheme();
             if (!validScheme && applicationSettings.getRepositorySchemaCreate()) {
                 validScheme = databaseRepository.updateDatabaseScheme();
@@ -339,7 +336,7 @@ public class Project {
             } catch (IOException ignore) {
             }
         }
-        this.repository = repositoryFactory.getDatabaseRepository();
+        this.repository = repositoryFactory.createDatabaseRepository();
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {

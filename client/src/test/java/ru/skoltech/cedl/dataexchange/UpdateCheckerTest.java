@@ -25,6 +25,7 @@ public class UpdateCheckerTest {
 
     @Test
     public void testRemote() {
+        // TODO: mock it
         Optional<ApplicationPackage> versionAvailable = UpdateChecker.getLatestVersionAvailable();
         Assert.assertTrue(versionAvailable.isPresent());
 
