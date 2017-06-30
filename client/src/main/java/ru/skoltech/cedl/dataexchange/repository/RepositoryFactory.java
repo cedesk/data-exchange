@@ -8,15 +8,21 @@ import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
  */
 public class RepositoryFactory {
 
-    public static Repository getDatabaseRepository() {
-        String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
-        String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
-        String repoUser = ApplicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
-        String repoPassword = ApplicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
+    private ApplicationSettings applicationSettings;
+
+    public RepositoryFactory(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
+
+    public Repository getDatabaseRepository() {
+        String hostname = applicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
+        String schema = applicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
+        String repoUser = applicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
+        String repoPassword = applicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
         return new DatabaseStorage(DatabaseStorage.DB_PERSISTENCE_UNIT_NAME, hostname, schema, repoUser, repoPassword);
     }
 
-    public static DatabaseStorage getTempRepository() {
+    public DatabaseStorage getTempRepository() {
         return new DatabaseStorage(DatabaseStorage.MEM_PERSISTENCE_UNIT_NAME);
     }
 }

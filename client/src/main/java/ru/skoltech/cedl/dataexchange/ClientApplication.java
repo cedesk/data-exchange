@@ -9,6 +9,8 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
@@ -17,6 +19,7 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 public class ClientApplication extends Application {
 
     private static Logger logger = Logger.getLogger(ClientApplication.class);
+    public static ApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"/META-INF/context.xml"});
     private MainController mainController;
 
     public static void main(String[] args) {

@@ -13,45 +13,51 @@ public class ActionLogger {
 
     private static final Logger logger = Logger.getLogger(ActionLogger.class);
 
-    public static void log(ActionType actionType, String description) {
+    private ApplicationSettings applicationSettings;
+
+    public ActionLogger(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
+
+    public void log(ActionType actionType, String description) {
         log(actionType.name(), description);
     }
 
-    public static void log(String action, String description) {
+    public void log(String action, String description) {
         Repository repository = ProjectContext.getInstance().getProject().getRepository();
         LogEntry logEntry = buildEntry(action, description);
         logger.info(logEntry.toString());
         repository.storeLog(logEntry);
     }
 
-    private static LogEntry buildEntry(String action, String description) {
-        String user = ApplicationSettings.getProjectUser();
+    private LogEntry buildEntry(String action, String description) {
+        String user = applicationSettings.getProjectUser();
         String client = Utils.getFullHostname();
         LogEntry logEntry = new LogEntry(user, client, action, description);
         return logEntry;
     }
 
     public enum ActionType {
-        application_start,
-        application_stop,
-        project_new,
-        project_load,
-        project_save,
-        project_delete,
-        project_export,
-        project_import,
-        user_validate,
-        node_add,
-        node_remove,
-        parameter_add,
-        parameter_remove,
-        parameter_merge,
-        parameter_modify_manual,
-        parameter_modify_link,
-        parameter_modify_reference,
-        external_model_add,
-        external_model_remove,
-        external_model_merge,
-        external_model_modify
+        APPLICATION_START,
+        APPLICATION_STOP,
+        PROJECT_NEW,
+        PROJECT_LOAD,
+        PROJECT_SAVE,
+        PROJECT_DELETE,
+        PROJECT_EXPORT,
+        PROJECT_IMPORT,
+        USER_VALIDATE,
+        NODE_ADD,
+        NODE_REMOVE,
+        PARAMETER_ADD,
+        PARAMETER_REMOVE,
+        PARAMETER_MERGE,
+        PARAMETER_MODIFY_MANUAL,
+        PARAMETER_MODIFY_LINK,
+        PARAMETER_MODIFY_REFERENCE,
+        EXTERNAL_MODEL_ADD,
+        EXTERNAL_MODEL_REMOVE,
+        EXTERNAL_MODEL_MERGE,
+        EXTERNAL_MODEL_MODIFY
     }
 }

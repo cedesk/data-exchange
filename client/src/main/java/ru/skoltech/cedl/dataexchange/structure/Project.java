@@ -6,11 +6,10 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.*;
+import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
@@ -46,6 +45,10 @@ public class Project {
 
     private final ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
 
+    private ApplicationSettings applicationSettings;
+    private ActionLogger actionLogger;
+    private RepositoryFactory repositoryFactory;
+
     private String projectName;
     private Study study;
     private UserManagement userManagement;
@@ -70,12 +73,25 @@ public class Project {
     }
 
     public Project(String projectName) {
+        //TODO rewrite after puting project on IoC container
+        applicationSettings = ClientApplication.context.getBean("applicationSettings", ApplicationSettings.class);
+        actionLogger = ClientApplication.context.getBean("actionLogger", ActionLogger.class);
+        repositoryFactory = ClientApplication.context.getBean("repositoryFactory", RepositoryFactory.class);
+
         connectRepository();
         initialize(projectName);
         externalModelFileHandler = new ExternalModelFileHandler(this);
         repositoryStateMachine.addObserver((o, arg) -> {
             updatePossibleActions();
         });
+    }
+
+    public ApplicationSettings getApplicationSettings() {
+        return applicationSettings;
+    }
+
+    public ActionLogger getActionLogger() {
+        return actionLogger;
     }
 
     public List<Discipline> getCurrentUserDisciplines() {
@@ -177,7 +193,7 @@ public class Project {
 
     public User getUser() {
         if (currentUser == null) { // caching
-            String userName = ApplicationSettings.getProjectUser();
+            String userName = applicationSettings.getProjectUser();
             currentUser = getUserManagement().findUser(userName);
             if (currentUser == null) {
                 boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
@@ -214,7 +230,7 @@ public class Project {
 
     public boolean isStudyInRepository() {
         // TODO: it is an imprecise assumption that in case of any import setting, this study is also available in the repository
-        if (ApplicationSettings.getProjectToImport() != null) {
+        if (applicationSettings.getProjectToImport() != null) {
             return true;
         }
         return repositoryStateMachine.wasLoadedOrSaved();
@@ -285,13 +301,35 @@ public class Project {
     }
 
     public boolean checkUser() {
-        String userName = ApplicationSettings.getProjectUser();
+        String userName = applicationSettings.getProjectUser();
         if (userName == null) {
             boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
             userName = isStudyNew ? UserManagementFactory.ADMIN : UserManagementFactory.OBSERVER;
         }
         currentUser = null; // make sure next getUser retrieves the user from settings
         return getUserManagement().checkUser(userName);
+    }
+
+    public boolean checkRepository() {
+        String hostname = applicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
+        String schema = applicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
+        String repoUser = applicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
+        String repoPassword = applicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
+
+        boolean connectionValid = DatabaseStorage.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
+        if (connectionValid) {
+            Repository databaseRepository = repositoryFactory.getDatabaseRepository();
+            boolean validScheme = databaseRepository.validateDatabaseScheme();
+            if (!validScheme && applicationSettings.getRepositorySchemaCreate()) {
+                validScheme = databaseRepository.updateDatabaseScheme();
+            }
+            try {
+                databaseRepository.close();
+            } catch (IOException ignore) {
+            }
+            return validScheme;
+        }
+        return false;
     }
 
     public void connectRepository() {
@@ -301,7 +339,7 @@ public class Project {
             } catch (IOException ignore) {
             }
         }
-        this.repository = RepositoryFactory.getDatabaseRepository();
+        this.repository = repositoryFactory.getDatabaseRepository();
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {
@@ -418,13 +456,13 @@ public class Project {
         initializeStateOfExternalModels();
         registerParameterLinks();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
-        ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
+        applicationSettings.setRepositoryServerHostname(repository.getUrl());
     }
 
     public boolean storeUnitManagement() {
         try {
             unitManagement = repository.storeUnitManagement(unitManagement);
-            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
+            applicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing unit management.", e);
@@ -435,7 +473,7 @@ public class Project {
     public boolean storeUserManagement() {
         try {
             userManagement = repository.storeUserManagement(userManagement);
-            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
+            applicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing user management.", e);
@@ -447,7 +485,7 @@ public class Project {
         try {
             UserRoleManagement userRoleManagement = repository.storeUserRoleManagement(getStudy().getUserRoleManagement());
             getStudy().setUserRoleManagement(userRoleManagement);
-            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
+            applicationSettings.setRepositoryServerHostname(repository.getUrl());
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing user role management.", e);

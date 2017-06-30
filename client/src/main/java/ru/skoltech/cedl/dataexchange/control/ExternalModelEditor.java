@@ -50,7 +50,6 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     private VBox externalModelViewContainer;
 
     private ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener;
-
     private ModelEditingController.ParameterUpdateListener parameterUpdateListener;
 
     public ExternalModelEditor() {
@@ -95,7 +94,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
                         renderExternalModelView(externalModel);
                         Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
                         StatusLogger.getInstance().log("added external model: " + externalModel.getName());
-                        ActionLogger.log(ActionLogger.ActionType.external_model_add, externalModel.getNodePath());
+                        project.getActionLogger().log(ActionLogger.ActionType.EXTERNAL_MODEL_ADD, externalModel.getNodePath());
                         project.markStudyModified();
                     } catch (IOException e) {
                         logger.warn("Unable to import model file.", e);
@@ -130,7 +129,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
             Project project = ProjectContext.getInstance().getProject();
             project.markStudyModified();
             StatusLogger.getInstance().log("removed external model: " + externalModel.getName());
-            ActionLogger.log(ActionLogger.ActionType.external_model_remove, externalModel.getNodePath());
+            project.getActionLogger().log(ActionLogger.ActionType.EXTERNAL_MODEL_REMOVE, externalModel.getNodePath());
         }
     }
 
@@ -178,7 +177,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
                     Platform.runLater(ExternalModelEditor.this::updateView);
                     Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
                     StatusLogger.getInstance().log("replaced external model: " + oldFileName + " > " + fileName);
-                    ActionLogger.log(ActionLogger.ActionType.external_model_modify, oldNodePath + " > " + fileName);
+                    project.getActionLogger().log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, oldNodePath + " > " + fileName);
                     project.markStudyModified();
                 } catch (IOException e) {
                     logger.warn("Unable to import model file.", e);

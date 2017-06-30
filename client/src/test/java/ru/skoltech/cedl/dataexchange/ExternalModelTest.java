@@ -28,7 +28,8 @@ public class ExternalModelTest {
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        repository = RepositoryFactory.getTempRepository();
+        RepositoryFactory repositoryFactory = new RepositoryFactory(null);
+        repository = repositoryFactory.getTempRepository();
     }
 
     @After

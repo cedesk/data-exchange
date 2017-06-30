@@ -27,8 +27,14 @@ public class UnitManagementTest {
 
     @Before
     public void prepare() {
-        this.databaseStorage = RepositoryFactory.getTempRepository();
+        RepositoryFactory repositoryFactory = new RepositoryFactory(null);
+        this.databaseStorage = repositoryFactory.getTempRepository();
         this.unitManagement = UnitManagementFactory.getUnitManagement();
+    }
+
+    @After
+    public void cleanup() {
+        databaseStorage.close();
     }
 
     @Test
@@ -55,10 +61,5 @@ public class UnitManagementTest {
         UnitManagement loadedUnitManagement = databaseStorage.loadUnitManagement();
 
         Assert.assertEquals(storedUnitManagement, loadedUnitManagement);
-    }
-
-    @After
-    public void cleanup() {
-        databaseStorage.close();
     }
 }

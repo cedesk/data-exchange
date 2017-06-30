@@ -26,7 +26,6 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
 import ru.skoltech.cedl.dataexchange.*;
-import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.*;
@@ -186,14 +185,14 @@ public class MainController implements Initializable {
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
                             StatusLogger.getInstance().log("Successfully deleted study!", false);
-                            ActionLogger.log(ActionLogger.ActionType.project_delete, studyName);
+                            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
                         }
                     } else {
                         Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study", "Are you really sure to delete project '" + studyName + "' from the repository?\nWARNING: This is not reversible!");
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
                             StatusLogger.getInstance().log("Successfully deleted study!", false);
-                            ActionLogger.log(ActionLogger.ActionType.project_delete, studyName);
+                            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
                         }
                     }
                 } catch (RepositoryException re) {
@@ -215,7 +214,7 @@ public class MainController implements Initializable {
             try {
                 fs.storeSystemModel(project.getSystemModel(), outputFile);
                 StatusLogger.getInstance().log("Successfully exported study!", false);
-                ActionLogger.log(ActionLogger.ActionType.project_export, project.getProjectName());
+                project.getActionLogger().log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
             } catch (IOException e) {
                 logger.error("error exporting model to file", e);
             }
@@ -227,7 +226,7 @@ public class MainController implements Initializable {
     public void importProject(ActionEvent actionEvent) {
         File importFile = null;
         if (actionEvent == null) { // invoked from startup
-            String projectToImport = ApplicationSettings.getProjectToImport();
+            String projectToImport = project.getApplicationSettings().getProjectToImport();
             if (projectToImport != null) {
                 importFile = new File(StorageUtils.getAppDir(), projectToImport);
                 if (importFile.exists()) {
@@ -253,7 +252,7 @@ public class MainController implements Initializable {
                 project.importSystemModel(systemModel);
                 updateView();
                 StatusLogger.getInstance().log("Successfully imported study!", false);
-                ActionLogger.log(ActionLogger.ActionType.project_import, project.getProjectName());
+                project.getActionLogger().log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName());
             } catch (IOException e) {
                 logger.error("error importing model from file");
             }
@@ -315,7 +314,7 @@ public class MainController implements Initializable {
             }
         });
 
-        if (ApplicationSettings.getAutoSync()) {
+        if (project.getApplicationSettings().getAutoSync()) {
             repositoryWatcher.start();
         }
 
@@ -364,7 +363,7 @@ public class MainController implements Initializable {
             SystemModel systemModel = builder.build(projectName);
             project.newStudy(systemModel);
             StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
-            ActionLogger.log(ActionLogger.ActionType.project_new, projectName);
+            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_NEW, projectName);
             updateView();
         }
     }
@@ -503,9 +502,11 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-            stage.setOnCloseRequest(event -> {
-                validateUser();
-            });
+
+            ProjectSettingsController controller = loader.getController();
+            controller.setProject(project);
+
+            stage.setOnCloseRequest(event -> validateUser());
             stage.showAndWait();
             updateView();
         } catch (IOException e) {
@@ -525,8 +526,12 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
+
+            RepositorySettingsController controller = loader.getController();
+            controller.setProject(project);
+
             stage.setOnCloseRequest(event -> {
-                if (!checkRepository()) {
+                if (!project.checkRepository()) {
                     Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository!");
                     quit(null);
                 }
@@ -620,18 +625,18 @@ public class MainController implements Initializable {
         try {
             boolean success = project.loadLocalStudy();
             if (success) {
-                ApplicationSettings.setLastUsedProject(project.getProjectName());
+                project.getApplicationSettings().setLastUsedProject(project.getProjectName());
                 repositoryWatcher.unpause();
                 StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
-                ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName());
+                project.getActionLogger().log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName());
             } else {
                 StatusLogger.getInstance().log("Loading study failed!", false);
-                ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName() + ", loading failed");
+                project.getActionLogger().log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName() + ", loading failed");
             }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading project!", true);
             logger.error("Error loading project", e);
-            ActionLogger.log(ActionLogger.ActionType.project_load, project.getProjectName() + ", loading failed");
+            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName() + ", loading failed");
         }
         updateView();
     }
@@ -662,22 +667,22 @@ public class MainController implements Initializable {
             project.storeLocalStudy();
             updateView();
             repositoryWatcher.unpause();
-            ApplicationSettings.setLastUsedProject(project.getProjectName());
+            project.getApplicationSettings().setLastUsedProject(project.getProjectName());
             StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
-            ActionLogger.log(ActionLogger.ActionType.project_save, project.getProjectName());
+            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());
         } catch (RepositoryException re) {
             logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
             StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
-            ActionLogger.log(ActionLogger.ActionType.project_save, project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
+            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
         } catch (Exception e) {
             StatusLogger.getInstance().log("Saving study failed!", true);
             logger.error("Unknown Exception", e);
-            ActionLogger.log(ActionLogger.ActionType.project_save, project.getProjectName() + ", saving failed");
+            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName() + ", saving failed");
         }
     }
 
     public void terminate() {
-        ActionLogger.log(ActionLogger.ActionType.application_stop, "");
+        project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_STOP, "");
         if (repositoryWatcher != null) {
             repositoryWatcher.finish();
         }
@@ -701,50 +706,28 @@ public class MainController implements Initializable {
     public void validateUser() {
         boolean validUser = project.checkUser();
         if (!validUser) {
-            String userName = ApplicationSettings.getProjectUser();
+            String userName = project.getApplicationSettings().getProjectUser();
             Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
                     "Contact the administrator for the creation of a user for you.\n" +
                     "As for now you'll be given the role of an observer, who can not perform modifications.");
-            ActionLogger.log(ActionLogger.ActionType.user_validate, userName + ", not found");
+            project.getActionLogger().log(ActionLogger.ActionType.USER_VALIDATE, userName + ", not found");
         }
-    }
-
-    private boolean checkRepository() {
-        String hostname = ApplicationSettings.getRepositoryServerHostname(DatabaseStorage.DEFAULT_HOST_NAME);
-        String schema = ApplicationSettings.getRepositorySchema(DatabaseStorage.DEFAULT_SCHEMA);
-        String repoUser = ApplicationSettings.getRepositoryUserName(DatabaseStorage.DEFAULT_USER_NAME);
-        String repoPassword = ApplicationSettings.getRepositoryPassword(DatabaseStorage.DEFAULT_PASSWORD);
-
-        boolean connectionValid = DatabaseStorage.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
-        if (connectionValid) {
-            Repository databaseRepository = RepositoryFactory.getDatabaseRepository();
-            boolean validScheme = databaseRepository.validateDatabaseScheme();
-            if (!validScheme && ApplicationSettings.getRepositorySchemaCreate()) {
-                validScheme = databaseRepository.updateDatabaseScheme();
-            }
-            try {
-                databaseRepository.close();
-            } catch (IOException ignore) {
-            }
-            return validScheme;
-        }
-        return false;
     }
 
     private void checkRepositoryAndLoadLastProject() {
-        boolean validRepository = checkRepository();
+        boolean validRepository = project.checkRepository();
         if (!validRepository) {
             openRepositorySettingsDialog(null);
-            validRepository = checkRepository();
+            validRepository = project.checkRepository();
         }
         if (!validRepository) return;
         validateUser();
 
-        ActionLogger.log(ActionLogger.ActionType.application_start, ApplicationProperties.getAppVersion());
-        if (ApplicationSettings.getProjectToImport() != null) {
+        project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_START, ApplicationProperties.getAppVersion());
+        if (project.getApplicationSettings().getProjectToImport() != null) {
             importProject(null);
-        } else if (ApplicationSettings.getAutoLoadLastProjectOnStartup()) {
-            String projectName = ApplicationSettings.getLastUsedProject();
+        } else if (project.getApplicationSettings().getAutoLoadLastProjectOnStartup()) {
+            String projectName = project.getApplicationSettings().getLastUsedProject();
             if (projectName != null) {
                 project.setProjectName(projectName);
                 reloadProject(null);

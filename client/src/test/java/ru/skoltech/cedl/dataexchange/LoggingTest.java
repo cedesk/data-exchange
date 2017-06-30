@@ -19,10 +19,19 @@ import java.lang.reflect.InvocationTargetException;
 public class LoggingTest {
 
     private Repository repository;
+    private ActionLogger actionLogger;
 
-    @Test
-    public void actionLoggerTest() {
-        ActionLogger.log("testing", "whatever is going on");
+    @Before
+    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
+        ApplicationSettings applicationSettings = new ApplicationSettings();
+        actionLogger = new ActionLogger(applicationSettings);
+
+        RepositoryFactory repositoryFactory = new RepositoryFactory(applicationSettings);
+        repository = repositoryFactory.getTempRepository();
+        Project project = new Project("project");
+        Field field = Project.class.getDeclaredField("repository");
+        field.setAccessible(true);
+        field.set(project, repository);
     }
 
     @After
@@ -33,13 +42,9 @@ public class LoggingTest {
         }
     }
 
-    @Before
-    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
-        repository = RepositoryFactory.getTempRepository();
-        Project project = new Project("project");
-        Field field = Project.class.getDeclaredField("repository");
-        field.setAccessible(true);
-        field.set(project, repository);
+    @Test
+    public void actionLoggerTest() {
+        actionLogger.log("testing", "whatever is going on");
     }
 
     @Test

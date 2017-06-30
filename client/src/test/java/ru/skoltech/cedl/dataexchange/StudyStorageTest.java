@@ -35,14 +35,15 @@ public class StudyStorageTest {
         return study;
     }
 
+    @Before
+    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        RepositoryFactory repositoryFactory = new RepositoryFactory(null);
+        databaseStorage = repositoryFactory.getTempRepository();
+    }
+
     @After
     public void cleanup() {
         databaseStorage.close();
-    }
-
-    @Before
-    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        databaseStorage = RepositoryFactory.getTempRepository();
     }
 
     @Test

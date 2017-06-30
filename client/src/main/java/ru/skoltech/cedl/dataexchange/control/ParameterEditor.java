@@ -1,6 +1,5 @@
 package ru.skoltech.cedl.dataexchange.control;
 
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -10,7 +9,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -430,7 +428,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         ProjectContext.getInstance().getProject().getParameterLinkRegistry().updateSinks(originalParameterModel);
 
         String attDiffs = attributeDifferences.stream().map(AttributeDifference::asText).collect(Collectors.joining(","));
-        ActionLogger.log(ActionLogger.ActionType.parameter_modify_manual, editingParameterModel.getNodePath() + ": " + attDiffs);
+        project.getActionLogger().log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, editingParameterModel.getNodePath() + ": " + attDiffs);
 
         project.markStudyModified();
         editListener.accept(editingParameterModel);

@@ -23,17 +23,19 @@ public class VersioningStorageTest {
     public static final String ADMIN = "admin";
     private DatabaseStorage databaseStorage;
 
+    @Before
+    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        RepositoryFactory repositoryFactory = new RepositoryFactory(null);
+        databaseStorage = repositoryFactory.getTempRepository();
+
+        ApplicationSettings applicationSettings = new ApplicationSettings();
+        applicationSettings.setUseOsUser(false);
+        applicationSettings.setProjectUser(ADMIN);
+    }
+
     @After
     public void cleanup() {
         databaseStorage.close();
-    }
-
-    @Before
-    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        databaseStorage = RepositoryFactory.getTempRepository();
-
-        ApplicationSettings.setUseOsUser(false);
-        ApplicationSettings.setProjectUser(ADMIN);
     }
 
     @Test

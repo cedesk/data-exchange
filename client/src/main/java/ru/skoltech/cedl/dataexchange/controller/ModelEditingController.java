@@ -170,7 +170,7 @@ public class ModelEditingController implements Initializable {
                     selectedItem.setExpanded(true);
                     project.markStudyModified();
                     StatusLogger.getInstance().log("added node: " + newNode.getNodePath());
-                    ActionLogger.log(ActionLogger.ActionType.node_add, newNode.getNodePath());
+                    project.getActionLogger().log(ActionLogger.ActionType.NODE_ADD, newNode.getNodePath());
                 }
             }
         } else {
@@ -198,7 +198,7 @@ public class ModelEditingController implements Initializable {
                 parameter = new ParameterModel(parameterName, 0.0);
                 selectedItem.getValue().addParameter(parameter);
                 StatusLogger.getInstance().log("added parameter: " + parameter.getName());
-                ActionLogger.log(ActionLogger.ActionType.parameter_add, parameter.getNodePath());
+                project.getActionLogger().log(ActionLogger.ActionType.PARAMETER_ADD, parameter.getNodePath());
                 project.markStudyModified();
             }
         }
@@ -249,7 +249,7 @@ public class ModelEditingController implements Initializable {
                 }
                 project.markStudyModified();
                 StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
-                ActionLogger.log(ActionLogger.ActionType.node_remove, deleteNode.getNodePath());
+                project.getActionLogger().log(ActionLogger.ActionType.NODE_REMOVE, deleteNode.getNodePath());
             }
         }
     }
@@ -269,7 +269,7 @@ public class ModelEditingController implements Initializable {
             selectedItem.getValue().getParameters().remove(parameterModel);
             project.getParameterLinkRegistry().removeSink(parameterModel);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
-            ActionLogger.log(ActionLogger.ActionType.parameter_remove, parameterModel.getNodePath());
+            project.getActionLogger().log(ActionLogger.ActionType.PARAMETER_REMOVE, parameterModel.getNodePath());
             updateParameterTable(selectedItem);
             project.markStudyModified();
         }

@@ -20,6 +20,12 @@ public class ModelStorageTest {
 
     private DatabaseStorage databaseStorage;
 
+    @Before
+    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        RepositoryFactory repositoryFactory = new RepositoryFactory(null);
+        databaseStorage = repositoryFactory.getTempRepository();
+    }
+
     @After
     public void cleanup() {
         databaseStorage.close();
@@ -38,12 +44,6 @@ public class ModelStorageTest {
         Assert.assertEquals(systemModel1.getName(), systemModel.getName());
         Assert.assertArrayEquals(systemModel1.getParameters().toArray(), systemModel.getParameters().toArray());
         Assert.assertEquals(systemModel1, systemModel);
-
-    }
-
-    @Before
-    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        databaseStorage = RepositoryFactory.getTempRepository();
     }
 
     @Test

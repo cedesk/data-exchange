@@ -22,7 +22,8 @@ public class UserRoleManagementStorageTest {
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        databaseStorage = RepositoryFactory.getTempRepository();
+        RepositoryFactory repositoryFactory = new RepositoryFactory(null);
+        databaseStorage = repositoryFactory.getTempRepository();
     }
 
     @After

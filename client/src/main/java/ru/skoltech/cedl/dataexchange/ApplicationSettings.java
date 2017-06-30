@@ -38,18 +38,40 @@ public class ApplicationSettings {
 
     private static final String STUDY_MODEL_DEPTH = "study.model.depth";
 
-    private static Properties properties = new Properties();
+    private Properties properties = new Properties();
 
-    static {
+    public ApplicationSettings() {
         load();
     }
 
-    public static boolean getAutoLoadLastProjectOnStartup() {
+    private File getSettingsFile() {
+        return new File(StorageUtils.getAppDir(), SETTINGS_FILE);
+    }
+
+    private synchronized void load() {
+        Properties props = new Properties();
+        try (FileReader fileReader = new FileReader(getSettingsFile())) {
+            props.load(fileReader);
+            properties = props;
+        } catch (IOException e) {
+            logger.error("Error loading application settings!");
+        }
+    }
+
+    private synchronized void save() {
+        try (FileWriter fileWriter = new FileWriter(getSettingsFile())) {
+            properties.store(fileWriter, SETTINGS_COMMENTS);
+        } catch (IOException e) {
+            logger.error("Error saving application settings!");
+        }
+    }
+
+    public boolean getAutoLoadLastProjectOnStartup() {
         String autoload = properties.getProperty(PROJECT_LAST_AUTOLOAD);
         return autoload == null || Boolean.parseBoolean(autoload);
     }
 
-    public static void setAutoLoadLastProjectOnStartup(boolean autoload) {
+    public void setAutoLoadLastProjectOnStartup(boolean autoload) {
         String prop = properties.getProperty(PROJECT_LAST_AUTOLOAD);
         if (prop == null || Boolean.parseBoolean(prop) != autoload) {
             properties.setProperty(PROJECT_LAST_AUTOLOAD, Boolean.toString(autoload));
@@ -57,13 +79,12 @@ public class ApplicationSettings {
         }
     }
 
-    public static boolean getAutoSync() {
+    public boolean getAutoSync() {
         String autosync = properties.getProperty(REPOSITORY_WATCHER_AUTO_SYNC);
         return autosync == null || Boolean.parseBoolean(autosync);
     }
 
-
-    public static void setAutoSync(boolean autoSync) {
+    public void setAutoSync(boolean autoSync) {
         String prop = properties.getProperty(REPOSITORY_WATCHER_AUTO_SYNC);
         if (prop == null || Boolean.parseBoolean(prop) != autoSync) {
             properties.setProperty(REPOSITORY_WATCHER_AUTO_SYNC, Boolean.toString(autoSync));
@@ -71,11 +92,11 @@ public class ApplicationSettings {
         }
     }
 
-    public static String getLastUsedProject() {
+    public String getLastUsedProject() {
         return properties.getProperty(PROJECT_LAST_NAME);
     }
 
-    public static void setLastUsedProject(String projectName) {
+    public void setLastUsedProject(String projectName) {
         String projName = properties.getProperty(PROJECT_LAST_NAME);
         if (projName == null || !projName.equals(projectName)) {
             properties.setProperty(PROJECT_LAST_NAME, projectName);
@@ -83,11 +104,11 @@ public class ApplicationSettings {
         }
     }
 
-    public static String getProjectToImport() {
+    public String getProjectToImport() {
         return properties.getProperty(PROJECT_IMPORT_NAME);
     }
 
-    public static String getProjectUser() {
+    public String getProjectUser() {
         String userNameFromSettings = properties.getProperty(PROJECT_USER_NAME);
         if (!getUseOsUser() && userNameFromSettings != null && !userNameFromSettings.isEmpty()) {
             return userNameFromSettings;
@@ -96,7 +117,7 @@ public class ApplicationSettings {
         }
     }
 
-    public static void setProjectUser(String projectUser) {
+    public void setProjectUser(String projectUser) {
         String userName = properties.getProperty(PROJECT_USER_NAME);
         if (userName == null || !userName.equals(projectUser)) {
             if (projectUser != null) {
@@ -108,21 +129,17 @@ public class ApplicationSettings {
         }
     }
 
-    public static boolean getRepositorySchemaCreate() {
+    public boolean getRepositorySchemaCreate() {
         String schemaCreate = properties.getProperty(REPOSITORY_SCHEMA_CREATE);
         return schemaCreate != null && Boolean.parseBoolean(schemaCreate);
     }
 
-    private static File getSettingsFile() {
-        return new File(StorageUtils.getAppDir(), SETTINGS_FILE);
-    }
-
-    public static boolean getUseOsUser() {
+    public boolean getUseOsUser() {
         String useOsUser = properties.getProperty(PROJECT_USE_OS_USER);
         return useOsUser == null || Boolean.parseBoolean(useOsUser);
     }
 
-    public static void setUseOsUser(boolean useOsUser) {
+    public void setUseOsUser(boolean useOsUser) {
         String prop = properties.getProperty(PROJECT_USE_OS_USER);
         if (prop == null || Boolean.parseBoolean(prop) != useOsUser) {
             properties.setProperty(PROJECT_USE_OS_USER, Boolean.toString(useOsUser));
@@ -130,7 +147,7 @@ public class ApplicationSettings {
         }
     }
 
-    public static void setRepositoryPassword(String password) {
+    public void setRepositoryPassword(String password) {
         if (password == null) return;
         String previousPassword = properties.getProperty(REPOSITORY_PASSWORD);
         if (previousPassword == null || !previousPassword.equals(password)) {
@@ -143,7 +160,7 @@ public class ApplicationSettings {
         }
     }
 
-    public static void setRepositoryServerHostname(String repository) {
+    public void setRepositoryServerHostname(String repository) {
         if (repository == null) return;
         String previousRepository = properties.getProperty(REPOSITORY_HOST);
         if (previousRepository == null || !previousRepository.equals(repository)) {
@@ -152,7 +169,7 @@ public class ApplicationSettings {
         }
     }
 
-    public static void setRepositoryUserName(String userName) {
+    public void setRepositoryUserName(String userName) {
         if (userName == null) return;
         String previousUser = properties.getProperty(REPOSITORY_USER);
         if (previousUser == null || !previousUser.equals(userName)) {
@@ -165,7 +182,7 @@ public class ApplicationSettings {
         }
     }
 
-    public static void setStudyModelDepth(Integer studyModelDepth) {
+    public void setStudyModelDepth(Integer studyModelDepth) {
         if (studyModelDepth == null) return;
         String previousValue = properties.getProperty(STUDY_MODEL_DEPTH);
         if (previousValue == null || !previousValue.equals(String.valueOf(studyModelDepth))) {
@@ -174,25 +191,7 @@ public class ApplicationSettings {
         }
     }
 
-    private static synchronized void load() {
-        Properties props = new Properties();
-        try (FileReader fileReader = new FileReader(getSettingsFile())) {
-            props.load(fileReader);
-            properties = props;
-        } catch (IOException e) {
-            logger.error("Error loading application settings!");
-        }
-    }
-
-    private static synchronized void save() {
-        try (FileWriter fileWriter = new FileWriter(getSettingsFile())) {
-            properties.store(fileWriter, SETTINGS_COMMENTS);
-        } catch (IOException e) {
-            logger.error("Error saving application settings!");
-        }
-    }
-
-    public static String getRepositoryServerHostname(String defaultRepositoryHostName) {
+    public String getRepositoryServerHostname(String defaultRepositoryHostName) {
         String repo = properties.getProperty(REPOSITORY_HOST);
         if (repo == null) {
             logger.warn("Empty repository url. Assuming: " + defaultRepositoryHostName);
@@ -201,7 +200,7 @@ public class ApplicationSettings {
         return repo;
     }
 
-    public static String getRepositorySchema(String defaultRepositorySchema) {
+    public String getRepositorySchema(String defaultRepositorySchema) {
         String schema = properties.getProperty(REPOSITORY_SCHEMA_NAME);
         if (schema == null) {
             logger.warn("Empty repository schema. Assuming: " + defaultRepositorySchema);
@@ -210,7 +209,7 @@ public class ApplicationSettings {
         return schema;
     }
 
-    public static String getRepositoryUserName(String defaultUserName) {
+    public String getRepositoryUserName(String defaultUserName) {
         String repositoryUser = properties.getProperty(REPOSITORY_USER);
         if (repositoryUser == null) {
             logger.warn("Empty repository user. Assuming: " + defaultUserName);
@@ -219,7 +218,7 @@ public class ApplicationSettings {
         return repositoryUser;
     }
 
-    public static String getRepositoryPassword(String defaultPassword) {
+    public String getRepositoryPassword(String defaultPassword) {
         String repositoryPassword = properties.getProperty(REPOSITORY_PASSWORD);
         if (repositoryPassword == null) {
             logger.warn("Empty repository password. Assuming: " + defaultPassword);
@@ -228,7 +227,7 @@ public class ApplicationSettings {
         return repositoryPassword;
     }
 
-    public static int getStudyModelDepth(int defaultValue) {
+    public int getStudyModelDepth(int defaultValue) {
         String studyModelDepthStr = properties.getProperty(STUDY_MODEL_DEPTH);
         int studyModelDepth = defaultValue;
         if (studyModelDepthStr != null) {

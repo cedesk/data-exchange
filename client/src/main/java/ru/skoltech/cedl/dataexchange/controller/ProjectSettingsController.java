@@ -47,6 +47,12 @@ public class ProjectSettingsController implements Initializable {
     @FXML
     private TextField userNameText;
 
+    private Project project;
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     private StudySettings getStudySettings() {
         Project project = ProjectContext.getInstance().getProject();
         if (project != null && project.getStudy() != null) {
@@ -93,19 +99,19 @@ public class ProjectSettingsController implements Initializable {
             logger.info(studySettings);
         }
 
-        ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
-        ApplicationSettings.setUseOsUser(useOsUserCheckbox.isSelected());
+        project.getApplicationSettings().setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
+        project.getApplicationSettings().setUseOsUser(useOsUserCheckbox.isSelected());
         String userName = null;
         if (useOsUserCheckbox.isSelected()) {
-            ApplicationSettings.setProjectUser(null);
-            userName = ApplicationSettings.getProjectUser(); // get default value
+            project.getApplicationSettings().setProjectUser(null);
+            userName = project.getApplicationSettings().getProjectUser(); // get default value
         } else {
             userName = userNameText.getText();
         }
         boolean validUser = ProjectContext.getInstance().getProject().getUserManagement().checkUser(userName);
         logger.info("using user: '" + userName + "', valid: " + validUser);
         if (validUser) {
-            ApplicationSettings.setProjectUser(userName);
+            project.getApplicationSettings().setProjectUser(userName);
         } else {
             Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
         }
@@ -129,9 +135,9 @@ public class ProjectSettingsController implements Initializable {
         File projectDataDir = ProjectContext.getInstance().getProjectDataDir();
         projectDirectoryText.setText(projectDataDir.getAbsolutePath());
 
-        autoloadOnStartupCheckbox.setSelected(ApplicationSettings.getAutoLoadLastProjectOnStartup());
-        useOsUserCheckbox.setSelected(ApplicationSettings.getUseOsUser());
-        userNameText.setText(ApplicationSettings.getProjectUser());
+        autoloadOnStartupCheckbox.setSelected(project.getApplicationSettings().getAutoLoadLastProjectOnStartup());
+        useOsUserCheckbox.setSelected(project.getApplicationSettings().getUseOsUser());
+        userNameText.setText(project.getApplicationSettings().getProjectUser());
 
     }
 }
