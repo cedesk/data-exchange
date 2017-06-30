@@ -49,8 +49,14 @@ public class ProjectSettingsController implements Initializable {
 
     private Project project;
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
+    }
+
     public void setProject(Project project) {
         this.project = project;
+        updateView();
     }
 
     private StudySettings getStudySettings() {
@@ -78,12 +84,6 @@ public class ProjectSettingsController implements Initializable {
 
     public void cleanupProjectCache(ActionEvent actionEvent) {
         ProjectContext.getInstance().getProject().getExternalModelFileHandler().cleanupCache();
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
-        updateView();
     }
 
     private boolean updateModel() {

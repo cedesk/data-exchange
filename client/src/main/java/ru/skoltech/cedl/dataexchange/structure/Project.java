@@ -6,6 +6,7 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.external.*;
@@ -42,9 +43,9 @@ public class Project {
 
     private final ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
 
+    private final ApplicationContext context;
     private ApplicationSettings applicationSettings;
     private ActionLogger actionLogger;
-    private RepositoryFactory repositoryFactory;
 
     private String projectName;
     private Study study;
@@ -71,9 +72,9 @@ public class Project {
 
     public Project(String projectName) {
         //TODO rewrite after puting project on IoC container
-        applicationSettings = ClientApplication.context.getBean("applicationSettings", ApplicationSettings.class);
-        actionLogger = ClientApplication.context.getBean("actionLogger", ActionLogger.class);
-        repositoryFactory = ClientApplication.context.getBean("repositoryFactory", RepositoryFactory.class);
+        context = ClientApplication.context;
+        applicationSettings = context.getBean("applicationSettings", ApplicationSettings.class);
+        actionLogger = context.getBean("actionLogger", ActionLogger.class);
 
         connectRepository();
         initialize(projectName);
@@ -315,13 +316,13 @@ public class Project {
 
         boolean connectionValid = DatabaseStorage.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
         if (connectionValid) {
-            Repository databaseRepository = repositoryFactory.createDatabaseRepository();
-            boolean validScheme = databaseRepository.validateDatabaseScheme();
+            Repository repository = context.getBean("repository", Repository.class);
+            boolean validScheme = repository.validateDatabaseScheme();
             if (!validScheme && applicationSettings.getRepositorySchemaCreate()) {
-                validScheme = databaseRepository.updateDatabaseScheme();
+                validScheme = repository.updateDatabaseScheme();
             }
             try {
-                databaseRepository.close();
+                repository.close();
             } catch (IOException ignore) {
             }
             return validScheme;
@@ -336,7 +337,7 @@ public class Project {
             } catch (IOException ignore) {
             }
         }
-        this.repository = repositoryFactory.createDatabaseRepository();
+        this.repository = context.getBean("repository", Repository.class);
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {

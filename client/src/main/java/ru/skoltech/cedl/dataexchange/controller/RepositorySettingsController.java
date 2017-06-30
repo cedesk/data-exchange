@@ -49,11 +49,11 @@ public class RepositorySettingsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        updateView();
     }
 
     public void setProject(Project project) {
         this.project = project;
+        updateView();
     }
 
     private void updateView() {

@@ -14,4 +14,7 @@
     <bean id="repositoryFactory" class="ru.skoltech.cedl.dataexchange.repository.ApplicationSettingsRepositoryFactory">
         <constructor-arg ref="applicationSettings" />
     </bean>
+
+    <bean id="repository" factory-bean="repositoryFactory" factory-method="createDatabaseRepository"
+        scope="prototype"/>
 </beans>
