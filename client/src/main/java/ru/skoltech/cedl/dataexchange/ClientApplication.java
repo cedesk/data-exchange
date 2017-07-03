@@ -10,7 +10,6 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
@@ -19,7 +18,7 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 public class ClientApplication extends Application {
 
     private static Logger logger = Logger.getLogger(ClientApplication.class);
-    public static ApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"/META-INF/context.xml"});
+    private static ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
     private MainController mainController;
 
     public static void main(String[] args) {
@@ -37,6 +36,7 @@ public class ClientApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader();
+        loader.setControllerFactory(aClass -> context.getBean(aClass));
         loader.setLocation(Views.MAIN_WINDOW);
         Parent root = loader.load();
         mainController = loader.getController();

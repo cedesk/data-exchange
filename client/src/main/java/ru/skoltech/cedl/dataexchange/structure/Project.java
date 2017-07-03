@@ -44,8 +44,8 @@ public class Project {
 
     private final ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
 
-    private final ApplicationContext context;
     private ApplicationSettings applicationSettings;
+    private RepositoryFactory repositoryFactory;
     private ActionLogger actionLogger;
 
     private String projectName;
@@ -67,18 +67,13 @@ public class Project {
     private BooleanProperty canLoad = new SimpleBooleanProperty(false);
     private BooleanProperty canSync = new SimpleBooleanProperty(false);
 
-    public Project() {
-        this(DEFAULT_PROJECT_NAME);
+    public void init() {
+        init(DEFAULT_PROJECT_NAME);
     }
 
-    public Project(String projectName) {
-        //TODO rewrite after puting project on IoC container
-        context = ClientApplication.context;
-        applicationSettings = context.getBean("applicationSettings", ApplicationSettings.class);
-        actionLogger = context.getBean("actionLogger", ActionLogger.class);
-
-        connectRepository();
-        initialize(projectName);
+    public void init(String projectName) {
+        this.connectRepository();
+        this.initialize(projectName);
         externalModelFileHandler = new ExternalModelFileHandler(this);
         repositoryStateMachine.addObserver((o, arg) -> {
             updatePossibleActions();
@@ -89,8 +84,28 @@ public class Project {
         return applicationSettings;
     }
 
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
+
+    public RepositoryFactory getRepositoryFactory() {
+        return repositoryFactory;
+    }
+
+    public void setRepositoryFactory(RepositoryFactory repositoryFactory) {
+        this.repositoryFactory = repositoryFactory;
+    }
+
     public ActionLogger getActionLogger() {
         return actionLogger;
+    }
+
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
+    }
+
+    public static void setLogger(Logger logger) {
+        Project.logger = logger;
     }
 
     public List<Discipline> getCurrentUserDisciplines() {
@@ -317,7 +332,7 @@ public class Project {
 
         boolean connectionValid = DatabaseRepository.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
         if (connectionValid) {
-            Repository repository = context.getBean("repository", Repository.class);
+            Repository repository = repositoryFactory.createDatabaseRepository();
             boolean validScheme = repository.validateDatabaseScheme();
             if (!validScheme && applicationSettings.getRepositorySchemaCreate()) {
                 validScheme = repository.updateDatabaseScheme();
@@ -338,7 +353,8 @@ public class Project {
             } catch (IOException ignore) {
             }
         }
-        this.repository = context.getBean("repository", Repository.class);
+        this.repository = repositoryFactory.createDatabaseRepository();
+        this.actionLogger.setRepository(this.repository); //TODO maybe handle this in IoC container
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {

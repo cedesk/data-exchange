@@ -18,7 +18,7 @@ public class ApplicationSettingsRepositoryFactory implements RepositoryFactory {
 
     @Override
     public Repository createDatabaseRepository() {
-        String persistenceUnit = DatabaseRepository.DB_PERSISTENCE_UNIT_NAME;
+        String persistenceUnit = DatabaseRepository.PERSISTENCE_UNIT_NAME;
         String hostname = applicationSettings.getRepositoryServerHostname(DatabaseRepository.DEFAULT_HOST_NAME);
         String schema = applicationSettings.getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA);
         String repoUser = applicationSettings.getRepositoryUserName(DatabaseRepository.DEFAULT_USER_NAME);

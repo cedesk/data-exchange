@@ -2,8 +2,9 @@ package ru.skoltech.cedl.dataexchange.db;
 
 import org.hibernate.envers.EntityTrackingRevisionListener;
 import org.hibernate.envers.RevisionType;
+import org.springframework.context.ApplicationContext;
+import ru.skoltech.cedl.dataexchange.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.ClientApplication;
 
 import java.io.Serializable;
 
@@ -25,7 +26,8 @@ public class CustomRevisionListener implements EntityTrackingRevisionListener {
     public void newRevision(Object revisionEntity) {
         CustomRevisionEntity revision = (CustomRevisionEntity) revisionEntity;
         // TODO: rewrite for proper DI use, maybe try spring-data-envers
-        ApplicationSettings applicationSettings = ClientApplication.context.getBean("applicationSettings", ApplicationSettings.class);
+        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         revision.setUsername(applicationSettings.getProjectUser()); // not certainly always carries the "current" value
     }
 }

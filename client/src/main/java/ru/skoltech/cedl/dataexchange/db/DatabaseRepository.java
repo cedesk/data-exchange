@@ -47,6 +47,7 @@ public class DatabaseRepository implements Repository {
 
     /**
      * The default backend uses a DB on the localhost.
+     * For test purposes.
      */
     public DatabaseRepository(String persistenceUnit) {
         this.persistenceUnit = persistenceUnit;

@@ -28,7 +28,8 @@ public class ReferenceSelectorDemo extends Application {
     private static Project project;
 
     public static ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
-        project = new Project("TEST");
+        project = new Project();
+        project.init("TEST");
         Study study = new Study("TEST");
         Field field = Project.class.getDeclaredField("study");
         field.setAccessible(true);

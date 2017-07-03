@@ -20,11 +20,7 @@ public class LoggingTest extends AbstractDatabaseTest {
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
         ApplicationSettings applicationSettings = new ApplicationSettings();
         actionLogger = new ActionLogger(applicationSettings);
-
-        Project project = new Project("project");
-        Field field = Project.class.getDeclaredField("repository");
-        field.setAccessible(true);
-        field.set(project, repository);
+        actionLogger.setRepository(repository);
     }
 
     @Test

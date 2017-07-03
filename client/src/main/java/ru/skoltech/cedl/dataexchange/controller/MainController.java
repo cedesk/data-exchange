@@ -57,9 +57,9 @@ public class MainController implements Initializable {
 
     private final static Image FLASH_ICON = new Image("/icons/flash-orange.png");
 
-    private final Project project = new Project();
+    private final Project project;
 
-    private final RepositoryWatcher repositoryWatcher = new RepositoryWatcher(project);
+    private final RepositoryWatcher repositoryWatcher;
 
     @FXML
     private MenuItem exportMenu;
@@ -91,6 +91,11 @@ public class MainController implements Initializable {
     private BorderPane layoutPane;
 
     private ModelEditingController modelEditingController;
+
+    public MainController(Project project) {
+        this.project = project;
+        this.repositoryWatcher = new RepositoryWatcher(project);
+    }
 
     public Window getAppWindow() {
         return applicationPane.getScene().getWindow();

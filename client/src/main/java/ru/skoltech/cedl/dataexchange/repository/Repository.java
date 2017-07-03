@@ -8,7 +8,6 @@ import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
-import javax.transaction.Transactional;
 import java.io.Closeable;
 import java.util.List;
 
@@ -26,54 +25,53 @@ public interface Repository extends Closeable {
     public static final String DEFAULT_SCHEMA = "cedesk_repo";
     public static final String DEFAULT_USER_NAME = "cedesk";
     public static final String DEFAULT_PASSWORD = "cedesk";
-    public static final String DB_PERSISTENCE_UNIT_NAME = "db";
-    public static final String MEM_PERSISTENCE_UNIT_NAME = "mem";
+    public static final String PERSISTENCE_UNIT_NAME = "db";
 
 
     boolean validateDatabaseScheme();
 
-    @Transactional
+//    @Transactional
     boolean updateDatabaseScheme();
 
     List<String> listStudies() throws RepositoryException;
 
     Study loadStudy(String name) throws RepositoryException;
 
-    @Transactional
+//    @Transactional
     void deleteStudy(String name) throws RepositoryException;
 
     Study storeStudy(Study study) throws RepositoryException;
 
     SystemModel loadSystemModel(long studyId) throws RepositoryException;
 
-    @Transactional
+//    @Transactional
     SystemModel storeSystemModel(SystemModel systemModel) throws RepositoryException;
 
     ExternalModel loadExternalModel(long externalModelId) throws RepositoryException;
 
-    @Transactional
+//    @Transactional
     ExternalModel storeExternalModel(ExternalModel externalModel) throws RepositoryException;
 
     UserRoleManagement loadUserRoleManagement(long studyId) throws RepositoryException;
 
-    @Transactional
+//    @Transactional
     UserRoleManagement storeUserRoleManagement(UserRoleManagement userRoleManagement) throws RepositoryException;
 
     UserManagement loadUserManagement() throws RepositoryException;
 
-    @Transactional
+//    @Transactional
     UserManagement storeUserManagement(UserManagement userManagement) throws RepositoryException;
 
     UnitManagement loadUnitManagement() throws RepositoryException;
 
-    @Transactional
+//    @Transactional
     UnitManagement storeUnitManagement(UnitManagement unitManagement) throws RepositoryException;
 
     List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException;
 
     CustomRevisionEntity getLastRevision(PersistedEntity persistedEntity);
 
-    @Transactional
+//    @Transactional
     void storeLog(LogEntry logEntry);
 
     Long getLastStudyModification(String name);
