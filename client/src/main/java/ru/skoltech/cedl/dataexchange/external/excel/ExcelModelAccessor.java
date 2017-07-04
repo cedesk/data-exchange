@@ -1,9 +1,9 @@
 package ru.skoltech.cedl.dataexchange.external.excel;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 
 import java.io.IOException;
@@ -29,10 +29,10 @@ public class ExcelModelAccessor {
         return WorkbookFactory.KNOWN_FILE_EXTENSIONS;
     }
 
-    protected SpreadsheetCellValueAccessor getSpreadsheetAccessor() throws ExternalModelException {
+    protected SpreadsheetCellValueAccessor getSpreadsheetAccessor(Project project) throws ExternalModelException {
         if (spreadsheetAccessor == null) {
             try {
-                ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 String fileName = externalModel.getName();
                 spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName);

@@ -13,7 +13,6 @@ import javafx.scene.layout.HBox;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
@@ -88,7 +87,7 @@ public class ExternalModelView extends HBox implements Initializable {
     }
 
     public void openExternalModel(ActionEvent actionEvent) {
-        ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         try {
             File file = externalModelFileHandler.cacheFile(project, externalModel);
             openFile(file);
@@ -102,7 +101,7 @@ public class ExternalModelView extends HBox implements Initializable {
     }
 
     public void startWizard(ActionEvent actionEvent) {
-        ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         String filename = externalModel.getName();
         if (WorkbookFactory.isWorkbookFile(filename)) {
             try {
@@ -114,7 +113,8 @@ public class ExternalModelView extends HBox implements Initializable {
                 if (choice.isPresent()) {
                     String sheetName = choice.get();
                     Sheet sheet = workbook.getSheet(sheetName);
-                    List<ParameterModel> parameterList = SpreadsheetInputOutputExtractor.extractParameters(externalModel, sheet);
+                    List<ParameterModel> parameterList =
+                            SpreadsheetInputOutputExtractor.extractParameters(project, externalModel, sheet);
                     if (parameterList.size() > 1) {
                         parameterList.sort(new ParameterComparatorByNatureAndName());
 
@@ -136,7 +136,7 @@ public class ExternalModelView extends HBox implements Initializable {
                                 modelNode.getParameters().clear();
                             }
                             parameterList.forEach(modelNode::addParameter);
-                            ProjectContext.getInstance().getProject().markStudyModified();
+                            project.markStudyModified();
                             // TODO: updateView
                         }
                     } else {

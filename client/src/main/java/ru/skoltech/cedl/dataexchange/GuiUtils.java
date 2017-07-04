@@ -13,6 +13,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.controller.ProjectDependent;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 
 import java.io.BufferedReader;
@@ -30,7 +32,7 @@ public class GuiUtils {
 
     private static final Logger logger = Logger.getLogger(GuiUtils.class);
 
-    public static void openView(String title, URL viewLocation, Window owner) {
+    public static void openView(String title, URL viewLocation, Window owner, Project project) {
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(viewLocation);
@@ -42,6 +44,9 @@ public class GuiUtils {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.NONE);
             stage.initOwner(owner);
+
+            ProjectDependent controller = loader.getController();
+            controller.setProject(project);
 
             stage.show();
         } catch (IOException e) {

@@ -69,7 +69,7 @@ public class ReferenceSelectorDemo extends Application {
         ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
 
         System.out.println(parameterModel);
-        ModelUpdateUtil.applyParameterChangesFromExternalModel(parameterModel, externalModelFileHandler,
+        ModelUpdateUtil.applyParameterChangesFromExternalModel(project, parameterModel, externalModelFileHandler,
                 new Consumer<ParameterUpdate>() {
                     @Override
                     public void accept(ParameterUpdate parameterUpdate) {
@@ -78,7 +78,7 @@ public class ReferenceSelectorDemo extends Application {
                 });
         ExternalModelReference valueReference = parameterModel.getValueReference();
         List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
-        Dialog<ExternalModelReference> dialog = new ReferenceSelector(valueReference, externalModels);
+        Dialog<ExternalModelReference> dialog = new ReferenceSelector(project, valueReference, externalModels);
         Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
         if (referenceOptional.isPresent()) {
             ExternalModelReference externalModelReference = referenceOptional.get();

@@ -26,11 +26,11 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
     }
 
     @Override
-    public void setValue(String target, Double value) throws ExternalModelException {
+    public void setValue(Project project, String target, Double value) throws ExternalModelException {
         try {
             SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
             if (spreadsheetAccessor == null) {
-                spreadsheetAccessor = getSpreadsheetAccessor();
+                spreadsheetAccessor = getSpreadsheetAccessor(project);
             }
             logger.debug("setting " + value + " on cell " + target + " in " + externalModel.getNodePath());
             spreadsheetAccessor.setNumericValue(coordinates, value);

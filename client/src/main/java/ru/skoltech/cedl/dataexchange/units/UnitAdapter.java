@@ -1,6 +1,8 @@
 package ru.skoltech.cedl.dataexchange.units;
 
-import ru.skoltech.cedl.dataexchange.ProjectContext;
+import org.springframework.context.ApplicationContext;
+import ru.skoltech.cedl.dataexchange.ApplicationContextInitializer;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
@@ -12,7 +14,9 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class UnitAdapter extends XmlAdapter<String, Unit> {
     @Override
     public Unit unmarshal(String unitStr) throws Exception {
-        UnitManagement unitManagement = ProjectContext.getInstance().getProject().getUnitManagement();
+        // TODO: rewrite for proper injection
+        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+        UnitManagement unitManagement = context.getBean(Project.class).getUnitManagement();
         Unit unit = unitManagement.findUnitByText(unitStr);
         return unit;
     }

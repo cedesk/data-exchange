@@ -14,7 +14,6 @@ import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.control.DiagramView;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -35,7 +34,7 @@ import java.util.ResourceBundle;
 /**
  * Created by D.Knoll on 02.11.2015.
  */
-public class DependencyController implements Initializable {
+public class DependencyController implements Initializable, ProjectDependent {
 
     private static final Logger logger = Logger.getLogger(DependencyController.class);
 
@@ -66,8 +65,12 @@ public class DependencyController implements Initializable {
     private Project project;
 
     @Override
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
-        project = ProjectContext.getInstance().getProject();
         sortOrderGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 refreshView(null);
@@ -127,7 +130,7 @@ public class DependencyController implements Initializable {
         FileChooser fc = new FileChooser();
         //fc.setInitialDirectory(new File("res/maps"));
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
-        fc.setInitialFileName(ProjectContext.getInstance().getProject().getProjectName() + "_NSquare_" + Utils.getFormattedDateAndTime());
+        fc.setInitialFileName(project.getProjectName() + "_NSquare_" + Utils.getFormattedDateAndTime());
         fc.setTitle("Save Diagram");
         Window window = diagramView.getScene().getWindow();
         File file = fc.showSaveDialog(window);

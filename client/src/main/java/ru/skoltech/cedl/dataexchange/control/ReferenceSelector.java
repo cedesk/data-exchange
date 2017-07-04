@@ -13,13 +13,13 @@ import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetColumn;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetGridViewFactory;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
@@ -57,6 +57,8 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
     @FXML
     private SpreadsheetView spreadsheetView;
 
+    private Project project;
+
     private ExternalModelReference reference;
 
     private ExternalModel externalModel;
@@ -65,7 +67,8 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
 
     private List<ExternalModel> externalModels;
 
-    public ReferenceSelector(ExternalModelReference reference, List<ExternalModel> externalModels) {
+    public ReferenceSelector(Project project, ExternalModelReference reference, List<ExternalModel> externalModels) {
+        this.project = project;
         this.reference = reference != null ? reference : new ExternalModelReference();
         this.externalModels = externalModels;
 
@@ -98,7 +101,7 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
     private List<String> getSheetNames() {
         List<String> sheetNames = new LinkedList<>();
         try {
-            ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+            ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
             InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
             sheetNames = WorkbookFactory.getSheetNames(inputStream, externalModel.getName());
             Predicate<String> nameTest = SHEET_NAME_PATTERN.asPredicate();
@@ -210,7 +213,7 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
     public void refreshTable(ActionEvent actionEvent) {
         try {
             if (externalModel.getAttachment() != null) {
-                ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 String fileName = externalModel.getName();
                 // TODO: generalize approach for other external model types, now only for SPREADSHEETS

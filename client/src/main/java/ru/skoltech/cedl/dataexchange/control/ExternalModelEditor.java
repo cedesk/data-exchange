@@ -15,7 +15,6 @@ import javafx.scene.layout.VBox;
 import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
@@ -145,7 +144,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         for (ExternalModel externalModel : modelNode.getExternalModels())
             try {
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler,
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler,
                         Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");

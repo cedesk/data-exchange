@@ -10,7 +10,6 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
@@ -89,7 +88,7 @@ public class RepositorySettingsController implements Initializable {
             project.getApplicationSettings().setRepositoryUserName(username);
             project.getApplicationSettings().setRepositoryPassword(password);
             try {
-                ProjectContext.getInstance().getProject().connectRepository();
+                project.connectRepository();
                 validSettings = true;
                 StatusLogger.getInstance().log("Successfully configured repository settings!");
             } catch (Exception e) {
@@ -98,8 +97,8 @@ public class RepositorySettingsController implements Initializable {
         } else {
             Dialogues.showError("Repository Connection Failed", "The given database access credentials did not work! Please verify they are correct, the database server is running and the connection is working.");
         }
-        ProjectContext.getInstance().getProject().loadUserManagement();
-        ProjectContext.getInstance().getProject().loadUnitManagement();
+        project.loadUserManagement();
+        project.loadUnitManagement();
         return validSettings;
     }
 

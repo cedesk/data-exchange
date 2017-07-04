@@ -2,7 +2,6 @@ package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
@@ -20,7 +19,7 @@ public class ModelUpdateUtil {
 
     private static final Logger logger = Logger.getLogger(ModelUpdateUtil.class);
 
-    public static void applyParameterChangesFromExternalModel(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler,
+    public static void applyParameterChangesFromExternalModel(Project project, ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler,
                                                               List<? extends Consumer<ModelUpdate>> modelUpdateListeners, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
@@ -38,7 +37,7 @@ public class ModelUpdateUtil {
                     ExternalModelReference valueReference = parameterModel.getValueReference();
                     if (valueReference != null && valueReference.getExternalModel() != null) {
                         if (externalModel.getName().equals(valueReference.getExternalModel().getName())) {
-                            ParameterUpdate parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
+                            ParameterUpdate parameterUpdate = getParameterUpdate(project, parameterModel, valueReference, evaluator);
                             if (parameterUpdate != null) {
                                 updates.add(parameterUpdate);
                             }
@@ -59,17 +58,17 @@ public class ModelUpdateUtil {
         }
 
         // APPLY CHANGES
-        ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
+        ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
         for (ParameterUpdate parameterUpdate : updates) {
             parameterUpdate.apply();
             if (parameterUpdateListener != null) {
                 parameterUpdateListener.accept(parameterUpdate);
             }
-            parameterLinkRegistry.updateSinks(parameterUpdate.getParameterModel());
+            parameterLinkRegistry.updateSinks(project, parameterUpdate.getParameterModel());
         }
     }
 
-    public static void applyParameterChangesFromExternalModel(ParameterModel parameterModel, ExternalModelFileHandler externalModelFileHandler,
+    public static void applyParameterChangesFromExternalModel(Project project, ParameterModel parameterModel, ExternalModelFileHandler externalModelFileHandler,
                                                               Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ParameterUpdate parameterUpdate = null;
 
@@ -80,7 +79,7 @@ public class ModelUpdateUtil {
                 ExternalModel externalModel = valueReference.getExternalModel();
                 ExternalModelEvaluator evaluator = ExternalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
                 try {
-                    parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
+                    parameterUpdate = getParameterUpdate(project, parameterModel, valueReference, evaluator);
                 } finally {
                     try {
                         evaluator.close();
@@ -98,15 +97,15 @@ public class ModelUpdateUtil {
             if (parameterUpdateListener != null) {
                 parameterUpdateListener.accept(parameterUpdate);
             }
-            ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
-            parameterLinkRegistry.updateSinks(parameterModel);
+            ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
+            parameterLinkRegistry.updateSinks(project, parameterModel);
         }
     }
 
-    private static ParameterUpdate getParameterUpdate(ParameterModel parameterModel, ExternalModelReference valueReference, ExternalModelEvaluator evaluator) throws ExternalModelException {
+    private static ParameterUpdate getParameterUpdate(Project project, ParameterModel parameterModel, ExternalModelReference valueReference, ExternalModelEvaluator evaluator) throws ExternalModelException {
         ParameterUpdate parameterUpdate = null;
         try {
-            Double value = evaluator.getValue(valueReference.getTarget());
+            Double value = evaluator.getValue(project, valueReference.getTarget());
             if (Double.isNaN(value)) {
                 StatusLogger.getInstance().log("invalid value for parameter '" + parameterModel.getNodePath() + "' from '" + valueReference.toString() + "'", true);
             } else if (!Precision.equals(parameterModel.getValue(), value, 2)) {
@@ -132,7 +131,7 @@ public class ModelUpdateUtil {
                 String target = parameterModel.getExportReference().getTarget();
                 if (target != null && !target.isEmpty()) {
                     try {
-                        exporter.setValue(target, parameterModel.getEffectiveValue()); // TODO: document behavior
+                        exporter.setValue(project, target, parameterModel.getEffectiveValue()); // TODO: document behavior
                     } catch (ExternalModelException e) {
                         logger.warn("failed to export parameter " + parameterModel.getNodePath(), e);
                         StatusLogger.getInstance().log("failed to export parameter " + parameterModel.getNodePath());

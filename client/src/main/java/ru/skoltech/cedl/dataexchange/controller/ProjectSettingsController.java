@@ -10,8 +10,6 @@ import javafx.scene.control.TitledPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 
@@ -82,7 +80,7 @@ public class ProjectSettingsController implements Initializable {
     }
 
     public void cleanupProjectCache(ActionEvent actionEvent) {
-        ProjectContext.getInstance().getProject().getExternalModelFileHandler().cleanupCache();
+        project.getExternalModelFileHandler().cleanupCache();
     }
 
     private boolean updateModel() {
@@ -93,7 +91,7 @@ public class ProjectSettingsController implements Initializable {
             boolean newSyncEnable = enableSyncCheckbox.isSelected();
             studySettings.setSyncEnabled(newSyncEnable);
             if (oldSyncEnabled != newSyncEnable) {
-                ProjectContext.getInstance().getProject().markStudyModified();
+                project.markStudyModified();
             }
             logger.info(studySettings);
         }
@@ -107,7 +105,7 @@ public class ProjectSettingsController implements Initializable {
         } else {
             userName = userNameText.getText();
         }
-        boolean validUser = ProjectContext.getInstance().getProject().getUserManagement().checkUser(userName);
+        boolean validUser = project.getUserManagement().checkUser(userName);
         logger.info("using user: '" + userName + "', valid: " + validUser);
         if (validUser) {
             project.getApplicationSettings().setProjectUser(userName);
@@ -119,7 +117,7 @@ public class ProjectSettingsController implements Initializable {
     }
 
     private void updateView() {
-        String projectName = ProjectContext.getInstance().getProject().getProjectName();
+        String projectName = project.getProjectName();
         projectNameText.setText(projectName);
         StudySettings studySettings = getStudySettings();
         if (studySettings != null) {

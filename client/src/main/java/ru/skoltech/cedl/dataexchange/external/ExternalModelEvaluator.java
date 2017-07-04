@@ -1,5 +1,7 @@
 package ru.skoltech.cedl.dataexchange.external;
 
+import ru.skoltech.cedl.dataexchange.structure.Project;
+
 import java.io.Closeable;
 
 /**
@@ -7,5 +9,5 @@ import java.io.Closeable;
  */
 public interface ExternalModelEvaluator extends Closeable {
 
-    Double getValue(String target) throws ExternalModelException;
+    Double getValue(Project project, String target) throws ExternalModelException;
 }

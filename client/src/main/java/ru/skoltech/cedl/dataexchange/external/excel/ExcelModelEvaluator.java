@@ -5,6 +5,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelEvaluator;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 
 import java.text.ParseException;
@@ -22,12 +23,12 @@ public class ExcelModelEvaluator extends ExcelModelAccessor implements ExternalM
     }
 
     @Override
-    public Double getValue(String target) throws ExternalModelException {
+    public Double getValue(Project project, String target) throws ExternalModelException {
         if (target == null)
             throw new ExternalModelException("target is null");
         try {
             SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
-            SpreadsheetCellValueAccessor spreadsheetAccessor = getSpreadsheetAccessor();
+            SpreadsheetCellValueAccessor spreadsheetAccessor = getSpreadsheetAccessor(project);
             return spreadsheetAccessor.getNumericValue(coordinates);
         } catch (ParseException e) {
             logger.error("error parsing coordinates: " + target);

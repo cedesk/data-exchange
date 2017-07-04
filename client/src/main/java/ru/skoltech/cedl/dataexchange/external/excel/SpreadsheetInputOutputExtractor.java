@@ -6,9 +6,9 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.model.ExternalLinksTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
@@ -53,7 +53,7 @@ public class SpreadsheetInputOutputExtractor {
         }
     }
 
-    public static List<ParameterModel> extractParameters(ExternalModel externalModel, Sheet sheet) {
+    public static List<ParameterModel> extractParameters(Project project, ExternalModel externalModel, Sheet sheet) {
         List<String> externalLinks = getWorkbookReferences(sheet.getWorkbook());
 
         List<ParameterModel> parameters = new LinkedList<>();
@@ -99,7 +99,7 @@ public class SpreadsheetInputOutputExtractor {
                             parameterNature = ParameterNature.OUTPUT;
                         }
                         if (parameterNature != ParameterNature.INTERNAL) {
-                            ParameterModel parameter = makeParameter(sheet, externalModel, externalLinks, previousCell, parameterNature, cell);
+                            ParameterModel parameter = makeParameter(project, sheet, externalModel, externalLinks, previousCell, parameterNature, cell);
                             logger.debug("new parameter: " + parameter);
                             parameters.add(parameter);
                         }
@@ -119,12 +119,12 @@ public class SpreadsheetInputOutputExtractor {
      * @param numberCell
      * @return
      */
-    private static Unit extractUnit(Cell numberCell) {
+    private static Unit extractUnit(Project project, Cell numberCell) {
         Row row = numberCell.getRow();
         Cell unitCell = row.getCell(numberCell.getColumnIndex() + 1, Row.RETURN_BLANK_AS_NULL);
         if (unitCell != null && unitCell.getCellTypeEnum() == CellType.STRING) {
             String unitString = SpreadsheetCellValueAccessor.getValueAsString(unitCell);
-            UnitManagement unitManagement = ProjectContext.getInstance().getProject().getUnitManagement();
+            UnitManagement unitManagement = project.getUnitManagement();
             Unit unit = unitManagement.findUnitBySymbolOrName(unitString);
             if (unit == null) {
                 logger.warn("unit not found '" + unitString + "'");
@@ -136,8 +136,9 @@ public class SpreadsheetInputOutputExtractor {
         return null;
     }
 
-    private static ParameterModel makeParameter(Sheet sheet, ExternalModel externalModel, List<String> externalLinks,
-                                                Cell nameCell, ParameterNature nature, Cell numberCell) {
+    private static ParameterModel makeParameter(Project project, Sheet sheet, ExternalModel externalModel,
+                                                List<String> externalLinks, Cell nameCell,
+                                                ParameterNature nature, Cell numberCell) {
         String parameterName = SpreadsheetCellValueAccessor.getValueAsString(nameCell);
         int rowIndex = numberCell.getRowIndex() + 1;
         int columnIndex = numberCell.getColumnIndex() + 1;
@@ -146,7 +147,7 @@ public class SpreadsheetInputOutputExtractor {
         ParameterModel parameter = new ParameterModel();
         parameter.setName(parameterName);
         parameter.setNature(nature);
-        Unit unit = extractUnit(numberCell);
+        Unit unit = extractUnit(project, numberCell);
         parameter.setUnit(unit);
         ExternalModelReference exportReference = new ExternalModelReference(externalModel, coordinates.toString());
         boolean isFormula = numberCell.getCellTypeEnum() == CellType.FORMULA;

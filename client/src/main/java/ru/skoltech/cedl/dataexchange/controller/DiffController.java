@@ -16,7 +16,6 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
@@ -54,32 +53,11 @@ public class DiffController implements Initializable {
     @FXML
     private TableColumn<ModelDifference, String> elementTypeColumn;
 
+    private Project project;
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
-    public void acceptAll(ActionEvent actionEvent) {
-        try {
-            List<ModelDifference> appliedDifferences = DifferenceMerger.mergeChangesOntoFirst(modelDifferences);
-            if (appliedDifferences.size() > 0) {
-                ProjectContext.getInstance().getProject().markStudyModified();
-            }
-            if (modelDifferences.size() == 0) {
-                close(null);
-            }
-        } catch (MergeException me) {
-            StatusLogger.getInstance().log(me.getMessage(), true);
-        }
-    }
-
-    public void close(ActionEvent actionEvent) {
-        Stage stage = (Stage) diffTable.getScene().getWindow();
-        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
-    }
-
-    public void displayDifferences(List<ModelDifference> modelDiffs) {
-        Repository repository = ProjectContext.getInstance().getProject().getRepository();
-        addChangeAuthors(modelDiffs, repository);
-        modelDifferences.clear();
-        modelDifferences.addAll(modelDiffs);
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     @Override
@@ -109,9 +87,34 @@ public class DiffController implements Initializable {
         });
     }
 
+    public void acceptAll(ActionEvent actionEvent) {
+        try {
+            List<ModelDifference> appliedDifferences = DifferenceMerger.mergeChangesOntoFirst(project, modelDifferences);
+            if (appliedDifferences.size() > 0) {
+                project.markStudyModified();
+            }
+            if (modelDifferences.size() == 0) {
+                close(null);
+            }
+        } catch (MergeException me) {
+            StatusLogger.getInstance().log(me.getMessage(), true);
+        }
+    }
+
+    public void close(ActionEvent actionEvent) {
+        Stage stage = (Stage) diffTable.getScene().getWindow();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
+    public void displayDifferences(List<ModelDifference> modelDiffs) {
+        Repository repository = project.getRepository();
+        addChangeAuthors(modelDiffs, repository);
+        modelDifferences.clear();
+        modelDifferences.addAll(modelDiffs);
+    }
+
     public void refreshView(ActionEvent actionEvent) {
-        Project project = ProjectContext.getInstance().getProject();
-        Study localStudy = ProjectContext.getInstance().getProject().getStudy();
+        Study localStudy = project.getStudy();
         Study remoteStudy = project.getRepositoryStudy();
         long latestLoadedModification = project.getLatestLoadedModification();
         project.updateExternalModelsInStudy();
@@ -121,7 +124,7 @@ public class DiffController implements Initializable {
 
     public void revertAll(ActionEvent actionEvent) {
         try {
-            List<ModelDifference> appliedDifferences = DifferenceMerger.revertChangesOnFirst(modelDifferences);
+            List<ModelDifference> appliedDifferences = DifferenceMerger.revertChangesOnFirst(project, modelDifferences);
             if (modelDifferences.size() == 0) {
                 close(null);
             } else if (appliedDifferences.size() > 0) {
@@ -163,9 +166,9 @@ public class DiffController implements Initializable {
         boolean success = false;
         try {
             if (modelDifference.isMergeable()) {
-                success = DifferenceMerger.mergeOne(modelDifference);
+                success = DifferenceMerger.mergeOne(project, modelDifference);
             } else if (modelDifference.isRevertible()) {
-                success = DifferenceMerger.revertOne(modelDifference);
+                success = DifferenceMerger.revertOne(project, modelDifference);
             }
         } catch (MergeException me) {
             StatusLogger.getInstance().log(me.getMessage(), true);
@@ -176,12 +179,11 @@ public class DiffController implements Initializable {
                 // reverting models may have affected parameters referencing values in them
                 Platform.runLater(() -> this.refreshView(null));
             }
-            ProjectContext.getInstance().getProject().markStudyModified();
+            project.markStudyModified();
         }
     }
 
     private boolean isEditable(ModelNode parentNode) {
-        Project project = ProjectContext.getInstance().getProject();
         UserRoleManagement userRoleManagement = project.getUserRoleManagement();
         User user = project.getUser();
         return UserRoleUtil.checkAccess(parentNode, user, userRoleManagement);

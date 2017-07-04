@@ -28,7 +28,10 @@ import org.controlsfx.control.PopOver;
 import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.repository.*;
+import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
@@ -417,7 +420,7 @@ public class MainController implements Initializable {
     }
 
     public void openDepencencyView(ActionEvent actionEvent) {
-        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
+        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow(), project);
     }
 
     public void openDiffView(ActionEvent actionEvent) {
@@ -441,6 +444,8 @@ public class MainController implements Initializable {
             // update from repository
             project.loadRepositoryStudy();
             DiffController controller = loader.getController();
+            controller.setProject(project);
+
             controller.refreshView(null);
             stage.showAndWait();
             modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
@@ -450,7 +455,7 @@ public class MainController implements Initializable {
     }
 
     public void openDsmView(ActionEvent actionEvent) {
-        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
+        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow(), project);
     }
 
     public void openGuideDialog(ActionEvent actionEvent) {
@@ -662,7 +667,7 @@ public class MainController implements Initializable {
                 if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
                     // TODO merge remote changes
                     List<ModelDifference> modelDifferences = StudyDifference.computeDifferences(project.getStudy(), project.getRepositoryStudy(), project.getLatestLoadedModification());
-                    List<ModelDifference> appliedChanges = DifferenceMerger.mergeChangesOntoFirst(modelDifferences);
+                    List<ModelDifference> appliedChanges = DifferenceMerger.mergeChangesOntoFirst(project, modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
                         openDiffView(actionEvent);
                     }

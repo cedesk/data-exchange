@@ -9,7 +9,7 @@ import java.io.Closeable;
  */
 public interface ExternalModelExporter extends Closeable {
 
-    void setValue(String target, Double value) throws ExternalModelException;
+    void setValue(Project project, String target, Double value) throws ExternalModelException;
 
     void flushModifications(Project project, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException;
 }

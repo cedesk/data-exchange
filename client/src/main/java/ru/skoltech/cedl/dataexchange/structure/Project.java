@@ -6,8 +6,10 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import ru.skoltech.cedl.dataexchange.*;
+import org.springframework.stereotype.Component;
+import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
@@ -562,7 +564,6 @@ public class Project {
         this.projectName = projectName;
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
-        ProjectContext.getInstance().setProject(this);
     }
 
     private void initializeStateOfExternalModels() {
@@ -590,7 +591,7 @@ public class Project {
 
             try {
                 // silently update model from external model
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler, null, null);
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(this, externalModel, externalModelFileHandler, null, null);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
             }
@@ -662,7 +663,7 @@ public class Project {
     }
 
     private void updateParameterValuesFromLinks() {
-        parameterLinkRegistry.updateAll(getSystemModel());
+        parameterLinkRegistry.updateAll(this, getSystemModel());
     }
 
     private void updatePossibleActions() {

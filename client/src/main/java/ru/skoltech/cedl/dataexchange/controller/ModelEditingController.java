@@ -21,7 +21,10 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.*;
+import ru.skoltech.cedl.dataexchange.GuiUtils;
+import ru.skoltech.cedl.dataexchange.Identifiers;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.external.*;
@@ -138,7 +141,7 @@ public class ModelEditingController implements Initializable {
                 ExternalModel externalModel = (ExternalModel) arg;
                 ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 try {
-                    ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler,
+                    ModelUpdateUtil.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler,
                             Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ParameterUpdateListener());
                 } catch (ExternalModelException e) {
                     logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
@@ -282,7 +285,7 @@ public class ModelEditingController implements Initializable {
         structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
             @Override
             public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
-                return new TextFieldTreeCell(false);
+                return new TextFieldTreeCell(project, false);
             }
         });
         structureTree.setOnEditCommit(new EventHandler<TreeView.EditEvent<ModelNode>>() {
@@ -380,11 +383,11 @@ public class ModelEditingController implements Initializable {
     }
 
     public void openDepencencyView(ActionEvent actionEvent) {
-        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
+        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow(), project);
     }
 
     public void openDsmView(ActionEvent actionEvent) {
-        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
+        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow(), project);
     }
 
     public void openParameterHistoryDialog(ActionEvent actionEvent) {
@@ -583,7 +586,7 @@ public class ModelEditingController implements Initializable {
             return null;
         }
         String parameterName = null;
-        ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
+        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         if (WorkbookFactory.isWorkbookFile(filename)) {
             try (InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel)) {
                 String sheetName = nameCellCoordinates.getSheetName();

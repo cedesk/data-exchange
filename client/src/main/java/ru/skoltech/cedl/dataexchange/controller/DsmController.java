@@ -11,7 +11,6 @@ import javafx.scene.control.SelectionMode;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.*;
 import ru.skoltech.cedl.dataexchange.GuiUtils;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.NumericalDSM;
@@ -28,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 02.11.2015.
  */
-public class DsmController implements Initializable {
+public class DsmController implements Initializable, ProjectDependent {
 
     private static final Logger logger = Logger.getLogger(DsmController.class);
 
@@ -38,15 +37,11 @@ public class DsmController implements Initializable {
     @FXML
     private CheckBox weightedDsmCheckbox;
 
-    public void generateCode(ActionEvent actionEvent) {
-        final Project project = ProjectContext.getInstance().getProject();
-        final SystemModel systemModel = project.getSystemModel();
-        ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
+    private Project project;
 
-        NumericalDSM dsm = parameterLinkRegistry.makeNumericalDSM(systemModel);
-        boolean weighted = weightedDsmCheckbox.isSelected();
-        String code = dsm.getMatlabCode(weighted);
-        GuiUtils.copyTextToClipboard(code);
+    @Override
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     @Override
@@ -56,8 +51,17 @@ public class DsmController implements Initializable {
         Platform.runLater(() -> refreshView(null));
     }
 
+    public void generateCode(ActionEvent actionEvent) {
+        final SystemModel systemModel = project.getSystemModel();
+        ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
+
+        NumericalDSM dsm = parameterLinkRegistry.makeNumericalDSM(systemModel);
+        boolean weighted = weightedDsmCheckbox.isSelected();
+        String code = dsm.getMatlabCode(weighted);
+        GuiUtils.copyTextToClipboard(code);
+    }
+
     public void refreshView(ActionEvent actionEvent) {
-        Project project = ProjectContext.getInstance().getProject();
         SystemModel systemModel = project.getSystemModel();
         ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
         DependencyModel dependencyModel = parameterLinkRegistry.getDependencyModel(systemModel);

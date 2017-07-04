@@ -19,11 +19,13 @@ import org.apache.log4j.Logger;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 import ru.skoltech.cedl.dataexchange.Identifiers;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.controller.UserNotifications;
-import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
+import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
@@ -184,7 +186,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void chooseSource(ActionEvent actionEvent) {
         List<ExternalModel> externalModels = editingParameterModel.getParent().getExternalModels();
-        Dialog<ExternalModelReference> dialog = new ReferenceSelector(valueReference, externalModels);
+        Dialog<ExternalModelReference> dialog = new ReferenceSelector(project, valueReference, externalModels);
         Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
         if (referenceOptional.isPresent()) {
             ExternalModelReference newValueReference = referenceOptional.get();
@@ -197,7 +199,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void chooseTarget(ActionEvent actionEvent) {
         List<ExternalModel> externalModels = editingParameterModel.getParent().getExternalModels();
-        Dialog<ExternalModelReference> dialog = new ReferenceSelector(exportReference, externalModels);
+        Dialog<ExternalModelReference> dialog = new ReferenceSelector(project, exportReference, externalModels);
         Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
         if (referenceOptional.isPresent()) {
             ExternalModelReference newExportReference = referenceOptional.get();
@@ -346,7 +348,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                 editingParameterModel.setValueReference(valueReference);
                 logger.debug("update parameter value from model");
                 try {
-                    ModelUpdateUtil.applyParameterChangesFromExternalModel(editingParameterModel, externalModelFileHandler,
+                    ModelUpdateUtil.applyParameterChangesFromExternalModel(project, editingParameterModel, externalModelFileHandler,
                             parameterUpdate -> valueText.setText(convertToText(parameterUpdate.getValue())));
                 } catch (ExternalModelException e) {
                     Window window = propertyPane.getScene().getWindow();
@@ -359,7 +361,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
             editingParameterModel.setValueReference(null);
         }
         if (editingParameterModel.getValueSource() == ParameterValueSource.LINK) {
-            ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
+            ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
             ParameterModel previousValueLink = editingParameterModel.getValueLink();
             if (previousValueLink != null) {
                 parameterLinkRegistry.removeLink(previousValueLink, originalParameterModel);
@@ -374,7 +376,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         }
         if (editingParameterModel.getValueSource() == ParameterValueSource.CALCULATION) {
             Calculation previousCalculation = editingParameterModel.getCalculation();
-            ParameterLinkRegistry parameterLinkRegistry = ProjectContext.getInstance().getProject().getParameterLinkRegistry();
+            ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
             if (previousCalculation != null) {
                 parameterLinkRegistry.removeLinks(previousCalculation.getLinkedParameters(), originalParameterModel);
             }
@@ -425,7 +427,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         }
 
         // UPDATE LINKING PARAMETERS
-        ProjectContext.getInstance().getProject().getParameterLinkRegistry().updateSinks(originalParameterModel);
+        project.getParameterLinkRegistry().updateSinks(project, originalParameterModel);
 
         String attDiffs = attributeDifferences.stream().map(AttributeDifference::asText).collect(Collectors.joining(","));
         project.getActionLogger().log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, editingParameterModel.getNodePath() + ": " + attDiffs);

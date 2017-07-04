@@ -1,6 +1,5 @@
 package ru.skoltech.cedl.dataexchange.structure.analytics;
 
-import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -69,7 +68,7 @@ public class ModelInconsistency {
         }
         // params
         for (ParameterModel parameterModel : compositeModelNode.getParameters()) {
-            modelInconsistencies.addAll(analyzeModel(parameterModel, parameterDictionary));
+            modelInconsistencies.addAll(analyzeModel(project, parameterModel, parameterDictionary));
         }
         // subnodes
         for (ModelNode modelNode : compositeModelNode.getSubNodes()) {
@@ -96,7 +95,7 @@ public class ModelInconsistency {
         return modelInconsistencies;
     }
 
-    private static Collection<ModelInconsistency> analyzeModel(ParameterModel pm, Map<String, ParameterModel> parameterDictionary) {
+    private static Collection<ModelInconsistency> analyzeModel(Project project, ParameterModel pm, Map<String, ParameterModel> parameterDictionary) {
         LinkedList<ModelInconsistency> modelInconsistencies = new LinkedList<>();
 
         if (pm.getValue() == null) {
@@ -193,7 +192,7 @@ public class ModelInconsistency {
         }
 
         if (pm.getNature() == ParameterNature.INPUT || pm.getNature() == ParameterNature.INTERNAL) {
-            List<ParameterModel> dependentParameters = ProjectContext.getInstance().getProject().getParameterLinkRegistry().getDependentParameters(pm);
+            List<ParameterModel> dependentParameters = project.getParameterLinkRegistry().getDependentParameters(pm);
             if (dependentParameters.size() > 0) {
                 String parameterNames = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
                 modelInconsistencies.add(new ModelInconsistency("Input parameter must not be used as a source by other parameters: " + parameterNames, Severity.ERROR, pm.getNodePath(), pm));
@@ -205,7 +204,7 @@ public class ModelInconsistency {
             }
         }
         if (pm.getNature() == ParameterNature.OUTPUT) {
-            List<ParameterModel> dependentParameters = ProjectContext.getInstance().getProject().getParameterLinkRegistry().getDependentParameters(pm);
+            List<ParameterModel> dependentParameters = project.getParameterLinkRegistry().getDependentParameters(pm);
             if (dependentParameters.size() == 0) {
                 modelInconsistencies.add(new ModelInconsistency("Output parameter is not linked by any other parameter", Severity.WARNING, pm.getNodePath(), pm));
             }
