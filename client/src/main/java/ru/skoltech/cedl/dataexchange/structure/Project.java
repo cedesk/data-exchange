@@ -303,11 +303,23 @@ public class Project {
         return false;
     }
 
+    /**
+     * Check current version of study in the repository.
+     * Has to be performed regularly for user's ability to synchronize remote and local study.
+     */
     public void checkStudyInRepository() {
+        final boolean autoSyncDisabled = !applicationSettings.getAutoSync();
+        final boolean emptyStudy = this.getStudy() == null;
+        final boolean studyNotInRepository = !this.isStudyInRepository();
+
+        if (autoSyncDisabled || emptyStudy || studyNotInRepository) {
+            return;
+        }
         LocalTime startTime = LocalTime.now();
         Long latestMod = repository.getLastStudyModification(projectName);
         long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
-        logger.info("checked repository study (" + checkDuration + "ms), last modification: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
+        logger.info("checked repository study (" + checkDuration + "ms), " +
+                "last modification: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
 
         if (latestMod != null) {
             setLatestRepositoryModification(latestMod);

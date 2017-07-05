@@ -31,7 +31,6 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryWatcher;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
@@ -60,10 +59,6 @@ public class MainController implements Initializable {
     private static final Logger logger = Logger.getLogger(MainController.class);
 
     private final static Image FLASH_ICON = new Image("/icons/flash-orange.png");
-
-    private final Project project;
-
-    private final RepositoryWatcher repositoryWatcher;
 
     @FXML
     private MenuItem exportMenu;
@@ -96,9 +91,10 @@ public class MainController implements Initializable {
 
     private ModelEditingController modelEditingController;
 
+    private final Project project;
+
     public MainController(Project project) {
         this.project = project;
-        this.repositoryWatcher = new RepositoryWatcher(project);
     }
 
     @Override
@@ -155,10 +151,6 @@ public class MainController implements Initializable {
                 }
             }
         });
-
-        if (project.getApplicationSettings().getAutoSync()) {
-            repositoryWatcher.start();
-        }
 
         newButton.disableProperty().bind(project.canNewProperty().not());
         loadButton.disableProperty().bind(project.canLoadProperty().not());
@@ -340,7 +332,6 @@ public class MainController implements Initializable {
         }
         if (importFile != null) {
             // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
-            //repositoryWatcher.pause();
             FileStorage fs = new FileStorage();
             try {
                 SystemModel systemModel = fs.loadSystemModel(importFile);
@@ -359,7 +350,6 @@ public class MainController implements Initializable {
     public void newProject(ActionEvent actionEvent) {
         Optional<String> choice = Dialogues.inputStudyName(Project.DEFAULT_PROJECT_NAME);
         if (choice.isPresent()) {
-            repositoryWatcher.pause();
             String projectName = choice.get();
             if (!Identifiers.validateProjectName(projectName)) {
                 Dialogues.showError("Invalid name", Identifiers.getProjectNameValidationDescription());
@@ -686,7 +676,6 @@ public class MainController implements Initializable {
             boolean success = project.loadLocalStudy();
             if (success) {
                 project.getApplicationSettings().setLastUsedProject(project.getProjectName());
-                repositoryWatcher.unpause();
                 StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
                 project.getActionLogger().log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName());
             } else {
@@ -729,7 +718,6 @@ public class MainController implements Initializable {
             project.storeUserRoleManagement();
             project.storeLocalStudy();
             updateView();
-            repositoryWatcher.unpause();
             project.getApplicationSettings().setLastUsedProject(project.getProjectName());
             StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
             project.getActionLogger().log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());
@@ -747,9 +735,6 @@ public class MainController implements Initializable {
 
     public void terminate() {
         project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_STOP, "");
-        if (repositoryWatcher != null) {
-            repositoryWatcher.finish();
-        }
         try {
             project.finalize();
         } catch (Throwable ignore) {

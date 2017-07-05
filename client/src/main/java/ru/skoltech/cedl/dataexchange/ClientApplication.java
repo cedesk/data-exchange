@@ -10,6 +10,7 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
@@ -59,6 +60,7 @@ public class ClientApplication extends Application {
     public void stop() throws Exception {
         logger.info("Stopping CEDESK ...");
         try {
+            context.getBean(ThreadPoolTaskScheduler.class).shutdown();
             mainController.terminate();
         } catch (Exception e) {
             logger.warn("", e);

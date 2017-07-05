@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/task  http://www.springframework.org/schema/task/spring-task.xsd">
 
 
     <bean id="applicationSettings" class="ru.skoltech.cedl.dataexchange.ApplicationSettings" />
@@ -31,5 +32,11 @@
         <property name="repositoryFactory" ref="repositoryFactory" />
         <property name="actionLogger" ref="actionLogger" />
     </bean>
+
+    <!-- Schedule a task for regular checking new version of remote study -->
+    <task:scheduler id="scheduler"/>
+    <task:scheduled-tasks scheduler="scheduler">
+        <task:scheduled ref="project" method="checkStudyInRepository" fixed-delay="10000"/>
+    </task:scheduled-tasks>
 
 </beans>
