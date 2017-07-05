@@ -4,9 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 /**

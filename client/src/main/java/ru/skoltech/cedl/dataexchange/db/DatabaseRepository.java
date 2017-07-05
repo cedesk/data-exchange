@@ -6,6 +6,7 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
+import ru.skoltech.cedl.dataexchange.ApplicationProperties;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
@@ -37,6 +38,20 @@ public class DatabaseRepository implements Repository {
     private static final Logger logger = Logger.getLogger(DatabaseRepository.class);
 
     private static final String JDBC_URL_PATTERN = "jdbc:mysql://%s:3306/%s?serverTimezone=UTC";
+
+    public static final String PERSISTENCE_URL_PROPERTY = "javax.persistence.jdbc.url";
+    public static final String PERSISTENCE_USER_PROPERTY = "javax.persistence.jdbc.user";
+    public static final String PERSISTENCE_PASSWORD_PROPERTY = "javax.persistence.jdbc.password";
+    public static final String HIBERNATE_TABLE_MAPPING = "hibernate.hbm2ddl.auto";
+    public static final String HIBERNATE_TABLE_MAPPING_UPDATE = "update";
+    public static final String DEFAULT_HOST_NAME = ApplicationProperties.getDefaultRepositoryHost();
+    public static final String DEFAULT_SCHEMA = "cedesk_repo";
+    public static final String DEFAULT_USER_NAME = "cedesk";
+    public static final String DEFAULT_PASSWORD = "cedesk";
+    public static final String PERSISTENCE_UNIT_NAME = "db";
+
+    private static final long SCHEME_VERSION_APPLICATION_PROPERTY_ID = 1;
+    private static final String SCHEME_VERSION_APPLICATION_PROPERTY_NAME = "version";
 
     private final String persistenceUnit;
     private final String hostName;
@@ -81,19 +96,6 @@ public class DatabaseRepository implements Repository {
             }
         }
         return emf.createEntityManager();
-    }
-
-    public static boolean checkDatabaseConnection(String hostName, String schema, String userName, String password) {
-        final String url = String.format(JDBC_URL_PATTERN, hostName, schema);
-        logger.debug("repository url: " + url + ", user: " + userName);
-        try {
-            DriverManager.getConnection(url, userName, password).close();
-            logger.info("check of database connection succeeded!");
-            return true;
-        } catch (SQLException e) {
-            logger.warn("check of database connection failed!");
-            return false;
-        }
     }
 
     @Override
@@ -568,6 +570,19 @@ public class DatabaseRepository implements Repository {
                 '}';
     }
 
+    public static boolean checkDatabaseConnection(String hostName, String schema, String userName, String password) {
+        final String url = String.format(JDBC_URL_PATTERN, hostName, schema);
+        logger.debug("repository url: " + url + ", user: " + userName);
+        try {
+            DriverManager.getConnection(url, userName, password).close();
+            logger.info("check of database connection succeeded!");
+            return true;
+        } catch (SQLException e) {
+            logger.warn("check of database connection failed!");
+            return false;
+        }
+    }
+
     @Override
     public boolean updateDatabaseScheme() {
         EntityManagerFactory entityManagerFactory = null;
@@ -597,30 +612,33 @@ public class DatabaseRepository implements Repository {
                 }
             }
         }
-        ApplicationProperty targetSchemaVersion = ApplicationProperty.DB_SCHEMA_VERSION;
-        ApplicationProperty actualSchemaVersion = null;
+
+        String currentSchemaVersion = ApplicationProperties.getDbSchemaVersion();
+
+        String actualSchemaVersion = null;
         try {
-            actualSchemaVersion = loadApplicationProperty(targetSchemaVersion);
+            actualSchemaVersion = loadSchemeVersion();
         } catch (RepositoryException e) {
             logger.debug("error loading the applications version property", e);
         }
         if (actualSchemaVersion == null) {
             try {
-                return storeApplicationProperty(targetSchemaVersion);
+                return storeSchemeVersion(currentSchemaVersion);
             } catch (RepositoryException e) {
                 logger.debug("error storing the applications version property", e);
             }
         } else {
-            int versionCompare = Utils.compareVersions(actualSchemaVersion.getValue(), targetSchemaVersion.getValue());
+            int versionCompare = Utils.compareVersions(actualSchemaVersion, currentSchemaVersion);
             if (versionCompare <= 0) {
                 try {
-                    return storeApplicationProperty(targetSchemaVersion);
+                    return storeSchemeVersion(currentSchemaVersion);
                 } catch (RepositoryException e) {
                     logger.debug("error storing the applications version property", e);
                 }
             } else {
-                StatusLogger.getInstance().log("Downgrade your CEDESK Client! Current Application Version " + targetSchemaVersion.getValue()
-                        + ", is older than current DB Schema Version " + actualSchemaVersion.getValue());
+                StatusLogger.getInstance().log("Downgrade your CEDESK Client! "
+                        + "Current Application Version (" + currentSchemaVersion + ") "
+                        + "is older than current DB Schema Version " + actualSchemaVersion);
                 return false;
             }
         }
@@ -642,11 +660,12 @@ public class DatabaseRepository implements Repository {
             logger.error("Database scheme validation failed!", e);
             return false;
         } finally {
-            if (entityManager != null)
+            if (entityManager != null) {
                 try {
                     entityManager.close();
                 } catch (Exception ignore) {
                 }
+            }
             if (entityManagerFactory != null) {
                 try {
                     entityManagerFactory.close();
@@ -654,10 +673,11 @@ public class DatabaseRepository implements Repository {
                 }
             }
         }
-        ApplicationProperty targetSchemaVersion = ApplicationProperty.DB_SCHEMA_VERSION;
-        ApplicationProperty actualSchemaVersion = null;
+
+        String currentSchemaVersion = ApplicationProperties.getDbSchemaVersion();
+        String actualSchemaVersion = null;
         try {
-            actualSchemaVersion = loadApplicationProperty(targetSchemaVersion);
+            actualSchemaVersion = loadSchemeVersion();
         } catch (RepositoryException e) {
             logger.debug("error loading the applications version property", e);
         }
@@ -665,16 +685,18 @@ public class DatabaseRepository implements Repository {
             logger.error("No DB Schema Version!");
             return false;
         }
-        int versionCompare = Utils.compareVersions(actualSchemaVersion.getValue(), targetSchemaVersion.getValue());
+        int versionCompare = Utils.compareVersions(actualSchemaVersion, currentSchemaVersion);
         if (versionCompare == 0) {
             return true;
         } else if (versionCompare < 0) {
-            StatusLogger.getInstance().log("Upgrade your CEDESK Client! Current Application Version requires a DB Schema Version " + targetSchemaVersion.getValue()
-                    + ", which is incompatible with current DB Schema Version " + actualSchemaVersion.getValue());
+            StatusLogger.getInstance().log("Upgrade your CEDESK Client! "
+                    + "Current Application Version requires a DB Schema Version " + currentSchemaVersion + ", "
+                    + "which is incompatible with current DB Schema Version " + actualSchemaVersion);
             return false;
         } else if (versionCompare > 0) {
-            StatusLogger.getInstance().log("Have the administrator upgrade the DB Schema! Current Application Version requires a DB Schema Version " + targetSchemaVersion.getValue()
-                    + ", which is incompatible with current DB Schema Version " + actualSchemaVersion.getValue());
+            StatusLogger.getInstance().log("Have the administrator upgrade the DB Schema! "
+                    + "Current Application Version requires a DB Schema Version " + currentSchemaVersion + ", "
+                    + "which is incompatible with current DB Schema Version " + actualSchemaVersion);
             return false;
         }
         return false;
@@ -722,12 +744,12 @@ public class DatabaseRepository implements Repository {
         return result;
     }
 
-    private ApplicationProperty loadApplicationProperty(ApplicationProperty applicationProperty) throws RepositoryException {
+    private String loadSchemeVersion() throws RepositoryException {
         EntityManager entityManager = null;
         ApplicationProperty appProp = null;
         try {
             entityManager = getEntityManager();
-            appProp = entityManager.find(ApplicationProperty.class, applicationProperty.getId());
+            appProp = entityManager.find(ApplicationProperty.class, SCHEME_VERSION_APPLICATION_PROPERTY_ID);
         } catch (Exception e) {
             throw new RepositoryException("Loading ApplicationProperty failed.", e);
         } finally {
@@ -737,26 +759,18 @@ public class DatabaseRepository implements Repository {
             } catch (Exception ignore) {
             }
         }
-        return appProp;
+        return appProp.getValue();
     }
 
-    private void releaseEntityManagerFactory() {
-        if (emf != null) {
-            try {
-                emf.close();
-            } catch (Exception ignore) {
-            }
-            emf = null;
-        }
-    }
-
-    private boolean storeApplicationProperty(ApplicationProperty applicationProperty) throws RepositoryException {
+    private boolean storeSchemeVersion(String schemeVersion) throws RepositoryException {
         EntityManager entityManager = null;
         try {
             entityManager = getEntityManager();
             entityManager.setFlushMode(FlushModeType.AUTO);
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
+            ApplicationProperty applicationProperty =
+                    new ApplicationProperty(SCHEME_VERSION_APPLICATION_PROPERTY_ID, SCHEME_VERSION_APPLICATION_PROPERTY_NAME, schemeVersion);
             ApplicationProperty appProp = entityManager.find(ApplicationProperty.class, applicationProperty.getId());
             if (appProp == null) {
                 entityManager.persist(applicationProperty);
@@ -773,6 +787,16 @@ public class DatabaseRepository implements Repository {
                     entityManager.close();
             } catch (Exception ignore) {
             }
+        }
+    }
+
+    private void releaseEntityManagerFactory() {
+        if (emf != null) {
+            try {
+                emf.close();
+            } catch (Exception ignore) {
+            }
+            emf = null;
         }
     }
 }

@@ -26,6 +26,7 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
 import ru.skoltech.cedl.dataexchange.*;
+import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
@@ -100,6 +101,80 @@ public class MainController implements Initializable {
         this.repositoryWatcher = new RepositoryWatcher(project);
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+        // EDITING PANE
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Views.MODEL_EDITING_VIEW);
+            Parent editingPane = loader.load();
+            layoutPane.setCenter(editingPane);
+            modelEditingController = loader.getController();
+            modelEditingController.setProject(project);
+        } catch (IOException ioe) {
+            logger.error("Unable to load editing view pane.");
+            throw new RuntimeException(ioe);
+        }
+
+        // STATUSBAR
+        statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
+        statusbarLabel.setOnMouseClicked(this::showStatusMessages);
+
+        // TOOLBAR
+        BooleanBinding repositoryNewer = Bindings.greaterThan(
+                project.latestRepositoryModificationProperty(),
+                project.latestLoadedModificationProperty());
+        //diffButton.disableProperty().bind(repositoryNewer.not());
+        repositoryNewer.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                if (newValue) {
+                    ImageView imageView = new ImageView(FLASH_ICON);
+                    imageView.setFitWidth(8);
+                    imageView.setPreserveRatio(true);
+                    imageView.setSmooth(true);
+                    diffButton.setGraphic(imageView);
+                    diffButton.setGraphicTextGap(8);
+                } else {
+                    diffButton.setGraphic(null);
+                }
+            }
+        });
+        project.latestRepositoryModificationProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && oldValue != null && oldValue.longValue() > 0) {
+                long timeOfModificationInRepository = newValue.longValue();
+                long timeOfModificationLoaded = project.getLatestLoadedModification();
+                if (timeOfModificationInRepository > Utils.INVALID_TIME && timeOfModificationInRepository > timeOfModificationLoaded) {
+                    String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
+                    String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
+                    logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
+                    updateRemoteModel();
+                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study",
+                            "New version of study in repository!", "View Differences",
+                            MainController.this::openDiffView, true);
+                }
+            }
+        });
+
+        if (project.getApplicationSettings().getAutoSync()) {
+            repositoryWatcher.start();
+        }
+
+        newButton.disableProperty().bind(project.canNewProperty().not());
+        loadButton.disableProperty().bind(project.canLoadProperty().not());
+        saveButton.disableProperty().bind(project.canSyncProperty().not());
+
+        Platform.runLater(this::checkRepositoryAndLoadLastProject);
+
+        Platform.runLater(() -> {
+            String appVersion = ApplicationProperties.getAppVersion();
+            if (ApplicationPackage.isRelease(appVersion)) {
+
+                checkForApplicationUpdate(null);
+            }
+        });
+    }
+
     public Window getAppWindow() {
         return applicationPane.getScene().getWindow();
     }
@@ -117,17 +192,21 @@ public class MainController implements Initializable {
                         "You are using " + appVersion + ", while " + packageVersion + " is already available. Please update!",
                         "Download Update", new UpdateDownloader(applicationPackage), false);
             } else if (versionCompare > 0) {
-                UserNotifications.showNotification(getAppWindow(), "Application Update", "You are using " + appVersion + ", which is newer than the latest available " + packageVersion + ". Please publish!");
+                UserNotifications.showNotification(getAppWindow(), "Application Update",
+                        "You are using " + appVersion + ", " +
+                                "which is newer than the latest available " + packageVersion + ". Please publish!");
             } else {
                 if (actionEvent != null) {
-                    UserNotifications.showNotification(getAppWindow(), "Application Update", "Latest version installed. No need to update.");
+                    UserNotifications.showNotification(getAppWindow(), "Application Update",
+                            "Latest version installed. No need to update.");
                 } else {
                     StatusLogger.getInstance().log("Latest application version installed. No need to update.");
                 }
             }
         } else {
             if (actionEvent != null) {
-                UserNotifications.showNotification(getAppWindow(), "Update check failed", "Unable to connect to Distribution Server!");
+                UserNotifications.showNotification(getAppWindow(), "Update check failed",
+                        "Unable to connect to Distribution Server!");
             } else {
                 StatusLogger.getInstance().log("Update check failed. Unable to connect to Distribution Server!");
             }
@@ -136,7 +215,9 @@ public class MainController implements Initializable {
 
     public boolean checkUnsavedModifications() {
         if (project.hasLocalStudyModifications()) {
-            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Modifications to the model must to be saved before managing user discipline assignment. Shall it be saved now?");
+            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
+                    "Modifications to the model must to be saved before managing user discipline assignment. " +
+                            "Shall it be saved now?");
             if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
                 try {
                     project.storeLocalStudy();
@@ -155,13 +236,15 @@ public class MainController implements Initializable {
 
     public boolean confirmCloseRequest() {
         if (project.hasLocalStudyModifications()) {
-            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications", "Shall the modifications saved before closing?");
+            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
+                    "Shall the modifications saved before closing?");
             if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
                 try {
                     project.storeLocalStudy();
                     return true;
                 } catch (RepositoryException | ExternalModelException e) {
-                    Optional<ButtonType> closeAnyway = Dialogues.chooseYesNo("Failed to save", "Shall the program close anyway?");
+                    Optional<ButtonType> closeAnyway = Dialogues.chooseYesNo("Failed to save",
+                            "Shall the program close anyway?");
                     if (closeAnyway.isPresent() && closeAnyway.get() == ButtonType.YES) {
                         return true;
                     }
@@ -189,14 +272,18 @@ public class MainController implements Initializable {
                 String studyName = studyChoice.get();
                 try {
                     if (studyName.equals(project.getProjectName())) {
-                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study", "You are deleting the currently loaded project. Unexpected behavior can appear!\nWARNING: This is not reversible!");
+                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
+                                "You are deleting the currently loaded project. Unexpected behavior can appear!\n" +
+                                        "WARNING: This is not reversible!");
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
                             StatusLogger.getInstance().log("Successfully deleted study!", false);
                             project.getActionLogger().log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
                         }
                     } else {
-                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study", "Are you really sure to delete project '" + studyName + "' from the repository?\nWARNING: This is not reversible!");
+                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
+                                "Are you really sure to delete project '" + studyName + "' from the repository?\n" +
+                                        "WARNING: This is not reversible!");
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
                             StatusLogger.getInstance().log("Successfully deleted study!", false);
@@ -267,78 +354,6 @@ public class MainController implements Initializable {
         } else {
             logger.info("user aborted import file selection.");
         }
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-
-        // EDITING PANE
-        try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.MODEL_EDITING_VIEW);
-            Parent editingPane = loader.load();
-            layoutPane.setCenter(editingPane);
-            modelEditingController = loader.getController();
-            modelEditingController.setProject(project);
-        } catch (IOException ioe) {
-            logger.error("Unable to load editing view pane.");
-            throw new RuntimeException(ioe);
-        }
-
-        // STATUSBAR
-        statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
-        statusbarLabel.setOnMouseClicked(this::showStatusMessages);
-
-        // TOOLBAR
-        BooleanBinding repositoryNewer = Bindings.greaterThan(
-                project.latestRepositoryModificationProperty(),
-                project.latestLoadedModificationProperty());
-        //diffButton.disableProperty().bind(repositoryNewer.not());
-        repositoryNewer.addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                if (newValue) {
-                    ImageView imageView = new ImageView(FLASH_ICON);
-                    imageView.setFitWidth(8);
-                    imageView.setPreserveRatio(true);
-                    imageView.setSmooth(true);
-                    diffButton.setGraphic(imageView);
-                    diffButton.setGraphicTextGap(8);
-                } else {
-                    diffButton.setGraphic(null);
-                }
-            }
-        });
-        project.latestRepositoryModificationProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null && oldValue != null && oldValue.longValue() > 0) {
-                long timeOfModificationInRepository = newValue.longValue();
-                long timeOfModificationLoaded = project.getLatestLoadedModification();
-                if (timeOfModificationInRepository > Utils.INVALID_TIME && timeOfModificationInRepository > timeOfModificationLoaded) {
-                    String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
-                    String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
-                    logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
-                    updateRemoteModel();
-                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study", "New version of study in repository!", "View Differences", MainController.this::openDiffView, true);
-                }
-            }
-        });
-
-        if (project.getApplicationSettings().getAutoSync()) {
-            repositoryWatcher.start();
-        }
-
-        newButton.disableProperty().bind(project.canNewProperty().not());
-        loadButton.disableProperty().bind(project.canLoadProperty().not());
-        saveButton.disableProperty().bind(project.canSyncProperty().not());
-
-        Platform.runLater(this::checkRepositoryAndLoadLastProject);
-
-        Platform.runLater(() -> {
-            String appVersion = ApplicationProperties.getAppVersion();
-            if (ApplicationPackage.isRelease(appVersion)) {
-
-                checkForApplicationUpdate(null);
-            }
-        });
     }
 
     public void newProject(ActionEvent actionEvent) {
@@ -529,6 +544,8 @@ public class MainController implements Initializable {
     public void openRepositorySettingsDialog(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader();
+            //TODO rewrite, maybe make MainController aware of ApplicationContext
+            loader.setControllerFactory(aClass -> ApplicationContextInitializer.getInstance().getContext().getBean(aClass));
             loader.setLocation(Views.REPOSITORY_SETTINGS_WINDOW);
             Parent root = loader.load();
 
@@ -538,9 +555,40 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-
             RepositorySettingsController controller = loader.getController();
-            controller.setProject(project);
+            controller.setRepositorySettingsListener((hostname, username, password, autoSynch) -> {
+                boolean validSettings = false;
+
+                project.getApplicationSettings().setAutoSync(autoSynch);
+
+                String schema = project.getApplicationSettings().getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA);
+
+                String newHostname = hostname == null || hostname.isEmpty() ? DatabaseRepository.DEFAULT_HOST_NAME : hostname;
+                String newUsername = username == null || username.isEmpty() ? DatabaseRepository.DEFAULT_USER_NAME : username;
+                String newPassword = password == null || password.isEmpty() ? DatabaseRepository.DEFAULT_PASSWORD : password;
+                boolean validCredentials = project.checkDatabaseConnection(newHostname, schema, newUsername, newPassword);
+                if (validCredentials) {
+                    project.getApplicationSettings().setRepositoryServerHostname(newHostname);
+                    project.getApplicationSettings().setRepositoryUserName(newUsername);
+                    project.getApplicationSettings().setRepositoryPassword(newPassword);
+                    try {
+                        project.connectRepository();
+                        validSettings = true;
+                        StatusLogger.getInstance().log("Successfully configured repository settings!");
+                    } catch (Exception e) {
+                        Dialogues.showError("Repository Connection Failed!",
+                                "Please verify that the access credentials for the repository are correct.");
+                    }
+                } else {
+                    Dialogues.showError("Repository Connection Failed",
+                            "The given database access credentials did not work! " +
+                            "Please verify they are correct, the database server is running and the connection is working.");
+                }
+                project.loadUserManagement();
+                project.loadUnitManagement();
+                return validSettings;
+
+            });
 
             stage.setOnCloseRequest(event -> {
                 if (!project.checkRepository()) {
@@ -658,15 +706,18 @@ public class MainController implements Initializable {
             boolean isSyncDisabled = !project.getStudy().getStudySettings().getSyncEnabled();
             boolean isNormalUser = !project.isCurrentAdmin();
             if (isSyncDisabled && isNormalUser) {
-                Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\nContact the team lead for him to enable it!");
+                Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\n" +
+                        "Contact the team lead for him to enable it!");
                 return;
             }
             boolean changesInRepository = project.checkRepositoryForChanges();
             if (changesInRepository) {
-                Optional<ButtonType> buttonType = Dialogues.chooseOkCancel("Repository has changes", "Merge changes, and review remaining differences?");
+                Optional<ButtonType> buttonType = Dialogues.chooseOkCancel("Repository has changes",
+                        "Merge changes, and review remaining differences?");
                 if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
                     // TODO merge remote changes
-                    List<ModelDifference> modelDifferences = StudyDifference.computeDifferences(project.getStudy(), project.getRepositoryStudy(), project.getLatestLoadedModification());
+                    List<ModelDifference> modelDifferences = StudyDifference.computeDifferences(project.getStudy(),
+                            project.getRepositoryStudy(), project.getLatestLoadedModification());
                     List<ModelDifference> appliedChanges = DifferenceMerger.mergeChangesOntoFirst(project, modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
                         openDiffView(actionEvent);
@@ -685,7 +736,8 @@ public class MainController implements Initializable {
         } catch (RepositoryException re) {
             logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
             StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
-            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
+            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_SAVE,
+                    project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
         } catch (Exception e) {
             StatusLogger.getInstance().log("Saving study failed!", true);
             logger.error("Unknown Exception", e);

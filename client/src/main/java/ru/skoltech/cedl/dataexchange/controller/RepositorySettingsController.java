@@ -10,15 +10,16 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
+ * Repository settings dialog.
+ *
  * Created by D.Knoll on 22.07.2015.
  */
 public class RepositorySettingsController implements Initializable {
@@ -43,69 +44,65 @@ public class RepositorySettingsController implements Initializable {
     @FXML
     private PasswordField dbPasswordText;
 
-    private Project project;
+    private ApplicationSettings applicationSettings;
+    private RepositorySettingsListener repositorySettingsListener;
+
+    public RepositorySettingsController(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
+
+    public void setRepositorySettingsListener(RepositorySettingsListener repositorySettingsListener) {
+        this.repositorySettingsListener = repositorySettingsListener;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-        updateView();
-    }
-
-    private void updateView() {
         String appDir = StorageUtils.getAppDir().getAbsolutePath();
         appDirText.setText(appDir);
-        repoSchemaText.setText(project.getApplicationSettings().getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA));
+        repoSchemaText.setText(applicationSettings.getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA));
 
-        dbHostnameText.setText(project.getApplicationSettings().getRepositoryServerHostname(DatabaseRepository.DEFAULT_HOST_NAME));
-        dbUsernameText.setText(project.getApplicationSettings().getRepositoryUserName(""));
-        dbPasswordText.setText(project.getApplicationSettings().getRepositoryPassword(""));
-        repoWatcherAutoSyncCheckbox.setSelected(project.getApplicationSettings().getAutoSync());
+        dbHostnameText.setText(applicationSettings.getRepositoryServerHostname(DatabaseRepository.DEFAULT_HOST_NAME));
+        dbUsernameText.setText(applicationSettings.getRepositoryUserName(""));
+        dbPasswordText.setText(applicationSettings.getRepositoryPassword(""));
+        repoWatcherAutoSyncCheckbox.setSelected(applicationSettings.getAutoSync());
+        logger.info("initialized");
     }
 
     public void applyAndClose(ActionEvent actionEvent) {
-        boolean success = updateModel();
-        if (success) {
-            cancel(actionEvent);
+        if (repositorySettingsListener == null) {
+            close(actionEvent);
+            return;
         }
-    }
 
-    private boolean updateModel() {
-        boolean validSettings = false;
+        boolean autoSynch = repoWatcherAutoSyncCheckbox.isSelected();
+        String hostname = dbHostnameText.getText();
+        String username = dbUsernameText.getText();
+        String password = dbPasswordText.getText();
 
-        project.getApplicationSettings().setAutoSync(repoWatcherAutoSyncCheckbox.isSelected());
-
-        String schema = project.getApplicationSettings().getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA);
-
-        String hostname = dbHostnameText.getText().isEmpty() ? DatabaseRepository.DEFAULT_HOST_NAME : dbHostnameText.getText();
-        String username = dbUsernameText.getText().isEmpty() ? DatabaseRepository.DEFAULT_USER_NAME : dbUsernameText.getText();
-        String password = dbPasswordText.getText().isEmpty() ? DatabaseRepository.DEFAULT_PASSWORD : dbPasswordText.getText();
-        boolean validCredentials = DatabaseRepository.checkDatabaseConnection(hostname, schema, username, password);
-        if (validCredentials) {
-            project.getApplicationSettings().setRepositoryServerHostname(hostname);
-            project.getApplicationSettings().setRepositoryUserName(username);
-            project.getApplicationSettings().setRepositoryPassword(password);
-            try {
-                project.connectRepository();
-                validSettings = true;
-                StatusLogger.getInstance().log("Successfully configured repository settings!");
-            } catch (Exception e) {
-                Dialogues.showError("Repository connection failed!", "Please verify that the access credentials for the repository are correct.");
-            }
-        } else {
-            Dialogues.showError("Repository Connection Failed", "The given database access credentials did not work! Please verify they are correct, the database server is running and the connection is working.");
+        if (!repositorySettingsListener.repositorySettingsChanged(hostname, username, password, autoSynch)) {
+            return;
         }
-        project.loadUserManagement();
-        project.loadUnitManagement();
-        return validSettings;
+
+        logger.info("applied");
+        close(actionEvent);
     }
 
     public void cancel(ActionEvent actionEvent) {
+        close(actionEvent);
+        logger.info("canceled");
+    }
+
+    private void close(ActionEvent actionEvent) {
         Node source = (Node) actionEvent.getSource();
         Stage stage = (Stage) source.getScene().getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+        logger.info("closed");
     }
 
+    /**
+     * Is called then user has been new applied changes.
+     */
+    public interface RepositorySettingsListener {
+        boolean repositorySettingsChanged(String hostname, String username, String password, boolean autoSynch);
+    }
 }

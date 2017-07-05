@@ -332,20 +332,25 @@ public class Project {
         String repoUser = applicationSettings.getRepositoryUserName(DatabaseRepository.DEFAULT_USER_NAME);
         String repoPassword = applicationSettings.getRepositoryPassword(DatabaseRepository.DEFAULT_PASSWORD);
 
-        boolean connectionValid = DatabaseRepository.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
-        if (connectionValid) {
-            Repository repository = repositoryFactory.createDatabaseRepository();
-            boolean validScheme = repository.validateDatabaseScheme();
-            if (!validScheme && applicationSettings.getRepositorySchemaCreate()) {
-                validScheme = repository.updateDatabaseScheme();
-            }
-            try {
-                repository.close();
-            } catch (IOException ignore) {
-            }
-            return validScheme;
+        boolean validConnection = this.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
+        if (!validConnection) {
+            return false;
         }
-        return false;
+
+        Repository repository = repositoryFactory.createDatabaseRepository();
+        boolean validScheme = repository.validateDatabaseScheme();
+        if (!validScheme && applicationSettings.getRepositorySchemaCreate()) {
+            validScheme = repository.updateDatabaseScheme();
+        }
+        try {
+            repository.close();
+        } catch (IOException ignore) {
+        }
+        return validScheme;
+    }
+
+    public boolean checkDatabaseConnection(String hostName, String schema, String userName, String password) {
+        return DatabaseRepository.checkDatabaseConnection(hostName, schema, userName, password);
     }
 
     public void connectRepository() {

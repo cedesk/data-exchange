@@ -12,8 +12,6 @@ import javax.persistence.*;
 @Table(uniqueConstraints = {@UniqueConstraint(name = "uniquePropertyName", columnNames = {"name"})})
 public class ApplicationProperty implements Comparable<ApplicationProperty> {
 
-    public static final ApplicationProperty DB_SCHEMA_VERSION = new ApplicationProperty(1, "version", ApplicationProperties.getDbSchemaVersion());
-
     private long id;
     private String name;
     private String value;

@@ -5,7 +5,7 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
-    <bean id="applicationSettings" class="ru.skoltech.cedl.dataexchange.ApplicationSettings"/>
+    <bean id="applicationSettings" class="ru.skoltech.cedl.dataexchange.ApplicationSettings" />
 
     <bean id="repositoryFactory" class="ru.skoltech.cedl.dataexchange.repository.ApplicationSettingsRepositoryFactory">
         <constructor-arg ref="applicationSettings" />
@@ -18,8 +18,12 @@
         <constructor-arg ref="applicationSettings"/>
     </bean>
 
-    <bean id="mainController" class="ru.skoltech.cedl.dataexchange.controller.MainController" >
+    <bean class="ru.skoltech.cedl.dataexchange.controller.MainController" >
         <constructor-arg ref="project" />
+    </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController" scope="prototype">
+        <constructor-arg ref="applicationSettings" />
     </bean>
 
     <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" init-method="init" >
@@ -27,6 +31,5 @@
         <property name="repositoryFactory" ref="repositoryFactory" />
         <property name="actionLogger" ref="actionLogger" />
     </bean>
-
 
 </beans>
