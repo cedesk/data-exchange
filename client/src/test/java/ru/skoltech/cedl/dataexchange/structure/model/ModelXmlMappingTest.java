@@ -34,9 +34,7 @@ public class ModelXmlMappingTest extends AbstractDatabaseTest {
 
     @Before
     public void setup() throws IOException, NoSuchFieldException, IllegalAccessException {
-        Project project = new Project();
-        project.setRepositoryFactory(repositoryFactory);
-        project.setActionLogger(mock(ActionLogger.class));
+        Project project = context.getBean(Project.class);
         project.init("project");
         UnitManagement unitManagement = UnitManagementFactory.getUnitManagement();
         Field field = Project.class.getDeclaredField("unitManagement");

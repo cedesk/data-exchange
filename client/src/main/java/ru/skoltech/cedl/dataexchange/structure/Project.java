@@ -48,6 +48,7 @@ public class Project {
 
     private ApplicationSettings applicationSettings;
     private RepositoryFactory repositoryFactory;
+    private RepositoryStateMachine repositoryStateMachine;
     private ActionLogger actionLogger;
 
     private String projectName;
@@ -58,7 +59,6 @@ public class Project {
     private User currentUser;
     private Study repositoryStudy;
     private Repository repository;
-    private RepositoryStateMachine repositoryStateMachine = new RepositoryStateMachine();
     private LongProperty latestLoadedModification = new SimpleLongProperty(Utils.INVALID_TIME);
     private LongProperty latestRepositoryModification = new SimpleLongProperty(Utils.INVALID_TIME);
 
@@ -98,6 +98,10 @@ public class Project {
         this.repositoryFactory = repositoryFactory;
     }
 
+    public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
+        this.repositoryStateMachine = repositoryStateMachine;
+    }
+
     public ActionLogger getActionLogger() {
         return actionLogger;
     }
@@ -132,11 +136,11 @@ public class Project {
         });
     }
 
-    public long getLatestRepositoryModification() {
+    private long getLatestRepositoryModification() {
         return latestRepositoryModification.get();
     }
 
-    public void setLatestRepositoryModification(long latestRepositoryModification) {
+    private void setLatestRepositoryModification(long latestRepositoryModification) {
         Platform.runLater(() -> {
             this.latestRepositoryModification.set(latestRepositoryModification);
         });

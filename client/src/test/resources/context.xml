@@ -4,7 +4,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-
     <bean id="applicationSettings" class="ru.skoltech.cedl.dataexchange.ApplicationSettings"/>
 
     <bean id="repositoryFactory" class="org.mockito.Mockito" factory-method="mock">
@@ -14,6 +13,8 @@
     <bean id="repository" factory-bean="repositoryFactory" factory-method="createDatabaseRepository"
         scope="prototype"/>
 
+    <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine" />
+
     <bean id="actionLogger" class="ru.skoltech.cedl.dataexchange.logging.ActionLogger">
         <constructor-arg ref="applicationSettings"/>
     </bean>
@@ -21,8 +22,8 @@
     <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" init-method="init" >
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="repositoryFactory" ref="repositoryFactory" />
+        <property name="repositoryStateMachine" ref="repositoryStateMachine" />
         <property name="actionLogger" ref="actionLogger" />
     </bean>
-
 
 </beans>
