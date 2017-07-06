@@ -12,40 +12,40 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ApplicationContextInitializer {
 
     private static Logger logger = Logger.getLogger(ApplicationContextInitializer.class);
-    private static final String DEFAULT_CONTEXT_PATH = "/META-INF/context.xml";
+    private static final String DEFAULT_CONTEXT_MODEL_LOCATION = "/META-INF/context-model.xml";
+    private static final String DEFAULT_CONTEXT_CONTROLLER_LOCATION = "/META-INF/context-controller.xml";
 
-    private static String path;
+    private static String[] locations;
     private static ApplicationContextInitializer instance;
 
     /**
      * Provide a special path to the application context.
      * For testing purposes.
      *
-     * @param contextPath path to application context;
+     * @param configLocations locations to application context;
      */
-    static void initialize(String contextPath) {
-        if (path != null) {
+    static void initialize(String[] configLocations) {
+        if (locations != null) {
             logger.warn("Application context has already been initialized.");
             return;
         }
-        path = contextPath;
+        locations = configLocations;
     }
 
     public static ApplicationContextInitializer getInstance() {
         if (instance == null) {
-            if (path == null) {
-                path = DEFAULT_CONTEXT_PATH;
+            if (locations == null) {
+                locations = new String[] {DEFAULT_CONTEXT_MODEL_LOCATION, DEFAULT_CONTEXT_CONTROLLER_LOCATION};
             }
-            instance = new ApplicationContextInitializer(path);
+            instance = new ApplicationContextInitializer(locations);
         }
         return instance;
     }
 
-
     private final ApplicationContext context;
 
-    private ApplicationContextInitializer(String contextPath) {
-        context = new ClassPathXmlApplicationContext(new String[] {contextPath});
+    private ApplicationContextInitializer(String[] configLocations) {
+        context = new ClassPathXmlApplicationContext(configLocations);
     }
 
     /**

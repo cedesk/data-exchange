@@ -23,14 +23,6 @@
         <constructor-arg ref="applicationSettings"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.controller.MainController" >
-        <constructor-arg ref="project" />
-    </bean>
-
-    <bean class="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController" scope="prototype">
-        <constructor-arg ref="applicationSettings" />
-    </bean>
-
     <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" init-method="init" >
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="repositoryFactory" ref="repositoryFactory" />
