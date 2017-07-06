@@ -33,7 +33,7 @@ public class ExcelModelAccessor {
         if (spreadsheetAccessor == null) {
             try {
                 ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
-                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
                 String fileName = externalModel.getName();
                 spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName);
             } catch (Throwable e) {

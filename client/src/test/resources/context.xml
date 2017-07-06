@@ -15,6 +15,9 @@
 
     <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine" />
 
+    <bean id="externalModelFileWatcher" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher" />
+    <bean id="externalModelFileHandler" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler" />
+
     <bean id="actionLogger" class="ru.skoltech.cedl.dataexchange.logging.ActionLogger">
         <constructor-arg ref="applicationSettings"/>
     </bean>
@@ -23,6 +26,8 @@
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="repositoryFactory" ref="repositoryFactory" />
         <property name="repositoryStateMachine" ref="repositoryStateMachine" />
+        <property name="externalModelFileWatcher" ref="externalModelFileWatcher" />
+        <property name="externalModelFileHandler" ref="externalModelFileHandler" />
         <property name="actionLogger" ref="actionLogger" />
     </bean>
 

@@ -105,7 +105,7 @@ public class ExternalModelView extends HBox implements Initializable {
         String filename = externalModel.getName();
         if (WorkbookFactory.isWorkbookFile(filename)) {
             try {
-                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
                 Workbook workbook = WorkbookFactory.getWorkbook(inputStream, filename);
                 //SpreadsheetInputOutputExtractor.guessInputSheet(workbook);
                 List<String> sheetNames = WorkbookFactory.getSheetNames(workbook);

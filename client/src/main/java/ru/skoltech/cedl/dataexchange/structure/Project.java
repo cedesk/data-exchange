@@ -49,6 +49,8 @@ public class Project {
     private ApplicationSettings applicationSettings;
     private RepositoryFactory repositoryFactory;
     private RepositoryStateMachine repositoryStateMachine;
+    private ExternalModelFileWatcher externalModelFileWatcher;
+    private ExternalModelFileHandler externalModelFileHandler;
     private ActionLogger actionLogger;
 
     private String projectName;
@@ -62,9 +64,6 @@ public class Project {
     private LongProperty latestLoadedModification = new SimpleLongProperty(Utils.INVALID_TIME);
     private LongProperty latestRepositoryModification = new SimpleLongProperty(Utils.INVALID_TIME);
 
-    private ExternalModelFileWatcher externalModelFileWatcher = new ExternalModelFileWatcher();
-    private ExternalModelFileHandler externalModelFileHandler;
-
     private BooleanProperty canNew = new SimpleBooleanProperty(false);
     private BooleanProperty canLoad = new SimpleBooleanProperty(false);
     private BooleanProperty canSync = new SimpleBooleanProperty(false);
@@ -76,7 +75,6 @@ public class Project {
     public void init(String projectName) {
         this.connectRepository();
         this.initialize(projectName);
-        externalModelFileHandler = new ExternalModelFileHandler(this);
         repositoryStateMachine.addObserver((o, arg) -> {
             updatePossibleActions();
         });
@@ -102,6 +100,22 @@ public class Project {
         this.repositoryStateMachine = repositoryStateMachine;
     }
 
+    public ExternalModelFileWatcher getExternalModelFileWatcher() {
+        return externalModelFileWatcher;
+    }
+
+    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
+        this.externalModelFileWatcher = externalModelFileWatcher;
+    }
+
+    public ExternalModelFileHandler getExternalModelFileHandler() {
+        return externalModelFileHandler;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
+    }
+
     public ActionLogger getActionLogger() {
         return actionLogger;
     }
@@ -116,14 +130,6 @@ public class Project {
 
     public List<Discipline> getCurrentUserDisciplines() {
         return getUserRoleManagement().getDisciplinesOfUser(getUser());
-    }
-
-    public ExternalModelFileHandler getExternalModelFileHandler() {
-        return externalModelFileHandler;
-    }
-
-    public ExternalModelFileWatcher getExternalModelFileWatcher() {
-        return externalModelFileWatcher;
     }
 
     public long getLatestLoadedModification() {

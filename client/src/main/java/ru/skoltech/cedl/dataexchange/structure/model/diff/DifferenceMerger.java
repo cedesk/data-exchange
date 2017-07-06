@@ -36,7 +36,7 @@ public class DifferenceMerger {
         try {
             // update cached file
             ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
-            externalModelFileHandler.forceCacheUpdate(externalModel);
+            externalModelFileHandler.forceCacheUpdate(project, externalModel);
             // update parameters from new file
             ModelUpdateUtil.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler, null, null);
         } catch (ExternalModelException e) {

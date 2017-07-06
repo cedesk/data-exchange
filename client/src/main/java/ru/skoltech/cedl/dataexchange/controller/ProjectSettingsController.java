@@ -80,7 +80,7 @@ public class ProjectSettingsController implements Initializable {
     }
 
     public void cleanupProjectCache(ActionEvent actionEvent) {
-        project.getExternalModelFileHandler().cleanupCache();
+        project.getExternalModelFileHandler().cleanupCache(project);
     }
 
     private boolean updateModel() {

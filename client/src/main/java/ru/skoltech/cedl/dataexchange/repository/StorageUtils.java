@@ -18,26 +18,29 @@ public class StorageUtils {
 
     private static final String APP_DIR = ".cedesk";
 
-    private static final String USER_HOME = System.getProperty("user.home");
+    private static final String USER_HOME_SYSTEM_PROPERTY_NAME = "user.home";
+    private static final String APP_DIR_SYSTEM_PROPERTY_NAME = "cedesk.app.dir";
+    private static final String DATA_DIR_SYSTEM_PROPERTY_NAME = "cedesk.data.dir";
+    private static final String APP_START_TIME_SYSTEM_PROPERTY_NAME = "app.start.time";
+
+    private static final String USER_HOME_SYSTEM_PROPERTY = System.getProperty(USER_HOME_SYSTEM_PROPERTY_NAME);
+    private static final String APP_DIR_SYSTEM_PROPERTY = System.getProperty(APP_DIR_SYSTEM_PROPERTY_NAME);
 
     public static File getAppDir() {
         File appHome;
-        String cedeskAppDirProperty = System.getProperty("cedesk.app.dir");
-        if (cedeskAppDirProperty == null) {
-            File homeDir = new File(USER_HOME);
-            appHome = new File(homeDir, APP_DIR);
+        if (APP_DIR_SYSTEM_PROPERTY == null) {
+            File userHomeDir = new File(USER_HOME_SYSTEM_PROPERTY);
+            appHome = new File(userHomeDir, APP_DIR);
         } else {
-            appHome = new File(cedeskAppDirProperty);
+            appHome = new File(APP_DIR_SYSTEM_PROPERTY);
         }
-        cedeskAppDirProperty = appHome.getAbsolutePath();
-        System.setProperty("cedesk.data.dir", cedeskAppDirProperty); // re-write in any case for log4j
 
-        String projectStartDate = Utils.TIME_AND_DATE_FOR_FILENAMES.format(new Date());
-        System.setProperty("app.start.time", projectStartDate);
+        System.setProperty(DATA_DIR_SYSTEM_PROPERTY_NAME, appHome.getAbsolutePath()); // re-write in any case for log4j
+        System.setProperty(APP_START_TIME_SYSTEM_PROPERTY_NAME, Utils.TIME_AND_DATE_FOR_FILENAMES.format(new Date()));
 
         if (!appHome.exists()) {
             boolean dirCreated = appHome.mkdirs();
-            System.err.println("unable to create application directory in user home: " + cedeskAppDirProperty);
+            System.err.println("unable to create application directory in user home: " + appHome.getAbsolutePath());
         }
         return appHome;
     }

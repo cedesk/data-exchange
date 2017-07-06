@@ -102,7 +102,7 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
         List<String> sheetNames = new LinkedList<>();
         try {
             ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
-            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
             sheetNames = WorkbookFactory.getSheetNames(inputStream, externalModel.getName());
             Predicate<String> nameTest = SHEET_NAME_PATTERN.asPredicate();
             List<String> validSheets = new ArrayList<>(sheetNames.size());
@@ -214,7 +214,7 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
         try {
             if (externalModel.getAttachment() != null) {
                 ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
-                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
                 String fileName = externalModel.getName();
                 // TODO: generalize approach for other external model types, now only for SPREADSHEETS
                 // TODO: handle invalid sheetname

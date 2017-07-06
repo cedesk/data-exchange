@@ -25,12 +25,6 @@ public class ExternalModelFileHandler {
 
     private Set<ExternalModel> changedExternalModels = new HashSet<>();
 
-    private Project project;
-
-    public ExternalModelFileHandler(Project project) {
-        this.project = project;
-    }
-
     public Set<ExternalModel> getChangedExternalModels() {
         return changedExternalModels;
     }
@@ -186,7 +180,7 @@ public class ExternalModelFileHandler {
         return file;
     }
 
-    public void cleanupCache() {
+    public void cleanupCache(Project project) {
         Set<String> toBeKept = new HashSet<>();
         SystemModel systemModel = project.getStudy().getSystemModel();
         ExternalModelTreeIterator emi = new ExternalModelTreeIterator(systemModel);
@@ -224,7 +218,7 @@ public class ExternalModelFileHandler {
         }
     }
 
-    public File forceCacheUpdate(ExternalModel externalModel) throws IOException {
+    public File forceCacheUpdate(Project project, ExternalModel externalModel) throws IOException {
         Objects.requireNonNull(externalModel);
         File file = getFilePathInCache(project, externalModel);
         StorageUtils.makeDirectory(file.getParentFile());
@@ -241,7 +235,7 @@ public class ExternalModelFileHandler {
         return file;
     }
 
-    public InputStream getAttachmentAsStream(ExternalModel externalModel) throws IOException, ExternalModelException {
+    public InputStream getAttachmentAsStream(Project project, ExternalModel externalModel) throws IOException, ExternalModelException {
         switch (ExternalModelFileHandler.getCacheState(project, externalModel)) {
             case CACHED_UP_TO_DATE:
             case CACHED_MODIFIED_AFTER_CHECKOUT:
