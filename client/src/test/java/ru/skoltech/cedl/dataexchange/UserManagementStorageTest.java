@@ -1,9 +1,10 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
+import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 /**
@@ -11,9 +12,16 @@ import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
  */
 public class UserManagementStorageTest extends AbstractDatabaseTest {
 
+    private UserManagementService userManagementService;
+
+    @Before
+    public void prepare() {
+        userManagementService = context.getBean(UserManagementService.class);
+    }
+
     @Test
-    public void storeAndRetrieveUserManagement() throws RepositoryException {
-        UserManagement userManagement = UserManagementFactory.getUserManagement();
+    public void testStoreAndRetrieveUserManagement() throws RepositoryException {
+        UserManagement userManagement = userManagementService.createDefaultUserManagement();
 
         repository.storeUserManagement(userManagement);
 

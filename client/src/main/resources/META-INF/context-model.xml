@@ -5,6 +5,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/task  http://www.springframework.org/schema/task/spring-task.xsd">
 
+    <import resource="context-service.xml" />
+
     <bean id="applicationSettings" class="ru.skoltech.cedl.dataexchange.ApplicationSettings" />
 
     <bean id="repositoryFactory" class="ru.skoltech.cedl.dataexchange.repository.ApplicationSettingsRepositoryFactory">
@@ -29,6 +31,9 @@
         <property name="repositoryStateMachine" ref="repositoryStateMachine" />
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher" />
         <property name="externalModelFileHandler" ref="externalModelFileHandler" />
+        <property name="studyService" ref="studyService" />
+        <property name="userManagementService" ref="userManagementService" />
+        <property name="unitManagementService" ref="unitManagementService" />
         <property name="actionLogger" ref="actionLogger" />
     </bean>
 

@@ -3,7 +3,8 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.repository.FileStorage;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
+import ru.skoltech.cedl.dataexchange.services.impl.FileStorageServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
 
@@ -19,12 +20,15 @@ import java.util.ArrayList;
  */
 public class CalculationXmlMappingTest {
 
+    private FileStorageService fileStorageService;
+
     @Before
     public void setup() {
+        fileStorageService = new FileStorageServiceImpl();
     }
 
     @Test
-    public void simpleTest() throws JAXBException {
+    public void testSimpleTest() throws JAXBException {
         Calculation calculation = getCalc();
         final Class[] MC = Calculation.getEntityClasses();
 
@@ -36,15 +40,14 @@ public class CalculationXmlMappingTest {
     }
 
     @Test
-    public void exportXmlAndReimport() throws IOException {
+    public void testExportXmlAndReimport() throws IOException {
         Calculation calc = getCalc();
 
-        FileStorage fs = new FileStorage();
         File file = new File("target", "Calculation.xml");
         // Export
-        fs.storeCalculation(calc, file);
+        fileStorageService.storeCalculation(calc, file);
         // Re-import
-        Calculation recalc = fs.loadCalculation(file);
+        Calculation recalc = fileStorageService.loadCalculation(file);
 
         Assert.assertNotEquals(calc, recalc);
     }

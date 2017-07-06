@@ -13,6 +13,7 @@ public class ApplicationContextInitializer {
 
     private static Logger logger = Logger.getLogger(ApplicationContextInitializer.class);
     private static final String DEFAULT_CONTEXT_MODEL_LOCATION = "/META-INF/context-model.xml";
+    private static final String DEFAULT_CONTEXT_SERVICE_LOCATION = "/META-INF/context-service.xml";
     private static final String DEFAULT_CONTEXT_CONTROLLER_LOCATION = "/META-INF/context-controller.xml";
 
     private static String[] locations;
@@ -35,7 +36,9 @@ public class ApplicationContextInitializer {
     public static ApplicationContextInitializer getInstance() {
         if (instance == null) {
             if (locations == null) {
-                locations = new String[] {DEFAULT_CONTEXT_MODEL_LOCATION, DEFAULT_CONTEXT_CONTROLLER_LOCATION};
+                locations = new String[] {DEFAULT_CONTEXT_MODEL_LOCATION,
+                                          DEFAULT_CONTEXT_SERVICE_LOCATION,
+                                          DEFAULT_CONTEXT_CONTROLLER_LOCATION};
             }
             instance = new ApplicationContextInitializer(locations);
         }

@@ -1,12 +1,14 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.services.UserManagementService;
+import ru.skoltech.cedl.dataexchange.services.impl.UserManagementServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ElementModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
@@ -18,16 +20,23 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
  */
 public class UserRoleUtilTest {
 
+    private UserManagementService userManagementService;
+
+    @Before
+    public void prepare() {
+        userManagementService = new UserManagementServiceImpl();
+    }
+
     @Test
-    public void checkAccessAdminTest() {
-        UserManagement userManagement = UserManagementFactory.getUserManagement();
-        UserRoleManagement userRoleManagement = UserManagementFactory.makeDefaultUserRoleManagement(userManagement);
+    public void testCheckAccessAdminTest() {
+        UserManagement userManagement = userManagementService.createDefaultUserManagement();
+        UserRoleManagement userRoleManagement = userManagementService.createDefaultUserRoleManagement(userManagement);
 
         User admin = userManagement.getUsers().get(0);
         Assert.assertTrue(userRoleManagement.isAdmin(admin));
 
         String testUserName = "test user";
-        UserManagementFactory.addUserWithAllPower(userRoleManagement, userManagement, testUserName);
+        userManagementService.addUserWithAdminRole(userRoleManagement, userManagement, testUserName);
 
         SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(3);
 
@@ -44,9 +53,9 @@ public class UserRoleUtilTest {
     }
 
     @Test
-    public void checkAccessExpertTest() {
-        UserManagement userManagement = UserManagementFactory.getUserManagement();
-        UserRoleManagement userRoleManagement = UserManagementFactory.makeDefaultUserRoleManagement(userManagement);
+    public void testCheckAccessExpertTest() {
+        UserManagement userManagement = userManagementService.createDefaultUserManagement();
+        UserRoleManagement userRoleManagement = userManagementService.createDefaultUserRoleManagement(userManagement);
 
         String testUserName = "testUSER";
         User testUser = new User(testUserName, "", "");

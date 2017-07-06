@@ -1,5 +1,6 @@
-package ru.skoltech.cedl.dataexchange.users;
+package ru.skoltech.cedl.dataexchange.services.impl;
 
+import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
@@ -10,25 +11,23 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 /**
  * Created by dknoll on 13/05/15.
  */
-public class UserManagementFactory {
+public class UserManagementServiceImpl implements UserManagementService {
 
-    public static final Long IDENTIFIER = 1L;
-    public static final String ADMIN = "admin";
-    public static final String OBSERVER = "observer";
-
-    public static UserManagement getUserManagement() {
+    @Override
+    public UserManagement createDefaultUserManagement() {
         UserManagement userManagement = new UserManagement();
         userManagement.setId(IDENTIFIER);
 
-        User expert = new User(OBSERVER, "Observer", "");
-        User admin = new User(ADMIN, "Team Lead", "");
+        User expert = new User(OBSERVER_USER_NAME, "Observer", "");
+        User admin = new User(ADMIN_USER_NAME, "Team Lead", "");
 
         userManagement.getUsers().add(admin);
         userManagement.getUsers().add(expert);
         return userManagement;
     }
 
-    public static UserRoleManagement makeUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement) {
+    @Override
+    public UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement) {
         UserRoleManagement urm = new UserRoleManagement();
 
         // add a discipline for each subsystem
@@ -38,7 +37,7 @@ public class UserManagementFactory {
         }
         // add user disciplines
         if (userManagement != null) {
-            User admin = userManagement.findUser(ADMIN);
+            User admin = userManagement.findUser(ADMIN_USER_NAME);
             if (admin != null) {
                 urm.addUserDiscipline(admin, urm.getAdminDiscipline());
             }
@@ -46,8 +45,8 @@ public class UserManagementFactory {
         return urm;
     }
 
-    public static UserRoleManagement makeDefaultUserRoleManagement(UserManagement userManagement) {
-
+    @Override
+    public UserRoleManagement createDefaultUserRoleManagement(UserManagement userManagement) {
         UserRoleManagement urm = new UserRoleManagement();
 
         // create Disciplines
@@ -72,7 +71,7 @@ public class UserManagementFactory {
 
         // add user disciplines
         if (userManagement != null) {
-            User admin = userManagement.findUser(ADMIN);
+            User admin = userManagement.findUser(ADMIN_USER_NAME);
             if (admin != null) {
                 urm.addUserDiscipline(admin, urm.getAdminDiscipline());
             }
@@ -80,11 +79,12 @@ public class UserManagementFactory {
         return urm;
     }
 
-    public static void addUserWithAllPower(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName) {
-        User godfather = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
+    @Override
+    public void addUserWithAdminRole(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName) {
+        User admin = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
 
-        userManagement.getUsers().add(godfather);
+        userManagement.getUsers().add(admin);
 
-        userRoleManagement.addUserDiscipline(godfather, userRoleManagement.getAdminDiscipline());
+        userRoleManagement.addUserDiscipline(admin, userRoleManagement.getAdminDiscipline());
     }
 }

@@ -29,9 +29,9 @@ import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.repository.FileStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
@@ -91,15 +91,19 @@ public class MainController implements Initializable {
 
     private ModelEditingController modelEditingController;
 
-    private final Project project;
+    private Project project;
+    private FileStorageService fileStorageService;
 
-    public MainController(Project project) {
+    public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setFileStorageService(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         // EDITING PANE
         try {
             FXMLLoader loader = new FXMLLoader();
@@ -297,9 +301,8 @@ public class MainController implements Initializable {
         if (exportPath != null) {
             String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
             File outputFile = new File(exportPath, outputFileName);
-            FileStorage fs = new FileStorage();
             try {
-                fs.storeSystemModel(project.getSystemModel(), outputFile);
+                fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
                 StatusLogger.getInstance().log("Successfully exported study!", false);
                 project.getActionLogger().log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
             } catch (IOException e) {
@@ -332,9 +335,8 @@ public class MainController implements Initializable {
         }
         if (importFile != null) {
             // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
-            FileStorage fs = new FileStorage();
             try {
-                SystemModel systemModel = fs.loadSystemModel(importFile);
+                SystemModel systemModel = fileStorageService.loadSystemModel(importFile);
                 project.importSystemModel(systemModel);
                 updateView();
                 StatusLogger.getInstance().log("Successfully imported study!", false);

@@ -1,13 +1,14 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.util.List;
@@ -17,19 +18,15 @@ import java.util.List;
  */
 public class StudyStorageTest extends AbstractDatabaseTest {
 
-    private static Study makeStudy(String projectName, int modelDepth) {
-        Study study = new Study();
-        study.setStudySettings(new StudySettings());
-        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(modelDepth);
-        study.setSystemModel(systemModel);
-        study.setName(projectName);
-        UserRoleManagement userRoleManagement = UserManagementFactory.makeUserRoleManagementWithSubsystemDisciplines(systemModel, null);
-        study.setUserRoleManagement(userRoleManagement);
-        return study;
+    private UserManagementService userManagementService;
+
+    @Before
+    public void prepare() {
+        userManagementService = context.getBean(UserManagementService.class);
     }
 
     @Test
-    public void storeAndListStudies() throws RepositoryException {
+    public void testStoreAndListStudies() throws RepositoryException {
         String name1 = "testStudy-1";
         Study study1 = makeStudy(name1, 1);
         repository.storeStudy(study1);
@@ -49,7 +46,7 @@ public class StudyStorageTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void storeAndRetrieveStudy() throws RepositoryException {
+    public void testStoreAndRetrieveStudy() throws RepositoryException {
         String name = "testStudy";
         Study study = makeStudy(name, 2);
         System.out.println(study);
@@ -69,5 +66,16 @@ public class StudyStorageTest extends AbstractDatabaseTest {
         UserRoleManagement urm2 = study1.getUserRoleManagement();
         Assert.assertEquals(urm1, urm2);
         Assert.assertEquals(study, study1);
+    }
+
+    private Study makeStudy(String projectName, int modelDepth) {
+        Study study = new Study();
+        study.setStudySettings(new StudySettings());
+        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(modelDepth);
+        study.setSystemModel(systemModel);
+        study.setName(projectName);
+        UserRoleManagement userRoleManagement = userManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, null);
+        study.setUserRoleManagement(userRoleManagement);
+        return study;
     }
 }

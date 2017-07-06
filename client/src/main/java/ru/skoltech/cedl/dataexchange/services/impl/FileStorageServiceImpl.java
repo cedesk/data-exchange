@@ -1,7 +1,9 @@
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.units.model.Prefix;
@@ -25,16 +27,17 @@ import java.util.Set;
 /**
  * Created by D.Knoll on 13.03.2015.
  */
-public class FileStorage {
+public class FileStorageServiceImpl implements FileStorageService {
 
     public static final Class[] MODEL_CLASSES = new Class[]{
             SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class,
             ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
-    private static Logger logger = Logger.getLogger(FileStorage.class);
+    private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
 
-    public FileStorage() {
+    public FileStorageServiceImpl() {
     }
 
+    @Override
     public void storeSystemModel(SystemModel systemModel, File outputFile) throws IOException {
 
         File outputFolder = outputFile.getParentFile();
@@ -64,6 +67,7 @@ public class FileStorage {
         }
     }
 
+    @Override
     public SystemModel loadSystemModel(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             Set<Class> modelClasses = new HashSet<>();
@@ -133,7 +137,8 @@ public class FileStorage {
         }
     }
 
-    public void storeUserManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
+    @Override
+    public void storeUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
 
         StorageUtils.makeDirectory(outputFile.getParentFile());
 
@@ -150,7 +155,8 @@ public class FileStorage {
         }
     }
 
-    public UserRoleManagement loadUserManagement(File inputFile) throws IOException {
+    @Override
+    public UserRoleManagement loadUserRoleManagement(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             JAXBContext ct = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
 
@@ -162,6 +168,7 @@ public class FileStorage {
         }
     }
 
+    @Override
     public void storeUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
 
         StorageUtils.makeDirectory(outputFile.getParentFile());
@@ -179,6 +186,7 @@ public class FileStorage {
         }
     }
 
+    @Override
     public UnitManagement loadUnitManagement(InputStream inputStream) throws IOException {
         try (BufferedInputStream inp = new BufferedInputStream(inputStream)) {
             JAXBContext ct = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
@@ -203,7 +211,8 @@ public class FileStorage {
         }
     }
 
-    public void storeCalculation(Calculation calc, File outputFile) throws IOException {
+    @Override
+    public void storeCalculation(Calculation calculation, File outputFile) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
             final Class[] MC = Calculation.getEntityClasses();
             JAXBContext jc = JAXBContext.newInstance(MC);
@@ -211,12 +220,13 @@ public class FileStorage {
             Marshaller m = jc.createMarshaller();
             m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(calc, fos);
+            m.marshal(calculation, fos);
         } catch (JAXBException e) {
             throw new IOException("Error writing system model to XML file.", e);
         }
     }
 
+    @Override
     public Calculation loadCalculation(File file) throws IOException {
         try (FileInputStream inp = new FileInputStream(file)) {
             final Class[] MC = Calculation.getEntityClasses();

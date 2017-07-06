@@ -28,6 +28,9 @@
         <property name="repositoryStateMachine" ref="repositoryStateMachine" />
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher" />
         <property name="externalModelFileHandler" ref="externalModelFileHandler" />
+        <property name="studyService" ref="studyService" />
+        <property name="userManagementService" ref="userManagementService" />
+        <property name="unitManagementService" ref="unitManagementService" />
         <property name="actionLogger" ref="actionLogger" />
     </bean>
 

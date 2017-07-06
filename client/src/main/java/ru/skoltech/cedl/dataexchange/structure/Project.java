@@ -6,7 +6,6 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Component;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
@@ -14,13 +13,14 @@ import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.*;
+import ru.skoltech.cedl.dataexchange.services.StudyService;
+import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
+import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
-import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
-import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
 import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
@@ -51,6 +51,9 @@ public class Project {
     private RepositoryStateMachine repositoryStateMachine;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ExternalModelFileHandler externalModelFileHandler;
+    private StudyService studyService;
+    private UserManagementService userManagementService;
+    private UnitManagementService unitManagementService;
     private ActionLogger actionLogger;
 
     private String projectName;
@@ -114,6 +117,18 @@ public class Project {
 
     public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
         this.externalModelFileHandler = externalModelFileHandler;
+    }
+
+    public void setStudyService(StudyService studyService) {
+        this.studyService = studyService;
+    }
+
+    public void setUnitManagementService(UnitManagementService unitManagementService) {
+        this.unitManagementService = unitManagementService;
+    }
+
+    public void setUserManagementService(UserManagementService userManagementService) {
+        this.userManagementService = userManagementService;
     }
 
     public ActionLogger getActionLogger() {
@@ -223,7 +238,7 @@ public class Project {
             currentUser = getUserManagement().findUser(userName);
             if (currentUser == null) {
                 boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
-                userName = isStudyNew ? UserManagementFactory.ADMIN : UserManagementFactory.OBSERVER;
+                userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
                 logger.warn("User not found in user management. Assuming " + userName + "!");
                 currentUser = getUserManagement().findUser(userName);
                 Objects.requireNonNull(currentUser);
@@ -342,7 +357,7 @@ public class Project {
         String userName = applicationSettings.getProjectUser();
         if (userName == null) {
             boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
-            userName = isStudyNew ? UserManagementFactory.ADMIN : UserManagementFactory.OBSERVER;
+            userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
         }
         currentUser = null; // make sure next getUser retrieves the user from settings
         return getUserManagement().checkUser(userName);
@@ -625,14 +640,14 @@ public class Project {
         }
     }
 
-    private void initializeUnitManagement() {
-        unitManagement = UnitManagementFactory.getUnitManagement();
-        storeUnitManagement();
+    private void initializeUserManagement() {
+        userManagement = userManagementService.createDefaultUserManagement();
+        storeUserManagement();
     }
 
-    private void initializeUserManagement() {
-        userManagement = UserManagementFactory.getUserManagement();
-        storeUserManagement();
+    private void initializeUnitManagement() {
+        unitManagement = unitManagementService.loadDefaultUnitManagement();
+        storeUnitManagement();
     }
 
     private void registerParameterLinks() {
@@ -641,7 +656,7 @@ public class Project {
 
     private void reinitializeProject(SystemModel systemModel) {
         setProjectName(systemModel.getName());
-        study = StudyFactory.makeStudy(systemModel, userManagement);
+        study = studyService.createStudy(systemModel, userManagement);
         setRepositoryStudy(null);
         externalModelFileWatcher.clear();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);

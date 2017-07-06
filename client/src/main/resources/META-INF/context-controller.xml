@@ -4,9 +4,11 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <import resource="context-model.xml" />
+    <import resource="context-service.xml" />
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.MainController" >
-        <constructor-arg ref="project" />
+        <property name="project" ref="project" />
+        <property name="fileStorageService" ref="fileStorageService" />
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController" scope="prototype">
