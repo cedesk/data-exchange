@@ -1,8 +1,8 @@
 package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
@@ -19,29 +19,90 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by D.Knoll on 13.03.2015.
  */
 public class FileStorageServiceImpl implements FileStorageService {
 
+    private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
+
+    private static final String APP_DIR = ".cedesk";
+    private static final String USER_HOME_SYSTEM_PROPERTY_NAME = "user.home";
+    private static final String APP_DIR_SYSTEM_PROPERTY_NAME = "cedesk.app.dir";
+    private static final String DATA_DIR_SYSTEM_PROPERTY_NAME = "cedesk.data.dir";
+
+    private static final String APP_START_TIME_SYSTEM_PROPERTY_NAME = "app.start.time";
+    private static final String USER_HOME_SYSTEM_PROPERTY = System.getProperty(USER_HOME_SYSTEM_PROPERTY_NAME);
+
+    private static final String APP_DIR_SYSTEM_PROPERTY = System.getProperty(APP_DIR_SYSTEM_PROPERTY_NAME);
+
     public static final Class[] MODEL_CLASSES = new Class[]{
             SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class,
             ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
-    private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
+
+    private final File applicationDirectory;
 
     public FileStorageServiceImpl() {
+        if (APP_DIR_SYSTEM_PROPERTY == null) {
+            File userHomeDir = new File(USER_HOME_SYSTEM_PROPERTY);
+            applicationDirectory = new File(userHomeDir, APP_DIR);
+        } else {
+            applicationDirectory = new File(APP_DIR_SYSTEM_PROPERTY);
+        }
+
+        System.setProperty(DATA_DIR_SYSTEM_PROPERTY_NAME, applicationDirectory.getAbsolutePath()); // re-write in any case for log4j
+        System.setProperty(APP_START_TIME_SYSTEM_PROPERTY_NAME, Utils.TIME_AND_DATE_FOR_FILENAMES.format(new Date()));
+
+        if (!applicationDirectory.exists()) {
+            applicationDirectory.mkdirs();
+            logger.error("unable to create application directory in user home: " + applicationDirectory.getAbsolutePath());
+        }
+    }
+
+    @Override
+    public File applicationDirectory() {
+        return applicationDirectory;
+    }
+
+    @Override
+    public File dataDir(String repositoryUrl, String repositoryScheme, String projectName) {
+        File repoDir = new File(this.applicationDirectory(), repositoryUrl);
+        File schemaDir = new File(repoDir, repositoryScheme);
+        return new File(schemaDir, projectName);
+    }
+
+    @Override
+    public void createDirectory(File path) {
+        if (!path.exists()) {
+            logger.info("Creating directory: " + path.toString());
+            path.mkdirs();
+        }
+        if (!path.canRead() || !path.canWrite()) {
+            logger.error("Warning: Directory is not usable: " + path.toString());
+        }
+    }
+
+    @Override
+    public boolean checkFileExistenceAndNonEmptiness(File file) {
+        if (file.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                if (br.readLine() == null) {
+                    return false;
+                }
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
     public void storeSystemModel(SystemModel systemModel, File outputFile) throws IOException {
-
         File outputFolder = outputFile.getParentFile();
-        StorageUtils.makeDirectory(outputFolder);
+        this.createDirectory(outputFolder);
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
             Set<Class> modelClasses = new HashSet<>();
@@ -62,7 +123,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             ExternalModel externalModel = iterator.next();
             String nodePath = ExternalModelFileHandler.makePath(externalModel);
             File nodeDir = new File(outputFolder, nodePath);
-            StorageUtils.makeDirectory(nodeDir);
+            this.createDirectory(nodeDir);
             ExternalModelFileHandler.toFile(externalModel, nodeDir);
         }
     }
@@ -139,8 +200,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public void storeUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
-
-        StorageUtils.makeDirectory(outputFile.getParentFile());
+        this.createDirectory(outputFile.getParentFile());
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 
@@ -170,8 +230,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public void storeUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
-
-        StorageUtils.makeDirectory(outputFile.getParentFile());
+        this.createDirectory(outputFile.getParentFile());
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 
@@ -233,9 +292,8 @@ public class FileStorageServiceImpl implements FileStorageService {
             JAXBContext ct = JAXBContext.newInstance(MC);
 
             Unmarshaller u = ct.createUnmarshaller();
-            Calculation calculation = (Calculation) u.unmarshal(inp);
 
-            return calculation;
+            return (Calculation) u.unmarshal(inp);
         } catch (JAXBException e) {
             throw new IOException("Error reading calculation from XML file.", e);
         }

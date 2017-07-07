@@ -32,6 +32,9 @@ import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetInputOutputExtractor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
+import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
+import ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
@@ -122,18 +125,28 @@ public class ModelEditingController implements Initializable {
 
     private Project project;
 
-    private Window getAppWindow() {
-        return viewPane.getScene().getWindow();
-    }
+    private FileStorageService fileStorageService;
 
-    private TreeItem<ModelNode> getSelectedTreeItem() {
-        return structureTree.getSelectionModel().getSelectedItem();
-    }
+    private ModelUpdateService modelUpdateService;
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setFileStorageService(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
+    }
+
+    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
+        this.modelUpdateService = modelUpdateService;
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
         parameterEditor.setProject(project);
         externalModelEditor.setProject(project);
+        externalModelEditor.setFileStorageService(fileStorageService);
+        externalModelEditor.setModelUpdateService(modelUpdateService);
 
         project.addExternalModelChangeObserver(new Observer() {
             @Override
@@ -141,13 +154,113 @@ public class ModelEditingController implements Initializable {
                 ExternalModel externalModel = (ExternalModel) arg;
                 ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 try {
-                    ModelUpdateUtil.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler,
+                    modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler,
                             Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ParameterUpdateListener());
                 } catch (ExternalModelException e) {
                     logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
                 }
             }
         });
+
+        // STRUCTURE TREE VIEW
+        structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
+            @Override
+            public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
+                return new TextFieldTreeCell(project, false);
+            }
+        });
+        structureTree.setOnEditCommit(new EventHandler<TreeView.EditEvent<ModelNode>>() {
+            @Override
+            public void handle(TreeView.EditEvent<ModelNode> event) {
+                project.markStudyModified();
+            }
+        });
+
+        // STRUCTURE MODIFICATION BUTTONS
+        structureTree.editableProperty().bind(selectedNodeIsEditable);
+        structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
+        BooleanBinding noSelectionOnStructureTreeView = structureTree.getSelectionModel().selectedItemProperty().isNull();
+        BooleanBinding structureNotEditable = structureTree.editableProperty().not();
+        addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCannotHaveChildren.or(structureNotEditable)));
+        renameNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
+        deleteNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
+
+        // STRUCTURE TREE CONTEXT MENU
+        structureTree.setContextMenu(makeStructureTreeContextMenu(structureNotEditable));
+
+        // EXTERNAL MODEL ATTACHMENT
+        externalModelPane.disableProperty().bind(selectedNodeIsEditable.not());
+
+        // NODE PARAMETERS
+        addParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnStructureTreeView));
+        BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
+        deleteParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnParameterTableView));
+        viewParameterHistoryButton.disableProperty().bind(noSelectionOnParameterTableView);
+
+        // NODE PARAMETER TABLE
+        parameterTable.editableProperty().bind(selectedNodeIsEditable);
+        parameterValueColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
+                if (param != null) {
+                    double valueToDisplay = param.getValue().getEffectiveValue();
+                    String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
+                    return new SimpleStringProperty(formattedValue);
+                } else {
+                    return new SimpleStringProperty();
+                }
+            }
+        });
+        parameterUnitColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
+                if (param != null && param.getValue() != null && param.getValue().getUnit() != null) {
+                    return new SimpleStringProperty(param.getValue().getUnit().asText());
+                } else {
+                    return new SimpleStringProperty();
+                }
+            }
+        });
+        parameterInfoColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
+                if (param != null && param.getValue() != null) {
+                    if (param.getValue().getValueSource() == ParameterValueSource.LINK) {
+                        return new SimpleStringProperty(param.getValue().getValueLink() != null ? param.getValue().getValueLink().getNodePath() : "--");
+                    }
+                    if (param.getValue().getValueSource() == ParameterValueSource.REFERENCE) {
+                        return new SimpleStringProperty(param.getValue().getValueReference() != null ? param.getValue().getValueReference().toString() : "--");
+                    }
+                }
+                return new SimpleStringProperty();
+            }
+        });
+
+        viewParameters = new ViewParameters();
+        parameterTable.setItems(viewParameters.getItems());
+        parameterTable.getSelectionModel().selectedItemProperty().addListener(new ParameterModelSelectionListener());
+
+        // NODE PARAMETERS TABLE CONTEXT MENU
+        ContextMenu parameterContextMenu = new ContextMenu();
+        MenuItem deleteParameterMenuItem = new MenuItem("Delete parameter");
+        deleteParameterMenuItem.setOnAction(ModelEditingController.this::deleteParameter);
+        deleteParameterMenuItem.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnParameterTableView));
+        parameterContextMenu.getItems().add(deleteParameterMenuItem);
+        MenuItem addNodeMenuItem = new MenuItem("View history");
+        addNodeMenuItem.setOnAction(ModelEditingController.this::openParameterHistoryDialog);
+        addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
+        parameterContextMenu.getItems().add(addNodeMenuItem);
+        parameterTable.setContextMenu(parameterContextMenu);
+        parameterEditor.setVisible(false);
+        parameterEditor.setEditListener(new Consumer<ParameterModel>() {
+            @Override
+            public void accept(ParameterModel parameterModel) {
+                lightTableRefresh();
+            }
+        });
+
+        externalModelEditor.setProject(project);
+        externalModelEditor.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
     }
 
     public void addNode(ActionEvent actionEvent) {
@@ -277,109 +390,6 @@ public class ModelEditingController implements Initializable {
             updateParameterTable(selectedItem);
             project.markStudyModified();
         }
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        // STRUCTURE TREE VIEW
-        structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
-            @Override
-            public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
-                return new TextFieldTreeCell(project, false);
-            }
-        });
-        structureTree.setOnEditCommit(new EventHandler<TreeView.EditEvent<ModelNode>>() {
-            @Override
-            public void handle(TreeView.EditEvent<ModelNode> event) {
-                project.markStudyModified();
-            }
-        });
-
-        // STRUCTURE MODIFICATION BUTTONS
-        structureTree.editableProperty().bind(selectedNodeIsEditable);
-        structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
-        BooleanBinding noSelectionOnStructureTreeView = structureTree.getSelectionModel().selectedItemProperty().isNull();
-        BooleanBinding structureNotEditable = structureTree.editableProperty().not();
-        addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCannotHaveChildren.or(structureNotEditable)));
-        renameNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
-        deleteNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
-
-        // STRUCTURE TREE CONTEXT MENU
-        structureTree.setContextMenu(makeStructureTreeContextMenu(structureNotEditable));
-
-        // EXTERNAL MODEL ATTACHMENT
-        externalModelPane.disableProperty().bind(selectedNodeIsEditable.not());
-
-        // NODE PARAMETERS
-        addParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnStructureTreeView));
-        BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
-        deleteParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnParameterTableView));
-        viewParameterHistoryButton.disableProperty().bind(noSelectionOnParameterTableView);
-
-        // NODE PARAMETER TABLE
-        parameterTable.editableProperty().bind(selectedNodeIsEditable);
-        parameterValueColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
-                if (param != null) {
-                    double valueToDisplay = param.getValue().getEffectiveValue();
-                    String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
-                    return new SimpleStringProperty(formattedValue);
-                } else {
-                    return new SimpleStringProperty();
-                }
-            }
-        });
-        parameterUnitColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
-                if (param != null && param.getValue() != null && param.getValue().getUnit() != null) {
-                    return new SimpleStringProperty(param.getValue().getUnit().asText());
-                } else {
-                    return new SimpleStringProperty();
-                }
-            }
-        });
-        parameterInfoColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
-                if (param != null && param.getValue() != null) {
-                    if (param.getValue().getValueSource() == ParameterValueSource.LINK) {
-                        return new SimpleStringProperty(param.getValue().getValueLink() != null ? param.getValue().getValueLink().getNodePath() : "--");
-                    }
-                    if (param.getValue().getValueSource() == ParameterValueSource.REFERENCE) {
-                        return new SimpleStringProperty(param.getValue().getValueReference() != null ? param.getValue().getValueReference().toString() : "--");
-                    }
-                }
-                return new SimpleStringProperty();
-            }
-        });
-
-        viewParameters = new ViewParameters();
-        parameterTable.setItems(viewParameters.getItems());
-        parameterTable.getSelectionModel().selectedItemProperty().addListener(new ParameterModelSelectionListener());
-
-        // NODE PARAMETERS TABLE CONTEXT MENU
-        ContextMenu parameterContextMenu = new ContextMenu();
-        MenuItem deleteParameterMenuItem = new MenuItem("Delete parameter");
-        deleteParameterMenuItem.setOnAction(ModelEditingController.this::deleteParameter);
-        deleteParameterMenuItem.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnParameterTableView));
-        parameterContextMenu.getItems().add(deleteParameterMenuItem);
-        MenuItem addNodeMenuItem = new MenuItem("View history");
-        addNodeMenuItem.setOnAction(ModelEditingController.this::openParameterHistoryDialog);
-        addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
-        parameterContextMenu.getItems().add(addNodeMenuItem);
-        parameterTable.setContextMenu(parameterContextMenu);
-        parameterEditor.setVisible(false);
-        parameterEditor.setEditListener(new Consumer<ParameterModel>() {
-            @Override
-            public void accept(ParameterModel parameterModel) {
-                lightTableRefresh();
-            }
-        });
-
-        externalModelEditor.setProject(project);
-        externalModelEditor.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
     }
 
     public void openDepencencyView(ActionEvent actionEvent) {
@@ -538,6 +548,14 @@ public class ModelEditingController implements Initializable {
             structureTree.setRoot(null);
             clearParameterTable();
         }
+    }
+
+    private Window getAppWindow() {
+        return viewPane.getScene().getWindow();
+    }
+
+    private TreeItem<ModelNode> getSelectedTreeItem() {
+        return structureTree.getSelectionModel().getSelectedItem();
     }
 
     private void clearParameterTable() {

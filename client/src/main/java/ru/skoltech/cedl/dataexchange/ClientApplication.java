@@ -12,7 +12,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -23,7 +23,8 @@ public class ClientApplication extends Application {
     private MainController mainController;
 
     public static void main(String[] args) {
-        System.out.println("using: " + StorageUtils.getAppDir().getAbsolutePath());
+        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
+        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath());
         PropertyConfigurator.configure(ClientApplication.class.getResource("/META-INF/log4j.properties"));
 
         logger.info("----------------------------------------------------------------------------------------------------");

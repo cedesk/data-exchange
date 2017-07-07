@@ -2,7 +2,7 @@ package ru.skoltech.cedl.dataexchange;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
 import java.io.File;
@@ -38,11 +38,17 @@ public class ApplicationSettings {
 
     private static final String STUDY_MODEL_DEPTH = "study.model.depth";
 
+    private FileStorageService fileStorageService;
+
     private File file;
     private Properties properties = new Properties();
 
-    public ApplicationSettings() {
-        this.file = new File(StorageUtils.getAppDir(), SETTINGS_FILE);
+    public void setFileStorageService(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
+    }
+
+    public void init() {
+        this.file = new File(fileStorageService.applicationDirectory(), SETTINGS_FILE);
         load();
     }
 

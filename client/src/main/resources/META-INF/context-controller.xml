@@ -9,10 +9,23 @@
     <bean class="ru.skoltech.cedl.dataexchange.controller.MainController" >
         <property name="project" ref="project" />
         <property name="fileStorageService" ref="fileStorageService" />
+        <property name="differenceMergeService" ref="differenceMergeService" />
+    </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.controller.ModelEditingController" scope="prototype">
+        <property name="project" ref="project" />
+        <property name="fileStorageService" ref="fileStorageService" />
+        <property name="modelUpdateService" ref="modelUpdateService" />
+    </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.controller.DiffController" scope="prototype">
+        <property name="project" ref="project" />
+        <property name="differenceMergeService" ref="differenceMergeService" />
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController" scope="prototype">
-        <constructor-arg ref="applicationSettings" />
+        <property name="fileStorageService" ref="fileStorageService" />
+        <property name="applicationSettings" ref="applicationSettings" />
     </bean>
 
 </beans>

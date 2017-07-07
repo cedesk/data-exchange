@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
+import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
@@ -54,10 +55,16 @@ public class DiffController implements Initializable {
     private TableColumn<ModelDifference, String> elementTypeColumn;
 
     private Project project;
+    private DifferenceMergeService differenceMergeService;
+
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
+        this.differenceMergeService = differenceMergeService;
     }
 
     @Override
@@ -89,7 +96,7 @@ public class DiffController implements Initializable {
 
     public void acceptAll(ActionEvent actionEvent) {
         try {
-            List<ModelDifference> appliedDifferences = DifferenceMerger.mergeChangesOntoFirst(project, modelDifferences);
+            List<ModelDifference> appliedDifferences = differenceMergeService.mergeChangesOntoFirst(project, modelDifferences);
             if (appliedDifferences.size() > 0) {
                 project.markStudyModified();
             }
@@ -124,7 +131,7 @@ public class DiffController implements Initializable {
 
     public void revertAll(ActionEvent actionEvent) {
         try {
-            List<ModelDifference> appliedDifferences = DifferenceMerger.revertChangesOnFirst(project, modelDifferences);
+            List<ModelDifference> appliedDifferences = differenceMergeService.revertChangesOnFirst(project, modelDifferences);
             if (modelDifferences.size() == 0) {
                 close(null);
             } else if (appliedDifferences.size() > 0) {
@@ -166,9 +173,9 @@ public class DiffController implements Initializable {
         boolean success = false;
         try {
             if (modelDifference.isMergeable()) {
-                success = DifferenceMerger.mergeOne(project, modelDifference);
+                success = differenceMergeService.mergeOne(project, modelDifference);
             } else if (modelDifference.isRevertible()) {
-                success = DifferenceMerger.revertOne(project, modelDifference);
+                success = differenceMergeService.revertOne(project, modelDifference);
             }
         } catch (MergeException me) {
             StatusLogger.getInstance().log(me.getMessage(), true);
@@ -218,6 +225,4 @@ public class DiffController implements Initializable {
             };
         }
     }
-
-
 }

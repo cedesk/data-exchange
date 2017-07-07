@@ -2,7 +2,7 @@ package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelTreeIterator;
@@ -23,7 +23,13 @@ public class ExternalModelFileHandler {
 
     private static Logger logger = Logger.getLogger(ExternalModelFileHandler.class);
 
+    private FileStorageService fileStorageService;
+
     private Set<ExternalModel> changedExternalModels = new HashSet<>();
+
+    public void setFileStorageService(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
+    }
 
     public Set<ExternalModel> getChangedExternalModels() {
         return changedExternalModels;
@@ -151,7 +157,7 @@ public class ExternalModelFileHandler {
     public File cacheFile(Project project, ExternalModel externalModel) throws IOException, ExternalModelException {
         Objects.requireNonNull(externalModel);
         File file = getFilePathInCache(project, externalModel);
-        StorageUtils.makeDirectory(file.getParentFile());
+        fileStorageService.createDirectory(file.getParentFile());
         ExternalModelCacheState state = getCacheState(project, externalModel);
         switch (state) {
             case NOT_CACHED:
@@ -221,7 +227,7 @@ public class ExternalModelFileHandler {
     public File forceCacheUpdate(Project project, ExternalModel externalModel) throws IOException {
         Objects.requireNonNull(externalModel);
         File file = getFilePathInCache(project, externalModel);
-        StorageUtils.makeDirectory(file.getParentFile());
+        fileStorageService.createDirectory(file.getParentFile());
         ExternalModelCacheState state = getCacheState(project, externalModel);
         switch (state) {
             case CACHED_MODIFIED_AFTER_CHECKOUT: // overwrite

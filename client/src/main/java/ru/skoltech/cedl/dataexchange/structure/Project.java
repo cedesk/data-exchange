@@ -12,10 +12,12 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.repository.*;
-import ru.skoltech.cedl.dataexchange.services.StudyService;
-import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
-import ru.skoltech.cedl.dataexchange.services.UserManagementService;
+import ru.skoltech.cedl.dataexchange.repository.Repository;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
+import ru.skoltech.cedl.dataexchange.services.*;
+import ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -51,7 +53,9 @@ public class Project {
     private RepositoryStateMachine repositoryStateMachine;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ExternalModelFileHandler externalModelFileHandler;
+    private FileStorageService fileStorageService;
     private StudyService studyService;
+    private ModelUpdateService modelUpdateService;
     private UserManagementService userManagementService;
     private UnitManagementService unitManagementService;
     private ActionLogger actionLogger;
@@ -119,8 +123,16 @@ public class Project {
         this.externalModelFileHandler = externalModelFileHandler;
     }
 
+    public void setFileStorageService(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
+    }
+
     public void setStudyService(StudyService studyService) {
         this.studyService = studyService;
+    }
+
+    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
+        this.modelUpdateService = modelUpdateService;
     }
 
     public void setUnitManagementService(UnitManagementService unitManagementService) {
@@ -591,7 +603,7 @@ public class Project {
         while (externalModelsIterator.hasNext()) {
             ExternalModel externalModel = externalModelsIterator.next();
             try {
-                ModelUpdateUtil.applyParameterChangesToExternalModel(this, externalModel, externalModelFileHandler, externalModelFileWatcher);
+                modelUpdateService.applyParameterChangesToExternalModel(this, externalModel, externalModelFileHandler, externalModelFileWatcher);
             } catch (ExternalModelException e) {
                 exceptions.add(e);
             }
@@ -633,7 +645,7 @@ public class Project {
 
             try {
                 // silently update model from external model
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(this, externalModel, externalModelFileHandler, null, null);
+                modelUpdateService.applyParameterChangesFromExternalModel(this, externalModel, externalModelFileHandler, null, null);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
             }
@@ -728,6 +740,6 @@ public class Project {
         String projectName = this.getProjectName();
         String hostname = applicationSettings.getRepositoryServerHostname(DatabaseRepository.DEFAULT_HOST_NAME);
         String schema = applicationSettings.getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA);
-        return StorageUtils.getDataDir(hostname, schema, projectName);
+        return fileStorageService.dataDir(hostname, schema, projectName);
     }
 }

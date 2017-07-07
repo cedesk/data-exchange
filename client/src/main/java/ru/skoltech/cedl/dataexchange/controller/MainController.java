@@ -30,13 +30,12 @@ import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.DifferenceMerger;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
@@ -93,6 +92,7 @@ public class MainController implements Initializable {
 
     private Project project;
     private FileStorageService fileStorageService;
+    private DifferenceMergeService differenceMergeService;
 
     public void setProject(Project project) {
         this.project = project;
@@ -102,16 +102,21 @@ public class MainController implements Initializable {
         this.fileStorageService = fileStorageService;
     }
 
+    public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
+        this.differenceMergeService = differenceMergeService;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // EDITING PANE
         try {
             FXMLLoader loader = new FXMLLoader();
+            //TODO rewrite, maybe make MainController aware of ApplicationContext
+            loader.setControllerFactory(aClass -> ApplicationContextInitializer.getInstance().getContext().getBean(aClass));
             loader.setLocation(Views.MODEL_EDITING_VIEW);
             Parent editingPane = loader.load();
             layoutPane.setCenter(editingPane);
             modelEditingController = loader.getController();
-            modelEditingController.setProject(project);
         } catch (IOException ioe) {
             logger.error("Unable to load editing view pane.");
             throw new RuntimeException(ioe);
@@ -297,7 +302,7 @@ public class MainController implements Initializable {
     }
 
     public void exportProject(ActionEvent actionEvent) {
-        File exportPath = Dialogues.chooseExportPath();
+        File exportPath = Dialogues.chooseExportPath(fileStorageService.applicationDirectory());
         if (exportPath != null) {
             String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
             File outputFile = new File(exportPath, outputFileName);
@@ -318,7 +323,7 @@ public class MainController implements Initializable {
         if (actionEvent == null) { // invoked from startup
             String projectToImport = project.getApplicationSettings().getProjectToImport();
             if (projectToImport != null) {
-                importFile = new File(StorageUtils.getAppDir(), projectToImport);
+                importFile = new File(fileStorageService.applicationDirectory(), projectToImport);
                 if (importFile.exists()) {
                     logger.info("importing " + importFile.getAbsolutePath());
                 } else {
@@ -331,7 +336,7 @@ public class MainController implements Initializable {
         }
         if (importFile == null) {
             // TODO: warn user about replacing current project
-            importFile = Dialogues.chooseImportFile();
+            importFile = Dialogues.chooseImportFile(fileStorageService.applicationDirectory());
         }
         if (importFile != null) {
             // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
@@ -438,6 +443,8 @@ public class MainController implements Initializable {
         }
         try {
             FXMLLoader loader = new FXMLLoader();
+            //TODO rewrite, maybe make MainController aware of ApplicationContext
+            loader.setControllerFactory(aClass -> ApplicationContextInitializer.getInstance().getContext().getBean(aClass));
             loader.setLocation(Views.MODEL_DIFF_WINDOW);
             Parent root = loader.load();
 
@@ -450,9 +457,8 @@ public class MainController implements Initializable {
 
             // update from repository
             project.loadRepositoryStudy();
-            DiffController controller = loader.getController();
-            controller.setProject(project);
 
+            DiffController controller = loader.getController();
             controller.refreshView(null);
             stage.showAndWait();
             modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
@@ -709,7 +715,7 @@ public class MainController implements Initializable {
                     // TODO merge remote changes
                     List<ModelDifference> modelDifferences = StudyDifference.computeDifferences(project.getStudy(),
                             project.getRepositoryStudy(), project.getLatestLoadedModification());
-                    List<ModelDifference> appliedChanges = DifferenceMerger.mergeChangesOntoFirst(project, modelDifferences);
+                    List<ModelDifference> appliedChanges = differenceMergeService.mergeChangesOntoFirst(project, modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
                         openDiffView(actionEvent);
                     }

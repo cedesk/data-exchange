@@ -6,7 +6,6 @@ import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
 
 import java.io.File;
 import java.util.List;
@@ -21,23 +20,23 @@ public class Dialogues {
     public static final ButtonType NEW_STUDY_BUTTON = new ButtonType("Create new Study");
     public static final ButtonType LOAD_STUDY_BUTTON = new ButtonType("Load existing Study");
 
-    public static File chooseExportPath() {
+    public static File chooseExportPath(File applicationDirectory) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setInitialDirectory(StorageUtils.getAppDir());
+        directoryChooser.setInitialDirectory(applicationDirectory);
         directoryChooser.setTitle("Select export path.");
         return directoryChooser.showDialog(null);
     }
 
-    public static File chooseImportFile() {
+    public static File chooseImportFile(File applicationDirectory) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(StorageUtils.getAppDir());
+        fileChooser.setInitialDirectory(applicationDirectory);
         fileChooser.setTitle("Select import file.");
         return fileChooser.showOpenDialog(null);
     }
 
-    public static File chooseExternalModelFile() {
+    public static File chooseExternalModelFile(File applicationDirectory) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(StorageUtils.getAppDir());
+        fileChooser.setInitialDirectory(applicationDirectory);
         fileChooser.setTitle("Select model file.");
         return fileChooser.showOpenDialog(null);
     }

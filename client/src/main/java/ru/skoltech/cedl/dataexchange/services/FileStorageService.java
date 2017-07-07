@@ -17,6 +17,37 @@ import java.io.InputStream;
 public interface FileStorageService {
 
     /**
+     * Retrieve a basic application directory.
+     *
+     * @return application directory.
+     */
+    File applicationDirectory();
+
+    /**
+     * Retrieve a data directory.
+     *
+     * @param repositoryUrl repository url
+     * @param repositoryScheme repository scheme
+     * @param projectName project name
+     * @return data directory
+     */
+    File dataDir(String repositoryUrl, String repositoryScheme, String projectName);
+
+    /**
+     * Create directory by path.
+     *
+     * @param path path to directory
+     */
+    void createDirectory(File path);
+
+    /**
+     * Check file existence and non emptiness.
+     *
+     * @param file file to check
+     * @return true if file exists and is not empty, false in case of opposite
+     */
+    boolean checkFileExistenceAndNonEmptiness(File file);
+    /**
      * Store {@link SystemModel} in the file.
      * @param systemModel
      * @param outputFile

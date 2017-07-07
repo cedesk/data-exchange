@@ -21,8 +21,9 @@ import ru.skoltech.cedl.dataexchange.controller.ModelEditingController;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
+import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
@@ -43,12 +44,16 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ExternalModelEditor.class);
 
+    @FXML
+    private VBox externalModelViewContainer;
+
     private ModelNode modelNode;
 
     private Project project;
 
-    @FXML
-    private VBox externalModelViewContainer;
+    private FileStorageService fileStorageService;
+
+    private ModelUpdateService modelUpdateService;
 
     private ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener;
     private ModelEditingController.ParameterUpdateListener parameterUpdateListener;
@@ -63,6 +68,14 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
+    }
+
+    public void setFileStorageService(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
+    }
+
+    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
+        this.modelUpdateService = modelUpdateService;
     }
 
     public ModelNode getModelNode() {
@@ -83,7 +96,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
             Dialogues.showError("Save Project", "Unable to attach an external model, as long as the project has not been saved yet!");
             return;
         }
-        File externalModelFile = Dialogues.chooseExternalModelFile();
+        File externalModelFile = Dialogues.chooseExternalModelFile(fileStorageService.applicationDirectory());
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
             if (externalModelFile.isFile() && ExternalModelAccessorFactory.hasEvaluator(fileName)) {
@@ -144,7 +157,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         for (ExternalModel externalModel : modelNode.getExternalModels())
             try {
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler,
+                modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler,
                         Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
@@ -165,7 +178,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         Button exchangeButton = (Button) actionEvent.getSource();
         ExternalModel externalModel = (ExternalModel) exchangeButton.getUserData();
 
-        File externalModelFile = Dialogues.chooseExternalModelFile();
+        File externalModelFile = Dialogues.chooseExternalModelFile(fileStorageService.applicationDirectory());
         String oldFileName = externalModel.getName();
         String oldNodePath = externalModel.getNodePath();
         if (externalModelFile != null) {

@@ -25,8 +25,10 @@ import ru.skoltech.cedl.dataexchange.controller.UserNotifications;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
-import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
+import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
+import ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -107,6 +109,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     @FXML
     private HBox overrideValueGroup;
 
+    private ModelUpdateService modelUpdateService;
+
     private Project project;
 
     private ParameterModel editingParameterModel;
@@ -126,7 +130,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private AutoCompletionBinding<String> binding;
 
     public ParameterEditor() {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("parameter_editor.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(Controls.PARAMETER_EDITOR_VIEW);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
 
@@ -148,6 +152,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
+        this.modelUpdateService = modelUpdateService;
     }
 
     public void setEditListener(Consumer<ParameterModel> updateListener) {
@@ -348,7 +356,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                 editingParameterModel.setValueReference(valueReference);
                 logger.debug("update parameter value from model");
                 try {
-                    ModelUpdateUtil.applyParameterChangesFromExternalModel(project, editingParameterModel, externalModelFileHandler,
+                    modelUpdateService.applyParameterChangesFromExternalModel(project, editingParameterModel, externalModelFileHandler,
                             parameterUpdate -> valueText.setText(convertToText(parameterUpdate.getValue())));
                 } catch (ExternalModelException e) {
                     Window window = propertyPane.getScene().getWindow();
@@ -419,7 +427,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
                 ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 ExternalModelFileWatcher externalModelFileWatcher = project.getExternalModelFileWatcher();
                 try {
-                    ModelUpdateUtil.applyParameterChangesToExternalModel(project, externalModel, externalModelFileHandler, externalModelFileWatcher);
+                    modelUpdateService.applyParameterChangesToExternalModel(project, externalModel, externalModelFileHandler, externalModelFileWatcher);
                 } catch (ExternalModelException e) {
                     Dialogues.showError("External Model Error", "Failed to export parameter value to external model. \n" + e.getMessage());
                 }

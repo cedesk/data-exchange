@@ -7,8 +7,9 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.control.ReferenceSelector;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
 import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
+import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
+import ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
@@ -26,10 +27,12 @@ public class ReferenceSelectorDemo extends Application {
     private static Logger logger = Logger.getLogger(ReferenceSelectorDemo.class);
 
     private static Project project;
+    private static ModelUpdateService modelUpdateService;
 
     public static ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
         project = new Project();
         project.init("TEST");
+        modelUpdateService = new ModelUpdateServiceImpl();
         Study study = new Study("TEST");
         Field field = Project.class.getDeclaredField("study");
         field.setAccessible(true);
@@ -69,7 +72,7 @@ public class ReferenceSelectorDemo extends Application {
         ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
 
         System.out.println(parameterModel);
-        ModelUpdateUtil.applyParameterChangesFromExternalModel(project, parameterModel, externalModelFileHandler,
+        modelUpdateService.applyParameterChangesFromExternalModel(project, parameterModel, externalModelFileHandler,
                 new Consumer<ParameterUpdate>() {
                     @Override
                     public void accept(ParameterUpdate parameterUpdate) {

@@ -12,7 +12,7 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
-import ru.skoltech.cedl.dataexchange.repository.StorageUtils;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -44,10 +44,16 @@ public class RepositorySettingsController implements Initializable {
     @FXML
     private PasswordField dbPasswordText;
 
+    private FileStorageService fileStorageService;
+
     private ApplicationSettings applicationSettings;
     private RepositorySettingsListener repositorySettingsListener;
 
-    public RepositorySettingsController(ApplicationSettings applicationSettings) {
+    public void setFileStorageService(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
+    }
+
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
     }
 
@@ -57,7 +63,7 @@ public class RepositorySettingsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        String appDir = StorageUtils.getAppDir().getAbsolutePath();
+        String appDir = fileStorageService.applicationDirectory().getAbsolutePath();
         appDirText.setText(appDir);
         repoSchemaText.setText(applicationSettings.getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA));
 

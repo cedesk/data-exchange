@@ -1,8 +1,10 @@
-package ru.skoltech.cedl.dataexchange.external;
+package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -15,12 +17,13 @@ import java.util.function.Consumer;
 /**
  * Created by D.Knoll on 09.07.2015.
  */
-public class ModelUpdateUtil {
+public class ModelUpdateServiceImpl implements ModelUpdateService {
 
-    private static final Logger logger = Logger.getLogger(ModelUpdateUtil.class);
+    private static final Logger logger = Logger.getLogger(ModelUpdateServiceImpl.class);
 
-    public static void applyParameterChangesFromExternalModel(Project project, ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler,
-                                                              List<? extends Consumer<ModelUpdate>> modelUpdateListeners, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
+    @Override
+    public void applyParameterChangesFromExternalModel(Project project, ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler,
+                                                       List<? extends Consumer<ModelUpdate>> modelUpdateListeners, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
         ModelUpdate modelUpdate = new ModelUpdate(externalModel);
@@ -68,8 +71,9 @@ public class ModelUpdateUtil {
         }
     }
 
-    public static void applyParameterChangesFromExternalModel(Project project, ParameterModel parameterModel, ExternalModelFileHandler externalModelFileHandler,
-                                                              Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
+    @Override
+    public void applyParameterChangesFromExternalModel(Project project, ParameterModel parameterModel, ExternalModelFileHandler externalModelFileHandler,
+                                                       Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ParameterUpdate parameterUpdate = null;
 
         // check whether parameter references external model
@@ -102,7 +106,7 @@ public class ModelUpdateUtil {
         }
     }
 
-    private static ParameterUpdate getParameterUpdate(Project project, ParameterModel parameterModel, ExternalModelReference valueReference, ExternalModelEvaluator evaluator) throws ExternalModelException {
+    private ParameterUpdate getParameterUpdate(Project project, ParameterModel parameterModel, ExternalModelReference valueReference, ExternalModelEvaluator evaluator) throws ExternalModelException {
         ParameterUpdate parameterUpdate = null;
         try {
             Double value = evaluator.getValue(project, valueReference.getTarget());
@@ -120,7 +124,8 @@ public class ModelUpdateUtil {
         return parameterUpdate;
     }
 
-    public static void applyParameterChangesToExternalModel(Project project, ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
+    @Override
+    public void applyParameterChangesToExternalModel(Project project, ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
         ExternalModelExporter exporter = ExternalModelAccessorFactory.getExporter(externalModel, externalModelFileHandler);
