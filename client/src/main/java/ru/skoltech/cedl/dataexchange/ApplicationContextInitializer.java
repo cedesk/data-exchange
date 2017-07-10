@@ -12,9 +12,9 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ApplicationContextInitializer {
 
     private static Logger logger = Logger.getLogger(ApplicationContextInitializer.class);
-    private static final String DEFAULT_CONTEXT_MODEL_LOCATION = "/META-INF/context-model.xml";
-    private static final String DEFAULT_CONTEXT_SERVICE_LOCATION = "/META-INF/context-service.xml";
-    private static final String DEFAULT_CONTEXT_CONTROLLER_LOCATION = "/META-INF/context-controller.xml";
+    private static final String DEFAULT_CONTEXT_MODEL_LOCATION = "/context-model.xml";
+    private static final String DEFAULT_CONTEXT_SERVICE_LOCATION = "/context-service.xml";
+    private static final String DEFAULT_CONTEXT_CONTROLLER_LOCATION = "/context-controller.xml";
 
     private static String[] locations;
     private static ApplicationContextInitializer instance;

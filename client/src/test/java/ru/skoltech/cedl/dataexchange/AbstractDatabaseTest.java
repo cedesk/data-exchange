@@ -26,8 +26,7 @@ public abstract class AbstractDatabaseTest {
     protected Repository repository = new DatabaseRepository(PERSISTENCE_UNIT_NAME);
 
     static {
-        ApplicationContextInitializer.initialize(new String[] {"/context-model.xml",
-                                                               "/context-service.xml"});
+        ApplicationContextInitializer.initialize(new String[] {"/context-model-test.xml"});
     }
     @Before
     public void before() {
