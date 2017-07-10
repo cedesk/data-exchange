@@ -1,12 +1,10 @@
 package ru.skoltech.cedl.dataexchange;
 
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
@@ -48,11 +46,9 @@ public class ClientApplication extends Application {
         primaryStage.getIcons().add(IconSet.APP_ICON);
         primaryStage.show();
 
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            public void handle(WindowEvent we) {
-                if (!mainController.confirmCloseRequest()) {
-                    we.consume();
-                }
+        primaryStage.setOnCloseRequest(we -> {
+            if (!mainController.confirmCloseRequest()) {
+                we.consume();
             }
         });
     }

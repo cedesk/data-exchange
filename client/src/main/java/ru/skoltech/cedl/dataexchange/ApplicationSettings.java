@@ -1,12 +1,13 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.core.io.FileSystemResource;
 import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
@@ -16,7 +17,7 @@ import java.util.Properties;
  * <p>
  * Created by D.Knoll on 18.03.2015.
  */
-public class ApplicationSettings {
+public class ApplicationSettings extends PropertyPlaceholderConfigurer {
 
     private static final Logger logger = Logger.getLogger(ApplicationSettings.class);
 
@@ -49,14 +50,14 @@ public class ApplicationSettings {
 
     public void init() {
         this.file = new File(fileStorageService.applicationDirectory(), SETTINGS_FILE);
+        this.setLocation(new FileSystemResource(file));
         load();
+
     }
 
     private void load() {
-        Properties props = new Properties();
-        try (FileReader fileReader = new FileReader(file)) {
-            props.load(fileReader);
-            properties = props;
+        try {
+            properties = mergeProperties();
         } catch (IOException e) {
             logger.error("Error loading application settings!");
         }
