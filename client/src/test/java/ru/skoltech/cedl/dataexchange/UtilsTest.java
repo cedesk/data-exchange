@@ -9,19 +9,11 @@ import org.junit.Test;
 public class UtilsTest {
 
     @Test
-    public void testVersionCompare() throws Exception {
-
-        Assert.assertEquals(-1, Utils.compareVersions("1.12", "1.13"));
-
-        Assert.assertEquals(0, Utils.compareVersions("1.13", "1.13"));
-
-        Assert.assertEquals(1, Utils.compareVersions("1.13", "1.12"));
-
-        Assert.assertEquals(-1, Utils.compareVersions("1.13-Snapshot", "1.13"));
-
-        Assert.assertEquals(1, Utils.compareVersions("1.13-Snapshot", "1.12-Snapshot"));
-
-        Assert.assertEquals(0, Utils.compareVersions("1.14-Snapshot", "1.14-Snapshot"));
+    public void hostAndDomainNameTest() {
+        String hostname = Utils.getHostname();
+        System.out.println(hostname);
+        String domain = Utils.getDomain();
+        System.out.println(domain);
     }
 
     @Test
@@ -37,10 +29,24 @@ public class UtilsTest {
     }
 
     @Test
-    public void hostAndDomainNameTest() {
-        String hostname = Utils.getHostname();
-        System.out.println(hostname);
-        String domain = Utils.getDomain();
-        System.out.println(domain);
+    public void testVersionCompare() throws Exception {
+
+        Assert.assertEquals(-1, Utils.compareVersions("1.12", "1.13"));
+
+        Assert.assertEquals(0, Utils.compareVersions("1.13", "1.13"));
+
+        Assert.assertEquals(1, Utils.compareVersions("1.13", "1.12"));
+
+        Assert.assertEquals(-1, Utils.compareVersions("1.13-Snapshot", "1.13"));
+
+        Assert.assertEquals(1, Utils.compareVersions("1.13-Snapshot", "1.12-Snapshot"));
+
+        Assert.assertEquals(0, Utils.compareVersions("1.14-Snapshot", "1.14-Snapshot"));
+
+        Assert.assertEquals(1, Utils.compareVersions("1.27.1", "1.27"));
+
+        Assert.assertEquals(0, Utils.compareVersions("1.27.1", "1.27.1"));
+
+        Assert.assertEquals(-1, Utils.compareVersions("1.27", "1.27.1"));
     }
 }

@@ -100,8 +100,8 @@
                 </TitledPane>
             </children>
         </AnchorPane>
-        <AnchorPane>
-            <children>
+        <SplitPane dividerPositions="0.5" orientation="VERTICAL">
+            <items>
                 <TitledPane fx:id="externalModelPane" animated="false" expanded="true" text="External Model"
                             AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <content>
@@ -196,7 +196,7 @@
                         </SplitPane>
                     </content>
                 </TitledPane>
-            </children>
-        </AnchorPane>
+            </items>
+        </SplitPane>
     </items>
 </SplitPane>
