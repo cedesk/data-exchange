@@ -12,9 +12,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ApplicationContextInitializer {
 
     private static Logger logger = Logger.getLogger(ApplicationContextInitializer.class);
-    private static final String DEFAULT_CONTEXT_MODEL_LOCATION = "/context-model.xml";
-    private static final String DEFAULT_CONTEXT_SERVICE_LOCATION = "/context-service.xml";
-    private static final String DEFAULT_CONTEXT_CONTROLLER_LOCATION = "/context-controller.xml";
+    private static final String BASE_CONTEXT_LOCATION = "/context-controller.xml";
 
     private static String[] locations;
     private static ApplicationContextInitializer instance;
@@ -36,9 +34,7 @@ public class ApplicationContextInitializer {
     public static ApplicationContextInitializer getInstance() {
         if (instance == null) {
             if (locations == null) {
-                locations = new String[] {DEFAULT_CONTEXT_MODEL_LOCATION,
-                                          DEFAULT_CONTEXT_SERVICE_LOCATION,
-                                          DEFAULT_CONTEXT_CONTROLLER_LOCATION};
+                locations = new String[] {BASE_CONTEXT_LOCATION};
             }
             instance = new ApplicationContextInitializer(locations);
         }

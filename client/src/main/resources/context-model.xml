@@ -11,13 +11,6 @@
         <property name="fileStorageService" ref="fileStorageService" />
     </bean>
 
-    <bean id="repositoryFactory" class="ru.skoltech.cedl.dataexchange.repository.ApplicationSettingsRepositoryFactory">
-        <constructor-arg ref="applicationSettings" />
-    </bean>
-
-    <bean id="repository" factory-bean="repositoryFactory" factory-method="createDatabaseRepository"
-        scope="prototype"/>
-
     <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine" />
 
     <bean id="externalModelFileWatcher" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher" />
@@ -26,12 +19,14 @@
     </bean>
 
     <bean id="actionLogger" class="ru.skoltech.cedl.dataexchange.logging.ActionLogger">
-        <constructor-arg ref="applicationSettings"/>
+        <property name="applicationSettings" ref="applicationSettings" />
+        <property name="repositoryService" ref="persistenceRepositoryService" />
     </bean>
 
     <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" init-method="init" >
         <property name="applicationSettings" ref="applicationSettings" />
-        <property name="repositoryFactory" ref="repositoryFactory" />
+        <property name="repositoryManager" ref="repositoryManager" />
+        <property name="repositoryService" ref="persistenceRepositoryService" />
         <property name="repositoryStateMachine" ref="repositoryStateMachine" />
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher" />
         <property name="externalModelFileHandler" ref="externalModelFileHandler" />

@@ -11,7 +11,6 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 
 import java.net.URL;
@@ -65,9 +64,9 @@ public class RepositorySettingsController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         String appDir = fileStorageService.applicationDirectory().getAbsolutePath();
         appDirText.setText(appDir);
-        repoSchemaText.setText(applicationSettings.getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA));
+        repoSchemaText.setText(applicationSettings.getRepositorySchema(ApplicationSettings.DEFAULT_SCHEMA));
 
-        dbHostnameText.setText(applicationSettings.getRepositoryServerHostname(DatabaseRepository.DEFAULT_HOST_NAME));
+        dbHostnameText.setText(applicationSettings.getRepositoryServerHostname(ApplicationSettings.DEFAULT_HOST_NAME));
         dbUsernameText.setText(applicationSettings.getRepositoryUserName(""));
         dbPasswordText.setText(applicationSettings.getRepositoryPassword(""));
         repoWatcherAutoSyncCheckbox.setSelected(applicationSettings.getAutoSync());

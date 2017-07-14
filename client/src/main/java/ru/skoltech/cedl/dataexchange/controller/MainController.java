@@ -26,12 +26,14 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
 import ru.skoltech.cedl.dataexchange.*;
-import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
+import ru.skoltech.cedl.dataexchange.services.RepositoryManager;
+import ru.skoltech.cedl.dataexchange.services.RepositoryService;
+import ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryManager;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
@@ -91,11 +93,21 @@ public class MainController implements Initializable {
     private ModelEditingController modelEditingController;
 
     private Project project;
+    private RepositoryManager repositoryManager;
+    private RepositoryService repositoryService;
     private FileStorageService fileStorageService;
     private DifferenceMergeService differenceMergeService;
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setRepositoryManager(RepositoryManager repositoryManager) {
+        this.repositoryManager = repositoryManager;
+    }
+
+    public void setRepositoryService(RepositoryService repositoryService) {
+        this.repositoryService = repositoryService;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -262,7 +274,7 @@ public class MainController implements Initializable {
     public void deleteProject(ActionEvent actionEvent) {
         List<String> studyNames = null;
         try {
-            studyNames = project.getRepository().listStudies();
+            studyNames = repositoryService.listStudies();
         } catch (RepositoryException e) {
             logger.error("error retrieving list of available studies");
             return;
@@ -364,7 +376,7 @@ public class MainController implements Initializable {
             }
             List<String> studyNames = null;
             try {
-                studyNames = project.getRepository().listStudies();
+                studyNames = repositoryService.listStudies();
             } catch (RepositoryException e) {
                 logger.error("error retrieving list of available studies");
                 return;
@@ -496,7 +508,7 @@ public class MainController implements Initializable {
     public void openProject(ActionEvent actionEvent) {
         List<String> studyNames = null;
         try {
-            studyNames = project.getRepository().listStudies();
+            studyNames = repositoryService.listStudies();
         } catch (RepositoryException e) {
             logger.error("error retrieving list of available studies");
             return;
@@ -559,12 +571,12 @@ public class MainController implements Initializable {
 
                 project.getApplicationSettings().setAutoSync(autoSynch);
 
-                String schema = project.getApplicationSettings().getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA);
+                String schema = project.getApplicationSettings().getRepositorySchema(ApplicationSettings.DEFAULT_SCHEMA);
 
-                String newHostname = hostname == null || hostname.isEmpty() ? DatabaseRepository.DEFAULT_HOST_NAME : hostname;
-                String newUsername = username == null || username.isEmpty() ? DatabaseRepository.DEFAULT_USER_NAME : username;
-                String newPassword = password == null || password.isEmpty() ? DatabaseRepository.DEFAULT_PASSWORD : password;
-                boolean validCredentials = project.checkDatabaseConnection(newHostname, schema, newUsername, newPassword);
+                String newHostname = hostname == null || hostname.isEmpty() ? ApplicationSettings.DEFAULT_HOST_NAME : hostname;
+                String newUsername = username == null || username.isEmpty() ? ApplicationSettings.DEFAULT_USER_NAME : username;
+                String newPassword = password == null || password.isEmpty() ? ApplicationSettings.DEFAULT_PASSWORD : password;
+                boolean validCredentials = repositoryManager.checkRepositoryConnection(newHostname, schema, newUsername, newPassword);
                 if (validCredentials) {
                     project.getApplicationSettings().setRepositoryServerHostname(newHostname);
                     project.getApplicationSettings().setRepositoryUserName(newUsername);

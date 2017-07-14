@@ -29,7 +29,7 @@ public class VersioningStorageTest extends AbstractDatabaseTest {
     public void test() throws RepositoryException {
         SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(1);
         System.out.println(systemModel);
-        repository.storeSystemModel(systemModel);
+        repositoryService.storeSystemModel(systemModel);
 
         ParameterModel parameterModel = systemModel.getParameters().get(0);
         parameterModel.setName("parameter-1-renamed");
@@ -37,9 +37,9 @@ public class VersioningStorageTest extends AbstractDatabaseTest {
         //ParameterModel newParameterModel = new ParameterModel("new-parameter-A", 3.1415);
         //systemModel.addParameter(newParameterModel);
 
-        repository.storeSystemModel(systemModel);
+        repositoryService.storeSystemModel(systemModel);
 
-        List<ParameterRevision> changeHistory = repository.getChangeHistory(parameterModel);
+        List<ParameterRevision> changeHistory = repositoryService.getChangeHistory(parameterModel);
 
         Assert.assertEquals(2, changeHistory.size());
 

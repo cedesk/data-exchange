@@ -20,17 +20,17 @@ public class ExternalModelTest extends AbstractDatabaseTest {
         File file = new File(this.getClass().getResource("/attachment.xls").toURI());
 
         SystemModel testSat = new SystemModel("testSat");
-        repository.storeSystemModel(testSat);
+        repositoryService.storeSystemModel(testSat);
 
         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
 
         System.err.println("before: " + externalModel.getId());
-        ExternalModel externalModel1 = repository.storeExternalModel(externalModel);
+        ExternalModel externalModel1 = repositoryService.storeExternalModel(externalModel);
         long pk = externalModel.getId();
         System.err.println("after: " + pk);
         System.err.println("second: " + externalModel1.getId());
 
-        ExternalModel externalModel2 = repository.loadExternalModel(pk);
+        ExternalModel externalModel2 = repositoryService.loadExternalModel(pk);
 
         Assert.assertArrayEquals(externalModel1.getAttachment(), externalModel2.getAttachment());
     }
@@ -40,7 +40,7 @@ public class ExternalModelTest extends AbstractDatabaseTest {
         File file = new File(this.getClass().getResource("/attachment.xls").toURI());
 
         SystemModel testSat = new SystemModel("testSat");
-        repository.storeSystemModel(testSat);
+        repositoryService.storeSystemModel(testSat);
 
         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
         ExternalModelReference externalModelReference = new ExternalModelReference();
@@ -52,7 +52,7 @@ public class ExternalModelTest extends AbstractDatabaseTest {
         parameterModel.setValueReference(externalModelReference);
 
         testSat.addParameter(parameterModel);
-        SystemModel systemModel = repository.storeSystemModel(testSat);
+        SystemModel systemModel = repositoryService.storeSystemModel(testSat);
 
         ExternalModelReference valueReference = systemModel.getParameters().get(0).getValueReference();
         Assert.assertEquals(externalModelReference, valueReference);
@@ -60,9 +60,9 @@ public class ExternalModelTest extends AbstractDatabaseTest {
         ExternalModel extMo = ExternalModelFileHandler.newFromFile(file, testSat);
         valueReference.setExternalModel(extMo);
 
-        repository.storeSystemModel(systemModel);
+        repositoryService.storeSystemModel(systemModel);
 
-        SystemModel systemModel1 = repository.loadSystemModel(testSat.getId());
+        SystemModel systemModel1 = repositoryService.loadSystemModel(testSat.getId());
 
         ExternalModelReference reference = systemModel1.getParameters().get(0).getValueReference();
         Assert.assertEquals(valueReference, reference);

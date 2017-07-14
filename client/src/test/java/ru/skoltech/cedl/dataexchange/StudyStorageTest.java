@@ -29,18 +29,18 @@ public class StudyStorageTest extends AbstractDatabaseTest {
     public void testStoreAndListStudies() throws RepositoryException {
         String name1 = "testStudy-1";
         Study study1 = makeStudy(name1, 1);
-        repository.storeStudy(study1);
+        repositoryService.storeStudy(study1);
 
         String name2 = "testStudy-2";
         Study study2 = makeStudy(name2, 1);
-        repository.storeStudy(study2);
+        repositoryService.storeStudy(study2);
 
         String name3 = "testStudy-3";
         Study study3 = makeStudy(name3, 1);
-        repository.storeStudy(study3);
+        repositoryService.storeStudy(study3);
 
         String[] createdStudies = new String[]{name1, name2, name3};
-        List<String> storedStudies = repository.listStudies();
+        List<String> storedStudies = repositoryService.listStudies();
 
         Assert.assertArrayEquals(createdStudies, storedStudies.toArray());
     }
@@ -51,9 +51,9 @@ public class StudyStorageTest extends AbstractDatabaseTest {
         Study study = makeStudy(name, 2);
         System.out.println(study);
 
-        Study study0 = repository.storeStudy(study);
+        Study study0 = repositoryService.storeStudy(study);
 
-        Study study1 = repository.loadStudy(name);
+        Study study1 = repositoryService.loadStudy(name);
         System.out.println(study1);
 
         Assert.assertEquals(study.getId(), study1.getId());

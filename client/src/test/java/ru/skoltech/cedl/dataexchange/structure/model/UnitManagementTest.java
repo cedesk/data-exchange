@@ -40,11 +40,8 @@ public class UnitManagementTest extends AbstractDatabaseTest {
 
     @Test
     public void testStoreAndLoadFromDB() throws Exception {
-
-        UnitManagement storedUnitManagement = repository.storeUnitManagement(unitManagement);
-
-        UnitManagement loadedUnitManagement = repository.loadUnitManagement();
-
+        UnitManagement storedUnitManagement = repositoryService.storeUnitManagement(unitManagement);
+        UnitManagement loadedUnitManagement = repositoryService.loadUnitManagement();
         Assert.assertEquals(storedUnitManagement, loadedUnitManagement);
     }
 }

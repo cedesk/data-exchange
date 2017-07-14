@@ -21,10 +21,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.GuiUtils;
-import ru.skoltech.cedl.dataexchange.Identifiers;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.external.*;
@@ -34,7 +31,6 @@ import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
-import ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
@@ -116,17 +112,12 @@ public class ModelEditingController implements Initializable {
     private TableView<ParameterModel> parameterTable;
 
     private ViewParameters viewParameters;
-
     private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(true);
-
     private BooleanProperty selectedNodeCannotHaveChildren = new SimpleBooleanProperty(true);
-
     private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(true);
 
     private Project project;
-
     private FileStorageService fileStorageService;
-
     private ModelUpdateService modelUpdateService;
 
     public void setProject(Project project) {
@@ -406,6 +397,7 @@ public class ModelEditingController implements Initializable {
 
         try {
             FXMLLoader loader = new FXMLLoader();
+            loader.setControllerFactory(aClass -> ApplicationContextInitializer.getInstance().getContext().getBean(aClass));
             loader.setLocation(Views.REVISION_HISTORY_WINDOW);
             Parent root = loader.load();
 
@@ -416,7 +408,6 @@ public class ModelEditingController implements Initializable {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
             RevisionHistoryController controller = loader.getController();
-            controller.setRepository(project.getRepository());
             controller.setParameter(selectedParameter);
             controller.updateView();
 

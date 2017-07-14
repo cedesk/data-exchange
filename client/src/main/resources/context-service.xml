@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/tx    http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.services.impl.FileStorageServiceImpl" />
 
@@ -21,4 +25,52 @@
         <property name="modelUpdateService" ref="modelUpdateService" />
     </bean>
 
+    <!-- persistence -->
+    <bean name="persistenceFactory" class="ru.skoltech.cedl.dataexchange.db.ApplicationSettingsPersistenceFactory">
+        <property name="jpaVendorAdapter" ref="jpaVendorAdapter" />
+        <property name="applicationSettings" ref="applicationSettings" />
+        <property name="entityManagerFactoryBuilder" ref="entityManagerFactoryBuilder" />
+    </bean>
+
+    <bean id="persistenceRepositoryService" class="ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryServiceImpl" />
+    <bean id="repositoryManager" class="ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryManager" >
+        <property name="jpaProperties" ref="jpaProperties" />
+        <property name="persistenceFactory" ref="persistenceFactory" />
+        <property name="persistenceRepositoryService" ref="persistenceRepositoryService" />
+    </bean>
+
+    <tx:annotation-driven />
+    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="userTransaction">
+            <bean class="com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple" />
+        </property>
+        <property name="transactionManager" >
+            <bean class="com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple"/>
+        </property>
+    </bean>
+
+    <bean name="entityManagerFactoryBuilder" class="org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder" >
+        <constructor-arg ref="jpaVendorAdapter" />
+        <constructor-arg ref="jpaProperties" />
+        <constructor-arg type="org.springframework.orm.jpa.persistenceunit.PersistenceUnitManager" >
+            <null/>
+        </constructor-arg>
+    </bean>
+
+    <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" >
+        <property name="databasePlatform" value="org.hibernate.dialect.MySQL57Dialect" />
+    </bean>
+
+    <util:map id="jpaProperties" map-class="java.util.HashMap">
+        <entry key="hibernate.dialect" value="org.hibernate.dialect.MySQL57Dialect" />
+        <entry key="hibernate.hbm2ddl.auto" value="validate" />
+        <entry key="hibernate.connection.isolation" value="2" />
+        <entry key="hibernate.transaction.jta.platform" value="org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform" />
+        <entry key="hibernate.session_factory.interceptor" value="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />
+        <entry key="hibernate.ejb.event.merge" value="ru.skoltech.cedl.dataexchange.structure.model.StudyUpdateListener" />
+    </util:map>
+
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" scope="prototype">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
+    </bean>
 </beans>

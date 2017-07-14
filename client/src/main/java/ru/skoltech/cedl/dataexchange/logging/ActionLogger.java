@@ -3,7 +3,7 @@ package ru.skoltech.cedl.dataexchange.logging;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.repository.Repository;
+import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 
 /**
  * Created by D.Knoll on 08.12.2015.
@@ -13,14 +13,14 @@ public class ActionLogger {
     private static final Logger logger = Logger.getLogger(ActionLogger.class);
 
     private ApplicationSettings applicationSettings;
-    private Repository repository;
+    private RepositoryService repositoryService;
 
-    public ActionLogger(ApplicationSettings applicationSettings) {
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
     }
 
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    public void setRepositoryService(RepositoryService repositoryService) {
+        this.repositoryService = repositoryService;
     }
 
     public void log(ActionType actionType, String description) {
@@ -31,10 +31,10 @@ public class ActionLogger {
         String user = applicationSettings.getProjectUser();
         LogEntry logEntry = buildEntry(user, action, description);
         logger.info(logEntry.toString());
-        if (repository == null) {
+        if (repositoryService == null) {
             logger.error("Unable to store log in repository.");
         }
-        repository.storeLog(logEntry);
+        repositoryService.storeLog(logEntry);
     }
 
     private static LogEntry buildEntry(String user, String action, String description) {

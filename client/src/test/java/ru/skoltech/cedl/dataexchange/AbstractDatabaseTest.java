@@ -3,13 +3,14 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.context.ApplicationContext;
-import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
-import ru.skoltech.cedl.dataexchange.repository.Repository;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
+import ru.skoltech.cedl.dataexchange.db.PersistenceFactory;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.services.RepositoryManager;
+import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 
-import java.io.IOException;
+import javax.sql.DataSource;
 
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 /**
@@ -19,30 +20,33 @@ import static org.mockito.Mockito.when;
  */
 public abstract class AbstractDatabaseTest {
 
-    private static final String PERSISTENCE_UNIT_NAME = "mem";
-
     protected ApplicationContext context;
-    protected RepositoryFactory repositoryFactory;
-    protected Repository repository = new DatabaseRepository(PERSISTENCE_UNIT_NAME);
+    private RepositoryManager repositoryManager;
+    protected RepositoryService repositoryService;
 
     static {
-        ApplicationContextInitializer.initialize(new String[] {"/context-model-test.xml"});
+        ApplicationContextInitializer.initialize(new String[] {"/context-test.xml"});
     }
     @Before
-    public void before() {
-
+    public void before() throws RepositoryException {
         context = ApplicationContextInitializer.getInstance().getContext();
 
-        repositoryFactory = context.getBean(RepositoryFactory.class);
-        when(repositoryFactory.createDatabaseRepository()).thenReturn(repository);
+        DataSource dataSource = context.getBean("dataSource", DataSource.class);
+
+        PersistenceFactory persistenceFactory = context.getBean("persistenceFactory", PersistenceFactory.class);
+        doReturn(dataSource).when(persistenceFactory).createDataSource();
+
+        ApplicationSettings applicationSettings = context.getBean("applicationSettings", ApplicationSettings.class);
+        when(applicationSettings.getProjectUser()).thenReturn("admin");
+
+        repositoryManager = context.getBean(RepositoryManager.class);
+        repositoryManager.createRepositoryConnection();
+        repositoryService = context.getBean(RepositoryService.class);
     }
 
     @After
     public void cleanup() {
-        try {
-            repository.close();
-        } catch (IOException ignore) {
-        }
+        repositoryManager.releaseRepositoryConnection();
     }
 
 }

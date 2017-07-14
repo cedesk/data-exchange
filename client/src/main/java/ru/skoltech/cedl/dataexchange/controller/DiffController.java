@@ -18,8 +18,8 @@ import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
-import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
+import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
@@ -55,12 +55,17 @@ public class DiffController implements Initializable {
     private TableColumn<ModelDifference, String> elementTypeColumn;
 
     private Project project;
+    private RepositoryService repositoryService;
     private DifferenceMergeService differenceMergeService;
 
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setRepositoryService(RepositoryService repositoryService) {
+        this.repositoryService = repositoryService;
     }
 
     public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
@@ -114,8 +119,7 @@ public class DiffController implements Initializable {
     }
 
     public void displayDifferences(List<ModelDifference> modelDiffs) {
-        Repository repository = project.getRepository();
-        addChangeAuthors(modelDiffs, repository);
+        addChangeAuthors(modelDiffs);
         modelDifferences.clear();
         modelDifferences.addAll(modelDiffs);
     }
@@ -150,12 +154,12 @@ public class DiffController implements Initializable {
         }
     }
 
-    private void addChangeAuthors(List<ModelDifference> modelDiffs, Repository repository) {
+    private void addChangeAuthors(List<ModelDifference> modelDiffs) {
         for (ModelDifference modelDifference : modelDiffs) {
             if (modelDifference.isMergeable()) {
                 PersistedEntity persistedEntity = modelDifference.getChangedEntity();
                 try {
-                    CustomRevisionEntity revisionEntity = repository.getLastRevision(persistedEntity);
+                    CustomRevisionEntity revisionEntity = repositoryService.getLastRevision(persistedEntity);
                     String author = revisionEntity != null ? revisionEntity.getUsername() : "<none>";
                     modelDifference.setAuthor(author);
                 } catch (Exception e) {

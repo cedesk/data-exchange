@@ -3,7 +3,6 @@ package ru.skoltech.cedl.dataexchange;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.core.io.FileSystemResource;
-import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
@@ -20,6 +19,12 @@ import java.util.Properties;
 public class ApplicationSettings extends PropertyPlaceholderConfigurer {
 
     private static final Logger logger = Logger.getLogger(ApplicationSettings.class);
+
+    public static final String DEFAULT_HOST_NAME = ApplicationProperties.getDefaultRepositoryHost();
+    public static final String DEFAULT_SCHEMA = "cedesk_repo";
+    public static final String DEFAULT_USER_NAME = "cedesk";
+    public static final String DEFAULT_PASSWORD = "cedesk";
+    public static final String DEFAULT_JDBC_URL_PATTERN = "jdbc:mysql://%s:3306/%s?serverTimezone=UTC";
 
     private static final String SETTINGS_FILE = "application.settings";
     private static final String SETTINGS_COMMENTS = "CEDESK application settings";
@@ -156,7 +161,7 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
         if (password == null) return;
         String previousPassword = properties.getProperty(REPOSITORY_PASSWORD);
         if (previousPassword == null || !previousPassword.equals(password)) {
-            if (password.equals(DatabaseRepository.DEFAULT_PASSWORD)) {
+            if (password.equals(DEFAULT_PASSWORD)) {
                 properties.remove(REPOSITORY_PASSWORD);
             } else {
                 properties.setProperty(REPOSITORY_PASSWORD, password);
@@ -178,7 +183,7 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
         if (userName == null) return;
         String previousUser = properties.getProperty(REPOSITORY_USER);
         if (previousUser == null || !previousUser.equals(userName)) {
-            if (userName.equals(DatabaseRepository.DEFAULT_USER_NAME)) {
+            if (userName.equals(DEFAULT_USER_NAME)) {
                 properties.remove(REPOSITORY_USER);
             } else {
                 properties.setProperty(REPOSITORY_USER, userName);
@@ -246,5 +251,12 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
             }
         }
         return studyModelDepth;
+    }
+
+    public synchronized String getRepositoryUrl(String defaultRepositoryHostName, String defaultRepositorySchema) {
+        String hostName = this.getRepositoryServerHostname(defaultRepositoryHostName);
+        String schema = this.getRepositorySchema(defaultRepositorySchema);
+        String url = String.format(DEFAULT_JDBC_URL_PATTERN, hostName, schema);
+        return url;
     }
 }

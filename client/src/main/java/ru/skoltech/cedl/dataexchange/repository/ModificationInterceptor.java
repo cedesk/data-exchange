@@ -21,9 +21,8 @@ public class ModificationInterceptor extends EmptyInterceptor {
     public boolean onFlushDirty(Object entity, Serializable id,
                                 Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types) {
         if (entity instanceof ModificationTimestamped) {
-            Long timestamp = null;
             if (!(entity instanceof ExternalModel)) {
-                timestamp = updateTimestamp(currentState, propertyNames);
+                Long timestamp = updateTimestamp(currentState, propertyNames);
                 ((ModificationTimestamped) entity).setLastModification(timestamp);
                 if (logger.isDebugEnabled()) {
                     logger.debug("onFlushDirty " + entity.getClass().getCanonicalName() + "#" + id
@@ -41,9 +40,8 @@ public class ModificationInterceptor extends EmptyInterceptor {
     @Override
     public boolean onSave(Object entity, Serializable id, Object[] currentState, String[] propertyNames, Type[] types) {
         if (entity instanceof ModificationTimestamped) {
-            Long timestamp = null;
             if (!(entity instanceof ExternalModel)) {
-                timestamp = updateTimestamp(currentState, propertyNames);
+                Long timestamp = updateTimestamp(currentState, propertyNames);
                 ((ModificationTimestamped) entity).setLastModification(timestamp);
                 if (logger.isDebugEnabled()) {
                     logger.debug("onSave " + entity.getClass().getCanonicalName() + "#" + id
@@ -56,21 +54,6 @@ public class ModificationInterceptor extends EmptyInterceptor {
             }
         }
         return false;
-    }
-
-    @Override
-    public void preFlush(Iterator entities) {
-        while (entities.hasNext()) {
-            Object element = entities.next();
-            if (element instanceof Study) {
-                Study study = (Study) element;
-                Long currentModelModification = study.getLatestModelModification() != null ? study.getLatestModelModification() : -1;
-                long newModelModification = study.getSystemModel().findLatestModification();
-                long latestModelModification = Math.max(currentModelModification + 1, newModelModification);
-                study.setLatestModelModification(latestModelModification);
-                return;
-            }
-        }
     }
 
     private String getNodeName(Object[] currentState, String[] propertyNames) {

@@ -6,8 +6,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableView;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 
@@ -27,14 +27,10 @@ public class RevisionHistoryController implements Initializable {
 
     private ParameterModel parameter;
 
-    private Repository repository;
+    private RepositoryService repositoryService;
 
-    public Repository getRepository() {
-        return repository;
-    }
-
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    public void setRepositoryService(RepositoryService repositoryService) {
+        this.repositoryService = repositoryService;
     }
 
     public ParameterModel getParameter() {
@@ -53,9 +49,9 @@ public class RevisionHistoryController implements Initializable {
     }
 
     public void updateView() {
-        if (repository != null && parameter != null) {
+        if (parameter != null) {
             try {
-                List<ParameterRevision> revisionList = repository.getChangeHistory(parameter);
+                List<ParameterRevision> revisionList = repositoryService.getChangeHistory(parameter);
                 revisionHistoryTable.getItems().clear();
                 revisionHistoryTable.getItems().addAll(revisionList);
             } catch (RepositoryException e) {

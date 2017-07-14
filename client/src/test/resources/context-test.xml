@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- beans of production context can be overridden here -->
+    <import resource="context-model.xml" />
+
+    <bean id="applicationSettings" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="ru.skoltech.cedl.dataexchange.ApplicationSettings" />
+    </bean>
+
+    <bean id="persistenceFactory" class="org.mockito.Mockito" factory-method="spy">
+        <constructor-arg >
+            <bean class="ru.skoltech.cedl.dataexchange.db.ApplicationSettingsPersistenceFactory">
+                <property name="jpaVendorAdapter" ref="jpaVendorAdapter" />
+                <property name="applicationSettings" ref="applicationSettings" />
+                <property name="entityManagerFactoryBuilder" ref="entityManagerFactoryBuilder" />
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project">
+        <property name="applicationSettings" ref="applicationSettings" />
+        <property name="repositoryManager" ref="repositoryManager" />
+        <property name="repositoryService" ref="persistenceRepositoryService" />
+        <property name="repositoryStateMachine" ref="repositoryStateMachine" />
+        <property name="externalModelFileWatcher" ref="externalModelFileWatcher" />
+        <property name="externalModelFileHandler" ref="externalModelFileHandler" />
+        <property name="fileStorageService" ref="fileStorageService" />
+        <property name="studyService" ref="studyService" />
+        <property name="modelUpdateService" ref="modelUpdateService" />
+        <property name="userManagementService" ref="userManagementService" />
+        <property name="unitManagementService" ref="unitManagementService" />
+        <property name="actionLogger" ref="actionLogger" />
+    </bean>
+
+    <!-- persistence -->
+    <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" >
+        <property name="databasePlatform" value="org.hibernate.dialect.HSQLDialect" />
+        <property name="showSql" value="true" />
+    </bean>
+
+    <util:map id="jpaProperties" map-class="java.util.HashMap">
+        <entry key="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" />
+        <entry key="hibernate.hbm2ddl.auto" value="update" />
+        <entry key="hibernate.format_sql" value="true" />
+        <entry key="hibernate.transaction.jta.platform" value="org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform" />
+        <entry key="hibernate.session_factory.interceptor" value="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />
+        <entry key="hibernate.ejb.event.merge" value="ru.skoltech.cedl.dataexchange.structure.model.StudyUpdateListener" />
+    </util:map>
+
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" scope="prototype">
+        <property name="url" value="jdbc:hsqldb:mem:demodb" />
+        <property name="username" value="sa" />
+        <property name="password" value="" />
+    </bean>
+</beans>

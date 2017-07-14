@@ -6,18 +6,19 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
+import org.springframework.scheduling.annotation.Scheduled;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.db.DatabaseRepository;
-import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.services.*;
-import ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl;
+import ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryManager;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -49,7 +50,8 @@ public class Project {
     private final ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
 
     private ApplicationSettings applicationSettings;
-    private RepositoryFactory repositoryFactory;
+    private RepositoryManager repositoryManager;
+    private RepositoryService repositoryService;
     private RepositoryStateMachine repositoryStateMachine;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ExternalModelFileHandler externalModelFileHandler;
@@ -67,7 +69,6 @@ public class Project {
 
     private User currentUser;
     private Study repositoryStudy;
-    private Repository repository;
     private LongProperty latestLoadedModification = new SimpleLongProperty(Utils.INVALID_TIME);
     private LongProperty latestRepositoryModification = new SimpleLongProperty(Utils.INVALID_TIME);
 
@@ -95,12 +96,12 @@ public class Project {
         this.applicationSettings = applicationSettings;
     }
 
-    public RepositoryFactory getRepositoryFactory() {
-        return repositoryFactory;
+    public void setRepositoryManager(RepositoryManager repositoryManager) {
+        this.repositoryManager = repositoryManager;
     }
 
-    public void setRepositoryFactory(RepositoryFactory repositoryFactory) {
-        this.repositoryFactory = repositoryFactory;
+    public void setRepositoryService(RepositoryService repositoryService) {
+        this.repositoryService = repositoryService;
     }
 
     public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
@@ -189,10 +190,6 @@ public class Project {
 
     public void setProjectName(String projectName) {
         initialize(projectName);
-    }
-
-    public Repository getRepository() {
-        return repository;
     }
 
     public Study getRepositoryStudy() {
@@ -353,10 +350,10 @@ public class Project {
             return;
         }
         LocalTime startTime = LocalTime.now();
-        Long latestMod = repository.getLastStudyModification(projectName);
+        Long latestMod = repositoryService.getLastStudyModification(projectName);
         long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
         logger.info("checked repository study (" + checkDuration + "ms), " +
-                "last modification: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
+                "last modification: " + latestMod + " " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
 
         if (latestMod != null) {
             setLatestRepositoryModification(latestMod);
@@ -376,50 +373,38 @@ public class Project {
     }
 
     public boolean checkRepository() {
-        String hostname = applicationSettings.getRepositoryServerHostname(DatabaseRepository.DEFAULT_HOST_NAME);
-        String schema = applicationSettings.getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA);
-        String repoUser = applicationSettings.getRepositoryUserName(DatabaseRepository.DEFAULT_USER_NAME);
-        String repoPassword = applicationSettings.getRepositoryPassword(DatabaseRepository.DEFAULT_PASSWORD);
+        String hostname = applicationSettings.getRepositoryServerHostname(ApplicationSettings.DEFAULT_HOST_NAME);
+        String schema = applicationSettings.getRepositorySchema(ApplicationSettings.DEFAULT_SCHEMA);
+        String repoUser = applicationSettings.getRepositoryUserName(ApplicationSettings.DEFAULT_USER_NAME);
+        String repoPassword = applicationSettings.getRepositoryPassword(ApplicationSettings.DEFAULT_PASSWORD);
 
-        boolean validConnection = this.checkDatabaseConnection(hostname, schema, repoUser, repoPassword);
+        boolean validConnection = repositoryManager.checkRepositoryConnection(hostname, schema, repoUser, repoPassword);
         if (!validConnection) {
             return false;
         }
 
-        Repository repository = repositoryFactory.createDatabaseRepository();
-        boolean validScheme = repository.validateDatabaseScheme();
+        boolean validScheme = repositoryManager.validateRepositoryScheme();
         if (!validScheme && applicationSettings.getRepositorySchemaCreate()) {
-            validScheme = repository.updateDatabaseScheme();
-        }
-        try {
-            repository.close();
-        } catch (IOException ignore) {
+            validScheme = repositoryManager.updateRepositoryScheme();
         }
         return validScheme;
     }
 
-    public boolean checkDatabaseConnection(String hostName, String schema, String userName, String password) {
-        return DatabaseRepository.checkDatabaseConnection(hostName, schema, userName, password);
-    }
-
     public void connectRepository() {
-        if (repository != null) {
-            try {
-                repository.close();
-            } catch (IOException ignore) {
-            }
+        try {
+            repositoryManager.createRepositoryConnection();
+        } catch (RepositoryException e) {
+            logger.error("Error connecting to the repository!", e);
         }
-        this.repository = repositoryFactory.createDatabaseRepository();
-        this.actionLogger.setRepository(this.repository); //TODO maybe handle this in IoC container
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {
-        repository.deleteStudy(studyName);
+        repositoryService.deleteStudy(studyName);
     }
 
     @Override
     public void finalize() throws Throwable {
-        repository.close();
+        repositoryManager.releaseRepositoryConnection();
         externalModelFileWatcher.close();
         super.finalize();
     }
@@ -445,7 +430,7 @@ public class Project {
     public boolean loadLocalStudy() {
         Study study = null;
         try {
-            study = repository.loadStudy(projectName);
+            study = repositoryService.loadStudy(projectName);
         } catch (RepositoryException e) {
             logger.error("Study not found!", e);
         } catch (Exception e) {
@@ -465,7 +450,7 @@ public class Project {
         Study repositoryStudy = null;
         try {
             // TODO: make more efficient, not to load the entire model, if it is not newer
-            repositoryStudy = repository.loadStudy(projectName);
+            repositoryStudy = repositoryService.loadStudy(projectName);
         } catch (RepositoryException e) {
             logger.error("Study not found!", e);
         } catch (Exception e) {
@@ -477,7 +462,7 @@ public class Project {
 
     public boolean loadUnitManagement() {
         try {
-            unitManagement = repository.loadUnitManagement();
+            unitManagement = repositoryService.loadUnitManagement();
             return true;
         } catch (RepositoryException e) {
             logger.error("Error loading unit management. recreating new unit management.");
@@ -488,7 +473,7 @@ public class Project {
 
     public boolean loadUserManagement() {
         try {
-            userManagement = repository.loadUserManagement();
+            userManagement = repositoryService.loadUserManagement();
             return true;
         } catch (RepositoryException e) {
             logger.error("Error loading user management. recreating new user management.");
@@ -499,7 +484,7 @@ public class Project {
 
     public boolean loadUserRoleManagement() {
         try {
-            getStudy().setUserRoleManagement(repository.loadUserRoleManagement(getStudy().getUserRoleManagement().getId()));
+            getStudy().setUserRoleManagement(repositoryService.loadUserRoleManagement(getStudy().getUserRoleManagement().getId()));
             return true;
         } catch (RepositoryException e) {
             logger.error("Error loading user role management. recreating new user role management.");
@@ -520,7 +505,7 @@ public class Project {
         updateParameterValuesFromLinks();
         exportValuesToExternalModels();
         updateExternalModelsInStudy();
-        Study newStudy = repository.storeStudy(this.study);
+        Study newStudy = repositoryService.storeStudy(this.study);
         updateExternalModelStateInCache();
         setStudy(newStudy);
         setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
@@ -531,7 +516,7 @@ public class Project {
 
     public boolean storeUnitManagement() {
         try {
-            unitManagement = repository.storeUnitManagement(unitManagement);
+            unitManagement = repositoryService.storeUnitManagement(unitManagement);
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing unit management.", e);
@@ -541,7 +526,7 @@ public class Project {
 
     public boolean storeUserManagement() {
         try {
-            userManagement = repository.storeUserManagement(userManagement);
+            userManagement = repositoryService.storeUserManagement(userManagement);
             return true;
         } catch (RepositoryException e) {
             logger.error("Error storing user management.", e);
@@ -551,7 +536,7 @@ public class Project {
 
     public boolean storeUserRoleManagement() {
         try {
-            UserRoleManagement userRoleManagement = repository.storeUserRoleManagement(getStudy().getUserRoleManagement());
+            UserRoleManagement userRoleManagement = repositoryService.storeUserRoleManagement(getStudy().getUserRoleManagement());
             getStudy().setUserRoleManagement(userRoleManagement);
             return true;
         } catch (RepositoryException e) {
@@ -564,7 +549,8 @@ public class Project {
     public String toString() {
         final StringBuilder sb = new StringBuilder("Project{");
         sb.append("projectName='").append(projectName).append('\'');
-        sb.append(", repository=").append(repository);
+        sb.append(", repositoryManager=").append(repositoryManager);
+        sb.append(", repositoryService=").append(repositoryService);
         sb.append(", currentUser").append(currentUser);
         sb.append(", latestLoadedModification").append(latestLoadedModification);
         sb.append(", latestRepositoryModification").append(latestRepositoryModification);
@@ -738,8 +724,8 @@ public class Project {
 
     public File getProjectDataDir() {
         String projectName = this.getProjectName();
-        String hostname = applicationSettings.getRepositoryServerHostname(DatabaseRepository.DEFAULT_HOST_NAME);
-        String schema = applicationSettings.getRepositorySchema(DatabaseRepository.DEFAULT_SCHEMA);
+        String hostname = applicationSettings.getRepositoryServerHostname(ApplicationSettings.DEFAULT_HOST_NAME);
+        String schema = applicationSettings.getRepositorySchema(ApplicationSettings.DEFAULT_SCHEMA);
         return fileStorageService.dataDir(hostname, schema, projectName);
     }
 }

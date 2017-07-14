@@ -1,34 +1,32 @@
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.services;
 
-import ru.skoltech.cedl.dataexchange.ApplicationProperties;
 import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import javax.transaction.Transactional;
-import java.io.Closeable;
 import java.util.List;
 
 /**
+ * Operation with repository.
+ *
  * Created by D.Knoll on 25.05.2015.
  */
-public interface Repository extends Closeable {
-
-    boolean validateDatabaseScheme();
-
-    @Transactional
-    boolean updateDatabaseScheme();
+public interface RepositoryService {
 
     List<String> listStudies() throws RepositoryException;
 
+    @Transactional
     Study loadStudy(String name) throws RepositoryException;
 
     @Transactional
     void deleteStudy(String name) throws RepositoryException;
 
+    @Transactional
     Study storeStudy(Study study) throws RepositoryException;
 
     SystemModel loadSystemModel(long studyId) throws RepositoryException;
@@ -64,4 +62,8 @@ public interface Repository extends Closeable {
     void storeLog(LogEntry logEntry);
 
     Long getLastStudyModification(String name);
+
+    String loadSchemeVersion()  throws RepositoryException;
+
+    boolean storeSchemeVersion(String schemeVersion) throws RepositoryException;
 }

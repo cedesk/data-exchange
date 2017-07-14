@@ -23,14 +23,14 @@ public class UserRoleManagementStorageTest extends AbstractDatabaseTest {
     @Test
     public void testStoreAndRetrieveUserManagement() throws RepositoryException {
         UserManagement userManagement = userManagementService.createDefaultUserManagement();
-        UserManagement userManagement1 = repository.storeUserManagement(userManagement);
+        UserManagement userManagement1 = repositoryService.storeUserManagement(userManagement);
 
         UserRoleManagement userRoleManagement = userManagementService.createDefaultUserRoleManagement(userManagement1);
-        repository.storeUserRoleManagement(userRoleManagement);
+        repositoryService.storeUserRoleManagement(userRoleManagement);
         long id = userRoleManagement.getId();
 
         System.out.println("user role management id: " + id);
-        UserRoleManagement userRoleManagement1 = repository.loadUserRoleManagement(id);
+        UserRoleManagement userRoleManagement1 = repositoryService.loadUserRoleManagement(id);
 
         Assert.assertEquals(userRoleManagement, userRoleManagement1);
     }

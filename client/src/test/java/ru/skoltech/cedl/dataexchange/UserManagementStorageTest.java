@@ -23,9 +23,9 @@ public class UserManagementStorageTest extends AbstractDatabaseTest {
     public void testStoreAndRetrieveUserManagement() throws RepositoryException {
         UserManagement userManagement = userManagementService.createDefaultUserManagement();
 
-        repository.storeUserManagement(userManagement);
+        repositoryService.storeUserManagement(userManagement);
 
-        UserManagement userManagement1 = repository.loadUserManagement();
+        UserManagement userManagement1 = repositoryService.loadUserManagement();
 
         Assert.assertEquals(userManagement, userManagement1);
     }

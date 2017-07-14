@@ -8,6 +8,8 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.MainController" >
         <property name="project" ref="project" />
+        <property name="repositoryManager" ref="repositoryManager" />
+        <property name="repositoryService" ref="persistenceRepositoryService" />
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
     </bean>
@@ -20,7 +22,12 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.DiffController" scope="prototype">
         <property name="project" ref="project" />
+        <property name="repositoryService" ref="persistenceRepositoryService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
+    </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController" scope="prototype">
+        <property name="repositoryService" ref="persistenceRepositoryService" />
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController" scope="prototype">

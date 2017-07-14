@@ -16,10 +16,10 @@ public class ModelStorageTest extends AbstractDatabaseTest {
     public void compareStoredAndRetrievedModel() throws RepositoryException {
         SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(2);
         System.out.println(systemModel);
-        repository.storeSystemModel(systemModel);
+        repositoryService.storeSystemModel(systemModel);
         long systemModelId = systemModel.getId();
 
-        SystemModel systemModel1 = repository.loadSystemModel(systemModelId);
+        SystemModel systemModel1 = repositoryService.loadSystemModel(systemModelId);
         System.out.println(systemModel1);
 
         Assert.assertEquals(systemModel1.getName(), systemModel.getName());
@@ -32,7 +32,7 @@ public class ModelStorageTest extends AbstractDatabaseTest {
         SystemModel generatedModel = BasicSpaceSystemBuilder.getSystemModel(1);
         System.out.println(generatedModel);
 
-        SystemModel storedModel = repository.storeSystemModel(generatedModel);
+        SystemModel storedModel = repositoryService.storeSystemModel(generatedModel);
         long systemModelId = storedModel.getId();
 
         Assert.assertEquals(generatedModel, storedModel);
@@ -43,10 +43,10 @@ public class ModelStorageTest extends AbstractDatabaseTest {
         int newValue = parameterModel.getValue().intValue() * 123;
         parameterModel.setValue((double) newValue);
 
-        SystemModel storedModel1 = repository.storeSystemModel(storedModel);
+        SystemModel storedModel1 = repositoryService.storeSystemModel(storedModel);
         Assert.assertEquals(storedModel, storedModel1);
 
-        SystemModel retrievedModel = repository.loadSystemModel(systemModelId);
+        SystemModel retrievedModel = repositoryService.loadSystemModel(systemModelId);
         ParameterModel parameterModel1 = retrievedModel.getParameterMap().get(parameterName);
         int storedValue = parameterModel1.getValue().intValue();
 
@@ -62,7 +62,7 @@ public class ModelStorageTest extends AbstractDatabaseTest {
         SystemModel storedModel = BasicSpaceSystemBuilder.getSystemModel(2);
         System.out.println(storedModel);
 
-        SystemModel system0 = repository.storeSystemModel(storedModel);
+        SystemModel system0 = repositoryService.storeSystemModel(storedModel);
         long systemModelId = storedModel.getId();
 
         ParameterModel parameterModel = storedModel.getParameters().get(0);
@@ -70,20 +70,20 @@ public class ModelStorageTest extends AbstractDatabaseTest {
         int newValue = parameterModel.getValue().intValue() * 123;
         parameterModel.setValue((double) newValue);
 
-        SystemModel system1 = repository.storeSystemModel(storedModel);
+        SystemModel system1 = repositoryService.storeSystemModel(storedModel);
         Assert.assertEquals(system0, system1);
 
-        SystemModel retrievedModel = repository.loadSystemModel(systemModelId);
+        SystemModel retrievedModel = repositoryService.loadSystemModel(systemModelId);
         ParameterModel parameterModel1 = retrievedModel.getParameterMap().get(parameterName);
         int storedValue = parameterModel1.getValue().intValue();
 
         Assert.assertEquals(newValue, storedValue);
 
-        SystemModel retrievedModel2 = repository.loadSystemModel(systemModelId);
+        SystemModel retrievedModel2 = repositoryService.loadSystemModel(systemModelId);
         ParameterModel parameterModel2 = retrievedModel2.getParameterMap().get(parameterName);
         newValue = parameterModel2.getValue().intValue() * 123;
         parameterModel.setValue((double) newValue);
-        SystemModel system2 = repository.storeSystemModel(retrievedModel2);
+        SystemModel system2 = repositoryService.storeSystemModel(retrievedModel2);
 
         Assert.assertEquals(system2, retrievedModel2);
     }
@@ -93,7 +93,7 @@ public class ModelStorageTest extends AbstractDatabaseTest {
         SystemModel storedModel = BasicSpaceSystemBuilder.getSystemModel(2);
         System.out.println(storedModel);
 
-        repository.storeSystemModel(storedModel);
+        repositoryService.storeSystemModel(storedModel);
         long systemModelId = storedModel.getId();
 
         ParameterModel parameterModel = storedModel.getParameters().get(0);
@@ -102,9 +102,9 @@ public class ModelStorageTest extends AbstractDatabaseTest {
         int newValue = parameterModel.getValue().intValue() * 123;
         parameterModel.setValue((double) newValue);
 
-        repository.storeSystemModel(storedModel);
+        repositoryService.storeSystemModel(storedModel);
 
-        SystemModel retrievedModel = repository.loadSystemModel(systemModelId);
+        SystemModel retrievedModel = repositoryService.loadSystemModel(systemModelId);
         ParameterModel parameterModel1 = retrievedModel.getParameterMap().get(newName);
         int storedValue = parameterModel1.getValue().intValue();
 
@@ -118,12 +118,12 @@ public class ModelStorageTest extends AbstractDatabaseTest {
         System.out.println(systemModel);
         System.out.println("----------------------------------------------------------------");
 
-        systemModel = repository.storeSystemModel(systemModel);
+        systemModel = repositoryService.storeSystemModel(systemModel);
         long systemModelId = systemModel.getId();
         System.out.println(systemModel);
         System.out.println("----------------------------------------------------------------");
 
-        SystemModel systemModel1 = repository.loadSystemModel(systemModelId);
+        SystemModel systemModel1 = repositoryService.loadSystemModel(systemModelId);
         System.out.println(systemModel1);
 
         Assert.assertEquals(systemModel1.getName(), systemModel.getName());

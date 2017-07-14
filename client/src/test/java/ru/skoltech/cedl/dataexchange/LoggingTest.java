@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
+import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -13,12 +14,16 @@ import java.lang.reflect.InvocationTargetException;
 public class LoggingTest extends AbstractDatabaseTest {
 
     private ActionLogger actionLogger;
+    private RepositoryService repositoryService;
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
+        repositoryService = context.getBean(RepositoryService.class);
+
         ApplicationSettings applicationSettings = new ApplicationSettings();
-        actionLogger = new ActionLogger(applicationSettings);
-        actionLogger.setRepository(repository);
+        actionLogger = new ActionLogger();
+        actionLogger.setApplicationSettings(applicationSettings);
+        actionLogger.setRepositoryService(repositoryService);
     }
 
     @Test
@@ -32,7 +37,7 @@ public class LoggingTest extends AbstractDatabaseTest {
         logEntry.setAction("test");
         logEntry.setUser("tester");
         logEntry.setClient("wrk-testing");
-        repository.storeLog(logEntry);
+        repositoryService.storeLog(logEntry);
 
         System.out.println(logEntry.toString());
     }
