@@ -790,6 +790,7 @@ public class MainController implements Initializable {
             validRepository = project.checkRepository();
         }
         if (!validRepository) return;
+        project.connectRepository();
         validateUser();
 
         project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_START, ApplicationProperties.getAppVersion());

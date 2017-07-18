@@ -30,6 +30,8 @@ public class PersistenceRepositoryManager implements RepositoryManager {
 
     private static final Logger logger = Logger.getLogger(PersistenceRepositoryManager.class);
 
+    private static final String PERSISTENCE_UNIT_NAME = "db";
+    private static final String PERSISTENCE_ENTITY_PACKAGE = "ru.skoltech.cedl.dataexchange";
     private static final String HIBERNATE_TABLE_MAPPING = "hibernate.hbm2ddl.auto";
     private static final String HIBERNATE_TABLE_MAPPING_UPDATE = "update";
 
@@ -65,8 +67,8 @@ public class PersistenceRepositoryManager implements RepositoryManager {
             localContainerEntityManagerFactoryBean = entityManagerFactoryBuilder
                     .dataSource(dataSource)
                     .jta(true)
-                    .persistenceUnit("db")
-                    .packages("ru.skoltech.cedl.dataexchange")
+                    .persistenceUnit(PERSISTENCE_UNIT_NAME)
+                    .packages(PERSISTENCE_ENTITY_PACKAGE)
                     .build();
             localContainerEntityManagerFactoryBean.afterPropertiesSet();
 
@@ -85,7 +87,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
     }
 
     private void destroyLocalContainerEntityManagerFactoryBean(LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean) {
-        if (localContainerEntityManagerFactoryBean != null) {
+        if (localContainerEntityManagerFactoryBean != null && localContainerEntityManagerFactoryBean.getObject() != null) {
             localContainerEntityManagerFactoryBean.destroy();
         }
     }
@@ -120,13 +122,15 @@ public class PersistenceRepositoryManager implements RepositoryManager {
             localContainerEntityManagerFactoryBean = entityManagerFactoryBuilder
                     .dataSource(dataSource)
                     .jta(true)
-                    .persistenceUnit("db")
-                    .packages("ru.skoltech.cedl.dataexchange")
+                    .persistenceUnit(PERSISTENCE_UNIT_NAME)
+                    .packages(PERSISTENCE_ENTITY_PACKAGE)
                     .build();
             localContainerEntityManagerFactoryBean.afterPropertiesSet();
 
             EntityManagerFactory entityManagerFactory = localContainerEntityManagerFactoryBean.getObject();
             entityManager = entityManagerFactory.createEntityManager();
+            repositoryServiceMethodInterceptor.setEntityManagerFactory(entityManagerFactory);
+            return checkAndStoreSchemeVersion();
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme update failed!", true);
             logger.error("Database scheme update failed!", e);
@@ -137,7 +141,6 @@ public class PersistenceRepositoryManager implements RepositoryManager {
             }
             destroyLocalContainerEntityManagerFactoryBean(localContainerEntityManagerFactoryBean);
         }
-        return checkAndStoreSchemeVersion();
     }
 
     @Override
@@ -152,13 +155,15 @@ public class PersistenceRepositoryManager implements RepositoryManager {
             localContainerEntityManagerFactoryBean = entityManagerFactoryBuilder
                     .dataSource(dataSource)
                     .jta(true)
-                    .persistenceUnit("db")
-                    .packages("ru.skoltech.cedl.dataexchange")
+                    .persistenceUnit(PERSISTENCE_UNIT_NAME)
+                    .packages(PERSISTENCE_ENTITY_PACKAGE)
                     .build();
             localContainerEntityManagerFactoryBean.afterPropertiesSet();
 
             EntityManagerFactory entityManagerFactory = localContainerEntityManagerFactoryBean.getObject();
             entityManager = entityManagerFactory.createEntityManager();
+            repositoryServiceMethodInterceptor.setEntityManagerFactory(entityManagerFactory);
+            return checkSchemeVersion();
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme validation failed!", true);
             logger.error("Database scheme validation failed!", e);
@@ -169,7 +174,6 @@ public class PersistenceRepositoryManager implements RepositoryManager {
             }
             destroyLocalContainerEntityManagerFactoryBean(localContainerEntityManagerFactoryBean);
         }
-        return checkSchemeVersion();
     }
 
     private boolean checkAndStoreSchemeVersion() {
