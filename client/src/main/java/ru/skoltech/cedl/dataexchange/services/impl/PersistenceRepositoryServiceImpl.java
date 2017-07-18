@@ -111,6 +111,7 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
             } else {
                 study = entityManager.merge(study);
             }
+            study = entityManager.find(Study.class, study.getId());
         } catch (OptimisticLockException | RollbackException re) {
             logger.warn("transaction failed", re);
             throw extractAndRepackCause(re);
@@ -412,7 +413,6 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
 
     public boolean storeSchemeVersion(String schemeVersion) throws RepositoryException {
         try {
-
             entityManager.setFlushMode(FlushModeType.AUTO);
             ApplicationProperty applicationProperty = new ApplicationProperty();
             applicationProperty.setId(SCHEME_VERSION_APPLICATION_PROPERTY_ID);

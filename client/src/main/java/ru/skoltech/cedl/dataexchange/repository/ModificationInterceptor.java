@@ -56,6 +56,21 @@ public class ModificationInterceptor extends EmptyInterceptor {
         return false;
     }
 
+    @Override
+    public void preFlush(Iterator entities) {
+        for (; entities.hasNext(); ) {
+            Object element = entities.next();
+            if (element instanceof Study) {
+                Study study = (Study) element;
+                long currentModelModification = study.getLatestModelModification() != null ? study.getLatestModelModification(): 0;
+                long newModelModification = study.getSystemModel().findLatestModification();
+                long latestModelModification = Math.max(currentModelModification + 1, newModelModification);
+                study.setLatestModelModification(latestModelModification);
+                return;
+            }
+        }
+    }
+
     private String getNodeName(Object[] currentState, String[] propertyNames) {
         for (int i = 0; i < propertyNames.length; i++) {
             if (propertyNames[i].equals("name")) {

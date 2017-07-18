@@ -25,7 +25,7 @@
     <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project">
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="repositoryManager" ref="repositoryManager" />
-        <property name="repositoryService" ref="persistenceRepositoryService" />
+        <property name="repositoryService" ref="repositoryService" />
         <property name="repositoryStateMachine" ref="repositoryStateMachine" />
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher" />
         <property name="externalModelFileHandler" ref="externalModelFileHandler" />
@@ -48,8 +48,7 @@
         <entry key="hibernate.hbm2ddl.auto" value="update" />
         <entry key="hibernate.format_sql" value="true" />
         <entry key="hibernate.transaction.jta.platform" value="org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform" />
-        <entry key="hibernate.session_factory.interceptor" value="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />
-        <entry key="hibernate.ejb.event.merge" value="ru.skoltech.cedl.dataexchange.structure.model.StudyUpdateListener" />
+        <entry key="hibernate.session_factory.interceptor" value-ref="modificationInterceptor" />
     </util:map>
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" scope="prototype">

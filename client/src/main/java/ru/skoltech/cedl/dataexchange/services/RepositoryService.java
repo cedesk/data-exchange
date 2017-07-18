@@ -20,7 +20,6 @@ public interface RepositoryService {
 
     List<String> listStudies() throws RepositoryException;
 
-    @Transactional
     Study loadStudy(String name) throws RepositoryException;
 
     @Transactional

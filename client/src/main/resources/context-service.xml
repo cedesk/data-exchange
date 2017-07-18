@@ -32,11 +32,22 @@
         <property name="entityManagerFactoryBuilder" ref="entityManagerFactoryBuilder" />
     </bean>
 
-    <bean id="persistenceRepositoryService" class="ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryServiceImpl" />
+    <bean id="repositoryServiceMethodInterceptor" class="ru.skoltech.cedl.dataexchange.repository.RepositoryServiceMethodInterceptor" />
+    <bean id="repositoryService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="target" >
+            <bean class="ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryServiceImpl" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>repositoryServiceMethodInterceptor</value>
+            </list>
+        </property>
+    </bean>
     <bean id="repositoryManager" class="ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryManager" >
         <property name="jpaProperties" ref="jpaProperties" />
         <property name="persistenceFactory" ref="persistenceFactory" />
-        <property name="persistenceRepositoryService" ref="persistenceRepositoryService" />
+        <property name="repositoryServiceMethodInterceptor" ref="repositoryServiceMethodInterceptor" />
+        <property name="repositoryService" ref="repositoryService" />
     </bean>
 
     <tx:annotation-driven />
@@ -66,11 +77,13 @@
         <entry key="hibernate.hbm2ddl.auto" value="validate" />
         <entry key="hibernate.connection.isolation" value="2" />
         <entry key="hibernate.transaction.jta.platform" value="org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform" />
-        <entry key="hibernate.session_factory.interceptor" value="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />
-        <entry key="hibernate.ejb.event.merge" value="ru.skoltech.cedl.dataexchange.structure.model.StudyUpdateListener" />
+        <entry key="hibernate.session_factory.interceptor" value-ref="modificationInterceptor" />
     </util:map>
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" scope="prototype">
         <property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
     </bean>
+
+    <bean id="modificationInterceptor"
+          class="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />
 </beans>

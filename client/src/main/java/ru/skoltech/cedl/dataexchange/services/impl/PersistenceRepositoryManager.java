@@ -9,8 +9,9 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.PersistenceFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.services.PersistenceRepositoryService;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryServiceMethodInterceptor;
 import ru.skoltech.cedl.dataexchange.services.RepositoryManager;
+import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -32,13 +33,14 @@ public class PersistenceRepositoryManager implements RepositoryManager {
     private static final String HIBERNATE_TABLE_MAPPING = "hibernate.hbm2ddl.auto";
     private static final String HIBERNATE_TABLE_MAPPING_UPDATE = "update";
 
-    private Map<String, String> jpaProperties;
+    private Map<String, Object> jpaProperties;
     private PersistenceFactory persistenceFactory;
-    private PersistenceRepositoryService persistenceRepositoryService;
+    private RepositoryServiceMethodInterceptor repositoryServiceMethodInterceptor;
+    private RepositoryService repositoryService;
 
     private LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean;
 
-    public void setJpaProperties(Map<String, String> jpaProperties) {
+    public void setJpaProperties(Map<String, Object> jpaProperties) {
         this.jpaProperties = jpaProperties;
     }
 
@@ -46,8 +48,12 @@ public class PersistenceRepositoryManager implements RepositoryManager {
         this.persistenceFactory = persistenceFactory;
     }
 
-    public void setPersistenceRepositoryService(PersistenceRepositoryService persistenceRepositoryService) {
-        this.persistenceRepositoryService = persistenceRepositoryService;
+    public void setRepositoryServiceMethodInterceptor(RepositoryServiceMethodInterceptor repositoryServiceMethodInterceptor) {
+        this.repositoryServiceMethodInterceptor = repositoryServiceMethodInterceptor;
+    }
+
+    public void setRepositoryService(RepositoryService repositoryService) {
+        this.repositoryService = repositoryService;
     }
 
     @Override
@@ -65,7 +71,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
             localContainerEntityManagerFactoryBean.afterPropertiesSet();
 
             EntityManagerFactory entityManagerFactory = localContainerEntityManagerFactoryBean.getObject();
-            persistenceRepositoryService.setEntityManager(entityManagerFactory.createEntityManager());
+            repositoryServiceMethodInterceptor.setEntityManagerFactory(entityManagerFactory);
         } catch (Exception e) {
             logger.fatal("connecting to database failed!", e);
             throw new RepositoryException("database connection failed");
@@ -107,7 +113,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
         try {
             DataSource dataSource = persistenceFactory.createDataSource();
 
-            Map<String, String> jpaProperties = new HashMap<>(this.jpaProperties);
+            Map<String, Object> jpaProperties = new HashMap<>(this.jpaProperties);
             jpaProperties.put(HIBERNATE_TABLE_MAPPING, HIBERNATE_TABLE_MAPPING_UPDATE);
 
             EntityManagerFactoryBuilder entityManagerFactoryBuilder = persistenceFactory.createEntityManagerFactoryBuilder(jpaProperties);
@@ -170,13 +176,13 @@ public class PersistenceRepositoryManager implements RepositoryManager {
         String currentSchemaVersion = ApplicationProperties.getDbSchemaVersion();
         String actualSchemaVersion = null;
         try {
-            actualSchemaVersion = persistenceRepositoryService.loadSchemeVersion();
+            actualSchemaVersion = repositoryService.loadSchemeVersion();
         } catch (RepositoryException e) {
             logger.debug("error loading the applications version property", e);
         }
         if (actualSchemaVersion == null) {
             try {
-                return persistenceRepositoryService.storeSchemeVersion(currentSchemaVersion);
+                return repositoryService.storeSchemeVersion(currentSchemaVersion);
             } catch (RepositoryException e) {
                 logger.debug("error storing the applications version property", e);
                 return false;
@@ -191,7 +197,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
         }
 
         try {
-            return persistenceRepositoryService.storeSchemeVersion(currentSchemaVersion);
+            return repositoryService.storeSchemeVersion(currentSchemaVersion);
         } catch (RepositoryException e) {
             logger.debug("error storing the applications version property", e);
             return false;
@@ -202,7 +208,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
         String currentSchemaVersion = ApplicationProperties.getDbSchemaVersion();
         String actualSchemaVersion = null;
         try {
-            actualSchemaVersion = persistenceRepositoryService.loadSchemeVersion();
+            actualSchemaVersion = repositoryService.loadSchemeVersion();
         } catch (RepositoryException e) {
             logger.debug("error loading the applications version property", e);
         }

@@ -20,13 +20,13 @@
 
     <bean id="actionLogger" class="ru.skoltech.cedl.dataexchange.logging.ActionLogger">
         <property name="applicationSettings" ref="applicationSettings" />
-        <property name="repositoryService" ref="persistenceRepositoryService" />
+        <property name="repositoryService" ref="repositoryService" />
     </bean>
 
     <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" init-method="init" >
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="repositoryManager" ref="repositoryManager" />
-        <property name="repositoryService" ref="persistenceRepositoryService" />
+        <property name="repositoryService" ref="repositoryService" />
         <property name="repositoryStateMachine" ref="repositoryStateMachine" />
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher" />
         <property name="externalModelFileHandler" ref="externalModelFileHandler" />
