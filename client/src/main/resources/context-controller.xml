@@ -8,10 +8,12 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.MainController" >
         <property name="project" ref="project" />
+        <property name="applicationSettings" ref="applicationSettings" />
         <property name="repositoryManager" ref="repositoryManager" />
         <property name="repositoryService" ref="repositoryService" />
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
+        <property name="updateService" ref="updateService" />
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.ModelEditingController" scope="prototype">

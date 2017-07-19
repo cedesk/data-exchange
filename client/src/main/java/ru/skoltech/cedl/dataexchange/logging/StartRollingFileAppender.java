@@ -3,10 +3,8 @@ package ru.skoltech.cedl.dataexchange.logging;
 import org.apache.log4j.FileAppender;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by n.groshkov on 19-Jun-17.
@@ -24,30 +22,36 @@ public class StartRollingFileAppender extends FileAppender {
     protected String filePattern = null;
 
     /**
-     The suffix of the log file name.
+     The suffix pattern of the log file name.
      */
-    protected String fileSuffix = null;
+    protected String fileSuffixPattern = null;
 
     /**
      There is one backup file by default.
      */
     protected int  maxBackupIndex  = 1;
 
+    /**
+     * Current time for new log file.
+     */
+    private Date logStartDate = new Date();
+
     @Override
     public void activateOptions() {
-        List<String> parts = new ArrayList(Arrays.asList(filePattern.split("\\.")));
+        List<String> parts = new ArrayList<String>(Arrays.asList(filePattern.split("\\.")));
         String filePrefix = String.join(".", parts.subList(0, parts.size() - 1));
         String extension = parts.get(parts.size() - 1);
+        String fileSuffix = new SimpleDateFormat(fileSuffixPattern).format(logStartDate);
         this.fileName = directory + "/" + filePrefix + "." + fileSuffix + "." + extension;
-        removeOldFiles(filePrefix, extension);
+        this.removeOldFiles(filePrefix, extension);
         super.activateOptions();
     }
 
     private void removeOldFiles(String filePrefix, String extension) {
         File dirFile = new File(directory);
-        List<String> oldLogFileNames = new ArrayList(Arrays.asList(dirFile.list((dir, file) ->  {
-            return file.startsWith(filePrefix) && file.endsWith(extension);
-        })));
+        List<String> oldLogFileNames = new ArrayList(Arrays.asList(dirFile.list((dir, file) ->
+            file.startsWith(filePrefix) && file.endsWith(extension)
+        )));
 
         oldLogFileNames.sort(Comparator.naturalOrder());
         if (maxBackupIndex > oldLogFileNames.size()) {
@@ -87,17 +91,17 @@ public class StartRollingFileAppender extends FileAppender {
     }
 
     /**
-     Returns the value of the <b>FileSuffix</b> option.
+     Returns the value of the <b>FileSuffixPattern</b> option.
      */
-    public String getFileSuffix() {
-        return fileSuffix;
+    public String getFileSuffixPattern() {
+        return fileSuffixPattern;
     }
 
     /**
-     Set the suffix of backup file name, the part which adds before extension.
+     Set the suffix pattern of backup file name, the part which adds before extension.
      */
-    public void setFileSuffix(String fileSuffix) {
-        this.fileSuffix = fileSuffix;
+    public void setFileSuffixPattern(String fileSuffixPattern) {
+        this.fileSuffixPattern = fileSuffixPattern;
     }
 
     /**

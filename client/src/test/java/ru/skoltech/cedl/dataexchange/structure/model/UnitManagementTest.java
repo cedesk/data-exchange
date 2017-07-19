@@ -3,7 +3,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.AbstractDatabaseTest;
+import ru.skoltech.cedl.dataexchange.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl;
@@ -14,7 +14,7 @@ import java.io.IOException;
 /**
  * Created by D.Knoll on 28.08.2015.
  */
-public class UnitManagementTest extends AbstractDatabaseTest {
+public class UnitManagementTest extends AbstractApplicationContextTest {
 
     private UnitManagementServiceImpl unitManagementServiceImpl;
     private UnitManagement unitManagement;

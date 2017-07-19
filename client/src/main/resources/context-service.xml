@@ -7,7 +7,9 @@
                            http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd
                            http://www.springframework.org/schema/tx    http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-    <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.services.impl.FileStorageServiceImpl" />
+    <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.services.impl.FileStorageServiceImpl" >
+        <constructor-arg type="ru.skoltech.cedl.dataexchange.ApplicationSettings" ref="applicationSettings" />
+    </bean>
 
     <bean id="studyService" class="ru.skoltech.cedl.dataexchange.services.impl.StudyServiceImpl" >
         <property name="userManagementService" ref="userManagementService" />
@@ -24,6 +26,13 @@
     <bean id="differenceMergeService" class="ru.skoltech.cedl.dataexchange.services.impl.DifferenceMergeServiceImpl" >
         <property name="modelUpdateService" ref="modelUpdateService" />
     </bean>
+
+    <bean id="updateService" class="ru.skoltech.cedl.dataexchange.services.impl.UpdateServiceImpl" >
+        <property name="applicationSettings" ref="applicationSettings" />
+        <property name="jsoupService" ref="jsoupService" />
+    </bean>
+
+    <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.services.impl.JsoupServiceImpl" />
 
     <!-- persistence -->
     <bean name="persistenceFactory" class="ru.skoltech.cedl.dataexchange.db.ApplicationSettingsPersistenceFactory">
@@ -44,6 +53,7 @@
         </property>
     </bean>
     <bean id="repositoryManager" class="ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryManager" >
+        <property name="applicationSettings" ref="applicationSettings" />
         <property name="jpaProperties" ref="jpaProperties" />
         <property name="persistenceFactory" ref="persistenceFactory" />
         <property name="repositoryServiceMethodInterceptor" ref="repositoryServiceMethodInterceptor" />
@@ -69,19 +79,21 @@
     </bean>
 
     <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" >
-        <property name="databasePlatform" value="org.hibernate.dialect.MySQL57Dialect" />
+        <property name="databasePlatform" value="${hibernate.dialect}" />
+        <property name="showSql" value="${hibernate.show.sql}" />
     </bean>
 
     <util:map id="jpaProperties" map-class="java.util.HashMap">
-        <entry key="hibernate.dialect" value="org.hibernate.dialect.MySQL57Dialect" />
-        <entry key="hibernate.hbm2ddl.auto" value="validate" />
-        <entry key="hibernate.connection.isolation" value="2" />
-        <entry key="hibernate.transaction.jta.platform" value="org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform" />
+        <entry key="hibernate.dialect" value="${hibernate.dialect}" />
+        <entry key="hibernate.hbm2ddl.auto" value="${hibernate.hbm2ddl.auto}" />
+        <entry key="hibernate.connection.isolation" value="${hibernate.connection.isolation}" />
+        <entry key="hibernate.format_sql" value="${hibernate.format.sql}" />
+        <entry key="hibernate.transaction.jta.platform" value="${hibernate.transaction.jta.platform}" />
         <entry key="hibernate.session_factory.interceptor" value-ref="modificationInterceptor" />
     </util:map>
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" scope="prototype">
-        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
+        <property name="driverClassName" value="${datasource.driver.class.name}" />
     </bean>
 
     <bean id="modificationInterceptor"

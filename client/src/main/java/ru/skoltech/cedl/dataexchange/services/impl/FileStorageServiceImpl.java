@@ -1,7 +1,7 @@
 package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -19,7 +19,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -28,33 +31,14 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
 
-    private static final String APP_DIR = ".cedesk";
-    private static final String USER_HOME_SYSTEM_PROPERTY_NAME = "user.home";
-    private static final String APP_DIR_SYSTEM_PROPERTY_NAME = "cedesk.app.dir";
-    private static final String DATA_DIR_SYSTEM_PROPERTY_NAME = "cedesk.data.dir";
-
-    private static final String APP_START_TIME_SYSTEM_PROPERTY_NAME = "app.start.time";
-    private static final String USER_HOME_SYSTEM_PROPERTY = System.getProperty(USER_HOME_SYSTEM_PROPERTY_NAME);
-
-    private static final String APP_DIR_SYSTEM_PROPERTY = System.getProperty(APP_DIR_SYSTEM_PROPERTY_NAME);
-
-    public static final Class[] MODEL_CLASSES = new Class[]{
+    private static final Class[] MODEL_CLASSES = new Class[]{
             SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class,
             ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
 
     private final File applicationDirectory;
 
-    public FileStorageServiceImpl() {
-        if (APP_DIR_SYSTEM_PROPERTY == null) {
-            File userHomeDir = new File(USER_HOME_SYSTEM_PROPERTY);
-            applicationDirectory = new File(userHomeDir, APP_DIR);
-        } else {
-            applicationDirectory = new File(APP_DIR_SYSTEM_PROPERTY);
-        }
-
-        System.setProperty(DATA_DIR_SYSTEM_PROPERTY_NAME, applicationDirectory.getAbsolutePath()); // re-write in any case for log4j
-        System.setProperty(APP_START_TIME_SYSTEM_PROPERTY_NAME, Utils.TIME_AND_DATE_FOR_FILENAMES.format(new Date()));
-
+    public FileStorageServiceImpl(ApplicationSettings applicationSettings) {
+        this.applicationDirectory = new File(applicationSettings.getCedeskAppDir(), applicationSettings.getCedeskAppFile());
         if (!applicationDirectory.exists()) {
             applicationDirectory.mkdirs();
             logger.error("unable to create application directory in user home: " + applicationDirectory.getAbsolutePath());
@@ -221,8 +205,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             JAXBContext ct = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
 
             Unmarshaller u = ct.createUnmarshaller();
-            UserRoleManagement userRoleManagement = (UserRoleManagement) u.unmarshal(inp);
-            return userRoleManagement;
+            return (UserRoleManagement) u.unmarshal(inp);
         } catch (JAXBException e) {
             throw new IOException("Error reading user management from XML file.", e);
         }

@@ -1,7 +1,7 @@
 package ru.skoltech.cedl.dataexchange;
 
+import org.junit.Before;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.services.impl.FileStorageServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
@@ -11,9 +11,14 @@ import java.net.URL;
 /**
  * Created by dknoll on 11/09/15.
  */
-public class DependencyGraphTest {
+public class DependencyGraphTest extends AbstractApplicationContextTest {
 
-    private FileStorageService fileStorageService = new FileStorageServiceImpl();
+    private FileStorageService fileStorageService;
+
+    @Before
+    public void prepare() {
+        fileStorageService = context.getBean(FileStorageService.class);
+    }
 
     //@Test
     public void testGraphLib() throws Exception {

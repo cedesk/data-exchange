@@ -29,11 +29,8 @@ import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.services.RepositoryManager;
-import ru.skoltech.cedl.dataexchange.services.RepositoryService;
-import ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryManager;
+import ru.skoltech.cedl.dataexchange.services.*;
+import ru.skoltech.cedl.dataexchange.services.impl.UpdateServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
@@ -93,13 +90,19 @@ public class MainController implements Initializable {
     private ModelEditingController modelEditingController;
 
     private Project project;
+    private ApplicationSettings applicationSettings;
     private RepositoryManager repositoryManager;
     private RepositoryService repositoryService;
     private FileStorageService fileStorageService;
     private DifferenceMergeService differenceMergeService;
+    private UpdateService updateService;
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
     }
 
     public void setRepositoryManager(RepositoryManager repositoryManager) {
@@ -116,6 +119,10 @@ public class MainController implements Initializable {
 
     public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
         this.differenceMergeService = differenceMergeService;
+    }
+
+    public void setUpdateService(UpdateService updateService) {
+        this.updateService = updateService;
     }
 
     @Override
@@ -180,9 +187,8 @@ public class MainController implements Initializable {
         Platform.runLater(this::checkRepositoryAndLoadLastProject);
 
         Platform.runLater(() -> {
-            String appVersion = ApplicationProperties.getAppVersion();
+            String appVersion = applicationSettings.getApplicationVersion();
             if (ApplicationPackage.isRelease(appVersion)) {
-
                 checkForApplicationUpdate(null);
             }
         });
@@ -193,12 +199,12 @@ public class MainController implements Initializable {
     }
 
     public void checkForApplicationUpdate(ActionEvent actionEvent) {
-        Optional<ApplicationPackage> latestVersionAvailable = UpdateChecker.getLatestVersionAvailable();
+        Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
         if (latestVersionAvailable.isPresent()) {
             ApplicationPackage applicationPackage = latestVersionAvailable.get();
             logger.info("available package: " + applicationPackage.toString());
             String packageVersion = applicationPackage.getVersion();
-            String appVersion = ApplicationProperties.getAppVersion();
+            String appVersion = applicationSettings.getApplicationVersion();
             int versionCompare = Utils.compareVersions(appVersion, packageVersion);
             if (versionCompare < 0) {
                 UserNotifications.showActionableNotification(getAppWindow(), "Application Update",
@@ -571,11 +577,11 @@ public class MainController implements Initializable {
 
                 project.getApplicationSettings().setAutoSync(autoSynch);
 
-                String schema = project.getApplicationSettings().getRepositorySchema(ApplicationSettings.DEFAULT_SCHEMA);
+                String schema = project.getApplicationSettings().getRepositorySchema();
 
-                String newHostname = hostname == null || hostname.isEmpty() ? ApplicationSettings.DEFAULT_HOST_NAME : hostname;
-                String newUsername = username == null || username.isEmpty() ? ApplicationSettings.DEFAULT_USER_NAME : username;
-                String newPassword = password == null || password.isEmpty() ? ApplicationSettings.DEFAULT_PASSWORD : password;
+                String newHostname = hostname == null || hostname.isEmpty() ? applicationSettings.getDefaultHostName() : hostname;
+                String newUsername = username == null || username.isEmpty() ? applicationSettings.getDefaultUserName() : username;
+                String newPassword = password == null || password.isEmpty() ? applicationSettings.getDefaultPassword() : password;
                 boolean validCredentials = repositoryManager.checkRepositoryConnection(newHostname, schema, newUsername, newPassword);
                 if (validCredentials) {
                     project.getApplicationSettings().setRepositoryServerHostname(newHostname);
@@ -793,7 +799,7 @@ public class MainController implements Initializable {
         project.connectRepository();
         validateUser();
 
-        project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_START, ApplicationProperties.getAppVersion());
+        project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
         if (project.getApplicationSettings().getProjectToImport() != null) {
             importProject(null);
         } else if (project.getApplicationSettings().getAutoLoadLastProjectOnStartup()) {

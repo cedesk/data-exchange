@@ -1,6 +1,6 @@
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import ru.skoltech.cedl.dataexchange.AbstractDatabaseTest;
+import ru.skoltech.cedl.dataexchange.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
 
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 /**
  * Created by D.Knoll on 13.05.2015.
  */
-public class CalculationPersistenceTest extends AbstractDatabaseTest {
+public class CalculationPersistenceTest extends AbstractApplicationContextTest {
 
 //    TODO: rewrite - test of persistence API is quite obvious
 //    @Test

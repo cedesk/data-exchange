@@ -1,33 +1,31 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
-import org.springframework.core.io.FileSystemResource;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
 /**
- * This class represents the settings that are stored on the client and can be changed by the user.
+ * Store all properties reqired by application.
+ * They could be of two types: properties which are common for any client
+ * and that of specific to them.
+ * First are stored in the <i>cedesk.properties</i> file inside project resources
+ * They can be overwritten by system properties (and also by separate file for test purposes).
+ * Second are located in separate file. It's path and filename can be configured
+ * (by <i>cedesk.app.dir</i> and <i>cedesk.app.file</i> properties).
+ *
  * <p>
  * Created by D.Knoll on 18.03.2015.
  */
-public class ApplicationSettings extends PropertyPlaceholderConfigurer {
+public class ApplicationSettings {
 
     private static final Logger logger = Logger.getLogger(ApplicationSettings.class);
 
-    public static final String DEFAULT_HOST_NAME = ApplicationProperties.getDefaultRepositoryHost();
-    public static final String DEFAULT_SCHEMA = "cedesk_repo";
-    public static final String DEFAULT_USER_NAME = "cedesk";
-    public static final String DEFAULT_PASSWORD = "cedesk";
-    public static final String DEFAULT_JDBC_URL_PATTERN = "jdbc:mysql://%s:3306/%s?serverTimezone=UTC";
-
-    private static final String SETTINGS_FILE = "application.settings";
-    private static final String SETTINGS_COMMENTS = "CEDESK application settings";
+    private static final String CEDESK_LOG_DIR_PROPERTY_NAME = "cedesk.log.dir";
 
     private static final String REPOSITORY_HOST = "repository.host";
     private static final String REPOSITORY_SCHEMA_NAME = "repository.schema.name";
@@ -44,25 +42,126 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
 
     private static final String STUDY_MODEL_DEPTH = "study.model.depth";
 
-    private FileStorageService fileStorageService;
+    private String applicationVersion;
+    private String applicationBuildTime;
+    private String applicationDistributionServerUrl;
+
+    private String cedeskAppDir;
+    private String cedeskAppFile;
+    private String cedeskAppFileComment;
+
+    private String defaultHostName;
+    private String defaultSchema;
+    private String defaultUserName;
+    private String defaultPassword;
+    private String defaultJdbcUrlPattern;
+    private String repositorySchemaVersion;
 
     private File file;
     private Properties properties = new Properties();
 
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
+    public String getApplicationVersion() {
+        return applicationVersion;
+    }
+
+    public void setApplicationVersion(String applicationVersion) {
+        this.applicationVersion = applicationVersion;
+    }
+
+    public String getApplicationBuildTime() {
+        return applicationBuildTime;
+    }
+
+    public void setApplicationBuildTime(String applicationBuildTime) {
+        this.applicationBuildTime = applicationBuildTime;
+    }
+
+    public String getApplicationDistributionServerUrl() {
+        return applicationDistributionServerUrl;
+    }
+
+    public void setApplicationDistributionServerUrl(String applicationDistributionServerUrl) {
+        this.applicationDistributionServerUrl = applicationDistributionServerUrl;
+    }
+
+    public String getCedeskAppDir() {
+        return cedeskAppDir;
+    }
+
+    public void setCedeskAppDir(String cedeskAppDir) {
+        this.cedeskAppDir = cedeskAppDir;
+    }
+
+    public String getCedeskAppFile() {
+        return cedeskAppFile;
+    }
+
+    public void setCedeskAppFile(String cedeskAppFile) {
+        this.cedeskAppFile = cedeskAppFile;
+    }
+
+    public void setCedeskAppFileComment(String cedeskAppFileComment) {
+        this.cedeskAppFileComment = cedeskAppFileComment;
+    }
+
+    public void setCedeskLogDir(String cedeskLogDir) {
+        System.setProperty(CEDESK_LOG_DIR_PROPERTY_NAME, cedeskLogDir); // re-write in any case for log4j
+    }
+
+    public void setDefaultHostName(String defaultHostName) {
+        this.defaultHostName = defaultHostName;
+    }
+
+    public String getDefaultHostName() {
+        return defaultHostName;
+    }
+
+    public String getDefaultSchema() {
+        return defaultSchema;
+    }
+
+    public void setDefaultSchema(String defaultSchema) {
+        this.defaultSchema = defaultSchema;
+    }
+
+    public String getDefaultUserName() {
+        return defaultUserName;
+    }
+
+    public void setDefaultUserName(String defaultUserName) {
+        this.defaultUserName = defaultUserName;
+    }
+
+    public String getDefaultPassword() {
+        return defaultPassword;
+    }
+
+    public void setDefaultPassword(String defaultPassword) {
+        this.defaultPassword = defaultPassword;
+    }
+
+    public String getDefaultJdbcUrlPattern() {
+        return defaultJdbcUrlPattern;
+    }
+
+    public void setDefaultJdbcUrlPattern(String defaultJdbcUrlPattern) {
+        this.defaultJdbcUrlPattern = defaultJdbcUrlPattern;
+    }
+
+    public String getRepositorySchemaVersion() {
+        return repositorySchemaVersion;
+    }
+
+    public void setRepositorySchemaVersion(String repositorySchemaVersion) {
+        this.repositorySchemaVersion = repositorySchemaVersion;
     }
 
     public void init() {
-        this.file = new File(fileStorageService.applicationDirectory(), SETTINGS_FILE);
-        this.setLocation(new FileSystemResource(file));
-        load();
-
-    }
-
-    private void load() {
-        try {
-            properties = mergeProperties();
+        this.file = new File(cedeskAppDir, cedeskAppFile);
+        Properties props = new Properties();
+        try (FileReader fileReader = new FileReader(file)) {
+            props.load(fileReader);
+            properties = props;
         } catch (IOException e) {
             logger.error("Error loading application settings!");
         }
@@ -70,7 +169,7 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
 
     private void save() {
         try (FileWriter fileWriter = new FileWriter(file)) {
-            properties.store(fileWriter, SETTINGS_COMMENTS);
+            properties.store(fileWriter, cedeskAppFileComment);
         } catch (IOException e) {
             logger.error("Error saving application settings!");
         }
@@ -161,7 +260,7 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
         if (password == null) return;
         String previousPassword = properties.getProperty(REPOSITORY_PASSWORD);
         if (previousPassword == null || !previousPassword.equals(password)) {
-            if (password.equals(DEFAULT_PASSWORD)) {
+            if (password.equals(defaultPassword)) {
                 properties.remove(REPOSITORY_PASSWORD);
             } else {
                 properties.setProperty(REPOSITORY_PASSWORD, password);
@@ -183,7 +282,7 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
         if (userName == null) return;
         String previousUser = properties.getProperty(REPOSITORY_USER);
         if (previousUser == null || !previousUser.equals(userName)) {
-            if (userName.equals(DEFAULT_USER_NAME)) {
+            if (userName.equals(defaultUserName)) {
                 properties.remove(REPOSITORY_USER);
             } else {
                 properties.setProperty(REPOSITORY_USER, userName);
@@ -201,6 +300,10 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
         }
     }
 
+    public synchronized String getRepositoryServerHostname() {
+        return this.getRepositoryServerHostname(this.getDefaultHostName());
+    }
+
     public synchronized String getRepositoryServerHostname(String defaultRepositoryHostName) {
         String repo = properties.getProperty(REPOSITORY_HOST);
         if (repo == null) {
@@ -208,6 +311,10 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
             repo = defaultRepositoryHostName;
         }
         return repo;
+    }
+
+    public synchronized String getRepositorySchema() {
+        return this.getRepositorySchema(defaultSchema);
     }
 
     public synchronized String getRepositorySchema(String defaultRepositorySchema) {
@@ -219,6 +326,10 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
         return schema;
     }
 
+    public synchronized String getRepositoryUserName() {
+        return this.getRepositoryUserName(defaultUserName);
+    }
+
     public synchronized String getRepositoryUserName(String defaultUserName) {
         String repositoryUser = properties.getProperty(REPOSITORY_USER);
         if (repositoryUser == null) {
@@ -226,6 +337,10 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
             repositoryUser = defaultUserName;
         }
         return repositoryUser;
+    }
+
+    public synchronized String getRepositoryPassword() {
+        return this.getRepositoryPassword(defaultPassword);
     }
 
     public synchronized String getRepositoryPassword(String defaultPassword) {
@@ -253,10 +368,13 @@ public class ApplicationSettings extends PropertyPlaceholderConfigurer {
         return studyModelDepth;
     }
 
+    public synchronized String getRepositoryUrl() {
+        return this.getRepositoryUrl(this.getDefaultHostName(), defaultSchema);
+    }
+
     public synchronized String getRepositoryUrl(String defaultRepositoryHostName, String defaultRepositorySchema) {
         String hostName = this.getRepositoryServerHostname(defaultRepositoryHostName);
         String schema = this.getRepositorySchema(defaultRepositorySchema);
-        String url = String.format(DEFAULT_JDBC_URL_PATTERN, hostName, schema);
-        return url;
+        return String.format(defaultJdbcUrlPattern, hostName, schema);
     }
 }

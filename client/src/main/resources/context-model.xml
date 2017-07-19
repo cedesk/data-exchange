@@ -7,8 +7,28 @@
 
     <import resource="context-service.xml" />
 
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="systemPropertiesMode" value="2" />
+        <property name="location">
+            <value>cedesk.properties</value>
+        </property>
+    </bean>
+
     <bean id="applicationSettings" class="ru.skoltech.cedl.dataexchange.ApplicationSettings" init-method="init">
-        <property name="fileStorageService" ref="fileStorageService" />
+        <property name="applicationVersion" value="${application.version}" />
+        <property name="applicationBuildTime" value="${application.build.time}" />
+        <property name="applicationDistributionServerUrl" value="${application.distribution.server.url}" />
+        <property name="cedeskAppDir" value="${cedesk.app.dir}" />
+        <property name="cedeskAppFile" value="${cedesk.app.file}" />
+        <property name="cedeskAppFileComment" value="${cedesk.app.file.comment}" />
+        <property name="cedeskLogDir" value="${cedesk.log.dir}" />
+        <property name="defaultHostName" value="${repository.default.host}" />
+        <property name="defaultSchema" value="${repository.default.schema}" />
+        <property name="defaultUserName" value="${repository.default.user.name}" />
+        <property name="defaultPassword" value="${repository.default.password}" />
+        <property name="defaultJdbcUrlPattern" value="${repository.default.jdbc.url.pattern}" />
+        <property name="repositorySchemaVersion" value="${repository.schema.version}" />
     </bean>
 
     <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine" />
@@ -41,7 +61,7 @@
     <!-- Schedule a task for regular checking new version of remote study -->
     <task:scheduler id="scheduler"/>
     <task:scheduled-tasks scheduler="scheduler">
-        <task:scheduled ref="project" method="checkStudyInRepository" fixed-delay="10000"/>
+        <task:scheduled ref="project" method="checkStudyInRepository" fixed-delay="${repository.scheduler.delay}"/>
     </task:scheduled-tasks>
 
 </beans>

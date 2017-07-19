@@ -13,6 +13,15 @@ import java.util.Map;
 public interface PersistenceFactory {
 
     /**
+     * Create repository URL.
+     *
+     * @param hostName host name
+     * @param schema schema name
+     * @return repository URL
+     */
+    String createRepositoryUrl(String hostName, String schema);
+
+    /**
      * Create database {@link DataSource}.
      *
      *  @return database {@link DataSource}

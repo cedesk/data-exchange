@@ -11,7 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Created by D.Knoll on 04.12.2015.
  */
-public class LoggingTest extends AbstractDatabaseTest {
+public class LoggingTest extends AbstractApplicationContextTest {
 
     private ActionLogger actionLogger;
     private RepositoryService repositoryService;

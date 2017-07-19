@@ -10,7 +10,7 @@ import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 /**
  * Created by dknoll on 09.06.2015
  */
-public class UserManagementStorageTest extends AbstractDatabaseTest {
+public class UserManagementStorageTest extends AbstractApplicationContextTest {
 
     private UserManagementService userManagementService;
 

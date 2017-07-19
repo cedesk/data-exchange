@@ -14,11 +14,11 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 /**
- * Abstract class which holds base objects for testing.
+ * Abstract class which holds all objects for testing in application context.
  *
  * Created by n.groshkov on 30-Jun-17.
  */
-public abstract class AbstractDatabaseTest {
+public abstract class AbstractApplicationContextTest {
 
     protected ApplicationContext context;
     private RepositoryManager repositoryManager;

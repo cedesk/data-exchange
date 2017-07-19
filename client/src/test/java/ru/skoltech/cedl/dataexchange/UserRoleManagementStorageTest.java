@@ -11,7 +11,7 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 /**
  * Created by dknoll on 23/05/15.
  */
-public class UserRoleManagementStorageTest extends AbstractDatabaseTest {
+public class UserRoleManagementStorageTest extends AbstractApplicationContextTest {
 
     private UserManagementService userManagementService;
 

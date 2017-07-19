@@ -3,7 +3,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.AbstractDatabaseTest;
+import ru.skoltech.cedl.dataexchange.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
@@ -24,7 +24,7 @@ import static org.junit.Assert.assertFalse;
 /**
  * Created by D.Knoll on 13.05.2015.
  */
-public class ModelXmlMappingTest extends AbstractDatabaseTest {
+public class ModelXmlMappingTest extends AbstractApplicationContextTest {
 
     private FileStorageService fileStorageService;
 

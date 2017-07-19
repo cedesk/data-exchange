@@ -353,7 +353,7 @@ public class Project {
         Long latestMod = repositoryService.getLastStudyModification(projectName);
         long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
         logger.info("checked repository study (" + checkDuration + "ms), " +
-                "last modification: " + latestMod + " " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
+                "last modification: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
 
         if (latestMod != null) {
             setLatestRepositoryModification(latestMod);
@@ -373,10 +373,10 @@ public class Project {
     }
 
     public boolean checkRepository() {
-        String hostname = applicationSettings.getRepositoryServerHostname(ApplicationSettings.DEFAULT_HOST_NAME);
-        String schema = applicationSettings.getRepositorySchema(ApplicationSettings.DEFAULT_SCHEMA);
-        String repoUser = applicationSettings.getRepositoryUserName(ApplicationSettings.DEFAULT_USER_NAME);
-        String repoPassword = applicationSettings.getRepositoryPassword(ApplicationSettings.DEFAULT_PASSWORD);
+        String hostname = applicationSettings.getRepositoryServerHostname();
+        String schema = applicationSettings.getRepositorySchema();
+        String repoUser = applicationSettings.getRepositoryUserName();
+        String repoPassword = applicationSettings.getRepositoryPassword();
 
         boolean validConnection = repositoryManager.checkRepositoryConnection(hostname, schema, repoUser, repoPassword);
         if (!validConnection) {
@@ -724,8 +724,8 @@ public class Project {
 
     public File getProjectDataDir() {
         String projectName = this.getProjectName();
-        String hostname = applicationSettings.getRepositoryServerHostname(ApplicationSettings.DEFAULT_HOST_NAME);
-        String schema = applicationSettings.getRepositorySchema(ApplicationSettings.DEFAULT_SCHEMA);
+        String hostname = applicationSettings.getRepositoryServerHostname();
+        String schema = applicationSettings.getRepositorySchema();
         return fileStorageService.dataDir(hostname, schema, projectName);
     }
 }

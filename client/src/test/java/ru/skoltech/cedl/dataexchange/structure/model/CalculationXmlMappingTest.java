@@ -3,8 +3,8 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.services.impl.FileStorageServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
 
@@ -18,13 +18,13 @@ import java.util.ArrayList;
 /**
  * Created by D.Knoll on 13.05.2015.
  */
-public class CalculationXmlMappingTest {
+public class CalculationXmlMappingTest extends AbstractApplicationContextTest {
 
     private FileStorageService fileStorageService;
 
     @Before
-    public void setup() {
-        fileStorageService = new FileStorageServiceImpl();
+    public void prepare() {
+        fileStorageService = context.getBean(FileStorageService.class);
     }
 
     @Test

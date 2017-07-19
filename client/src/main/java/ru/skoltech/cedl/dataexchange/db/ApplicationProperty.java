@@ -1,7 +1,5 @@
 package ru.skoltech.cedl.dataexchange.db;
 
-import ru.skoltech.cedl.dataexchange.ApplicationProperties;
-
 import javax.persistence.*;
 
 /**

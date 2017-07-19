@@ -1,15 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-                           http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- beans of production context can be overridden here -->
     <import resource="context-model.xml" />
 
-    <bean id="applicationSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="ru.skoltech.cedl.dataexchange.ApplicationSettings" />
+    <bean id="applicationSettings" class="org.mockito.Mockito" factory-method="spy">
+        <constructor-arg>
+            <bean class="ru.skoltech.cedl.dataexchange.ApplicationSettings" init-method="init">
+                <property name="applicationVersion" value="${application.version}" />
+                <property name="applicationBuildTime" value="${application.build.time}" />
+                <property name="applicationDistributionServerUrl" value="${application.distribution.server.url}" />
+                <property name="cedeskAppDir" value="${cedesk.app.dir}" />
+                <property name="cedeskAppFile" value="${cedesk.app.file}" />
+                <property name="cedeskAppFileComment" value="${cedesk.app.file.comment}" />
+                <property name="cedeskLogDir" value="${cedesk.log.dir}" />
+                <property name="defaultHostName" value="${repository.default.host}" />
+                <property name="defaultSchema" value="${repository.default.schema}" />
+                <property name="defaultUserName" value="${repository.default.user.name}" />
+                <property name="defaultPassword" value="${repository.default.password}" />
+                <property name="defaultJdbcUrlPattern" value="${repository.default.jdbc.url.pattern}" />
+                <property name="repositorySchemaVersion" value="${repository.schema.version}" />
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="jsoupService" class="org.mockito.Mockito" factory-method="mock" >
+        <constructor-arg value="ru.skoltech.cedl.dataexchange.services.JsoupService" />
     </bean>
 
     <bean id="persistenceFactory" class="org.mockito.Mockito" factory-method="spy">
@@ -38,22 +56,9 @@
     </bean>
 
     <!-- persistence -->
-    <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" >
-        <property name="databasePlatform" value="org.hibernate.dialect.HSQLDialect" />
-        <property name="showSql" value="true" />
-    </bean>
-
-    <util:map id="jpaProperties" map-class="java.util.HashMap">
-        <entry key="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" />
-        <entry key="hibernate.hbm2ddl.auto" value="update" />
-        <entry key="hibernate.format_sql" value="true" />
-        <entry key="hibernate.transaction.jta.platform" value="org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform" />
-        <entry key="hibernate.session_factory.interceptor" value-ref="modificationInterceptor" />
-    </util:map>
-
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" scope="prototype">
-        <property name="url" value="jdbc:hsqldb:mem:demodb" />
-        <property name="username" value="sa" />
-        <property name="password" value="" />
+        <property name="url" value="${datasource.driver.url}" />
+        <property name="username" value="${datasource.driver.username}" />
+        <property name="password" value="${datasource.driver.password}" />
     </bean>
 </beans>

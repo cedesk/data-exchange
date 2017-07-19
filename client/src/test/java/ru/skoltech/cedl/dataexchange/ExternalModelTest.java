@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 /**
  * Created by D.Knoll on 02.07.2015.
  */
-public class ExternalModelTest extends AbstractDatabaseTest {
+public class ExternalModelTest extends AbstractApplicationContextTest {
 
     @Test()
     public void storeAndRetrieveAttachment() throws URISyntaxException, IOException, RepositoryException {

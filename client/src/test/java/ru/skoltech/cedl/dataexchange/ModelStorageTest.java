@@ -10,7 +10,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 /**
  * Created by dknoll on 23/05/15.
  */
-public class ModelStorageTest extends AbstractDatabaseTest {
+public class ModelStorageTest extends AbstractApplicationContextTest {
 
     @Test
     public void compareStoredAndRetrievedModel() throws RepositoryException {

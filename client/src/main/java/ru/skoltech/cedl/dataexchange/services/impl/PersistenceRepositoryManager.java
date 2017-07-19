@@ -3,7 +3,6 @@ package ru.skoltech.cedl.dataexchange.services.impl;
 import org.apache.log4j.Logger;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import ru.skoltech.cedl.dataexchange.ApplicationProperties;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
@@ -35,12 +34,17 @@ public class PersistenceRepositoryManager implements RepositoryManager {
     private static final String HIBERNATE_TABLE_MAPPING = "hibernate.hbm2ddl.auto";
     private static final String HIBERNATE_TABLE_MAPPING_UPDATE = "update";
 
+    private ApplicationSettings applicationSettings;
     private Map<String, Object> jpaProperties;
     private PersistenceFactory persistenceFactory;
     private RepositoryServiceMethodInterceptor repositoryServiceMethodInterceptor;
     private RepositoryService repositoryService;
 
     private LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean;
+
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
 
     public void setJpaProperties(Map<String, Object> jpaProperties) {
         this.jpaProperties = jpaProperties;
@@ -94,7 +98,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
 
     @Override
     public boolean checkRepositoryConnection(String hostName, String schema, String userName, String password) {
-        String url = String.format(ApplicationSettings.DEFAULT_JDBC_URL_PATTERN, hostName, schema);
+        String url = persistenceFactory.createRepositoryUrl(hostName, schema);
 
         logger.debug("repository url: " + url + ", user: " + userName);
         try {
@@ -177,7 +181,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
     }
 
     private boolean checkAndStoreSchemeVersion() {
-        String currentSchemaVersion = ApplicationProperties.getDbSchemaVersion();
+        String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
         String actualSchemaVersion = null;
         try {
             actualSchemaVersion = repositoryService.loadSchemeVersion();
@@ -209,7 +213,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
     }
 
     private boolean checkSchemeVersion() {
-        String currentSchemaVersion = ApplicationProperties.getDbSchemaVersion();
+        String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
         String actualSchemaVersion = null;
         try {
             actualSchemaVersion = repositoryService.loadSchemeVersion();

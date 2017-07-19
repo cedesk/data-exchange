@@ -15,9 +15,9 @@ import java.util.List;
 /**
  * Created by D.Knoll on 23.06.2015.
  */
-public class VersioningStorageTest extends AbstractDatabaseTest {
+public class VersioningStorageTest extends AbstractApplicationContextTest {
 
-    public static final String ADMIN = "admin";
+    private static final String ADMIN = "admin";
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {

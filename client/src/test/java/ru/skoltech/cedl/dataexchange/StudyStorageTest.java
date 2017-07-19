@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Created by dknoll on 23/05/15.
  */
-public class StudyStorageTest extends AbstractDatabaseTest {
+public class StudyStorageTest extends AbstractApplicationContextTest {
 
     private UserManagementService userManagementService;
 

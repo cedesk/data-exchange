@@ -10,25 +10,24 @@ import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 public class ClientApplication extends Application {
 
-    private static Logger logger = Logger.getLogger(ClientApplication.class);
     private static ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+    private static Logger logger = Logger.getLogger(ClientApplication.class);
     private MainController mainController;
 
     public static void main(String[] args) {
-        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
-        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath());
-        PropertyConfigurator.configure(ClientApplication.class.getResource("/META-INF/log4j.properties"));
+        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
+        PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
+        System.out.println("using: " + applicationSettings.getCedeskAppDir() + "/" + applicationSettings.getCedeskAppFile());
 
         logger.info("----------------------------------------------------------------------------------------------------");
         logger.info("Opening CEDESK ...");
-        String appVersion = ApplicationProperties.getAppVersion();
-        String dbSchemaVersion = ApplicationProperties.getDbSchemaVersion();
+        String appVersion = applicationSettings.getApplicationVersion();
+        String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
         logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
         launch(args);
     }
