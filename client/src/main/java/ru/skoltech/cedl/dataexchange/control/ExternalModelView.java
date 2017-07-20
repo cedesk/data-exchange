@@ -35,14 +35,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Conrol for display external model.
+ *
  * Created by D.Knoll on 24.09.2015.
  */
 public class ExternalModelView extends HBox implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ExternalModelView.class);
-
-    private ExternalModel externalModel;
-    private Project project;
 
     @FXML
     private TextField externalModelNameText;
@@ -50,15 +49,18 @@ public class ExternalModelView extends HBox implements Initializable {
     @FXML
     private Button openExternalButton;
 
+    private Project project;
+    private ExternalModel externalModel;
+
     public ExternalModelView(Project project, ExternalModel externalModel) {
         this.project = project;
         this.externalModel = externalModel;
-        // load layout
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("external_model_view.fxml"));
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
 
         try {
+            // load layout
+            FXMLLoader fxmlLoader = new FXMLLoader(Controls.EXTERNAL_MODEL_CONTROL);
+            fxmlLoader.setRoot(this);
+            fxmlLoader.setController(this);
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);

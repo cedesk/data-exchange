@@ -26,9 +26,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
-import ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -43,6 +41,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
+ * Control for parameter editing.
+ *
  * Created by D.Knoll on 03.07.2015.
  */
 public class ParameterEditor extends AnchorPane implements Initializable {
@@ -112,29 +112,20 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private ModelUpdateService modelUpdateService;
 
     private Project project;
-
     private ParameterModel editingParameterModel;
-
     private ParameterModel originalParameterModel;
-
     private ExternalModelReference valueReference;
-
     private ExternalModelReference exportReference;
-
     private ParameterModel valueLinkParameter;
-
     private Calculation calculation;
-
     private Consumer<ParameterModel> editListener;
-
     private AutoCompletionBinding<String> binding;
 
     public ParameterEditor() {
-        FXMLLoader fxmlLoader = new FXMLLoader(Controls.PARAMETER_EDITOR_VIEW);
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
         try {
+            FXMLLoader fxmlLoader = new FXMLLoader(Controls.PARAMETER_EDITOR_CONTROL);
+            fxmlLoader.setRoot(this);
+            fxmlLoader.setController(this);
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
@@ -144,10 +135,6 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     public void setParameterModel(ParameterModel parameterModel) {
         this.originalParameterModel = parameterModel;
         updateView(originalParameterModel);
-    }
-
-    public Project getProject() {
-        return project;
     }
 
     public void setProject(Project project) {

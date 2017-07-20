@@ -14,14 +14,14 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.units.model.QuantityKind;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
 /**
+ * Controller for unit addition window.
+ *
  * Created by n.groshkov on 09-Jun-17.
  */
 public class AddUnitController implements Initializable {
@@ -43,13 +43,11 @@ public class AddUnitController implements Initializable {
     @FXML
     private Button addUnitButton;
 
-    private UnitManagement unitManagement;
+    private Project project;
     private AddUnitListener addUnitListener;
 
-
-    public void setUnitManagement(UnitManagement unitManagement) {
-        this.unitManagement = unitManagement;
-        this.updateView();
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     @Override
@@ -79,10 +77,11 @@ public class AddUnitController implements Initializable {
         });
 
         addUnitButton.disableProperty().bind(Bindings.or(nameText.textProperty().isEmpty(), symbolText.textProperty().isEmpty()));
+        this.updateView();
     }
 
     public void updateView() {
-        List<QuantityKind> quantityKindList = unitManagement.getQuantityKinds();
+        List<QuantityKind> quantityKindList = project.getUnitManagement().getQuantityKinds();
         quantityKindComboBox.setItems(FXCollections.observableArrayList(quantityKindList));
 
     }

@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 /**
+ * Control for editing external model.
+ *
  * Created by D.Knoll on 03.07.2015.
  */
 public class ExternalModelEditor extends ScrollPane implements Initializable {
@@ -50,20 +52,17 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     private ModelNode modelNode;
 
     private Project project;
-
     private FileStorageService fileStorageService;
-
     private ModelUpdateService modelUpdateService;
 
     private ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener;
     private ModelEditingController.ParameterUpdateListener parameterUpdateListener;
 
     public ExternalModelEditor() {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("external_models_editor.fxml"));
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
         try {
+            FXMLLoader fxmlLoader = new FXMLLoader(Controls.EXTERNAL_MODELS_EDITOR_CONTROL);
+            fxmlLoader.setRoot(this);
+            fxmlLoader.setController(this);
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);

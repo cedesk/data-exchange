@@ -1,7 +1,5 @@
 package ru.skoltech.cedl.dataexchange.control;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
@@ -18,29 +16,36 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Control for parameter selection.
+ *
  * Created by D.Knoll on 08.09.2015.
  */
 public class ParameterSelector extends ChoiceDialog<ParameterModel> {
 
-    private final Map<ModelNode, List<ParameterModel>> nodeParametersMap;
     @FXML
     private ChoiceBox<ModelNode> subsystemChoiceBox;
+
     @FXML
     private ChoiceBox<ParameterModel> parameterChoiceBox;
+
     @FXML
     private TextField valueText;
+
     @FXML
     private TextField unitText;
+
     @FXML
     private TextArea descriptionText;
+
+    private final Map<ModelNode, List<ParameterModel>> nodeParametersMap;
 
     public ParameterSelector(Collection<ParameterModel> choices, ParameterModel defaultValue) {
         nodeParametersMap = choices.stream().collect(Collectors.groupingBy(ParameterModel::getParent));
 
-        // load layout
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("parameter_selector.fxml"));
-        fxmlLoader.setController(this);
         try {
+            // load layout
+            FXMLLoader fxmlLoader = new FXMLLoader(Controls.PARAMETER_SELECTOR_CONTROL);
+            fxmlLoader.setController(this);
             DialogPane dialogPane = fxmlLoader.load();
             super.setDialogPane(dialogPane);
         } catch (IOException exception) {
@@ -71,13 +76,10 @@ public class ParameterSelector extends ChoiceDialog<ParameterModel> {
             }
         });
         subsystemChoiceBox.getItems().addAll(nodeParametersMap.keySet());
-        subsystemChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ModelNode>() {
-            @Override
-            public void changed(ObservableValue<? extends ModelNode> observable, ModelNode oldValue, ModelNode newValue) {
-                parameterChoiceBox.getItems().clear();
-                List<ParameterModel> parameterModels = nodeParametersMap.get(newValue);
-                parameterChoiceBox.getItems().addAll(parameterModels);
-            }
+        subsystemChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            parameterChoiceBox.getItems().clear();
+            List<ParameterModel> parameterModels = nodeParametersMap.get(newValue);
+            parameterChoiceBox.getItems().addAll(parameterModels);
         });
         // PARAMETER CHOICE
         parameterChoiceBox.setConverter(new StringConverter<ParameterModel>() {
@@ -91,18 +93,15 @@ public class ParameterSelector extends ChoiceDialog<ParameterModel> {
                 return null;
             }
         });
-        parameterChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ParameterModel>() {
-            @Override
-            public void changed(ObservableValue<? extends ParameterModel> observable, ParameterModel oldValue, ParameterModel newValue) {
-                if (newValue != null) {
-                    valueText.setText(String.valueOf(newValue.getEffectiveValue()));
-                    unitText.setText(newValue.getUnit() != null ? newValue.getUnit().asText() : null);
-                    descriptionText.setText(newValue.getDescription());
-                } else {
-                    valueText.setText(null);
-                    unitText.setText(null);
-                    descriptionText.setText(null);
-                }
+        parameterChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                valueText.setText(String.valueOf(newValue.getEffectiveValue()));
+                unitText.setText(newValue.getUnit() != null ? newValue.getUnit().asText() : null);
+                descriptionText.setText(newValue.getDescription());
+            } else {
+                valueText.setText(null);
+                unitText.setText(null);
+                descriptionText.setText(null);
             }
         });
         if (defaultValue != null) {

@@ -37,13 +37,15 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
+ * Control for reference selector.
+ *
  * Created by dknoll on 01/07/15.
  */
 public class ReferenceSelector extends Dialog<ExternalModelReference> implements Initializable {
 
-    public static final Pattern SHEET_NAME_PATTERN = Pattern.compile("^[A-Za-z0-9 \\-\\_]{1,}$");
-
     private static final Logger logger = Logger.getLogger(ReferenceSelector.class);
+
+    private static final Pattern SHEET_NAME_PATTERN = Pattern.compile("^[A-Za-z0-9 \\-\\_]{1,}$");
 
     @FXML
     private ComboBox<ExternalModel> attachmentChooser;
@@ -58,13 +60,9 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
     private SpreadsheetView spreadsheetView;
 
     private Project project;
-
     private ExternalModelReference reference;
-
     private ExternalModel externalModel;
-
     private String sheetName;
-
     private List<ExternalModel> externalModels;
 
     public ReferenceSelector(Project project, ExternalModelReference reference, List<ExternalModel> externalModels) {
@@ -72,10 +70,10 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
         this.reference = reference != null ? reference : new ExternalModelReference();
         this.externalModels = externalModels;
 
-        // load layout
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("reference_selector.fxml"));
-        fxmlLoader.setController(this);
         try {
+            // load layout
+            FXMLLoader fxmlLoader = new FXMLLoader(Controls.REFERENCE_SELECTOR_CONTROL);
+            fxmlLoader.setController(this);
             DialogPane dialogPane = fxmlLoader.load();
             super.setDialogPane(dialogPane);
         } catch (IOException exception) {
@@ -189,9 +187,8 @@ public class ReferenceSelector extends Dialog<ExternalModelReference> implements
             attachmentChooser.setValue(externalModel);
             String targetSheetName = null;
             if (reference.getTarget() != null) {
-                SpreadsheetCoordinates coordinates = null;
                 try {
-                    coordinates = SpreadsheetCoordinates.valueOf(reference.getTarget());
+                    SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(reference.getTarget());
                     if (coordinates.getSheetName() != null) {
                         targetSheetName = coordinates.getSheetName();
                     }

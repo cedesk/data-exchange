@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * Implementation of service which handles operations with file system.
+ *
  * Created by D.Knoll on 13.03.2015.
  */
 public class FileStorageServiceImpl implements FileStorageService {
@@ -38,10 +40,12 @@ public class FileStorageServiceImpl implements FileStorageService {
     private final File applicationDirectory;
 
     public FileStorageServiceImpl(ApplicationSettings applicationSettings) {
-        this.applicationDirectory = new File(applicationSettings.getCedeskAppDir(), applicationSettings.getCedeskAppFile());
+        this.applicationDirectory = new File(applicationSettings.getCedeskAppDir());
         if (!applicationDirectory.exists()) {
-            applicationDirectory.mkdirs();
-            logger.error("unable to create application directory in user home: " + applicationDirectory.getAbsolutePath());
+            boolean created = applicationDirectory.mkdirs();
+            if (!created) {
+                logger.error("unable to create application directory: " + applicationDirectory.getAbsolutePath());
+            }
         }
     }
 
@@ -61,7 +65,10 @@ public class FileStorageServiceImpl implements FileStorageService {
     public void createDirectory(File path) {
         if (!path.exists()) {
             logger.info("Creating directory: " + path.toString());
-            path.mkdirs();
+            boolean created = path.mkdirs();
+            if (!created) {
+                logger.error("unable to create directory: " + path.getAbsolutePath());
+            }
         }
         if (!path.canRead() || !path.canWrite()) {
             logger.error("Warning: Directory is not usable: " + path.toString());
@@ -269,8 +276,8 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public Calculation loadCalculation(File file) throws IOException {
-        try (FileInputStream inp = new FileInputStream(file)) {
+    public Calculation loadCalculation(File inputFile) throws IOException {
+        try (FileInputStream inp = new FileInputStream(inputFile)) {
             final Class[] MC = Calculation.getEntityClasses();
             JAXBContext ct = JAXBContext.newInstance(MC);
 
@@ -281,4 +288,5 @@ public class FileStorageServiceImpl implements FileStorageService {
             throw new IOException("Error reading calculation from XML file.", e);
         }
     }
+
 }

@@ -39,6 +39,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
+ * Controller for user's roles management.
+ *
  * Created by d.knoll on 10.06.2015.
  */
 public class UserRoleManagementController implements Initializable {
@@ -147,6 +149,7 @@ public class UserRoleManagementController implements Initializable {
         addUserRoleButton.disableProperty().bind(Bindings.or(noSelectionOnUserTable, noSelectionOnDisciplinesTable));
         BooleanBinding noSelectionOnAssignedUsers = userRolesAssignedList.getSelectionModel().selectedItemProperty().isNull();
         deleteUserRoleButton.disableProperty().bind(noSelectionOnAssignedUsers);
+        updateView();
     }
 
     public void onCloseRequest(WindowEvent windowEvent) {

@@ -32,9 +32,11 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 /**
+ * Controller for dependency checks.
+ *
  * Created by D.Knoll on 02.11.2015.
  */
-public class DependencyController implements Initializable, ProjectDependent {
+public class DependencyController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(DependencyController.class);
 
@@ -64,7 +66,6 @@ public class DependencyController implements Initializable, ProjectDependent {
 
     private Project project;
 
-    @Override
     public void setProject(Project project) {
         this.project = project;
     }

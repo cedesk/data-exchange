@@ -1,11 +1,9 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -19,7 +17,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -35,6 +32,8 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
+ * Controller for unit management.
+ *
  * Created by d.knoll on 27.08.2015.
  */
 public class UnitManagementController implements Initializable {
@@ -74,25 +73,26 @@ public class UnitManagementController implements Initializable {
     @FXML
     private Button deleteQuantityKindButton;
 
+    private BooleanProperty changed = new SimpleBooleanProperty(false);
+
+    private FXMLLoaderFactory fxmlLoaderFactory;
     private Project project;
 
-    private BooleanProperty changed = new SimpleBooleanProperty(false);
+    public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
+        this.fxmlLoaderFactory = fxmlLoaderFactory;
+    }
 
     public void setProject(Project project) {
         this.project = project;
-        updateView();
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        unitQuantityKindColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Unit, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<Unit, String> param) {
-                if (param != null && param.getValue() != null && param.getValue().getQuantityKind() != null) {
-                    return new SimpleStringProperty(param.getValue().getQuantityKind().asText());
-                } else {
-                    return new SimpleStringProperty();
-                }
+        unitQuantityKindColumn.setCellValueFactory(param -> {
+            if (param != null && param.getValue() != null && param.getValue().getQuantityKind() != null) {
+                return new SimpleStringProperty(param.getValue().getQuantityKind().asText());
+            } else {
+                return new SimpleStringProperty();
             }
         });
 
@@ -101,6 +101,7 @@ public class UnitManagementController implements Initializable {
 
         deleteQuantityKindButton.setDisable(true);
         addQuantityKindButton.setDisable(true);
+        updateView();
     }
 
     public void updateView() {
@@ -131,16 +132,13 @@ public class UnitManagementController implements Initializable {
             saveUnits();
         } else if (result.get() == noButton){
             project.loadUnitManagement();
-            return;
         }
     }
 
 
     public void openAddUnitDialog(ActionEvent actionEvent) {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.UNIT_ADD_WINDOW);
-
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.UNIT_ADD_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -151,7 +149,6 @@ public class UnitManagementController implements Initializable {
             stage.initOwner(unitManagementPane.getScene().getWindow());
 
             AddUnitController addUnitController = loader.getController();
-            addUnitController.setUnitManagement(project.getUnitManagement());
             addUnitController.setAddUnitListener(unit -> {
                 project.getUnitManagement().getUnits().add(unit);
                 changed.setValue(true);
@@ -165,7 +162,6 @@ public class UnitManagementController implements Initializable {
     }
 
     public void deleteUnit(ActionEvent actionEvent) {
-
     }
 
     public void saveUnits() {
@@ -176,12 +172,9 @@ public class UnitManagementController implements Initializable {
         changed.setValue(false);
     }
 
-
     public void addQuantityKind(ActionEvent actionEvent) {
-
     }
 
     public void deleteQuantityKind(ActionEvent actionEvent) {
-
     }
 }

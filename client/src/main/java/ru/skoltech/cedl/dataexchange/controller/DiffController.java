@@ -39,6 +39,7 @@ import java.util.ResourceBundle;
 public class DiffController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(DiffController.class);
+
     @FXML
     private Button revertAllButton;
 
@@ -97,6 +98,8 @@ public class DiffController implements Initializable {
                 }
             }
         });
+        project.loadRepositoryStudy();
+        refreshView(null);
     }
 
     public void acceptAll(ActionEvent actionEvent) {

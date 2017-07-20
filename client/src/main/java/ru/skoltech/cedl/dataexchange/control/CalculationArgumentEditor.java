@@ -19,13 +19,11 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
+ * Control for calculation arguments.
+ *
  * Created by D.Knoll on 24.09.2015.
  */
 public class CalculationArgumentEditor extends GridPane implements Initializable {
-
-    private final ParameterModel parameterModel;
-
-    private Argument argument;
 
     @FXML
     private Label argNameText;
@@ -48,16 +46,18 @@ public class CalculationArgumentEditor extends GridPane implements Initializable
     @FXML
     private TextField argParameterValueLinkText;
 
+    private Argument argument;
+    private final ParameterModel parameterModel;
+
     public CalculationArgumentEditor(String argName, Argument argument, ParameterModel parameterModel) {
         this.argument = argument;
         this.parameterModel = parameterModel;
 
-        // load layout
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("calculation_argument_editor.fxml"));
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
         try {
+            // load layout
+            FXMLLoader fxmlLoader = new FXMLLoader(Controls.CALCULATION_ARGUMENT_EDITOR_CONTROL);
+            fxmlLoader.setRoot(this);
+            fxmlLoader.setController(this);
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
@@ -97,13 +97,12 @@ public class CalculationArgumentEditor extends GridPane implements Initializable
     }
 
     public void chooseParameter(ActionEvent actionEvent) {
-
         // list parameters of subsystem and children, excluding the parameter which contains the calculation
         List<ParameterModel> parameters = new LinkedList<>();
         ParameterTreeIterator subsystemParameterIterator =
                 new ParameterTreeIterator(parameterModel.getParent(), param -> param != parameterModel);
         subsystemParameterIterator.forEachRemaining(parameters::add);
-        parameters.removeIf(pm -> pm.getUuid() == parameterModel.getUuid());
+        parameters.removeIf(pm -> pm.getUuid().equals(parameterModel.getUuid()));
 
         ParameterModel valueLinkParameter = ((Argument.Parameter) argument).getLink();
         Dialog<ParameterModel> dialog = new ParameterSelector(parameters, valueLinkParameter);

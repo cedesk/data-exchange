@@ -1,21 +1,10 @@
 package ru.skoltech.cedl.dataexchange;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.controller.ProjectDependent;
-import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,28 +21,6 @@ public class GuiUtils {
 
     private static final Logger logger = Logger.getLogger(GuiUtils.class);
 
-    public static void openView(String title, URL viewLocation, Window owner, Project project) {
-        try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(viewLocation);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle(title);
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.NONE);
-            stage.initOwner(owner);
-
-            ProjectDependent controller = loader.getController();
-            controller.setProject(project);
-
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
-    }
-
     public static void loadWebView(WebView guideView, Class resourceClass, String filename) {
         URL fileLocation = resourceClass.getResource(filename);
         String baseLocation = fileLocation.toExternalForm().replace(filename, "");
@@ -64,12 +31,8 @@ public class GuiUtils {
             logger.error("Error loading web content from resource", e);
         }
         WebEngine webEngine = guideView.getEngine();
-        webEngine.getLoadWorker().exceptionProperty().addListener(new ChangeListener<Throwable>() {
-            @Override
-            public void changed(ObservableValue<? extends Throwable> observableValue, Throwable oldThrowable, Throwable newThrowable) {
-                logger.error("Load exception ", newThrowable);
-            }
-        });
+        webEngine.getLoadWorker().exceptionProperty().addListener((observableValue, oldThrowable, newThrowable) ->
+                logger.error("Load exception ", newThrowable));
         content = content.replace("src=\"", "src=\"" + baseLocation);
 
         webEngine.loadContent(content);

@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 /**
+ * Controller for consistency validation window.
+ *
  * Created by D.Knoll on 26.06.2017.
  */
 public class ConsistencyController implements Initializable {
@@ -25,12 +27,13 @@ public class ConsistencyController implements Initializable {
 
     private Project project;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-    }
-
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        refreshView(null);
     }
 
     public void refreshView(ActionEvent actionEvent) {

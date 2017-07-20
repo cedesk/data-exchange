@@ -29,19 +29,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * Control for calculation edition.
+ *
  * Created by D.Knoll on 24.09.2015.
  */
 public class CalculationEditor extends ChoiceDialog<Calculation> {
-
-    private final ParameterModel parameterModel;
-
-    private final IntegerProperty argumentCount = new SimpleIntegerProperty(0);
-
-    private final IntegerProperty minArguments = new SimpleIntegerProperty(0);
-
-    private final IntegerProperty maxArguments = new SimpleIntegerProperty(0);
-
-    private Calculation calculation;
 
     @FXML
     private ChoiceBox<Operation> operationChoiceBox;
@@ -58,14 +50,21 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
     @FXML
     private Button addButton;
 
+    private final IntegerProperty argumentCount = new SimpleIntegerProperty(0);
+    private final IntegerProperty minArguments = new SimpleIntegerProperty(0);
+    private final IntegerProperty maxArguments = new SimpleIntegerProperty(0);
+
+    private final ParameterModel parameterModel;
+    private Calculation calculation;
+
     public CalculationEditor(ParameterModel parameterModel, Calculation calc) {
         this.parameterModel = parameterModel;
         this.calculation = calc != null ? calc : new Calculation();
 
-        // load layout
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("calculation_editor.fxml"));
-        fxmlLoader.setController(this);
         try {
+            // load layout
+            FXMLLoader fxmlLoader = new FXMLLoader(Controls.CALCULATION_EDITOR_CONTROL);
+            fxmlLoader.setController(this);
             DialogPane dialogPane = fxmlLoader.load();
             super.setDialogPane(dialogPane);
         } catch (IOException exception) {

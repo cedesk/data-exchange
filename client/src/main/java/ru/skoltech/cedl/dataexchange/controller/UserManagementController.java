@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
+ * Controller for user management.
+ *
  * Created by d.knoll on 10.06.2015.
  */
 public class UserManagementController implements Initializable {
@@ -46,7 +48,12 @@ public class UserManagementController implements Initializable {
     @FXML
     private Button deleteUserButton;
 
+    private FXMLLoaderFactory fxmlLoaderFactory;
     private Project project;
+
+    public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
+        this.fxmlLoaderFactory = fxmlLoaderFactory;
+    }
 
     public void setProject(Project project) {
         this.project = project;
@@ -55,7 +62,6 @@ public class UserManagementController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         BooleanBinding noSelectionOnUserTable = userTable.getSelectionModel().selectedItemProperty().isNull();
-
         // USERS
         editUserButton.disableProperty().bind(noSelectionOnUserTable);
         deleteUserButton.disableProperty().bind(noSelectionOnUserTable);
@@ -64,6 +70,7 @@ public class UserManagementController implements Initializable {
                 UserManagementController.this.openUserEditingView(null);
             }
         });
+        updateView();
     }
 
     private void updateUsers() {
@@ -96,12 +103,9 @@ public class UserManagementController implements Initializable {
     }
 
     public void deleteUser(ActionEvent actionEvent) {
-        project.getUserManagement().getUsers().remove(getSelectedUser());
+        User selectedUser = userTable.getSelectionModel().getSelectedItem();
+        project.getUserManagement().getUsers().remove(selectedUser);
         updateUsers();
-    }
-
-    public User getSelectedUser() {
-        return (User) userTable.getSelectionModel().getSelectedItem();
     }
 
     public void reloadUsers(ActionEvent actionEvent) {
@@ -121,8 +125,7 @@ public class UserManagementController implements Initializable {
 
     public void openUserEditingView(ActionEvent actionEvent) {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.USER_EDITING_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.USER_EDITING_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -130,10 +133,12 @@ public class UserManagementController implements Initializable {
             stage.setTitle("User details");
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(getAppWindow());
+            stage.initOwner(userTable.getScene().getWindow());
 
+            User selectedUser = userTable.getSelectionModel().getSelectedItem();
             UserEditingController controller = loader.getController();
-            controller.setUserModel(getSelectedUser());
+            controller.setUserModel(selectedUser);
+
             stage.showAndWait();
             updateUsers();
         } catch (IOException e) {
@@ -141,11 +146,8 @@ public class UserManagementController implements Initializable {
         }
     }
 
-    public Window getAppWindow() {
-        return userTable.getScene().getWindow();
-    }
-
     public void updateView() {
         updateUsers();
     }
+
 }

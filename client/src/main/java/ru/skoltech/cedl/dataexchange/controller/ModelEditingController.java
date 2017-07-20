@@ -9,7 +9,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -19,9 +18,10 @@ import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import javafx.util.Callback;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.*;
+import ru.skoltech.cedl.dataexchange.Identifiers;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.external.*;
@@ -51,6 +51,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
+ * Controller for model editing.
+ *
  * Created by D.Knoll on 20.03.2015.
  */
 public class ModelEditingController implements Initializable {
@@ -116,9 +118,15 @@ public class ModelEditingController implements Initializable {
     private BooleanProperty selectedNodeCannotHaveChildren = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(true);
 
+    private FXMLLoaderFactory fxmlLoaderFactory;
+
     private Project project;
     private FileStorageService fileStorageService;
     private ModelUpdateService modelUpdateService;
+
+    public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
+        this.fxmlLoaderFactory = fxmlLoaderFactory;
+    }
 
     public void setProject(Project project) {
         this.project = project;
@@ -154,18 +162,8 @@ public class ModelEditingController implements Initializable {
         });
 
         // STRUCTURE TREE VIEW
-        structureTree.setCellFactory(new Callback<TreeView<ModelNode>, TreeCell<ModelNode>>() {
-            @Override
-            public TreeCell<ModelNode> call(TreeView<ModelNode> p) {
-                return new TextFieldTreeCell(project, false);
-            }
-        });
-        structureTree.setOnEditCommit(new EventHandler<TreeView.EditEvent<ModelNode>>() {
-            @Override
-            public void handle(TreeView.EditEvent<ModelNode> event) {
-                project.markStudyModified();
-            }
-        });
+        structureTree.setCellFactory(param -> new TextFieldTreeCell(project, false));
+        structureTree.setOnEditCommit(event -> project.markStudyModified());
 
         // STRUCTURE MODIFICATION BUTTONS
         structureTree.editableProperty().bind(selectedNodeIsEditable);
@@ -190,41 +188,32 @@ public class ModelEditingController implements Initializable {
 
         // NODE PARAMETER TABLE
         parameterTable.editableProperty().bind(selectedNodeIsEditable);
-        parameterValueColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
-                if (param != null) {
-                    double valueToDisplay = param.getValue().getEffectiveValue();
-                    String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
-                    return new SimpleStringProperty(formattedValue);
-                } else {
-                    return new SimpleStringProperty();
-                }
-            }
-        });
-        parameterUnitColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
-                if (param != null && param.getValue() != null && param.getValue().getUnit() != null) {
-                    return new SimpleStringProperty(param.getValue().getUnit().asText());
-                } else {
-                    return new SimpleStringProperty();
-                }
-            }
-        });
-        parameterInfoColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
-                if (param != null && param.getValue() != null) {
-                    if (param.getValue().getValueSource() == ParameterValueSource.LINK) {
-                        return new SimpleStringProperty(param.getValue().getValueLink() != null ? param.getValue().getValueLink().getNodePath() : "--");
-                    }
-                    if (param.getValue().getValueSource() == ParameterValueSource.REFERENCE) {
-                        return new SimpleStringProperty(param.getValue().getValueReference() != null ? param.getValue().getValueReference().toString() : "--");
-                    }
-                }
+        parameterValueColumn.setCellValueFactory(param -> {
+            if (param != null) {
+                double valueToDisplay = param.getValue().getEffectiveValue();
+                String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
+                return new SimpleStringProperty(formattedValue);
+            } else {
                 return new SimpleStringProperty();
             }
+        });
+        parameterUnitColumn.setCellValueFactory(param -> {
+            if (param != null && param.getValue() != null && param.getValue().getUnit() != null) {
+                return new SimpleStringProperty(param.getValue().getUnit().asText());
+            } else {
+                return new SimpleStringProperty();
+            }
+        });
+        parameterInfoColumn.setCellValueFactory(param -> {
+            if (param != null && param.getValue() != null) {
+                if (param.getValue().getValueSource() == ParameterValueSource.LINK) {
+                    return new SimpleStringProperty(param.getValue().getValueLink() != null ? param.getValue().getValueLink().getNodePath() : "--");
+                }
+                if (param.getValue().getValueSource() == ParameterValueSource.REFERENCE) {
+                    return new SimpleStringProperty(param.getValue().getValueReference() != null ? param.getValue().getValueReference().toString() : "--");
+                }
+            }
+            return new SimpleStringProperty();
         });
 
         viewParameters = new ViewParameters();
@@ -243,12 +232,7 @@ public class ModelEditingController implements Initializable {
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
         parameterEditor.setVisible(false);
-        parameterEditor.setEditListener(new Consumer<ParameterModel>() {
-            @Override
-            public void accept(ParameterModel parameterModel) {
-                lightTableRefresh();
-            }
-        });
+        parameterEditor.setEditListener(parameterModel -> lightTableRefresh());
 
         externalModelEditor.setProject(project);
         externalModelEditor.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
@@ -350,10 +334,8 @@ public class ModelEditingController implements Initializable {
 
                 // model
                 if (parent.getValue() instanceof CompositeModelNode) {
-
                     CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                     parentNode.removeSubNode(deleteNode);
-
                 }
                 project.markStudyModified();
                 StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
@@ -384,11 +366,37 @@ public class ModelEditingController implements Initializable {
     }
 
     public void openDepencencyView(ActionEvent actionEvent) {
-        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow(), project);
+        try {
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.DEPENDENCY_WINDOW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("N-Square Chart");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.NONE);
+            stage.initOwner(getAppWindow());
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
+        }
     }
 
     public void openDsmView(ActionEvent actionEvent) {
-        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow(), project);
+        try {
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.DSM_WINDOW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Dependency Structure Matrix");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.NONE);
+            stage.initOwner(getAppWindow());
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
+        }
     }
 
     public void openParameterHistoryDialog(ActionEvent actionEvent) {
@@ -396,9 +404,7 @@ public class ModelEditingController implements Initializable {
         Objects.requireNonNull(selectedParameter, "no parameter selected");
 
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setControllerFactory(aClass -> ApplicationContextInitializer.getInstance().getContext().getBean(aClass));
-            loader.setLocation(Views.REVISION_HISTORY_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.REVISION_HISTORY_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -407,6 +413,7 @@ public class ModelEditingController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
+
             RevisionHistoryController controller = loader.getController();
             controller.setParameter(selectedParameter);
             controller.updateView();

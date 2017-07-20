@@ -25,9 +25,11 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**
+ * Controller for display Dependency Structure Matrix.
+ *
  * Created by D.Knoll on 02.11.2015.
  */
-public class DsmController implements Initializable, ProjectDependent {
+public class DsmController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(DsmController.class);
 
@@ -39,7 +41,6 @@ public class DsmController implements Initializable, ProjectDependent {
 
     private Project project;
 
-    @Override
     public void setProject(Project project) {
         this.project = project;
     }

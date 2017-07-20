@@ -30,7 +30,6 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.services.*;
-import ru.skoltech.cedl.dataexchange.services.impl.UpdateServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
@@ -52,6 +51,11 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * Controller for main application window.
+ *
+ * Created by n.groshkov on 19-Jul-17.
+ */
 public class MainController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(MainController.class);
@@ -87,6 +91,7 @@ public class MainController implements Initializable {
     @FXML
     private BorderPane layoutPane;
 
+    private FXMLLoaderFactory fxmlLoaderFactory;
     private ModelEditingController modelEditingController;
 
     private Project project;
@@ -96,6 +101,14 @@ public class MainController implements Initializable {
     private FileStorageService fileStorageService;
     private DifferenceMergeService differenceMergeService;
     private UpdateService updateService;
+
+    public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
+        this.fxmlLoaderFactory = fxmlLoaderFactory;
+    }
+
+    public void setModelEditingController(ModelEditingController modelEditingController) {
+        this.modelEditingController = modelEditingController;
+    }
 
     public void setProject(Project project) {
         this.project = project;
@@ -129,13 +142,9 @@ public class MainController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // EDITING PANE
         try {
-            FXMLLoader loader = new FXMLLoader();
-            //TODO rewrite, maybe make MainController aware of ApplicationContext
-            loader.setControllerFactory(aClass -> ApplicationContextInitializer.getInstance().getContext().getBean(aClass));
-            loader.setLocation(Views.MODEL_EDITING_VIEW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.MODEL_EDITING_VIEW);
             Parent editingPane = loader.load();
             layoutPane.setCenter(editingPane);
-            modelEditingController = loader.getController();
         } catch (IOException ioe) {
             logger.error("Unable to load editing view pane.");
             throw new RuntimeException(ioe);
@@ -184,14 +193,12 @@ public class MainController implements Initializable {
         loadButton.disableProperty().bind(project.canLoadProperty().not());
         saveButton.disableProperty().bind(project.canSyncProperty().not());
 
-        Platform.runLater(this::checkRepositoryAndLoadLastProject);
+        this.checkRepositoryAndLoadLastProject();
 
-        Platform.runLater(() -> {
-            String appVersion = applicationSettings.getApplicationVersion();
-            if (ApplicationPackage.isRelease(appVersion)) {
-                checkForApplicationUpdate(null);
-            }
-        });
+        String appVersion = applicationSettings.getApplicationVersion();
+        if (ApplicationPackage.isRelease(appVersion)) {
+            checkForApplicationUpdate(null);
+        }
     }
 
     public Window getAppWindow() {
@@ -339,7 +346,7 @@ public class MainController implements Initializable {
     public void importProject(ActionEvent actionEvent) {
         File importFile = null;
         if (actionEvent == null) { // invoked from startup
-            String projectToImport = project.getApplicationSettings().getProjectToImport();
+            String projectToImport = applicationSettings.getProjectToImport();
             if (projectToImport != null) {
                 importFile = new File(fileStorageService.applicationDirectory(), projectToImport);
                 if (importFile.exists()) {
@@ -408,8 +415,7 @@ public class MainController implements Initializable {
 
     public void openAboutDialog(ActionEvent actionEvent) {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.ABOUT_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.ABOUT_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -427,8 +433,7 @@ public class MainController implements Initializable {
 
     public void openConsistencyView(ActionEvent actionEvent) {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.MODEL_CONSISTENCY_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.MODEL_CONSISTENCY_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -437,12 +442,8 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.NONE);
             stage.initOwner(getAppWindow());
-
-            ConsistencyController controller = loader.getController();
-            controller.setProject(project);
-
-            controller.refreshView(null);
             stage.showAndWait();
+
             modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
         } catch (IOException e) {
             logger.error(e);
@@ -450,7 +451,20 @@ public class MainController implements Initializable {
     }
 
     public void openDepencencyView(ActionEvent actionEvent) {
-        GuiUtils.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow(), project);
+        try {
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.DEPENDENCY_WINDOW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("N-Square Chart");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.NONE);
+            stage.initOwner(getAppWindow());
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
+        }
     }
 
     public void openDiffView(ActionEvent actionEvent) {
@@ -460,10 +474,7 @@ public class MainController implements Initializable {
             return;
         }
         try {
-            FXMLLoader loader = new FXMLLoader();
-            //TODO rewrite, maybe make MainController aware of ApplicationContext
-            loader.setControllerFactory(aClass -> ApplicationContextInitializer.getInstance().getContext().getBean(aClass));
-            loader.setLocation(Views.MODEL_DIFF_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.MODEL_DIFF_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -472,13 +483,8 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-
-            // update from repository
-            project.loadRepositoryStudy();
-
-            DiffController controller = loader.getController();
-            controller.refreshView(null);
             stage.showAndWait();
+
             modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
         } catch (IOException e) {
             logger.error(e);
@@ -486,14 +492,27 @@ public class MainController implements Initializable {
     }
 
     public void openDsmView(ActionEvent actionEvent) {
-        GuiUtils.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow(), project);
+        try {
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.DSM_WINDOW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Dependency Structure Matrix");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.NONE);
+            stage.initOwner(getAppWindow());
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
+        }
     }
 
     public void openGuideDialog(ActionEvent actionEvent) {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.GUIDE_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.GUIDE_WINDOW);
             Parent root = loader.load();
+
             Stage currentStage = (Stage) getAppWindow();
 
             Stage stage = new Stage();
@@ -504,7 +523,6 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.NONE);
             stage.initOwner(getAppWindow());
-
             stage.show();
         } catch (IOException e) {
             logger.error(e);
@@ -535,8 +553,7 @@ public class MainController implements Initializable {
 
     public void openProjectSettingsDialog(ActionEvent actionEvent) {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.PROJECT_SETTINGS_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.PROJECT_SETTINGS_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -545,12 +562,9 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-
-            ProjectSettingsController controller = loader.getController();
-            controller.setProject(project);
-
             stage.setOnCloseRequest(event -> validateUser());
             stage.showAndWait();
+
             updateView();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
@@ -559,10 +573,7 @@ public class MainController implements Initializable {
 
     public void openRepositorySettingsDialog(ActionEvent actionEvent) {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            //TODO rewrite, maybe make MainController aware of ApplicationContext
-            loader.setControllerFactory(aClass -> ApplicationContextInitializer.getInstance().getContext().getBean(aClass));
-            loader.setLocation(Views.REPOSITORY_SETTINGS_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.REPOSITORY_SETTINGS_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -571,22 +582,23 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
+
             RepositorySettingsController controller = loader.getController();
             controller.setRepositorySettingsListener((hostname, username, password, autoSynch) -> {
                 boolean validSettings = false;
 
-                project.getApplicationSettings().setAutoSync(autoSynch);
+                applicationSettings.setAutoSync(autoSynch);
 
-                String schema = project.getApplicationSettings().getRepositorySchema();
+                String schema = applicationSettings.getRepositorySchema();
 
                 String newHostname = hostname == null || hostname.isEmpty() ? applicationSettings.getDefaultHostName() : hostname;
                 String newUsername = username == null || username.isEmpty() ? applicationSettings.getDefaultUserName() : username;
                 String newPassword = password == null || password.isEmpty() ? applicationSettings.getDefaultPassword() : password;
                 boolean validCredentials = repositoryManager.checkRepositoryConnection(newHostname, schema, newUsername, newPassword);
                 if (validCredentials) {
-                    project.getApplicationSettings().setRepositoryServerHostname(newHostname);
-                    project.getApplicationSettings().setRepositoryUserName(newUsername);
-                    project.getApplicationSettings().setRepositoryPassword(newPassword);
+                    applicationSettings.setRepositoryServerHostname(newHostname);
+                    applicationSettings.setRepositoryUserName(newUsername);
+                    applicationSettings.setRepositoryPassword(newPassword);
                     try {
                         project.connectRepository();
                         validSettings = true;
@@ -603,7 +615,6 @@ public class MainController implements Initializable {
                 project.loadUserManagement();
                 project.loadUnitManagement();
                 return validSettings;
-
             });
 
             stage.setOnCloseRequest(event -> {
@@ -622,8 +633,7 @@ public class MainController implements Initializable {
 
     public void openUnitManagement(ActionEvent actionEvent) {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.UNIT_EDITING_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.UNIT_EDITING_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -632,11 +642,8 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-
-            UnitManagementController unitManagementController = loader.getController();
-            unitManagementController.setProject(project);
-
-            stage.setOnCloseRequest(event -> unitManagementController.onCloseRequest(event));
+            stage.setOnCloseRequest(event ->
+                    ((UnitManagementController)loader.getController()).onCloseRequest(event));
             stage.show();
         } catch (IOException e) {
             logger.error(e);
@@ -645,8 +652,7 @@ public class MainController implements Initializable {
 
     public void openUserManagement(ActionEvent actionEvent) {
         try {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.USER_MANAGEMENT_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.USER_MANAGEMENT_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -655,11 +661,7 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-
-            UserManagementController userManagementController = loader.getController();
-            userManagementController.setProject(project);
             stage.show();
-            userManagementController.updateView();
         } catch (IOException e) {
             logger.error(e);
         }
@@ -667,10 +669,11 @@ public class MainController implements Initializable {
 
     public void openUserRoleManagement(ActionEvent actionEvent) {
         try {
-            if (!checkUnsavedModifications()) return;
+            if (!checkUnsavedModifications()) {
+                return;
+            }
 
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Views.USER_ROLES_EDITING_WINDOW);
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.USER_ROLES_EDITING_WINDOW);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -679,13 +682,9 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-
-            UserRoleManagementController userRoleManagementController = loader.getController();
-            userRoleManagementController.setProject(project);
-
-            stage.setOnCloseRequest(event -> userRoleManagementController.onCloseRequest(event));
+            stage.setOnCloseRequest(event ->
+                    ((UserRoleManagementController)loader.getController()).onCloseRequest(event));
             stage.show();
-            userRoleManagementController.updateView();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
@@ -701,7 +700,7 @@ public class MainController implements Initializable {
         try {
             boolean success = project.loadLocalStudy();
             if (success) {
-                project.getApplicationSettings().setLastUsedProject(project.getProjectName());
+                applicationSettings.setLastUsedProject(project.getProjectName());
                 StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
                 project.getActionLogger().log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName());
             } else {
@@ -744,7 +743,7 @@ public class MainController implements Initializable {
             project.storeUserRoleManagement();
             project.storeLocalStudy();
             updateView();
-            project.getApplicationSettings().setLastUsedProject(project.getProjectName());
+            applicationSettings.setLastUsedProject(project.getProjectName());
             StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
             project.getActionLogger().log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());
         } catch (RepositoryException re) {
@@ -781,7 +780,7 @@ public class MainController implements Initializable {
     public void validateUser() {
         boolean validUser = project.checkUser();
         if (!validUser) {
-            String userName = project.getApplicationSettings().getProjectUser();
+            String userName = applicationSettings.getProjectUser();
             Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
                     "Contact the administrator for the creation of a user for you.\n" +
                     "As for now you'll be given the role of an observer, who can not perform modifications.");
@@ -800,10 +799,10 @@ public class MainController implements Initializable {
         validateUser();
 
         project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
-        if (project.getApplicationSettings().getProjectToImport() != null) {
+        if (applicationSettings.getProjectToImport() != null) {
             importProject(null);
-        } else if (project.getApplicationSettings().getAutoLoadLastProjectOnStartup()) {
-            String projectName = project.getApplicationSettings().getLastUsedProject();
+        } else if (applicationSettings.getAutoLoadLastProjectOnStartup()) {
+            String projectName = applicationSettings.getLastUsedProject();
             if (projectName != null) {
                 project.setProjectName(projectName);
                 reloadProject(null);

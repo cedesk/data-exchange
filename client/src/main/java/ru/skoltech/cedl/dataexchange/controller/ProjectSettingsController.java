@@ -18,6 +18,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
+ * Controller for adjustment of project settings.
+ *
  * Created by D.Knoll on 22.07.2015.
  */
 public class ProjectSettingsController implements Initializable {
@@ -47,13 +49,13 @@ public class ProjectSettingsController implements Initializable {
 
     private Project project;
 
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
         updateView();
     }
 
@@ -84,7 +86,6 @@ public class ProjectSettingsController implements Initializable {
     }
 
     private boolean updateModel() {
-
         StudySettings studySettings = getStudySettings();
         if (studySettings != null) {
             boolean oldSyncEnabled = studySettings.getSyncEnabled();
@@ -135,6 +136,6 @@ public class ProjectSettingsController implements Initializable {
         autoloadOnStartupCheckbox.setSelected(project.getApplicationSettings().getAutoLoadLastProjectOnStartup());
         useOsUserCheckbox.setSelected(project.getApplicationSettings().getUseOsUser());
         userNameText.setText(project.getApplicationSettings().getProjectUser());
-
     }
+
 }

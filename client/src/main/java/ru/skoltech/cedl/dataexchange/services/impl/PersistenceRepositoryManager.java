@@ -38,7 +38,6 @@ public class PersistenceRepositoryManager implements RepositoryManager {
     private Map<String, Object> jpaProperties;
     private PersistenceFactory persistenceFactory;
     private RepositoryServiceMethodInterceptor repositoryServiceMethodInterceptor;
-    private RepositoryService repositoryService;
 
     private LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean;
 
@@ -56,10 +55,6 @@ public class PersistenceRepositoryManager implements RepositoryManager {
 
     public void setRepositoryServiceMethodInterceptor(RepositoryServiceMethodInterceptor repositoryServiceMethodInterceptor) {
         this.repositoryServiceMethodInterceptor = repositoryServiceMethodInterceptor;
-    }
-
-    public void setRepositoryService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
     }
 
     @Override
@@ -133,8 +128,9 @@ public class PersistenceRepositoryManager implements RepositoryManager {
 
             EntityManagerFactory entityManagerFactory = localContainerEntityManagerFactoryBean.getObject();
             entityManager = entityManagerFactory.createEntityManager();
-            repositoryServiceMethodInterceptor.setEntityManagerFactory(entityManagerFactory);
-            return checkAndStoreSchemeVersion();
+            PersistenceRepositoryServiceImpl persistenceRepositoryService = new PersistenceRepositoryServiceImpl();
+            persistenceRepositoryService.setEntityManager(entityManager);
+            return checkAndStoreSchemeVersion(persistenceRepositoryService);
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme update failed!", true);
             logger.error("Database scheme update failed!", e);
@@ -166,8 +162,9 @@ public class PersistenceRepositoryManager implements RepositoryManager {
 
             EntityManagerFactory entityManagerFactory = localContainerEntityManagerFactoryBean.getObject();
             entityManager = entityManagerFactory.createEntityManager();
-            repositoryServiceMethodInterceptor.setEntityManagerFactory(entityManagerFactory);
-            return checkSchemeVersion();
+            PersistenceRepositoryServiceImpl persistenceRepositoryService = new PersistenceRepositoryServiceImpl();
+            persistenceRepositoryService.setEntityManager(entityManager);
+            return checkSchemeVersion(persistenceRepositoryService);
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme validation failed!", true);
             logger.error("Database scheme validation failed!", e);
@@ -180,7 +177,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
         }
     }
 
-    private boolean checkAndStoreSchemeVersion() {
+    private boolean checkAndStoreSchemeVersion(RepositoryService repositoryService) {
         String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
         String actualSchemaVersion = null;
         try {
@@ -212,7 +209,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
         }
     }
 
-    private boolean checkSchemeVersion() {
+    private boolean checkSchemeVersion(RepositoryService repositoryService) {
         String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
         String actualSchemaVersion = null;
         try {

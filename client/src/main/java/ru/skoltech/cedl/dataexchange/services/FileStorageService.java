@@ -47,74 +47,76 @@ public interface FileStorageService {
      * @return true if file exists and is not empty, false in case of opposite
      */
     boolean checkFileExistenceAndNonEmptiness(File file);
+
     /**
      * Store {@link SystemModel} in the file.
-     * @param systemModel
-     * @param outputFile
-     * @throws IOException
+     *
+     * @param systemModel {@link SystemModel} for storage
+     * @param outputFile output file for storage
+     * @throws IOException if storage is impossible
      */
     void storeSystemModel(SystemModel systemModel, File outputFile) throws IOException;
 
     /**
      * Load {@link SystemModel} from the file.
      *
-     * @param inputFile
+     * @param inputFile file which stores {@link SystemModel}
      * @return system model
-     * @throws IOException
+     * @throws IOException if loading is impossible
      */
     SystemModel loadSystemModel(File inputFile) throws IOException;
 
     /**
      * Store {@link UserRoleManagement} in the file.
      *
-     * @param userRoleManagement
-     * @param outputFile
-     * @throws IOException
+     * @param userRoleManagement {@link UserRoleManagement} for storage
+     * @param outputFile output file for storage
+     * @throws IOException if storage is impossible
      */
     void storeUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException;
 
     /**
      * Load {@link UserRoleManagement} from the file.
      *
-     * @param inputFile
+     * @param inputFile file which stores {@link UserRoleManagement}
      * @return user role management
-     * @throws IOException
+     * @throws IOException if loading is impossible
      */
     UserRoleManagement loadUserRoleManagement(File inputFile) throws IOException;
 
     /**
      * Store {@link UnitManagement} in the file.
      *
-     * @param unitManagement
-     * @param outputFile
-     * @throws IOException
+     * @param unitManagement {@link UnitManagement} for storage
+     * @param outputFile output file for storage
+     * @throws IOException if storage is impossible
      */
     void storeUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException;
 
     /**
      * Load {@link UnitManagement} from the file.
      *
-     * @param inputStream
+     * @param inputStream inputStream which contains {@link UnitManagement}
      * @return unit management
-     * @throws IOException
+     * @throws IOException if loading is impossible
      */
     UnitManagement loadUnitManagement(InputStream inputStream) throws IOException;
 
     /**
      * Store {@link Calculation} in the file.
      *
-     * @param calculation
-     * @param outputFile
-     * @throws IOException
+     * @param calculation {@link Calculation} for storage
+     * @param outputFile output file for storage
+     * @throws IOException if storage is impossible
      */
     void storeCalculation(Calculation calculation, File outputFile) throws IOException;
 
     /**
      * Load {@link Calculation} from the file.
      *
-     * @param file
+     * @param inputFile file which stores {@link Calculation}
      * @return calculation
-     * @throws IOException
+     * @throws IOException if loading is impossible
      */
-    Calculation loadCalculation(File file) throws IOException;
+    Calculation loadCalculation(File inputFile) throws IOException;
 }
