@@ -18,6 +18,7 @@
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
         <property name="updateService" ref="updateService" />
+        <property name="taskExecutor" ref="taskExecutor" />
     </bean>
 
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">

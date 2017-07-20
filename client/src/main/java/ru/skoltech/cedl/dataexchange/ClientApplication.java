@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
@@ -42,12 +43,13 @@ public class ClientApplication extends Application {
 
         Parent root = loader.load();
         mainController = loader.getController();
+        mainController.checkRepository();
+        mainController.checkVersionUpdate();
 
         primaryStage.setTitle("Concurrent Engineering Data Exchange Skoltech");
         primaryStage.setScene(new Scene(root));
         primaryStage.getIcons().add(IconSet.APP_ICON);
         primaryStage.show();
-
         primaryStage.setOnCloseRequest(we -> {
             if (!mainController.confirmCloseRequest()) {
                 we.consume();
@@ -60,6 +62,7 @@ public class ClientApplication extends Application {
         logger.info("Stopping CEDESK ...");
         try {
             context.getBean(ThreadPoolTaskScheduler.class).shutdown();
+            context.getBean(ThreadPoolTaskExecutor.class).shutdown();
             mainController.terminate();
         } catch (Exception e) {
             logger.warn("", e);

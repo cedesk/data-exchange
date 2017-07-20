@@ -48,6 +48,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -101,6 +102,7 @@ public class MainController implements Initializable {
     private FileStorageService fileStorageService;
     private DifferenceMergeService differenceMergeService;
     private UpdateService updateService;
+    private Executor taskExecutor;
 
     public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
@@ -136,6 +138,10 @@ public class MainController implements Initializable {
 
     public void setUpdateService(UpdateService updateService) {
         this.updateService = updateService;
+    }
+
+    public void setTaskExecutor(Executor taskExecutor) {
+        this.taskExecutor = taskExecutor;
     }
 
     @Override
@@ -192,12 +198,15 @@ public class MainController implements Initializable {
         newButton.disableProperty().bind(project.canNewProperty().not());
         loadButton.disableProperty().bind(project.canLoadProperty().not());
         saveButton.disableProperty().bind(project.canSyncProperty().not());
+    }
 
-        this.checkRepositoryAndLoadLastProject();
-
+    public void checkVersionUpdate(){
         String appVersion = applicationSettings.getApplicationVersion();
         if (ApplicationPackage.isRelease(appVersion)) {
-            checkForApplicationUpdate(null);
+            taskExecutor.execute(() -> {
+                Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
+                Platform.runLater(() -> MainController.this.validateLatestUpdate(latestVersionAvailable, null));
+            });
         }
     }
 
@@ -207,6 +216,10 @@ public class MainController implements Initializable {
 
     public void checkForApplicationUpdate(ActionEvent actionEvent) {
         Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
+        validateLatestUpdate(latestVersionAvailable, actionEvent);
+    }
+
+    private void validateLatestUpdate(Optional<ApplicationPackage> latestVersionAvailable, ActionEvent actionEvent) {
         if (latestVersionAvailable.isPresent()) {
             ApplicationPackage applicationPackage = latestVersionAvailable.get();
             logger.info("available package: " + applicationPackage.toString());
@@ -543,7 +556,7 @@ public class MainController implements Initializable {
                 String studyName = studyChoice.get();
                 project.setProjectName(studyName);
                 reloadProject(null);
-                validateUser();
+                this.validateUser();
             }
         } else {
             logger.warn("list of studies is empty!");
@@ -562,7 +575,7 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-            stage.setOnCloseRequest(event -> validateUser());
+            stage.setOnCloseRequest(event -> this.validateUser());
             stage.showAndWait();
 
             updateView();
@@ -622,7 +635,7 @@ public class MainController implements Initializable {
                     Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository!");
                     quit(null);
                 }
-                validateUser();
+                this.validateUser();
             });
             stage.showAndWait();
             updateView();
@@ -777,27 +790,22 @@ public class MainController implements Initializable {
         });
     }
 
-    public void validateUser() {
-        boolean validUser = project.checkUser();
-        if (!validUser) {
-            String userName = applicationSettings.getProjectUser();
-            Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
-                    "Contact the administrator for the creation of a user for you.\n" +
-                    "As for now you'll be given the role of an observer, who can not perform modifications.");
-            project.getActionLogger().log(ActionLogger.ActionType.USER_VALIDATE, userName + ", not found");
-        }
+    public void checkRepository() {
+        taskExecutor.execute(() -> {
+            boolean validRepository = project.checkRepository();
+            Runnable mainControllerRunnable;
+            if (!validRepository) {
+                mainControllerRunnable = () -> MainController.this.openRepositorySettingsDialog(null);
+            } else {
+                project.connectRepository();
+                this.validateUser();
+                mainControllerRunnable = () -> MainController.this.loadLastProject();
+            }
+            Platform.runLater(mainControllerRunnable);
+        });
     }
 
-    private void checkRepositoryAndLoadLastProject() {
-        boolean validRepository = project.checkRepository();
-        if (!validRepository) {
-            openRepositorySettingsDialog(null);
-            validRepository = project.checkRepository();
-        }
-        if (!validRepository) return;
-        project.connectRepository();
-        validateUser();
-
+    private void loadLastProject() {
         project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
         if (applicationSettings.getProjectToImport() != null) {
             importProject(null);
@@ -858,6 +866,17 @@ public class MainController implements Initializable {
             userRoleLabel.setText("--");
             usersAndDisciplinesMenu.setDisable(false);
             usersMenu.setDisable(false);
+        }
+    }
+
+    public void validateUser() {
+        boolean validUser = project.checkUser();
+        if (!validUser) {
+            String userName = applicationSettings.getProjectUser();
+            Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
+                    "Contact the administrator for the creation of a user for you.\n" +
+                    "As for now you'll be given the role of an observer, who can not perform modifications.");
+            project.getActionLogger().log(ActionLogger.ActionType.USER_VALIDATE, userName + ", not found");
         }
     }
 
