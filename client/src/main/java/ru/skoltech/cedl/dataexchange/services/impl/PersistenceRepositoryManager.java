@@ -130,6 +130,7 @@ public class PersistenceRepositoryManager implements RepositoryManager {
             entityManager = entityManagerFactory.createEntityManager();
             PersistenceRepositoryServiceImpl persistenceRepositoryService = new PersistenceRepositoryServiceImpl();
             persistenceRepositoryService.setEntityManager(entityManager);
+            StatusLogger.getInstance().log("Database scheme updated!");
             return checkAndStoreSchemeVersion(persistenceRepositoryService);
         } catch (Exception e) {
             StatusLogger.getInstance().log("Database scheme update failed!", true);
