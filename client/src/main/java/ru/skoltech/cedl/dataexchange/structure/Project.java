@@ -503,6 +503,10 @@ public class Project {
         updateParameterValuesFromLinks();
         exportValuesToExternalModels();
         updateExternalModelsInStudy();
+        if (getStudy().getUserRoleManagement().getId() != 0) { // do not store if new
+            // store URM separately before study, to prevent links to deleted subsystems have storing study fail
+            storeUserRoleManagement();
+        }
         Study newStudy = repositoryService.storeStudy(this.study);
         updateExternalModelStateInCache();
         setStudy(newStudy);

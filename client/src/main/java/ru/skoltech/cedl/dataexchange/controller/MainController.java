@@ -753,7 +753,6 @@ public class MainController implements Initializable {
                     return;
                 }
             }
-            project.storeUserRoleManagement();
             project.storeLocalStudy();
             updateView();
             applicationSettings.setLastUsedProject(project.getProjectName());
