@@ -8,14 +8,15 @@ The software is developed at the [Concurrent Engineering Design Laboratory](http
 More details on [cedesk.github.io](https://cedesk.github.io)
 
 ## Release History and Notes##
+* 2018-07-21 - Version 1.28   (introduce DI via Spring context)
 * 2017-06-29 - Version 1.27.1 (fixed bug, critical for first time installations)
-* 2017-06-28 - Version 1.27 (bug fixes, N2 chart improvements, consistency verification)
-* 2017-05-31 - Version 1.26 (bug fixes, diff viewing and merging improvements)
-* 2016-11-28 - Version 1.25 (bug fixes, layout improvement, library upgrade, external model replacement, N2 chart improvement)
-* 2016-11-15 - Version 1.24 (process guide, N2 chart)
-* 2016-07-14 - Version 1.23 (bugfix)
+* 2017-06-28 - Version 1.27   (bug fixes, N2 chart improvements, consistency verification)
+* 2017-05-31 - Version 1.26   (bug fixes, diff viewing and merging improvements)
+* 2016-11-28 - Version 1.25   (bug fixes, layout improvement, library upgrade, external model replacement, N2 chart improvement)
+* 2016-11-15 - Version 1.24   (process guide, N2 chart)
+* 2016-07-14 - Version 1.23   (bugfix)
 * 2016-07-14 - Version 1.22
-* 2016-07-07 - Version 1.21 (bugfix)
+* 2016-07-07 - Version 1.21   (bugfix)
 * 2016-07-04 - Version 1.20
 * 2016-05-31 - Version 1.19
 * 2015-12-14 - Version 1.18
