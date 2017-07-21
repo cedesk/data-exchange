@@ -22,9 +22,9 @@
                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                             </rowConstraints>
                             <children>
-                                <TextField fx:id="dbHostnameText" editable="false"
+                                <TextField fx:id="dbHostnameText"
                                            promptText="hostname (leave empty to use default)" GridPane.columnIndex="1"/>
-                                <TextField fx:id="dbUsernameText" editable="false"
+                                <TextField fx:id="dbUsernameText"
                                            promptText="username (leave empty to use default)" GridPane.columnIndex="1"
                                            GridPane.rowIndex="1"/>
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="DB hostname">
@@ -32,7 +32,7 @@
                                         <Insets/>
                                     </GridPane.margin>
                                 </Text>
-                                <PasswordField fx:id="dbPasswordText" editable="false"
+                                <PasswordField fx:id="dbPasswordText"
                                                promptText="password (leave empty to use default)"
                                                GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="DB username" GridPane.rowIndex="1">

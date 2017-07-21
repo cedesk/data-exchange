@@ -2,31 +2,35 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
 import javax.xml.bind.JAXBException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by D.Knoll on 13.05.2015.
  */
 public class CalculationPersistenceTest {
 
-    private EntityManagerFactory emf;
+    private DatabaseStorage databaseStorage;
+
+    @Before
+    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        databaseStorage = RepositoryFactory.getTempRepository();
+    }
 
     @After
-    public void tearDown() {
-        releaseEntityManagerFactory();
+    public void cleanup() {
+        databaseStorage.close();
     }
 
     @Test
@@ -35,7 +39,7 @@ public class CalculationPersistenceTest {
 
         EntityManager entityManager = null;
         try {
-            entityManager = getEntityManager();
+            entityManager = databaseStorage.getEntityManager();
             EntityTransaction transaction = entityManager.getTransaction();
             transaction.begin();
             entityManager.persist(calculation1);
@@ -68,27 +72,5 @@ public class CalculationPersistenceTest {
         return calc;
     }
 
-    private EntityManager getEntityManager() throws RepositoryException {
-        if (emf == null) {
-            try {
-                Map<String, Object> properties = new HashMap<>();
-                emf = Persistence.createEntityManagerFactory(DatabaseStorage.MEM_PERSISTENCE_UNIT_NAME, properties);
-            } catch (Exception e) {
-                System.err.println("connecting to database failed!");
-                e.printStackTrace();
-                throw new RepositoryException("database connection failed");
-            }
-        }
-        return emf.createEntityManager();
-    }
 
-    private void releaseEntityManagerFactory() {
-        if (emf != null) {
-            try {
-                emf.close();
-            } catch (Exception ignore) {
-            }
-            emf = null;
-        }
-    }
 }

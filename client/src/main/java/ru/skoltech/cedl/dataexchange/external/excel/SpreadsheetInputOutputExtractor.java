@@ -3,10 +3,7 @@ package ru.skoltech.cedl.dataexchange.external.excel;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.model.InternalWorkbook;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.model.ExternalLinksTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
@@ -74,7 +71,7 @@ public class SpreadsheetInputOutputExtractor {
                         previousCell = null;
                         continue;
                     }
-                    boolean isText = cell.getCellType() == Cell.CELL_TYPE_STRING;
+                    boolean isText = cell.getCellTypeEnum() == CellType.STRING;
                     if (isText) {
                         String stringCellValue = cell.getStringCellValue();
                         if (inputSectionTitle == null && ("inputs".equalsIgnoreCase(stringCellValue) || "input".equalsIgnoreCase(stringCellValue))) {
@@ -87,8 +84,8 @@ public class SpreadsheetInputOutputExtractor {
                             outputSectionTitle = cell;
                         }
                     }
-                    boolean containsNumbers = cell.getCellType() == Cell.CELL_TYPE_NUMERIC || cell.getCellType() == Cell.CELL_TYPE_FORMULA;
-                    boolean hasName = previousCell != null && previousCell.getCellType() == Cell.CELL_TYPE_STRING;
+                    boolean containsNumbers = cell.getCellTypeEnum() == CellType.NUMERIC || cell.getCellTypeEnum() == CellType.FORMULA;
+                    boolean hasName = previousCell != null && previousCell.getCellTypeEnum() == CellType.STRING;
                     if (containsNumbers && hasName) {
                         ParameterNature parameterNature = ParameterNature.INTERNAL;
                         if ((inputSectionTitle != null &&
@@ -125,7 +122,7 @@ public class SpreadsheetInputOutputExtractor {
     private static Unit extractUnit(Cell numberCell) {
         Row row = numberCell.getRow();
         Cell unitCell = row.getCell(numberCell.getColumnIndex() + 1, Row.RETURN_BLANK_AS_NULL);
-        if (unitCell != null && unitCell.getCellType() == Cell.CELL_TYPE_STRING) {
+        if (unitCell != null && unitCell.getCellTypeEnum() == CellType.STRING) {
             String unitString = SpreadsheetCellValueAccessor.getValueAsString(unitCell);
             UnitManagement unitManagement = ProjectContext.getInstance().getProject().getUnitManagement();
             Unit unit = unitManagement.findUnitBySymbolOrName(unitString);
@@ -152,7 +149,7 @@ public class SpreadsheetInputOutputExtractor {
         Unit unit = extractUnit(numberCell);
         parameter.setUnit(unit);
         ExternalModelReference exportReference = new ExternalModelReference(externalModel, coordinates.toString());
-        boolean isFormula = numberCell.getCellType() == Cell.CELL_TYPE_FORMULA;
+        boolean isFormula = numberCell.getCellTypeEnum() == CellType.FORMULA;
         if (isFormula) {
             String cellFormula = numberCell.getCellFormula();
             String sourceDescription = clarifyFormula(cellFormula, externalLinks);

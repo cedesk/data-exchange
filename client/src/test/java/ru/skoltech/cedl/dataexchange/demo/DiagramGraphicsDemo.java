@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.demo;
 
 /**
  * Created by d.knoll on 14.11.2016.
@@ -6,13 +6,10 @@ package ru.skoltech.cedl.dataexchange;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.ArcType;
 import javafx.stage.Stage;
 import ru.skoltech.cedl.dataexchange.control.DiagramView;
 
-public class DiagramGraphicsTest extends Application {
+public class DiagramGraphicsDemo extends Application {
 
     public static void main(String[] args) {
         Application.launch(args);
@@ -30,6 +27,7 @@ public class DiagramGraphicsTest extends Application {
         stage.setTitle("Diagram Viewer Test");
         stage.show();
 
+        diagramView.initialize(null, null);
         diagramView.addElement("Element 1");
         diagramView.addElement("Element 2");
         diagramView.addConnection("Element 1", "Element 2", "param. A,\nparam. Z", 2);
@@ -42,16 +40,6 @@ public class DiagramGraphicsTest extends Application {
         diagramView.addConnection("Element 3", "Element 4", "param. Y", 1);
         diagramView.addConnection("Element 4", "Element 2", "param. X", 1);
 
-    }
-
-
-    private Arc getArc() {
-        // A CHORD arc with no fill and a stroke
-        Arc arc = new Arc(0, 0, 50, 100, 0, 90);
-        arc.setFill(Color.TRANSPARENT);
-        arc.setStroke(Color.BLACK);
-        arc.setType(ArcType.CHORD);
-        return arc;
     }
 
 }

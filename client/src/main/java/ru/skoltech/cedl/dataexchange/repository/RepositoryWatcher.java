@@ -26,19 +26,15 @@ public class RepositoryWatcher extends Thread {
 
     @Override
     public void run() {
-        try {
-            sleep(SECONDS_OF_CHECK_PERIODICITY * 100); // willingly shorter
-        } catch (InterruptedException ignore) {
-        }
+        logger.info("RepositoryWatcher started.");
         while (!quitRunning.get()) {
             try {
+                sleep(SECONDS_OF_CHECK_PERIODICITY * 1000);
                 if (!pausedRunning.get() &&
                         project.getStudy() != null &&
                         project.isStudyInRepository()) {
                     project.checkStudyInRepository();
                 }
-                sleep(SECONDS_OF_CHECK_PERIODICITY * 1000);
-                //} catch (RepositoryException ignore1) {
             } catch (InterruptedException ignore) {
             } catch (Exception ex) {
                 logger.warn(ex.getMessage());
@@ -49,13 +45,16 @@ public class RepositoryWatcher extends Thread {
 
     public void pause() {
         pausedRunning.set(true);
+        logger.info("RepositoryWatcher paused.");
     }
 
     public void unpause() {
         pausedRunning.set(false);
+        logger.info("RepositoryWatcher unpaused.");
     }
 
     public void finish() {
+        logger.info("RepositoryWatcher finishing...");
         quitRunning.set(true);
         super.interrupt();
         try {

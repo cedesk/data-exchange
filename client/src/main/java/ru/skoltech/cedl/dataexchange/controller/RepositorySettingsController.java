@@ -92,7 +92,8 @@ public class RepositorySettingsController implements Initializable {
         } else {
             Dialogues.showError("Repository Connection Failed", "The given database access credentials did not work! Please verify they are correct, the database server is running and the connection is working.");
         }
-
+        ProjectContext.getInstance().getProject().loadUserManagement();
+        ProjectContext.getInstance().getProject().loadUnitManagement();
         return validSettings;
     }
 

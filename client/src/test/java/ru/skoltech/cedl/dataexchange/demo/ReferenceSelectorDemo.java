@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.demo;
 
 import javafx.application.Application;
 import javafx.scene.control.Dialog;
@@ -13,6 +13,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -20,20 +21,19 @@ import java.util.function.Consumer;
 /**
  * Created by D.Knoll on 25.09.2015.
  */
-public class ReferenceSelectorTest extends Application {
+public class ReferenceSelectorDemo extends Application {
 
-    private static Logger logger = Logger.getLogger(ReferenceSelectorTest.class);
+    private static Logger logger = Logger.getLogger(ReferenceSelectorDemo.class);
 
     private static Project project;
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
-    public static ParameterModel getParameterModel() {
+    public static ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
         project = new Project("TEST");
         Study study = new Study("TEST");
-        project.setStudy(study);
+        Field field = Project.class.getDeclaredField("study");
+        field.setAccessible(true);
+        field.set(project, study);
+
         SystemModel systemModel = new SystemModel("ROOT-SYS");
         study.setSystemModel(systemModel);
         ParameterModel parameterModel = new ParameterModel("param", 123.45);
@@ -42,12 +42,12 @@ public class ReferenceSelectorTest extends Application {
 
         try {
             SystemModel testSat = new SystemModel("testSat");
-            File file = new File(ReferenceSelectorTest.class.getResource("/simple-model.xls").toURI());
+            File file = new File(ReferenceSelectorDemo.class.getResource("/simple-model.xls").toURI());
             ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
             systemModel.addExternalModel(externalModel);
             parameterModel.setValueReference(new ExternalModelReference(externalModel, "G4"));
 
-            file = new File(ReferenceSelectorTest.class.getResource("/attachment.xls").toURI());
+            file = new File(ReferenceSelectorDemo.class.getResource("/attachment.xls").toURI());
             externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
             systemModel.addExternalModel(externalModel);
         } catch (Exception e) {
@@ -55,6 +55,10 @@ public class ReferenceSelectorTest extends Application {
             System.exit(-1);
         }
         return parameterModel;
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 
     @Override
@@ -80,5 +84,6 @@ public class ReferenceSelectorTest extends Application {
             System.out.println(externalModelReference);
         }
         primaryStage.fireEvent(new WindowEvent(primaryStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+        System.exit(1);
     }
 }

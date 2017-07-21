@@ -33,6 +33,7 @@
                 <Label text="Description" GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
                 <TextField fx:id="nameText" promptText="name" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
                 <ChoiceBox fx:id="natureChoiceBox" prefWidth="120.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                <TextField fx:id="dependentsText" GridPane.columnIndex="2" GridPane.rowIndex="1" editable="false"/>
                 <ChoiceBox fx:id="valueSourceChoiceBox" prefWidth="120.0" GridPane.columnIndex="1"
                            GridPane.rowIndex="2"/>
                 <TextField fx:id="valueText" prefWidth="80.0" promptText="0123.45" GridPane.columnIndex="1"
@@ -97,7 +98,7 @@
                       alignment="CENTER_LEFT">
                     <children>
                         <Label text="Unit"/>
-                        <ChoiceBox fx:id="unitChoiceBox" prefWidth="200.0"/>
+                        <ComboBox fx:id="unitComboBox" editable="true" visibleRowCount="10" prefWidth="200.0"/>
                     </children>
                 </HBox>
                 <HBox fx:id="exportSelectorGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="5">

@@ -13,6 +13,10 @@ public class Views {
 
     public static final URL MODEL_DIFF_WINDOW = Views.class.getResource("model-diff-window.fxml");
 
+    public static final URL MODEL_CONSISTENCY_WINDOW = Views.class.getResource("model-consistency-window.fxml");
+
+    public static final URL DSM_WINDOW = Views.class.getResource("dsm-window.fxml");
+
     public static final URL DEPENDENCY_WINDOW = Views.class.getResource("dependency-window.fxml");
 
     public static final URL USER_ROLES_EDITING_WINDOW = Views.class.getResource("user-role-management-window.fxml");
@@ -23,6 +27,8 @@ public class Views {
 
     public static final URL UNIT_EDITING_WINDOW = Views.class.getResource("unit-editing-window.fxml");
 
+    public static final URL UNIT_ADD_WINDOW = Views.class.getResource("add-unit-dialog.fxml");
+
     public static final URL REVISION_HISTORY_WINDOW = Views.class.getResource("revision-history-window.fxml");
 
     public static final URL PROJECT_SETTINGS_WINDOW = Views.class.getResource("project-settings-window.fxml");
@@ -30,4 +36,7 @@ public class Views {
     public static final URL REPOSITORY_SETTINGS_WINDOW = Views.class.getResource("repository-settings-window.fxml");
 
     public static final URL ABOUT_WINDOW = Views.class.getResource("about-window.fxml");
+
+    public static final URL GUIDE_WINDOW = Views.class.getResource("guide-window.fxml");
+
 }

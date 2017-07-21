@@ -1,11 +1,7 @@
 package ru.skoltech.cedl.dataexchange;
 
-import org.jgrapht.DirectedGraph;
-import org.junit.Assert;
-import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.FileStorage;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterLinkRegistry;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.io.File;

@@ -67,7 +67,7 @@ public class DisciplineSubSystem {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UserDiscipline{");
+        final StringBuilder sb = new StringBuilder("DisciplineSubSystem{");
         sb.append("id=").append(id);
         sb.append(", userRoleManagementId=").append(userRoleManagement.getId());
         sb.append(", disciplineId=").append(discipline.getId());
@@ -84,7 +84,7 @@ public class DisciplineSubSystem {
         DisciplineSubSystem that = (DisciplineSubSystem) o;
 
         if (!discipline.equals(that.discipline)) return false;
-        return subSystem.equals(that.subSystem);
+        return subSystem.getUuid().equals(that.subSystem.getUuid());
     }
 
     @Override

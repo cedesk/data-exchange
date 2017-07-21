@@ -7,7 +7,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
-import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -23,6 +23,11 @@ public class VersioningStorageTest {
     public static final String ADMIN = "admin";
     private DatabaseStorage databaseStorage;
 
+    @After
+    public void cleanup() {
+        databaseStorage.close();
+    }
+
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         databaseStorage = RepositoryFactory.getTempRepository();
@@ -31,14 +36,9 @@ public class VersioningStorageTest {
         ApplicationSettings.setProjectUser(ADMIN);
     }
 
-    @After
-    public void cleanup() {
-        databaseStorage.close();
-    }
-
     @Test
     public void test() throws RepositoryException {
-        SystemModel systemModel = DummySystemBuilder.getSystemModel(1);
+        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(1);
         System.out.println(systemModel);
         databaseStorage.storeSystemModel(systemModel);
 

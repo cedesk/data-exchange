@@ -1,4 +1,4 @@
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.demo;
 
 import javafx.application.Application;
 import javafx.scene.control.Dialog;
@@ -14,9 +14,9 @@ import java.util.*;
 /**
  * Created by D.Knoll on 25.09.2015.
  */
-public class CalculationEditorTest extends Application {
+public class CalculationEditorDemo extends Application {
 
-    private static Logger logger = Logger.getLogger(CalculationEditorTest.class);
+    private static Logger logger = Logger.getLogger(CalculationEditorDemo.class);
 
     public static void main(String[] args) {
         launch(args);

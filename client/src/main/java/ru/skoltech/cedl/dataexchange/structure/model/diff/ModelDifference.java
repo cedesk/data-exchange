@@ -1,6 +1,7 @@
-package ru.skoltech.cedl.dataexchange.structure.view;
+package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
-import ru.skoltech.cedl.dataexchange.structure.model.ModificationTimestamped;
+import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 
 /**
  * Created by D.Knoll on 20.07.2015.
@@ -8,42 +9,37 @@ import ru.skoltech.cedl.dataexchange.structure.model.ModificationTimestamped;
 public abstract class ModelDifference {
 
     protected String attribute;
-
     protected ChangeType changeType;
-
     protected ChangeLocation changeLocation;
-
     protected String value1;
-
     protected String value2;
-
     protected String author;
-
-    protected static boolean firstIsNewer(ModificationTimestamped arg1, ModificationTimestamped arg2) {
-        Long mod1 = arg1.getLastModification();
-        Long mod2 = arg2.getLastModification();
-        mod1 = mod1 != null ? mod1 : 0L;
-        mod2 = mod2 != null ? mod2 : 0L;
-        return mod1 > mod2;
-    }
-
-    abstract public String getNodeName();
-
-    abstract public String getParameterName();
-
-    abstract public boolean isMergeable();
 
     public String getAttribute() {
         return attribute;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public ChangeLocation getChangeLocation() {
+        return changeLocation;
     }
 
     public ChangeType getChangeType() {
         return changeType;
     }
 
-    public ChangeLocation getChangeLocation() {
-        return changeLocation;
-    }
+    abstract public PersistedEntity getChangedEntity();
+
+    abstract public String getElementPath();
+
+    abstract public ModelNode getParentNode();
 
     public String getValue1() {
         return value1;
@@ -53,9 +49,13 @@ public abstract class ModelDifference {
         return value2;
     }
 
-    public String getAuthor() {
-        return author;
-    }
+    abstract public boolean isMergeable();
+
+    abstract public boolean isRevertible();
+
+    abstract public void mergeDifference() throws MergeException;
+
+    abstract public void revertDifference() throws MergeException;
 
     @Override
     public String toString() {
@@ -68,5 +68,16 @@ public abstract class ModelDifference {
         sb.append(", author='").append(author).append('\'');
         sb.append("}\n ");
         return sb.toString();
+    }
+
+    public enum ChangeType {
+        ADD,
+        REMOVE,
+        MODIFY
+    }
+
+    public enum ChangeLocation {
+        ARG1,
+        ARG2
     }
 }

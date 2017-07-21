@@ -1,5 +1,6 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
+import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
@@ -51,6 +52,8 @@ public interface Repository extends Closeable {
     UnitManagement storeUnitManagement(UnitManagement unitManagement) throws RepositoryException;
 
     List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException;
+
+    CustomRevisionEntity getLastRevision(PersistedEntity persistedEntity);
 
     void storeLog(LogEntry logEntry);
 

@@ -4,6 +4,7 @@ import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.io.IOException;
@@ -19,12 +20,12 @@ public class ModelUpdateUtil {
     private static final Logger logger = Logger.getLogger(ModelUpdateUtil.class);
 
     public static void applyParameterChangesFromExternalModel(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler,
-                                                              Consumer<ModelUpdate> modelUpdateListener, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
+                                                              List<? extends Consumer<ModelUpdate>> modelUpdateListeners, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
         ModelUpdate modelUpdate = new ModelUpdate(externalModel);
-        if (modelUpdateListener != null) {
-            modelUpdateListener.accept(modelUpdate);
+        if (modelUpdateListeners != null) {
+            modelUpdateListeners.forEach(modelUpdateConsumer -> modelUpdateConsumer.accept(modelUpdate));
         }
 
         List<ParameterUpdate> updates = new LinkedList<>();
@@ -132,6 +133,7 @@ public class ModelUpdateUtil {
                     try {
                         exporter.setValue(target, parameterModel.getEffectiveValue()); // TODO: document behavior
                     } catch (ExternalModelException e) {
+                        logger.warn("failed to export parameter " + parameterModel.getNodePath(), e);
                         StatusLogger.getInstance().log("failed to export parameter " + parameterModel.getNodePath());
                     }
                 } else {

@@ -3,7 +3,7 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.db.DatabaseStorage;
+import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
@@ -20,14 +20,9 @@ public class LoggingTest {
 
     private Repository repository;
 
-    @Before
-    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
-        repository = RepositoryFactory.getTempRepository();
-        Project project = new Project("project");
-        DatabaseStorage tempRepository = RepositoryFactory.getTempRepository();
-        Field field = Project.class.getDeclaredField("repository");
-        field.setAccessible(true);
-        field.set(project, tempRepository);
+    @Test
+    public void actionLoggerTest() {
+        ActionLogger.log("testing", "whatever is going on");
     }
 
     @After
@@ -36,6 +31,15 @@ public class LoggingTest {
             repository.close();
         } catch (IOException ignore) {
         }
+    }
+
+    @Before
+    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
+        repository = RepositoryFactory.getTempRepository();
+        Project project = new Project("project");
+        Field field = Project.class.getDeclaredField("repository");
+        field.setAccessible(true);
+        field.set(project, repository);
     }
 
     @Test
@@ -47,10 +51,5 @@ public class LoggingTest {
         repository.storeLog(logEntry);
 
         System.out.println(logEntry.toString());
-    }
-
-    @Test
-    public void actionLoggerTest() {
-        ActionLogger.log("testing", "whatever is going on");
     }
 }

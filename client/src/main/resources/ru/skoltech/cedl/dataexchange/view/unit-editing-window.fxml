@@ -4,7 +4,7 @@
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="800.0" stylesheets="@styling.css"
-            xmlns="http://javafx.com/javafx/8.0.40"
+            xmlns="http://javafx.com/javafx/8.0.40" fx:id="unitManagementPane"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.UnitManagementController">
     <children>
         <TabPane prefHeight="600.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0"
@@ -40,9 +40,16 @@
                                                  AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                                             <items>
                                                 <Button fx:id="addUnitButton" mnemonicParsing="false"
-                                                        onAction="#addUnit" text="Add"/>
+                                                        onAction="#openAddUnitDialog" text="Add"/>
                                                 <Button fx:id="deleteUnitButton" mnemonicParsing="false"
                                                         onAction="#deleteUnit" text="Delete"/>
+                                                <Pane HBox.hgrow="ALWAYS" />
+                                                <Button fx:id="saveUnitsButton" mnemonicParsing="false" onAction="#saveUnits"
+                                                        minWidth="28" text="Save">
+                                                    <tooltip>
+                                                        <Tooltip text="Save changes"/>
+                                                    </tooltip>
+                                                </Button>
                                             </items>
                                         </ToolBar>
                                     </children>

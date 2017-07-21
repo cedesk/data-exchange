@@ -4,11 +4,11 @@ import org.apache.log4j.Logger;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.type.Type;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModificationTimestamped;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.model.Study;
 
 import java.io.Serializable;
+import java.util.Iterator;
 
 /**
  * Created by D.Knoll on 25.06.2015.
@@ -20,38 +20,57 @@ public class ModificationInterceptor extends EmptyInterceptor {
     @Override
     public boolean onFlushDirty(Object entity, Serializable id,
                                 Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types) {
-
         if (entity instanceof ModificationTimestamped) {
             Long timestamp = null;
             if (!(entity instanceof ExternalModel)) {
                 timestamp = updateTimestamp(currentState, propertyNames);
+                ((ModificationTimestamped) entity).setLastModification(timestamp);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("onFlushDirty " + entity.getClass().getCanonicalName() + "#" + id
+                            + ":" + getNodeName(currentState, propertyNames) + ", ts: " + timestamp);
+                }
+                return true;
+            } else if (logger.isDebugEnabled()) {
+                logger.debug("onFlushDirty Ext.Mod." + entity.getClass().getCanonicalName() + "#" + id
+                        + ":" + getNodeName(currentState, propertyNames));
             }
-            logger.debug("onFlushDirty " + entity.getClass().getCanonicalName() + "#" + id + ":" + getNodeName(currentState, propertyNames) + ", ts: " + timestamp);
         }
         return false;
     }
 
     @Override
-    public boolean onSave(Object entity, Serializable id,
-                          Object[] currentState, String[] propertyNames, Type[] types) {
+    public boolean onSave(Object entity, Serializable id, Object[] currentState, String[] propertyNames, Type[] types) {
         if (entity instanceof ModificationTimestamped) {
-            String nodeName = null;
-            if (entity instanceof ModelNode) {
-                nodeName = ((ModelNode) entity).getNodePath();
-            } else if (entity instanceof ParameterModel) {
-                nodeName = ((ParameterModel) entity).getNodePath();
-            } else if (entity instanceof ExternalModel) {
-                nodeName = ((ExternalModel) entity).getNodePath();
-            } else {
-                nodeName = getNodeName(currentState, propertyNames);
-            }
             Long timestamp = null;
             if (!(entity instanceof ExternalModel)) {
                 timestamp = updateTimestamp(currentState, propertyNames);
+                ((ModificationTimestamped) entity).setLastModification(timestamp);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("onSave " + entity.getClass().getCanonicalName() + "#" + id
+                            + ":" + getNodeName(currentState, propertyNames) + ", ts: " + timestamp);
+                }
+                return true;
+            } else if (logger.isDebugEnabled()) {
+                logger.debug("onSave Ext.Mod." + entity.getClass().getCanonicalName() + "#" + id
+                        + ":" + getNodeName(currentState, propertyNames));
             }
-            logger.debug("onSave " + entity.getClass().getCanonicalName() + "#" + id + ":" + nodeName + ", ts: " + timestamp);
         }
         return false;
+    }
+
+    @Override
+    public void preFlush(Iterator entities) {
+        while (entities.hasNext()) {
+            Object element = entities.next();
+            if (element instanceof Study) {
+                Study study = (Study) element;
+                Long currentModelModification = study.getLatestModelModification() != null ? study.getLatestModelModification() : -1;
+                long newModelModification = study.getSystemModel().findLatestModification();
+                long latestModelModification = Math.max(currentModelModification + 1, newModelModification);
+                study.setLatestModelModification(latestModelModification);
+                return;
+            }
+        }
     }
 
     private String getNodeName(Object[] currentState, String[] propertyNames) {
@@ -60,7 +79,7 @@ public class ModificationInterceptor extends EmptyInterceptor {
                 return (String) currentState[i];
             }
         }
-        return null;
+        return null; // better throw exception
     }
 
     private Long updateTimestamp(Object[] currentState, String[] propertyNames) {
@@ -71,6 +90,6 @@ public class ModificationInterceptor extends EmptyInterceptor {
                 return timestamp;
             }
         }
-        return 0L;
+        return 0L; // better throw exception
     }
 }

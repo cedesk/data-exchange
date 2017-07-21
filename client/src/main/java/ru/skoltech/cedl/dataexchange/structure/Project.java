@@ -15,10 +15,10 @@ import ru.skoltech.cedl.dataexchange.repository.Repository;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.structure.view.ChangeLocation;
-import ru.skoltech.cedl.dataexchange.structure.view.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.view.ModelDifferencesFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.users.UserManagementFactory;
@@ -43,17 +43,21 @@ public class Project {
     public static final String DEFAULT_PROJECT_NAME = "defaultProject";
 
     private static Logger logger = Logger.getLogger(Project.class);
+
     private final ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
+
     private String projectName;
-    private Repository repository;
     private Study study;
-    private Study repositoryStudy;
-    private LongProperty latestLoadedModification = new SimpleLongProperty(Utils.INVALID_TIME);
-    private LongProperty latestRepositoryModification = new SimpleLongProperty(Utils.INVALID_TIME);
-    private RepositoryStateMachine repositoryStateMachine = new RepositoryStateMachine();
     private UserManagement userManagement;
     private UnitManagement unitManagement;
+
     private User currentUser;
+    private Study repositoryStudy;
+    private Repository repository;
+    private RepositoryStateMachine repositoryStateMachine = new RepositoryStateMachine();
+    private LongProperty latestLoadedModification = new SimpleLongProperty(Utils.INVALID_TIME);
+    private LongProperty latestRepositoryModification = new SimpleLongProperty(Utils.INVALID_TIME);
+
     private ExternalModelFileWatcher externalModelFileWatcher = new ExternalModelFileWatcher();
     private ExternalModelFileHandler externalModelFileHandler;
 
@@ -74,40 +78,101 @@ public class Project {
         });
     }
 
-    private void updatePossibleActions() {
-        canNew.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
-        canLoad.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
-        boolean isAdmin = isCurrentAdmin();
-        boolean isSyncEnabled = isAdmin || getStudy().getStudySettings().getSyncEnabled();
-        boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
-        canSync.setValue(isSyncEnabled && isSavePossible);
+    public List<Discipline> getCurrentUserDisciplines() {
+        return getUserRoleManagement().getDisciplinesOfUser(getUser());
     }
 
-    public void connectRepository() {
-        if (repository != null) {
-            try {
-                repository.close();
-            } catch (IOException ignore) {
+    public ExternalModelFileHandler getExternalModelFileHandler() {
+        return externalModelFileHandler;
+    }
+
+    public ExternalModelFileWatcher getExternalModelFileWatcher() {
+        return externalModelFileWatcher;
+    }
+
+    public long getLatestLoadedModification() {
+        return latestLoadedModification.get();
+    }
+
+    private void setLatestLoadedModification(long latestLoadedModification) {
+        Platform.runLater(() -> {
+            this.latestLoadedModification.set(latestLoadedModification);
+        });
+    }
+
+    public long getLatestRepositoryModification() {
+        return latestRepositoryModification.get();
+    }
+
+    public void setLatestRepositoryModification(long latestRepositoryModification) {
+        Platform.runLater(() -> {
+            this.latestRepositoryModification.set(latestRepositoryModification);
+        });
+    }
+
+    public ParameterLinkRegistry getParameterLinkRegistry() {
+        return parameterLinkRegistry;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        initialize(projectName);
+    }
+
+    public Repository getRepository() {
+        return repository;
+    }
+
+    public Study getRepositoryStudy() {
+        return repositoryStudy;
+    }
+
+    public void setRepositoryStudy(Study repositoryStudy) {
+        this.repositoryStudy = repositoryStudy;
+
+        if (repositoryStudy != null) {
+            setLatestRepositoryModification(repositoryStudy.getLatestModelModification());
+            StudySettings localSettings = getStudy().getStudySettings();
+            StudySettings remoteSettings = repositoryStudy.getStudySettings();
+            if (!localSettings.equals(remoteSettings)) {
+                logger.debug("updating studySettings");
+                setStudySettings(remoteSettings);
+            }
+            UserRoleManagement localURM = getStudy().getUserRoleManagement();
+            UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
+            if (!localURM.equals(remoteURM) && !localURM.isAdmin(getUser())) {
+                logger.debug("updating userRoleManagement");
+                setUserRoleManagement(remoteURM);
             }
         }
-        this.repository = RepositoryFactory.getDatabaseRepository();
     }
 
-    private void initialize(String projectName) {
-        this.projectName = projectName;
-        this.repositoryStateMachine.reset();
-        this.repositoryStudy = null;
-        ProjectContext.getInstance().setProject(this);
+    public Study getStudy() {
+        return study;
     }
 
-    public boolean checkUser() {
-        String userName = ApplicationSettings.getProjectUser();
-        if (userName == null) {
-            boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
-            userName = isStudyNew ? UserManagementFactory.ADMIN : UserManagementFactory.OBSERVER;
+    private void setStudy(Study study) {
+        this.study = study;
+        if (study != null) {
+            long latestMod = study.getLatestModelModification();
+            setLatestLoadedModification(latestMod);
+        } else {
+            setLatestLoadedModification(Utils.INVALID_TIME);
         }
-        currentUser = null; // make sure next getUser retrieves the user from settings
-        return getUserManagement().checkUser(userName);
+    }
+
+    public SystemModel getSystemModel() {
+        return getStudy() != null ? getStudy().getSystemModel() : null;
+    }
+
+    public UnitManagement getUnitManagement() {
+        if (unitManagement == null) {
+            loadUnitManagement();
+        }
+        return unitManagement;
     }
 
     public User getUser() {
@@ -125,126 +190,11 @@ public class Project {
         return currentUser;
     }
 
-    public SystemModel getSystemModel() {
-        return getStudy() != null ? getStudy().getSystemModel() : null;
-    }
-
-    public Study getStudy() {
-        return study;
-    }
-
-    /**
-     * Use with caution.
-     *
-     * @param study
-     */
-    public void setStudy(Study study) {
-        this.study = study;
-        if (study != null && study.getSystemModel() != null) {
-            long latestMod = getSystemModel().findLatestModification();
-            setLatestLoadedModification(latestMod);
-        } else {
-            setLatestLoadedModification(Utils.INVALID_TIME);
-        }
-    }
-
-    public Study getRepositoryStudy() {
-        return repositoryStudy;
-    }
-
-    public void setRepositoryStudy(Study repositoryStudy) {
-        this.repositoryStudy = repositoryStudy;
-
-        if (repositoryStudy != null) {
-            StudySettings localSettings = getStudy().getStudySettings();
-            StudySettings remoteSettings = repositoryStudy.getStudySettings();
-            if (!localSettings.equals(remoteSettings)) {
-                logger.debug("updating studySettings");
-                setStudySettings(remoteSettings);
-            }
-            UserRoleManagement localURM = getStudy().getUserRoleManagement();
-            UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
-            if (!localURM.equals(remoteURM) && !localURM.isAdmin(getUser())) {
-                logger.debug("updating userRoleManagement");
-                setUserRoleManagement(remoteURM);
-            }
-        }
-    }
-
-    public long getLatestLoadedModification() {
-        return latestLoadedModification.get();
-    }
-
-    private void setLatestLoadedModification(long latestLoadedModification) {
-        Platform.runLater(() -> {
-            this.latestLoadedModification.set(latestLoadedModification);
-        });
-    }
-
-    public LongProperty latestLoadedModificationProperty() {
-        return latestLoadedModification;
-    }
-
-    public long getLatestRepositoryModification() {
-        return latestRepositoryModification.get();
-    }
-
-    public void setLatestRepositoryModification(long latestRepositoryModification) {
-        Platform.runLater(() -> {
-            this.latestRepositoryModification.set(latestRepositoryModification);
-        });
-    }
-
-    public LongProperty latestRepositoryModificationProperty() {
-        return latestRepositoryModification;
-    }
-
-
-    public void checkStudyInRepository() {
-        LocalTime startTime = LocalTime.now();
-        Long latestMod = repository.getLastStudyModification(projectName);
-        long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
-        logger.info("checked repository study (" + checkDuration + "ms)");
-
-        if (latestMod != null) {
-            setLatestRepositoryModification(latestMod);
-        } else {
-            setLatestRepositoryModification(Utils.INVALID_TIME);
-        }
-    }
-
     public UserManagement getUserManagement() {
         if (userManagement == null) {
             loadUserManagement();
         }
         return userManagement;
-    }
-
-    public boolean loadUserManagement() {
-        try {
-            userManagement = repository.loadUserManagement();
-            return true;
-        } catch (RepositoryException e) {
-            logger.error("Error loading user management. recreating new user management.");
-            initializeUserManagement();
-        }
-        return false;
-    }
-
-    private void initializeUserManagement() {
-        userManagement = UserManagementFactory.getUserManagement();
-        storeUserManagement();
-    }
-
-    public boolean storeUserManagement() {
-        try {
-            userManagement = repository.storeUserManagement(userManagement);
-            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
-            return true;
-        } catch (RepositoryException e) {
-            logger.error("Error storing user management.", e);
-        }
-        return false;
     }
 
     public UserRoleManagement getUserRoleManagement() {
@@ -258,11 +208,162 @@ public class Project {
         // TODO: update user information on ui
     }
 
-    public UnitManagement getUnitManagement() {
-        if (unitManagement == null) {
-            loadUnitManagement();
+    public boolean isCurrentAdmin() {
+        return getUserRoleManagement().isAdmin(getUser());
+    }
+
+    public boolean isStudyInRepository() {
+        // TODO: it is an imprecise assumption that in case of any import setting, this study is also available in the repository
+        if (ApplicationSettings.getProjectToImport() != null) {
+            return true;
         }
-        return unitManagement;
+        return repositoryStateMachine.wasLoadedOrSaved();
+    }
+
+    public void setStudySettings(StudySettings studySettings) {
+        this.study.setStudySettings(studySettings);
+        updatePossibleActions();
+    }
+
+    public void addChangedExternalModel(ExternalModel externalModel) {
+        externalModelFileHandler.addChangedExternalModel(externalModel);
+        markStudyModified();
+    }
+
+    public void addExternalModelChangeObserver(Observer o) {
+        externalModelFileWatcher.addObserver(o);
+    }
+
+    public void addExternalModelFileWatcher(ExternalModel externalModel) {
+        externalModelFileWatcher.add(externalModel);
+    }
+
+    public BooleanProperty canLoadProperty() {
+        return canLoad;
+    }
+
+    public BooleanProperty canNewProperty() {
+        return canNew;
+    }
+
+    public BooleanProperty canSyncProperty() {
+        return canSync;
+    }
+
+    public boolean checkRepositoryForChanges() {
+        if (getRepositoryStudy() != null) { // already saved or retrieved from repository
+            try {
+                loadRepositoryStudy();
+                updateExternalModelsInStudy();
+                SystemModel localSystemModel = getStudy().getSystemModel();
+                SystemModel remoteSystemModel = getRepositoryStudy().getSystemModel();
+                long latestStudy1Modification = latestLoadedModification.get();
+                List<ModelDifference> modelDifferences =
+                        NodeDifference.computeDifferences(localSystemModel, remoteSystemModel, latestStudy1Modification);
+                long remoteDifferenceCounts = modelDifferences.stream()
+                        .filter(md -> md.getChangeLocation() == ModelDifference.ChangeLocation.ARG2).count();
+                return remoteDifferenceCounts > 0;
+            } catch (Exception e) {
+                StatusLogger.getInstance().log("Error checking repository for changes");
+                logger.error(e);
+            }
+        }
+        return false;
+    }
+
+    public void checkStudyInRepository() {
+        LocalTime startTime = LocalTime.now();
+        Long latestMod = repository.getLastStudyModification(projectName);
+        long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
+        logger.info("checked repository study (" + checkDuration + "ms), last modification: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
+
+        if (latestMod != null) {
+            setLatestRepositoryModification(latestMod);
+        } else {
+            setLatestRepositoryModification(Utils.INVALID_TIME);
+        }
+    }
+
+    public boolean checkUser() {
+        String userName = ApplicationSettings.getProjectUser();
+        if (userName == null) {
+            boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
+            userName = isStudyNew ? UserManagementFactory.ADMIN : UserManagementFactory.OBSERVER;
+        }
+        currentUser = null; // make sure next getUser retrieves the user from settings
+        return getUserManagement().checkUser(userName);
+    }
+
+    public void connectRepository() {
+        if (repository != null) {
+            try {
+                repository.close();
+            } catch (IOException ignore) {
+            }
+        }
+        this.repository = RepositoryFactory.getDatabaseRepository();
+    }
+
+    public void deleteStudy(String studyName) throws RepositoryException {
+        repository.deleteStudy(studyName);
+    }
+
+    @Override
+    public void finalize() throws Throwable {
+        repository.close();
+        externalModelFileWatcher.close();
+        super.finalize();
+    }
+
+    public boolean hasLocalStudyModifications() {
+        return repositoryStateMachine.hasModifications();
+    }
+
+    public void importSystemModel(SystemModel systemModel) {
+        reinitializeProject(systemModel);
+        reinitializeUniqueIdentifiers(systemModel);
+        initializeStateOfExternalModels();
+    }
+
+    public LongProperty latestLoadedModificationProperty() {
+        return latestLoadedModification;
+    }
+
+    public LongProperty latestRepositoryModificationProperty() {
+        return latestRepositoryModification;
+    }
+
+    public boolean loadLocalStudy() {
+        Study study = null;
+        try {
+            study = repository.loadStudy(projectName);
+        } catch (RepositoryException e) {
+            logger.error("Study not found!", e);
+        } catch (Exception e) {
+            logger.error("Error loading study!", e);
+        }
+        if (study != null) {
+            setStudy(study);
+            Platform.runLater(this::loadRepositoryStudy);
+            repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+            initializeStateOfExternalModels();
+            registerParameterLinks();
+        }
+        return study != null;
+    }
+
+    public boolean loadRepositoryStudy() {
+        Study repositoryStudy = null;
+        try {
+            // TODO: make more efficient, not to load the entire model, if it is not newer
+            repositoryStudy = repository.loadStudy(projectName);
+        } catch (RepositoryException e) {
+            logger.error("Study not found!", e);
+        } catch (Exception e) {
+            logger.error("Error loading repositoryStudy!", e);
+        }
+        setRepositoryStudy(repositoryStudy);
+        return repositoryStudy != null;
     }
 
     public boolean loadUnitManagement() {
@@ -276,9 +377,52 @@ public class Project {
         return false;
     }
 
-    private void initializeUnitManagement() {
-        unitManagement = UnitManagementFactory.getUnitManagement();
-        storeUnitManagement();
+    public boolean loadUserManagement() {
+        try {
+            userManagement = repository.loadUserManagement();
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error loading user management. recreating new user management.");
+            initializeUserManagement();
+        }
+        return false;
+    }
+
+    public boolean loadUserRoleManagement() {
+        try {
+            getStudy().setUserRoleManagement(repository.loadUserRoleManagement(getStudy().getUserRoleManagement().getId()));
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error loading user role management. recreating new user role management.");
+//            initializeUserRoleManagement(); //TODO initialize default UserRoleManagement?
+        }
+        return false;
+    }
+
+    public void markStudyModified() {
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
+    }
+
+    public void newStudy(SystemModel systemModel) {
+        reinitializeProject(systemModel);
+    }
+
+    public void storeLocalStudy() throws RepositoryException, ExternalModelException {
+        updateParameterValuesFromLinks();
+        exportValuesToExternalModels();
+        updateExternalModelsInStudy();
+        if (getStudy().getUserRoleManagement().getId() != 0) { // do not store if new
+            // store URM separately before study, to prevent links to deleted subsystems have storing study fail
+            storeUserRoleManagement();
+        }
+        Study newStudy = repository.storeStudy(this.study);
+        updateExternalModelStateInCache();
+        setStudy(newStudy);
+        setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
+        initializeStateOfExternalModels();
+        registerParameterLinks();
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+        ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
     }
 
     public boolean storeUnitManagement() {
@@ -292,17 +436,27 @@ public class Project {
         return false;
     }
 
-    public String getProjectName() {
-        return projectName;
+    public boolean storeUserManagement() {
+        try {
+            userManagement = repository.storeUserManagement(userManagement);
+            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error storing user management.", e);
+        }
+        return false;
     }
 
-    public void setProjectName(String projectName) {
-        initialize(projectName);
-    }
-
-    public void setStudySettings(StudySettings studySettings) {
-        this.study.setStudySettings(studySettings);
-        updatePossibleActions();
+    public boolean storeUserRoleManagement() {
+        try {
+            UserRoleManagement userRoleManagement = repository.storeUserRoleManagement(getStudy().getUserRoleManagement());
+            getStudy().setUserRoleManagement(userRoleManagement);
+            ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("Error storing user role management.", e);
+        }
+        return false;
     }
 
     @Override
@@ -318,22 +472,27 @@ public class Project {
         return sb.toString();
     }
 
-    public void storeLocalStudy() throws RepositoryException, ExternalModelException {
-        updateParameterValuesFromLinks();
-        exportValuesToExternalModels();
-        updateExternalModelsInStudy();
-        Study study = repository.storeStudy(this.study);
-        updateExternalModelStateInCache();
-        setStudy(study);
-        setRepositoryStudy(study);
-        initializeStateOfExternalModels();
-        registerParameterLinks();
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
-        ApplicationSettings.setRepositoryServerHostname(repository.getUrl());
-    }
-
-    private void updateParameterValuesFromLinks() {
-        parameterLinkRegistry.updateAll(getSystemModel());
+    /**
+     * check the locally cached external model files for modifications,
+     * and if there are modifications, update the local study model in memory.
+     */
+    public void updateExternalModelsInStudy() {
+        for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
+            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+            if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
+                logger.debug("updating " + externalModel.getNodePath() + " from file");
+                try {
+                    ExternalModelFileHandler.readAttachmentFromFile(externalModel);
+                } catch (IOException e) {
+                    logger.error("error updating external model from file!", e);
+                }
+            } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
+                // TODO: WARN USER, PROVIDE WITH CHOICE TO REVERT OR FORCE CHECKIN
+                logger.warn(externalModel.getNodePath() + " has conflicting changes locally and in repository");
+            } else {
+                logger.warn(externalModel.getNodePath() + " is in state " + cacheState);
+            }
+        }
     }
 
     private void exportValuesToExternalModels() throws ExternalModelException {
@@ -354,67 +513,11 @@ public class Project {
         }
     }
 
-    public void updateExternalModelsInStudy() {
-        for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
-            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
-            if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
-                logger.debug("updating " + externalModel.getNodePath() + " from file");
-                try {
-                    ExternalModelFileHandler.readAttachmentFromFile(externalModel);
-                } catch (IOException e) {
-                    logger.error("error updating external model from file!", e);
-                }
-            } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
-                // TODO: WARN USER, PROVIDE WITH CHOICE TO REVERT OR FORCE CHECKIN
-                logger.warn(externalModel.getNodePath() + " has conflicting changes locally and in repository");
-            } else {
-                logger.warn(externalModel.getNodePath() + " is in state " + cacheState);
-            }
-        }
-    }
-
-    private void updateExternalModelStateInCache() {
-        for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
-            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
-            if (cacheState != ExternalModelCacheState.NOT_CACHED) {
-                logger.debug("timestamping " + externalModel.getNodePath());
-                ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
-                if (logger.isDebugEnabled()) {
-                    String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
-                    long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
-                    String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
-                    logger.debug("stored external model '" + externalModel.getName() +
-                            "' (model: " + modelModification + ", file: " + fileModification + ")");
-                    logger.debug(externalModel.getNodePath() + " is now in state " + cacheState);
-                }
-            }
-        }
-        externalModelFileHandler.getChangedExternalModels().clear();
-    }
-
-    public boolean loadLocalStudy() {
-        Study study = null;
-        try {
-            study = repository.loadStudy(projectName);
-        } catch (RepositoryException e) {
-            logger.error("Study not found!", e);
-        } catch (Exception e) {
-            logger.error("Error loading study!", e);
-        }
-        if (study != null) {
-            setStudy(study);
-            Platform.runLater(this::loadRepositoryStudy);
-            long latestMod = getSystemModel().findLatestModification();
-            setLatestLoadedModification(latestMod);
-            repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
-            initializeStateOfExternalModels();
-            registerParameterLinks();
-        }
-        return study != null;
-    }
-
-    private void registerParameterLinks() {
-        parameterLinkRegistry.registerAllParameters(getSystemModel());
+    private void initialize(String projectName) {
+        this.projectName = projectName;
+        this.repositoryStateMachine.reset();
+        this.repositoryStudy = null;
+        ProjectContext.getInstance().setProject(this);
     }
 
     private void initializeStateOfExternalModels() {
@@ -449,50 +552,30 @@ public class Project {
         }
     }
 
-    public boolean loadRepositoryStudy() {
-        Study repositoryStudy = null;
-        try {
-            // TODO: make more efficient, not to load the entire model, if it is not newer
-            repositoryStudy = repository.loadStudy(projectName);
-        } catch (RepositoryException e) {
-            logger.error("Study not found!", e);
-        } catch (Exception e) {
-            logger.error("Error loading repositoryStudy!", e);
-        }
-        setRepositoryStudy(repositoryStudy);
-        return repositoryStudy != null;
+    private void initializeUnitManagement() {
+        unitManagement = UnitManagementFactory.getUnitManagement();
+        storeUnitManagement();
     }
 
-    public void addExternalModelChangeObserver(Observer o) {
-        externalModelFileWatcher.addObserver(o);
+    private void initializeUserManagement() {
+        userManagement = UserManagementFactory.getUserManagement();
+        storeUserManagement();
     }
 
-    public void markStudyModified() {
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
+    private void registerParameterLinks() {
+        parameterLinkRegistry.registerAllParameters(getSystemModel());
     }
 
-    @Override
-    public void finalize() throws Throwable {
-        repository.close();
-        externalModelFileWatcher.close();
-        super.finalize();
-    }
+    private void reinitializeProject(SystemModel systemModel) {
+        setProjectName(systemModel.getName());
+        study = StudyFactory.makeStudy(systemModel, userManagement);
+        setRepositoryStudy(null);
+        externalModelFileWatcher.clear();
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+        parameterLinkRegistry.clear();
 
-    public void newStudy(String studyName) {
-        int studyModelDepth = ApplicationSettings.getStudyModelDepth(DummySystemBuilder.DEFAULT_MODEL_DEPTH);
-        SystemModel systemModel = DummySystemBuilder.getSystemModel(studyModelDepth);
-        systemModel.setName(studyName);
-        reinitializeProject(systemModel);
-    }
-
-    public void deleteStudy(String studyName) throws RepositoryException {
-        repository.deleteStudy(studyName);
-    }
-
-    public void importSystemModel(SystemModel systemModel) {
-        reinitializeProject(systemModel);
-        reinitializeUniqueIdentifiers(systemModel);
-        initializeStateOfExternalModels();
+        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
+        userRoleManagement.addUserDiscipline(getUser(), userRoleManagement.getAdminDiscipline());
     }
 
     private void reinitializeUniqueIdentifiers(ModelNode modelNode) {
@@ -511,104 +594,39 @@ public class Project {
         }
     }
 
-    private void reinitializeProject(SystemModel systemModel) {
-        setProjectName(systemModel.getName());
-        study = StudyFactory.makeStudy(systemModel, userManagement);
-        setRepositoryStudy(null);
-        externalModelFileWatcher.clear();
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
-        parameterLinkRegistry.clear();
-
-        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
-        userRoleManagement.addUserDiscipline(getUser(), userRoleManagement.getAdminDiscipline());
-    }
-
-    public Repository getRepository() {
-        return repository;
-    }
-
-    public void addExternalModelFileWatcher(ExternalModel externalModel) {
-        externalModelFileWatcher.add(externalModel);
-    }
-
-    public boolean storeExternalModel(ExternalModel externalModel) {
-        try {
-            repository.storeExternalModel(externalModel);
-            // TODO: confirm repo url is working
-            return true;
-        } catch (RepositoryException e) {
-            logger.error("Error storing external model: " + externalModel.getParent().getNodePath() + "\\" + externalModel.getName(), e);
-        }
-        return false;
-    }
-
-    public ExternalModelFileHandler getExternalModelFileHandler() {
-        return externalModelFileHandler;
-    }
-
-    public ExternalModelFileWatcher getExternalModelFileWatcher() {
-        return externalModelFileWatcher;
-    }
-
-    public void addChangedExternalModel(ExternalModel externalModel) {
-        externalModelFileHandler.addChangedExternalModel(externalModel);
-        markStudyModified();
-    }
-
-    public boolean isStudyInRepository() {
-        // TODO: it is an imprecise assumption that in case of any import setting, this study is also available in the repository
-        if (ApplicationSettings.getProjectToImport() != null) {
-            return true;
-        }
-        return repositoryStateMachine.wasLoadedOrSaved();
-    }
-
-    public boolean hasLocalStudyModifications() {
-        return repositoryStateMachine.hasModifications();
-    }
-
-    public ParameterLinkRegistry getParameterLinkRegistry() {
-        return parameterLinkRegistry;
-    }
-
-    public boolean checkRepositoryForChanges() {
-        if (getRepositoryStudy() != null) {
-            try {
-                loadRepositoryStudy();
-                updateExternalModelsInStudy();
-                SystemModel localSystemModel = getStudy().getSystemModel();
-                SystemModel remoteSystemModel = getRepositoryStudy().getSystemModel();
-                List<ModelDifference> modelDifferences =
-                        ModelDifferencesFactory.computeDifferences(localSystemModel, remoteSystemModel);
-                long remoteDifferenceCounts = modelDifferences.stream()
-                        .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2).count();
-                return remoteDifferenceCounts > 0;
-            } catch (Exception e) {
-                StatusLogger.getInstance().log("Error checking repository for changes");
-                logger.error(e);
+    /**
+     * make sure external model files in cache get a new timestamp
+     */
+    private void updateExternalModelStateInCache() {
+        for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
+            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(externalModel);
+            if (cacheState != ExternalModelCacheState.NOT_CACHED) {
+                logger.debug("timestamping " + externalModel.getNodePath());
+                ExternalModelFileHandler.updateCheckoutTimestamp(externalModel);
+                if (logger.isDebugEnabled()) {
+                    String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
+                    long checkoutTime = ExternalModelFileHandler.getCheckoutTime(externalModel);
+                    String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
+                    logger.debug("stored external model '" + externalModel.getName() +
+                            "' (model: " + modelModification + ", file: " + fileModification + ")");
+                    logger.debug(externalModel.getNodePath() + " is now in state " + cacheState);
+                }
             }
         }
-        return false;
+        externalModelFileHandler.getChangedExternalModels().clear();
     }
 
-    public BooleanProperty canNewProperty() {
-        return canNew;
+    private void updateParameterValuesFromLinks() {
+        parameterLinkRegistry.updateAll(getSystemModel());
     }
 
-    public BooleanProperty canLoadProperty() {
-        return canLoad;
-    }
-
-    public BooleanProperty canSyncProperty() {
-        return canSync;
-    }
-
-    public List<Discipline> getCurrentUserDisciplines() {
-        return getUserRoleManagement().getDisciplinesOfUser(getUser());
-    }
-
-    public boolean isCurrentAdmin() {
-        return getUserRoleManagement().isAdmin(getUser());
+    private void updatePossibleActions() {
+        canNew.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
+        canLoad.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
+        boolean isAdmin = isCurrentAdmin();
+        boolean isSyncEnabled = isAdmin || getStudy().getStudySettings().getSyncEnabled();
+        boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
+        canSync.setValue(isSyncEnabled && isSavePossible);
     }
 
     private class AccessChecker implements Predicate<ModelNode> {

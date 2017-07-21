@@ -33,9 +33,9 @@ public class UpdateChecker {
             applicationPackage.setBaseUrl(serverString);
             return Optional.of(applicationPackage);
         } catch (MalformedURLException e) {
-            logger.error("error with application distribution server url");
+            logger.error("error with application distribution server url: " + e.getMessage());
         } catch (IOException e) {
-            logger.error("problem accessing application distribution server");
+            logger.error("problem accessing application distribution server: " + e.getMessage());
         } catch (Exception e) {
             logger.error("unknown problem while checking available software on distribution server", e);
         }
@@ -69,6 +69,6 @@ public class UpdateChecker {
     }
 
     private static Document getDocument(URL url) throws IOException {
-        return Jsoup.parse(url, 3000);
+        return Jsoup.parse(url, 10000);
     }
 }

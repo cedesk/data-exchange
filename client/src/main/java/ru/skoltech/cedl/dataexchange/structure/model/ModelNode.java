@@ -3,6 +3,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.hibernate.annotations.DiscriminatorOptions;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import ru.skoltech.cedl.dataexchange.Utils;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @DiscriminatorOptions(force = true)
-public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped {
+public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped, PersistedEntity {
 
     public static final String NODE_SEPARATOR = "\\";
 
@@ -121,6 +122,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         externalModel.setParent(this);
     }
 
+    @Override
     @Id
     @GeneratedValue
     public long getId() {
@@ -236,6 +238,27 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
             }
         }
         return true;
+    }
+
+    public Long findLatestModificationCurrentNode() {
+        Long latest = Utils.INVALID_TIME;
+
+        Long modelNodeLastModification = this.getLastModification();
+        if (modelNodeLastModification != null && modelNodeLastModification > latest)
+            latest = modelNodeLastModification;
+
+        for (ExternalModel externalModel : this.getExternalModels()) {
+            Long externalModelLastModification = externalModel.getLastModification();
+            if (externalModelLastModification != null && externalModelLastModification > latest)
+                latest = externalModelLastModification;
+        }
+
+        for (ParameterModel parameterModel : this.getParameters()) {
+            Long parameterModelLastModification = parameterModel.getLastModification();
+            if (parameterModelLastModification != null && parameterModelLastModification > latest)
+                latest = parameterModelLastModification;
+        }
+        return latest;
     }
 
     @Override

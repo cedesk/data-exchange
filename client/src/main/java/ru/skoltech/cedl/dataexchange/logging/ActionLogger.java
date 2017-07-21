@@ -1,7 +1,9 @@
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.logging;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.logging.LogEntry;
+import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.ProjectContext;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.repository.Repository;
 
 /**

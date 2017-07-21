@@ -15,7 +15,6 @@ import javafx.scene.layout.VBox;
 import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
-import ru.skoltech.cedl.dataexchange.ActionLogger;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
@@ -24,6 +23,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdateUtil;
+import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
@@ -33,6 +33,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -64,11 +65,6 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         }
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-
-    }
-
     public ModelNode getModelNode() {
         return modelNode;
     }
@@ -76,70 +72,6 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     public void setModelNode(ModelNode modelNode) {
         this.modelNode = modelNode;
         updateView();
-    }
-
-    public void setListeners(ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener,
-                             ModelEditingController.ParameterUpdateListener parameterUpdateListener) {
-        this.externalModelUpdateListener = externalModelUpdateListener;
-        this.parameterUpdateListener = parameterUpdateListener;
-    }
-
-    private void updateView() {
-        ObservableList<Node> externalModelViewerList = externalModelViewContainer.getChildren();
-        externalModelViewerList.clear();
-        List<ExternalModel> externalModels = modelNode.getExternalModels();
-        for (ExternalModel externalModel : externalModels) {
-            renderExternalModelView(externalModel);
-        }
-    }
-
-    private void renderExternalModelView(ExternalModel externalModel) {
-        ExternalModelView editor = new ExternalModelView(externalModel);
-        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
-        removeButton.setTooltip(new Tooltip("Remove external model"));
-        removeButton.setOnAction(ExternalModelEditor.this::deleteExternalModel);
-        removeButton.setMinWidth(28);
-        Button exchangeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.EXCHANGE));
-        exchangeButton.setTooltip(new Tooltip("Replace external model"));
-        exchangeButton.setOnAction(ExternalModelEditor.this::exchangeExternalModel);
-        exchangeButton.setMinWidth(28);
-        HBox extModRow = new HBox(6, editor, removeButton, exchangeButton);
-        removeButton.setUserData(extModRow);
-        exchangeButton.setUserData(externalModel);
-        externalModelViewContainer.getChildren().add(extModRow);
-    }
-
-    private void exchangeExternalModel(ActionEvent actionEvent) {
-        Project project = ProjectContext.getInstance().getProject();
-
-        if (!project.isStudyInRepository()) {
-            Dialogues.showError("Save Project", "Unable to attach an external model, as long as the project has not been saved yet!");
-            return;
-        }
-        Button exchangeButton = (Button) actionEvent.getSource();
-        ExternalModel externalModel = (ExternalModel) exchangeButton.getUserData();
-
-        File externalModelFile = Dialogues.chooseExternalModelFile();
-        String oldFileName = externalModel.getName();
-        String oldNodePath = externalModel.getNodePath();
-        if (externalModelFile != null) {
-            String fileName = externalModelFile.getName();
-            if (externalModelFile.isFile() && ExternalModelAccessorFactory.hasEvaluator(fileName)) {
-                try {
-                    ExternalModelFileHandler.readAttachmentFromFile(externalModel, externalModelFile);
-                    externalModel.setName(fileName);
-                    Platform.runLater(ExternalModelEditor.this::updateView);
-                    Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
-                    StatusLogger.getInstance().log("replaced external model: " + oldFileName + " > " + fileName);
-                    ActionLogger.log(ActionLogger.ActionType.external_model_modify, oldNodePath + " > " + fileName);
-                    project.markStudyModified();
-                } catch (IOException e) {
-                    logger.warn("Unable to import model file.", e);
-                }
-            } else {
-                Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
-            }
-        }
     }
 
     public void addExternalModel(ActionEvent actionEvent) {
@@ -202,14 +134,84 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         }
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+    }
+
     public void reloadExternalModels(ActionEvent actionEvent) {
         ExternalModelFileHandler externalModelFileHandler = ProjectContext.getInstance().getProject().getExternalModelFileHandler();
         for (ExternalModel externalModel : modelNode.getExternalModels())
             try {
-                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler, externalModelUpdateListener, parameterUpdateListener);
+                ModelUpdateUtil.applyParameterChangesFromExternalModel(externalModel, externalModelFileHandler,
+                        Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
             }
+    }
+
+    public void setListeners(ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener,
+                             ModelEditingController.ParameterUpdateListener parameterUpdateListener) {
+        this.externalModelUpdateListener = externalModelUpdateListener;
+        this.parameterUpdateListener = parameterUpdateListener;
+    }
+
+    private void exchangeExternalModel(ActionEvent actionEvent) {
+        Project project = ProjectContext.getInstance().getProject();
+
+        if (!project.isStudyInRepository()) {
+            Dialogues.showError("Save Project", "Unable to attach an external model, as long as the project has not been saved yet!");
+            return;
+        }
+        Button exchangeButton = (Button) actionEvent.getSource();
+        ExternalModel externalModel = (ExternalModel) exchangeButton.getUserData();
+
+        File externalModelFile = Dialogues.chooseExternalModelFile();
+        String oldFileName = externalModel.getName();
+        String oldNodePath = externalModel.getNodePath();
+        if (externalModelFile != null) {
+            String fileName = externalModelFile.getName();
+            if (externalModelFile.isFile() && ExternalModelAccessorFactory.hasEvaluator(fileName)) {
+                try {
+                    ExternalModelFileHandler.readAttachmentFromFile(externalModel, externalModelFile);
+                    externalModel.setName(fileName);
+                    Platform.runLater(ExternalModelEditor.this::updateView);
+                    Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
+                    StatusLogger.getInstance().log("replaced external model: " + oldFileName + " > " + fileName);
+                    ActionLogger.log(ActionLogger.ActionType.external_model_modify, oldNodePath + " > " + fileName);
+                    project.markStudyModified();
+                } catch (IOException e) {
+                    logger.warn("Unable to import model file.", e);
+                }
+            } else {
+                Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
+            }
+        }
+    }
+
+    private void renderExternalModelView(ExternalModel externalModel) {
+        ExternalModelView editor = new ExternalModelView(externalModel);
+        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
+        removeButton.setTooltip(new Tooltip("Remove external model"));
+        removeButton.setOnAction(ExternalModelEditor.this::deleteExternalModel);
+        removeButton.setMinWidth(28);
+        Button exchangeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.EXCHANGE));
+        exchangeButton.setTooltip(new Tooltip("Replace external model"));
+        exchangeButton.setOnAction(ExternalModelEditor.this::exchangeExternalModel);
+        exchangeButton.setMinWidth(28);
+        HBox extModRow = new HBox(6, editor, removeButton, exchangeButton);
+        removeButton.setUserData(extModRow);
+        exchangeButton.setUserData(externalModel);
+        externalModelViewContainer.getChildren().add(extModRow);
+    }
+
+    private void updateView() {
+        ObservableList<Node> externalModelViewerList = externalModelViewContainer.getChildren();
+        externalModelViewerList.clear();
+        List<ExternalModel> externalModels = modelNode.getExternalModels();
+        for (ExternalModel externalModel : externalModels) {
+            renderExternalModelView(externalModel);
+        }
     }
 }
 

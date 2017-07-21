@@ -1,12 +1,10 @@
 package ru.skoltech.cedl.dataexchange.controller;
 
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.stage.Stage;
@@ -14,10 +12,10 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.ProjectContext;
-import ru.skoltech.cedl.dataexchange.structure.DummySystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -29,7 +27,10 @@ public class ProjectSettingsController implements Initializable {
     private static Logger logger = Logger.getLogger(ProjectSettingsController.class);
 
     @FXML
-    public TitledPane teamSettingsPane;
+    private TitledPane teamSettingsPane;
+
+    @FXML
+    private TextField projectDirectoryText;
 
     @FXML
     private TextField projectNameText;
@@ -41,39 +42,19 @@ public class ProjectSettingsController implements Initializable {
     private CheckBox autoloadOnStartupCheckbox;
 
     @FXML
-    private ComboBox<Integer> modelDepth;
-
-    @FXML
     private CheckBox useOsUserCheckbox;
 
     @FXML
     private TextField userNameText;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        modelDepth.setItems(FXCollections.observableArrayList(DummySystemBuilder.getValidModelDepths()));
-        userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
-        updateView();
-    }
-
-    private void updateView() {
-        String projectName = ProjectContext.getInstance().getProject().getProjectName();
-        projectNameText.setText(projectName);
-        StudySettings studySettings = getStudySettings();
-        if (studySettings != null) {
-            enableSyncCheckbox.setSelected(studySettings.getSyncEnabled());
-            enableSyncCheckbox.setDisable(false);
-            teamSettingsPane.setDisable(false);
-        } else {
-            enableSyncCheckbox.setDisable(true);
-            teamSettingsPane.setDisable(true);
+    private StudySettings getStudySettings() {
+        Project project = ProjectContext.getInstance().getProject();
+        if (project != null && project.getStudy() != null) {
+            boolean isAdmin = project.isCurrentAdmin();
+            if (isAdmin)
+                return project.getStudy().getStudySettings();
         }
-
-        autoloadOnStartupCheckbox.setSelected(ApplicationSettings.getAutoLoadLastProjectOnStartup());
-        modelDepth.setValue(ApplicationSettings.getStudyModelDepth(DummySystemBuilder.DEFAULT_MODEL_DEPTH));
-        useOsUserCheckbox.setSelected(ApplicationSettings.getUseOsUser());
-        userNameText.setText(ApplicationSettings.getProjectUser());
-
+        return null;
     }
 
     public void applyAndClose(ActionEvent actionEvent) {
@@ -81,6 +62,22 @@ public class ProjectSettingsController implements Initializable {
         if (succcess) {
             cancel(actionEvent);
         }
+    }
+
+    public void cancel(ActionEvent actionEvent) {
+        Node source = (Node) actionEvent.getSource();
+        Stage stage = (Stage) source.getScene().getWindow();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
+    public void cleanupProjectCache(ActionEvent actionEvent) {
+        ProjectContext.getInstance().getProject().getExternalModelFileHandler().cleanupCache();
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
+        updateView();
     }
 
     private boolean updateModel() {
@@ -97,7 +94,6 @@ public class ProjectSettingsController implements Initializable {
         }
 
         ApplicationSettings.setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
-        ApplicationSettings.setStudyModelDepth(modelDepth.getValue());
         ApplicationSettings.setUseOsUser(useOsUserCheckbox.isSelected());
         String userName = null;
         if (useOsUserCheckbox.isSelected()) {
@@ -117,19 +113,25 @@ public class ProjectSettingsController implements Initializable {
         return validUser;
     }
 
-    public void cancel(ActionEvent actionEvent) {
-        Node source = (Node) actionEvent.getSource();
-        Stage stage = (Stage) source.getScene().getWindow();
-        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
-    }
-
-    private StudySettings getStudySettings() {
-        Project project = ProjectContext.getInstance().getProject();
-        if (project != null && project.getStudy() != null) {
-            boolean isAdmin = project.isCurrentAdmin();
-            if (isAdmin)
-                return project.getStudy().getStudySettings();
+    private void updateView() {
+        String projectName = ProjectContext.getInstance().getProject().getProjectName();
+        projectNameText.setText(projectName);
+        StudySettings studySettings = getStudySettings();
+        if (studySettings != null) {
+            enableSyncCheckbox.setSelected(studySettings.getSyncEnabled());
+            enableSyncCheckbox.setDisable(false);
+            teamSettingsPane.setDisable(false);
+        } else {
+            enableSyncCheckbox.setDisable(true);
+            teamSettingsPane.setDisable(true);
         }
-        return null;
+
+        File projectDataDir = ProjectContext.getInstance().getProjectDataDir();
+        projectDirectoryText.setText(projectDataDir.getAbsolutePath());
+
+        autoloadOnStartupCheckbox.setSelected(ApplicationSettings.getAutoLoadLastProjectOnStartup());
+        useOsUserCheckbox.setSelected(ApplicationSettings.getUseOsUser());
+        userNameText.setText(ApplicationSettings.getProjectUser());
+
     }
 }

@@ -103,6 +103,9 @@ public class FileStorage {
 
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             parameterModel.setParent(modelNode);
+
+            parameterModel.setValueReference(parameterModel.getValueReference()); // workaround to re-initialize fields on parameter
+            parameterModel.setExportReference(parameterModel.getExportReference()); // workaround to re-initialize fields on parameter
             if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
                 logger.info(parameterModel.getNodePath() + " <L- " + (parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "null"));
             }
