@@ -9,7 +9,7 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import java.util.Date;
 
 /**
- * Created by n.groshkov on 14-Jun-17.
+ * Created by Nikolay Groshkov on 14-Jun-17.
  */
 public class SystemModelTest {
 

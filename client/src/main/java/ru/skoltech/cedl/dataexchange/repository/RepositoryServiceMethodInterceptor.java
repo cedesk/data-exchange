@@ -2,19 +2,23 @@ package ru.skoltech.cedl.dataexchange.repository;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.services.PersistenceRepositoryService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import java.util.Arrays;
 
 /**
  * Interceptor for {@link PersistenceRepositoryService}.
  * Based on passed {@link EntityManagerFactory} interceptor creates a new instance of {@link EntityManager}
  * before invocation of each method of {@link PersistenceRepositoryService} and close it after.
  *
- * Created by n.groshkov on 17-Jul-17.
+ * Created by Nikolay Groshkov on 17-Jul-17.
  */
 public class RepositoryServiceMethodInterceptor implements MethodInterceptor {
+
+    private static Logger logger = Logger.getLogger(RepositoryServiceMethodInterceptor.class);
 
     private EntityManagerFactory entityManagerFactory;
 
@@ -33,9 +37,11 @@ public class RepositoryServiceMethodInterceptor implements MethodInterceptor {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             ((PersistenceRepositoryService)invocation.getThis()).setEntityManager(entityManager);
-            Object result = invocation.proceed();
-            return result;
+            return invocation.proceed();
         } catch (Throwable e) {
+            logger.error("Invocation of method " + invocation.getMethod().getName() +
+                    " with arguments " + Arrays.toString(invocation.getArguments()) +
+                    " produces an exception: " + e.getMessage(), e);
             throw e;
         } finally {
             entityManager.close();

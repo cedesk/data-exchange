@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * Created by n.groshkov on 19-Jun-17.
+ * Created by Nikolay Groshkov on 19-Jun-17.
  */
 public class StartRollingFileAppender extends FileAppender {
 

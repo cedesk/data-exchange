@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
 /**
  * Controller for unit addition window.
  *
- * Created by n.groshkov on 09-Jun-17.
+ * Created by Nikolay Groshkov on 09-Jun-17.
  */
 public class AddUnitController implements Initializable {
 

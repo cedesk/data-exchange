@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * {@link RepositoryManager} based on the JPA.
  *
- * Created by n.groshkov on 04-Jul-17.
+ * Created by Nikolay Groshkov on 04-Jul-17.
  */
 public class PersistenceRepositoryManager implements RepositoryManager {
 

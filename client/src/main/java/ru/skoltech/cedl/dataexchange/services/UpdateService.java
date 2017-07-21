@@ -10,7 +10,7 @@ import java.util.Optional;
 /**
  * Service which monitor application's updates in the repository.
  *
- * Created by n.groshkov on 18-Jul-17.
+ * Created by Nikolay Groshkov on 18-Jul-17.
  */
 public interface UpdateService {
 

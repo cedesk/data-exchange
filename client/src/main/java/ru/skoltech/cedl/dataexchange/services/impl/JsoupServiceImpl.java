@@ -12,7 +12,7 @@ import java.nio.charset.Charset;
 /**
  * Implementation of {@link JsoupService}.
  *
- * Created by n.groshkov on 19-Jul-17.
+ * Created by Nikolay Groshkov on 19-Jul-17.
  */
 public class JsoupServiceImpl implements JsoupService {
 

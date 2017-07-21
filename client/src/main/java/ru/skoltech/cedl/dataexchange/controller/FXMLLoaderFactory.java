@@ -10,7 +10,7 @@ import java.net.URL;
 /**
  * Factory for creation {@link FXMLLoader}s which are based on context controllers.
  *
- * Created by n.groshkov on 19-Jul-17.
+ * Created by Nikolay Groshkov on 19-Jul-17.
  */
 public class FXMLLoaderFactory implements ApplicationContextAware {
 

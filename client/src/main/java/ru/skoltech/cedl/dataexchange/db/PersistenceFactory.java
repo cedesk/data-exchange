@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Constructs a {@link DataSource} and {@link EntityManagerFactoryBuilder} objects.
  *
- * Created by n.groshkov on 30-Jun-17.
+ * Created by Nikolay Groshkov on 30-Jun-17.
  */
 public interface PersistenceFactory {
 

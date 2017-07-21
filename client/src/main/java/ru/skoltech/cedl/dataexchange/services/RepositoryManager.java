@@ -10,7 +10,7 @@ import javax.transaction.Transactional;
  * Operations on the entities reside on the {@link RepositoryService}
  * implementations.
  *
- * Created by n.groshkov on 04-Jul-17.
+ * Created by Nikolay Groshkov on 04-Jul-17.
  */
 public interface RepositoryManager {
 

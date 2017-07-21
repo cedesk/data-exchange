@@ -8,7 +8,7 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 /**
  * Operations with {@link UserManagement}.
  *
- * Created by n.groshkov on 06-Jul-17.
+ * Created by Nikolay Groshkov on 06-Jul-17.
  */
 public interface UserManagementService {
 

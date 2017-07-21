@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 /**
  * Controller for main application window.
  *
- * Created by n.groshkov on 19-Jul-17.
+ * Created by Nikolay Groshkov on 19-Jul-17.
  */
 public class MainController implements Initializable {
 

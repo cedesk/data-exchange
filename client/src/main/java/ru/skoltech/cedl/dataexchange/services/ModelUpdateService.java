@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Created by n.groshkov on 07-Jul-17.
+ * Created by Nikolay Groshkov on 07-Jul-17.
  */
 public interface ModelUpdateService {
 

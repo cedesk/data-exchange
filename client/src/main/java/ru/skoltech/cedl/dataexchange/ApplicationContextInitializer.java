@@ -7,7 +7,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * Singleton which holds application context and expose it through application.
  *
- * Created by n.groshkov on 03-Jul-17.
+ * Created by Nikolay Groshkov on 03-Jul-17.
  */
 public class ApplicationContextInitializer {
 

@@ -10,7 +10,7 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.*;
 
 /**
- * Created by n.groshkov on 14-Jun-17.
+ * Created by Nikolay Groshkov on 14-Jun-17.
  */
 public class ModelTreeIteratorTest {
 

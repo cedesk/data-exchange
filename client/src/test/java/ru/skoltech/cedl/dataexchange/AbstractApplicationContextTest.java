@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 /**
  * Abstract class which holds all objects for testing in application context.
  *
- * Created by n.groshkov on 30-Jun-17.
+ * Created by Nikolay Groshkov on 30-Jun-17.
  */
 public abstract class AbstractApplicationContextTest {
 

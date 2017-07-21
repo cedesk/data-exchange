@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Service for merging differences of projects.
  *
- * Created by n.groshkov on 07-Jul-17.
+ * Created by Nikolay Groshkov on 07-Jul-17.
  */
 public interface DifferenceMergeService {
 

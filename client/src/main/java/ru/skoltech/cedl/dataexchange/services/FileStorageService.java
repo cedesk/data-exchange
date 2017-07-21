@@ -12,7 +12,7 @@ import java.io.InputStream;
 /**
  * Operations with file system.
  *
- * Created by n.groshkov on 06-Jul-17.
+ * Created by Nikolay Groshkov on 06-Jul-17.
  */
 public interface FileStorageService {
 
