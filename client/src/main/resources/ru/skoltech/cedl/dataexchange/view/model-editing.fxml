@@ -7,6 +7,13 @@
 <?import org.controlsfx.glyphfont.*?>
 <?import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor?>
 <?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
+<!--
+  ~ Copyright (C) 2017 Dominik Knoll and Nikolay Groshkov - All Rights Reserved
+  ~ You may use, distribute and modify this code under the terms of the MIT license.
+  ~
+  ~  See file LICENSE.txt or go to https://opensource.org/licenses/MIT for full license details.
+  -->
+
 <SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="700.0"
            prefWidth="900.0"
            stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
