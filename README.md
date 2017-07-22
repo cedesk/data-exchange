@@ -1,13 +1,16 @@
-# CEDESK - Concurrent Engineering Data Exchange Skoltech #
+# CEDESK - Concurrent Engineering Data Exchange Skoltech
 
 CEDESK is a tool to facilitate co-located collaborative model based conceptual design for space missions and complex systems. Multidisciplinary teams of engineers and scientists can use it for working together with a shared parametric model of any type of system.
 
-The software is developed at the [Concurrent Engineering Design Laboratory](http://crei.skoltech.ru/space/research/labs/concurrent-engineering-design-laboratory/), which is part of Space Center of [Skolkovo Institute of Science and Technology](https://www.skoltech.ru).
-
-## Project webpage ##
+## Project webpage
 More details on [cedesk.github.io](https://cedesk.github.io)
 
-## Release History and Notes##
+## Public Repository
+On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
+
+## Release History and Notes
+
+* 2018-07-22 - Version 1.29   (open source release, added copyright and MIT license)
 * 2018-07-21 - Version 1.28   (introduce DI via Spring context)
 * 2017-06-29 - Version 1.27.1 (fixed bug, critical for first time installations)
 * 2017-06-28 - Version 1.27   (bug fixes, N2 chart improvements, consistency verification)
