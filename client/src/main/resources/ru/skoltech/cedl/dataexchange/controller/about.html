@@ -32,6 +32,10 @@
         padding-top: .5em;
         }
 
+        dd ul {
+        margin: 0;
+        }
+
         .projectDetailsLabels {
         /* font-weight: bold;*/
         font-style: italic;
@@ -41,6 +45,8 @@
         /* font-style: italic;*/
         }
 
+
+
     </style>
 </head>
 <body>
@@ -49,24 +55,51 @@
 <p class="sectionTitle"><span class="initials">C</span>oncurrent <span class="initials">E</span>ngineering <span
         class="initials">D</span>ata <span class="initials">E</span>xchange <span class="initials">Sk</span>oltech</p>
 
-<p>CSR - Center for Space Research,<br/>
+<p><a href="http://crei.skoltech.ru/space/research/labs/concurrent-engineering-design-laboratory/">Concurrent
+    Engineering Design Laboratory</a>
+    at <a href="http://crei.skoltech.ru/space">Skoltech Space Center</a>,<br/>
     SIRG - Strategic Innovation Research Group,<br/>
-    Skoltech - Skolkovo Institue of Science and Technology
+    Skoltech - <a href="http://www.skoltech.ru/">Skolkovo Institue of Science and Technology</a>
+</p>
+<p>This software is Open Source and available under the <a href="https://opensource.org/licenses/MIT">MIT License</a>.
 </p>
 <dl>
+    <dt class="projectDetailsLabels">Website</dt>
+    <dd class="projectDetailsText"><a href="https://cedesk.github.io">https://cedesk.github.io</a></dd>
+    <dt class="projectDetailsLabels">Authors</dt>
+    <dd class="projectDetailsText">Dominik Knoll <a href="mailto:d.knoll@skoltech.ru">d.knoll@skoltech.ru</a><br/>
+        Nikolay Groshkov <a href="mailto:n.groshkov@skoltech.ru">n.groshkov@skoltech.ru</a></dd>
     <dt class="projectDetailsLabels">Version</dt>
     <dd class="projectDetailsText">${project.version}</dd>
     <dt class="projectDetailsLabels">Build Date/Time</dt>
     <dd class="projectDetailsText">${timestamp}</dd>
-    <dt class="projectDetailsLabels">Authors</dt>
-    <dd class="projectDetailsText">Dominik Knoll <a href="mailto:d.knoll@skoltech.ru">d.knoll@skoltech.ru</a></dd>
-    <dt class="projectDetailsLabels">Libraries</dt>
-    <dd class="projectDetailsText">Hibernate ORM,<br/>
-        MySQL,<br/>
-        slf4j,<br/>
-        Apache POI, Apache Commons Math 3, Apache Commons Lang 3,<br/>
-        ControlsFX, JFXtras,<br/>
-        jgrapht, Jsoup<br/>
+    <dt class="projectDetailsLabels">Used OSS Libraries</dt>
+    <dd class="projectDetailsText">
+        <ul>
+            <li>apache-commons-lang3, 3.5, Apache 2.0</li>
+            <li>apache-commons-math3, 3.5, Apache 2.0</li>
+            <li>apache-poi, 3.16, Apache 2.0</li>
+            <li>apache-poi-ooxml, 3.16, Apache 2.0</li>
+            <li>commons-beanutils, 1.9.3, Apache 2.0</li>
+            <li>controlsfx, 8.40.12, EPL 1.0</li>
+            <li>hibernate-core, 5.2.10, LGPL 2.1</li>
+            <li>hibernate-envers, 5.2.10, LGPL 2.1</li>
+            <li>hibernate-jpa, 1.0.0, EDL 1.0, EPL 1.0</li>
+            <li>hsqldb, 2.3.4, BSD</li>
+            <li>jboss-transaction-spi, 7.6.0, Public</li>
+            <li>jfxtras-labs, 8.0-r5, BSD 2-clause</li>
+            <li>jgrapht-core, 1.0.1, EPL 1.0, LGPL 2.1</li>
+            <li>jsoup, 1.10.2, MIT license</li>
+            <li>jUnit, 4.12, EPL 1.0</li>
+            <li>Mockito-Core, 2.8.47, MIT license</li>
+            <li>mysql-connector-java, 6.0.6, GPL 2.0</li>
+            <li>narayana-jta, 5.6.2, CC0, LGPL 2.1</li>
+            <li>slf4j-log4j12, 1.7.21, MIT license</li>
+            <li>spring-boot-autoconfigure, 1.5.4, Apache 2.0</li>
+            <li>spring-context, 4.3.9, Apache 2.0</li>
+            <li>spring-data-jpa, 1.11.4, Apache 2.0</li>
+        </ul>
+    </dd>
 </dl>
 </body>
 </html>
