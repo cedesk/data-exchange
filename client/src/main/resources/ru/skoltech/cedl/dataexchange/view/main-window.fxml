@@ -73,6 +73,8 @@
                                                         onAction="#openDsmView" text="Design Structure Matrix"/>
                                                 <MenuItem
                                                         onAction="#openDepencencyView" text="N-square Chart"/>
+                                                <MenuItem
+                                                        onAction="#openChangeHistoryAnalysis" text="Change History Analyis"/>
                                             </items>
                                         </Menu>
                                         <Menu text="_Help">

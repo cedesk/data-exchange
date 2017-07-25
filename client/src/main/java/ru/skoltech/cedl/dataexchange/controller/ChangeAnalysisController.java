@@ -7,6 +7,7 @@
 
 package ru.skoltech.cedl.dataexchange.controller;
 
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,15 +17,11 @@ import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import ru.skoltech.cedl.dataexchange.ApplicationContextInitializer;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.analysis.ParameterChangeAnalysis;
 import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
 import ru.skoltech.cedl.dataexchange.control.ChangeAnalysisView;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.services.RepositoryManager;
 import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
@@ -56,14 +53,16 @@ public class ChangeAnalysisController implements Initializable {
     @FXML
     private ChangeAnalysisView changeAnalysisView;
 
-    private Long systemId;
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        Platform.runLater(() -> {
+            refreshView(null);
+        });
     }
 
     public void refreshView(ActionEvent actionEvent) {
         try {
+            long systemId = project.getSystemModel().getId();
             List<ParameterChange> changes = repositoryService.getChanges(systemId);
             ParameterChangeAnalysis parameterChangeAnalysis = new ParameterChangeAnalysis(changes);
             changeAnalysisView.setAnalysis(parameterChangeAnalysis);
@@ -71,10 +70,6 @@ public class ChangeAnalysisController implements Initializable {
         } catch (RepositoryException e) {
             logger.error("error loading parameter changes", e);
         }
-    }
-
-    public void setSystemId(Long systemId) {
-        this.systemId = systemId;
     }
 
     public void saveDiagram(ActionEvent actionEvent) {

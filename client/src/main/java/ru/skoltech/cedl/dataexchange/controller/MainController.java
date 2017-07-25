@@ -487,6 +487,23 @@ public class MainController implements Initializable {
         }
     }
 
+    public void openChangeHistoryAnalysis(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.ANALYSIS_WINDOW);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Parameter Change Analysis");
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(Modality.NONE);
+            stage.initOwner(getAppWindow());
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
     public void openDiffView(ActionEvent actionEvent) {
         if (project.getSystemModel() == null
                 || project.getRepositoryStudy() == null

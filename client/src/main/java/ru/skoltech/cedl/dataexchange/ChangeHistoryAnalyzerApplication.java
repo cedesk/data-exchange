@@ -18,7 +18,6 @@ import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import ru.skoltech.cedl.dataexchange.controller.ChangeAnalysisController;
 import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
@@ -33,8 +32,6 @@ public class ChangeHistoryAnalyzerApplication extends Application {
 
     private static ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
 
-    private static final Long SYSTEM_ID = 16420L; // demoSat  205L;// CarDesign //17835L; // LaserNaut
-
     public static void main(String[] args) {
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
@@ -45,6 +42,12 @@ public class ChangeHistoryAnalyzerApplication extends Application {
         String appVersion = applicationSettings.getApplicationVersion();
         String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
         logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
+
+        Project project = context.getBean(Project.class);
+        String projectName = applicationSettings.getLastUsedProject();
+        project.setProjectName(projectName != null ? projectName : "demoSAT"); // TODO: give choice on ui
+        project.loadLocalStudy();
+
         launch(args);
     }
 
@@ -54,14 +57,9 @@ public class ChangeHistoryAnalyzerApplication extends Application {
         FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.ANALYSIS_WINDOW);
 
         Parent root = loader.load();
-        ChangeAnalysisController controller = loader.getController();
-        controller.setSystemId(SYSTEM_ID);
-        controller.refreshView(null);
-
         stage.setScene(new Scene(root));
         stage.setTitle("Parameter Change Analysis");
         stage.getIcons().add(IconSet.APP_ICON);
-
         stage.show();
     }
 
