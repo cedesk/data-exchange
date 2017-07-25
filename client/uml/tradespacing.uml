@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_iOSmoFgAEeeAouFGooXdyQ" name="RootElement">
+  <ownedComment xmi:type="uml:Comment" xmi:id="_2lJt4FgHEeeAouFGooXdyQ">
+    <body>Datamodel for storing tradespace information complementary to the design model</body>
+  </ownedComment>
+  <ownedComment xmi:type="uml:Comment" xmi:id="_-J21cFgHEeeAouFGooXdyQ">
+    <body>Dominik Knoll, June 2017</body>
+  </ownedComment>
+  <packagedElement xmi:type="uml:Class" xmi:id="_mS3PUFgAEeeAouFGooXdyQ" name="MultitemporalTradespace">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_OGDwQFgEEeeAouFGooXdyQ" name="epochs" visibility="public" type="_IG8YYFgCEeeAouFGooXdyQ" isUnique="false">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_SfWEsFgEEeeAouFGooXdyQ"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_SfWEsVgEEeeAouFGooXdyQ" value="*"/>
+    </ownedAttribute>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_bt2boFgEEeeAouFGooXdyQ" name="designPoints" visibility="public" type="_3kyDEFgAEeeAouFGooXdyQ" isUnique="false" aggregation="composite">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_dLbz8FgEEeeAouFGooXdyQ"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_dLlk8FgEEeeAouFGooXdyQ" value="*"/>
+    </ownedAttribute>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_aAQb8FgFEeeAouFGooXdyQ" name="definitions" type="_oFXuwFgAEeeAouFGooXdyQ" aggregation="composite">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eZK88FgFEeeAouFGooXdyQ"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eZUt8FgFEeeAouFGooXdyQ" value="*"/>
+    </ownedAttribute>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_oFXuwFgAEeeAouFGooXdyQ" name="FigureOfMeritDefinition">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_M1WEYFgGEeeAouFGooXdyQ" name="name" visibility="public" isUnique="false">
+      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+    </ownedAttribute>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_Qg5wIFgGEeeAouFGooXdyQ" name="unit">
+      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/EcorePrimitiveTypes.library.uml#EString"/>
+    </ownedAttribute>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_ry-o8FgAEeeAouFGooXdyQ" name="FigureOfMeritValue">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_Is9IIFgFEeeAouFGooXdyQ" name="definition" type="_oFXuwFgAEeeAouFGooXdyQ" isUnique="false"/>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_R1oj4FgFEeeAouFGooXdyQ" name="value">
+      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Real"/>
+    </ownedAttribute>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_3kyDEFgAEeeAouFGooXdyQ" name="DesignPoint">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_ANmgwFgGEeeAouFGooXdyQ" name="epoch" visibility="public" type="_IG8YYFgCEeeAouFGooXdyQ"/>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_BLVJwFgFEeeAouFGooXdyQ" name="values" type="_ry-o8FgAEeeAouFGooXdyQ" aggregation="composite">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_DuBI8FgFEeeAouFGooXdyQ" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_DuK58FgFEeeAouFGooXdyQ" value="*"/>
+    </ownedAttribute>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_8neg4FgAEeeAouFGooXdyQ" memberEnd="_8nnq0lgAEeeAouFGooXdyQ _8nnq01gAEeeAouFGooXdyQ">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_8nnq0FgAEeeAouFGooXdyQ" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_8nnq0VgAEeeAouFGooXdyQ" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_8nnq01gAEeeAouFGooXdyQ" name="tradespace" type="_mS3PUFgAEeeAouFGooXdyQ" association="_8neg4FgAEeeAouFGooXdyQ">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_2GBJkFgBEeeAouFGooXdyQ" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_2GK6kFgBEeeAouFGooXdyQ" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_8nnq0lgAEeeAouFGooXdyQ" name="designpoint" type="_3kyDEFgAEeeAouFGooXdyQ" aggregation="composite" association="_8neg4FgAEeeAouFGooXdyQ">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_6tOlQFgBEeeAouFGooXdyQ"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_6tYWQFgBEeeAouFGooXdyQ" value="*"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_IG8YYFgCEeeAouFGooXdyQ" name="Epoch">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_kN5KEFgEEeeAouFGooXdyQ" name="year" visibility="public">
+      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+    </ownedAttribute>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_Jp28oFgCEeeAouFGooXdyQ" memberEnd="_Jp28o1gCEeeAouFGooXdyQ _Jp28pFgCEeeAouFGooXdyQ">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_Jp28oVgCEeeAouFGooXdyQ" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_Jp28olgCEeeAouFGooXdyQ" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_Jp28pFgCEeeAouFGooXdyQ" name="tradespace" type="_mS3PUFgAEeeAouFGooXdyQ" association="_Jp28oFgCEeeAouFGooXdyQ"/>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_Jp28o1gCEeeAouFGooXdyQ" name="epoch" type="_IG8YYFgCEeeAouFGooXdyQ" aggregation="composite" association="_Jp28oFgCEeeAouFGooXdyQ"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_aKzmcFgCEeeAouFGooXdyQ" memberEnd="_aKzmc1gCEeeAouFGooXdyQ _aKzmdFgCEeeAouFGooXdyQ">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_aKzmcVgCEeeAouFGooXdyQ" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_aKzmclgCEeeAouFGooXdyQ" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_aKzmdFgCEeeAouFGooXdyQ" name="designpoint" type="_3kyDEFgAEeeAouFGooXdyQ" association="_aKzmcFgCEeeAouFGooXdyQ">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_COK8QFgEEeeAouFGooXdyQ"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_COUGMFgEEeeAouFGooXdyQ" value="*"/>
+    </ownedEnd>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_aKzmc1gCEeeAouFGooXdyQ" name="figureofmeritvalue" type="_ry-o8FgAEeeAouFGooXdyQ" aggregation="composite" association="_aKzmcFgCEeeAouFGooXdyQ">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_gMgqMFgCEeeAouFGooXdyQ" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_gMp0IFgCEeeAouFGooXdyQ" value="*"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_w4-AcFgCEeeAouFGooXdyQ" memberEnd="_w4-Ac1gCEeeAouFGooXdyQ _w5HKYFgCEeeAouFGooXdyQ">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_w4-AcVgCEeeAouFGooXdyQ" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_w4-AclgCEeeAouFGooXdyQ" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_w5HKYFgCEeeAouFGooXdyQ" name="tradespace" type="_mS3PUFgAEeeAouFGooXdyQ" association="_w4-AcFgCEeeAouFGooXdyQ"/>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_w4-Ac1gCEeeAouFGooXdyQ" name="figureofmeritdefinition" type="_oFXuwFgAEeeAouFGooXdyQ" aggregation="composite" association="_w4-AcFgCEeeAouFGooXdyQ"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_5v92UFgCEeeAouFGooXdyQ" memberEnd="_5v92U1gCEeeAouFGooXdyQ _5v92VFgCEeeAouFGooXdyQ" navigableOwnedEnd="_5v92U1gCEeeAouFGooXdyQ">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_5v92UVgCEeeAouFGooXdyQ" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_5v92UlgCEeeAouFGooXdyQ" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_5v92VFgCEeeAouFGooXdyQ" name="figureofmeritvalue" type="_ry-o8FgAEeeAouFGooXdyQ" association="_5v92UFgCEeeAouFGooXdyQ"/>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_5v92U1gCEeeAouFGooXdyQ" name="figureofmeritdefinition" type="_oFXuwFgAEeeAouFGooXdyQ" association="_5v92UFgCEeeAouFGooXdyQ"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="__49_cFgDEeeAouFGooXdyQ" memberEnd="__49_c1gDEeeAouFGooXdyQ __49_dFgDEeeAouFGooXdyQ" navigableOwnedEnd="__49_c1gDEeeAouFGooXdyQ">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="__49_cVgDEeeAouFGooXdyQ" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="__49_clgDEeeAouFGooXdyQ" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="__49_dFgDEeeAouFGooXdyQ" name="designpoint" type="_3kyDEFgAEeeAouFGooXdyQ" association="__49_cFgDEeeAouFGooXdyQ"/>
+    <ownedEnd xmi:type="uml:Property" xmi:id="__49_c1gDEeeAouFGooXdyQ" name="epoch" type="_IG8YYFgCEeeAouFGooXdyQ" association="__49_cFgDEeeAouFGooXdyQ"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_SD9ycFgTEeeHOIDbdOjASQ" name="FigureOfMeritChart">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_VcwTMFgTEeeHOIDbdOjASQ" name="axis1" type="_oFXuwFgAEeeAouFGooXdyQ" isUnique="false" aggregation="composite" association="_qqp0UFgTEeeHOIDbdOjASQ"/>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_d17koFgTEeeHOIDbdOjASQ" name="axis2" type="_oFXuwFgAEeeAouFGooXdyQ" isUnique="false"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_qqp0UFgTEeeHOIDbdOjASQ" name="A_axis1_figureOfMeritChart" memberEnd="_VcwTMFgTEeeHOIDbdOjASQ _qqzlUFgTEeeHOIDbdOjASQ">
+    <ownedEnd xmi:type="uml:Property" xmi:id="_qqzlUFgTEeeHOIDbdOjASQ" name="figureOfMeritChart" type="_SD9ycFgTEeeHOIDbdOjASQ" association="_qqp0UFgTEeeHOIDbdOjASQ">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_qqzlUVgTEeeHOIDbdOjASQ"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_qqzlUlgTEeeHOIDbdOjASQ" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_vYOWsFgTEeeHOIDbdOjASQ" memberEnd="_vYOWs1gTEeeHOIDbdOjASQ _vYOWtFgTEeeHOIDbdOjASQ" navigableOwnedEnd="_vYOWs1gTEeeHOIDbdOjASQ">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_vYOWsVgTEeeHOIDbdOjASQ" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_vYOWslgTEeeHOIDbdOjASQ" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_vYOWtFgTEeeHOIDbdOjASQ" name="multitemporaltradespace" type="_mS3PUFgAEeeAouFGooXdyQ" association="_vYOWsFgTEeeHOIDbdOjASQ"/>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_vYOWs1gTEeeHOIDbdOjASQ" name="figureofmeritchart" type="_SD9ycFgTEeeHOIDbdOjASQ" association="_vYOWsFgTEeeHOIDbdOjASQ"/>
+  </packagedElement>
+  <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_ybc08FgEEeeAouFGooXdyQ">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_ybc08VgEEeeAouFGooXdyQ" source="http://www.eclipse.org/uml2/2.0.0/UML">
+      <references xmi:type="ecore:EPackage" href="pathmap://PAPYRUS_ACTIONLANGUAGE_PROFILE/ActionLanguage-Profile.profile.uml#_Kv8EIKFXEeS_KNX0nfvIVQ"/>
+    </eAnnotations>
+    <appliedProfile xmi:type="uml:Profile" href="pathmap://PAPYRUS_ACTIONLANGUAGE_PROFILE/ActionLanguage-Profile.profile.uml#ActionLanguage"/>
+  </profileApplication>
+</uml:Model>

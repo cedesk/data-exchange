@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.glyphfont.Glyph?>
+<?import ru.skoltech.cedl.dataexchange.control.FiguresOfMeritEditor?>
+<?import ru.skoltech.cedl.dataexchange.control.TradespaceView?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="900.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.112"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.TradespaceController">
+    <children>
+        <SplitPane dividerPositions="0.65" prefHeight="600.0" prefWidth="900.0" AnchorPane.bottomAnchor="0.0"
+                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"
+                   BorderPane.alignment="CENTER">
+            <items>
+                <BorderPane>
+                    <center>
+                        <TradespaceView fx:id="tradespaceView"/>
+                    </center>
+                    <top>
+                        <ToolBar BorderPane.alignment="CENTER">
+                            <Label text="X-Axis"/>
+                            <ComboBox fx:id="xAxisCombo" prefWidth="150.0"/>
+                            <Label text="Y-Axis"/>
+                            <ComboBox fx:id="yAxisCombo" prefWidth="150.0"/>
+                            <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
+                                <tooltip>
+                                    <Tooltip text="Refresh"/>
+                                </tooltip>
+                                <graphic>
+                                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                                </graphic>
+                            </Button>
+                            <Pane HBox.hgrow="ALWAYS"/>
+                            <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
+                                <tooltip>
+                                    <Tooltip text="Save the diagram as image file"/>
+                                </tooltip>
+                                <graphic>
+                                    <Glyph fontFamily="FontAwesome" icon="SAVE"/>
+                                </graphic>
+                            </Button>
+                        </ToolBar>
+                    </top>
+                </BorderPane>
+                <FiguresOfMeritEditor fx:id="figuresOfMeritEditor"/>
+            </items>
+        </SplitPane>
+    </children>
+</AnchorPane>
