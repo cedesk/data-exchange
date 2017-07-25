@@ -9,14 +9,15 @@ package ru.skoltech.cedl.dataexchange;
 
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by D.Knoll on 28.12.2016.
  */
 public class EnumUtil {
 
-    private final static HashMap<Class, Object[]> cache = new HashMap<>();
+    private final static HashMap<Class, Object[]> ordinalCache = new HashMap<>();
+    private final static HashMap<Class, HashMap<String, Enum>> nameCache = new HashMap<>();
 
     /**
      * convert ordinal to Enum
@@ -29,18 +30,45 @@ public class EnumUtil {
     public static <E extends Enum<E>> E lookupEnum(Class<E> enumClass, Number ordinal) {
         if (ordinal == null) return null;
         int ord = ordinal.intValue();
-        if (!cache.containsKey(enumClass)) {
+        if (!ordinalCache.containsKey(enumClass)) {
             EnumSet<E> set = EnumSet.allOf(enumClass);
             Object[] values = new Object[set.size()];
             for (E rval : set) {
                 values[rval.ordinal()] = rval;
             }
-            cache.put(enumClass, values);
+            ordinalCache.put(enumClass, values);
         }
-        Object[] enums = cache.get(enumClass);
+        Object[] enums = ordinalCache.get(enumClass);
         if (ord >= 0 && ord < enums.length) {
             return (E) enums[ord];
         }
         throw new IllegalArgumentException("Invalid value " + ordinal + " for " + enumClass.getName() + ", must be < " + enums.length);
     }
+
+    /**
+     * convert name to Enum
+     *
+     * @param enumClass may not be null
+     * @param name
+     * @return e with e.name( ) equals name
+     * @throws IllegalArgumentException if ordinal out of range
+     */
+    public static <E extends Enum<E>> E lookupEnum(Class<E> enumClass, String name) {
+        if (name == null) return null;
+        name = name.toLowerCase();
+        if (!nameCache.containsKey(enumClass)) {
+            EnumSet<E> set = EnumSet.allOf(enumClass);
+            HashMap<String, Enum> values = new HashMap<>();
+            for (E rval : set) {
+                values.put(rval.name().toLowerCase(), rval);
+            }
+            nameCache.put(enumClass, values);
+        }
+        HashMap<String, Enum> enums = nameCache.get(enumClass);
+        if (enums.containsKey(name)) {
+            return (E) enums.get(name);
+        }
+        throw new IllegalArgumentException("Invalid value " + name + " for " + enumClass.getName());
+    }
+
 }

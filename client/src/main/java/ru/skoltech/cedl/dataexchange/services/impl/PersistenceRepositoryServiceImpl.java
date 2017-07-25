@@ -38,7 +38,7 @@ import java.util.List;
 
 /**
  * Implementation of {@link PersistenceRepositoryService}.
- *
+ * <p>
  * Created by dknoll on 24/05/15.
  */
 public class PersistenceRepositoryServiceImpl implements PersistenceRepositoryService {
@@ -334,6 +334,18 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
             return resultList;
         } catch (Exception e) {
             throw new RepositoryException("ParameterChange loading failed.", e);
+        }
+    }
+
+    @Override
+    public List<LogEntry> getLogEntries() throws RepositoryException {
+        try {
+            final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<LogEntry> criteria = builder.createQuery(LogEntry.class);
+            Root<LogEntry> root = criteria.from(LogEntry.class);
+            return entityManager.createQuery(criteria).getResultList();
+        } catch (Exception e) {
+            throw new RepositoryException("Study loading LogEntries.", e);
         }
     }
 

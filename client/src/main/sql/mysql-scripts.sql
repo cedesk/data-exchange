@@ -74,18 +74,23 @@ CREATE OR REPLACE VIEW `parameter_changes` AS
         rc.ENTITYNAME = 'ru.skoltech.cedl.dataexchange.structure.model.ParameterModel'
     ORDER BY sys_id , node_id , param_id, `timestamp`;
 
-    CREATE OR REPLACE VIEW `overall_study_statistics` AS
-        SELECT
-            sys_name,
-            sys_id,
-            MIN(timestamp_h) AS first_change,
-            MAX(timestamp_h) AS last_change,
-            COUNT(1) AS changes,
-            COUNT(DISTINCT param_id) AS parameters,
-            COUNT(DISTINCT node_id) AS nodes,
-            COUNT(DISTINCT username) AS users,
-            GROUP_CONCAT(DISTINCT username
-                SEPARATOR ', ') AS usernames
-        FROM
-            parameter_changes
-        GROUP BY sys_id;
+
+CREATE OR REPLACE VIEW `overall_study_statistics` AS
+    SELECT
+        study.id AS study_id,
+        study.`name` AS study_name,
+        sys_name,
+        sys_id,
+        MIN(timestamp_h) AS first_change,
+        MAX(timestamp_h) AS last_change,
+        COUNT(1) AS changes,
+        COUNT(DISTINCT param_id) AS parameters,
+        COUNT(DISTINCT node_id) AS nodes,
+        COUNT(DISTINCT username) AS users,
+        GROUP_CONCAT(DISTINCT username
+            SEPARATOR ', ') AS usernames
+    FROM
+        parameter_changes
+            JOIN
+        study ON study.systemModel_id = parameter_changes.sys_id
+    GROUP BY sys_id;
