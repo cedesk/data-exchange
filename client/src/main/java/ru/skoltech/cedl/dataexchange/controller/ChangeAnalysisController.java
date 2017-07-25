@@ -1,0 +1,97 @@
+/*
+ * Copyright (C) 2017 Dominik Knoll and Nikolay Groshkov - All Rights Reserved
+ * You may use, distribute and modify this code under the terms of the MIT license.
+ *
+ *  See file LICENSE.txt or go to https://opensource.org/licenses/MIT for full license details.
+ */
+
+package ru.skoltech.cedl.dataexchange.controller;
+
+import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.image.WritableImage;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
+import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import ru.skoltech.cedl.dataexchange.ApplicationContextInitializer;
+import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.analysis.ParameterChangeAnalysis;
+import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
+import ru.skoltech.cedl.dataexchange.control.ChangeAnalysisView;
+import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.services.RepositoryManager;
+import ru.skoltech.cedl.dataexchange.services.RepositoryService;
+import ru.skoltech.cedl.dataexchange.structure.Project;
+
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import java.util.ResourceBundle;
+
+/**
+ * Created by D.Knoll on 28.12.2016.
+ */
+public class ChangeAnalysisController implements Initializable {
+
+    private static final Logger logger = Logger.getLogger(ChangeAnalysisController.class);
+
+    private Project project;
+    private RepositoryService repositoryService;
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public void setRepositoryService(RepositoryService repositoryService) {
+        this.repositoryService = repositoryService;
+    }
+
+    @FXML
+    private ChangeAnalysisView changeAnalysisView;
+
+    private Long systemId;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+    }
+
+    public void refreshView(ActionEvent actionEvent) {
+        try {
+            List<ParameterChange> changes = repositoryService.getChanges(systemId);
+            ParameterChangeAnalysis parameterChangeAnalysis = new ParameterChangeAnalysis(changes);
+            changeAnalysisView.setAnalysis(parameterChangeAnalysis);
+
+        } catch (RepositoryException e) {
+            logger.error("error loading parameter changes", e);
+        }
+    }
+
+    public void setSystemId(Long systemId) {
+        this.systemId = systemId;
+    }
+
+    public void saveDiagram(ActionEvent actionEvent) {
+        FileChooser fc = new FileChooser();
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
+        fc.setInitialFileName(project.getProjectName() + "_ChangeHistory_" + Utils.getFormattedDateAndTime());
+        fc.setTitle("Save Diagram");
+        Window window = changeAnalysisView.getScene().getWindow();
+        File file = fc.showSaveDialog(window);
+        if (file != null) {
+            SnapshotParameters snapshotParameters = new SnapshotParameters();
+            WritableImage snapshot = changeAnalysisView.snapshot(snapshotParameters, null);
+            try {
+                ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null), "png", file);
+            } catch (IOException e) {
+                logger.error("Error saving diagram to file", e);
+            }
+        }
+    }
+}

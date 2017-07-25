@@ -28,6 +28,11 @@
         <property name="taskExecutor" ref="taskExecutor" />
     </bean>
 
+    <bean class="ru.skoltech.cedl.dataexchange.controller.ChangeAnalysisController" >
+        <property name="project" ref="project" />
+        <property name="repositoryService" ref="repositoryService" />
+    </bean>
+
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />

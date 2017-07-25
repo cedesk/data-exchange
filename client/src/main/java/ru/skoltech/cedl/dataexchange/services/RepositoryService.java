@@ -7,6 +7,7 @@
 
 package ru.skoltech.cedl.dataexchange.services;
 
+import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
 import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
@@ -63,6 +64,8 @@ public interface RepositoryService {
     List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException;
 
     CustomRevisionEntity getLastRevision(PersistedEntity persistedEntity);
+
+    List<ParameterChange> getChanges(long systemId) throws RepositoryException;
 
     @Transactional
     void storeLog(LogEntry logEntry);

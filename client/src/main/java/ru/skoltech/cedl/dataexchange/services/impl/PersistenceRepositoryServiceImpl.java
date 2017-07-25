@@ -13,6 +13,7 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
+import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
 import ru.skoltech.cedl.dataexchange.db.ApplicationProperty;
 import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
@@ -315,6 +316,24 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
             logger.debug("Loading revision history failed: " +
                     persistedEntity.getClass().getSimpleName() + "[" + persistedEntity.getId() + "]");
             return null;
+        }
+    }
+
+    @Override
+    public List<ParameterChange> getChanges(long systemId) throws RepositoryException {
+        List<ParameterChange> resultList = new ArrayList<>();
+        try {
+            Query nativeQuery = entityManager.createNativeQuery("SELECT " +
+                    "rev_id, param_id, valueLink_id, node_id, timestamp, nature, valueSource, name, node_name " +
+                    "FROM parameter_changes WHERE sys_id = " + systemId + " ORDER BY timestamp, node_id, nature ASC");
+            List<Object[]> nativeQueryResultList = nativeQuery.getResultList();
+            for (Object[] row : nativeQueryResultList) {
+                ParameterChange pc = new ParameterChange(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]);
+                resultList.add(pc);
+            }
+            return resultList;
+        } catch (Exception e) {
+            throw new RepositoryException("ParameterChange loading failed.", e);
         }
     }
 
