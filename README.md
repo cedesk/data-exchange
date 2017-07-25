@@ -1,28 +1,25 @@
-# CEDESK - Concurrent Engineering Data Exchange Skoltech #
+# CEDESK - Concurrent Engineering Data Exchange Skoltech
 
-This is a collaboration tool for parametric system modeling in Concurrent Engineering Design Lab
-(http://crei.skoltech.ru/space/research/labs/concurrent-engineering-design-laboratory/).
+CEDESK is a tool to facilitate co-located collaborative model based conceptual design for space missions and complex systems. Multidisciplinary teams of engineers and scientists can use it for working together with a shared parametric model of any type of system.
 
-## General Concept ##
-CEDESK was conceived as a data exchange tool for concurrent engineering design studies. It is meant to support the collaboration between engineers working together through a common model of the system. Each engineer uses specific tools to elaborate on aspects or parts of the system. These domain specific models can be arbitrary complex and use different specialized tools to work with them, whereas the common system model most and for all contains those design parameters through which the parts are interconnected/interdependent.
+## Project webpage
+More details on [cedesk.github.io](https://cedesk.github.io)
 
-A goal in the development of the data exchange is not to duplicate functionality of engineering tools, but rather interconnect existing ones in a way to provide fast and easy-to-use integration. 
+## Public Repository
+On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
-## Quick summary ##
-* Architecture: 2 tier (Client application + Database)
-* Rich Client based on JavaFX
-* Server part is an SQL database, accessed via Hibernate ORM
-* Current State: Development
+## Release History and Notes
 
-## Release History ##
+* 2018-07-22 - Version 1.29   (open source release, added copyright and MIT license)
+* 2018-07-21 - Version 1.28   (introduce DI via Spring context)
 * 2017-06-29 - Version 1.27.1 (fixed bug, critical for first time installations)
-* 2017-06-28 - Version 1.27 (bug fixes, N2 chart improvements, consistency verification)
-* 2017-05-31 - Version 1.26 (bug fixes, diff viewing and merging improvements)
-* 2016-11-28 - Version 1.25 (bug fixes, layout improvement, library upgrade, external model replacement, N2 chart improvement)
-* 2016-11-15 - Version 1.24 (process guide, N2 chart)
-* 2016-07-14 - Version 1.23 (bugfix)
+* 2017-06-28 - Version 1.27   (bug fixes, N2 chart improvements, consistency verification)
+* 2017-05-31 - Version 1.26   (bug fixes, diff viewing and merging improvements)
+* 2016-11-28 - Version 1.25   (bug fixes, layout improvement, library upgrade, external model replacement, N2 chart improvement)
+* 2016-11-15 - Version 1.24   (process guide, N2 chart)
+* 2016-07-14 - Version 1.23   (bugfix)
 * 2016-07-14 - Version 1.22
-* 2016-07-07 - Version 1.21 (bugfix)
+* 2016-07-07 - Version 1.21   (bugfix)
 * 2016-07-04 - Version 1.20
 * 2016-05-31 - Version 1.19
 * 2015-12-14 - Version 1.18

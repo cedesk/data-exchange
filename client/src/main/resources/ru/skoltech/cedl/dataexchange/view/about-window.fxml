@@ -2,6 +2,13 @@
 
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
+<!--
+  ~ Copyright (C) 2017 Dominik Knoll and Nikolay Groshkov - All Rights Reserved
+  ~ You may use, distribute and modify this code under the terms of the MIT license.
+  ~
+  ~  See file LICENSE.txt or go to https://opensource.org/licenses/MIT for full license details.
+  -->
+
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="400.0" prefWidth="600.0" stylesheets="@styling.css"
             xmlns="http://javafx.com/javafx/8.0.40"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.AboutController">
