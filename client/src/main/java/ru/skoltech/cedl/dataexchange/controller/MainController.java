@@ -641,6 +641,7 @@ public class MainController implements Initializable {
                 if (!project.checkRepository()) {
                     Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository!");
                     quit(null);
+                    return;
                 }
                 this.validateUser();
             });
@@ -778,9 +779,12 @@ public class MainController implements Initializable {
     }
 
     public void terminate() {
-        project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_STOP, "");
         try {
-            project.finalize();
+            project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_STOP, "");
+        } catch (Throwable ignore) {
+        }
+        try {
+            project.close();
         } catch (Throwable ignore) {
         }
     }
