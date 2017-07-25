@@ -5,8 +5,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import ru.skoltech.cedl.dataexchange.ProjectContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import ru.skoltech.cedl.dataexchange.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.controller.TradespaceController;
+import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SimpleSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
@@ -14,7 +18,6 @@ import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;
 import ru.skoltech.cedl.dataexchange.tradespace.TradespaceFactory;
-import ru.skoltech.cedl.dataexchange.units.UnitManagementFactory;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -42,7 +45,7 @@ public class TradespaceWindowDemo extends Application {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Views.TRADESPACE_WINDOW);
         Parent root = loader.load();
-        TradespaceController controller = (TradespaceController) loader.getController();
+        TradespaceController controller = loader.getController();
         controller.setModel(multitemporalTradespace);
 
         primaryStage.setTitle("Tradespace Window Demo");
@@ -55,7 +58,11 @@ public class TradespaceWindowDemo extends Application {
 
     private void closeContext() {
         try {
-            ProjectContext.getInstance().getProject().finalize();
+            ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+            Project project = context.getBean(Project.class);
+            context.getBean(ThreadPoolTaskScheduler.class).shutdown();
+            context.getBean(ThreadPoolTaskExecutor.class).shutdown();
+            project.finalize();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -63,9 +70,9 @@ public class TradespaceWindowDemo extends Application {
 
     private void setupContext() {
         try {
-            Project project = new Project("TS Demo");
-            UnitManagement unitManagement = UnitManagementFactory.getUnitManagement();
-
+            ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+            Project project = context.getBean(Project.class);
+            UnitManagement unitManagement = context.getBean(UnitManagementService.class).loadDefaultUnitManagement();
             Study study = new Study("TS Demo");
             Field sField = Project.class.getDeclaredField("study");
             sField.setAccessible(true);
@@ -76,7 +83,6 @@ public class TradespaceWindowDemo extends Application {
             SystemModel systemModel = simpleSystemBuilder.build(study.getName());
             study.setSystemModel(systemModel);
 
-            ProjectContext.getInstance().setProject(project);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);

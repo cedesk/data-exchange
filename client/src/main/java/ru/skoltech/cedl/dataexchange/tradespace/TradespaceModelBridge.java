@@ -1,6 +1,7 @@
 package ru.skoltech.cedl.dataexchange.tradespace;
 
-import ru.skoltech.cedl.dataexchange.ProjectContext;
+import org.springframework.context.ApplicationContext;
+import ru.skoltech.cedl.dataexchange.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
@@ -18,7 +19,8 @@ import java.util.Map;
 public class TradespaceModelBridge {
 
     public static Collection<ParameterModel> getModelOutputParameters() {
-        Project project = ProjectContext.getInstance().getProject();
+        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+        Project project = context.getBean(Project.class);
         ModelNode systemModel = project.getSystemModel();
         List<ParameterModel> parameters = new LinkedList<>();
         ParameterTreeIterator subsystemParameterIterator = new ParameterTreeIterator(systemModel,
@@ -29,7 +31,8 @@ public class TradespaceModelBridge {
 
     public static String getParameterName(String parameterUuid) {
         if (parameterUuid == null) return "<not defined>";
-        Project project = ProjectContext.getInstance().getProject();
+        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+        Project project = context.getBean(Project.class);
         Map<String, ParameterModel> parameterDictionary = project.getStudy().getSystemModel().makeParameterDictionary();
 
         ParameterModel parameterModel = parameterDictionary.get(parameterUuid);
