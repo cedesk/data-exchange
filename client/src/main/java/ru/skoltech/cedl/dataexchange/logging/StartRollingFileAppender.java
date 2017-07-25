@@ -56,7 +56,14 @@ public class StartRollingFileAppender extends FileAppender {
 
     private void removeOldFiles(String filePrefix, String extension) {
         File dirFile = new File(directory);
-        List<String> oldLogFileNames = new ArrayList(Arrays.asList(dirFile.list((dir, file) ->
+        if (!dirFile.isAbsolute()) {
+            String userHome = System.getProperty("user.home");
+            dirFile = new File(userHome, directory);
+        }
+
+        final File directoryFile = dirFile;
+
+        List<String> oldLogFileNames = new ArrayList(Arrays.asList(directoryFile.list((dir, file) ->
             file.startsWith(filePrefix) && file.endsWith(extension)
         )));
 
@@ -66,7 +73,7 @@ public class StartRollingFileAppender extends FileAppender {
         }
         List<String> toDeleteFileNames = oldLogFileNames.subList(maxBackupIndex - 1, oldLogFileNames.size());
 
-        toDeleteFileNames.stream().map(s -> new File(dirFile, s)).forEach(File::delete);
+        toDeleteFileNames.stream().map(s -> new File(directoryFile, s)).forEach(File::delete);
     }
 
     /**

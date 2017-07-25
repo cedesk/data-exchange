@@ -53,7 +53,7 @@ public class FileStorageServiceImpl implements FileStorageService {
      * Id <i>cedesk.app.dir</i> property defined as relative path, then prepend <i>user.home</i> system property to it.
      * TODO: write a test
      *
-     * @param applicationSettings
+     * @param applicationSettings application settings to access to <i>cedesk.app.dir</i> property
      */
     public FileStorageServiceImpl(ApplicationSettings applicationSettings) {
         File cedeskAppDir = new File(applicationSettings.getCedeskAppDir());
