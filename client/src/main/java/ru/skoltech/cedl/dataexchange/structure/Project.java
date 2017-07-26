@@ -407,11 +407,9 @@ public class Project {
         repositoryService.deleteStudy(studyName);
     }
 
-    @Override
-    public void finalize() throws Throwable {
+    public void close() throws Throwable {
         repositoryManager.releaseRepositoryConnection();
         externalModelFileWatcher.close();
-        super.finalize();
     }
 
     public boolean hasLocalStudyModifications() {
