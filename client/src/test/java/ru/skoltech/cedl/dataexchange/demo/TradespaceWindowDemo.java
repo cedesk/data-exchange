@@ -62,7 +62,7 @@ public class TradespaceWindowDemo extends Application {
             Project project = context.getBean(Project.class);
             context.getBean(ThreadPoolTaskScheduler.class).shutdown();
             context.getBean(ThreadPoolTaskExecutor.class).shutdown();
-            project.finalize();
+            project.close();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
