@@ -9,9 +9,9 @@ package ru.skoltech.cedl.dataexchange.analysis;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.EnumUtil;
+import ru.skoltech.cedl.dataexchange.analysis.model.Period;
 import ru.skoltech.cedl.dataexchange.analysis.model.WorkPeriod;
 import ru.skoltech.cedl.dataexchange.analysis.model.WorkSession;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
@@ -48,6 +48,7 @@ public class WorkPeriodAnalysis {
     public List<WorkPeriod> extractWorkPeriods() {
         Map<String, WorkPeriod> lastPeriodOfUser = new HashMap<>();
         workPeriods = new LinkedList<>();
+        logEntries.sort(Comparator.comparing(LogEntry::getUser).thenComparingLong(LogEntry::getLogTimestamp));
         for (LogEntry logEntry : logEntries) {
 
             ActionLogger.ActionType actionType = EnumUtil.lookupEnum(ActionLogger.ActionType.class, logEntry.getAction());
@@ -128,9 +129,26 @@ public class WorkPeriodAnalysis {
 
     public List<WorkSession> extractWorkSessions() {
         if (workPeriods == null) extractWorkPeriods();
+        workPeriods.sort(Comparator.comparingLong(Period::getStartTimestamp));
         List<WorkSession> workSessions = new LinkedList<>();
+        if (workPeriods.isEmpty()) return workSessions;
 
-
+        WorkSession workSession = WorkSession.makeSessionFromWorkPeriod(workPeriods.get(0)); // FIX: if fist has STOP == null
+        for (WorkPeriod workPeriod : workPeriods) {
+            if(workPeriod.getStopTimestamp() == null) continue;
+            if (workSession.hasOverlap(workPeriod)) {
+                workSession.enlarge(workPeriod);
+            } else {
+                workSessions.add(workSession);
+                System.out.println(workSession.asText());
+                workSession = WorkSession.makeSessionFromWorkPeriod(workPeriod); // FIX: if fist has STOP == null
+            }
+        }
+        if (workSessions.isEmpty()) {
+            workSessions.add(workSession);
+            System.out.println(workSession.asText());
+        }
         return workSessions;
     }
+
 }

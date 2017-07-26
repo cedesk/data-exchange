@@ -64,9 +64,9 @@ public class Period {
         if (this.stopTimestamp == null || other.stopTimestamp == null) {
             return false;
         }
-        if (this.startTimestamp > other.startTimestamp && this.startTimestamp < other.stopTimestamp) { // this starts before other
+        if (this.startTimestamp >= other.startTimestamp && this.startTimestamp <= other.stopTimestamp) { // this starts before other
             return true;
-        } else if (this.startTimestamp < other.startTimestamp && this.stopTimestamp > other.startTimestamp) { // this starts after other
+        } else if (this.startTimestamp <= other.startTimestamp && this.stopTimestamp >= other.startTimestamp) { // this starts after other
             return true;
         }
         return false;

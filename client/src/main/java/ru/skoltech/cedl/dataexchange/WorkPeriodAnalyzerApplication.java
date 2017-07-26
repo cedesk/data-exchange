@@ -68,12 +68,10 @@ public class WorkPeriodAnalyzerApplication { // extends Application {
 
             WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries);
             workPeriodAnalysis.extractWorkPeriods();
+            workPeriodAnalysis.saveWorkPeriodsToFile(csvFile);
 
             workPeriodAnalysis.extractWorkSessions();
 
-            workPeriodAnalysis.printWorkPeriods();
-
-            workPeriodAnalysis.saveWorkPeriodsToFile(csvFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
