@@ -10,7 +10,8 @@ On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
 ## Release History and Notes
 
-* 2018-07-22 - Version 1.29   (open source release, added copyright and MIT license)
+* 2018-07-26 - Version 1.29.1 (fixed *.exe build, logging and shutdown errors)
+* 2018-07-24 - Version 1.29   (open source release, added copyright and MIT license)
 * 2018-07-21 - Version 1.28   (introduce DI via Spring context)
 * 2017-06-29 - Version 1.27.1 (fixed bug, critical for first time installations)
 * 2017-06-28 - Version 1.27   (bug fixes, N2 chart improvements, consistency verification)
