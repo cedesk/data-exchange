@@ -12,6 +12,7 @@
 
     <!-- beans of production context can be overridden here -->
     <import resource="context-model.xml" />
+    <import resource="context-controller.xml" />
 
     <bean id="applicationSettings" class="org.mockito.Mockito" factory-method="spy">
         <constructor-arg>

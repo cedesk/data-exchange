@@ -68,7 +68,7 @@ public class MainController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(MainController.class);
 
-    private final static Image FLASH_ICON = new Image("/icons/flash-orange.png");
+    private final static String FLASH_ICON_URL = "/icons/flash-orange.png";
 
     @FXML
     private MenuItem exportMenu;
@@ -175,7 +175,7 @@ public class MainController implements Initializable {
         repositoryNewer.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 if (newValue) {
-                    ImageView imageView = new ImageView(FLASH_ICON);
+                    ImageView imageView = new ImageView(new Image(FLASH_ICON_URL));
                     imageView.setFitWidth(8);
                     imageView.setPreserveRatio(true);
                     imageView.setSmooth(true);
