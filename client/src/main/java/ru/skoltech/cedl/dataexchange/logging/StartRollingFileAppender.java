@@ -64,18 +64,19 @@ public class StartRollingFileAppender extends FileAppender {
     }
 
     private void removeOldFiles(String filePrefix, String extension) {
-        File dirFile = new File(directory);
-        List<String> oldLogFileNames = new ArrayList(Arrays.asList(dirFile.list((dir, file) ->
+        File directoryFile = new File(directory);
+
+        List<String> oldLogFileNames = new ArrayList(Arrays.asList(directoryFile.list((dir, file) ->
             file.startsWith(filePrefix) && file.endsWith(extension)
         )));
 
-        oldLogFileNames.sort(Comparator.naturalOrder());
+        oldLogFileNames.sort(Comparator.reverseOrder());
         if (maxBackupIndex > oldLogFileNames.size()) {
             return;
         }
         List<String> toDeleteFileNames = oldLogFileNames.subList(maxBackupIndex - 1, oldLogFileNames.size());
 
-        toDeleteFileNames.stream().map(s -> new File(dirFile, s)).forEach(File::delete);
+        toDeleteFileNames.stream().map(s -> new File(directoryFile, s)).forEach(File::delete);
     }
 
     /**
@@ -89,7 +90,14 @@ public class StartRollingFileAppender extends FileAppender {
      Set the directory of file name.
      */
     public void setDirectory(String directory) {
-        this.directory = directory;
+        File dirFile = new File(directory);
+        if (!dirFile.isAbsolute()) {
+            String userHome = System.getProperty("user.home");
+            dirFile = new File(userHome, directory);
+        }
+
+        System.out.println("logging directory = " + dirFile.getAbsolutePath());
+        this.directory = dirFile.getAbsolutePath();
     }
 
     /**

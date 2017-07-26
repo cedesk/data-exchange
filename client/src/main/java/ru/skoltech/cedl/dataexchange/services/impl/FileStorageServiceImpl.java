@@ -55,12 +55,27 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     private final File applicationDirectory;
 
+    /**
+     * Service defines an application directory at the start up.
+     *
+     * If <i>cedesk.app.dir</i> property defined as absolute path then use it.
+     * Id <i>cedesk.app.dir</i> property defined as relative path, then prepend <i>user.home</i> system property to it.
+     * TODO: write a test
+     *
+     * @param applicationSettings application settings to access to <i>cedesk.app.dir</i> property
+     */
     public FileStorageServiceImpl(ApplicationSettings applicationSettings) {
-        this.applicationDirectory = new File(applicationSettings.getCedeskAppDir());
-        if (!applicationDirectory.exists()) {
-            boolean created = applicationDirectory.mkdirs();
+        File cedeskAppDir = new File(applicationSettings.getCedeskAppDir());
+        if (cedeskAppDir.isAbsolute()) {
+            this.applicationDirectory = cedeskAppDir;
+        } else {
+            String userHome = System.getProperty("user.home");
+            this.applicationDirectory = new File(userHome, applicationSettings.getCedeskAppDir());
+        }
+        if (!this.applicationDirectory.exists()) {
+            boolean created = this.applicationDirectory.mkdirs();
             if (!created) {
-                logger.error("unable to create application directory: " + applicationDirectory.getAbsolutePath());
+                logger.error("unable to create application directory: " + this.applicationDirectory.getAbsolutePath());
             }
         }
     }

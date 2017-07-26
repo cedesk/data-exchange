@@ -28,6 +28,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
 import ru.skoltech.cedl.dataexchange.controller.MainController;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -41,8 +42,10 @@ public class ClientApplication extends Application {
 
     public static void main(String[] args) {
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
+        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
         PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
-        System.out.println("using: " + applicationSettings.getCedeskAppDir() + "/" + applicationSettings.getCedeskAppFile());
+        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
+                "/" + applicationSettings.getCedeskAppFile());
 
         logger.info("----------------------------------------------------------------------------------------------------");
         logger.info("Opening CEDESK ...");
