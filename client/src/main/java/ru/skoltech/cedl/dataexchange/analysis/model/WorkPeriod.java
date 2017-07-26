@@ -7,19 +7,29 @@
 
 package ru.skoltech.cedl.dataexchange.analysis.model;
 
-public class WorkPeriod {
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.logging.LogEntry;
+
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * Created by D.Knoll on 25.07.2017.
+ */
+public class WorkPeriod extends Period {
 
     private String usernname;
 
-    private Long startTimestamp;
-
-    private Long stopTimestamp;
-
     private Long parameterModifications = 0L;
 
+    private List<LogEntry> logEntries = new LinkedList<>();
+    private MultiValuedMap<ActionLogger.ActionType, LogEntry> logEntriesByActionType = new ArrayListValuedHashMap<>();
+
     public WorkPeriod(String username, Long startTimestamp) {
+        super(startTimestamp);
         this.usernname = username;
-        this.startTimestamp = startTimestamp;
     }
 
     public String getUsernname() {
@@ -30,22 +40,6 @@ public class WorkPeriod {
         this.usernname = usernname;
     }
 
-    public Long getStartTimestamp() {
-        return startTimestamp;
-    }
-
-    public void setStartTimestamp(Long startTimestamp) {
-        this.startTimestamp = startTimestamp;
-    }
-
-    public Long getStopTimestamp() {
-        return stopTimestamp;
-    }
-
-    public void setStopTimestamp(Long stopTimestamp) {
-        this.stopTimestamp = stopTimestamp;
-    }
-
     public Long getParameterModifications() {
         return parameterModifications;
     }
@@ -54,8 +48,36 @@ public class WorkPeriod {
         this.parameterModifications = parameterModifications;
     }
 
-    public void incrementParameterModifications() {
+    public int getAllActionCount() {
+        return logEntries.size();
+    }
+
+    private void incrementParameterModifications() {
         parameterModifications++;
+    }
+
+    public List<LogEntry> getLogEntries() {
+        return logEntries;
+    }
+
+    public boolean add(ActionLogger.ActionType actionType, LogEntry logEntry) {
+        if (actionType == ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL) {
+            incrementParameterModifications();
+        }
+        logEntriesByActionType.put(actionType, logEntry);
+        return logEntries.add(logEntry);
+    }
+
+    public String asText() {
+        return "WorkPeriod: " + usernname +
+                " [" + getStartTimestampFormatted() + " - " + getStopTimestampFormatted() + "] " + getDurationFormatted() + " :: " + getAllActionCount();
+    }
+
+    public Integer getActionCount(ActionLogger.ActionType actionType) {
+        if (logEntriesByActionType.containsKey(actionType)) {
+            return logEntriesByActionType.get(actionType).size();
+        }
+        return 0;
     }
 
     @Override

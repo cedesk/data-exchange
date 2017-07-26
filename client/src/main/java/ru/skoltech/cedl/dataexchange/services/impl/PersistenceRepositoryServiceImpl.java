@@ -65,11 +65,11 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
     @Override
     public List<String> listStudies() throws RepositoryException {
         try {
-            final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<String> criteria = builder.createQuery(String.class);
-            Root<Study> personRoot = criteria.from(Study.class);
-            criteria.select(personRoot.get("name"));
-            return entityManager.createQuery(criteria).getResultList();
+            final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<String> criteriaQuery = criteriaBuilder.createQuery(String.class);
+            Root<Study> root = criteriaQuery.from(Study.class);
+            criteriaQuery.select(root.get("name"));
+            return entityManager.createQuery(criteriaQuery).getResultList();
         } catch (Exception e) {
             throw new RepositoryException("Study loading failed.", e);
         }
@@ -80,8 +80,8 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
         try {
             final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
             final CriteriaQuery criteriaQuery = criteriaBuilder.createQuery(Study.class);
-            final Root studyRoot = criteriaQuery.from(Study.class);
-            final Predicate namePredicate = criteriaBuilder.equal(studyRoot.get("name"), name);
+            final Root root = criteriaQuery.from(Study.class);
+            final Predicate namePredicate = criteriaBuilder.equal(root.get("name"), name);
             criteriaQuery.where(namePredicate);
             final TypedQuery query = entityManager.createQuery(criteriaQuery);
             Object singleResult = query.getSingleResult();
@@ -338,12 +338,18 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
     }
 
     @Override
-    public List<LogEntry> getLogEntries() throws RepositoryException {
+    public List<LogEntry> getLogEntries(Long fromId, Long toId) throws RepositoryException {
         try {
-            final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<LogEntry> criteria = builder.createQuery(LogEntry.class);
-            Root<LogEntry> root = criteria.from(LogEntry.class);
-            return entityManager.createQuery(criteria).getResultList();
+            final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<LogEntry> criteriaQuery = criteriaBuilder.createQuery(LogEntry.class);
+            Root<LogEntry> root = criteriaQuery.from(LogEntry.class);
+            if (fromId != null && toId != null) {
+                Predicate greaterThanOrEqualTo = criteriaBuilder.greaterThanOrEqualTo(root.get("id"), fromId);
+                Predicate lessThanOrEqualTo = criteriaBuilder.lessThanOrEqualTo(root.get("id"), toId);
+                criteriaQuery = criteriaQuery.where(greaterThanOrEqualTo, lessThanOrEqualTo);
+            }
+            criteriaQuery = criteriaQuery.orderBy(criteriaBuilder.asc(root.get("user")), criteriaBuilder.asc(root.get("id")));
+            return entityManager.createQuery(criteriaQuery).getResultList();
         } catch (Exception e) {
             throw new RepositoryException("Study loading LogEntries.", e);
         }
@@ -363,10 +369,10 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
         try {
             final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
             final CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
-            final Root<Study> studyRoot = criteriaQuery.from(Study.class);
-            final Predicate namePredicate = criteriaBuilder.equal(studyRoot.get("name"), name);
+            final Root<Study> root = criteriaQuery.from(Study.class);
+            final Predicate namePredicate = criteriaBuilder.equal(root.get("name"), name);
             criteriaQuery.where(namePredicate);
-            criteriaQuery.select(criteriaBuilder.tuple(studyRoot.get("latestModelModification")));
+            criteriaQuery.select(criteriaBuilder.tuple(root.get("latestModelModification")));
             Tuple result = entityManager.createQuery(criteriaQuery).getSingleResult();
             return (Long) result.get(0);
         } catch (NoResultException e) {

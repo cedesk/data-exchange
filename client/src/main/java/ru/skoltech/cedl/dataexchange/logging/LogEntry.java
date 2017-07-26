@@ -7,7 +7,10 @@
 
 package ru.skoltech.cedl.dataexchange.logging;
 
+import ru.skoltech.cedl.dataexchange.Utils;
+
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * Created by dknoll on 04/12/15.
@@ -52,6 +55,11 @@ public class LogEntry {
 
     public Long getLogTimestamp() {
         return logTimestamp;
+    }
+
+    @Transient
+    public String getLogTimestampFormatted() {
+        return Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(logTimestamp));
     }
 
     public void setLogTimestamp(Long logTimestamp) {

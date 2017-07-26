@@ -7,17 +7,23 @@
 
 package ru.skoltech.cedl.dataexchange.analysis;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.EnumUtil;
 import ru.skoltech.cedl.dataexchange.analysis.model.WorkPeriod;
+import ru.skoltech.cedl.dataexchange.analysis.model.WorkSession;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.*;
 
+/**
+ * Created by D.Knoll on 25.07.2017.
+ */
 public class WorkPeriodAnalysis {
 
     private static final Logger logger = Logger.getLogger(WorkPeriodAnalysis.class);
@@ -30,7 +36,16 @@ public class WorkPeriodAnalysis {
         this.logEntries = logEntries;
     }
 
-    public void analyze() {
+    private final static EnumSet<ActionLogger.ActionType> ACTIONS_TO_ANALYZE = EnumSet.of(
+            ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL,
+            ActionLogger.ActionType.PARAMETER_ADD,
+            ActionLogger.ActionType.PARAMETER_MODIFY_LINK,
+            ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE,
+            ActionLogger.ActionType.PARAMETER_REMOVE,
+            ActionLogger.ActionType.NODE_ADD,
+            ActionLogger.ActionType.NODE_REMOVE);
+
+    public List<WorkPeriod> extractWorkPeriods() {
         Map<String, WorkPeriod> lastPeriodOfUser = new HashMap<>();
         workPeriods = new LinkedList<>();
         for (LogEntry logEntry : logEntries) {
@@ -46,24 +61,76 @@ public class WorkPeriodAnalysis {
                 if (lastPeriodOfUser.containsKey(user)) {
                     WorkPeriod workPeriod = lastPeriodOfUser.get(user);
                     workPeriod.setStopTimestamp(logEntry.getLogTimestamp());
-                    logger.info(workPeriod);
                 } else {
                     logger.warn("save without load: " + logEntry.getId());
-                }
-            } else if (actionType == ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL) {
-                if (lastPeriodOfUser.containsKey(user)) {
-                    WorkPeriod workPeriod = lastPeriodOfUser.get(user);
-                    workPeriod.incrementParameterModifications();
-                } else {
-                    logger.warn("modification without load: " + logEntry.getId());
                 }
             } else if (actionType == ActionLogger.ActionType.APPLICATION_START
                     || actionType == ActionLogger.ActionType.USER_VALIDATE
                     || actionType == ActionLogger.ActionType.APPLICATION_STOP) {
                 // ignore
+                //logger.info("ignoring action: " + logEntry.getLogTimestampFormatted() + ": " + logEntry.getUser() + ", " + logEntry.getAction());
+            } else if (ACTIONS_TO_ANALYZE.contains(actionType)) {
+                if (lastPeriodOfUser.containsKey(user)) {
+                    WorkPeriod workPeriod = lastPeriodOfUser.get(user);
+                    workPeriod.add(actionType, logEntry);
+                } else {
+                    logger.warn("modification without load: " + logEntry.getId());
+                }
             } else {
-                logger.warn("other action: " + logEntry.getAction());
+                logger.warn("other action: " + logEntry.getLogTimestampFormatted() + ": " + logEntry.getUser() + ", " + logEntry.getAction() + ", " + logEntry.getDescription());
             }
         }
+        return workPeriods;
+    }
+
+    public void saveWorkPeriodsToFile(File csvFile) {
+        logger.info("writing to file: " + csvFile.getAbsolutePath());
+        try (FileWriter fos = new FileWriter(csvFile)) {
+
+            CSVPrinter printer = new CSVPrinter(fos, CSVFormat.RFC4180);
+            printer.print("username");
+            printer.print("starttime");
+            printer.print("stoptime");
+            printer.print("duration");
+            printer.print("actions");
+
+            for (ActionLogger.ActionType actionType : ACTIONS_TO_ANALYZE) {
+                printer.print(actionType.name());
+            }
+
+            printer.println();
+
+            for (WorkPeriod workPeriod : workPeriods) {
+                printer.print(workPeriod.getUsernname());
+                printer.print(workPeriod.getStartTimestampFormatted());
+                printer.print(workPeriod.getStopTimestampFormatted());
+                printer.print(workPeriod.getDurationFormatted());
+                printer.print(workPeriod.getAllActionCount());
+
+                for (ActionLogger.ActionType actionType : ACTIONS_TO_ANALYZE) {
+                    printer.print(workPeriod.getActionCount(actionType));
+                }
+
+                printer.println();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void printWorkPeriods() {
+        System.out.println("--- WORK PERIODS START ---");
+        for (WorkPeriod workPeriod : workPeriods) {
+            System.out.println(workPeriod.asText());
+        }
+        System.out.println("--- WORK PERIODS END---");
+    }
+
+    public List<WorkSession> extractWorkSessions() {
+        if (workPeriods == null) extractWorkPeriods();
+        List<WorkSession> workSessions = new LinkedList<>();
+
+
+        return workSessions;
     }
 }

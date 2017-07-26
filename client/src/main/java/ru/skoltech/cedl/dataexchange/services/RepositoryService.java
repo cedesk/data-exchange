@@ -68,7 +68,7 @@ public interface RepositoryService {
     List<ParameterChange> getChanges(long systemId) throws RepositoryException;
 
     @Transactional
-    List<LogEntry> getLogEntries() throws RepositoryException;
+    List<LogEntry> getLogEntries(Long fromId, Long toId) throws RepositoryException;
 
     @Transactional
     void storeLog(LogEntry logEntry);
