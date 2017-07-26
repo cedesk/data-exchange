@@ -83,7 +83,7 @@ public class WorkPeriodAnalyzerApplication { // extends Application {
         logger.info("Stopping CEDESK ...");
         try {
             Project project = context.getBean(Project.class);
-            project.finalize();
+            project.close();
             context.getBean(ThreadPoolTaskScheduler.class).shutdown();
             context.getBean(ThreadPoolTaskExecutor.class).shutdown();
         } catch (Throwable e) {
