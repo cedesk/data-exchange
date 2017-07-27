@@ -13,14 +13,21 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.ResolverStyle;
 import java.util.Date;
+
+import static java.time.temporal.ChronoField.*;
 
 /**
  * Created by D.Knoll on 26.07.2017.
  */
 public class Period {
 
-    private static DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_TIME;
+    private static DateTimeFormatter TIME_FORMATTER = new DateTimeFormatterBuilder()
+            .appendValue(HOUR_OF_DAY, 2).appendLiteral(':')
+            .appendValue(MINUTE_OF_HOUR, 2).optionalStart().appendLiteral(':')
+            .appendValue(SECOND_OF_MINUTE, 2).toFormatter();
 
     protected Long startTimestamp;
 
@@ -60,8 +67,12 @@ public class Period {
         return Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(stopTimestamp));
     }
 
+    public boolean isOpen() {
+        return stopTimestamp == null;
+    }
+
     public boolean hasOverlap(Period other) {
-        if (this.stopTimestamp == null || other.stopTimestamp == null) {
+        if (this.isOpen() || other.isOpen()) {
             return false;
         }
         if (this.startTimestamp >= other.startTimestamp && this.startTimestamp <= other.stopTimestamp) { // this starts before other
@@ -73,7 +84,7 @@ public class Period {
     }
 
     public long overlapValue(Period other) {
-        if (this.stopTimestamp == null || other.stopTimestamp == null) {
+        if (this.isOpen() || other.isOpen()) {
             return 0;
         }
         return Math.max(0, Math.min(this.stopTimestamp, other.stopTimestamp) - Math.max(this.startTimestamp, other.startTimestamp));

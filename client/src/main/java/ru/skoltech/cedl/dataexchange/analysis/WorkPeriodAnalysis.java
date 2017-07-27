@@ -27,15 +27,6 @@ import java.util.*;
 public class WorkPeriodAnalysis {
 
     private static final Logger logger = Logger.getLogger(WorkPeriodAnalysis.class);
-
-    private List<LogEntry> logEntries;
-
-    private List<WorkPeriod> workPeriods;
-
-    public WorkPeriodAnalysis(List<LogEntry> logEntries) {
-        this.logEntries = logEntries;
-    }
-
     private final static EnumSet<ActionLogger.ActionType> ACTIONS_TO_ANALYZE = EnumSet.of(
             ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL,
             ActionLogger.ActionType.PARAMETER_ADD,
@@ -44,6 +35,13 @@ public class WorkPeriodAnalysis {
             ActionLogger.ActionType.PARAMETER_REMOVE,
             ActionLogger.ActionType.NODE_ADD,
             ActionLogger.ActionType.NODE_REMOVE);
+    private List<LogEntry> logEntries;
+    private List<WorkPeriod> workPeriods;
+    private List<WorkSession> workSessions;
+
+    public WorkPeriodAnalysis(List<LogEntry> logEntries) {
+        this.logEntries = logEntries;
+    }
 
     public List<WorkPeriod> extractWorkPeriods() {
         Map<String, WorkPeriod> lastPeriodOfUser = new HashMap<>();
@@ -84,15 +82,73 @@ public class WorkPeriodAnalysis {
         return workPeriods;
     }
 
+    public List<WorkSession> extractWorkSessions() {
+        if (workPeriods == null) extractWorkPeriods();
+        workPeriods.sort(Comparator.comparingLong(Period::getStartTimestamp));
+        workSessions = new LinkedList<>();
+        if (workPeriods.isEmpty()) return workSessions;
+
+        Iterator<WorkPeriod> workPeriodIterator = workPeriods.iterator();
+        WorkPeriod firstWorkPeriod = getNextClosedWorkPeriod(workPeriodIterator);
+        if (firstWorkPeriod == null) return workSessions;
+        WorkSession workSession = WorkSession.makeSessionFromWorkPeriod(firstWorkPeriod);
+        while (workPeriodIterator.hasNext()) {
+            WorkPeriod workPeriod = workPeriodIterator.next();
+            if (workPeriod.isOpen() || workPeriod.getAllActionCount() == 0) continue;
+            if (workSession.hasOverlap(workPeriod)) {
+                workSession.enlarge(workPeriod);
+            } else {
+                workSessions.add(workSession);
+                if (workPeriod.isOpen()) {
+                    workPeriod = getNextClosedWorkPeriod(workPeriodIterator);
+                    if (workPeriod == null) break;
+                }
+                workSession = WorkSession.makeSessionFromWorkPeriod(workPeriod);
+            }
+        }
+        if (workSessions.isEmpty()) {
+            workSessions.add(workSession);
+        }
+        return workSessions;
+    }
+
+    private WorkPeriod getNextClosedWorkPeriod(Iterator<WorkPeriod> workPeriodIterator) {
+        WorkPeriod firstWorkPeriod = null;
+        while (workPeriodIterator.hasNext()) { // find first closed work period
+            firstWorkPeriod = workPeriodIterator.next();
+            if (!firstWorkPeriod.isOpen()) break;
+        }
+        return firstWorkPeriod;
+    }
+
+    public void printWorkPeriods() {
+        System.out.println("--- WORK PERIODS START ---");
+        for (WorkPeriod workPeriod : workPeriods) {
+            System.out.println(workPeriod.asText());
+        }
+        System.out.println("--- WORK PERIODS END---");
+    }
+
+    public void printWorkSessions() {
+        System.out.println("--- WORK SESSIONS START ---");
+        for (WorkSession workSession : workSessions) {
+            System.out.println(workSession.asText());
+        }
+        System.out.println("--- WORK SESSIONS END---");
+    }
+
     public void saveWorkPeriodsToFile(File csvFile) {
         logger.info("writing to file: " + csvFile.getAbsolutePath());
         try (FileWriter fos = new FileWriter(csvFile)) {
 
             CSVPrinter printer = new CSVPrinter(fos, CSVFormat.RFC4180);
+            printer.print("sep=,");
+            printer.println();
+
             printer.print("username");
-            printer.print("starttime");
-            printer.print("stoptime");
-            printer.print("duration");
+            printer.print("time of load");
+            printer.print("time of store");
+            printer.print("work duration");
             printer.print("actions");
 
             for (ActionLogger.ActionType actionType : ACTIONS_TO_ANALYZE) {
@@ -115,40 +171,36 @@ public class WorkPeriodAnalysis {
                 printer.println();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error writing work periods to CSV file");
         }
     }
 
-    public void printWorkPeriods() {
-        System.out.println("--- WORK PERIODS START ---");
-        for (WorkPeriod workPeriod : workPeriods) {
-            System.out.println(workPeriod.asText());
-        }
-        System.out.println("--- WORK PERIODS END---");
-    }
+    public void saveWorkSessionToFile(File csvFile) {
+        logger.info("writing to file: " + csvFile.getAbsolutePath());
+        try (FileWriter fos = new FileWriter(csvFile)) {
 
-    public List<WorkSession> extractWorkSessions() {
-        if (workPeriods == null) extractWorkPeriods();
-        workPeriods.sort(Comparator.comparingLong(Period::getStartTimestamp));
-        List<WorkSession> workSessions = new LinkedList<>();
-        if (workPeriods.isEmpty()) return workSessions;
+            CSVPrinter printer = new CSVPrinter(fos, CSVFormat.RFC4180);
+            printer.print("sep=,");
+            printer.println();
 
-        WorkSession workSession = WorkSession.makeSessionFromWorkPeriod(workPeriods.get(0)); // FIX: if fist has STOP == null
-        for (WorkPeriod workPeriod : workPeriods) {
-            if(workPeriod.getStopTimestamp() == null) continue;
-            if (workSession.hasOverlap(workPeriod)) {
-                workSession.enlarge(workPeriod);
-            } else {
-                workSessions.add(workSession);
-                System.out.println(workSession.asText());
-                workSession = WorkSession.makeSessionFromWorkPeriod(workPeriod); // FIX: if fist has STOP == null
+            printer.print("session start");
+            printer.print("session stop");
+            printer.print("duration");
+            printer.print("#users");
+            printer.print("users+actions");
+            printer.println();
+
+            for (WorkSession workSession : workSessions) {
+                printer.print(workSession.getStartTimestampFormatted());
+                printer.print(workSession.getStopTimestampFormatted());
+                printer.print(workSession.getDurationFormatted());
+                printer.print(workSession.getWorkPeriods().size());
+                printer.print(workSession.getUsers());
+                printer.println();
             }
+        } catch (Exception e) {
+            logger.error("error writing work sessions to CSV file");
         }
-        if (workSessions.isEmpty()) {
-            workSessions.add(workSession);
-            System.out.println(workSession.asText());
-        }
-        return workSessions;
     }
 
 }

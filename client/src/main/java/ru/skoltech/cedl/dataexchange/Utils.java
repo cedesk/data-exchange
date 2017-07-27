@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.jboss.logging.Logger;
 
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -129,5 +130,29 @@ public class Utils {
         int beginIndex = fileName.lastIndexOf('.');
         if (beginIndex < 0) return "";
         return fileName.substring(beginIndex).toLowerCase();
+    }
+
+    static void writeToFile(Serializable object, File file) {
+        logger.info("writing to file: " + file.getAbsolutePath());
+        try {
+            ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(file));
+            os.writeObject(object);
+            os.close();
+        } catch (Exception e) {
+            logger.error("failed writing OBJ file", e);
+        }
+    }
+
+    static Object readFromFile(File file) {
+        logger.info("reading from file: " + file.getAbsolutePath());
+        try {
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+            Object object = ois.readObject();
+            ois.close();
+            return object;
+        } catch (Exception e) {
+            logger.error("failed read OBJ file", e);
+        }
+        return null;
     }
 }

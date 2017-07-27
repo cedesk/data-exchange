@@ -18,12 +18,6 @@ public class WorkSession extends Period {
 
     private List<WorkPeriod> workPeriods = new LinkedList<>();
 
-    public static WorkSession makeSessionFromWorkPeriod(WorkPeriod workPeriod) {
-        WorkSession workSession = new WorkSession(workPeriod.getStartTimestamp(), workPeriod.getStopTimestamp());
-        workSession.addWorkPeriod(workPeriod);
-        return workSession;
-    }
-
     public WorkSession(Long startTimestamp, Long stopTimestamp) {
         super(startTimestamp, stopTimestamp);
     }
@@ -32,18 +26,23 @@ public class WorkSession extends Period {
         return workPeriods;
     }
 
-    private void addWorkPeriod(WorkPeriod workPeriod) {
-        workPeriods.add(workPeriod);
+    public static WorkSession makeSessionFromWorkPeriod(WorkPeriod workPeriod) {
+        WorkSession workSession = new WorkSession(workPeriod.getStartTimestamp(), workPeriod.getStopTimestamp());
+        workSession.addWorkPeriod(workPeriod);
+        return workSession;
+    }
+
+    public String asText() {
+        return "WorkSession: [" + getStartTimestampFormatted() + " - " + getStopTimestampFormatted() + "] " + getDurationFormatted() + " {" + workPeriods.size() + "} " + getUsers();
+    }
+
+    public String getUsers() {
+        return workPeriods.stream().map(wp -> wp.getUsernname() + "(" + wp.getAllActionCount() + ")").collect(Collectors.joining(";"));
     }
 
     public void enlarge(WorkPeriod workPeriod) {
         super.enlarge(workPeriod);
         addWorkPeriod(workPeriod);
-    }
-
-    public String asText() {
-        String users = workPeriods.stream().map(WorkPeriod::getUsernname).distinct().sorted().collect(Collectors.joining(","));
-        return "WorkSession: [" + getStartTimestampFormatted() + " - " + getStopTimestampFormatted() + "] " + getDurationFormatted() + " (" + workPeriods.size() + ") " + users;
     }
 
     @Override
@@ -53,5 +52,9 @@ public class WorkSession extends Period {
                 ", stopTimestamp=" + stopTimestamp +
                 ", workPeriods=" + workPeriods +
                 '}';
+    }
+
+    private void addWorkPeriod(WorkPeriod workPeriod) {
+        workPeriods.add(workPeriod);
     }
 }

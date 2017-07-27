@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange.logging;
 import ru.skoltech.cedl.dataexchange.Utils;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -26,7 +27,7 @@ import java.util.Date;
  */
 @Entity
 @Access(AccessType.PROPERTY)
-public class LogEntry {
+public class LogEntry implements Serializable {
 
     private long id;
 
