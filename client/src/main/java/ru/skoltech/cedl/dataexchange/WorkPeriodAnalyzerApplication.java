@@ -21,17 +21,17 @@ import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
-import java.io.*;
+import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by d.knoll on 25.07.2017.
  */
-public class WorkPeriodAnalyzerApplication { // extends Application {
+public class WorkPeriodAnalyzerApplication {
 
+    private static final boolean TREAT_INCOMPLETE_PERIOD_AS_CLOSED = false;
     private static Logger logger = Logger.getLogger(WorkPeriodAnalyzerApplication.class);
-
     private static ApplicationContext context;
 
     /**
@@ -92,7 +92,7 @@ public class WorkPeriodAnalyzerApplication { // extends Application {
         try {
             List<LogEntry> logEntries = getLogEntries();
 
-            WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries);
+            WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries, TREAT_INCOMPLETE_PERIOD_AS_CLOSED);
             //File periodsCsvFile = new File(appDir, "work-periods.csv");
             //workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
 

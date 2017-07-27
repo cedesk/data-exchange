@@ -11,9 +11,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.EnumUtil;
-import ru.skoltech.cedl.dataexchange.analysis.model.Period;
 import ru.skoltech.cedl.dataexchange.analysis.model.WorkPeriod;
-import ru.skoltech.cedl.dataexchange.analysis.model.WorkSession;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 
@@ -37,16 +35,22 @@ public class WorkPeriodAnalysis {
             ActionLogger.ActionType.NODE_REMOVE);
     private List<LogEntry> logEntries;
     private List<WorkPeriod> workPeriods;
+    private boolean closeIncompletePeriods;
 
-    public WorkPeriodAnalysis(List<LogEntry> logEntries) {
+    public WorkPeriodAnalysis(List<LogEntry> logEntries, boolean closeIncompletePeriods) {
         this.logEntries = logEntries;
+        this.closeIncompletePeriods = closeIncompletePeriods;
     }
 
     public List<WorkPeriod> getWorkPeriods() {
-        if(workPeriods == null) {
+        if (workPeriods == null) {
             workPeriods = extractWorkPeriods();
         }
         return workPeriods;
+    }
+
+    public boolean isCloseIncompletePeriods() {
+        return closeIncompletePeriods;
     }
 
     public List<WorkPeriod> extractWorkPeriods() {
@@ -65,7 +69,14 @@ public class WorkPeriodAnalysis {
             } else if (actionType == ActionLogger.ActionType.PROJECT_SAVE) {
                 if (lastPeriodOfUser.containsKey(user)) {
                     WorkPeriod workPeriod = lastPeriodOfUser.get(user);
-                    workPeriod.setStopTimestamp(logEntry.getLogTimestamp());
+                    if (!closeIncompletePeriods && logEntry.getDescription().contains("concurrent")) {
+                        logger.warn("work period of " + workPeriod.getUsernname() + ", " +
+                                workPeriod.getStartTimestampFormatted() + " finished unsuccessfully: " +
+                                logEntry.getLogTimestampFormatted() + ": " + logEntry.getUser() + ", " +
+                                logEntry.getAction() + ", " + logEntry.getDescription());
+                    } else {
+                        workPeriod.setStopTimestamp(logEntry.getLogTimestamp());
+                    }
                 } else {
                     logger.warn("save without load: " + logEntry.getId());
                 }
@@ -86,15 +97,6 @@ public class WorkPeriodAnalysis {
             }
         }
         return workPeriods;
-    }
-
-    private WorkPeriod getNextClosedWorkPeriod(Iterator<WorkPeriod> workPeriodIterator) {
-        WorkPeriod firstWorkPeriod = null;
-        while (workPeriodIterator.hasNext()) { // find first closed work period
-            firstWorkPeriod = workPeriodIterator.next();
-            if (!firstWorkPeriod.isOpen()) break;
-        }
-        return firstWorkPeriod;
     }
 
     public void printWorkPeriods() {
@@ -141,6 +143,15 @@ public class WorkPeriodAnalysis {
         } catch (Exception e) {
             logger.error("error writing work periods to CSV file");
         }
+    }
+
+    private WorkPeriod getNextClosedWorkPeriod(Iterator<WorkPeriod> workPeriodIterator) {
+        WorkPeriod firstWorkPeriod = null;
+        while (workPeriodIterator.hasNext()) { // find first closed work period
+            firstWorkPeriod = workPeriodIterator.next();
+            if (!firstWorkPeriod.isOpen()) break;
+        }
+        return firstWorkPeriod;
     }
 
 
