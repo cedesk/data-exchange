@@ -173,7 +173,14 @@ public class ApplicationSettings {
     }
 
     public void init() {
-        this.file = new File(cedeskAppDir, cedeskAppFile);
+        File cedeskAppDirFile = new File(cedeskAppDir);
+        if (cedeskAppDirFile.isAbsolute()) {
+            this.file = new File(cedeskAppDirFile, cedeskAppFile);
+        } else {
+            String userHome = System.getProperty("user.home");
+            File userDir = new File(userHome, cedeskAppDir);
+            this.file = new File(userDir, cedeskAppFile);
+        }
         Properties props = new Properties();
         try (FileReader fileReader = new FileReader(file)) {
             props.load(fileReader);
