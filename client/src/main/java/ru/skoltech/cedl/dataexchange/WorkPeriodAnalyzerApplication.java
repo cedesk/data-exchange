@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.analysis.WorkPeriodAnalysis;
+import ru.skoltech.cedl.dataexchange.analysis.WorkSessionAnalysis;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
@@ -86,20 +87,19 @@ public class WorkPeriodAnalyzerApplication { // extends Application {
     }
 
     private static void performAnalysis() {
+        FileStorageService storageService = context.getBean(FileStorageService.class);
+        File appDir = storageService.applicationDirectory();
         try {
-            FileStorageService storageService = context.getBean(FileStorageService.class);
             List<LogEntry> logEntries = getLogEntries();
 
             WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries);
-            //workPeriodAnalysis.extractWorkPeriods();
+            //File periodsCsvFile = new File(appDir, "work-periods.csv");
+            //workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
 
-            //File csvFile = new File(storageService.applicationDirectory(), "work-periods.csv");
-            //workPeriodAnalysis.saveWorkPeriodsToFile(csvFile);
-
-            workPeriodAnalysis.extractWorkSessions();
-            workPeriodAnalysis.printWorkSessions();
-            File sessionsCsvFile = new File(storageService.applicationDirectory(), "work-sessions.csv");
-            workPeriodAnalysis.saveWorkSessionToFile(sessionsCsvFile);
+            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis);
+            workSessionAnalysis.printWorkSessions();
+            File sessionsCsvFile = new File(appDir, "work-sessions.csv");
+            workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
 
         } catch (Exception e) {
             logger.error("analysis failed", e);
