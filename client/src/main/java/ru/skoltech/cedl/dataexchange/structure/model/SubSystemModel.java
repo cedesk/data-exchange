@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.List;
  */
 @Entity
 @Access(AccessType.PROPERTY)
+@Audited
 public class SubSystemModel extends CompositeModelNode<ElementModel> {
 
     public SubSystemModel() {
@@ -38,21 +40,23 @@ public class SubSystemModel extends CompositeModelNode<ElementModel> {
     }
 
     @Override
-    @OneToMany(targetEntity = ElementModel.class, mappedBy = "parent", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @Fetch(FetchMode.SELECT)
-    public List<ElementModel> getSubNodes() {
-        return super.getSubNodes();
-    }
-
-    @Override
     @ManyToOne(targetEntity = SystemModel.class)
     public ModelNode getParent() {
         return super.getParent();
     }
 
     @Override
+    @OneToMany(targetEntity = ElementModel.class, mappedBy = "parent", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
+    public List<ElementModel> getSubNodes() {
+        return super.getSubNodes();
+    }
+
+    //---------------
+    @Override
     @Transient
     public String getNodePath() {
         return NODE_SEPARATOR + name;
     }
+    //---------------
 }

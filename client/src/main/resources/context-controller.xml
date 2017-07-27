@@ -41,12 +41,14 @@
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />
         <property name="fileStorageService" ref="fileStorageService" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="modelUpdateService" ref="modelUpdateService" />
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.DiffController">
         <property name="project" ref="project" />
         <property name="repositoryService" ref="repositoryService" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
     </bean>
 
@@ -65,12 +67,14 @@
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserManagementController" >
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserEditingController" />
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserRoleManagementController" >
         <property name="project" ref="project" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UnitManagementController" >

@@ -17,17 +17,21 @@
 package ru.skoltech.cedl.dataexchange.services.impl;
 
 import ru.skoltech.cedl.dataexchange.services.UserManagementService;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.Discipline;
-import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.users.model.*;
 
 /**
  * Created by dknoll on 13/05/15.
  */
 public class UserManagementServiceImpl implements UserManagementService {
+
+    private UserRoleManagementService userRoleManagementService;
+
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
+    }
 
     @Override
     public UserManagement createDefaultUserManagement() {
@@ -44,7 +48,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     @Override
     public UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement) {
-        UserRoleManagement urm = new UserRoleManagement();
+        UserRoleManagement urm = UserRoleManagementFactory.createUserRoleManagement();
 
         // add a discipline for each subsystem
         for (ModelNode modelNode : systemModel.getSubNodes()) {
@@ -55,7 +59,7 @@ public class UserManagementServiceImpl implements UserManagementService {
         if (userManagement != null) {
             User admin = userManagement.findUser(ADMIN_USER_NAME);
             if (admin != null) {
-                urm.addUserDiscipline(admin, urm.getAdminDiscipline());
+                userRoleManagementService.addAdminDiscipline(urm, admin);
             }
         }
         return urm;
@@ -63,7 +67,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     @Override
     public UserRoleManagement createDefaultUserRoleManagement(UserManagement userManagement) {
-        UserRoleManagement urm = new UserRoleManagement();
+        UserRoleManagement urm = UserRoleManagementFactory.createUserRoleManagement();
 
         // create Disciplines
         Discipline orbitDiscipline = new Discipline("Orbit", urm);
@@ -89,7 +93,7 @@ public class UserManagementServiceImpl implements UserManagementService {
         if (userManagement != null) {
             User admin = userManagement.findUser(ADMIN_USER_NAME);
             if (admin != null) {
-                urm.addUserDiscipline(admin, urm.getAdminDiscipline());
+                userRoleManagementService.addAdminDiscipline(urm, admin);
             }
         }
         return urm;
@@ -101,6 +105,6 @@ public class UserManagementServiceImpl implements UserManagementService {
 
         userManagement.getUsers().add(admin);
 
-        userRoleManagement.addUserDiscipline(admin, userRoleManagement.getAdminDiscipline());
+        userRoleManagementService.addAdminDiscipline(userRoleManagement, admin);
     }
 }

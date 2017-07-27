@@ -38,7 +38,6 @@ import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
-import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
@@ -61,18 +60,18 @@ public class Project {
 
     private static Logger logger = Logger.getLogger(Project.class);
 
-    private final ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
-
     private ApplicationSettings applicationSettings;
     private RepositoryManager repositoryManager;
     private RepositoryService repositoryService;
     private RepositoryStateMachine repositoryStateMachine;
+    private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ExternalModelFileHandler externalModelFileHandler;
     private FileStorageService fileStorageService;
     private StudyService studyService;
     private ModelUpdateService modelUpdateService;
     private UserManagementService userManagementService;
+    private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
     private ActionLogger actionLogger;
 
@@ -122,6 +121,10 @@ public class Project {
         this.repositoryStateMachine = repositoryStateMachine;
     }
 
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
     public ExternalModelFileWatcher getExternalModelFileWatcher() {
         return externalModelFileWatcher;
     }
@@ -150,12 +153,16 @@ public class Project {
         this.modelUpdateService = modelUpdateService;
     }
 
-    public void setUnitManagementService(UnitManagementService unitManagementService) {
-        this.unitManagementService = unitManagementService;
-    }
-
     public void setUserManagementService(UserManagementService userManagementService) {
         this.userManagementService = userManagementService;
+    }
+
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
+    }
+
+    public void setUnitManagementService(UnitManagementService unitManagementService) {
+        this.unitManagementService = unitManagementService;
     }
 
     public ActionLogger getActionLogger() {
@@ -171,7 +178,8 @@ public class Project {
     }
 
     public List<Discipline> getCurrentUserDisciplines() {
-        return getUserRoleManagement().getDisciplinesOfUser(getUser());
+        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
+        return userRoleManagementService.obtainDisciplinesOfUser(userRoleManagement, getUser());
     }
 
     public long getLatestLoadedModification() {
@@ -223,7 +231,7 @@ public class Project {
             }
             UserRoleManagement localURM = getStudy().getUserRoleManagement();
             UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
-            if (!localURM.equals(remoteURM) && !localURM.isAdmin(getUser())) {
+            if (!localURM.equals(remoteURM) && !userRoleManagementService.checkUserAdmin(localURM, getUser())) {
                 logger.debug("updating userRoleManagement");
                 setUserRoleManagement(remoteURM);
             }
@@ -289,7 +297,8 @@ public class Project {
     }
 
     public boolean isCurrentAdmin() {
-        return getUserRoleManagement().isAdmin(getUser());
+        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
+        return userRoleManagementService.checkUserAdmin(userRoleManagement, getUser());
     }
 
     public boolean isStudyInRepository() {
@@ -677,7 +686,7 @@ public class Project {
         parameterLinkRegistry.clear();
 
         UserRoleManagement userRoleManagement = study.getUserRoleManagement();
-        userRoleManagement.addUserDiscipline(getUser(), userRoleManagement.getAdminDiscipline());
+        userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
     }
 
     private void reinitializeUniqueIdentifiers(ModelNode modelNode) {
@@ -734,7 +743,9 @@ public class Project {
     private class AccessChecker implements Predicate<ModelNode> {
         @Override
         public boolean test(ModelNode modelNode) {
-            return UserRoleUtil.checkAccess(modelNode, getUser(), getUserRoleManagement());
+            UserRoleManagement userRoleManagement = Project.this.getUserRoleManagement();
+            User user = Project.this.getUser();
+            return userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
         }
     }
 

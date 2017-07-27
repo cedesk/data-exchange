@@ -16,6 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import org.hibernate.envers.Audited;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Entity;
@@ -26,6 +28,7 @@ import javax.persistence.ManyToOne;
  */
 @Entity
 @Access(AccessType.PROPERTY)
+@Audited
 public class InstrumentModel extends ModelNode {
 
     public InstrumentModel() {

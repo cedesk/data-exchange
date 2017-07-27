@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.envers.Audited;
 import ru.skoltech.cedl.dataexchange.Utils;
 
 import javax.persistence.*;
@@ -30,9 +31,10 @@ import java.util.Map;
 /**
  * Created by D.Knoll on 11.03.2015.
  */
-@XmlRootElement
 @Entity
 @Access(AccessType.PROPERTY)
+@Audited
+@XmlRootElement
 public class SystemModel extends CompositeModelNode<SubSystemModel> {
 
     public SystemModel() {
@@ -41,12 +43,6 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
 
     public SystemModel(String name) {
         super(name);
-    }
-
-    @Override
-    @Transient
-    public String getNodePath() {
-        return name;
     }
 
     @Override
@@ -60,6 +56,13 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
     @Fetch(FetchMode.SELECT)
     public List<SubSystemModel> getSubNodes() {
         return super.getSubNodes();
+    }
+
+    //--------------------
+    @Override
+    @Transient
+    public String getNodePath() {
+        return name;
     }
 
     /**
@@ -88,4 +91,5 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
         pmi.forEachRemaining(parameterModel -> dictionary.put(parameterModel.getUuid(), parameterModel));
         return dictionary;
     }
+    //----------------
 }

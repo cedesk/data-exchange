@@ -16,21 +16,31 @@
 
 package ru.skoltech.cedl.dataexchange.users.model;
 
-import javax.persistence.*;
+import org.hibernate.envers.Audited;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 /**
  * Created by D.Knoll on 09.06.2015.
  */
 @Entity
-@Access(AccessType.PROPERTY)
+@Audited
 public class UserDiscipline {
 
+    @Id
+    @GeneratedValue
     private long id;
 
+    @ManyToOne(targetEntity = UserRoleManagement.class)
     private UserRoleManagement userRoleManagement;
 
+    @ManyToOne(targetEntity = User.class)
     private User user;
 
+    @ManyToOne(targetEntity = Discipline.class)
     private Discipline discipline;
 
     private UserDiscipline() {
@@ -42,8 +52,6 @@ public class UserDiscipline {
         this.discipline = discipline;
     }
 
-    @Id
-    @GeneratedValue
     public long getId() {
         return id;
     }
@@ -52,7 +60,6 @@ public class UserDiscipline {
         this.id = id;
     }
 
-    @ManyToOne(targetEntity = UserRoleManagement.class)
     public UserRoleManagement getUserRoleManagement() {
         return userRoleManagement;
     }
@@ -61,7 +68,6 @@ public class UserDiscipline {
         this.userRoleManagement = userRoleManagement;
     }
 
-    @ManyToOne(targetEntity = User.class)
     public User getUser() {
         return user;
     }
@@ -70,7 +76,6 @@ public class UserDiscipline {
         this.user = user;
     }
 
-    @ManyToOne(targetEntity = Discipline.class)
     public Discipline getDiscipline() {
         return discipline;
     }
@@ -80,25 +85,13 @@ public class UserDiscipline {
     }
 
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("UserDiscipline{");
-        sb.append("id=").append(id);
-        sb.append(", userRoleManagementId=").append(userRoleManagement.getId());
-        sb.append(", userId=").append(user.getId());
-        sb.append(", disciplineId=").append(discipline.getId());
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         UserDiscipline that = (UserDiscipline) o;
 
-        if (!user.equals(that.user)) return false;
-        return discipline.equals(that.discipline);
+        return user.equals(that.user) && discipline.equals(that.discipline);
     }
 
     @Override
@@ -106,5 +99,15 @@ public class UserDiscipline {
         int result = user.hashCode();
         result = 31 * result + discipline.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "UserDiscipline{" +
+                "id=" + id +
+                ", userRoleManagement=" + userRoleManagement +
+                ", user=" + user +
+                ", discipline=" + discipline +
+                '}';
     }
 }

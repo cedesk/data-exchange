@@ -64,14 +64,20 @@
         <property name="repositoryManager" ref="repositoryManager" />
         <property name="repositoryService" ref="repositoryService" />
         <property name="repositoryStateMachine" ref="repositoryStateMachine" />
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry" />
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher" />
         <property name="externalModelFileHandler" ref="externalModelFileHandler" />
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="studyService" ref="studyService" />
         <property name="modelUpdateService" ref="modelUpdateService" />
         <property name="userManagementService" ref="userManagementService" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="unitManagementService" ref="unitManagementService" />
         <property name="actionLogger" ref="actionLogger" />
+    </bean>
+
+    <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry" >
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
     </bean>
 
     <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">

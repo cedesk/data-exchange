@@ -16,18 +16,25 @@
 
 package ru.skoltech.cedl.dataexchange.users.model;
 
-import javax.persistence.*;
+import org.hibernate.envers.Audited;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.*;
 
 /**
  * Created by dknoll on 13/05/15.
  */
+@Entity
+@Audited
 @XmlType(propOrder = {"name", "builtIn", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
-@Entity
-@Access(AccessType.PROPERTY)
 public class Discipline implements Comparable<Discipline> {
 
+    @Id
+    @GeneratedValue
     @XmlTransient
     private long id;
 
@@ -40,12 +47,13 @@ public class Discipline implements Comparable<Discipline> {
     @XmlAttribute
     private boolean builtIn = false;
 
+    @ManyToOne(optional = false, targetEntity = UserRoleManagement.class)
     private UserRoleManagement userRoleManagement;
 
     public Discipline() {
     }
 
-    private Discipline(String name, UserRoleManagement userRoleManagement, boolean builtIn) {
+    public Discipline(String name, UserRoleManagement userRoleManagement, boolean builtIn) {
         this.name = name;
         this.userRoleManagement = userRoleManagement;
         this.builtIn = builtIn;
@@ -56,12 +64,6 @@ public class Discipline implements Comparable<Discipline> {
         this.userRoleManagement = userRoleManagement;
     }
 
-    public static Discipline getAdminDiscipline(UserRoleManagement userRoleManagement) {
-        return new Discipline("Admin", userRoleManagement, true);
-    }
-
-    @Id
-    @GeneratedValue
     public long getId() {
         return id;
     }
@@ -94,13 +96,20 @@ public class Discipline implements Comparable<Discipline> {
         this.builtIn = builtIn;
     }
 
+    public UserRoleManagement getUserRoleManagement() {
+        return userRoleManagement;
+    }
+
+    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
+        this.userRoleManagement = userRoleManagement;
+    }
+
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Discipline{");
-        sb.append("name='").append(name).append('\'');
-        sb.append(", description='").append(description).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return "Discipline{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 
     @Override
@@ -109,9 +118,8 @@ public class Discipline implements Comparable<Discipline> {
         if (other == null || getClass() != other.getClass()) return false;
 
         Discipline otherDiscipline = (Discipline) other;
-
-        if (builtIn != otherDiscipline.builtIn) return false;
-        return !(name != null ? !name.equals(otherDiscipline.name) : otherDiscipline.name != null);
+        return builtIn == otherDiscipline.builtIn
+                && !(name != null ? !name.equals(otherDiscipline.name) : otherDiscipline.name != null);
     }
 
     @Override
@@ -119,15 +127,6 @@ public class Discipline implements Comparable<Discipline> {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (builtIn ? 1 : 0);
         return result;
-    }
-
-    @ManyToOne(optional = false, targetEntity = UserRoleManagement.class)
-    public UserRoleManagement getUserRoleManagement() {
-        return userRoleManagement;
-    }
-
-    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
-        this.userRoleManagement = userRoleManagement;
     }
 
     @Override

@@ -36,12 +36,12 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
 import ru.skoltech.cedl.dataexchange.services.RepositoryService;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
-import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
@@ -73,6 +73,7 @@ public class DiffController implements Initializable {
 
     private Project project;
     private RepositoryService repositoryService;
+    private UserRoleManagementService userRoleManagementService;
     private DifferenceMergeService differenceMergeService;
 
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
@@ -83,6 +84,10 @@ public class DiffController implements Initializable {
 
     public void setRepositoryService(RepositoryService repositoryService) {
         this.repositoryService = repositoryService;
+    }
+
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
@@ -216,7 +221,7 @@ public class DiffController implements Initializable {
     private boolean isEditable(ModelNode parentNode) {
         UserRoleManagement userRoleManagement = project.getUserRoleManagement();
         User user = project.getUser();
-        return UserRoleUtil.checkAccess(parentNode, user, userRoleManagement);
+        return userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, parentNode);
     }
 
     private class ActionCellFactory implements Callback<TableColumn<ModelDifference, String>, TableCell<ModelDifference, String>> {

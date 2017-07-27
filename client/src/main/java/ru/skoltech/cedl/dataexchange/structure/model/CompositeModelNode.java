@@ -16,6 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.structure.model;
 
+import org.hibernate.envers.Audited;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.MappedSuperclass;
@@ -24,21 +26,25 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 29.03.2015.
  */
-@XmlAccessorType(XmlAccessType.FIELD)
 @MappedSuperclass
 @Access(AccessType.PROPERTY)
-public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
+@Audited
+@XmlAccessorType(XmlAccessType.FIELD)
+public class CompositeModelNode<S extends ModelNode> extends ModelNode {
 
     @XmlElementWrapper(name = "subNodes")
     @XmlElement(name = "subNode")
-    protected List<SUBNODES> subNodes = new LinkedList<>();
+    protected List<S> subNodes = new LinkedList<>();
 
     public CompositeModelNode() {
         super();
@@ -49,15 +55,21 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
     }
 
     @Transient
-    public List<SUBNODES> getSubNodes() {
+    public List<S> getSubNodes() {
         return subNodes;
     }
 
-    public void setSubNodes(List<SUBNODES> subNodes) {
+    public void setSubNodes(List<S> subNodes) {
         this.subNodes = subNodes;
     }
 
-    public void addSubNode(SUBNODES subnode) {
+    //--------------
+    @Transient
+    public boolean isLeafNode() {
+        return subNodes.isEmpty();
+    }
+
+    public void addSubNode(S subnode) {
         subnode.setParent(this);
         subNodes.add(subnode);
     }
@@ -72,17 +84,9 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
 
     @Transient
     public Map<String, ModelNode> getSubNodesMap() {
-        Map<String, ModelNode> subnodeMap = new HashMap<>(subNodes.size());
-        for (ModelNode mn : subNodes) {
-            subnodeMap.put(mn.getName(), mn);
-        }
-        return subnodeMap;
+        return this.getSubNodes().stream().collect(Collectors.toMap(ModelNode::getName, o -> o));
     }
-
-    @Transient
-    public boolean isLeafNode() {
-        return subNodes.isEmpty();
-    }
+    //----------------
 
     @Override
     public boolean equals(Object obj) {
@@ -109,12 +113,12 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
         Map<String, ModelNode> otherSubNodesMap = subNodes.stream().collect(
                 Collectors.toMap(ModelNode::getUuid, Function.identity())
         );
-        for (SUBNODES subNode : this.subNodes) {
+        for (S subNode : this.subNodes) {
             boolean res = true;
             String nodeUuid = subNode.getUuid();
             if (otherSubNodesMap.containsKey(nodeUuid)) {
                 ModelNode otherSubNode = otherSubNodesMap.get(nodeUuid);
-                res = res & subNode.equals(otherSubNode);
+                res = subNode.equals(otherSubNode);
             } else {  // corresponding node not found
                 return false;
             }
@@ -125,13 +129,12 @@ public class CompositeModelNode<SUBNODES extends ModelNode> extends ModelNode {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("CompositeModelNode{");
-        sb.append("name='").append(name).append('\'');
-        sb.append(", parameters=").append("\n\t").append(parameters).append("\n");
-        sb.append(", subNodes=\n").append(subNodes).append("\n");
-        sb.append(", lastModification=").append(lastModification);
-        sb.append(", uuid='").append(uuid).append('\'');
-        sb.append("\n}");
-        return sb.toString();
+        return "CompositeModelNode{" +
+                "subNodes=" + subNodes +
+                ", name='" + name + '\'' +
+                ", uuid='" + uuid + '\'' +
+                ", parameters=" + parameters +
+                ", lastModification=" + lastModification +
+                '}';
     }
 }

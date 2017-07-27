@@ -68,6 +68,7 @@
         <property name="studyService" ref="studyService" />
         <property name="modelUpdateService" ref="modelUpdateService" />
         <property name="userManagementService" ref="userManagementService" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="unitManagementService" ref="unitManagementService" />
         <property name="actionLogger" ref="actionLogger" />
     </bean>

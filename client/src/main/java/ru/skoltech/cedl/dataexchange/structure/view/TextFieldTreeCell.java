@@ -23,10 +23,12 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
+import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 /**
  * Created by D.Knoll on 24.04.2015.
@@ -34,10 +36,12 @@ import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 public class TextFieldTreeCell extends TreeCell<ModelNode> {
 
     private Project project;
+    private UserRoleManagementService userRoleManagementService;
     private TextField textField;
 
-    public TextFieldTreeCell(Project project, boolean editable) {
+    public TextFieldTreeCell(Project project, UserRoleManagementService userRoleManagementService, boolean editable) {
         this.project = project;
+        this.userRoleManagementService = userRoleManagementService;
         this.setEditable(editable);
     }
 
@@ -78,7 +82,9 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
                 setGraphic(textField);
             } else {
                 setText(getString());
-                boolean access = UserRoleUtil.checkAccess(item, project.getUser(), project.getUserRoleManagement());
+                UserRoleManagement userRoleManagement = project.getUserRoleManagement();
+                User user = project.getUser();
+                boolean access = userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, item);
                 if (access) {
                     setStyle("-fx-font-weight: bold;");
                 } else {

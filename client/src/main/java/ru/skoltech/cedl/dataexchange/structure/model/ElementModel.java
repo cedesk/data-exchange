@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.List;
  */
 @Entity
 @Access(AccessType.PROPERTY)
+@Audited
 public class ElementModel extends CompositeModelNode<InstrumentModel> {
 
     public ElementModel() {
@@ -38,15 +40,15 @@ public class ElementModel extends CompositeModelNode<InstrumentModel> {
     }
 
     @Override
+    @ManyToOne(targetEntity = SubSystemModel.class)
+    public ModelNode getParent() {
+        return super.getParent();
+    }
+
+    @Override
     @OneToMany(targetEntity = InstrumentModel.class, mappedBy = "parent", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @Fetch(FetchMode.SELECT)
     public List<InstrumentModel> getSubNodes() {
         return super.getSubNodes();
-    }
-
-    @Override
-    @ManyToOne(targetEntity = SubSystemModel.class)
-    public ModelNode getParent() {
-        return super.getParent();
     }
 }

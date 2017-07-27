@@ -31,7 +31,11 @@
         <property name="userManagementService" ref="userManagementService" />
     </bean>
 
-    <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserManagementServiceImpl" />
+    <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserManagementServiceImpl">
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
+    </bean>
+
+    <bean id="userRoleManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserRoleManagementServiceImpl" />
 
     <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl" >
         <property name="fileStorageService" ref="fileStorageService" />
@@ -104,6 +108,7 @@
         <entry key="hibernate.connection.isolation" value="${hibernate.connection.isolation}" />
         <entry key="hibernate.format_sql" value="${hibernate.format.sql}" />
         <entry key="hibernate.transaction.jta.platform" value="${hibernate.transaction.jta.platform}" />
+        <entry key="org.hibernate.envers.audit_strategy" value="${hibernate.envers.audit_strategy}" />
         <entry key="hibernate.session_factory.interceptor" value-ref="modificationInterceptor" />
     </util:map>
 

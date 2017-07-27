@@ -27,10 +27,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.users.model.User;
@@ -66,6 +66,7 @@ public class UserManagementController implements Initializable {
 
     private FXMLLoaderFactory fxmlLoaderFactory;
     private Project project;
+    private UserRoleManagementService userRoleManagementService;
 
     public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
@@ -73,6 +74,10 @@ public class UserManagementController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     @Override
@@ -106,7 +111,7 @@ public class UserManagementController implements Initializable {
                 Dialogues.showError("Invalid name", Identifiers.getUserNameValidationDescription());
                 return;
             }
-            if (project.getUserRoleManagement().getDisciplineMap().containsKey(userName)) {
+            if (userRoleManagementService.disciplineMap(project.getUserRoleManagement()).containsKey(userName)) {
                 Dialogues.showError("Duplicate user name", "There is already a user named like that!");
             } else {
                 User user = new User();

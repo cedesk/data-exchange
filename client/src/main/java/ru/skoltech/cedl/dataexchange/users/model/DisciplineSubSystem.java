@@ -16,23 +16,32 @@
 
 package ru.skoltech.cedl.dataexchange.users.model;
 
+import org.hibernate.envers.Audited;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 /**
  * Created by D.Knoll on 16.06.2015.
  */
 @Entity
-@Access(AccessType.PROPERTY)
+@Audited
 public class DisciplineSubSystem {
 
+    @Id
+    @GeneratedValue
     private long id;
 
+    @ManyToOne(optional = false, targetEntity = UserRoleManagement.class)
     private UserRoleManagement userRoleManagement;
 
+    @ManyToOne(optional = false, targetEntity = Discipline.class)
     private Discipline discipline;
 
+    @ManyToOne(optional = false, targetEntity = SubSystemModel.class)
     private SubSystemModel subSystem;
 
     private DisciplineSubSystem() {
@@ -44,8 +53,6 @@ public class DisciplineSubSystem {
         this.subSystem = subSystem;
     }
 
-    @Id
-    @GeneratedValue
     public long getId() {
         return id;
     }
@@ -54,7 +61,6 @@ public class DisciplineSubSystem {
         this.id = id;
     }
 
-    @ManyToOne(optional = false, targetEntity = UserRoleManagement.class)
     public UserRoleManagement getUserRoleManagement() {
         return userRoleManagement;
     }
@@ -63,7 +69,6 @@ public class DisciplineSubSystem {
         this.userRoleManagement = userRoleManagement;
     }
 
-    @ManyToOne(optional = false, targetEntity = SubSystemModel.class)
     public SubSystemModel getSubSystem() {
         return subSystem;
     }
@@ -72,7 +77,6 @@ public class DisciplineSubSystem {
         this.subSystem = subSystem;
     }
 
-    @ManyToOne(optional = false, targetEntity = Discipline.class)
     public Discipline getDiscipline() {
         return discipline;
     }
@@ -82,25 +86,13 @@ public class DisciplineSubSystem {
     }
 
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DisciplineSubSystem{");
-        sb.append("id=").append(id);
-        sb.append(", userRoleManagementId=").append(userRoleManagement.getId());
-        sb.append(", disciplineId=").append(discipline.getId());
-        sb.append(", subSystemId=").append(subSystem.getId());
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         DisciplineSubSystem that = (DisciplineSubSystem) o;
-
-        if (!discipline.equals(that.discipline)) return false;
-        return subSystem.getUuid().equals(that.subSystem.getUuid());
+        return discipline.equals(that.discipline)
+                && subSystem.getUuid().equals(that.subSystem.getUuid());
     }
 
     @Override
@@ -108,5 +100,15 @@ public class DisciplineSubSystem {
         int result = discipline.hashCode();
         result = 31 * result + subSystem.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "DisciplineSubSystem{" +
+                "id=" + id +
+                ", userRoleManagement=" + userRoleManagement +
+                ", discipline=" + discipline +
+                ", subSystem=" + subSystem +
+                '}';
     }
 }

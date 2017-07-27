@@ -16,17 +16,22 @@
 
 package ru.skoltech.cedl.dataexchange.users.model;
 
+import org.hibernate.envers.Audited;
+
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 
 /**
  * Created by dknoll on 13/05/15.
  */
+@Entity
+@Audited
 @XmlType(propOrder = {"userName", "fullName", "disciplines"})
 @XmlAccessorType(XmlAccessType.FIELD)
-@Entity
-@Access(AccessType.PROPERTY)
 public class User implements Comparable<User> {
+
+    @Id
+    @GeneratedValue
     @XmlTransient
     private long id;
 
@@ -51,26 +56,12 @@ public class User implements Comparable<User> {
         this.salt = salt;
     }
 
-    @Id
-    @GeneratedValue
     public long getId() {
         return id;
     }
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    /**
-     * @return fullname if present, otherwise username
-     */
-    @Transient
-    public String getName() {
-        if (fullName != null && !fullName.isEmpty()) {
-            return fullName;
-        } else {
-            return userName;
-        }
     }
 
     public String getUserName() {
@@ -105,6 +96,17 @@ public class User implements Comparable<User> {
         this.passwordHash = passwordHash;
     }
 
+    /**
+     * @return fullname if present, otherwise username
+     */
+    public String name() {
+        if (fullName != null && !fullName.isEmpty()) {
+            return fullName;
+        } else {
+            return userName;
+        }
+    }
+
     @Override
     public int compareTo(User other) {
         return userName.compareTo(other.userName);
@@ -117,10 +119,10 @@ public class User implements Comparable<User> {
 
         User user = (User) o;
 
-        if (userName != null ? !userName.equals(user.userName) : user.userName != null) return false;
-        if (fullName != null ? !fullName.equals(user.fullName) : user.fullName != null) return false;
-        if (salt != null ? !salt.equals(user.salt) : user.salt != null) return false;
-        return !(passwordHash != null ? !passwordHash.equals(user.passwordHash) : user.passwordHash != null);
+        return (userName != null ? userName.equals(user.userName) : user.userName == null)
+                && (fullName != null ? fullName.equals(user.fullName) : user.fullName == null)
+                && (salt != null ? salt.equals(user.salt) : user.salt == null)
+                && !(passwordHash != null ? !passwordHash.equals(user.passwordHash) : user.passwordHash != null);
     }
 
     @Override
@@ -134,10 +136,9 @@ public class User implements Comparable<User> {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("User{");
-        sb.append("userName='").append(userName).append('\'');
-        sb.append(", fullName='").append(fullName).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return "User{" +
+                "userName='" + userName + '\'' +
+                ", fullName='" + fullName + '\'' +
+                '}';
     }
 }

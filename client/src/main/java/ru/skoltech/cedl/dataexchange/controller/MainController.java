@@ -861,7 +861,7 @@ public class MainController implements Initializable {
     private void updateView() {
         if (project.getStudy() != null) {
             studyNameLabel.setText(project.getStudy().getName());
-            userNameLabel.setText(project.getUser().getName());
+            userNameLabel.setText(project.getUser().name());
             List<Discipline> disciplinesOfUser = project.getCurrentUserDisciplines();
             if (!disciplinesOfUser.isEmpty()) {
                 String disciplineNames = disciplinesOfUser.stream()

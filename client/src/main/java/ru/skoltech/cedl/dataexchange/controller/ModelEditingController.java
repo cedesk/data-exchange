@@ -47,10 +47,10 @@ import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
-import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
@@ -138,6 +138,7 @@ public class ModelEditingController implements Initializable {
 
     private Project project;
     private FileStorageService fileStorageService;
+    private UserRoleManagementService userRoleManagementService;
     private ModelUpdateService modelUpdateService;
 
     public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
@@ -150,6 +151,10 @@ public class ModelEditingController implements Initializable {
 
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
+    }
+
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     public void setModelUpdateService(ModelUpdateService modelUpdateService) {
@@ -178,7 +183,7 @@ public class ModelEditingController implements Initializable {
         });
 
         // STRUCTURE TREE VIEW
-        structureTree.setCellFactory(param -> new TextFieldTreeCell(project, false));
+        structureTree.setCellFactory(param -> new TextFieldTreeCell(project, userRoleManagementService, false));
         structureTree.setOnEditCommit(event -> project.markStudyModified());
 
         // STRUCTURE MODIFICATION BUTTONS
@@ -676,16 +681,18 @@ public class ModelEditingController implements Initializable {
 
     private void updateOwners(ModelNode modelNode) {
         UserRoleManagement userRoleManagement = project.getUserRoleManagement();
-        Discipline disciplineOfSubSystem = userRoleManagement.getDisciplineOfSubSystem(modelNode);
-        List<User> usersOfDiscipline = userRoleManagement.getUsersOfDiscipline(disciplineOfSubSystem);
-        String userNames = usersOfDiscipline.stream().map(User::getName).collect(Collectors.joining(", "));
+        Discipline disciplineOfSubSystem = userRoleManagementService.obtainDisciplineOfSubSystem(userRoleManagement, modelNode);
+        List<User> usersOfDiscipline = userRoleManagementService.obtainUsersOfDiscipline(userRoleManagement, disciplineOfSubSystem);
+        String userNames = usersOfDiscipline.stream().map(User::name).collect(Collectors.joining(", "));
         ownersText.setText(userNames);
     }
 
     private void updateParameterEditor(ParameterModel parameterModel) {
         if (parameterModel != null) {
+            UserRoleManagement userRoleManagement = project.getUserRoleManagement();
             ModelNode modelNode = parameterModel.getParent();
-            boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
+            User user = project.getUser();
+            boolean editable = userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
             logger.debug("selected parameter: " + parameterModel.getNodePath() + ", editable: " + editable);
             parameterEditor.setVisible(editable); // TODO: allow read only
             if (editable) {
@@ -728,8 +735,10 @@ public class ModelEditingController implements Initializable {
         public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable,
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
+                UserRoleManagement userRoleManagement = project.getUserRoleManagement();
                 ModelNode modelNode = newValue.getValue();
-                boolean editable = UserRoleUtil.checkAccess(modelNode, project.getUser(), project.getUserRoleManagement());
+                User user = project.getUser();
+                boolean editable = userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
                 logger.debug("selected node: " + modelNode.getNodePath() + ", editable: " + editable);
 
                 selectedNodeCannotHaveChildren.setValue(!(modelNode instanceof CompositeModelNode));

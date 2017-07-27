@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.hibernate.annotations.DiscriminatorOptions;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.envers.Audited;
 import ru.skoltech.cedl.dataexchange.Utils;
 
 import javax.persistence.*;
@@ -30,35 +31,36 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 11.03.2015.
  */
-@XmlType(propOrder = {"name", "lastModification", "uuid", "externalModels", "parameters"})
-@XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @DiscriminatorOptions(force = true)
+@Audited
+@XmlType(propOrder = {"name", "lastModification", "uuid", "externalModels", "parameters"})
+@XmlAccessorType(XmlAccessType.FIELD)
 public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped, PersistedEntity {
 
     public static final String NODE_SEPARATOR = "\\";
 
+    @XmlTransient
+    protected long id;
+
+    @XmlTransient
+    protected ModelNode parent;
+
     @XmlAttribute
     protected String name;
+
+    @XmlID
+    @XmlAttribute
+    protected String uuid = UUID.randomUUID().toString();
 
     @XmlElementWrapper(name = "parameters")
     @XmlElement(name = "parameter")
     protected List<ParameterModel> parameters = new LinkedList<>();
 
-    @XmlTransient
-    protected ModelNode parent;
-
-    @XmlTransient
-    protected long id;
-
     @XmlElementWrapper(name = "externalModels")
     @XmlElement(name = "externalModel")
     protected List<ExternalModel> externalModels = new LinkedList<>();
-
-    @XmlID
-    @XmlAttribute
-    protected String uuid = UUID.randomUUID().toString();
 
     @XmlAttribute
     protected Long lastModification;
@@ -68,74 +70,6 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     public ModelNode(String name) {
         this.name = name;
-    }
-
-    @Column(nullable = false)
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public Long getLastModification() {
-        return lastModification;
-    }
-
-    @Override
-    public void setLastModification(Long timestamp) {
-        this.lastModification = timestamp;
-    }
-
-    public void addParameter(ParameterModel parameter) {
-        parameters.add(parameter);
-        parameter.setParent(this);
-    }
-
-    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
-    @Fetch(FetchMode.SELECT)
-    public List<ParameterModel> getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(List<ParameterModel> parameters) {
-        this.parameters = parameters;
-    }
-
-    @Transient
-    public Map<String, ParameterModel> getParameterMap() {
-        Map<String, ParameterModel> parameterModelMap = new HashMap<>(parameters.size());
-        for (ParameterModel pm : parameters) {
-            parameterModelMap.put(pm.getName(), pm);
-        }
-        return parameterModelMap;
-    }
-
-    @Transient
-    public Map<String, ExternalModel> getExternalModelMap() {
-        Map<String, ExternalModel> externalModelMap = new HashMap<>(externalModels.size());
-        for (ExternalModel em : externalModels) {
-            externalModelMap.put(em.getName(), em);
-        }
-        return externalModelMap;
-    }
-
-    //TODO: fix EAGER
-    @OneToMany(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
-    @Fetch(FetchMode.SELECT)
-    public List<ExternalModel> getExternalModels() {
-        return externalModels;
-    }
-
-    public void setExternalModels(List<ExternalModel> externalModels) {
-        this.externalModels = externalModels;
-    }
-
-    public void addExternalModel(ExternalModel externalModel) {
-        externalModels.add(externalModel);
-        externalModel.setParent(this);
     }
 
     @Override
@@ -149,14 +83,6 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         this.id = id;
     }
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
     @Transient
     public ModelNode getParent() {
         return parent;
@@ -166,6 +92,55 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         this.parent = parent;
     }
 
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    @Column(nullable = false)
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
+    @Fetch(FetchMode.SELECT)
+    public List<ParameterModel> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(List<ParameterModel> parameters) {
+        this.parameters = parameters;
+    }
+
+    //TODO: fix EAGER
+    @OneToMany(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
+    @Fetch(FetchMode.SELECT)
+    public List<ExternalModel> getExternalModels() {
+        return externalModels;
+    }
+
+    public void setExternalModels(List<ExternalModel> externalModels) {
+        this.externalModels = externalModels;
+    }
+
+    @Override
+    public Long getLastModification() {
+        return lastModification;
+    }
+
+    @Override
+    public void setLastModification(Long timestamp) {
+        this.lastModification = timestamp;
+    }
+
+    //-------
     @Transient
     public SystemModel findRoot() {
         if (parent == null) {
@@ -180,6 +155,30 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         return parent == null;
     }
 
+    @Transient
+    public boolean isLeafNode() {
+        return true;
+    }
+
+    @Transient
+    public String getNodePath() {
+        return isRootNode() ? name : parent.getNodePath() + NODE_SEPARATOR + name;
+    }
+
+    public void addParameter(ParameterModel parameter) {
+        parameters.add(parameter);
+        parameter.setParent(this);
+    }
+
+    public boolean hasParameter(String parameterName) {
+        return getParameterMap().containsKey(parameterName);
+    }
+
+    public void addExternalModel(ExternalModel externalModel) {
+        externalModels.add(externalModel);
+        externalModel.setParent(this);
+    }
+
     public Iterator<ExternalModel> externalModelsIterator() {
         return new ExternalModelTreeIterator(this);
     }
@@ -189,27 +188,24 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
     }
 
     @Transient
-    public boolean isLeafNode() {
-        return true;
-    }
-
-    public boolean hasParameter(String parameterName) {
-        return getParameterMap().containsKey(parameterName);
+    public Map<String, ParameterModel> getParameterMap() {
+        return this.getParameters().stream().collect(Collectors.toMap(ParameterModel::getName, o -> o));
     }
 
     @Transient
-    public String getNodePath() {
-        return isRootNode() ? name : parent.getNodePath() + NODE_SEPARATOR + name;
+    public Map<String, ExternalModel> getExternalModelMap() {
+        return this.getExternalModels().stream().collect(Collectors.toMap(ExternalModel::getName, o -> o));
     }
+    //-------------
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ModelNode) {
             ModelNode other = (ModelNode) obj;
-            if (!this.uuid.equals(other.uuid)) return false;
-            if (!this.name.equals(other.name)) return false;
-            if (!equalParameters(other)) return false;
-            return equalExternalModels(other);
+            return this.uuid.equals(other.uuid)
+                    && this.name.equals(other.name)
+                    && equalParameters(other)
+                    && equalExternalModels(other);
         }
         return false;
     }
@@ -279,13 +275,12 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ModelNode{");
-        sb.append("name='").append(name).append('\'');
-        sb.append(", parameters=").append("\n\t").append(parameters).append("\n");
-        sb.append(", lastModification=").append(lastModification);
-        sb.append(", uuid='").append(uuid).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return "ModelNode{" +
+                "name='" + name + '\'' +
+                ", uuid='" + uuid + '\'' +
+                ", parameters=" + parameters +
+                ", lastModification=" + lastModification +
+                '}';
     }
 
     /**
