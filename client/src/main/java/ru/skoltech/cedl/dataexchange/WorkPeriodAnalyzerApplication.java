@@ -39,6 +39,8 @@ public class WorkPeriodAnalyzerApplication { // extends Application {
     public static void main(String[] args) {
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
+        Project project = context.getBean(Project.class);
+        project.checkRepository();
         System.out.println("using: " + applicationSettings.getCedeskAppDir() + "/" + applicationSettings.getCedeskAppFile());
 
         logger.info("----------------------------------------------------------------------------------------------------");
