@@ -7,6 +7,9 @@
 
 package ru.skoltech.cedl.dataexchange.analysis.model;
 
+import ru.skoltech.cedl.dataexchange.Utils;
+
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +25,31 @@ public class WorkSession extends Period {
         super(startTimestamp, stopTimestamp);
     }
 
+    public double getConcurrencyRatio() {
+        return (double) getOverlapDuration() / (double) getDuration();
+    }
+
+    private long getOverlapDuration() {
+        long totalOverlap = 0;
+        if (workPeriods.isEmpty()) return 0;
+        workPeriods.sort(Comparator.comparingLong(Period::getStartTimestamp));
+        WorkPeriod lastWorkPeriod = workPeriods.get(0);
+        for (int i = 1; i < workPeriods.size(); i++) { // start with second
+            WorkPeriod workPeriod = workPeriods.get(i);
+            totalOverlap += lastWorkPeriod.overlapValue(workPeriod);
+            lastWorkPeriod = workPeriod;
+        }
+        return totalOverlap;
+    }
+
+    public String getOverlapFormatted() {
+        return formatDurationMillis(getOverlapDuration());
+    }
+
+    public String getUsers() {
+        return workPeriods.stream().map(wp -> wp.getUsernname() + "(" + wp.getAllActionCount() + ")").collect(Collectors.joining(";"));
+    }
+
     public List<WorkPeriod> getWorkPeriods() {
         return workPeriods;
     }
@@ -33,11 +61,10 @@ public class WorkSession extends Period {
     }
 
     public String asText() {
-        return "WorkSession: [" + getStartTimestampFormatted() + " - " + getStopTimestampFormatted() + "] " + getDurationFormatted() + " {" + workPeriods.size() + "} " + getUsers();
-    }
-
-    public String getUsers() {
-        return workPeriods.stream().map(wp -> wp.getUsernname() + "(" + wp.getAllActionCount() + ")").collect(Collectors.joining(";"));
+        return "WorkSession: [" + getStartTimestampFormatted() + " - " + getStopTimestampFormatted() + "] " +
+                getOverlapFormatted() + " / " + getDurationFormatted() +
+                " %" + Utils.NUMBER_FORMAT.format(getConcurrencyRatio()) +
+                " {" + workPeriods.size() + "} " + getUsers();
     }
 
     public void enlarge(WorkPeriod workPeriod) {

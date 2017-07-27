@@ -19,16 +19,17 @@ package ru.skoltech.cedl.dataexchange.analysis;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.EnumUtil;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.analysis.model.Period;
 import ru.skoltech.cedl.dataexchange.analysis.model.WorkPeriod;
 import ru.skoltech.cedl.dataexchange.analysis.model.WorkSession;
-import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by D.Knoll on 27.07.2017.
@@ -44,7 +45,7 @@ public class WorkSessionAnalysis {
     }
 
     public List<WorkSession> getWorkSessions() {
-        if(workSessions == null) {
+        if (workSessions == null) {
             workSessions = extractWorkSessions();
         }
         return workSessions;
@@ -80,15 +81,6 @@ public class WorkSessionAnalysis {
         return workSessions;
     }
 
-    private WorkPeriod getNextClosedWorkPeriod(Iterator<WorkPeriod> workPeriodIterator) {
-        WorkPeriod firstWorkPeriod = null;
-        while (workPeriodIterator.hasNext()) { // find first closed work period
-            firstWorkPeriod = workPeriodIterator.next();
-            if (!firstWorkPeriod.isOpen()) break;
-        }
-        return firstWorkPeriod;
-    }
-
     public void printWorkSessions() {
         System.out.println("--- WORK SESSIONS START ---");
         for (WorkSession workSession : getWorkSessions()) {
@@ -108,14 +100,18 @@ public class WorkSessionAnalysis {
             printer.print("session start");
             printer.print("session stop");
             printer.print("duration");
+            printer.print("overlap");
+            printer.print("ratio");
             printer.print("#users");
-            printer.print("users+actions");
+            printer.print("users + #actions");
             printer.println();
 
             for (WorkSession workSession : getWorkSessions()) {
                 printer.print(workSession.getStartTimestampFormatted());
                 printer.print(workSession.getStopTimestampFormatted());
                 printer.print(workSession.getDurationFormatted());
+                printer.print(workSession.getOverlapFormatted());
+                printer.print(Utils.NUMBER_FORMAT.format(workSession.getConcurrencyRatio()));
                 printer.print(workSession.getWorkPeriods().size());
                 printer.print(workSession.getUsers());
                 printer.println();
@@ -123,6 +119,15 @@ public class WorkSessionAnalysis {
         } catch (Exception e) {
             logger.error("error writing work sessions to CSV file");
         }
+    }
+
+    private WorkPeriod getNextClosedWorkPeriod(Iterator<WorkPeriod> workPeriodIterator) {
+        WorkPeriod firstWorkPeriod = null;
+        while (workPeriodIterator.hasNext()) { // find first closed work period
+            firstWorkPeriod = workPeriodIterator.next();
+            if (!firstWorkPeriod.isOpen()) break;
+        }
+        return firstWorkPeriod;
     }
 
 }

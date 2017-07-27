@@ -97,9 +97,9 @@ public class WorkPeriodAnalyzerApplication { // extends Application {
             //workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
 
             WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis);
-            workSessionAnalysis.printWorkSessions();
             File sessionsCsvFile = new File(appDir, "work-sessions.csv");
             workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
+            workSessionAnalysis.printWorkSessions();
 
         } catch (Exception e) {
             logger.error("analysis failed", e);

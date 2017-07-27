@@ -9,12 +9,9 @@ package ru.skoltech.cedl.dataexchange.analysis.model;
 
 import ru.skoltech.cedl.dataexchange.Utils;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.ResolverStyle;
 import java.util.Date;
 
 import static java.time.temporal.ChronoField.*;
@@ -42,24 +39,37 @@ public class Period {
         this.stopTimestamp = stopTimestamp;
     }
 
-    public Long getStartTimestamp() {
-        return startTimestamp;
+    public Long getDuration() {
+        if (isOpen()) {
+            return Long.MAX_VALUE;
+        } else {
+            return stopTimestamp - startTimestamp;
+        }
     }
 
-    public Long getStopTimestamp() {
-        return stopTimestamp;
+    public String getDurationFormatted() {
+        if (stopTimestamp == null) return " ";
+        return formatDurationMillis(getDuration());
+    }
+
+    public Long getStartTimestamp() {
+        return startTimestamp;
     }
 
     public void setStartTimestamp(Long startTimestamp) {
         this.startTimestamp = startTimestamp;
     }
 
-    public void setStopTimestamp(Long stopTimestamp) {
-        this.stopTimestamp = stopTimestamp;
-    }
-
     public String getStartTimestampFormatted() {
         return Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(startTimestamp));
+    }
+
+    public Long getStopTimestamp() {
+        return stopTimestamp;
+    }
+
+    public void setStopTimestamp(Long stopTimestamp) {
+        this.stopTimestamp = stopTimestamp;
     }
 
     public String getStopTimestampFormatted() {
@@ -69,6 +79,29 @@ public class Period {
 
     public boolean isOpen() {
         return stopTimestamp == null;
+    }
+
+    public static String formatDurationMillis(long duration) {
+        LocalTime diffTime = LocalTime.ofSecondOfDay(duration / 1000);
+        return TIME_FORMATTER.format(diffTime);
+    }
+
+    public void enlarge(Period other) {
+        if (hasOverlap(other)) {
+            this.startTimestamp = Math.min(this.startTimestamp, other.startTimestamp);
+            this.stopTimestamp = Math.max(this.stopTimestamp, other.stopTimestamp);
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Period period = (Period) o;
+
+        if (!startTimestamp.equals(period.startTimestamp)) return false;
+        return stopTimestamp != null ? stopTimestamp.equals(period.stopTimestamp) : period.stopTimestamp == null;
     }
 
     public boolean hasOverlap(Period other) {
@@ -83,44 +116,17 @@ public class Period {
         return false;
     }
 
-    public long overlapValue(Period other) {
-        if (this.isOpen() || other.isOpen()) {
-            return 0;
-        }
-        return Math.max(0, Math.min(this.stopTimestamp, other.stopTimestamp) - Math.max(this.startTimestamp, other.startTimestamp));
-    }
-
-    public void enlarge(Period other) {
-        if (hasOverlap(other)) {
-            this.startTimestamp = Math.min(this.startTimestamp, other.startTimestamp);
-            this.stopTimestamp = Math.max(this.stopTimestamp, other.stopTimestamp);
-        }
-    }
-
-    public String getDurationFormatted() {
-        if (stopTimestamp == null) return " ";
-        Instant startInstant = Instant.ofEpochMilli(startTimestamp);
-        Instant stopInstant = Instant.ofEpochMilli(stopTimestamp);
-        Duration duration = Duration.between(startInstant, stopInstant);
-        LocalTime diffTime = LocalTime.ofNanoOfDay(duration.toNanos());
-        return TIME_FORMATTER.format(diffTime);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Period period = (Period) o;
-
-        if (!startTimestamp.equals(period.startTimestamp)) return false;
-        return stopTimestamp != null ? stopTimestamp.equals(period.stopTimestamp) : period.stopTimestamp == null;
-    }
-
     @Override
     public int hashCode() {
         int result = startTimestamp.hashCode();
         result = 31 * result + (stopTimestamp != null ? stopTimestamp.hashCode() : 0);
         return result;
+    }
+
+    public long overlapValue(Period other) {
+        if (this.isOpen() || other.isOpen()) {
+            return 0;
+        }
+        return Math.max(0, Math.min(this.stopTimestamp, other.stopTimestamp) - Math.max(this.startTimestamp, other.startTimestamp));
     }
 }
