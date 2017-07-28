@@ -105,7 +105,6 @@ public class UserDiscipline {
     public String toString() {
         return "UserDiscipline{" +
                 "id=" + id +
-                ", userRoleManagement=" + userRoleManagement +
                 ", user=" + user +
                 ", discipline=" + discipline +
                 '}';

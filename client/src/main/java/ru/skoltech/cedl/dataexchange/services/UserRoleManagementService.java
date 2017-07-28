@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.services;
 
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.*;
 
 import java.util.List;
@@ -31,6 +32,33 @@ import java.util.Map;
 public interface UserRoleManagementService {
 
     /**
+     * Create {@link UserRoleManagement} based on {@link SystemModel} subsystems and
+     * {@link UserManagement} disciplines.
+     *
+     * @param systemModel {@link SystemModel} to base on
+     * @param userManagement {@link UserManagement} to base on
+     * @return created instance of {@link UserRoleManagement}
+     */
+    UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement);
+
+    /**
+     * Create default {@link UserRoleManagement}.
+     *
+     * @param userManagement {@link UserManagement} to base on
+     * @return created instance of {@link UserRoleManagement}
+     */
+    UserRoleManagement createDefaultUserRoleManagement(UserManagement userManagement);
+
+    /**
+     * Add user with specified name and set an administrator role to him.
+     *
+     * @param userRoleManagement {@link UserRoleManagement} to add on
+     * @param userManagement {@link UserManagement} to add on
+     * @param userName name of new {@link User}
+     */
+    void addUserWithAdminRole(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName);
+
+    /**
      * Retrieve an <i>admin</i> {@link Discipline} from {@link UserRoleManagement}.
      * If there is no one, then exception is thrown due to inconsistency.
      *
@@ -40,11 +68,11 @@ public interface UserRoleManagementService {
     Discipline obtainAdminDiscipline(UserRoleManagement userRoleManagement);
 
     /**
-     * Build a {@link Map} of current {@link UserRoleManagement} disciplines (
-     * discipline's name as a key).
+     * Build a {@link Map} of current {@link UserRoleManagement} disciplines
+     * (discipline's name as a key).
      *
      * @param userRoleManagement {@link UserRoleManagement} for build from
-     * @return map with discipline names as keys and discipline itself as values.
+     * @return map with discipline names as keys and disciplines itself as values.
      */
     Map<String, Discipline> disciplineMap(UserRoleManagement userRoleManagement);
 
@@ -57,23 +85,25 @@ public interface UserRoleManagementService {
     void removeDiscipline(UserRoleManagement userRoleManagement, Discipline discipline);
 
     /**
-     * Create and add {@link UserDiscipline} to {@link UserRoleManagement}.
+     * Create and add {@link UserDiscipline} association to {@link UserRoleManagement}.
+     * Does not allow duplication.
      *
      * @param userRoleManagement {@link UserRoleManagement} to add in
      * @param user {@link User} to build {@link UserDiscipline}
      * @param discipline {@link Discipline} to build {@link UserDiscipline}
-     * @return <i>true</i> if {@link UserDiscipline} was added successfully (not existent before),
-     * <i>false</i> if opposite
+     * @return <i>false</i> if {@link UserDiscipline} was added successfully (not existent before),
+     * <i>true</i> if opposite
      */
     boolean addUserDiscipline(UserRoleManagement userRoleManagement, User user, Discipline discipline);
 
     /**
-     * Create and add {@link UserDiscipline} with <i>admin</i> {@link Discipline} to {@link UserRoleManagement}.
+     * Create and add {@link UserDiscipline} association with <i>admin</i> {@link Discipline} to {@link UserRoleManagement}.
+     * Does not allow duplication.
      *
      * @param userRoleManagement {@link UserRoleManagement} to add in
      * @param user {@link User} to build {@link UserDiscipline}
-     * @return <i>true</i> if {@link UserDiscipline} was added successfully (not existent before),
-     * <i>false</i> if opposite
+     * @return <i>false</i> if {@link UserDiscipline} was added successfully (not existent before),
+     * <i>true</i> if opposite
      */
     boolean addAdminDiscipline(UserRoleManagement userRoleManagement, User user);
 
@@ -97,12 +127,13 @@ public interface UserRoleManagementService {
 
     /**
      * Create and add {@link DisciplineSubSystem} to {@link UserRoleManagement}.
+     * Does not allow duplication.
      *
      * @param userRoleManagement {@link UserRoleManagement} to add in
      * @param discipline {@link Discipline} to build {@link DisciplineSubSystem}
      * @param subSystem {@link SubSystemModel} to build {@link DisciplineSubSystem}
-     * @return <i>true</i> if {@link DisciplineSubSystem} was added successfully (not existent before),
-     * <i>false</i> if opposite
+     * @return <i>false</i> if {@link DisciplineSubSystem} was added successfully (not existent before),
+     * <i>true</i> if opposite
      */
     boolean addDisciplineSubsystem(UserRoleManagement userRoleManagement, Discipline discipline, SubSystemModel subSystem);
 

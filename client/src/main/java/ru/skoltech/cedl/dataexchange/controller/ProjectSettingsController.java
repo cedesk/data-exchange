@@ -26,6 +26,7 @@ import javafx.scene.control.TitledPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 
@@ -64,9 +65,15 @@ public class ProjectSettingsController implements Initializable {
     private TextField userNameText;
 
     private Project project;
+    private UserManagementService userManagementService;
+
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setUserManagementService(UserManagementService userManagementService) {
+        this.userManagementService = userManagementService;
     }
 
     @Override
@@ -122,7 +129,7 @@ public class ProjectSettingsController implements Initializable {
         } else {
             userName = userNameText.getText();
         }
-        boolean validUser = project.getUserManagement().checkUser(userName);
+        boolean validUser = userManagementService.checkUserName(project.getUserManagement(), userName);
         logger.info("using user: '" + userName + "', valid: " + validUser);
         if (validUser) {
             project.getApplicationSettings().setProjectUser(userName);

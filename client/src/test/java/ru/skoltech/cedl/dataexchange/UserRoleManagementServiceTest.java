@@ -47,13 +47,13 @@ public class UserRoleManagementServiceTest extends AbstractApplicationContextTes
     @Test
     public void testCheckAccessAdminTest() {
         UserManagement userManagement = userManagementService.createDefaultUserManagement();
-        UserRoleManagement userRoleManagement = userManagementService.createDefaultUserRoleManagement(userManagement);
+        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement(userManagement);
 
         User admin = userManagement.getUsers().get(0);
         Assert.assertTrue(userRoleManagementService.checkUserAdmin(userRoleManagement, admin));
 
         String testUserName = "test user";
-        userManagementService.addUserWithAdminRole(userRoleManagement, userManagement, testUserName);
+        userRoleManagementService.addUserWithAdminRole(userRoleManagement, userManagement, testUserName);
 
         SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(3);
 
@@ -69,7 +69,7 @@ public class UserRoleManagementServiceTest extends AbstractApplicationContextTes
     @Test
     public void testCheckAccessExpertTest() {
         UserManagement userManagement = userManagementService.createDefaultUserManagement();
-        UserRoleManagement userRoleManagement = userManagementService.createDefaultUserRoleManagement(userManagement);
+        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement(userManagement);
 
         String testUserName = "testUSER";
         User testUser = new User(testUserName, "", "");
@@ -80,7 +80,7 @@ public class UserRoleManagementServiceTest extends AbstractApplicationContextTes
 
         Discipline secondDiscipline = userRoleManagement.getDisciplines().get(1);
         userRoleManagementService.addUserDiscipline(userRoleManagement, testUser, secondDiscipline);
-        userRoleManagementService.addDisciplineSubsystem(userRoleManagement, secondDiscipline, firstSubsystemNode);
+        Assert.assertFalse(userRoleManagementService.addDisciplineSubsystem(userRoleManagement, secondDiscipline, firstSubsystemNode));
 
         ElementModel firstElementSubsystemNode = firstSubsystemNode.getSubNodes().get(0);
 

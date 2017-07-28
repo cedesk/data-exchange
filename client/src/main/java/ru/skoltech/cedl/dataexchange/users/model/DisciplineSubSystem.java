@@ -106,7 +106,6 @@ public class DisciplineSubSystem {
     public String toString() {
         return "DisciplineSubSystem{" +
                 "id=" + id +
-                ", userRoleManagement=" + userRoleManagement +
                 ", discipline=" + discipline +
                 ", subSystem=" + subSystem +
                 '}';

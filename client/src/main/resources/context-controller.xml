@@ -92,6 +92,7 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.ProjectSettingsController" >
         <property name="project" ref="project" />
+        <property name="userManagementService" ref="userManagementService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController">

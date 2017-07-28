@@ -572,7 +572,9 @@ public class MainController implements Initializable {
                 String studyName = studyChoice.get();
                 project.setProjectName(studyName);
                 reloadProject(null);
-                this.validateUser();
+                if (!project.checkUser()) {
+                    this.displayInvalidUserDialog();
+                }
             }
         } else {
             logger.warn("list of studies is empty!");
@@ -591,7 +593,11 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-            stage.setOnCloseRequest(event -> this.validateUser());
+            stage.setOnCloseRequest(event -> {
+                if (!project.checkUser()) {
+                    this.displayInvalidUserDialog();
+                }
+            });
             stage.showAndWait();
 
             updateView();
@@ -652,7 +658,9 @@ public class MainController implements Initializable {
                     quit(null);
                     return;
                 }
-                this.validateUser();
+                if (!project.checkUser()) {
+                    this.displayInvalidUserDialog();
+                }
             });
             stage.showAndWait();
             updateView();
@@ -812,15 +820,15 @@ public class MainController implements Initializable {
     public void checkRepository() {
         taskExecutor.execute(() -> {
             boolean validRepository = project.checkRepository();
-            Runnable mainControllerRunnable;
             if (!validRepository) {
-                mainControllerRunnable = () -> MainController.this.openRepositorySettingsDialog(null);
+                Platform.runLater(() -> MainController.this.openRepositorySettingsDialog(null));
             } else {
                 project.connectRepository();
-                this.validateUser();
-                mainControllerRunnable = () -> MainController.this.loadLastProject();
+                if (!project.checkUser()) {
+                    Platform.runLater(this::displayInvalidUserDialog);
+                }
+                Platform.runLater(this::loadLastProject);
             }
-            Platform.runLater(mainControllerRunnable);
         });
     }
 
@@ -888,15 +896,12 @@ public class MainController implements Initializable {
         }
     }
 
-    public void validateUser() {
-        boolean validUser = project.checkUser();
-        if (!validUser) {
-            String userName = applicationSettings.getProjectUser();
-            Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
-                    "Contact the administrator for the creation of a user for you.\n" +
-                    "As for now you'll be given the role of an observer, who can not perform modifications.");
-            project.getActionLogger().log(ActionLogger.ActionType.USER_VALIDATE, userName + ", not found");
-        }
+    private void displayInvalidUserDialog() {
+        String userName = applicationSettings.getProjectUser();
+        Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
+                "Contact the administrator for the creation of a user for you.\n" +
+                "As for now you'll be given the role of an observer, who can not perform modifications.");
+        project.getActionLogger().log(ActionLogger.ActionType.USER_VALIDATE, userName + ", not found");
     }
 
     private class UpdateDownloader implements Consumer<ActionEvent> {

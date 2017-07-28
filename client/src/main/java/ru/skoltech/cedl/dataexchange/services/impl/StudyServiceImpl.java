@@ -17,7 +17,7 @@
 package ru.skoltech.cedl.dataexchange.services.impl;
 
 import ru.skoltech.cedl.dataexchange.services.StudyService;
-import ru.skoltech.cedl.dataexchange.services.UserManagementService;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -29,10 +29,10 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
  */
 public class StudyServiceImpl implements StudyService {
 
-    private UserManagementService userManagementService;
+    private UserRoleManagementService userRoleManagementService;
 
-    public void setUserManagementService(UserManagementService userManagementService) {
-        this.userManagementService = userManagementService;
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class StudyServiceImpl implements StudyService {
         study.setSystemModel(systemModel);
         study.setName(systemModel.getName());
         UserRoleManagement userRoleManagement =
-                userManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, userManagement);
+                userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, userManagement);
         study.setUserRoleManagement(userRoleManagement);
         return study;
     }

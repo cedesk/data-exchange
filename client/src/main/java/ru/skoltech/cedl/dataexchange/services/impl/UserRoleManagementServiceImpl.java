@@ -17,9 +17,11 @@
 package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.*;
 
 import java.util.LinkedList;
@@ -35,6 +37,73 @@ import java.util.stream.Collectors;
 public class UserRoleManagementServiceImpl implements UserRoleManagementService {
 
     private static final Logger logger = Logger.getLogger(UserRoleManagementServiceImpl.class);
+
+    private UserManagementServiceImpl userManagementService;
+
+    public void setUserManagementService(UserManagementServiceImpl userManagementService) {
+        this.userManagementService = userManagementService;
+    }
+
+    @Override
+    public UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement) {
+        UserRoleManagement urm = UserRoleManagementFactory.createUserRoleManagement();
+
+        // add a discipline for each subsystem
+        for (ModelNode modelNode : systemModel.getSubNodes()) {
+            Discipline discipline = new Discipline(modelNode.getName(), urm);
+            urm.getDisciplines().add(discipline);
+        }
+        // add user disciplines
+        if (userManagement != null) {
+            User admin = userManagementService.obtainUser(userManagement, UserManagementService.ADMIN_USER_NAME);
+            if (admin != null) {
+                this.addAdminDiscipline(urm, admin);
+            }
+        }
+        return urm;
+    }
+
+    @Override
+    public UserRoleManagement createDefaultUserRoleManagement(UserManagement userManagement) {
+        UserRoleManagement urm = UserRoleManagementFactory.createUserRoleManagement();
+
+        // create Disciplines
+        Discipline orbitDiscipline = new Discipline("Orbit", urm);
+        Discipline payloadDiscipline = new Discipline("Payload", urm);
+        Discipline aocsDiscipline = new Discipline("AOCS", urm);
+        Discipline powerDiscipline = new Discipline("Power", urm);
+        Discipline thermalDiscipline = new Discipline("Thermal", urm);
+        Discipline communicationDiscipline = new Discipline("Communications", urm);
+        Discipline propulsionDiscipline = new Discipline("Propulsion", urm);
+        Discipline missionDiscipline = new Discipline("Mission", urm);
+
+        // add disciplines
+        urm.getDisciplines().add(aocsDiscipline);
+        urm.getDisciplines().add(orbitDiscipline);
+        urm.getDisciplines().add(payloadDiscipline);
+        urm.getDisciplines().add(powerDiscipline);
+        urm.getDisciplines().add(thermalDiscipline);
+        urm.getDisciplines().add(communicationDiscipline);
+        urm.getDisciplines().add(propulsionDiscipline);
+        urm.getDisciplines().add(missionDiscipline);
+
+        // add user disciplines
+        if (userManagement != null) {
+            User admin = userManagementService.obtainUser(userManagement, UserManagementService.ADMIN_USER_NAME);
+            if (admin != null) {
+                this.addAdminDiscipline(urm, admin);
+            }
+        }
+        return urm;
+    }
+
+    @Override
+    public void addUserWithAdminRole(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName) {
+        User admin = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
+        userManagement.getUsers().add(admin);
+        this.addAdminDiscipline(userRoleManagement, admin);
+    }
+
 
     @Override
     public Discipline obtainAdminDiscipline(UserRoleManagement userRoleManagement) {
@@ -61,13 +130,6 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
         userRoleManagement.getDisciplines().remove(discipline);
     }
 
-    /**
-     * Adds a user-discipline association, without allowing duplicates.
-     *
-     * @param user
-     * @param discipline
-     * @return true if the association already existed.
-     */
     @Override
     public boolean addUserDiscipline(UserRoleManagement userRoleManagement, User user, Discipline discipline) {
         UserDiscipline userDiscipline = new UserDiscipline(userRoleManagement, user, discipline);
@@ -101,13 +163,6 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    /**
-     * Adds a discipline-subsystem association, without allowing duplicates.
-     *
-     * @param discipline
-     * @param subSystem
-     * @return true if the association already existed.
-     */
     @Override
     public boolean addDisciplineSubsystem(UserRoleManagement userRoleManagement, Discipline discipline, SubSystemModel subSystem) {
         DisciplineSubSystem disciplineSubSystem = new DisciplineSubSystem(userRoleManagement, discipline, subSystem);

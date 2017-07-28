@@ -16,10 +16,10 @@
 
 package ru.skoltech.cedl.dataexchange.services;
 
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.users.model.User;
 import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+
+import java.util.Map;
 
 /**
  * Operations with {@link UserManagement}.
@@ -51,29 +51,28 @@ public interface UserManagementService {
     UserManagement createDefaultUserManagement();
 
     /**
-     * Create {@link UserRoleManagement} based on {@link SystemModel} subsystems and
-     * {@link UserManagement} disciplines.
+     * Build a {@link Map} of current {@link User}s (user name as a key).
      *
-     * @param systemModel
-     * @param userManagement
-     * @return user role management
+     * @param userManagement {@link UserManagement} to build from
+     * @return map with user names as keys and users itself as values.
      */
-    UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement);
+    Map<String, User> userMap(UserManagement userManagement);
 
     /**
-     * Create default {@link UserRoleManagement}.
+     * Check if {@link UserManagement} contains {@link User} with specified name.
      *
-     * @param userManagement
-     * @return user role management
+     * @param userManagement {@link UserManagement} to check from
+     * @param userName checked user name
+     * @return <i>true</i> if {@link User} exists, <i>false</i> if opposite
      */
-    UserRoleManagement createDefaultUserRoleManagement(UserManagement userManagement);
+    boolean checkUserName(UserManagement userManagement, String userName);
 
     /**
-     * Add user with specified name and set an administrator role to him.
+     * Retrieve from {@link UserManagement} an {@link User} with specified name.
      *
-     * @param userRoleManagement
-     * @param userManagement
-     * @param userName
+     * @param userManagement {@link UserManagement} to search from
+     * @param userName to search for
+     * @return instance of {@link User} if found, <i>null</i> if opposite
      */
-    void addUserWithAdminRole(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName);
+    User obtainUser(UserManagement userManagement, String userName);
 }

@@ -28,14 +28,14 @@
     </bean>
 
     <bean id="studyService" class="ru.skoltech.cedl.dataexchange.services.impl.StudyServiceImpl" >
+        <property name="userRoleManagementService" ref="userRoleManagementService"/>
+    </bean>
+
+    <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserManagementServiceImpl" />
+
+    <bean id="userRoleManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserRoleManagementServiceImpl" >
         <property name="userManagementService" ref="userManagementService" />
     </bean>
-
-    <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserManagementServiceImpl">
-        <property name="userRoleManagementService" ref="userRoleManagementService" />
-    </bean>
-
-    <bean id="userRoleManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserRoleManagementServiceImpl" />
 
     <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl" >
         <property name="fileStorageService" ref="fileStorageService" />

@@ -266,12 +266,13 @@ public class Project {
     public User getUser() {
         if (currentUser == null) { // caching
             String userName = applicationSettings.getProjectUser();
-            currentUser = getUserManagement().findUser(userName);
+            UserManagement userManagement = this.getUserManagement();
+            currentUser = userManagementService.obtainUser(userManagement, userName);
             if (currentUser == null) {
                 boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
                 userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
                 logger.warn("User not found in user management. Assuming " + userName + "!");
-                currentUser = getUserManagement().findUser(userName);
+                currentUser = userManagementService.obtainUser(userManagement, userName);
                 Objects.requireNonNull(currentUser);
             }
         }
@@ -392,7 +393,8 @@ public class Project {
             userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
         }
         currentUser = null; // make sure next getUser retrieves the user from settings
-        return getUserManagement().checkUser(userName);
+        UserManagement userManagement = this.getUserManagement();
+        return userManagementService.checkUserName(userManagement, userName);
     }
 
     public boolean checkRepository() {
