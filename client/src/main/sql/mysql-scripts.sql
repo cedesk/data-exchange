@@ -6,7 +6,7 @@ GRANT ALL PRIVILEGES ON `cedesk_repo`.* TO 'cedesk'@'%';
 ## --------------------------------------------------------
 
 SELECT 
-    concat("RENAME TABLE ",tr.table_name, " TO ", td.table_name, "1, ", tr.table_name, "1 TO ", td.table_name, ";")
+    concat("RENAME TABLE ", LOWER(tr.table_name), " TO ", tr.table_name, "1, ", tr.table_name, "1 TO ", td.table_name, ";")
 FROM
     information_schema.tables td
         JOIN
