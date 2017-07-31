@@ -33,26 +33,34 @@ import java.util.List;
  * <br/>
  * Created by D.Knoll on 28.08.2015.
  */
+@Entity
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-@Entity
-@Access(AccessType.PROPERTY)
 public class UnitManagement {
-
-    @XmlTransient
-    private long id;
-
-    @XmlElement(name = "prefix")
-    private List<Prefix> prefixes = new LinkedList<>();
-
-    @XmlElement(name = "unit")
-    private List<Unit> units = new LinkedList<>();
-
-    @XmlElement(name = "quantityKind")
-    private List<QuantityKind> quantityKinds = new LinkedList<>();
 
     @Id
     @Column(name = "id")
+    @XmlTransient
+    private long id;
+
+    @OneToMany(targetEntity = Prefix.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "um_id", referencedColumnName = "id")
+    @Fetch(FetchMode.SELECT)
+    @XmlElement(name = "prefix")
+    private List<Prefix> prefixes = new LinkedList<>();
+
+    @OneToMany(targetEntity = Unit.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "um_id", referencedColumnName = "id")
+    @Fetch(FetchMode.SELECT)
+    @XmlElement(name = "unit")
+    private List<Unit> units = new LinkedList<>();
+
+    @OneToMany(targetEntity = QuantityKind.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "um_id", referencedColumnName = "id")
+    @Fetch(FetchMode.SELECT)
+    @XmlElement(name = "quantityKind")
+    private List<QuantityKind> quantityKinds = new LinkedList<>();
+
     public long getId() {
         return id;
     }
@@ -61,9 +69,6 @@ public class UnitManagement {
         this.id = id;
     }
 
-    @OneToMany(targetEntity = Prefix.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "um_id", referencedColumnName = "id")
-    @Fetch(FetchMode.SELECT)
     public List<Prefix> getPrefixes() {
         return prefixes;
     }
@@ -72,9 +77,6 @@ public class UnitManagement {
         this.prefixes = prefixes;
     }
 
-    @OneToMany(targetEntity = Unit.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "um_id", referencedColumnName = "id")
-    @Fetch(FetchMode.SELECT)
     public List<Unit> getUnits() {
         return units;
     }
@@ -83,9 +85,6 @@ public class UnitManagement {
         this.units = units;
     }
 
-    @OneToMany(targetEntity = QuantityKind.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "um_id", referencedColumnName = "id")
-    @Fetch(FetchMode.SELECT)
     public List<QuantityKind> getQuantityKinds() {
         return quantityKinds;
     }
@@ -101,9 +100,9 @@ public class UnitManagement {
 
         UnitManagement that = (UnitManagement) o;
 
-        if (!Arrays.equals(prefixes.toArray(), that.prefixes.toArray())) return false;
-        if (!Arrays.equals(units.toArray(), that.units.toArray())) return false;
-        return Arrays.equals(quantityKinds.toArray(), that.quantityKinds.toArray());
+        return Arrays.equals(prefixes.toArray(), that.prefixes.toArray())
+                && Arrays.equals(units.toArray(), that.units.toArray())
+                && Arrays.equals(quantityKinds.toArray(), that.quantityKinds.toArray());
     }
 
     @Override
@@ -116,38 +115,10 @@ public class UnitManagement {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UnitManagement{");
-        sb.append("\nprefixes(").append(prefixes.size()).append(")=").append(prefixes);
-        sb.append(",\nunits(").append(units.size()).append(")=").append(units);
-        sb.append(",\nquantityKinds(").append(quantityKinds.size()).append(")=").append(quantityKinds);
-        sb.append("\n}");
-        return sb.toString();
+        return "UnitManagement{" +
+                "prefixes=" + prefixes +
+                ", units=" + units +
+                ", quantityKinds=" + quantityKinds +
+                '}';
     }
-
-    public Unit findUnitByText(String unitStr) {
-        Unit result = null;
-        for (Unit unit : units) {
-            if (unit.asText().equals(unitStr)) {
-                result = unit;
-                break;
-            }
-        }
-        return result;
-    }
-
-    public Unit findUnitBySymbolOrName(String unitStr) {
-        Unit result = null;
-        for (Unit unit : units) {
-            if (unit.getSymbol().equals(unitStr)) {
-                result = unit;
-                break;
-            }
-            if (unit.getName().equals(unitStr)) {
-                result = unit;
-                break;
-            }
-        }
-        return result;
-    }
-
 }

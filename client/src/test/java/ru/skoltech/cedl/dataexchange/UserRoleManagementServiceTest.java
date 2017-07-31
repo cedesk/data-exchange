@@ -22,6 +22,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ElementModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -37,11 +38,15 @@ public class UserRoleManagementServiceTest extends AbstractApplicationContextTes
 
     private UserRoleManagementService userRoleManagementService;
     private UserManagementService userManagementService;
+    private SystemBuilder systemBuilder;
 
     @Before
     public void prepare() {
         userRoleManagementService = context.getBean(UserRoleManagementService.class);
         userManagementService = context.getBean(UserManagementService.class);
+        systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
+
+        systemBuilder.modelDepth(3);
     }
 
     @Test
@@ -55,7 +60,8 @@ public class UserRoleManagementServiceTest extends AbstractApplicationContextTes
         String testUserName = "test user";
         userRoleManagementService.addUserWithAdminRole(userRoleManagement, userManagement, testUserName);
 
-        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(3);
+
+        SystemModel systemModel = systemBuilder.build("testModel");
 
         SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
@@ -75,7 +81,7 @@ public class UserRoleManagementServiceTest extends AbstractApplicationContextTes
         User testUser = new User(testUserName, "", "");
         userManagement.getUsers().add(testUser);
 
-        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(3);
+        SystemModel systemModel = systemBuilder.build("testModel");
         SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
         Discipline secondDiscipline = userRoleManagement.getDisciplines().get(1);

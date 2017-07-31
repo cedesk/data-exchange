@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.external.excel;
+package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.model.InternalWorkbook;
@@ -24,6 +24,9 @@ import org.apache.poi.xssf.model.ExternalLinksTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
+import ru.skoltech.cedl.dataexchange.services.SpreadsheetInputOutputExtractorService;
+import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
@@ -39,21 +42,27 @@ import java.util.List;
 /**
  * Created by D.Knoll on 14.06.2016.
  */
-public class SpreadsheetInputOutputExtractor {
+public class SpreadsheetInputOutputExtractorServiceImpl implements SpreadsheetInputOutputExtractorService {
 
-    public static final String EXT_SRC = "EXT.SRC: ";
-    public static final String SOURCE = "SOURCE: ";
-    private static final Logger logger = Logger.getLogger(SpreadsheetInputOutputExtractor.class);
+    private static final Logger logger = Logger.getLogger(SpreadsheetInputOutputExtractorServiceImpl.class);
 
-    public static Sheet guessInputSheet(Workbook wb) {
+    private UnitManagementService unitManagementService;
+
+    public void setUnitManagementService(UnitManagementService unitManagementService) {
+        this.unitManagementService = unitManagementService;
+    }
+
+    @Override
+    public Sheet guessInputSheet(Workbook wb) {
         return guessSheet(wb, "input");
     }
 
-    public static Sheet guessOutputSheet(Workbook wb) {
+    @Override
+    public Sheet guessOutputSheet(Workbook wb) {
         return guessSheet(wb, "output");
     }
 
-    private static Sheet guessSheet(Workbook wb, String input) {
+    private Sheet guessSheet(Workbook wb, String input) {
         int sheets = wb.getNumberOfSheets();
         if (sheets == 1) {
             return wb.getSheetAt(0);
@@ -69,7 +78,8 @@ public class SpreadsheetInputOutputExtractor {
         }
     }
 
-    public static List<ParameterModel> extractParameters(Project project, ExternalModel externalModel, Sheet sheet) {
+    @Override
+    public List<ParameterModel> extractParameters(Project project, ExternalModel externalModel, Sheet sheet) {
         List<String> externalLinks = getWorkbookReferences(sheet.getWorkbook());
 
         List<ParameterModel> parameters = new LinkedList<>();
@@ -135,13 +145,13 @@ public class SpreadsheetInputOutputExtractor {
      * @param numberCell
      * @return
      */
-    private static Unit extractUnit(Project project, Cell numberCell) {
+    private Unit extractUnit(Project project, Cell numberCell) {
         Row row = numberCell.getRow();
         Cell unitCell = row.getCell(numberCell.getColumnIndex() + 1, Row.RETURN_BLANK_AS_NULL);
         if (unitCell != null && unitCell.getCellTypeEnum() == CellType.STRING) {
             String unitString = SpreadsheetCellValueAccessor.getValueAsString(unitCell);
             UnitManagement unitManagement = project.getUnitManagement();
-            Unit unit = unitManagement.findUnitBySymbolOrName(unitString);
+            Unit unit = unitManagementService.obtainUnitBySymbolOrName(unitManagement, unitString);
             if (unit == null) {
                 logger.warn("unit not found '" + unitString + "'");
             } else {
@@ -152,7 +162,7 @@ public class SpreadsheetInputOutputExtractor {
         return null;
     }
 
-    private static ParameterModel makeParameter(Project project, Sheet sheet, ExternalModel externalModel,
+    private ParameterModel makeParameter(Project project, Sheet sheet, ExternalModel externalModel,
                                                 List<String> externalLinks, Cell nameCell,
                                                 ParameterNature nature, Cell numberCell) {
         String parameterName = SpreadsheetCellValueAccessor.getValueAsString(nameCell);
@@ -190,7 +200,7 @@ public class SpreadsheetInputOutputExtractor {
         return parameter;
     }
 
-    private static String clarifyFormula(String cellFormula, List<String> otherWorkbooks) {
+    private String clarifyFormula(String cellFormula, List<String> otherWorkbooks) {
         String result;
         if (cellFormula.contains("[")) {
             String simpleFormula = cellFormula;
@@ -206,7 +216,7 @@ public class SpreadsheetInputOutputExtractor {
     }
 
 
-    private static List<String> getWorkbookReferences(Workbook workbook) {
+    private List<String> getWorkbookReferences(Workbook workbook) {
         List<String> references = new LinkedList<>();
         if (workbook instanceof XSSFWorkbook) {
             List<ExternalLinksTable> externalLinksTables = ((XSSFWorkbook) workbook).getExternalLinksTable();
@@ -255,7 +265,7 @@ public class SpreadsheetInputOutputExtractor {
         return references;
     }
 
-    private static String simplifyFilename(String linkedFileName) {
+    private String simplifyFilename(String linkedFileName) {
         String simpleFileName = linkedFileName.substring(linkedFileName.lastIndexOf('/') + 1);
         return simpleFileName.replace("%20", " ");
     }

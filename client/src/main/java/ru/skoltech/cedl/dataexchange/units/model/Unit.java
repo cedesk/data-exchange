@@ -22,12 +22,13 @@ import javax.xml.bind.annotation.*;
 /**
  * Created by D.Knoll on 28.08.2015.
  */
+@Entity
 @XmlType
 @XmlAccessorType(XmlAccessType.FIELD)
-@Entity
-@Access(AccessType.PROPERTY)
 public class Unit {
 
+    @Id
+    @GeneratedValue
     @XmlTransient
     private long id;
 
@@ -40,14 +41,14 @@ public class Unit {
     @XmlAttribute
     private String description;
 
+    @ManyToOne(targetEntity = QuantityKind.class)
     @XmlTransient
     private QuantityKind quantityKind;
 
+    @Transient
     @XmlAttribute(name = "quantityKind")
     private String quantityKindStr;
 
-    @Id
-    @GeneratedValue
     public long getId() {
         return id;
     }
@@ -80,7 +81,6 @@ public class Unit {
         this.description = description;
     }
 
-    @ManyToOne(targetEntity = QuantityKind.class)
     public QuantityKind getQuantityKind() {
         return quantityKind;
     }
@@ -89,7 +89,6 @@ public class Unit {
         this.quantityKind = quantityKind;
     }
 
-    @Transient
     public String getQuantityKindStr() {
         return quantityKindStr;
     }
@@ -109,10 +108,10 @@ public class Unit {
 
         Unit unit = (Unit) o;
 
-        if (!name.equals(unit.name)) return false;
-        if (!symbol.equals(unit.symbol)) return false;
-        if (description != null ? !description.equals(unit.description) : unit.description != null) return false;
-        return !(quantityKind != null ? !quantityKind.equals(unit.quantityKind) : unit.quantityKind != null);
+        return name.equals(unit.name)
+                && symbol.equals(unit.symbol)
+                && (description != null ? description.equals(unit.description) : unit.description == null)
+                && !(quantityKind != null ? !quantityKind.equals(unit.quantityKind) : unit.quantityKind != null);
     }
 
     @Override
@@ -126,12 +125,11 @@ public class Unit {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("\nUnit{");
-        sb.append("name='").append(name).append('\'');
-        sb.append(", symbol='").append(symbol).append('\'');
-        sb.append(", description='").append(description).append('\'');
-        sb.append(", quantityKind='").append(quantityKind != null ? quantityKind.asText() : null).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return "Unit{" +
+                "name='" + name + '\'' +
+                ", symbol='" + symbol + '\'' +
+                ", description='" + description + '\'' +
+                ", quantityKind=" + quantityKind +
+                '}';
     }
 }

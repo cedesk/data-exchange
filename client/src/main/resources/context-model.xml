@@ -17,8 +17,10 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
        xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd
                            http://www.springframework.org/schema/task  http://www.springframework.org/schema/task/spring-task.xsd">
 
     <import resource="context-service.xml" />
@@ -26,9 +28,7 @@
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders" value="true"/>
         <property name="systemPropertiesMode" value="2" />
-        <property name="location">
-            <value>cedesk.properties</value>
-        </property>
+        <property name="location" value="cedesk.properties"/>
     </bean>
 
     <bean id="applicationSettings" class="ru.skoltech.cedl.dataexchange.ApplicationSettings" init-method="init">
@@ -75,6 +75,26 @@
         <property name="unitManagementService" ref="unitManagementService" />
         <property name="actionLogger" ref="actionLogger" />
     </bean>
+
+
+    <util:map id="builderRegistry" map-class="java.util.HashMap">
+        <entry value-ref="simpleSystemBuilder">
+            <key><bean factory-bean="simpleSystemBuilder" factory-method="asName"/></key>
+        </entry>
+        <entry value-ref="basicSpaceSystemBuilder">
+            <key><bean factory-bean="basicSpaceSystemBuilder" factory-method="asName"/></key>
+        </entry>
+    </util:map>
+
+    <bean id="systemBuilderFactory" class="ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory" >
+        <constructor-arg name="builderRegistry" ref="builderRegistry" />
+    </bean>
+
+    <bean id="simpleSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SimpleSystemBuilder" >
+        <property name="unitManagementService" ref="unitManagementService" />
+    </bean>
+
+    <bean id="basicSpaceSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder" />
 
     <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry" >
         <property name="userRoleManagementService" ref="userRoleManagementService" />

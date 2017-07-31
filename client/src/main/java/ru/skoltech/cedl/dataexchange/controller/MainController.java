@@ -113,6 +113,7 @@ public class MainController implements Initializable {
 
     private Project project;
     private ApplicationSettings applicationSettings;
+    private SystemBuilderFactory systemBuilderFactory;
     private RepositoryManager repositoryManager;
     private RepositoryService repositoryService;
     private FileStorageService fileStorageService;
@@ -134,6 +135,10 @@ public class MainController implements Initializable {
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
+    }
+
+    public void setSystemBuilderFactory(SystemBuilderFactory systemBuilderFactory) {
+        this.systemBuilderFactory = systemBuilderFactory;
     }
 
     public void setRepositoryManager(RepositoryManager repositoryManager) {
@@ -428,17 +433,37 @@ public class MainController implements Initializable {
                 return;
             }
 
-            Optional<String> builderName = Dialogues.chooseStudyBuilder(SystemBuilderFactory.getBuilderNames());
+            Optional<String> builderName = Dialogues.chooseStudyBuilder(systemBuilderFactory.getBuilderNames());
             if (!builderName.isPresent()) {
                 return;
             }
-            SystemBuilder builder = SystemBuilderFactory.getBuilder(builderName.get());
-            builder.setUnitManagement(project.getUnitManagement());
+            SystemBuilder builder = systemBuilderFactory.getBuilder(builderName.get());
+            if (builder.adjustsSubsystems()) {
+                builder.subsystemNames(requestSubsystemNames());
+            }
+            builder.unitManagement(project.getUnitManagement());
             SystemModel systemModel = builder.build(projectName);
             project.newStudy(systemModel);
             StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
             project.getActionLogger().log(ActionLogger.ActionType.PROJECT_NEW, projectName);
             updateView();
+        }
+    }
+
+    private String[] requestSubsystemNames() {
+        while (true) {
+            Optional<String> subsystemNamesString = Dialogues.inputSubsystemNames("SubsystemA,SubsystemB");
+            if (subsystemNamesString.isPresent()) {
+                String[] subsystemNames = subsystemNamesString.get().split(",");
+                boolean correct = Arrays.stream(subsystemNames).allMatch(Identifiers::validateNodeName);
+                if (correct) {
+                    return subsystemNames;
+                } else {
+                    Dialogues.showWarning("Incorrect subsystem names", "The specified names are not valid for subsystem nodes!\n" + Identifiers.getNodeNameValidationDescription());
+                }
+            } else {
+                return new String[0];
+            }
         }
     }
 

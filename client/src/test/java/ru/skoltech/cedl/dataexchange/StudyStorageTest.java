@@ -22,6 +22,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -35,10 +36,12 @@ import java.util.List;
 public class StudyStorageTest extends AbstractApplicationContextTest {
 
     private UserRoleManagementService userRoleManagementService;
+    private SystemBuilder systemBuilder;
 
     @Before
     public void prepare() {
         userRoleManagementService = context.getBean(UserRoleManagementService.class);
+        systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
     }
 
     @Test
@@ -87,7 +90,8 @@ public class StudyStorageTest extends AbstractApplicationContextTest {
     private Study makeStudy(String projectName, int modelDepth) {
         Study study = new Study();
         study.setStudySettings(new StudySettings());
-        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(modelDepth);
+        systemBuilder.modelDepth(modelDepth);
+        SystemModel systemModel = systemBuilder.build("testModel");
         study.setSystemModel(systemModel);
         study.setName(projectName);
         UserRoleManagement userRoleManagement

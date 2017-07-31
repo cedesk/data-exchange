@@ -382,7 +382,7 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
             Class<?> entityClass = Class.forName(entityClassName);
             Object entity = entityManager.find(entityClass, identifier);
             if (entity != null) {
-                Method getNameMethod = entity.getClass().getMethod("name");
+                Method getNameMethod = entity.getClass().getMethod("getName");
                 Object name = getNameMethod.invoke(entity);
                 result[0] = name.toString();
                 result[1] = entity.toString();

@@ -42,12 +42,10 @@ import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
 import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
-import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetInputOutputExtractor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
-import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.services.*;
+import ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
@@ -139,7 +137,9 @@ public class ModelEditingController implements Initializable {
     private Project project;
     private FileStorageService fileStorageService;
     private UserRoleManagementService userRoleManagementService;
+    private UnitManagementService unitManagementService;
     private ModelUpdateService modelUpdateService;
+    private SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService;
 
     public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
@@ -153,6 +153,10 @@ public class ModelEditingController implements Initializable {
         this.fileStorageService = fileStorageService;
     }
 
+    public void setUnitManagementService(UnitManagementServiceImpl unitManagementService) {
+        this.unitManagementService = unitManagementService;
+    }
+
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
     }
@@ -161,12 +165,20 @@ public class ModelEditingController implements Initializable {
         this.modelUpdateService = modelUpdateService;
     }
 
+    public void setSpreadsheetInputOutputExtractorService(SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService) {
+        this.spreadsheetInputOutputExtractorService = spreadsheetInputOutputExtractorService;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         parameterEditor.setProject(project);
+        parameterEditor.setModelUpdateService(modelUpdateService);
+        parameterEditor.setUnitManagementService(unitManagementService);
+
         externalModelEditor.setProject(project);
         externalModelEditor.setFileStorageService(fileStorageService);
         externalModelEditor.setModelUpdateService(modelUpdateService);
+        externalModelEditor.setSpreadsheetInputOutputExtractorService(spreadsheetInputOutputExtractorService);
 
         project.addExternalModelChangeObserver(new Observer() {
             @Override
@@ -491,8 +503,8 @@ public class ModelEditingController implements Initializable {
         Pattern pattern = Pattern.compile("\\[(.*)\\](.*)"); // e.g. [Structure.xls]Sheet1!A1
 
         String description = selectedParameter.getDescription();
-        if (description.startsWith(SpreadsheetInputOutputExtractor.EXT_SRC)) {
-            String formula = description.replace(SpreadsheetInputOutputExtractor.EXT_SRC, "");
+        if (description.startsWith(SpreadsheetInputOutputExtractorService.EXT_SRC)) {
+            String formula = description.replace(SpreadsheetInputOutputExtractorService.EXT_SRC, "");
             Matcher matcher = pattern.matcher(formula);
             if (matcher.find()) {
                 String filename = matcher.group(1);

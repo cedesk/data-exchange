@@ -54,6 +54,11 @@
 
     <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.services.impl.JsoupServiceImpl" />
 
+    <bean class="ru.skoltech.cedl.dataexchange.services.impl.SpreadsheetInputOutputExtractorServiceImpl"
+          id="spreadsheetInputOutputExtractorService">
+        <property name="unitManagementService" ref="unitManagementService"/>
+    </bean>
+
     <!-- persistence -->
     <bean name="persistenceFactory" class="ru.skoltech.cedl.dataexchange.db.ApplicationSettingsPersistenceFactory">
         <property name="jpaVendorAdapter" ref="jpaVendorAdapter" />

@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
@@ -34,16 +35,20 @@ import java.util.List;
 public class VersioningStorageTest extends AbstractApplicationContextTest {
 
     private static final String ADMIN = "admin";
+    private SystemBuilder systemBuilder;
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         applicationSettings.setUseOsUser(false);
+
+        systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
     }
 
     @Test
     public void test() throws RepositoryException {
-        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(1);
+        systemBuilder.modelDepth(1);
+        SystemModel systemModel = systemBuilder.build("testModel");
         System.out.println(systemModel);
         repositoryService.storeSystemModel(systemModel);
 

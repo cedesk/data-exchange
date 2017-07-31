@@ -40,6 +40,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
+import ru.skoltech.cedl.dataexchange.services.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
@@ -70,6 +71,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     private Project project;
     private FileStorageService fileStorageService;
     private ModelUpdateService modelUpdateService;
+    private SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService;
 
     private ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener;
     private ModelEditingController.ParameterUpdateListener parameterUpdateListener;
@@ -91,6 +93,10 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
 
     public void setModelUpdateService(ModelUpdateService modelUpdateService) {
         this.modelUpdateService = modelUpdateService;
+    }
+
+    public void setSpreadsheetInputOutputExtractorService(SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService) {
+        this.spreadsheetInputOutputExtractorService = spreadsheetInputOutputExtractorService;
     }
 
     public ModelNode getModelNode() {
@@ -217,7 +223,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     }
 
     private void renderExternalModelView(ExternalModel externalModel) {
-        ExternalModelView editor = new ExternalModelView(project, externalModel);
+        ExternalModelView editor = new ExternalModelView(spreadsheetInputOutputExtractorService, project, externalModel);
         Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
         removeButton.setTooltip(new Tooltip("Remove external model"));
         removeButton.setOnAction(ExternalModelEditor.this::deleteExternalModel);

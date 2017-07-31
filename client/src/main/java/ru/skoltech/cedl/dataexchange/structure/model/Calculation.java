@@ -92,8 +92,9 @@ public class Calculation {
 
     public boolean valid() {
         int args = arguments.size();
-        if (operation == null) return false;
-        return operation.minArguments() <= args && operation.maxArguments() >= args;
+        return operation != null
+                && operation.minArguments() <= args
+                && operation.maxArguments() >= args;
     }
 
     public Double evaluate() throws IllegalArgumentException {

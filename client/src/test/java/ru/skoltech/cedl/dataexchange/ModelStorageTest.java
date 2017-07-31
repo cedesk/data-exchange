@@ -17,9 +17,11 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
@@ -28,9 +30,18 @@ import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
  */
 public class ModelStorageTest extends AbstractApplicationContextTest {
 
-    @Test
+    private SystemBuilder systemBuilder;
+    private String systemModelName = "testName";
+
+    @Before
+    public void prepare() {
+        systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
+    }
+
+        @Test
     public void compareStoredAndRetrievedModel() throws RepositoryException {
-        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(2);
+        systemBuilder.modelDepth(2);
+        SystemModel systemModel = systemBuilder.build(systemModelName);
         System.out.println(systemModel);
         repositoryService.storeSystemModel(systemModel);
         long systemModelId = systemModel.getId();
@@ -45,7 +56,8 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
 
     @Test
     public void storeModifyAndStore() throws RepositoryException {
-        SystemModel generatedModel = BasicSpaceSystemBuilder.getSystemModel(1);
+        systemBuilder.modelDepth(1);
+        SystemModel generatedModel = systemBuilder.build(systemModelName);
         System.out.println(generatedModel);
 
         SystemModel storedModel = repositoryService.storeSystemModel(generatedModel);
@@ -75,7 +87,8 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
 
     @Test
     public void storeModifyAndStore2() throws RepositoryException {
-        SystemModel storedModel = BasicSpaceSystemBuilder.getSystemModel(2);
+        systemBuilder.modelDepth(2);
+        SystemModel storedModel = systemBuilder.build(systemModelName);
         System.out.println(storedModel);
 
         SystemModel system0 = repositoryService.storeSystemModel(storedModel);
@@ -106,7 +119,8 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
 
     @Test
     public void storeModifyAndStoreNames() throws RepositoryException {
-        SystemModel storedModel = BasicSpaceSystemBuilder.getSystemModel(2);
+        systemBuilder.modelDepth(2);
+        SystemModel storedModel = systemBuilder.build(systemModelName);
         System.out.println(storedModel);
 
         repositoryService.storeSystemModel(storedModel);
@@ -130,7 +144,8 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
 
     @Test
     public void testTimeStamping() throws RepositoryException {
-        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(1);
+        systemBuilder.modelDepth(1);
+        SystemModel systemModel = systemBuilder.build(systemModelName);
         System.out.println(systemModel);
         System.out.println("----------------------------------------------------------------");
 

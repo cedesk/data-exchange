@@ -25,6 +25,7 @@ import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
@@ -42,6 +43,7 @@ import static org.junit.Assert.assertFalse;
  */
 public class ModelXmlMappingTest extends AbstractApplicationContextTest {
 
+    private SystemBuilder systemBuilder;
     private FileStorageService fileStorageService;
 
     private SystemModel m1;
@@ -51,6 +53,7 @@ public class ModelXmlMappingTest extends AbstractApplicationContextTest {
     @Before
     public void setup() throws IOException, NoSuchFieldException, IllegalAccessException {
         Project project = context.getBean(Project.class);
+        systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
         fileStorageService = context.getBean(FileStorageService.class);
 
         project.init("project");
@@ -94,7 +97,8 @@ public class ModelXmlMappingTest extends AbstractApplicationContextTest {
 
     @Test
     public void testExportXmlAndReimport() throws IOException {
-        SystemModel s1 = BasicSpaceSystemBuilder.getSystemModel(1);
+        systemBuilder.modelDepth(1);
+        SystemModel s1 = systemBuilder.build("testModel");
         URL url = this.getClass().getResource("/attachment.xls");
         File excelFile = new File(url.getFile());
         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(excelFile, s1);

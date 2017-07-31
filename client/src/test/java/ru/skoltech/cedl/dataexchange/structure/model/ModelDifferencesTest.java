@@ -20,6 +20,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 
@@ -37,7 +38,10 @@ public class ModelDifferencesTest {
 
     @Test
     public void equalNodes() {
-        s1 = BasicSpaceSystemBuilder.getSystemModel(4);
+        SystemBuilder systemBuilder = new BasicSpaceSystemBuilder();
+        systemBuilder.modelDepth(4);
+
+        s1 = systemBuilder.build("testSystem");
         s2 = s1;
         Assert.assertTrue(s1.equals(s2));
         List<ModelDifference> modelDifferences =

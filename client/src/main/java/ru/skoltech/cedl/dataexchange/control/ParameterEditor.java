@@ -43,12 +43,14 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
+import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.io.IOException;
 import java.net.URL;
@@ -126,6 +128,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private HBox overrideValueGroup;
 
     private ModelUpdateService modelUpdateService;
+    private UnitManagementService unitManagementService;
 
     private Project project;
     private ParameterModel editingParameterModel;
@@ -159,6 +162,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void setModelUpdateService(ModelUpdateService modelUpdateService) {
         this.modelUpdateService = modelUpdateService;
+    }
+
+    public void setUnitManagementService(UnitManagementService unitManagementService) {
+        this.unitManagementService = unitManagementService;
     }
 
     public void setEditListener(Consumer<ParameterModel> updateListener) {
@@ -280,7 +287,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         unitComboBox.setConverter(new StringConverter<Unit>() {
             @Override
             public Unit fromString(String unitStr) {
-                return project.getUnitManagement().findUnitByText(unitStr);
+                UnitManagement unitManagement = project.getUnitManagement();
+                return unitManagementService.obtainUnitByText(unitManagement, unitStr);
             }
 
             @Override

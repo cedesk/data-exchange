@@ -41,6 +41,10 @@ public class ApplicationSettings {
 
     private static final Logger logger = Logger.getLogger(ApplicationSettings.class);
 
+    public static final int MIN_MODEL_DEPTH = 1;
+    public static final int MAX_MODEL_DEPTH = 4;
+    public static final int DEFAULT_MODEL_DEPTH = 2;
+
     private static final String CEDESK_LOG_DIR_PROPERTY_NAME = "cedesk.log.dir";
 
     private static final String REPOSITORY_HOST = "repository.host";
@@ -381,8 +385,9 @@ public class ApplicationSettings {
         if (studyModelDepthStr != null) {
             try {
                 studyModelDepth = Integer.valueOf(studyModelDepthStr);
-                if (studyModelDepth < SystemBuilder.MIN_MODEL_DEPTH || studyModelDepth > SystemBuilder.MAX_MODEL_DEPTH) {
-                    logger.warn("Invalid value of setting " + STUDY_MODEL_DEPTH + ", it must be >= " + SystemBuilder.MIN_MODEL_DEPTH + " and <=" + SystemBuilder.MAX_MODEL_DEPTH);
+                if (studyModelDepth < MIN_MODEL_DEPTH || studyModelDepth > MAX_MODEL_DEPTH) {
+                    logger.warn("Invalid value of setting " + STUDY_MODEL_DEPTH + ", " +
+                            "it must be >= " + MIN_MODEL_DEPTH + " and <=" + MAX_MODEL_DEPTH);
                 }
             } catch (NumberFormatException nfe) {
                 logger.warn("Not parseable value of setting " + STUDY_MODEL_DEPTH);
