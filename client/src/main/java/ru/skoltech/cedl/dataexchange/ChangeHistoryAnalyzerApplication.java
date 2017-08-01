@@ -30,11 +30,13 @@ public class ChangeHistoryAnalyzerApplication extends Application {
 
     private static Logger logger = Logger.getLogger(ChangeHistoryAnalyzerApplication.class);
 
-    private static ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+    private static ApplicationContext context;
 
     public static void main(String[] args) {
-        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
+        ApplicationContextInitializer.initialize(new String[]{"/context-model.xml"}); // headless, without GUI
+        context = ApplicationContextInitializer.getInstance().getContext();
+        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         System.out.println("using: " + applicationSettings.getCedeskAppDir() + "/" + applicationSettings.getCedeskAppFile());
 
         logger.info("----------------------------------------------------------------------------------------------------");
@@ -44,6 +46,7 @@ public class ChangeHistoryAnalyzerApplication extends Application {
         logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
 
         Project project = context.getBean(Project.class);
+        project.connectRepository();
         String projectName = applicationSettings.getLastUsedProject();
         project.setProjectName(projectName != null ? projectName : "demoSAT"); // TODO: give choice on ui
         project.loadLocalStudy();
@@ -64,8 +67,7 @@ public class ChangeHistoryAnalyzerApplication extends Application {
     }
 
 
-    @Override
-    public void stop() throws Exception {
+    private static void cleanup() {
         logger.info("Stopping CEDESK ...");
         try {
             Project project = context.getBean(Project.class);
@@ -76,6 +78,11 @@ public class ChangeHistoryAnalyzerApplication extends Application {
             logger.warn("", e);
         }
         logger.info("CEDESK stopped.");
+    }
+
+    @Override
+    public void stop() throws Exception {
+        cleanup();
     }
 
 }
