@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.services.RepositoryService;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 /**
  * Created by D.Knoll on 08.12.2015.
@@ -30,33 +31,39 @@ public class ActionLogger {
 
     private ApplicationSettings applicationSettings;
     private RepositoryService repositoryService;
+    private Project project;
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public void setRepositoryService(RepositoryService repositoryService) {
         this.repositoryService = repositoryService;
     }
 
+    private static LogEntry buildEntry(String user, Long studyId, String action, String description) {
+        String client = Utils.getFullHostname();
+        LogEntry logEntry = new LogEntry(user, client, action, description, studyId);
+        return logEntry;
+    }
+
     public void log(ActionType actionType, String description) {
         log(actionType.name(), description);
     }
 
-    public void log(String action, String description) {
+    private void log(String action, String description) {
         String user = applicationSettings.getProjectUser();
-        LogEntry logEntry = buildEntry(user, action, description);
+        Long studyId = project.getStudy() != null ? project.getStudy().getId() : null;
+        LogEntry logEntry = buildEntry(user, studyId, action, description);
         logger.info(logEntry.toString());
         if (repositoryService == null) {
             logger.error("Unable to store log in repository.");
         }
         repositoryService.storeLog(logEntry);
-    }
-
-    private static LogEntry buildEntry(String user, String action, String description) {
-        String client = Utils.getFullHostname();
-        LogEntry logEntry = new LogEntry(user, client, action, description);
-        return logEntry;
     }
 
     public enum ActionType {
