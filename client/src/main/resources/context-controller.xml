@@ -28,6 +28,7 @@
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="modelEditingController" ref="modelEditingController" />
         <property name="project" ref="project" />
+        <property name="actionLogger" ref="actionLogger" />
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="systemBuilderFactory" ref="systemBuilderFactory" />
         <property name="repositoryManager" ref="repositoryManager" />
@@ -41,6 +42,7 @@
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />
+        <property name="actionLogger" ref="actionLogger" />
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="modelUpdateService" ref="modelUpdateService" />

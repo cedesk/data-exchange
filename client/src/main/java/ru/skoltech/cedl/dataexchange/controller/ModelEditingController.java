@@ -135,6 +135,7 @@ public class ModelEditingController implements Initializable {
     private FXMLLoaderFactory fxmlLoaderFactory;
 
     private Project project;
+    private ActionLogger actionLogger;
     private FileStorageService fileStorageService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
@@ -147,6 +148,10 @@ public class ModelEditingController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -172,10 +177,12 @@ public class ModelEditingController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         parameterEditor.setProject(project);
+        parameterEditor.setActionLogger(actionLogger);
         parameterEditor.setModelUpdateService(modelUpdateService);
         parameterEditor.setUnitManagementService(unitManagementService);
 
         externalModelEditor.setProject(project);
+        externalModelEditor.setActionLogger(actionLogger);
         externalModelEditor.setFileStorageService(fileStorageService);
         externalModelEditor.setModelUpdateService(modelUpdateService);
         externalModelEditor.setSpreadsheetInputOutputExtractorService(spreadsheetInputOutputExtractorService);
@@ -295,7 +302,7 @@ public class ModelEditingController implements Initializable {
                     selectedItem.setExpanded(true);
                     project.markStudyModified();
                     StatusLogger.getInstance().log("added node: " + newNode.getNodePath());
-                    project.getActionLogger().log(ActionLogger.ActionType.NODE_ADD, newNode.getNodePath());
+                    actionLogger.log(ActionLogger.ActionType.NODE_ADD, newNode.getNodePath());
                 }
             }
         } else {
@@ -323,7 +330,7 @@ public class ModelEditingController implements Initializable {
                 parameter = new ParameterModel(parameterName, 0.0);
                 selectedItem.getValue().addParameter(parameter);
                 StatusLogger.getInstance().log("added parameter: " + parameter.getName());
-                project.getActionLogger().log(ActionLogger.ActionType.PARAMETER_ADD, parameter.getNodePath());
+                actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, parameter.getNodePath());
                 project.markStudyModified();
             }
         }
@@ -372,7 +379,7 @@ public class ModelEditingController implements Initializable {
                 }
                 project.markStudyModified();
                 StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
-                project.getActionLogger().log(ActionLogger.ActionType.NODE_REMOVE, deleteNode.getNodePath());
+                actionLogger.log(ActionLogger.ActionType.NODE_REMOVE, deleteNode.getNodePath());
             }
         }
     }
@@ -392,7 +399,7 @@ public class ModelEditingController implements Initializable {
             selectedItem.getValue().getParameters().remove(parameterModel);
             project.getParameterLinkRegistry().removeSink(parameterModel);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
-            project.getActionLogger().log(ActionLogger.ActionType.PARAMETER_REMOVE, parameterModel.getNodePath());
+            actionLogger.log(ActionLogger.ActionType.PARAMETER_REMOVE, parameterModel.getNodePath());
             updateParameterTable(selectedItem);
             project.markStudyModified();
         }
