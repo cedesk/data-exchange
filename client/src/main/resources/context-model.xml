@@ -90,11 +90,13 @@
         <constructor-arg name="builderRegistry" ref="builderRegistry" />
     </bean>
 
-    <bean id="simpleSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SimpleSystemBuilder" >
+    <bean id="systemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SystemBuilder" abstract="true" >
         <property name="unitManagementService" ref="unitManagementService" />
     </bean>
 
-    <bean id="basicSpaceSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder" />
+    <bean id="simpleSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SimpleSystemBuilder" parent="systemBuilder"/>
+
+    <bean id="basicSpaceSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder" parent="systemBuilder" />
 
     <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry" >
         <property name="userRoleManagementService" ref="userRoleManagementService" />

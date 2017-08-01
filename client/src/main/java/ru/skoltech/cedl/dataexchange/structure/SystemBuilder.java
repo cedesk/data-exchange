@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.structure;
 
+import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
@@ -39,6 +40,12 @@ public abstract class SystemBuilder {
     protected List<String> subsystemNames = new ArrayList<>();
     protected UnitManagement unitManagement;
     protected int modelDepth = DEFAULT_MODEL_DEPTH;
+
+    private UnitManagementService unitManagementService;
+
+    public void setUnitManagementService(UnitManagementService unitManagementService) {
+        this.unitManagementService = unitManagementService;
+    }
 
     /**
      * Defines if particular builder has the ability to adjust model depth parameter (<i>false</i> by default).
@@ -108,11 +115,18 @@ public abstract class SystemBuilder {
      */
     public abstract SystemModel build(String systemName) throws IllegalArgumentException;
 
-    static double randomDouble() {
+    protected double randomDouble() {
         return Math.round(Math.random() * 1000) / 10;
     }
 
-    static ParameterModel createMassParameter(Unit unit) {
+    protected Unit retrieveUnit(String name) {
+        if (unitManagement != null) {
+            return unitManagementService.obtainUnitBySymbolOrName(unitManagement, name);
+        }
+        return null;
+    }
+
+    protected ParameterModel createMassParameter(Unit unit) {
         ParameterModel parameterModel = new ParameterModel("mass", randomDouble());
         parameterModel.setDescription("");
         parameterModel.setNature(ParameterNature.OUTPUT);
@@ -121,7 +135,7 @@ public abstract class SystemBuilder {
         return parameterModel;
     }
 
-    static ParameterModel createPowerParameter(Unit unit) {
+    protected ParameterModel createPowerParameter(Unit unit) {
         ParameterModel parameterModel = new ParameterModel("power", randomDouble());
         parameterModel.setDescription("");
         parameterModel.setNature(ParameterNature.OUTPUT);

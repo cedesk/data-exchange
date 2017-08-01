@@ -17,6 +17,7 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.units.model.Unit;
 
 import static ru.skoltech.cedl.dataexchange.ApplicationSettings.MAX_MODEL_DEPTH;
 import static ru.skoltech.cedl.dataexchange.ApplicationSettings.MIN_MODEL_DEPTH;
@@ -33,6 +34,10 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
     private static int parameterCnt = 1;
     private static int elementCnt = 1;
     private static int instrumentCnt = 1;
+
+    private Unit massUnit = retrieveUnit("kg");
+    private Unit powerUnit = retrieveUnit("W");
+
 
     @Override
     public String asName() {
@@ -54,14 +59,14 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
         return systemModel;
     }
 
-    private static SystemModel createSystemModel(int modelDepth) {
+    private SystemModel createSystemModel(int modelDepth) {
         if (modelDepth < MIN_MODEL_DEPTH || modelDepth > MAX_MODEL_DEPTH)
             throw new IllegalArgumentException("model depth must be >= " + MIN_MODEL_DEPTH
                     + " and <=" + MAX_MODEL_DEPTH);
 
         SystemModel system = new SystemModel("Spacecraft " + systemsCnt++);
-        system.addParameter(createMassParameter(null));
-        system.addParameter(createPowerParameter(null));
+        system.addParameter(createMassParameter(massUnit));
+        system.addParameter(createPowerParameter(powerUnit));
 
         if (modelDepth < 2) return system;
         system.addSubNode(createSubSystem("Mission", modelDepth - 1));
@@ -75,10 +80,10 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
         return system;
     }
 
-    private static SubSystemModel createSubSystem(String name, int level) {
+    private SubSystemModel createSubSystem(String name, int level) {
         SubSystemModel subSystem = new SubSystemModel(name);
-        subSystem.addParameter(createMassParameter(null));
-        subSystem.addParameter(createPowerParameter(null));
+        subSystem.addParameter(createMassParameter(massUnit));
+        subSystem.addParameter(createPowerParameter(powerUnit));
         //subSystem.addParameter(createParameter());
 
         if (level < 2) return subSystem;
@@ -86,7 +91,7 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
         return subSystem;
     }
 
-    private static ElementModel createElement(String name, int level) {
+    private ElementModel createElement(String name, int level) {
         ElementModel element = new ElementModel(name);
         element.addParameter(createParameter());
         element.addParameter(createParameter());
@@ -96,14 +101,15 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
         return element;
     }
 
-    private static InstrumentModel createInstrument(String name, ModelNode parent) {
+    private InstrumentModel createInstrument(String name, ModelNode parent) {
         InstrumentModel instrument = new InstrumentModel(name);
+        instrument.setParent(parent);
         instrument.addParameter(createParameter());
         instrument.addParameter(createParameter());
         return instrument;
     }
 
-    private static ParameterModel createParameter() {
+    private ParameterModel createParameter() {
         ParameterModel parameterModel = new ParameterModel("parameter" + parameterCnt++, randomDouble());
         parameterModel.setDescription("");
         double sh = Math.random();

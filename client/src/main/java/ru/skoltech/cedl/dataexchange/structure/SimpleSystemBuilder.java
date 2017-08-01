@@ -16,7 +16,6 @@
 
 package ru.skoltech.cedl.dataexchange.structure;
 
-import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
@@ -33,12 +32,6 @@ import java.util.stream.Collectors;
  * Created by d.knoll on 27/06/2017.
  */
 public class SimpleSystemBuilder extends SystemBuilder {
-
-    private UnitManagementService unitManagementService;
-
-    public void setUnitManagementService(UnitManagementService unitManagementService) {
-        this.unitManagementService = unitManagementService;
-    }
 
     @Override
     public String asName() {
@@ -82,13 +75,6 @@ public class SimpleSystemBuilder extends SystemBuilder {
         makeSum(powerParameter, powers);
         systemModel.addParameter(powerParameter);
         return systemModel;
-    }
-
-    private Unit retrieveUnit(String name) {
-        if (unitManagement != null) {
-            return unitManagementService.obtainUnitBySymbolOrName(unitManagement, name);
-        }
-        return null;
     }
 
     private void makeSum(ParameterModel sum, List<ParameterModel> summands) {
