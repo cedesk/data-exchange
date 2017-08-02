@@ -67,6 +67,9 @@
         <property name="project" ref="project" />
     </bean>
 
+    <bean class="ru.skoltech.cedl.dataexchange.controller.TradespaceController" >
+    </bean>
+
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserManagementController" >
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />

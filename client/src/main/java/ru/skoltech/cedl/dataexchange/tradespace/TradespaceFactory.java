@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
  */
 public class TradespaceFactory {
 
-    public static MultitemporalTradespace buildFromCSV(File file) {
+    public static MultitemporalTradespace readValuesForEpochFromCSV(File file, int epoch) {
         MultitemporalTradespace multitemporalTradespace = new MultitemporalTradespace();
-        List<Epoch> epoches = Epoch.buildEpochs(2017);
+        List<Epoch> epoches = Epoch.buildEpochs(epoch);
         Epoch currentEpoch = epoches.get(0);
         multitemporalTradespace.setEpochs(epoches);
 

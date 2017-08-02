@@ -10,40 +10,51 @@
             fx:controller="ru.skoltech.cedl.dataexchange.controller.TradespaceController">
     <children>
         <SplitPane dividerPositions="0.55" prefHeight="600.0" prefWidth="900.0" AnchorPane.bottomAnchor="0.0"
-                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"
-                   BorderPane.alignment="CENTER">
+                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <items>
-                <BorderPane>
-                    <center>
-                        <TradespaceView fx:id="tradespaceView"/>
-                    </center>
-                    <top>
-                        <ToolBar BorderPane.alignment="CENTER">
-                            <Label text="X-Axis"/>
-                            <ComboBox fx:id="xAxisCombo" prefWidth="150.0"/>
-                            <Label text="Y-Axis"/>
-                            <ComboBox fx:id="yAxisCombo" prefWidth="150.0"/>
-                            <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
-                                <tooltip>
-                                    <Tooltip text="Refresh"/>
-                                </tooltip>
-                                <graphic>
-                                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                                </graphic>
-                            </Button>
-                            <Pane HBox.hgrow="ALWAYS"/>
-                            <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
-                                <tooltip>
-                                    <Tooltip text="Save the diagram as image file"/>
-                                </tooltip>
-                                <graphic>
-                                    <Glyph fontFamily="FontAwesome" icon="SAVE"/>
-                                </graphic>
-                            </Button>
-                        </ToolBar>
-                    </top>
-                </BorderPane>
-                <FiguresOfMeritEditor fx:id="figuresOfMeritEditor"/>
+                <AnchorPane SplitPane.resizableWithParent="true">
+                    <TitledPane collapsible="false" text="Tradespace Chart"
+                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <BorderPane>
+                            <center>
+                                <TradespaceView fx:id="tradespaceView"/>
+                            </center>
+                            <top>
+                                <ToolBar BorderPane.alignment="CENTER">
+                                    <Label text="X-Axis"/>
+                                    <ComboBox fx:id="xAxisCombo" prefWidth="150.0"/>
+                                    <Label text="Y-Axis"/>
+                                    <ComboBox fx:id="yAxisCombo" prefWidth="150.0"/>
+                                    <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
+                                        <tooltip>
+                                            <Tooltip text="Refresh"/>
+                                        </tooltip>
+                                        <graphic>
+                                            <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                                        </graphic>
+                                    </Button>
+                                    <Pane HBox.hgrow="ALWAYS"/>
+                                    <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram" text="">
+                                        <tooltip>
+                                            <Tooltip text="Save the diagram as image file"/>
+                                        </tooltip>
+                                        <graphic>
+                                            <Glyph fontFamily="FontAwesome" icon="SAVE"/>
+                                        </graphic>
+                                    </Button>
+                                </ToolBar>
+                            </top>
+                        </BorderPane>
+                    </TitledPane>
+                </AnchorPane>
+                <AnchorPane SplitPane.resizableWithParent="true">
+                    <TitledPane collapsible="false" text="Figures of Merit Definitions"
+                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <FiguresOfMeritEditor fx:id="figuresOfMeritEditor"/>
+                    </TitledPane>
+                </AnchorPane>
             </items>
         </SplitPane>
     </children>
