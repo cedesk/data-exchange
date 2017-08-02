@@ -30,13 +30,13 @@
     <items>
         <AnchorPane>
             <children>
-                <TitledPane animated="false" collapsible="false" text="Structure" AnchorPane.bottomAnchor="210.0"
+                <TitledPane animated="false" collapsible="false" text="Structure" AnchorPane.bottomAnchor="290.0"
                             AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <content>
                         <TreeView fx:id="structureTree"/>
                     </content>
                 </TitledPane>
-                <ToolBar layoutY="500.0" prefHeight="40.0" AnchorPane.bottomAnchor="240.0" AnchorPane.leftAnchor="0.0"
+                <ToolBar prefHeight="40.0" AnchorPane.bottomAnchor="250.0" AnchorPane.leftAnchor="0.0"
                          AnchorPane.rightAnchor="0.0">
                     <items>
                         <Button fx:id="addNodeButton" minWidth="28" mnemonicParsing="false" onAction="#addNode" text="">

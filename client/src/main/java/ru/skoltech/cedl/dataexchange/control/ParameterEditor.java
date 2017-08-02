@@ -131,6 +131,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private UnitManagementService unitManagementService;
 
     private Project project;
+    private ActionLogger actionLogger;
     private ParameterModel editingParameterModel;
     private ParameterModel originalParameterModel;
     private ExternalModelReference valueReference;
@@ -158,6 +159,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     public void setModelUpdateService(ModelUpdateService modelUpdateService) {
@@ -449,7 +454,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         project.getParameterLinkRegistry().updateSinks(project, originalParameterModel);
 
         String attDiffs = attributeDifferences.stream().map(AttributeDifference::asText).collect(Collectors.joining(","));
-        project.getActionLogger().log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, editingParameterModel.getNodePath() + ": " + attDiffs);
+        actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, editingParameterModel.getNodePath() + ": " + attDiffs);
 
         project.markStudyModified();
         editListener.accept(editingParameterModel);

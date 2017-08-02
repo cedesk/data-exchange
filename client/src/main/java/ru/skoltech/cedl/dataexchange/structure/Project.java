@@ -165,14 +165,6 @@ public class Project {
         this.unitManagementService = unitManagementService;
     }
 
-    public ActionLogger getActionLogger() {
-        return actionLogger;
-    }
-
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
-    }
-
     public static void setLogger(Logger logger) {
         Project.logger = logger;
     }

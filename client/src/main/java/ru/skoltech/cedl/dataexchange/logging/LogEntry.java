@@ -37,16 +37,19 @@ public class LogEntry {
 
     private String description;
 
+    private Long studyId;
+
     public LogEntry() {
         logTimestamp = System.currentTimeMillis();
     }
 
-    public LogEntry(String user, String client, String action, String description) {
+    public LogEntry(String user, String client, String action, String description, Long studyId) {
         this();
         this.user = user;
         this.client = client;
         this.action = action;
         this.description = description;
+        this.studyId = studyId;
     }
 
     @Id
@@ -97,6 +100,14 @@ public class LogEntry {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Long getStudyId() {
+        return studyId;
+    }
+
+    public void setStudyId(Long studyId) {
+        this.studyId = studyId;
     }
 
     @Override

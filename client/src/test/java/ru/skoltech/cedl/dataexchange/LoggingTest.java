@@ -44,7 +44,7 @@ public class LoggingTest extends AbstractApplicationContextTest {
 
     @Test
     public void actionLoggerTest() {
-        actionLogger.log("testing", "whatever is going on");
+        actionLogger.log(ActionLogger.ActionType.APPLICATION_START, "whatever is going on");
     }
 
     @Test

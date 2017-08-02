@@ -57,6 +57,7 @@
     <bean id="actionLogger" class="ru.skoltech.cedl.dataexchange.logging.ActionLogger">
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="repositoryService" ref="repositoryService" />
+        <property name="project" ref="project" />
     </bean>
 
     <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" init-method="init" >
@@ -73,7 +74,6 @@
         <property name="userManagementService" ref="userManagementService" />
         <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="unitManagementService" ref="unitManagementService" />
-        <property name="actionLogger" ref="actionLogger" />
     </bean>
 
 
