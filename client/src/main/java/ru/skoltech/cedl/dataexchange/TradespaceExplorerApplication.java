@@ -16,7 +16,6 @@
 
 package ru.skoltech.cedl.dataexchange;
 
-import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -24,12 +23,9 @@ import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
 import ru.skoltech.cedl.dataexchange.controller.TradespaceController;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;
 import ru.skoltech.cedl.dataexchange.tradespace.TradespaceFactory;
@@ -38,27 +34,21 @@ import ru.skoltech.cedl.dataexchange.view.Views;
 import java.io.File;
 import java.net.URL;
 
-public class TradespaceExplorerApplication extends Application {
+/**
+ * Created by d.knoll on 6/23/2017.
+ */
+public class TradespaceExplorerApplication extends ContextAwareApplication {
 
     private static Logger logger = Logger.getLogger(TradespaceExplorerApplication.class);
 
-    private static ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
-
-    private TradespaceController tradespaceController;
-    private Project project;
-
     public static void main(String[] args) {
+        PropertyConfigurator.configure(TradespaceExplorerApplication.class.getResource("/log4j/log4j.properties"));
+
+        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         FileStorageService fileStorageService = context.getBean(FileStorageService.class);
-        PropertyConfigurator.configure(TradespaceExplorerApplication.class.getResource("/log4j/log4j.properties"));
         System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
                 "/" + applicationSettings.getCedeskAppFile());
-
-        logger.info("----------------------------------------------------------------------------------------------------");
-        logger.info("Opening CEDESK Tradespace Explorer ...");
-        String appVersion = applicationSettings.getApplicationVersion();
-        String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
-        logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
 
         launch(args);
     }
@@ -66,12 +56,12 @@ public class TradespaceExplorerApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         setupContext();
+        loadLastProject();
 
         FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);
         FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.TRADESPACE_WINDOW);
-
         Parent root = loader.load();
-        tradespaceController = loader.getController();
+        TradespaceController tradespaceController = loader.getController();
 
         URL url = TradespaceExplorerApplication.class.getResource("/GPUdataset_2015.csv");
         File file = new File(url.getFile());
@@ -89,29 +79,4 @@ public class TradespaceExplorerApplication extends Application {
         });*/
     }
 
-    private void setupContext() {
-        project = context.getBean(Project.class);
-        boolean validRepository = project.checkRepository();
-        project.connectRepository();
-        project.loadUnitManagement();
-        project.loadUserManagement();
-
-        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        String projectName = applicationSettings.getLastUsedProject();
-        project.setProjectName(projectName);
-        boolean success = project.loadLocalStudy();
-    }
-
-    @Override
-    public void stop() throws Exception {
-        logger.info("Stopping CEDESK Tradespace Explorer ...");
-        try {
-            context.getBean(ThreadPoolTaskScheduler.class).shutdown();
-            context.getBean(ThreadPoolTaskExecutor.class).shutdown();
-            project.close();
-        } catch (Throwable e) {
-            logger.warn("", e);
-        }
-        logger.info("CEDESK stopped.");
-    }
 }

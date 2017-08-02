@@ -8,7 +8,6 @@
 package ru.skoltech.cedl.dataexchange;
 
 
-import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -16,46 +15,35 @@ import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
-import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 /**
  * Created by d.knoll on 29.12.2016.
  */
-public class ChangeHistoryAnalyzerApplication extends Application {
+public class ChangeHistoryAnalyzerApplication extends ContextAwareApplication {
 
     private static Logger logger = Logger.getLogger(ChangeHistoryAnalyzerApplication.class);
 
-    private static ApplicationContext context;
-
     public static void main(String[] args) {
-        PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
-        ApplicationContextInitializer.initialize(new String[]{"/context-model.xml"}); // headless, without GUI
-        context = ApplicationContextInitializer.getInstance().getContext();
+        PropertyConfigurator.configure(TradespaceExplorerApplication.class.getResource("/log4j/log4j.properties"));
+
+        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        System.out.println("using: " + applicationSettings.getCedeskAppDir() + "/" + applicationSettings.getCedeskAppFile());
-
-        logger.info("----------------------------------------------------------------------------------------------------");
-        logger.info("Opening CEDESK ...");
-        String appVersion = applicationSettings.getApplicationVersion();
-        String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
-        logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
-
-        Project project = context.getBean(Project.class);
-        project.connectRepository();
-        String projectName = applicationSettings.getLastUsedProject();
-        project.setProjectName(projectName != null ? projectName : "demoSAT"); // TODO: give choice on ui
-        project.loadLocalStudy();
+        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
+        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
+                "/" + applicationSettings.getCedeskAppFile());
 
         launch(args);
     }
 
     @Override
     public void start(Stage stage) throws Exception {
+        setupContext();
+        loadLastProject();
+
         FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);
         FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.ANALYSIS_WINDOW);
 
@@ -64,25 +52,6 @@ public class ChangeHistoryAnalyzerApplication extends Application {
         stage.setTitle("Parameter Change Analysis");
         stage.getIcons().add(IconSet.APP_ICON);
         stage.show();
-    }
-
-
-    private static void cleanup() {
-        logger.info("Stopping CEDESK ...");
-        try {
-            Project project = context.getBean(Project.class);
-            project.close();
-            context.getBean(ThreadPoolTaskScheduler.class).shutdown();
-            context.getBean(ThreadPoolTaskExecutor.class).shutdown();
-        } catch (Throwable e) {
-            logger.warn("", e);
-        }
-        logger.info("CEDESK stopped.");
-    }
-
-    @Override
-    public void stop() throws Exception {
-        cleanup();
     }
 
 }
