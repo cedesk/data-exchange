@@ -56,7 +56,7 @@ public class ActionLogger {
     }
 
     private void log(String action, String description) {
-        String user = applicationSettings.getProjectUser();
+        String user = applicationSettings.getProjectUserName();
         Long studyId = project.getStudy() != null ? project.getStudy().getId() : null;
         LogEntry logEntry = buildEntry(user, studyId, action, description);
         logger.info(logEntry.toString());

@@ -44,6 +44,6 @@ public class CustomRevisionListener implements EntityTrackingRevisionListener {
         // TODO: rewrite for proper DI use, maybe try spring-data-envers
         ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        revision.setUsername(applicationSettings.getProjectUser()); // not certainly always carries the "current" value
+        revision.setUsername(applicationSettings.getProjectUserName()); // not certainly always carries the "current" value
     }
 }

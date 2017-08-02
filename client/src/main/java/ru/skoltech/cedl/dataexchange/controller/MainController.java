@@ -49,11 +49,13 @@ import ru.skoltech.cedl.dataexchange.services.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
+import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
+import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.awt.*;
@@ -113,6 +115,7 @@ public class MainController implements Initializable {
 
     private Project project;
     private ApplicationSettings applicationSettings;
+    private UserManagementService userManagementService;
     private SystemBuilderFactory systemBuilderFactory;
     private RepositoryManager repositoryManager;
     private RepositoryService repositoryService;
@@ -385,7 +388,7 @@ public class MainController implements Initializable {
     public void importProject(ActionEvent actionEvent) {
         File importFile = null;
         if (actionEvent == null) { // invoked from startup
-            String projectToImport = applicationSettings.getProjectToImport();
+            String projectToImport = applicationSettings.getProjectImportName();
             if (projectToImport != null) {
                 importFile = new File(fileStorageService.applicationDirectory(), projectToImport);
                 if (importFile.exists()) {
@@ -652,17 +655,17 @@ public class MainController implements Initializable {
             controller.setRepositorySettingsListener((hostname, username, password, autoSynch) -> {
                 boolean validSettings = false;
 
-                applicationSettings.setAutoSync(autoSynch);
+                applicationSettings.storeRepositoryWatcherAutosync(autoSynch);
 
-                String schema = applicationSettings.getRepositorySchema();
+                String schema = applicationSettings.getRepositorySchemaName();
 
-                String newHostname = hostname == null || hostname.isEmpty() ? applicationSettings.getDefaultHostName() : hostname;
-                String newUsername = username == null || username.isEmpty() ? applicationSettings.getDefaultUserName() : username;
-                String newPassword = password == null || password.isEmpty() ? applicationSettings.getDefaultPassword() : password;
+                String newHostname = hostname == null || hostname.isEmpty() ? applicationSettings.getDefaultRepositoryHost() : hostname;
+                String newUsername = username == null || username.isEmpty() ? applicationSettings.getDefaultRepositoryUser() : username;
+                String newPassword = password == null || password.isEmpty() ? applicationSettings.getDefaultRepositoryPassword() : password;
                 boolean validCredentials = repositoryManager.checkRepositoryConnection(newHostname, schema, newUsername, newPassword);
                 if (validCredentials) {
-                    applicationSettings.setRepositoryServerHostname(newHostname);
-                    applicationSettings.setRepositoryUserName(newUsername);
+                    applicationSettings.storeRepositoryHost(newHostname);
+                    applicationSettings.setRepositoryUser(newUsername);
                     applicationSettings.setRepositoryPassword(newPassword);
                     try {
                         project.connectRepository();
@@ -768,7 +771,7 @@ public class MainController implements Initializable {
         try {
             boolean success = project.loadLocalStudy();
             if (success) {
-                applicationSettings.setLastUsedProject(project.getProjectName());
+                applicationSettings.storeProjectLastName(project.getProjectName());
                 StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
                 actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName());
             } else {
@@ -810,7 +813,7 @@ public class MainController implements Initializable {
             }
             project.storeLocalStudy();
             updateView();
-            applicationSettings.setLastUsedProject(project.getProjectName());
+            applicationSettings.storeProjectLastName(project.getProjectName());
             StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
             actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());
         } catch (RepositoryException re) {
@@ -864,10 +867,10 @@ public class MainController implements Initializable {
 
     private void loadLastProject() {
         actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
-        if (applicationSettings.getProjectToImport() != null) {
+        if (applicationSettings.getProjectImportName() != null) {
             importProject(null);
-        } else if (applicationSettings.getAutoLoadLastProjectOnStartup()) {
-            String projectName = applicationSettings.getLastUsedProject();
+        } else if (applicationSettings.isProjectLastAutoload()) {
+            String projectName = applicationSettings.getProjectLastName();
             if (projectName != null) {
                 project.setProjectName(projectName);
                 reloadProject(null);
@@ -927,7 +930,7 @@ public class MainController implements Initializable {
     }
 
     private void displayInvalidUserDialog() {
-        String userName = applicationSettings.getProjectUser();
+        String userName = applicationSettings.getProjectUserName();
         Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
                 "Contact the administrator for the creation of a user for you.\n" +
                 "As for now you'll be given the role of an observer, who can not perform modifications.");

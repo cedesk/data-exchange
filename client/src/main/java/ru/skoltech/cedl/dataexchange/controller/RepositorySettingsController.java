@@ -79,13 +79,21 @@ public class RepositorySettingsController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         String appDir = fileStorageService.applicationDirectory().getAbsolutePath();
-        appDirText.setText(appDir);
-        repoSchemaText.setText(applicationSettings.getRepositorySchema());
+        String repositorySchemaName = applicationSettings.getRepositorySchemaName();
+        String repositoryHost = applicationSettings.getRepositoryHost();
+        String repositoryUser = applicationSettings.getRepositoryUser() != null ?
+                applicationSettings.getRepositoryUser() : "";
+        String repositoryPassword = applicationSettings.getRepositoryPassword() != null ?
+                applicationSettings.getRepositoryPassword(): "";
+        boolean repositoryWatcherAutosync = applicationSettings.isRepositoryWatcherAutosync();
 
-        dbHostnameText.setText(applicationSettings.getRepositoryServerHostname());
-        dbUsernameText.setText(applicationSettings.getRepositoryUserName(""));
-        dbPasswordText.setText(applicationSettings.getRepositoryPassword(""));
-        repoWatcherAutoSyncCheckbox.setSelected(applicationSettings.getAutoSync());
+        appDirText.setText(appDir);
+        repoSchemaText.setText(repositorySchemaName);
+        dbHostnameText.setText(repositoryHost);
+        dbUsernameText.setText(repositoryUser);
+        dbPasswordText.setText(repositoryPassword);
+        repoWatcherAutoSyncCheckbox.setSelected(repositoryWatcherAutosync);
+
         logger.info("initialized");
     }
 

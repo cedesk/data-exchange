@@ -19,9 +19,6 @@ package ru.skoltech.cedl.dataexchange.structure;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.units.model.Unit;
 
-import static ru.skoltech.cedl.dataexchange.ApplicationSettings.MAX_MODEL_DEPTH;
-import static ru.skoltech.cedl.dataexchange.ApplicationSettings.MIN_MODEL_DEPTH;
-
 /**
  * Creates basic space system.
  *  Can accept model depth parameter for creation feature {@link SystemModel}.

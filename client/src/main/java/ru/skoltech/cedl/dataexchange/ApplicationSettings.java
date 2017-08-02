@@ -17,42 +17,34 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
 /**
- * Store all properties reqired by application.
+ * Store all properties required by application.
  * They could be of two types: properties which are common for any client
  * and that of specific to them.
  * First are stored in the <i>cedesk.properties</i> file inside project resources
  * They can be overwritten by system properties (and also by separate file for test purposes).
  * Second are located in separate file. It's path and filename can be configured
  * (by <i>cedesk.app.dir</i> and <i>cedesk.app.file</i> properties).
- *
  * <p>
+ *
  * Created by D.Knoll on 18.03.2015.
  */
 public class ApplicationSettings {
 
     private static final Logger logger = Logger.getLogger(ApplicationSettings.class);
 
-    public static final int MIN_MODEL_DEPTH = 1;
-    public static final int MAX_MODEL_DEPTH = 4;
-    public static final int DEFAULT_MODEL_DEPTH = 2;
-
-    private static final String CEDESK_LOG_DIR_PROPERTY_NAME = "cedesk.log.dir";
-
     private static final String REPOSITORY_HOST = "repository.host";
-    private static final String REPOSITORY_SCHEMA_NAME = "repository.schema.name";
     private static final String REPOSITORY_SCHEMA_CREATE = "repository.schema.create";
+    private static final String REPOSITORY_SCHEMA_NAME = "repository.schema.name";
     private static final String REPOSITORY_USER = "repository.user";
     private static final String REPOSITORY_PASSWORD = "repository.password";
-    private static final String REPOSITORY_WATCHER_AUTO_SYNC = "repository.watcher.autosync";
+    private static final String REPOSITORY_WATCHER_AUTOSYNC = "repository.watcher.autosync";
 
     private static final String PROJECT_LAST_AUTOLOAD = "project.last.autoload";
     private static final String PROJECT_LAST_NAME = "project.last.name";
@@ -62,23 +54,66 @@ public class ApplicationSettings {
 
     private static final String STUDY_MODEL_DEPTH = "study.model.depth";
 
+
+    private String cedeskAppDir;
+    private String cedeskAppFile;
+
     private String applicationVersion;
     private String applicationBuildTime;
     private String applicationDistributionServerUrl;
 
-    private String cedeskAppDir;
-    private String cedeskAppFile;
     private String cedeskAppFileComment;
 
-    private String defaultHostName;
-    private String defaultSchema;
-    private String defaultUserName;
-    private String defaultPassword;
-    private String defaultJdbcUrlPattern;
+    private String defaultRepositoryHost;
+    private boolean defaultRepositorySchemaCreate;
+    private String defaultRepositorySchemaName;
+    private String defaultRepositoryUser;
+    private String defaultRepositoryPassword;
+    private boolean defaultRepositoryWatcherAutosync;
+    private boolean defaultProjectLastAutoload;
+    private String defaultProjectLastName;
+    private boolean defaultProjectUseOsUser;
+    private String defaultProjectUserName;
+    private String defaultProjectImportName;
+    private String defaultStudyModelDepth;
+    private String repositoryJdbcUrlPattern;
     private String repositorySchemaVersion;
 
+    private String repositoryHost;
+    private boolean repositorySchemaCreate;
+    private String repositorySchemaName;
+    private String repositoryUser;
+    private String repositoryPassword;
+    private boolean repositoryWatcherAutosync;
+    private boolean projectLastAutoload;
+    private String projectLastName;
+    private boolean projectUseOsUser;
+    private String projectUserName;
+    private String projectImportName;
+    private String studyModelDepth;
+
     private File file;
-    private Properties properties = new Properties();
+
+    public ApplicationSettings(String cedeskAppDir, String cedeskAppFile) {
+        this.cedeskAppDir = cedeskAppDir;
+        this.cedeskAppFile = cedeskAppFile;
+        File cedeskAppDirFile = new File(cedeskAppDir);
+        if (cedeskAppDirFile.isAbsolute()) {
+            this.file = new File(cedeskAppDirFile, cedeskAppFile);
+        } else {
+            String userHome = System.getProperty("user.home");
+            File userDir = new File(userHome, cedeskAppDir);
+            this.file = new File(userDir, cedeskAppFile);
+        }
+    }
+
+    public String getCedeskAppDir() {
+        return cedeskAppDir;
+    }
+
+    public String getCedeskAppFile() {
+        return cedeskAppFile;
+    }
 
     public String getApplicationVersion() {
         return applicationVersion;
@@ -104,68 +139,116 @@ public class ApplicationSettings {
         this.applicationDistributionServerUrl = applicationDistributionServerUrl;
     }
 
-    public String getCedeskAppDir() {
-        return cedeskAppDir;
-    }
-
-    public void setCedeskAppDir(String cedeskAppDir) {
-        this.cedeskAppDir = cedeskAppDir;
-    }
-
-    public String getCedeskAppFile() {
-        return cedeskAppFile;
-    }
-
-    public void setCedeskAppFile(String cedeskAppFile) {
-        this.cedeskAppFile = cedeskAppFile;
+    public String getCedeskAppFileComment() {
+        return cedeskAppFileComment;
     }
 
     public void setCedeskAppFileComment(String cedeskAppFileComment) {
         this.cedeskAppFileComment = cedeskAppFileComment;
     }
 
-    public void setCedeskLogDir(String cedeskLogDir) {
-        System.setProperty(CEDESK_LOG_DIR_PROPERTY_NAME, cedeskLogDir); // re-write in any case for log4j
+    public String getDefaultRepositoryHost() {
+        return defaultRepositoryHost;
     }
 
-    public void setDefaultHostName(String defaultHostName) {
-        this.defaultHostName = defaultHostName;
+    public void setDefaultRepositoryHost(String defaultRepositoryHost) {
+        this.defaultRepositoryHost = defaultRepositoryHost;
     }
 
-    public String getDefaultHostName() {
-        return defaultHostName;
+    public boolean isDefaultRepositorySchemaCreate() {
+        return defaultRepositorySchemaCreate;
     }
 
-    public String getDefaultSchema() {
-        return defaultSchema;
+    public void setDefaultRepositorySchemaCreate(boolean defaultRepositorySchemaCreate) {
+        this.defaultRepositorySchemaCreate = defaultRepositorySchemaCreate;
     }
 
-    public void setDefaultSchema(String defaultSchema) {
-        this.defaultSchema = defaultSchema;
+    public String getDefaultRepositorySchemaName() {
+        return defaultRepositorySchemaName;
     }
 
-    public String getDefaultUserName() {
-        return defaultUserName;
+    public void setDefaultRepositorySchemaName(String defaultRepositorySchemaName) {
+        this.defaultRepositorySchemaName = defaultRepositorySchemaName;
     }
 
-    public void setDefaultUserName(String defaultUserName) {
-        this.defaultUserName = defaultUserName;
+    public String getDefaultRepositoryUser() {
+        return defaultRepositoryUser;
     }
 
-    public String getDefaultPassword() {
-        return defaultPassword;
+    public void setDefaultRepositoryUser(String defaultRepositoryUser) {
+        this.defaultRepositoryUser = defaultRepositoryUser;
     }
 
-    public void setDefaultPassword(String defaultPassword) {
-        this.defaultPassword = defaultPassword;
+    public String getDefaultRepositoryPassword() {
+        return defaultRepositoryPassword;
     }
 
-    public String getDefaultJdbcUrlPattern() {
-        return defaultJdbcUrlPattern;
+    public void setDefaultRepositoryPassword(String defaultRepositoryPassword) {
+        this.defaultRepositoryPassword = defaultRepositoryPassword;
     }
 
-    public void setDefaultJdbcUrlPattern(String defaultJdbcUrlPattern) {
-        this.defaultJdbcUrlPattern = defaultJdbcUrlPattern;
+    public boolean isDefaultRepositoryWatcherAutosync() {
+        return defaultRepositoryWatcherAutosync;
+    }
+
+    public void setDefaultRepositoryWatcherAutosync(boolean defaultRepositoryWatcherAutosync) {
+        this.defaultRepositoryWatcherAutosync = defaultRepositoryWatcherAutosync;
+    }
+
+    public boolean isDefaultProjectLastAutoload() {
+        return defaultProjectLastAutoload;
+    }
+
+    public void setDefaultProjectLastAutoload(boolean defaultProjectLastAutoload) {
+        this.defaultProjectLastAutoload = defaultProjectLastAutoload;
+    }
+
+    public String getDefaultProjectLastName() {
+        return defaultProjectLastName;
+    }
+
+    public void setDefaultProjectLastName(String defaultProjectLastName) {
+        this.defaultProjectLastName = defaultProjectLastName;
+    }
+
+    public boolean isDefaultProjectUseOsUser() {
+        return defaultProjectUseOsUser;
+    }
+
+    public void setDefaultProjectUseOsUser(boolean defaultProjectUseOsUser) {
+        this.defaultProjectUseOsUser = defaultProjectUseOsUser;
+    }
+
+    public String getDefaultProjectUserName() {
+        return defaultProjectUserName;
+    }
+
+    public void setDefaultProjectUserName(String defaultProjectUserName) {
+        this.defaultProjectUserName = defaultProjectUserName;
+    }
+
+    public String getDefaultProjectImportName() {
+        return defaultProjectImportName;
+    }
+
+    public void setDefaultProjectImportName(String defaultProjectImportName) {
+        this.defaultProjectImportName = defaultProjectImportName;
+    }
+
+    public String getDefaultStudyModelDepth() {
+        return defaultStudyModelDepth;
+    }
+
+    public void setDefaultStudyModelDepth(String defaultStudyModelDepth) {
+        this.defaultStudyModelDepth = defaultStudyModelDepth;
+    }
+
+    public String getRepositoryJdbcUrlPattern() {
+        return repositoryJdbcUrlPattern;
+    }
+
+    public void setRepositoryJdbcUrlPattern(String repositoryJdbcUrlPattern) {
+        this.repositoryJdbcUrlPattern = repositoryJdbcUrlPattern;
     }
 
     public String getRepositorySchemaVersion() {
@@ -176,233 +259,221 @@ public class ApplicationSettings {
         this.repositorySchemaVersion = repositorySchemaVersion;
     }
 
-    public void init() {
-        File cedeskAppDirFile = new File(cedeskAppDir);
-        if (cedeskAppDirFile.isAbsolute()) {
-            this.file = new File(cedeskAppDirFile, cedeskAppFile);
-        } else {
-            String userHome = System.getProperty("user.home");
-            File userDir = new File(userHome, cedeskAppDir);
-            this.file = new File(userDir, cedeskAppFile);
-        }
-        Properties props = new Properties();
-        try (FileReader fileReader = new FileReader(file)) {
-            props.load(fileReader);
-            properties = props;
-        } catch (IOException e) {
-            logger.error("Error loading application settings!");
-        }
+    public String getRepositoryHost() {
+        return repositoryHost;
     }
 
-    private void save() {
+    public void setRepositoryHost(String repositoryHost) {
+        this.repositoryHost = repositoryHost;
+    }
+
+    public boolean isRepositorySchemaCreate() {
+        return repositorySchemaCreate;
+    }
+
+    public void setRepositorySchemaCreate(boolean repositorySchemaCreate) {
+        this.repositorySchemaCreate = repositorySchemaCreate;
+    }
+
+    public String getRepositorySchemaName() {
+        return repositorySchemaName;
+    }
+
+    public void setRepositorySchemaName(String repositorySchemaName) {
+        this.repositorySchemaName = repositorySchemaName;
+    }
+
+    public String getRepositoryUser() {
+        return repositoryUser;
+    }
+
+    public void setRepositoryUser(String repositoryUser) {
+        this.repositoryUser = repositoryUser;
+    }
+
+    public String getRepositoryPassword() {
+        return repositoryPassword;
+    }
+
+    public void setRepositoryPassword(String repositoryPassword) {
+        this.repositoryPassword = repositoryPassword;
+    }
+
+    public boolean isRepositoryWatcherAutosync() {
+        return repositoryWatcherAutosync;
+    }
+
+    public void setRepositoryWatcherAutosync(boolean repositoryWatcherAutosync) {
+        this.repositoryWatcherAutosync = repositoryWatcherAutosync;
+    }
+
+    public boolean isProjectLastAutoload() {
+        return projectLastAutoload;
+    }
+
+    public void setProjectLastAutoload(boolean projectLastAutoload) {
+        this.projectLastAutoload = projectLastAutoload;
+    }
+
+    public String getProjectLastName() {
+        return projectLastName;
+    }
+
+    public void setProjectLastName(String projectLastName) {
+        this.projectLastName = projectLastName;
+    }
+
+    public boolean isProjectUseOsUser() {
+        return projectUseOsUser;
+    }
+
+    public void setProjectUseOsUser(boolean projectUseOsUser) {
+        this.projectUseOsUser = projectUseOsUser;
+    }
+
+    public String getProjectUserName() {
+        return projectUserName;
+    }
+
+    public void setProjectUserName(String projectUserName) {
+        this.projectUserName = projectUserName;
+    }
+
+    public String getProjectImportName() {
+        return projectImportName;
+    }
+
+    public void setProjectImportName(String projectImportName) {
+        this.projectImportName = projectImportName;
+    }
+
+    public String getStudyModelDepth() {
+        return studyModelDepth;
+    }
+
+    public void setStudyModelDepth(String studyModelDepth) {
+        this.studyModelDepth = studyModelDepth;
+    }
+
+    //-------------------------------------
+    public void storeRepositoryHost() {
+        this.storeRepositoryHost(defaultRepositoryHost);
+    }
+
+    public void storeRepositoryHost(String repositoryHost) {
+        this.setRepositoryHost(repositoryHost);
+    }
+
+    public void storeRepositorySchemaCreate() {
+        this.storeRepositorySchemaCreate(defaultRepositorySchemaCreate);
+    }
+
+    public void storeRepositorySchemaCreate(boolean repositorySchemaCreate) {
+        this.setRepositorySchemaCreate(repositorySchemaCreate);
+    }
+
+    public void storeRepositorySchemaName() {
+        this.storeRepositorySchemaName(defaultRepositorySchemaName);
+    }
+
+    public void storeRepositorySchemaName(String repositorySchemaName) {
+        this.setRepositorySchemaName(repositorySchemaName);
+    }
+
+    public void storeRepositoryUser() {
+        this.storeRepositoryUser(defaultRepositoryUser);
+    }
+
+    public void storeRepositoryUser(String repositoryUser) {
+        this.setRepositoryUser(repositoryUser);
+    }
+
+    public void storeRepositoryPassword() {
+        this.storeRepositoryPassword(defaultRepositoryPassword);
+    }
+
+    public void storeRepositoryPassword(String repositoryPassword) {
+        this.setRepositoryPassword(repositoryPassword);
+    }
+
+    public void storeRepositoryWatcherAutosync() {
+        this.storeRepositoryWatcherAutosync(defaultRepositoryWatcherAutosync);
+    }
+
+    public void storeRepositoryWatcherAutosync(boolean repositoryWatcherAutosync) {
+        this.setRepositoryWatcherAutosync(repositoryWatcherAutosync);
+    }
+
+    public void storeProjectLastAutoload() {
+        this.storeProjectLastAutoload(defaultProjectLastAutoload);
+    }
+
+    public void storeProjectLastAutoload(boolean projectLastAutoload) {
+        this.setProjectLastAutoload(projectLastAutoload);
+    }
+
+    public void storeProjectLastName() {
+        this.storeProjectLastName(defaultProjectLastName);
+    }
+
+    public void storeProjectLastName(String projectLastName) {
+        this.setProjectLastName(projectLastName);
+    }
+
+    public void storeProjectUseOsUser() {
+        this.storeProjectUseOsUser(defaultProjectUseOsUser);
+    }
+
+    public void storeProjectUseOsUser(boolean projectUseOsUser) {
+        this.setProjectUseOsUser(projectUseOsUser);
+    }
+
+    public void storeProjectUserName() {
+        this.storeProjectUserName(defaultProjectUserName);
+    }
+
+    public void storeProjectUserName(String projectUserName) {
+        this.setProjectUserName(projectUserName);
+    }
+
+    public void storeProjectImportName() {
+        this.storeProjectImportName(defaultProjectImportName);
+    }
+
+    public void storeProjectImportName(String projectImportName) {
+        this.setProjectImportName(projectImportName);
+    }
+
+    public void storeStudyModelDepth() {
+        this.storeStudyModelDepth(defaultStudyModelDepth);
+    }
+
+    public void storeStudyModelDepth(String studyModelDepth) {
+        this.setStudyModelDepth(studyModelDepth);
+    }
+
+    public void save() {
         try (FileWriter fileWriter = new FileWriter(file)) {
-            properties.store(fileWriter, cedeskAppFileComment);
+
+            Properties applicationSettings = new Properties();
+
+            applicationSettings.put(REPOSITORY_HOST, repositoryHost);
+            applicationSettings.put(REPOSITORY_SCHEMA_NAME, repositorySchemaName);
+            applicationSettings.put(REPOSITORY_SCHEMA_CREATE, repositorySchemaCreate);
+            applicationSettings.put(REPOSITORY_USER, repositoryUser);
+            applicationSettings.put(REPOSITORY_PASSWORD, repositoryPassword);
+            applicationSettings.put(REPOSITORY_WATCHER_AUTOSYNC, repositoryWatcherAutosync);
+            applicationSettings.put(PROJECT_LAST_AUTOLOAD, projectLastAutoload);
+            applicationSettings.put(PROJECT_LAST_NAME, projectLastName);
+            applicationSettings.put(PROJECT_USE_OS_USER, projectUseOsUser);
+            applicationSettings.put(PROJECT_USER_NAME, projectUserName);
+            applicationSettings.put(PROJECT_IMPORT_NAME, projectImportName);
+            applicationSettings.put(STUDY_MODEL_DEPTH, studyModelDepth);
+
+            applicationSettings.store(fileWriter, cedeskAppFileComment);
         } catch (IOException e) {
             logger.error("Error saving application settings!");
         }
     }
 
-    public synchronized boolean getAutoLoadLastProjectOnStartup() {
-        String autoload = properties.getProperty(PROJECT_LAST_AUTOLOAD);
-        return autoload == null || Boolean.parseBoolean(autoload);
-    }
-
-    public synchronized void setAutoLoadLastProjectOnStartup(boolean autoload) {
-        String prop = properties.getProperty(PROJECT_LAST_AUTOLOAD);
-        if (prop == null || Boolean.parseBoolean(prop) != autoload) {
-            properties.setProperty(PROJECT_LAST_AUTOLOAD, Boolean.toString(autoload));
-            save();
-        }
-    }
-
-    public synchronized boolean getAutoSync() {
-        String autosync = properties.getProperty(REPOSITORY_WATCHER_AUTO_SYNC);
-        return autosync == null || Boolean.parseBoolean(autosync);
-    }
-
-    public synchronized void setAutoSync(boolean autoSync) {
-        String prop = properties.getProperty(REPOSITORY_WATCHER_AUTO_SYNC);
-        if (prop == null || Boolean.parseBoolean(prop) != autoSync) {
-            properties.setProperty(REPOSITORY_WATCHER_AUTO_SYNC, Boolean.toString(autoSync));
-            save();
-        }
-    }
-
-    public synchronized String getLastUsedProject() {
-        return properties.getProperty(PROJECT_LAST_NAME);
-    }
-
-    public synchronized void setLastUsedProject(String projectName) {
-        String projName = properties.getProperty(PROJECT_LAST_NAME);
-        if (projName == null || !projName.equals(projectName)) {
-            properties.setProperty(PROJECT_LAST_NAME, projectName);
-            save();
-        }
-    }
-
-    public synchronized String getProjectToImport() {
-        return properties.getProperty(PROJECT_IMPORT_NAME);
-    }
-
-    public synchronized String getProjectUser() {
-        String userNameFromSettings = properties.getProperty(PROJECT_USER_NAME);
-        if (!getUseOsUser() && userNameFromSettings != null && !userNameFromSettings.isEmpty()) {
-            return userNameFromSettings;
-        } else {
-            return System.getProperty("user.name").toLowerCase();
-        }
-    }
-
-    public synchronized void setProjectUser(String projectUser) {
-        String userName = properties.getProperty(PROJECT_USER_NAME);
-        if (userName == null || !userName.equals(projectUser)) {
-            if (projectUser != null) {
-                properties.setProperty(PROJECT_USER_NAME, projectUser);
-            } else {
-                properties.remove(PROJECT_USER_NAME);
-            }
-            save();
-        }
-    }
-
-    public synchronized boolean getRepositorySchemaCreate() {
-        String schemaCreate = properties.getProperty(REPOSITORY_SCHEMA_CREATE);
-        return schemaCreate != null && Boolean.parseBoolean(schemaCreate);
-    }
-
-    public synchronized boolean getUseOsUser() {
-        String useOsUser = properties.getProperty(PROJECT_USE_OS_USER);
-        return useOsUser == null || Boolean.parseBoolean(useOsUser);
-    }
-
-    public synchronized void setUseOsUser(boolean useOsUser) {
-        String prop = properties.getProperty(PROJECT_USE_OS_USER);
-        if (prop == null || Boolean.parseBoolean(prop) != useOsUser) {
-            properties.setProperty(PROJECT_USE_OS_USER, Boolean.toString(useOsUser));
-            save();
-        }
-    }
-
-    public synchronized void setRepositoryPassword(String password) {
-        if (password == null) return;
-        String previousPassword = properties.getProperty(REPOSITORY_PASSWORD);
-        if (previousPassword == null || !previousPassword.equals(password)) {
-            if (password.equals(defaultPassword)) {
-                properties.remove(REPOSITORY_PASSWORD);
-            } else {
-                properties.setProperty(REPOSITORY_PASSWORD, password);
-            }
-            save();
-        }
-    }
-
-    public synchronized void setRepositoryServerHostname(String repository) {
-        if (repository == null) return;
-        String previousRepository = properties.getProperty(REPOSITORY_HOST);
-        if (previousRepository == null || !previousRepository.equals(repository)) {
-            properties.setProperty(REPOSITORY_HOST, repository);
-            save();
-        }
-    }
-
-    public synchronized void setRepositoryUserName(String userName) {
-        if (userName == null) return;
-        String previousUser = properties.getProperty(REPOSITORY_USER);
-        if (previousUser == null || !previousUser.equals(userName)) {
-            if (userName.equals(defaultUserName)) {
-                properties.remove(REPOSITORY_USER);
-            } else {
-                properties.setProperty(REPOSITORY_USER, userName);
-            }
-            save();
-        }
-    }
-
-    public synchronized void setStudyModelDepth(Integer studyModelDepth) {
-        if (studyModelDepth == null) return;
-        String previousValue = properties.getProperty(STUDY_MODEL_DEPTH);
-        if (previousValue == null || !previousValue.equals(String.valueOf(studyModelDepth))) {
-            properties.setProperty(STUDY_MODEL_DEPTH, String.valueOf(studyModelDepth));
-            save();
-        }
-    }
-
-    public synchronized String getRepositoryServerHostname() {
-        return this.getRepositoryServerHostname(this.getDefaultHostName());
-    }
-
-    public synchronized String getRepositoryServerHostname(String defaultRepositoryHostName) {
-        String repo = properties.getProperty(REPOSITORY_HOST);
-        if (repo == null) {
-            logger.warn("Empty repository url. Assuming: " + defaultRepositoryHostName);
-            repo = defaultRepositoryHostName;
-        }
-        return repo;
-    }
-
-    public synchronized String getRepositorySchema() {
-        return this.getRepositorySchema(defaultSchema);
-    }
-
-    public synchronized String getRepositorySchema(String defaultRepositorySchema) {
-        String schema = properties.getProperty(REPOSITORY_SCHEMA_NAME);
-        if (schema == null) {
-            logger.warn("Empty repository schema. Assuming: " + defaultRepositorySchema);
-            schema = defaultRepositorySchema;
-        }
-        return schema;
-    }
-
-    public synchronized String getRepositoryUserName() {
-        return this.getRepositoryUserName(defaultUserName);
-    }
-
-    public synchronized String getRepositoryUserName(String defaultUserName) {
-        String repositoryUser = properties.getProperty(REPOSITORY_USER);
-        if (repositoryUser == null) {
-            logger.warn("Empty repository user. Assuming: " + defaultUserName);
-            repositoryUser = defaultUserName;
-        }
-        return repositoryUser;
-    }
-
-    public synchronized String getRepositoryPassword() {
-        return this.getRepositoryPassword(defaultPassword);
-    }
-
-    public synchronized String getRepositoryPassword(String defaultPassword) {
-        String repositoryPassword = properties.getProperty(REPOSITORY_PASSWORD);
-        if (repositoryPassword == null) {
-            logger.warn("Empty repository password. Assuming: " + defaultPassword);
-            repositoryPassword = defaultPassword;
-        }
-        return repositoryPassword;
-    }
-
-    public synchronized int getStudyModelDepth(int defaultValue) {
-        String studyModelDepthStr = properties.getProperty(STUDY_MODEL_DEPTH);
-        int studyModelDepth = defaultValue;
-        if (studyModelDepthStr != null) {
-            try {
-                studyModelDepth = Integer.valueOf(studyModelDepthStr);
-                if (studyModelDepth < MIN_MODEL_DEPTH || studyModelDepth > MAX_MODEL_DEPTH) {
-                    logger.warn("Invalid value of setting " + STUDY_MODEL_DEPTH + ", " +
-                            "it must be >= " + MIN_MODEL_DEPTH + " and <=" + MAX_MODEL_DEPTH);
-                }
-            } catch (NumberFormatException nfe) {
-                logger.warn("Not parseable value of setting " + STUDY_MODEL_DEPTH);
-            }
-        }
-        return studyModelDepth;
-    }
-
-    public synchronized String getRepositoryUrl() {
-        return this.getRepositoryUrl(this.getDefaultHostName(), defaultSchema);
-    }
-
-    public synchronized String getRepositoryUrl(String defaultRepositoryHostName, String defaultRepositorySchema) {
-        String hostName = this.getRepositoryServerHostname(defaultRepositoryHostName);
-        String schema = this.getRepositorySchema(defaultRepositorySchema);
-        return String.format(defaultJdbcUrlPattern, hostName, schema);
-    }
 }

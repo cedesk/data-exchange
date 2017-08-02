@@ -23,26 +23,6 @@
     <import resource="context-model.xml" />
     <import resource="context-controller.xml" />
 
-    <bean id="applicationSettings" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg>
-            <bean class="ru.skoltech.cedl.dataexchange.ApplicationSettings" init-method="init">
-                <property name="applicationVersion" value="${application.version}" />
-                <property name="applicationBuildTime" value="${application.build.time}" />
-                <property name="applicationDistributionServerUrl" value="${application.distribution.server.url}" />
-                <property name="cedeskAppDir" value="${cedesk.app.dir}" />
-                <property name="cedeskAppFile" value="${cedesk.app.file}" />
-                <property name="cedeskAppFileComment" value="${cedesk.app.file.comment}" />
-                <property name="cedeskLogDir" value="${cedesk.log.dir}" />
-                <property name="defaultHostName" value="${repository.default.host}" />
-                <property name="defaultSchema" value="${repository.default.schema}" />
-                <property name="defaultUserName" value="${repository.default.user.name}" />
-                <property name="defaultPassword" value="${repository.default.password}" />
-                <property name="defaultJdbcUrlPattern" value="${repository.default.jdbc.url.pattern}" />
-                <property name="repositorySchemaVersion" value="${repository.schema.version}" />
-            </bean>
-        </constructor-arg>
-    </bean>
-
     <bean id="jsoupService" class="org.mockito.Mockito" factory-method="mock" >
         <constructor-arg value="ru.skoltech.cedl.dataexchange.services.JsoupService" />
     </bean>

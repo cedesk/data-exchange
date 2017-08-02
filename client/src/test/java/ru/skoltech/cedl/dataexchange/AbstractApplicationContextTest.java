@@ -17,7 +17,9 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.springframework.context.ApplicationContext;
 import ru.skoltech.cedl.dataexchange.db.PersistenceFactory;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
@@ -25,9 +27,11 @@ import ru.skoltech.cedl.dataexchange.services.RepositoryManager;
 import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 
 import javax.sql.DataSource;
+import java.io.File;
+import java.io.IOException;
 
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static ru.skoltech.cedl.dataexchange.ApplicationSettingsInitializerTest.*;
 
 /**
  * Abstract class which holds all objects for testing in application context.
@@ -36,24 +40,32 @@ import static org.mockito.Mockito.when;
  */
 public abstract class AbstractApplicationContextTest {
 
-    protected ApplicationContext context;
+    private static File cedeskAppDir;
+    private static File cedeskAppFile;
+    protected static ApplicationContext context;
+
     private RepositoryManager repositoryManager;
     protected RepositoryService repositoryService;
 
-    static {
+    @BeforeClass
+    public static void beforeClass() throws IOException {
+        System.setProperty("user.home", new File("target").getAbsolutePath());
+
+        cedeskAppDir = createCedeskAppDir();
+        cedeskAppFile = createCedeskAppFile(cedeskAppDir);
+
+        ApplicationSettingsInitializer.initialize();
+
         ApplicationContextInitializer.initialize(new String[] {"/context-test.xml"});
+        context = ApplicationContextInitializer.getInstance().getContext();
     }
+
     @Before
     public void before() throws RepositoryException {
-        context = ApplicationContextInitializer.getInstance().getContext();
-
         DataSource dataSource = context.getBean("dataSource", DataSource.class);
 
         PersistenceFactory persistenceFactory = context.getBean("persistenceFactory", PersistenceFactory.class);
         doReturn(dataSource).when(persistenceFactory).createDataSource();
-
-        ApplicationSettings applicationSettings = context.getBean("applicationSettings", ApplicationSettings.class);
-        when(applicationSettings.getProjectUser()).thenReturn("admin");
 
         repositoryManager = context.getBean(RepositoryManager.class);
         repositoryManager.createRepositoryConnection();
@@ -61,8 +73,13 @@ public abstract class AbstractApplicationContextTest {
     }
 
     @After
-    public void cleanup() {
+    public void after() {
         repositoryManager.releaseRepositoryConnection();
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        deleteApplicationSettings(cedeskAppDir, cedeskAppFile);
     }
 
 }

@@ -257,7 +257,7 @@ public class Project {
 
     public User getUser() {
         if (currentUser == null) { // caching
-            String userName = applicationSettings.getProjectUser();
+            String userName = applicationSettings.getProjectUserName();
             UserManagement userManagement = this.getUserManagement();
             currentUser = userManagementService.obtainUser(userManagement, userName);
             if (currentUser == null) {
@@ -296,7 +296,7 @@ public class Project {
 
     public boolean isStudyInRepository() {
         // TODO: it is an imprecise assumption that in case of any import setting, this study is also available in the repository
-        if (applicationSettings.getProjectToImport() != null) {
+        if (applicationSettings.getProjectImportName() != null) {
             return true;
         }
         return repositoryStateMachine.wasLoadedOrSaved();
@@ -358,7 +358,7 @@ public class Project {
      * Has to be performed regularly for user's ability to synchronize remote and local study.
      */
     public void checkStudyInRepository() {
-        final boolean autoSyncDisabled = !applicationSettings.getAutoSync();
+        final boolean autoSyncDisabled = !applicationSettings.isRepositoryWatcherAutosync();
         final boolean emptyStudy = this.getStudy() == null;
         final boolean studyNotInRepository = !this.isStudyInRepository();
 
@@ -379,7 +379,7 @@ public class Project {
     }
 
     public boolean checkUser() {
-        String userName = applicationSettings.getProjectUser();
+        String userName = applicationSettings.getProjectUserName();
         if (userName == null) {
             boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
             userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
@@ -390,9 +390,9 @@ public class Project {
     }
 
     public boolean checkRepository() {
-        String hostname = applicationSettings.getRepositoryServerHostname();
-        String schema = applicationSettings.getRepositorySchema();
-        String repoUser = applicationSettings.getRepositoryUserName();
+        String hostname = applicationSettings.getRepositoryHost();
+        String schema = applicationSettings.getRepositorySchemaName();
+        String repoUser = applicationSettings.getRepositoryUser();
         String repoPassword = applicationSettings.getRepositoryPassword();
 
         boolean validConnection = repositoryManager.checkRepositoryConnection(hostname, schema, repoUser, repoPassword);
@@ -401,7 +401,7 @@ public class Project {
         }
 
         boolean validScheme = repositoryManager.validateRepositoryScheme();
-        if (!validScheme && applicationSettings.getRepositorySchemaCreate()) {
+        if (!validScheme && applicationSettings.isRepositorySchemaCreate()) {
             validScheme = repositoryManager.updateRepositoryScheme();
         }
         return validScheme;
@@ -745,8 +745,8 @@ public class Project {
 
     public File getProjectDataDir() {
         String projectName = this.getProjectName();
-        String hostname = applicationSettings.getRepositoryServerHostname();
-        String schema = applicationSettings.getRepositorySchema();
+        String hostname = applicationSettings.getRepositoryHost();
+        String schema = applicationSettings.getRepositorySchemaName();
         return fileStorageService.dataDir(hostname, schema, projectName);
     }
 }

@@ -40,7 +40,7 @@ public class VersioningStorageTest extends AbstractApplicationContextTest {
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        applicationSettings.setUseOsUser(false);
+        applicationSettings.setProjectUseOsUser(false);
 
         systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
     }

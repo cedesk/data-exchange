@@ -36,7 +36,7 @@ public class LoggingTest extends AbstractApplicationContextTest {
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
         repositoryService = context.getBean(RepositoryService.class);
 
-        ApplicationSettings applicationSettings = new ApplicationSettings();
+        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         actionLogger = new ActionLogger();
         actionLogger.setApplicationSettings(applicationSettings);
         actionLogger.setRepositoryService(repositoryService);

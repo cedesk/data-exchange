@@ -37,6 +37,7 @@
         <property name="differenceMergeService" ref="differenceMergeService" />
         <property name="updateService" ref="updateService" />
         <property name="taskExecutor" ref="taskExecutor" />
+        <property name="userManagementService" ref="userManagementService"/>
     </bean>
 
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
@@ -97,7 +98,6 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.ProjectSettingsController" >
         <property name="project" ref="project" />
-        <property name="userManagementService" ref="userManagementService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController">

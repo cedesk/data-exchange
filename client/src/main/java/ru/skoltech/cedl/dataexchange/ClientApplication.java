@@ -36,14 +36,16 @@ public class ClientApplication extends Application {
 
     private static Logger logger = Logger.getLogger(ClientApplication.class);
 
-    private static ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+    private static ApplicationContext context;
 
     private MainController mainController;
 
     public static void main(String[] args) {
+        ApplicationSettingsInitializer.initialize();
+        PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
+        context = ApplicationContextInitializer.getInstance().getContext();
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         FileStorageService fileStorageService = context.getBean(FileStorageService.class);
-        PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
         System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
                 "/" + applicationSettings.getCedeskAppFile());
 

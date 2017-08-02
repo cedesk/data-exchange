@@ -28,14 +28,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static ru.skoltech.cedl.dataexchange.ApplicationSettings.DEFAULT_MODEL_DEPTH;
-
 /**
  * Abstract class for {@link SystemModel} builders.
  *
  * Created by d.knoll on 27/06/2017.
  */
 public abstract class SystemBuilder {
+
+    public static final int MIN_MODEL_DEPTH = 1;
+    public static final int MAX_MODEL_DEPTH = 4;
+    public static final int DEFAULT_MODEL_DEPTH = 2;
 
     protected List<String> subsystemNames = new ArrayList<>();
     protected UnitManagement unitManagement;

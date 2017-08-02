@@ -22,96 +22,78 @@
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefWidth="500" stylesheets="@styling.css"
             xmlns="http://javafx.com/javafx/8.0.112"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.ProjectSettingsController">
-    <children>
-        <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-              AnchorPane.topAnchor="0.0">
-            <children>
-                <TitledPane fx:id="teamSettingsPane" animated="false" collapsible="false" text="Team-wide settings">
-                    <content>
-                        <GridPane hgap="8.0" vgap="2.0">
-                            <columnConstraints>
-                                <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0"
-                                                   percentWidth="30.0"/>
-                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints minHeight="30.0" vgrow="SOMETIMES"/>
-                                <RowConstraints minHeight="30.0" vgrow="SOMETIMES"/>
-                            </rowConstraints>
-                            <children>
-                                <CheckBox fx:id="enableSyncCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                                          GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Enable Team to save"
-                                      GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Project Name"
-                                      GridPane.halignment="RIGHT"/>
-                                <TextField fx:id="projectNameText" editable="false" GridPane.columnIndex="1"/>
-                            </children>
-                        </GridPane>
-                    </content>
-                </TitledPane>
-                <TitledPane animated="false" collapsible="false" text="Personal settings">
-                    <content>
-                        <GridPane hgap="8.0" vgap="2.0">
-                            <columnConstraints>
-                                <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0"
-                                                   percentWidth="45.0"/>
-                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
-                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                            </rowConstraints>
-                            <children>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Autoload last project on startup"
-                                      GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
-                                <CheckBox fx:id="autoloadOnStartupCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                                          GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Use OS user"
-                                      GridPane.halignment="RIGHT"/>
-                                <CheckBox fx:id="useOsUserCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                                          GridPane.columnIndex="1"/>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Study User"
-                                      GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
-                                <TextField fx:id="userNameText" promptText="username" GridPane.columnIndex="1"
-                                           GridPane.columnSpan="2147483647" GridPane.rowIndex="1"/>
-                            </children>
-                        </GridPane>
-                    </content>
-                </TitledPane>
-                <TitledPane animated="false" collapsible="false" text="Project Directory">
-                    <content>
-                        <GridPane hgap="8.0" vgap="2.0">
-                            <columnConstraints>
-                                <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0"
-                                                   percentWidth="30.0"/>
-                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                            </rowConstraints>
-                            <children>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Project Directory"
-                                      GridPane.halignment="RIGHT"/>
-                                <TextField fx:id="projectDirectoryText" editable="false" GridPane.columnIndex="1"/>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Clean up" GridPane.halignment="RIGHT"
-                                      GridPane.rowIndex="1"/>
-                                <Button mnemonicParsing="false" onAction="#cleanupProjectCache"
-                                        text="Delete unused files" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                            </children>
-                        </GridPane>
-                    </content>
-                </TitledPane>
-                <ToolBar nodeOrientation="RIGHT_TO_LEFT">
-                    <items>
-                        <Button defaultButton="true" mnemonicParsing="false" onAction="#applyAndClose" text="Ok"/>
-                        <Button cancelButton="true" mnemonicParsing="false" onAction="#cancel" text="Cancel"/>
-                    </items>
-                </ToolBar>
-            </children>
-        </VBox>
-    </children>
+    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
+        <TitledPane fx:id="teamSettingsPane" animated="false" collapsible="false" text="Team-wide settings">
+            <GridPane hgap="8.0" vgap="2.0">
+                <columnConstraints>
+                    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0"
+                                       percentWidth="30.0"/>
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="30.0" vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="30.0" vgrow="SOMETIMES"/>
+                </rowConstraints>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Project Name"
+                      GridPane.halignment="RIGHT"/>
+                <TextField fx:id="projectNameText" editable="false" GridPane.columnIndex="1"/>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Enable Team to save"
+                      GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
+                <CheckBox fx:id="enableSyncCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                          GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            </GridPane>
+        </TitledPane>
+        <TitledPane animated="false" collapsible="false" text="Personal settings">
+            <GridPane hgap="8.0" vgap="2.0">
+                <columnConstraints>
+                    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0"
+                                       percentWidth="45.0"/>
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                </rowConstraints>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Use OS user"
+                      GridPane.halignment="RIGHT"/>
+                <CheckBox fx:id="useOsUserCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                          GridPane.columnIndex="1"/>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Study User"
+                      GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
+                <TextField fx:id="userNameText" promptText="username" GridPane.columnIndex="1"
+                           GridPane.columnSpan="2147483647" GridPane.rowIndex="1"/>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Autoload last project on startup"
+                      GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
+                <CheckBox fx:id="autoloadOnStartupCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                          GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            </GridPane>
+        </TitledPane>
+        <TitledPane animated="false" collapsible="false" text="Project Directory">
+            <GridPane hgap="8.0" vgap="2.0">
+                <columnConstraints>
+                    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0"
+                                       percentWidth="30.0"/>
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                </rowConstraints>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Project Directory"
+                      GridPane.halignment="RIGHT"/>
+                <TextField fx:id="projectDirectoryText" editable="false" GridPane.columnIndex="1"/>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Clean up" GridPane.halignment="RIGHT"
+                      GridPane.rowIndex="1"/>
+                <Button mnemonicParsing="false" onAction="#cleanupProjectCache"
+                        text="Delete unused files" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            </GridPane>
+        </TitledPane>
+        <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+            <Button defaultButton="true" mnemonicParsing="false" onAction="#applyAndClose" text="Ok"/>
+            <Button cancelButton="true" mnemonicParsing="false" onAction="#cancel" text="Cancel"/>
+        </ToolBar>
+    </VBox>
 </AnchorPane>
