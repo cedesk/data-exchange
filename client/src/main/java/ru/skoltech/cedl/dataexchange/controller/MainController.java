@@ -55,7 +55,6 @@ import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.users.model.Discipline;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.awt.*;
@@ -143,6 +142,10 @@ public class MainController implements Initializable {
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
+    }
+
+    public void setUserManagementService(UserManagementService userManagementService) {
+        this.userManagementService = userManagementService;
     }
 
     public void setSystemBuilderFactory(SystemBuilderFactory systemBuilderFactory) {
@@ -626,6 +629,39 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
+
+            ProjectSettingsController controller = loader.getController();
+            controller.setProjectSettingsListener((repositoryWatcherAutosync, projectLastAutoload,
+                                                   projectUseOsUser, projectUserName) -> {
+                StudySettings studySettings = studySettings();
+                if (studySettings != null) {
+                    boolean oldSyncEnabled = studySettings.getSyncEnabled();
+                    studySettings.setSyncEnabled(repositoryWatcherAutosync);
+                    if (oldSyncEnabled != repositoryWatcherAutosync) {
+                        project.markStudyModified();
+                    }
+                    logger.info(studySettings);
+                }
+
+                applicationSettings.storeProjectLastAutoload(projectLastAutoload);
+                applicationSettings.storeProjectUseOsUser(projectUseOsUser);
+                String userName = null;
+                if (projectUseOsUser) {
+                    applicationSettings.storeProjectUserName(null);
+                    userName = applicationSettings.getDefaultProjectUserName(); // get default value
+                } else {
+                    userName = projectUserName;
+                }
+                boolean validUser = userManagementService.checkUserName(project.getUserManagement(), userName);
+                logger.info("using user: '" + userName + "', valid: " + validUser);
+                if (validUser) {
+                    applicationSettings.storeProjectUserName(userName);
+                } else {
+                    Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
+                }
+
+                return validUser;
+            });
             stage.setOnCloseRequest(event -> {
                 if (!project.checkUser()) {
                     this.displayInvalidUserDialog();
@@ -637,6 +673,15 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
+    }
+
+    private StudySettings studySettings() {
+        if (project != null && project.getStudy() != null) {
+            if (project.isCurrentAdmin()) {
+                return project.getStudy().getStudySettings();
+            }
+        }
+        return null;
     }
 
     public void openRepositorySettingsDialog(ActionEvent actionEvent) {

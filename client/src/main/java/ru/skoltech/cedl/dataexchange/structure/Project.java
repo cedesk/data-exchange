@@ -29,7 +29,6 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
-import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.services.*;
@@ -73,7 +72,6 @@ public class Project {
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
-    private ActionLogger actionLogger;
 
     private String projectName;
     private Study study;
