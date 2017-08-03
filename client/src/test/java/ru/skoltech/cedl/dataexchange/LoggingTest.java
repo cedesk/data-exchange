@@ -21,6 +21,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 import ru.skoltech.cedl.dataexchange.services.RepositoryService;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -37,9 +38,11 @@ public class LoggingTest extends AbstractApplicationContextTest {
         repositoryService = context.getBean(RepositoryService.class);
 
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
+        Project project = context.getBean(Project.class);
         actionLogger = new ActionLogger();
         actionLogger.setApplicationSettings(applicationSettings);
         actionLogger.setRepositoryService(repositoryService);
+        actionLogger.setProject(project);
     }
 
     @Test
