@@ -31,12 +31,11 @@
         <property name="actionLogger" ref="actionLogger" />
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="systemBuilderFactory" ref="systemBuilderFactory" />
-        <property name="repositoryManager" ref="repositoryManager" />
         <property name="repositoryService" ref="repositoryService" />
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
         <property name="updateService" ref="updateService" />
-        <property name="taskExecutor" ref="taskExecutor" />
+        <property name="executor" ref="executor" />
         <property name="userManagementService" ref="userManagementService"/>
     </bean>
 
@@ -103,6 +102,8 @@
     <bean class="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController">
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="applicationSettings" ref="applicationSettings" />
+        <property name="repositoryManager" ref="repositoryManager"/>
+        <property name="executor" ref="executor"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.AboutController" />

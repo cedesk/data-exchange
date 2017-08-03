@@ -122,7 +122,7 @@
         <property name="userRoleManagementService" ref="userRoleManagementService" />
     </bean>
 
-    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+    <bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
         <property name="corePoolSize" value="3" />
         <property name="maxPoolSize" value="10" />
         <property name="waitForTasksToCompleteOnShutdown" value="true" />

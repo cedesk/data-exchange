@@ -116,12 +116,11 @@ public class MainController implements Initializable {
     private ApplicationSettings applicationSettings;
     private UserManagementService userManagementService;
     private SystemBuilderFactory systemBuilderFactory;
-    private RepositoryManager repositoryManager;
     private RepositoryService repositoryService;
     private FileStorageService fileStorageService;
     private DifferenceMergeService differenceMergeService;
     private UpdateService updateService;
-    private Executor taskExecutor;
+    private Executor executor;
     private ActionLogger actionLogger;
 
     public void setActionLogger(ActionLogger actionLogger) {
@@ -152,10 +151,6 @@ public class MainController implements Initializable {
         this.systemBuilderFactory = systemBuilderFactory;
     }
 
-    public void setRepositoryManager(RepositoryManager repositoryManager) {
-        this.repositoryManager = repositoryManager;
-    }
-
     public void setRepositoryService(RepositoryService repositoryService) {
         this.repositoryService = repositoryService;
     }
@@ -172,8 +167,8 @@ public class MainController implements Initializable {
         this.updateService = updateService;
     }
 
-    public void setTaskExecutor(Executor taskExecutor) {
-        this.taskExecutor = taskExecutor;
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 
     @Override
@@ -235,7 +230,7 @@ public class MainController implements Initializable {
     public void checkVersionUpdate(){
         String appVersion = applicationSettings.getApplicationVersion();
         if (ApplicationPackage.isRelease(appVersion)) {
-            taskExecutor.execute(() -> {
+            executor.execute(() -> {
                 Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
                 Platform.runLater(() -> MainController.this.validateLatestUpdate(latestVersionAvailable, null));
             });
@@ -697,49 +692,18 @@ public class MainController implements Initializable {
             stage.initOwner(getAppWindow());
 
             RepositorySettingsController controller = loader.getController();
-            controller.setRepositorySettingsListener((hostname, username, password, autoSynch) -> {
-                boolean validSettings = false;
-
-                applicationSettings.storeRepositoryWatcherAutosync(autoSynch);
-
-                String schema = applicationSettings.getRepositorySchemaName();
-
-                String newHostname = hostname == null || hostname.isEmpty() ? applicationSettings.getDefaultRepositoryHost() : hostname;
-                String newUsername = username == null || username.isEmpty() ? applicationSettings.getDefaultRepositoryUser() : username;
-                String newPassword = password == null || password.isEmpty() ? applicationSettings.getDefaultRepositoryPassword() : password;
-                boolean validCredentials = repositoryManager.checkRepositoryConnection(newHostname, schema, newUsername, newPassword);
-                if (validCredentials) {
-                    applicationSettings.storeRepositoryHost(newHostname);
-                    applicationSettings.setRepositoryUser(newUsername);
-                    applicationSettings.setRepositoryPassword(newPassword);
-                    try {
-                        project.connectRepository();
-                        validSettings = true;
-                        StatusLogger.getInstance().log("Successfully configured repository settings!");
-                    } catch (Exception e) {
-                        Dialogues.showError("Repository Connection Failed!",
-                                "Please verify that the access credentials for the repository are correct.");
-                    }
-                } else {
-                    Dialogues.showError("Repository Connection Failed",
-                            "The given database access credentials did not work! " +
-                            "Please verify they are correct, the database server is running and the connection is working.");
-                }
-                project.loadUserManagement();
-                project.loadUnitManagement();
-                return validSettings;
+            controller.setRepositorySettingsListener((repositoryHost, repositoryUser,
+                                                      repositoryPassword, repositoryWatcherAutosync) -> {
+                this.quit();
+                applicationSettings.storeRepositoryHost(repositoryHost);
+                applicationSettings.storeRepositoryUser(repositoryUser);
+                applicationSettings.storeRepositoryPassword(repositoryPassword);
+                applicationSettings.storeRepositoryWatcherAutosync(repositoryWatcherAutosync);
+                applicationSettings.save();
+                //TODO: add auto restart application
             });
 
-            stage.setOnCloseRequest(event -> {
-                if (!project.checkRepository()) {
-                    Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository!");
-                    quit(null);
-                    return;
-                }
-                if (!project.checkUser()) {
-                    this.displayInvalidUserDialog();
-                }
-            });
+            stage.setOnCloseRequest(event -> controller.close());
             stage.showAndWait();
             updateView();
         } catch (IOException e) {
@@ -806,7 +770,7 @@ public class MainController implements Initializable {
         }
     }
 
-    public void quit(ActionEvent actionEvent) {
+    public void quit() {
         Stage stage = (Stage) applicationPane.getScene().getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
@@ -896,7 +860,7 @@ public class MainController implements Initializable {
     }
 
     public void checkRepository() {
-        taskExecutor.execute(() -> {
+        executor.execute(() -> {
             boolean validRepository = project.checkRepository();
             if (!validRepository) {
                 Platform.runLater(() -> MainController.this.openRepositorySettingsDialog(null));

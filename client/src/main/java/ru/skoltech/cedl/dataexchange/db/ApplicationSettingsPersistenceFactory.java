@@ -59,25 +59,24 @@ public class ApplicationSettingsPersistenceFactory implements PersistenceFactory
     }
 
     @Override
-    public String createRepositoryUrl(String defaultRepositoryHost, String defaultRepositorySchemaName) {
-        String repositoryHost = applicationSettings.getRepositoryHost() != null ?
-                applicationSettings.getRepositoryHost() : defaultRepositoryHost;
+    public String createRepositoryUrl() {
+        String repositoryHost = applicationSettings.getRepositoryHost();
+        String repositorySchemaName = applicationSettings.getRepositorySchemaName();
+        return this.createRepositoryUrl(repositoryHost, repositorySchemaName);
+    }
 
-        String repositorySchemaName = applicationSettings.getRepositorySchemaName() != null ?
-                applicationSettings.getRepositorySchemaName() : defaultRepositorySchemaName;
-
+    @Override
+    public String createRepositoryUrl(String repositoryHost, String repositorySchemaName) {
         String defaultJdbcUrlPattern = applicationSettings.getRepositoryJdbcUrlPattern();
         return String.format(defaultJdbcUrlPattern, repositoryHost, repositorySchemaName);
     }
 
     @Override
     public DataSource createDataSource() {
-        String repositoryHost = applicationSettings.getRepositoryHost();
-        String repositorySchemaName = applicationSettings.getRepositorySchemaName();
         String user = applicationSettings.getRepositoryUser();
         String password = applicationSettings.getRepositoryPassword();
 
-        String url = createRepositoryUrl(repositoryHost, repositorySchemaName);
+        String url = createRepositoryUrl();
 
         DriverManagerDataSource driverManagerDataSource = applicationContext.getBean(DriverManagerDataSource.class);
         driverManagerDataSource.setUrl(url);

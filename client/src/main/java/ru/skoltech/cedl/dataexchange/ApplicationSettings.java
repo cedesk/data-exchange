@@ -454,21 +454,20 @@ public class ApplicationSettings {
 
     public void save() {
         try (FileWriter fileWriter = new FileWriter(file)) {
-
             Properties applicationSettings = new Properties();
 
-            applicationSettings.put(REPOSITORY_HOST, repositoryHost);
-            applicationSettings.put(REPOSITORY_SCHEMA_NAME, repositorySchemaName);
-            applicationSettings.put(REPOSITORY_SCHEMA_CREATE, repositorySchemaCreate);
-            applicationSettings.put(REPOSITORY_USER, repositoryUser);
-            applicationSettings.put(REPOSITORY_PASSWORD, repositoryPassword);
-            applicationSettings.put(REPOSITORY_WATCHER_AUTOSYNC, repositoryWatcherAutosync);
-            applicationSettings.put(PROJECT_LAST_AUTOLOAD, projectLastAutoload);
-            applicationSettings.put(PROJECT_LAST_NAME, projectLastName);
-            applicationSettings.put(PROJECT_USE_OS_USER, projectUseOsUser);
-            applicationSettings.put(PROJECT_USER_NAME, projectUserName);
-            applicationSettings.put(PROJECT_IMPORT_NAME, projectImportName);
-            applicationSettings.put(STUDY_MODEL_DEPTH, studyModelDepth);
+            applicationSettings.setProperty(REPOSITORY_HOST, repositoryHost);
+            applicationSettings.setProperty(REPOSITORY_SCHEMA_NAME, repositorySchemaName);
+            applicationSettings.setProperty(REPOSITORY_SCHEMA_CREATE, String.valueOf(repositorySchemaCreate));
+            applicationSettings.setProperty(REPOSITORY_USER, repositoryUser);
+            applicationSettings.setProperty(REPOSITORY_PASSWORD, repositoryPassword);
+            applicationSettings.setProperty(REPOSITORY_WATCHER_AUTOSYNC, String.valueOf(repositoryWatcherAutosync));
+            applicationSettings.setProperty(PROJECT_LAST_AUTOLOAD, String.valueOf(projectLastAutoload));
+            applicationSettings.setProperty(PROJECT_LAST_NAME, projectLastName);
+            applicationSettings.setProperty(PROJECT_USE_OS_USER, String.valueOf(projectUseOsUser));
+            applicationSettings.setProperty(PROJECT_USER_NAME, projectUserName);
+            applicationSettings.setProperty(PROJECT_IMPORT_NAME, projectImportName);
+            applicationSettings.setProperty(STUDY_MODEL_DEPTH, studyModelDepth);
 
             applicationSettings.store(fileWriter, cedeskAppFileComment);
         } catch (IOException e) {

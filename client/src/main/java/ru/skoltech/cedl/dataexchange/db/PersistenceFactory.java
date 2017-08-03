@@ -29,6 +29,13 @@ import java.util.Map;
 public interface PersistenceFactory {
 
     /**
+     * Create repository URL with default hostname and schema.
+     *
+     * @return repository URL
+     */
+    String createRepositoryUrl();
+
+    /**
      * Create repository URL.
      *
      * @param hostName host name

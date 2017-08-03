@@ -151,7 +151,6 @@ public class UnitManagementController implements Initializable {
         }
     }
 
-
     public void openAddUnitDialog(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.UNIT_ADD_WINDOW);
