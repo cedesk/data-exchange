@@ -392,7 +392,7 @@ public class MainController implements Initializable {
         File importFile = null;
         if (actionEvent == null) { // invoked from startup
             String projectToImport = applicationSettings.getProjectImportName();
-            if (projectToImport != null) {
+            if (projectToImport != null && !projectToImport.isEmpty()) {
                 importFile = new File(fileStorageService.applicationDirectory(), projectToImport);
                 if (importFile.exists()) {
                     logger.info("importing " + importFile.getAbsolutePath());
@@ -417,10 +417,10 @@ public class MainController implements Initializable {
                 StatusLogger.getInstance().log("Successfully imported study!", false);
                 actionLogger.log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName());
             } catch (IOException e) {
-                logger.error("error importing model from file");
+                logger.error("Error importing model from file.", e);
             }
         } else {
-            logger.info("user aborted import file selection.");
+            logger.info("User aborted import file selection.");
         }
     }
 
@@ -912,7 +912,7 @@ public class MainController implements Initializable {
 
     private void loadLastProject() {
         actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
-        if (applicationSettings.getProjectImportName() != null) {
+        if (applicationSettings.getProjectImportName() != null && !applicationSettings.getProjectImportName().isEmpty()) {
             importProject(null);
         } else if (applicationSettings.isProjectLastAutoload()) {
             String projectName = applicationSettings.getProjectLastName();
