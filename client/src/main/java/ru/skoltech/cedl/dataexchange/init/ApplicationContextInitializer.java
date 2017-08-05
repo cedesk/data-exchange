@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.init;
 
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -28,39 +29,40 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ApplicationContextInitializer {
 
     private static Logger logger = Logger.getLogger(ApplicationContextInitializer.class);
-    private static final String BASE_CONTEXT_LOCATION = "/context-controller.xml";
+    public static final String BASE_CONTEXT_LOCATION = "/context-base.xml";
+    public static final String CONTEXT_LOCATION = "/context-controller.xml";
 
-    private static String[] locations;
+    private static String location;
     private static ApplicationContextInitializer instance;
 
     /**
      * Provide a special path to the application context.
      * For testing purposes.
      *
-     * @param configLocations locations to application context;
+     * @param configLocation location to application context;
      */
-    static void initialize(String[] configLocations) {
-        if (locations != null) {
+    static void initialize(String configLocation) {
+        if (location != null) {
             logger.warn("Application context has already been initialized.");
             return;
         }
-        locations = configLocations;
+        location = configLocation;
     }
 
     public static ApplicationContextInitializer getInstance() {
         if (instance == null) {
-            if (locations == null) {
-                locations = new String[] {BASE_CONTEXT_LOCATION};
+            if (location == null) {
+                location = CONTEXT_LOCATION;
             }
-            instance = new ApplicationContextInitializer(locations);
+            instance = new ApplicationContextInitializer(location);
         }
         return instance;
     }
 
-    private final ApplicationContext context;
+    private final ConfigurableApplicationContext context;
 
-    private ApplicationContextInitializer(String[] configLocations) {
-        context = new ClassPathXmlApplicationContext(configLocations);
+    private ApplicationContextInitializer(String configLocation) {
+        context = new ClassPathXmlApplicationContext(configLocation);
     }
 
     /**
@@ -68,7 +70,7 @@ public class ApplicationContextInitializer {
      *
      * @return application context.
      */
-    public ApplicationContext getContext() {
+    public ConfigurableApplicationContext getContext() {
         return context;
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.init;
 
 import java.io.*;
 import java.util.Properties;
@@ -31,10 +31,10 @@ import java.util.Properties;
  */
 public class ApplicationSettingsInitializer {
 
-    public static final String DEFAULT_PROPERTY_PERIX = "default.";
+    static final String DEFAULT_PROPERTY_PERIX = "default.";
 
-    public static final String CEDESK_APP_DIR = "cedesk.app.dir";
-    public static final String CEDESK_APP_FILE = "cedesk.app.file";
+    private static final String CEDESK_APP_DIR = "cedesk.app.dir";
+    private static final String CEDESK_APP_FILE = "cedesk.app.file";
     private static final String CEDESK_APP_FILE_COMMENT = "cedesk.app.file.comment";
 
     private static final String REPOSITORY_HOST = "repository.host";

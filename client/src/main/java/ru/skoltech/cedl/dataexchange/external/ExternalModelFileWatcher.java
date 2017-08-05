@@ -43,10 +43,6 @@ public class ExternalModelFileWatcher extends Observable {
 
     private Set<File> maskedFiles = new ConcurrentSkipListSet<>();
 
-    public ExternalModelFileWatcher() {
-        SimpleDirectoryWatchService.getInstance().start();
-    }
-
     public void add(Project project, ExternalModel externalModel) {
         File file = ExternalModelFileHandler.getFilePathInCache(project, externalModel);
         watchedExternalModels.put(file, externalModel);
@@ -61,6 +57,10 @@ public class ExternalModelFileWatcher extends Observable {
     public void clear() {
         SimpleDirectoryWatchService.getInstance().clear();
         watchedExternalModels.clear();
+    }
+
+    public void start() {
+        SimpleDirectoryWatchService.getInstance().start();
     }
 
     public void close() {

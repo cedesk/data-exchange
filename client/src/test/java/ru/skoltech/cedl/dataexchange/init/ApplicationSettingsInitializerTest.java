@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.init;
 
 import org.junit.After;
 import org.junit.Before;
@@ -28,9 +28,8 @@ import java.util.Properties;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static ru.skoltech.cedl.dataexchange.ApplicationSettingsInitializer.DEFAULT_PROPERTY_PERIX;
+import static org.junit.Assert.*;
+import static ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializer.DEFAULT_PROPERTY_PERIX;
 
 public class ApplicationSettingsInitializerTest {
 
@@ -61,8 +60,6 @@ public class ApplicationSettingsInitializerTest {
 
         cedeskAppDir = createCedeskAppDir();
         cedeskAppFile = createCedeskAppFile(cedeskAppDir);
-
-
 
         testCedeskAppDir = new File(System.getProperty("user.home"), TEST_CEDESK_APP_DIR);
         testCedeskAppFile = new File(testCedeskAppDir, TEST_CEDESK_APP_FILE);
@@ -126,6 +123,15 @@ public class ApplicationSettingsInitializerTest {
         Properties testApplicationSettings = ApplicationSettingsInitializer.applicationSettings(testCedeskAppFile);
         testApplicationSettings.forEach((key, value) ->
                 assertThat(cedeskProperties.get(DEFAULT_PROPERTY_PERIX + key), is(value)));
+    }
+
+    @Test
+    public void testCedeskProperties() {
+        Properties cedeskProperties = ApplicationSettingsInitializer.cedeskProperties();
+
+        assertNotNull(cedeskProperties);
+        assertFalse(cedeskProperties.isEmpty());
+        assertTrue(cedeskProperties.containsKey("repository.jdbc.url.pattern"));
     }
 
     @After

@@ -19,7 +19,7 @@ package ru.skoltech.cedl.dataexchange.structure;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;

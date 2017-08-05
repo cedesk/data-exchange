@@ -22,7 +22,7 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
@@ -60,7 +60,6 @@ public class Project {
     private static Logger logger = Logger.getLogger(Project.class);
 
     private ApplicationSettings applicationSettings;
-    private RepositoryManager repositoryManager;
     private RepositoryService repositoryService;
     private RepositoryStateMachine repositoryStateMachine;
     private ParameterLinkRegistry parameterLinkRegistry;
@@ -87,13 +86,10 @@ public class Project {
     private BooleanProperty canLoad = new SimpleBooleanProperty(false);
     private BooleanProperty canSync = new SimpleBooleanProperty(false);
 
-    public void init() {
-        init(DEFAULT_PROJECT_NAME);
-    }
-
     public void init(String projectName) {
-        this.connectRepository();
-        this.initialize(projectName);
+        this.projectName = projectName;
+        this.repositoryStateMachine.reset();
+        this.repositoryStudy = null;
         repositoryStateMachine.addObserver((o, arg) -> {
             updatePossibleActions();
         });
@@ -105,10 +101,6 @@ public class Project {
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
-    }
-
-    public void setRepositoryManager(RepositoryManager repositoryManager) {
-        this.repositoryManager = repositoryManager;
     }
 
     public void setRepositoryService(RepositoryService repositoryService) {
@@ -201,7 +193,7 @@ public class Project {
     }
 
     public void setProjectName(String projectName) {
-        initialize(projectName);
+        this.init(projectName);
     }
 
     public Study getRepositoryStudy() {
@@ -387,38 +379,23 @@ public class Project {
         return userManagementService.checkUserName(userManagement, userName);
     }
 
-    public boolean checkRepository() {
-        String hostname = applicationSettings.getRepositoryHost();
-        String schema = applicationSettings.getRepositorySchemaName();
-        String repoUser = applicationSettings.getRepositoryUser();
-        String repoPassword = applicationSettings.getRepositoryPassword();
-
-        boolean validConnection = repositoryManager.checkRepositoryConnection(hostname, schema, repoUser, repoPassword);
-        if (!validConnection) {
-            return false;
-        }
-
-        boolean validScheme = repositoryManager.validateRepositoryScheme();
+    public boolean checkRepositoryScheme() {
+        boolean validScheme = repositoryService.checkSchemeVersion();
         if (!validScheme && applicationSettings.isRepositorySchemaCreate()) {
-            validScheme = repositoryManager.updateRepositoryScheme();
+            validScheme = repositoryService.checkAndStoreSchemeVersion();
         }
         return validScheme;
-    }
-
-    public void connectRepository() {
-        try {
-            repositoryManager.createRepositoryConnection();
-        } catch (RepositoryException e) {
-            logger.error("Error connecting to the repository!", e);
-        }
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {
         repositoryService.deleteStudy(studyName);
     }
 
+    public void start() {
+        externalModelFileWatcher.start();
+    }
+
     public void close() throws Throwable {
-        repositoryManager.releaseRepositoryConnection();
         externalModelFileWatcher.close();
     }
 
@@ -566,7 +543,6 @@ public class Project {
     public String toString() {
         final StringBuilder sb = new StringBuilder("Project{");
         sb.append("projectName='").append(projectName).append('\'');
-        sb.append(", repositoryManager=").append(repositoryManager);
         sb.append(", repositoryService=").append(repositoryService);
         sb.append(", currentUser").append(currentUser);
         sb.append(", latestLoadedModification").append(latestLoadedModification);
@@ -617,13 +593,7 @@ public class Project {
         }
     }
 
-    private void initialize(String projectName) {
-        this.projectName = projectName;
-        this.repositoryStateMachine.reset();
-        this.repositoryStudy = null;
-    }
-
-    private void initializeStateOfExternalModels() {
+     private void initializeStateOfExternalModels() {
         externalModelFileWatcher.clear();
         externalModelFileHandler.getChangedExternalModels().clear();
         Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), new AccessChecker());

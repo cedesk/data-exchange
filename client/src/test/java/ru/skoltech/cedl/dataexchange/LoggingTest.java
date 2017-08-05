@@ -18,6 +18,8 @@ package ru.skoltech.cedl.dataexchange;
 
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 import ru.skoltech.cedl.dataexchange.services.RepositoryService;

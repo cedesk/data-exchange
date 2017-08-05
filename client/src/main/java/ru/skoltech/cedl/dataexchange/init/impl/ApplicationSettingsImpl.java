@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange;
+package ru.skoltech.cedl.dataexchange.init.impl;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -24,36 +25,12 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * Store all properties required by application.
- * They could be of two types: properties which are common for any client
- * and that of specific to them.
- * First are stored in the <i>cedesk.properties</i> file inside project resources
- * They can be overwritten by system properties (and also by separate file for test purposes).
- * Second are located in separate file. It's path and filename can be configured
- * (by <i>cedesk.app.dir</i> and <i>cedesk.app.file</i> properties).
- * <p>
  *
  * Created by D.Knoll on 18.03.2015.
  */
-public class ApplicationSettings {
+public class ApplicationSettingsImpl implements ApplicationSettings {
 
-    private static final Logger logger = Logger.getLogger(ApplicationSettings.class);
-
-    private static final String REPOSITORY_HOST = "repository.host";
-    private static final String REPOSITORY_SCHEMA_CREATE = "repository.schema.create";
-    private static final String REPOSITORY_SCHEMA_NAME = "repository.schema.name";
-    private static final String REPOSITORY_USER = "repository.user";
-    private static final String REPOSITORY_PASSWORD = "repository.password";
-    private static final String REPOSITORY_WATCHER_AUTOSYNC = "repository.watcher.autosync";
-
-    private static final String PROJECT_LAST_AUTOLOAD = "project.last.autoload";
-    private static final String PROJECT_LAST_NAME = "project.last.name";
-    private static final String PROJECT_USE_OS_USER = "project.use.os.user";
-    private static final String PROJECT_USER_NAME = "project.user.name";
-    private static final String PROJECT_IMPORT_NAME = "project.import.name";
-
-    private static final String STUDY_MODEL_DEPTH = "study.model.depth";
-
+    private static final Logger logger = Logger.getLogger(ApplicationSettingsImpl.class);
 
     private String cedeskAppDir;
     private String cedeskAppFile;
@@ -94,7 +71,7 @@ public class ApplicationSettings {
 
     private File file;
 
-    public ApplicationSettings(String cedeskAppDir, String cedeskAppFile) {
+    public ApplicationSettingsImpl(String cedeskAppDir, String cedeskAppFile) {
         this.cedeskAppDir = cedeskAppDir;
         this.cedeskAppFile = cedeskAppFile;
         File cedeskAppDirFile = new File(cedeskAppDir);
@@ -107,14 +84,17 @@ public class ApplicationSettings {
         }
     }
 
+    @Override
     public String getCedeskAppDir() {
         return cedeskAppDir;
     }
 
+    @Override
     public String getCedeskAppFile() {
         return cedeskAppFile;
     }
 
+    @Override
     public String getApplicationVersion() {
         return applicationVersion;
     }
@@ -123,6 +103,7 @@ public class ApplicationSettings {
         this.applicationVersion = applicationVersion;
     }
 
+    @Override
     public String getApplicationBuildTime() {
         return applicationBuildTime;
     }
@@ -131,6 +112,7 @@ public class ApplicationSettings {
         this.applicationBuildTime = applicationBuildTime;
     }
 
+    @Override
     public String getApplicationDistributionServerUrl() {
         return applicationDistributionServerUrl;
     }
@@ -139,6 +121,7 @@ public class ApplicationSettings {
         this.applicationDistributionServerUrl = applicationDistributionServerUrl;
     }
 
+    @Override
     public String getCedeskAppFileComment() {
         return cedeskAppFileComment;
     }
@@ -147,6 +130,7 @@ public class ApplicationSettings {
         this.cedeskAppFileComment = cedeskAppFileComment;
     }
 
+    @Override
     public String getDefaultRepositoryHost() {
         return defaultRepositoryHost;
     }
@@ -155,6 +139,7 @@ public class ApplicationSettings {
         this.defaultRepositoryHost = defaultRepositoryHost;
     }
 
+    @Override
     public boolean isDefaultRepositorySchemaCreate() {
         return defaultRepositorySchemaCreate;
     }
@@ -163,6 +148,7 @@ public class ApplicationSettings {
         this.defaultRepositorySchemaCreate = defaultRepositorySchemaCreate;
     }
 
+    @Override
     public String getDefaultRepositorySchemaName() {
         return defaultRepositorySchemaName;
     }
@@ -171,6 +157,7 @@ public class ApplicationSettings {
         this.defaultRepositorySchemaName = defaultRepositorySchemaName;
     }
 
+    @Override
     public String getDefaultRepositoryUser() {
         return defaultRepositoryUser;
     }
@@ -179,6 +166,7 @@ public class ApplicationSettings {
         this.defaultRepositoryUser = defaultRepositoryUser;
     }
 
+    @Override
     public String getDefaultRepositoryPassword() {
         return defaultRepositoryPassword;
     }
@@ -187,6 +175,7 @@ public class ApplicationSettings {
         this.defaultRepositoryPassword = defaultRepositoryPassword;
     }
 
+    @Override
     public boolean isDefaultRepositoryWatcherAutosync() {
         return defaultRepositoryWatcherAutosync;
     }
@@ -195,6 +184,7 @@ public class ApplicationSettings {
         this.defaultRepositoryWatcherAutosync = defaultRepositoryWatcherAutosync;
     }
 
+    @Override
     public boolean isDefaultProjectLastAutoload() {
         return defaultProjectLastAutoload;
     }
@@ -203,6 +193,7 @@ public class ApplicationSettings {
         this.defaultProjectLastAutoload = defaultProjectLastAutoload;
     }
 
+    @Override
     public String getDefaultProjectLastName() {
         return defaultProjectLastName;
     }
@@ -211,6 +202,7 @@ public class ApplicationSettings {
         this.defaultProjectLastName = defaultProjectLastName;
     }
 
+    @Override
     public boolean isDefaultProjectUseOsUser() {
         return defaultProjectUseOsUser;
     }
@@ -219,6 +211,7 @@ public class ApplicationSettings {
         this.defaultProjectUseOsUser = defaultProjectUseOsUser;
     }
 
+    @Override
     public String getDefaultProjectUserName() {
         return defaultProjectUserName;
     }
@@ -227,6 +220,7 @@ public class ApplicationSettings {
         this.defaultProjectUserName = defaultProjectUserName;
     }
 
+    @Override
     public String getDefaultProjectImportName() {
         return defaultProjectImportName;
     }
@@ -235,6 +229,7 @@ public class ApplicationSettings {
         this.defaultProjectImportName = defaultProjectImportName;
     }
 
+    @Override
     public String getDefaultStudyModelDepth() {
         return defaultStudyModelDepth;
     }
@@ -243,6 +238,7 @@ public class ApplicationSettings {
         this.defaultStudyModelDepth = defaultStudyModelDepth;
     }
 
+    @Override
     public String getRepositoryJdbcUrlPattern() {
         return repositoryJdbcUrlPattern;
     }
@@ -251,6 +247,7 @@ public class ApplicationSettings {
         this.repositoryJdbcUrlPattern = repositoryJdbcUrlPattern;
     }
 
+    @Override
     public String getRepositorySchemaVersion() {
         return repositorySchemaVersion;
     }
@@ -259,6 +256,9 @@ public class ApplicationSettings {
         this.repositorySchemaVersion = repositorySchemaVersion;
     }
 
+
+    //--------------------------------------
+    @Override
     public String getRepositoryHost() {
         return repositoryHost;
     }
@@ -267,6 +267,7 @@ public class ApplicationSettings {
         this.repositoryHost = repositoryHost;
     }
 
+    @Override
     public boolean isRepositorySchemaCreate() {
         return repositorySchemaCreate;
     }
@@ -275,6 +276,7 @@ public class ApplicationSettings {
         this.repositorySchemaCreate = repositorySchemaCreate;
     }
 
+    @Override
     public String getRepositorySchemaName() {
         return repositorySchemaName;
     }
@@ -283,6 +285,7 @@ public class ApplicationSettings {
         this.repositorySchemaName = repositorySchemaName;
     }
 
+    @Override
     public String getRepositoryUser() {
         return repositoryUser;
     }
@@ -291,6 +294,7 @@ public class ApplicationSettings {
         this.repositoryUser = repositoryUser;
     }
 
+    @Override
     public String getRepositoryPassword() {
         return repositoryPassword;
     }
@@ -299,6 +303,7 @@ public class ApplicationSettings {
         this.repositoryPassword = repositoryPassword;
     }
 
+    @Override
     public boolean isRepositoryWatcherAutosync() {
         return repositoryWatcherAutosync;
     }
@@ -307,6 +312,7 @@ public class ApplicationSettings {
         this.repositoryWatcherAutosync = repositoryWatcherAutosync;
     }
 
+    @Override
     public boolean isProjectLastAutoload() {
         return projectLastAutoload;
     }
@@ -315,6 +321,7 @@ public class ApplicationSettings {
         this.projectLastAutoload = projectLastAutoload;
     }
 
+    @Override
     public String getProjectLastName() {
         return projectLastName;
     }
@@ -323,6 +330,7 @@ public class ApplicationSettings {
         this.projectLastName = projectLastName;
     }
 
+    @Override
     public boolean isProjectUseOsUser() {
         return projectUseOsUser;
     }
@@ -331,6 +339,7 @@ public class ApplicationSettings {
         this.projectUseOsUser = projectUseOsUser;
     }
 
+    @Override
     public String getProjectUserName() {
         return projectUserName;
     }
@@ -339,6 +348,7 @@ public class ApplicationSettings {
         this.projectUserName = projectUserName;
     }
 
+    @Override
     public String getProjectImportName() {
         return projectImportName;
     }
@@ -347,6 +357,7 @@ public class ApplicationSettings {
         this.projectImportName = projectImportName;
     }
 
+    @Override
     public String getStudyModelDepth() {
         return studyModelDepth;
     }
@@ -356,102 +367,127 @@ public class ApplicationSettings {
     }
 
     //-------------------------------------
+    @Override
     public void storeRepositoryHost() {
         this.storeRepositoryHost(defaultRepositoryHost);
     }
 
+    @Override
     public void storeRepositoryHost(String repositoryHost) {
         this.setRepositoryHost(repositoryHost);
     }
 
+    @Override
     public void storeRepositorySchemaCreate() {
         this.storeRepositorySchemaCreate(defaultRepositorySchemaCreate);
     }
 
+    @Override
     public void storeRepositorySchemaCreate(boolean repositorySchemaCreate) {
         this.setRepositorySchemaCreate(repositorySchemaCreate);
     }
 
+    @Override
     public void storeRepositorySchemaName() {
         this.storeRepositorySchemaName(defaultRepositorySchemaName);
     }
 
+    @Override
     public void storeRepositorySchemaName(String repositorySchemaName) {
         this.setRepositorySchemaName(repositorySchemaName);
     }
 
+    @Override
     public void storeRepositoryUser() {
         this.storeRepositoryUser(defaultRepositoryUser);
     }
 
+    @Override
     public void storeRepositoryUser(String repositoryUser) {
         this.setRepositoryUser(repositoryUser);
     }
 
+    @Override
     public void storeRepositoryPassword() {
         this.storeRepositoryPassword(defaultRepositoryPassword);
     }
 
+    @Override
     public void storeRepositoryPassword(String repositoryPassword) {
         this.setRepositoryPassword(repositoryPassword);
     }
 
+    @Override
     public void storeRepositoryWatcherAutosync() {
         this.storeRepositoryWatcherAutosync(defaultRepositoryWatcherAutosync);
     }
 
+    @Override
     public void storeRepositoryWatcherAutosync(boolean repositoryWatcherAutosync) {
         this.setRepositoryWatcherAutosync(repositoryWatcherAutosync);
     }
 
+    @Override
     public void storeProjectLastAutoload() {
         this.storeProjectLastAutoload(defaultProjectLastAutoload);
     }
 
+    @Override
     public void storeProjectLastAutoload(boolean projectLastAutoload) {
         this.setProjectLastAutoload(projectLastAutoload);
     }
 
+    @Override
     public void storeProjectLastName() {
         this.storeProjectLastName(defaultProjectLastName);
     }
 
+    @Override
     public void storeProjectLastName(String projectLastName) {
         this.setProjectLastName(projectLastName);
     }
 
+    @Override
     public void storeProjectUseOsUser() {
         this.storeProjectUseOsUser(defaultProjectUseOsUser);
     }
 
+    @Override
     public void storeProjectUseOsUser(boolean projectUseOsUser) {
         this.setProjectUseOsUser(projectUseOsUser);
     }
 
+    @Override
     public void storeProjectUserName() {
         this.storeProjectUserName(defaultProjectUserName);
     }
 
+    @Override
     public void storeProjectUserName(String projectUserName) {
         this.setProjectUserName(projectUserName);
     }
 
+    @Override
     public void storeProjectImportName() {
         this.storeProjectImportName(defaultProjectImportName);
     }
 
+    @Override
     public void storeProjectImportName(String projectImportName) {
         this.setProjectImportName(projectImportName);
     }
 
+    @Override
     public void storeStudyModelDepth() {
         this.storeStudyModelDepth(defaultStudyModelDepth);
     }
 
+    @Override
     public void storeStudyModelDepth(String studyModelDepth) {
         this.setStudyModelDepth(studyModelDepth);
     }
 
+    @Override
     public void save() {
         try (FileWriter fileWriter = new FileWriter(file)) {
             Properties applicationSettings = new Properties();

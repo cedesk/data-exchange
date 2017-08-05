@@ -16,7 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import ru.skoltech.cedl.dataexchange.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
 

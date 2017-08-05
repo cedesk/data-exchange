@@ -19,8 +19,8 @@ package ru.skoltech.cedl.dataexchange.db;
 import org.hibernate.envers.EntityTrackingRevisionListener;
 import org.hibernate.envers.RevisionType;
 import org.springframework.context.ApplicationContext;
-import ru.skoltech.cedl.dataexchange.ApplicationContextInitializer;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 
 import java.io.Serializable;
 

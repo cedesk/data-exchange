@@ -17,55 +17,11 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:task="http://www.springframework.org/schema/task"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans      http://www.springframework.org/schema/beans/spring-beans.xsd
-                           http://www.springframework.org/schema/context    http://www.springframework.org/schema/context/spring-context.xsd
-                           http://www.springframework.org/schema/util       http://www.springframework.org/schema/util/spring-util.xsd
-                           http://www.springframework.org/schema/task       http://www.springframework.org/schema/task/spring-task.xsd">
-
-    <import resource="context-service.xml" />
-
-    <context:property-placeholder location="classpath:cedesk.properties" ignore-unresolvable="true"  system-properties-mode="OVERRIDE"/>
-    <context:property-placeholder location="file:${cedesk.app.dir}/${cedesk.app.file}" ignore-unresolvable="true" system-properties-mode="OVERRIDE"/>
-
-    <bean id="applicationSettings" class="ru.skoltech.cedl.dataexchange.ApplicationSettings">
-        <constructor-arg name="cedeskAppDir" value="${cedesk.app.dir}" />
-        <constructor-arg name="cedeskAppFile" value="${cedesk.app.file}" />
-
-        <property name="applicationVersion" value="${application.version}" />
-        <property name="applicationBuildTime" value="${application.build.time}" />
-        <property name="applicationDistributionServerUrl" value="${application.distribution.server.url}" />
-        <property name="cedeskAppFileComment" value="${cedesk.app.file.comment}" />
-        <property name="defaultRepositoryHost" value="${default.repository.host}" />
-        <property name="defaultRepositorySchemaCreate" value="${default.repository.schema.create}" />
-        <property name="defaultRepositorySchemaName" value="${default.repository.schema.name}" />
-        <property name="defaultRepositoryUser" value="${default.repository.user}" />
-        <property name="defaultRepositoryPassword" value="${default.repository.password}" />
-        <property name="defaultRepositoryWatcherAutosync" value="${default.repository.watcher.autosync}" />
-        <property name="defaultProjectLastAutoload" value="${default.project.last.autoload}" />
-        <property name="defaultProjectLastName" value="${default.project.last.name}" />
-        <property name="defaultProjectUseOsUser" value="${default.project.use.os.user}" />
-        <property name="defaultProjectUserName" value="${default.project.user.name}" />
-        <property name="defaultProjectImportName" value="${default.project.import.name}" />
-        <property name="defaultStudyModelDepth" value="${study.model.depth}" />
-        <property name="repositoryJdbcUrlPattern" value="${repository.jdbc.url.pattern}" />
-        <property name="repositorySchemaVersion" value="${repository.schema.version}" />
-
-        <property name="repositoryHost" value="${repository.host}" />
-        <property name="repositorySchemaCreate" value="${repository.schema.create}" />
-        <property name="repositorySchemaName" value="${repository.schema.name}" />
-        <property name="repositoryUser" value="${repository.user}" />
-        <property name="repositoryPassword" value="${repository.password}" />
-        <property name="repositoryWatcherAutosync" value="${repository.watcher.autosync}" />
-        <property name="projectLastAutoload" value="${project.last.autoload}" />
-        <property name="projectLastName" value="${project.last.name}" />
-        <property name="projectUseOsUser" value="${project.use.os.user}" />
-        <property name="projectUserName" value="${project.user.name}" />
-        <property name="projectImportName" value="${project.import.name}" />
-        <property name="studyModelDepth" value="${study.model.depth}" />
-    </bean>
+       xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util   http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/task   http://www.springframework.org/schema/task/spring-task.xsd">
 
     <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine" />
 
@@ -80,9 +36,8 @@
         <property name="project" ref="project" />
     </bean>
 
-    <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" init-method="init" >
+    <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" >
         <property name="applicationSettings" ref="applicationSettings" />
-        <property name="repositoryManager" ref="repositoryManager" />
         <property name="repositoryService" ref="repositoryService" />
         <property name="repositoryStateMachine" ref="repositoryStateMachine" />
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry" />
@@ -95,7 +50,6 @@
         <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="unitManagementService" ref="unitManagementService" />
     </bean>
-
 
     <util:map id="builderRegistry" map-class="java.util.HashMap">
         <entry value-ref="simpleSystemBuilder">
@@ -120,12 +74,6 @@
 
     <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry" >
         <property name="userRoleManagementService" ref="userRoleManagementService" />
-    </bean>
-
-    <bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-        <property name="corePoolSize" value="3" />
-        <property name="maxPoolSize" value="10" />
-        <property name="waitForTasksToCompleteOnShutdown" value="true" />
     </bean>
 
     <!-- Schedule a task for regular checking new version of remote study -->

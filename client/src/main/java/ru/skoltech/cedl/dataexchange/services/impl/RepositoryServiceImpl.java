@@ -22,11 +22,14 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.ApplicationProperty;
 import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.services.PersistenceRepositoryService;
+import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.structure.model.*;
@@ -45,27 +48,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementation of {@link PersistenceRepositoryService}.
+ * Implementation of {@link RepositoryService}.
  *
  * Created by dknoll on 24/05/15.
  */
-public class PersistenceRepositoryServiceImpl implements PersistenceRepositoryService {
+public class RepositoryServiceImpl implements RepositoryService {
 
-    private static final Logger logger = Logger.getLogger(PersistenceRepositoryServiceImpl.class);
+    private static final Logger logger = Logger.getLogger(RepositoryServiceImpl.class);
 
     private static final long SCHEME_VERSION_APPLICATION_PROPERTY_ID = 1;
     private static final String SCHEME_VERSION_APPLICATION_PROPERTY_NAME = "version";
 
+    private ApplicationSettings applicationSettings;
+
+    @PersistenceContext
     private EntityManager entityManager;
 
-    @Override
-    public void setEntityManager(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
     }
 
     @Override
     public String toString() {
-        return "PersistenceRepositoryServiceImpl{" +
+        return "RepositoryServiceImpl{" +
                 entityManager.getProperties() +
                 "}";
     }
@@ -427,6 +432,7 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
         }
     }
 
+    @Override
     public boolean storeSchemeVersion(String schemeVersion) throws RepositoryException {
         try {
             entityManager.setFlushMode(FlushModeType.AUTO);
@@ -444,6 +450,69 @@ public class PersistenceRepositoryServiceImpl implements PersistenceRepositorySe
         } catch (Exception e) {
             throw new RepositoryException("Storing ApplicationProperty failed.", e);
         }
+    }
+
+    @Override
+    public boolean checkAndStoreSchemeVersion() {
+        String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
+        String actualSchemaVersion = null;
+        try {
+            actualSchemaVersion = this.loadSchemeVersion();
+        } catch (RepositoryException e) {
+            logger.debug("error loading the applications version property", e);
+        }
+        if (actualSchemaVersion == null) {
+            try {
+                return this.storeSchemeVersion(currentSchemaVersion);
+            } catch (RepositoryException e) {
+                logger.debug("error storing the applications version property", e);
+                return false;
+            }
+        }
+
+        if (Utils.compareVersions(actualSchemaVersion, currentSchemaVersion) > 0) {
+            StatusLogger.getInstance().log("Downgrade your CEDESK Client! "
+                    + "Current Application Version (" + currentSchemaVersion + ") "
+                    + "is older than current DB Schema Version " + actualSchemaVersion);
+            return false;
+        }
+
+        try {
+            return this.storeSchemeVersion(currentSchemaVersion);
+        } catch (RepositoryException e) {
+            logger.debug("error storing the applications version property", e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean checkSchemeVersion() {
+        String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
+        String actualSchemaVersion = null;
+        try {
+            actualSchemaVersion = this.loadSchemeVersion();
+        } catch (RepositoryException e) {
+            logger.debug("error loading the applications version property", e);
+        }
+        if (actualSchemaVersion == null) {
+            logger.error("No DB Schema Version!");
+            return false;
+        }
+        int versionCompare = Utils.compareVersions(actualSchemaVersion, currentSchemaVersion);
+
+        if (versionCompare < 0) {
+            StatusLogger.getInstance().log("Upgrade your CEDESK Client! "
+                    + "Current Application Version requires a DB Schema Version " + currentSchemaVersion + ", "
+                    + "which is incompatible with current DB Schema Version " + actualSchemaVersion);
+            return false;
+        }
+        if (versionCompare > 0) {
+            StatusLogger.getInstance().log("Have the administrator upgrade the DB Schema! "
+                    + "Current Application Version requires a DB Schema Version " + currentSchemaVersion + ", "
+                    + "which is incompatible with current DB Schema Version " + actualSchemaVersion);
+            return false;
+        }
+        return true;
     }
 
 }

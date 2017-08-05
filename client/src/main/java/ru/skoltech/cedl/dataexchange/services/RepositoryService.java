@@ -69,6 +69,7 @@ public interface RepositoryService {
     @Transactional
     UnitManagement storeUnitManagement(UnitManagement unitManagement) throws RepositoryException;
 
+    @Transactional
     List<ParameterRevision> getChangeHistory(ParameterModel parameterModel) throws RepositoryException;
 
     CustomRevisionEntity getLastRevision(PersistedEntity persistedEntity);
@@ -80,5 +81,11 @@ public interface RepositoryService {
 
     String loadSchemeVersion()  throws RepositoryException;
 
+    @Transactional
     boolean storeSchemeVersion(String schemeVersion) throws RepositoryException;
+
+    @Transactional
+    boolean checkAndStoreSchemeVersion();
+
+    boolean checkSchemeVersion();
 }

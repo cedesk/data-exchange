@@ -17,7 +17,7 @@
 package ru.skoltech.cedl.dataexchange.logging;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 import ru.skoltech.cedl.dataexchange.structure.Project;

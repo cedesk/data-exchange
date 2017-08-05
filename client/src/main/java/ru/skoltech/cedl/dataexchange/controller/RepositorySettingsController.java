@@ -30,9 +30,9 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.services.RepositoryManager;
+import ru.skoltech.cedl.dataexchange.services.RepositoryConnectionService;
 
 import java.net.URL;
 import java.util.Optional;
@@ -76,7 +76,7 @@ public class RepositorySettingsController implements Initializable {
     @FXML
     private Button saveButton;
 
-    private RepositoryManager repositoryManager;
+    private RepositoryConnectionService repositoryConnectionService;
     private FileStorageService fileStorageService;
     private ApplicationSettings applicationSettings;
     private Executor executor;
@@ -96,8 +96,8 @@ public class RepositorySettingsController implements Initializable {
         this.applicationSettings = applicationSettings;
     }
 
-    public void setRepositoryManager(RepositoryManager repositoryManager) {
-        this.repositoryManager = repositoryManager;
+    public void setRepositoryConnectionService(RepositoryConnectionService repositoryConnectionService) {
+        this.repositoryConnectionService = repositoryConnectionService;
     }
 
     public void setRepositorySettingsListener(RepositorySettingsListener repositorySettingsListener) {
@@ -106,7 +106,6 @@ public class RepositorySettingsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         String applicationDirectory = fileStorageService.applicationDirectory().getAbsolutePath();
         String repositorySchemaName = applicationSettings.getRepositorySchemaName();
         String repositoryHost = applicationSettings.getRepositoryHost();
@@ -134,6 +133,7 @@ public class RepositorySettingsController implements Initializable {
 
         saveButton.disableProperty().bind(Bindings.not(changed));
 
+        this.test();
         logger.info("initialized");
     }
 
@@ -209,12 +209,13 @@ public class RepositorySettingsController implements Initializable {
         String repositoryUser = repositoryUserTextField.getText();
         String repositoryPassword = repositoryPasswordTextField.getText();
 
-        return repositoryManager.checkRepositoryConnection(repositoryHost, repositorySchemaName, repositoryUser, repositoryPassword);
+        return repositoryConnectionService.checkRepositoryConnection(repositoryHost, repositorySchemaName,
+                repositoryUser, repositoryPassword);
     }
 
     private void apply() {
-        if (repositorySettingsListener == null) {
-            return;
+        if (repositorySettingsListener != null) {
+            repositorySettingsListener.repositorySettingsChanged();
         }
 
         String repositoryHost = repositoryHostTextField.getText();
@@ -222,8 +223,11 @@ public class RepositorySettingsController implements Initializable {
         String repositoryPassword = repositoryPasswordTextField.getText();
         boolean repositoryWatcherAutosync = repositoryWatcherAutosyncCheckBox.isSelected();
 
-        repositorySettingsListener.repositorySettingsChanged(repositoryHost, repositoryUser,
-                repositoryPassword, repositoryWatcherAutosync);
+        applicationSettings.storeRepositoryHost(repositoryHost);
+        applicationSettings.storeRepositoryUser(repositoryUser);
+        applicationSettings.storeRepositoryPassword(repositoryPassword);
+        applicationSettings.storeRepositoryWatcherAutosync(repositoryWatcherAutosync);
+        applicationSettings.save();
 
         logger.info("applied");
     }
@@ -238,7 +242,6 @@ public class RepositorySettingsController implements Initializable {
      * Is called then user has new applied changes.
      */
     public interface RepositorySettingsListener {
-        void repositorySettingsChanged(String repositoryHost, String repositoryUser,
-                                          String repositoryPassword, boolean repositoryWatcherAutosync);
+        void repositorySettingsChanged();
     }
 }

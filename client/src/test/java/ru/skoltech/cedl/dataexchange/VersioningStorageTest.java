@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
@@ -39,9 +40,6 @@ public class VersioningStorageTest extends AbstractApplicationContextTest {
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        applicationSettings.setProjectUseOsUser(false);
-
         systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
     }
 

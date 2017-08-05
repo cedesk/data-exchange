@@ -16,31 +16,29 @@
 
 package ru.skoltech.cedl.dataexchange.services;
 
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-
-import javax.transaction.Transactional;
-
 /**
- * Manager of repository connection.
- * Must contains special utilities only for this purpose.
- * Operations on the entities reside on the {@link RepositoryService}
- * implementations.
+ * Service for repository connection operations.
  *
- * Created by Nikolay Groshkov on 04-Jul-17.
+ * Created by Nikolay Groshkov on 04-Aug-17.
  */
-public interface RepositoryManager {
+public interface RepositoryConnectionService {
 
     /**
-     * Constructs current repository connection.
+     * Create repository URL with default hostname and schema.
      *
-     * @throws RepositoryException then construction is impossible for some reason.
+     * @return repository URL
      */
-    void createRepositoryConnection() throws RepositoryException;
+    String createRepositoryUrl();
 
     /**
-     * Release current repository connection.
+     * Create repository URL.
+     *
+     * @param hostName host name
+     * @param schema schema name
+     * @return repository URL
      */
-    void releaseRepositoryConnection();
+    String createRepositoryUrl(String hostName, String schema);
+
 
     /**
      * Check database connection based on passed parameters.
@@ -52,20 +50,5 @@ public interface RepositoryManager {
      * @return <i>true</i> if connection is possible, <i>false</i> - if opposite
      */
     boolean checkRepositoryConnection(String hostName, String schema, String userName, String password);
-
-    /**
-     * Update the current state of scheme.
-     *
-     * @return <i>true</i> if schema has been update successfully, <i>false</i> - if opposite
-     */
-    @Transactional
-    boolean updateRepositoryScheme();
-
-    /**
-     * Validate the current state of scheme.
-     *
-     * @return <i>true</i> if schema has been validated successfully, <i>false</i> - if opposite
-     */
-    boolean validateRepositoryScheme();
 
 }

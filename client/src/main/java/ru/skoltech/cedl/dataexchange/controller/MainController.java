@@ -43,6 +43,7 @@ import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
 import ru.skoltech.cedl.dataexchange.*;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
 import ru.skoltech.cedl.dataexchange.services.*;
@@ -169,6 +170,10 @@ public class MainController implements Initializable {
 
     public void setExecutor(Executor executor) {
         this.executor = executor;
+    }
+
+    public void init(){
+        project.start();
     }
 
     @Override
@@ -692,16 +697,8 @@ public class MainController implements Initializable {
             stage.initOwner(getAppWindow());
 
             RepositorySettingsController controller = loader.getController();
-            controller.setRepositorySettingsListener((repositoryHost, repositoryUser,
-                                                      repositoryPassword, repositoryWatcherAutosync) -> {
-                this.quit();
-                applicationSettings.storeRepositoryHost(repositoryHost);
-                applicationSettings.storeRepositoryUser(repositoryUser);
-                applicationSettings.storeRepositoryPassword(repositoryPassword);
-                applicationSettings.storeRepositoryWatcherAutosync(repositoryWatcherAutosync);
-                applicationSettings.save();
-                //TODO: add auto restart application
-            });
+            //TODO: add auto restart application
+            controller.setRepositorySettingsListener(this::quit);
 
             stage.setOnCloseRequest(event -> controller.close());
             stage.showAndWait();
@@ -837,7 +834,7 @@ public class MainController implements Initializable {
         }
     }
 
-    public void terminate() {
+    public void destroy() {
         try {
             actionLogger.log(ActionLogger.ActionType.APPLICATION_STOP, "");
         } catch (Throwable ignore) {
@@ -861,11 +858,10 @@ public class MainController implements Initializable {
 
     public void checkRepository() {
         executor.execute(() -> {
-            boolean validRepository = project.checkRepository();
+            boolean validRepository = project.checkRepositoryScheme();
             if (!validRepository) {
                 Platform.runLater(() -> MainController.this.openRepositorySettingsDialog(null));
             } else {
-                project.connectRepository();
                 if (!project.checkUser()) {
                     Platform.runLater(this::displayInvalidUserDialog);
                 }
