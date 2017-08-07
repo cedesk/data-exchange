@@ -19,10 +19,10 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.repository.user.UserManagementRepository;
 import ru.skoltech.cedl.dataexchange.services.UserManagementService;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 /**
  * Created by dknoll on 09.06.2015
@@ -30,19 +30,21 @@ import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 public class UserManagementStorageTest extends AbstractApplicationContextTest {
 
     private UserManagementService userManagementService;
+    private UserManagementRepository userManagementRepository;
 
     @Before
     public void prepare() {
         userManagementService = context.getBean(UserManagementService.class);
+        userManagementRepository = context.getBean(UserManagementRepository.class);
     }
 
     @Test
-    public void testStoreAndRetrieveUserManagement() throws RepositoryException {
+    public void testStoreAndRetrieveUserManagement() {
         UserManagement userManagement = userManagementService.createDefaultUserManagement();
 
-        repositoryService.storeUserManagement(userManagement);
+        userManagementRepository.saveAndFlush(userManagement);
 
-        UserManagement userManagement1 = repositoryService.loadUserManagement();
+        UserManagement userManagement1 = userManagementRepository.findOne(UserManagementRepository.IDENTIFIER);
 
         Assert.assertEquals(userManagement, userManagement1);
     }

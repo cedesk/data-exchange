@@ -21,8 +21,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 
 import java.io.IOException;

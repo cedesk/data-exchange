@@ -22,15 +22,15 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.model.ExternalLinksTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.services.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

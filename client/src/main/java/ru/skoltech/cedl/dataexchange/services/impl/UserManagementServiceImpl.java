@@ -17,13 +17,15 @@
 package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.services.UserManagementService;
-import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
 
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static ru.skoltech.cedl.dataexchange.repository.user.UserManagementRepository.IDENTIFIER;
 
 /**
  * Created by dknoll on 13/05/15.
@@ -48,7 +50,7 @@ public class UserManagementServiceImpl implements UserManagementService {
     @Override
     public Map<String, User> userMap(UserManagement userManagement) {
         return userManagement.getUsers().stream().collect(
-                Collectors.toMap(User::getUserName, Function.<User>identity()));
+                Collectors.toMap(User::getUserName, Function.identity()));
     }
 
     @Override

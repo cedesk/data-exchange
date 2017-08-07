@@ -20,7 +20,7 @@ import org.junit.Before;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 
 import java.io.File;
 import java.net.URL;

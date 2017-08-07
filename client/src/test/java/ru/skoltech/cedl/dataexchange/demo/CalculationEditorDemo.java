@@ -21,9 +21,13 @@ import javafx.scene.control.Dialog;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.control.CalculationEditor;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
 
 import java.util.*;
 

@@ -16,10 +16,10 @@
 
 package ru.skoltech.cedl.dataexchange.services;
 
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.*;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.*;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +30,13 @@ import java.util.Map;
  * Created by Nikolay Groshkov on 26-Jul-17.
  */
 public interface UserRoleManagementService {
+
+    /**
+     * Build {@link UserRoleManagement} which contains <i>Admin</i> {@link Discipline} with full rights.
+     *
+     * @return UserRoleManagement instance
+     */
+    UserRoleManagement createUserRoleManagement();
 
     /**
      * Create {@link UserRoleManagement} based on {@link SystemModel} subsystems and

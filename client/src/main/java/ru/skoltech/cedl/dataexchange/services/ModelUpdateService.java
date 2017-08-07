@@ -18,8 +18,8 @@ package ru.skoltech.cedl.dataexchange.services;
 
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 
 import java.util.List;
 import java.util.function.Consumer;

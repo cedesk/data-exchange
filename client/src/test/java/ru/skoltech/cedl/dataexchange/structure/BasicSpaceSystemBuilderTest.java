@@ -19,7 +19,12 @@ package ru.skoltech.cedl.dataexchange.structure;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.model.ElementModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 
 import java.util.List;
 

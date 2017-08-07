@@ -33,7 +33,7 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
-import ru.skoltech.cedl.dataexchange.users.model.User;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;

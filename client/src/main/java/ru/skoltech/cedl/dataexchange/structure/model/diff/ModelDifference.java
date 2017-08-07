@@ -16,8 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 
 /**
  * Created by D.Knoll on 20.07.2015.

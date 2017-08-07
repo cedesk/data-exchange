@@ -19,15 +19,15 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.repository.StudyRepository;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.util.List;
 
@@ -38,42 +38,44 @@ public class StudyStorageTest extends AbstractApplicationContextTest {
 
     private UserRoleManagementService userRoleManagementService;
     private SystemBuilder systemBuilder;
+    private StudyRepository studyRepository;
 
     @Before
     public void prepare() {
         userRoleManagementService = context.getBean(UserRoleManagementService.class);
         systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
+        studyRepository = context.getBean(StudyRepository.class);
     }
 
     @Test
-    public void testStoreAndListStudies() throws RepositoryException {
+    public void testStoreAndListStudies() {
         String name1 = "testStudy-1";
         Study study1 = makeStudy(name1, 1);
-        repositoryService.storeStudy(study1);
+        studyRepository.saveAndFlush(study1);
 
         String name2 = "testStudy-2";
         Study study2 = makeStudy(name2, 1);
-        repositoryService.storeStudy(study2);
+        studyRepository.saveAndFlush(study2);
 
         String name3 = "testStudy-3";
         Study study3 = makeStudy(name3, 1);
-        repositoryService.storeStudy(study3);
+        studyRepository.saveAndFlush(study3);
 
         String[] createdStudies = new String[]{name1, name2, name3};
-        List<String> storedStudies = repositoryService.listStudies();
+        List<String> storedStudyNames = studyRepository.findAllNames();
 
-        Assert.assertArrayEquals(createdStudies, storedStudies.toArray());
+        Assert.assertArrayEquals(createdStudies, storedStudyNames.toArray());
     }
 
     @Test
-    public void testStoreAndRetrieveStudy() throws RepositoryException {
+    public void testStoreAndRetrieveStudy() {
         String name = "testStudy";
         Study study = makeStudy(name, 2);
         System.out.println(study);
 
-        Study study0 = repositoryService.storeStudy(study);
+        Study study0 = studyRepository.saveAndFlush(study);
 
-        Study study1 = repositoryService.loadStudy(name);
+        Study study1 = studyRepository.findByName(name);
         System.out.println(study1);
 
         Assert.assertEquals(study.getId(), study1.getId());

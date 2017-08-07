@@ -49,6 +49,8 @@
     <orderEntry type="library" name="Maven: org.aspectj:aspectjrt:1.8.10" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.25" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.slf4j:jcl-over-slf4j:1.7.25" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.data:spring-data-envers:1.1.6.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: joda-time:joda-time:2.8.2" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-autoconfigure:1.5.4.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot:1.5.4.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.hibernate:hibernate-core:5.2.10.Final" level="project" />

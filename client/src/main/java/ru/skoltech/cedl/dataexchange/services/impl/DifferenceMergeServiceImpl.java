@@ -23,7 +23,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
 import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ExternalModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.MergeException;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;

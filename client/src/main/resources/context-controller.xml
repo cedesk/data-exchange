@@ -30,7 +30,6 @@
         <property name="actionLogger" ref="actionLogger" />
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="systemBuilderFactory" ref="systemBuilderFactory" />
-        <property name="repositoryService" ref="repositoryService" />
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
         <property name="updateService" ref="updateService" />
@@ -51,7 +50,6 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.DiffController">
         <property name="project" ref="project" />
-        <property name="repositoryService" ref="repositoryService" />
         <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
     </bean>
@@ -91,11 +89,12 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController">
-        <property name="repositoryService" ref="repositoryService" />
+        <property name="parameterModelService" ref="parameterModelService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.ProjectSettingsController" >
         <property name="project" ref="project" />
+        <property name="applicationSettings" ref="applicationSettings"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.AboutController" />

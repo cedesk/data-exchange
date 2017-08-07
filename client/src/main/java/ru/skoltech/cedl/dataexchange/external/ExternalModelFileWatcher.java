@@ -21,7 +21,7 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.file.DirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.file.SimpleDirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 
 import java.io.File;
 import java.io.IOException;

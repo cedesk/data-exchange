@@ -35,8 +35,8 @@ import ru.skoltech.cedl.dataexchange.control.DiagramView;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 
 import javax.imageio.ImageIO;
 import java.io.File;

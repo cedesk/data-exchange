@@ -38,10 +38,10 @@ import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.entity.user.*;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.*;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 
 import java.net.URL;
 import java.util.*;

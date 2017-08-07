@@ -19,15 +19,19 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
        xmlns:tx="http://www.springframework.org/schema/tx"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       xsi:schemaLocation="http://www.springframework.org/schema/beans      http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/context    http://www.springframework.org/schema/context/spring-context.xsd
-                           http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd
-                           http://www.springframework.org/schema/tx    http://www.springframework.org/schema/tx/spring-tx.xsd">
+                           http://www.springframework.org/schema/util       http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/data/jpa   http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+                           http://www.springframework.org/schema/tx         http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <bean id="studyService" class="ru.skoltech.cedl.dataexchange.services.impl.StudyServiceImpl" >
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
     </bean>
+
+    <bean id="parameterModelService" class="ru.skoltech.cedl.dataexchange.services.impl.ParameterModelServiceImpl" />
 
     <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserManagementServiceImpl" />
 
@@ -45,6 +49,10 @@
         <property name="modelUpdateService" ref="modelUpdateService" />
     </bean>
 
+    <bean id="repositorySchemeService" class="ru.skoltech.cedl.dataexchange.services.impl.RepositorySchemeServiceImpl" >
+        <property name="applicationSettings" ref="applicationSettings" />
+    </bean>
+
     <bean id="updateService" class="ru.skoltech.cedl.dataexchange.services.impl.UpdateServiceImpl" >
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="jsoupService" ref="jsoupService" />
@@ -58,18 +66,17 @@
     </bean>
 
     <!-- persistence -->
-    <bean id="repositoryService" class="ru.skoltech.cedl.dataexchange.services.impl.RepositoryServiceImpl" >
-        <property name="applicationSettings" ref="applicationSettings" />
-    </bean>
-
     <context:annotation-config />
     <tx:annotation-driven />
+    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository" />
+    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository"
+                      factory-class="org.springframework.data.envers.repository.support.EnversRevisionRepositoryFactoryBean" />
 
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager" />
 
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="dataSource" ref="dataSource" />
-        <property name="packagesToScan" value="${hibernate.packages.to.scan}" />
+        <property name="packagesToScan" value="ru.skoltech.cedl.dataexchange.entity" />
         <property name="jpaVendorAdapter" >
             <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" >
                 <property name="databasePlatform" value="${hibernate.dialect}" />
@@ -98,5 +105,6 @@
     </bean>
 
     <bean id="modificationInterceptor"
-          class="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />
+          class="ru.skoltech.cedl.dataexchange.db.ModificationInterceptor" />
+
 </beans>

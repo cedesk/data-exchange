@@ -16,10 +16,10 @@
 
 package ru.skoltech.cedl.dataexchange.services;
 
-import ru.skoltech.cedl.dataexchange.structure.model.Calculation;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 
 import java.io.File;
 import java.io.IOException;

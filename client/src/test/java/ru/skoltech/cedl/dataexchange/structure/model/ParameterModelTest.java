@@ -19,6 +19,8 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 
 /**
  * Created by D.Knoll on 27.03.2015.

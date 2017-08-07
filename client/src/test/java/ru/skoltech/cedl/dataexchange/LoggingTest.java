@@ -18,12 +18,10 @@ package ru.skoltech.cedl.dataexchange;
 
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.logging.LogEntry;
-import ru.skoltech.cedl.dataexchange.services.RepositoryService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.repository.log.LogEntryRepository;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -33,18 +31,12 @@ import java.lang.reflect.InvocationTargetException;
 public class LoggingTest extends AbstractApplicationContextTest {
 
     private ActionLogger actionLogger;
-    private RepositoryService repositoryService;
+    private LogEntryRepository logEntryRepository;
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
-        repositoryService = context.getBean(RepositoryService.class);
-
-        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        Project project = context.getBean(Project.class);
-        actionLogger = new ActionLogger();
-        actionLogger.setApplicationSettings(applicationSettings);
-        actionLogger.setRepositoryService(repositoryService);
-        actionLogger.setProject(project);
+        actionLogger = context.getBean(ActionLogger.class);
+        logEntryRepository = context.getBean(LogEntryRepository.class);
     }
 
     @Test
@@ -58,7 +50,7 @@ public class LoggingTest extends AbstractApplicationContextTest {
         logEntry.setAction("test");
         logEntry.setUser("tester");
         logEntry.setClient("wrk-testing");
-        repositoryService.storeLog(logEntry);
+        logEntryRepository.saveAndFlush(logEntry);
 
         System.out.println(logEntry.toString());
     }

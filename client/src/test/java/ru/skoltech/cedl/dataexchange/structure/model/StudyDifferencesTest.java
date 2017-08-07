@@ -20,6 +20,8 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 

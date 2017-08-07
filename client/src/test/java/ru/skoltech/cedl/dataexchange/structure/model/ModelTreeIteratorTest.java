@@ -20,6 +20,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.ElementModel;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 
 import java.util.*;
 

@@ -17,12 +17,12 @@
 package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.*;
 import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -45,8 +45,17 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
     }
 
     @Override
+    public UserRoleManagement createUserRoleManagement() {
+        UserRoleManagement userRoleManagement = new UserRoleManagement();
+
+        Discipline adminDiscipline = new Discipline("Admin", userRoleManagement, true);
+        userRoleManagement.getDisciplines().add(adminDiscipline);
+        return userRoleManagement;
+    }
+
+    @Override
     public UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement) {
-        UserRoleManagement urm = UserRoleManagementFactory.createUserRoleManagement();
+        UserRoleManagement urm = this.createUserRoleManagement();
 
         // add a discipline for each subsystem
         for (ModelNode modelNode : systemModel.getSubNodes()) {
@@ -65,7 +74,7 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
 
     @Override
     public UserRoleManagement createDefaultUserRoleManagement(UserManagement userManagement) {
-        UserRoleManagement urm = UserRoleManagementFactory.createUserRoleManagement();
+        UserRoleManagement urm = this.createUserRoleManagement();
 
         // create Disciplines
         Discipline orbitDiscipline = new Discipline("Orbit", urm);

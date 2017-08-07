@@ -18,11 +18,11 @@ package ru.skoltech.cedl.dataexchange.services.impl;
 
 import ru.skoltech.cedl.dataexchange.services.StudyService;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 
 /**
  * Created by dknoll on 25/05/15.

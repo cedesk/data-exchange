@@ -21,14 +21,14 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 
 import java.util.Arrays;
 

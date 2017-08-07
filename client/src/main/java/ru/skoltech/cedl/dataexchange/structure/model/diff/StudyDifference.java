@@ -17,8 +17,12 @@
 package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Date;

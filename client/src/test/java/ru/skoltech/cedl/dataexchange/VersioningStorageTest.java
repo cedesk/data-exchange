@@ -19,13 +19,14 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.repository.model.SystemModelRepository;
+import ru.skoltech.cedl.dataexchange.services.ParameterModelService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -37,18 +38,22 @@ public class VersioningStorageTest extends AbstractApplicationContextTest {
 
     private static final String ADMIN = "admin";
     private SystemBuilder systemBuilder;
+    private ParameterModelService parameterModelService;
+    private SystemModelRepository systemModelRepository;
 
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
+        parameterModelService = context.getBean(ParameterModelService.class);
+        systemModelRepository = context.getBean(SystemModelRepository.class);
     }
 
     @Test
-    public void test() throws RepositoryException {
+    public void test() {
         systemBuilder.modelDepth(1);
         SystemModel systemModel = systemBuilder.build("testModel");
         System.out.println(systemModel);
-        repositoryService.storeSystemModel(systemModel);
+        systemModelRepository.saveAndFlush(systemModel);
 
         ParameterModel parameterModel = systemModel.getParameters().get(0);
         parameterModel.setName("parameter-1-renamed");
@@ -56,9 +61,9 @@ public class VersioningStorageTest extends AbstractApplicationContextTest {
         //ParameterModel newParameterModel = new ParameterModel("new-parameter-A", 3.1415);
         //systemModel.addParameter(newParameterModel);
 
-        repositoryService.storeSystemModel(systemModel);
+        systemModelRepository.saveAndFlush(systemModel);
 
-        List<ParameterRevision> changeHistory = repositoryService.getChangeHistory(parameterModel);
+        List<ParameterRevision> changeHistory = parameterModelService.parameterModelChangeHistory(parameterModel);
 
         Assert.assertEquals(2, changeHistory.size());
 

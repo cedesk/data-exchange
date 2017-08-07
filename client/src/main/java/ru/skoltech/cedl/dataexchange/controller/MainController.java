@@ -41,21 +41,29 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
-import ru.skoltech.cedl.dataexchange.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.skoltech.cedl.dataexchange.ApplicationPackage;
+import ru.skoltech.cedl.dataexchange.Identifiers;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.services.*;
+import ru.skoltech.cedl.dataexchange.repository.StudyRepository;
+import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
+import ru.skoltech.cedl.dataexchange.services.UpdateService;
+import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
-import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
-import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.awt.*;
@@ -117,12 +125,14 @@ public class MainController implements Initializable {
     private ApplicationSettings applicationSettings;
     private UserManagementService userManagementService;
     private SystemBuilderFactory systemBuilderFactory;
-    private RepositoryService repositoryService;
     private FileStorageService fileStorageService;
     private DifferenceMergeService differenceMergeService;
     private UpdateService updateService;
     private Executor executor;
     private ActionLogger actionLogger;
+
+    @Autowired
+    private StudyRepository studyRepository;
 
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
@@ -150,10 +160,6 @@ public class MainController implements Initializable {
 
     public void setSystemBuilderFactory(SystemBuilderFactory systemBuilderFactory) {
         this.systemBuilderFactory = systemBuilderFactory;
-    }
-
-    public void setRepositoryService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -330,13 +336,7 @@ public class MainController implements Initializable {
     }
 
     public void deleteProject(ActionEvent actionEvent) {
-        List<String> studyNames = null;
-        try {
-            studyNames = repositoryService.listStudies();
-        } catch (RepositoryException e) {
-            logger.error("error retrieving list of available studies");
-            return;
-        }
+        List<String> studyNames = studyRepository.findAllNames();
         if (studyNames.size() > 0) {
             Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
             if (studyChoice.isPresent()) {
@@ -361,8 +361,8 @@ public class MainController implements Initializable {
                             actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
                         }
                     }
-                } catch (RepositoryException re) {
-                    logger.error("Failed to delete the study!", re);
+                } catch (Exception e) {
+                    logger.error("Failed to delete the study!", e);
                 }
             }
         } else {
@@ -432,13 +432,7 @@ public class MainController implements Initializable {
                 Dialogues.showError("Invalid name", Identifiers.getProjectNameValidationDescription());
                 return;
             }
-            List<String> studyNames = null;
-            try {
-                studyNames = repositoryService.listStudies();
-            } catch (RepositoryException e) {
-                logger.error("error retrieving list of available studies");
-                return;
-            }
+            List<String> studyNames = studyRepository.findAllNames();
             if (studyNames != null && studyNames.contains(projectName)) {
                 Dialogues.showError("Invalid name", "A study with this name already exists in the repository!");
                 return;
@@ -595,13 +589,7 @@ public class MainController implements Initializable {
     }
 
     public void openProject(ActionEvent actionEvent) {
-        List<String> studyNames = null;
-        try {
-            studyNames = repositoryService.listStudies();
-        } catch (RepositoryException e) {
-            logger.error("error retrieving list of available studies");
-            return;
-        }
+        List<String> studyNames = studyRepository.findAllNames();
         if (studyNames.size() > 0) {
             Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
             if (studyChoice.isPresent()) {

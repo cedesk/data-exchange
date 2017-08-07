@@ -16,8 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.services;
 
-import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 
 import java.util.Map;
 
@@ -27,11 +27,6 @@ import java.util.Map;
  * Created by Nikolay Groshkov on 06-Jul-17.
  */
 public interface UserManagementService {
-
-    /**
-     * Default {@link UserManagement} id in the database
-     */
-    Long IDENTIFIER = 1L;
 
     /**
      * {@link User} name of administrator.

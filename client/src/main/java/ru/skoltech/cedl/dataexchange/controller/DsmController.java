@@ -31,7 +31,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.NumericalDSM;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 
 import java.net.URL;
 import java.util.ArrayList;

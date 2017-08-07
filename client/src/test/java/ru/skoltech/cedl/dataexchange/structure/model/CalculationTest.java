@@ -18,13 +18,14 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.junit.Assert;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Margin;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Margin;
+import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
 
 import java.util.ArrayList;
 
-import static ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument.Literal;
+import static ru.skoltech.cedl.dataexchange.entity.calculation.Argument.Literal;
 
 /**
  * Created by D.Knoll on 23.09.2015.

@@ -21,8 +21,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.context.ApplicationContext;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 
 import java.io.File;
 
@@ -39,8 +37,6 @@ public abstract class AbstractApplicationContextTest {
     private static File cedeskAppFile;
     protected static ApplicationContext context;
 
-    protected RepositoryService repositoryService;
-
     @BeforeClass
     public static void beforeClass() throws Exception {
         System.setProperty("user.home", new File("target").getAbsolutePath());
@@ -55,8 +51,7 @@ public abstract class AbstractApplicationContextTest {
     }
 
     @Before
-    public void before() throws RepositoryException {
-        repositoryService = context.getBean(RepositoryService.class);
+    public void before() {
     }
 
     @After

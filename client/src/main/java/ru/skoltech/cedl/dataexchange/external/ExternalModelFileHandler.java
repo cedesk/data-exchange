@@ -20,10 +20,10 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModelTreeIterator;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModelTreeIterator;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 
 import java.io.*;
 import java.nio.file.*;

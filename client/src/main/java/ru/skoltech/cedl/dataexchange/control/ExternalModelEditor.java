@@ -42,10 +42,10 @@ import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.services.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 
 import java.io.File;
 import java.io.IOException;

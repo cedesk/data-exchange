@@ -16,10 +16,14 @@
 
 package ru.skoltech.cedl.dataexchange.structure;
 
-import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 
 import java.util.LinkedList;
 import java.util.List;

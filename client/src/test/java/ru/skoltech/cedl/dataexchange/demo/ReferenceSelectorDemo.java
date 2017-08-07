@@ -22,12 +22,13 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.control.ReferenceSelector;
+import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
 import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
 
 import java.io.File;
 import java.lang.reflect.Field;

@@ -18,15 +18,17 @@ package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ClientApplication;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static ru.skoltech.cedl.dataexchange.repository.unit.UnitManagementRepository.IDENTIFIER;
 
 /**
  * Created by D.Knoll on 29.08.2015.

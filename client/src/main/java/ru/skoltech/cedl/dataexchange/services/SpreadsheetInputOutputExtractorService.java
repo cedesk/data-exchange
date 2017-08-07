@@ -19,8 +19,8 @@ package ru.skoltech.cedl.dataexchange.services;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 
 import java.util.List;
 

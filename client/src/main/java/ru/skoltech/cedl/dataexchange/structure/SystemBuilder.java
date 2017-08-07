@@ -17,12 +17,12 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -22,25 +22,33 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
+import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
+import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.repository.StudyRepository;
+import ru.skoltech.cedl.dataexchange.repository.unit.UnitManagementRepository;
+import ru.skoltech.cedl.dataexchange.repository.user.UserManagementRepository;
+import ru.skoltech.cedl.dataexchange.repository.user.UserRoleManagementRepository;
 import ru.skoltech.cedl.dataexchange.services.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
-import ru.skoltech.cedl.dataexchange.users.model.Discipline;
-import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +68,7 @@ public class Project {
     private static Logger logger = Logger.getLogger(Project.class);
 
     private ApplicationSettings applicationSettings;
-    private RepositoryService repositoryService;
+    private RepositorySchemeService repositorySchemeService;
     private RepositoryStateMachine repositoryStateMachine;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileWatcher externalModelFileWatcher;
@@ -71,6 +79,18 @@ public class Project {
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
+
+    @Autowired
+    private StudyRepository studyRepository;
+
+    @Autowired
+    private UserManagementRepository userManagementRepository;
+
+    @Autowired
+    private UserRoleManagementRepository userRoleManagementRepository;
+
+    @Autowired
+    private UnitManagementRepository unitManagementRepository;
 
     private String projectName;
     private Study study;
@@ -95,16 +115,12 @@ public class Project {
         });
     }
 
-    public ApplicationSettings getApplicationSettings() {
-        return applicationSettings;
-    }
-
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
     }
 
-    public void setRepositoryService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
+    public void setRepositorySchemeService(RepositorySchemeService repositorySchemeService) {
+        this.repositorySchemeService = repositorySchemeService;
     }
 
     public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
@@ -356,7 +372,7 @@ public class Project {
             return;
         }
         LocalTime startTime = LocalTime.now();
-        Long latestMod = repositoryService.getLastStudyModification(projectName);
+        Long latestMod = studyRepository.findLatestModelModificationByName(projectName);
         long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
         logger.info("checked repository study (" + checkDuration + "ms), " +
                 "last modification: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
@@ -380,15 +396,15 @@ public class Project {
     }
 
     public boolean checkRepositoryScheme() {
-        boolean validScheme = repositoryService.checkSchemeVersion();
+        boolean validScheme = repositorySchemeService.checkSchemeVersion();
         if (!validScheme && applicationSettings.isRepositorySchemaCreate()) {
-            validScheme = repositoryService.checkAndStoreSchemeVersion();
+            validScheme = repositorySchemeService.checkAndStoreSchemeVersion();
         }
         return validScheme;
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {
-        repositoryService.deleteStudy(studyName);
+        studyRepository.deleteByName(studyName);
     }
 
     public void start() {
@@ -418,16 +434,12 @@ public class Project {
     }
 
     public boolean loadLocalStudy() {
-        Study study = null;
-        try {
-            study = repositoryService.loadStudy(projectName);
-        } catch (RepositoryException e) {
-            logger.error("Study not found!", e);
-        } catch (Exception e) {
-            logger.error("Error loading study!", e);
-        }
-        if (study != null) {
-            setStudy(study);
+        Study study = studyRepository.findByName(projectName);
+
+        if (study == null) {
+            logger.error("Study not found!");
+        } else {
+            this.setStudy(study);
             Platform.runLater(this::loadRepositoryStudy);
             repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
             initializeStateOfExternalModels();
@@ -437,50 +449,45 @@ public class Project {
     }
 
     public boolean loadRepositoryStudy() {
-        Study repositoryStudy = null;
-        try {
-            // TODO: make more efficient, not to load the entire model, if it is not newer
-            repositoryStudy = repositoryService.loadStudy(projectName);
-        } catch (RepositoryException e) {
-            logger.error("Study not found!", e);
-        } catch (Exception e) {
-            logger.error("Error loading repositoryStudy!", e);
+        Study repositoryStudy = studyRepository.findByName(projectName);
+        this.setRepositoryStudy(repositoryStudy);
+        if (repositoryStudy == null) {
+            logger.error("Study not found!");
         }
-        setRepositoryStudy(repositoryStudy);
         return repositoryStudy != null;
     }
 
     public boolean loadUnitManagement() {
-        try {
-            unitManagement = repositoryService.loadUnitManagement();
+        unitManagement = unitManagementRepository.findOne(UnitManagementRepository.IDENTIFIER);
+        if (unitManagement != null) {
             return true;
-        } catch (RepositoryException e) {
-            logger.error("Error loading unit management. recreating new unit management.");
-            initializeUnitManagement();
         }
+        logger.error("Error loading unit management. recreating new unit management.");
+        initializeUnitManagement();
         return false;
     }
 
     public boolean loadUserManagement() {
-        try {
-            userManagement = repositoryService.loadUserManagement();
+        userManagement = userManagementRepository.findOne(UserManagementRepository.IDENTIFIER);
+        if (userManagement != null) {
             return true;
-        } catch (RepositoryException e) {
-            logger.error("Error loading user management. recreating new user management.");
-            initializeUserManagement();
         }
+
+        logger.error("Error loading user management. recreating new user management.");
+        initializeUserManagement();
         return false;
     }
 
     public boolean loadUserRoleManagement() {
-        try {
-            getStudy().setUserRoleManagement(repositoryService.loadUserRoleManagement(getStudy().getUserRoleManagement().getId()));
-            return true;
-        } catch (RepositoryException e) {
+        long userRoleManagementId = getStudy().getUserRoleManagement().getId();
+        UserRoleManagement newUserRoleManagement = userRoleManagementRepository.findOne(userRoleManagementId);
+        if (newUserRoleManagement == null) {
             logger.error("Error loading user role management. recreating new user role management.");
 //            initializeUserRoleManagement(); //TODO initialize default UserRoleManagement?
+            return false;
         }
-        return false;
+        this.getStudy().setUserRoleManagement(newUserRoleManagement);
+        return true;
     }
 
     public void markStudyModified() {
@@ -499,7 +506,7 @@ public class Project {
             // store URM separately before study, to prevent links to deleted subsystems have storing study fail
             storeUserRoleManagement();
         }
-        Study newStudy = repositoryService.storeStudy(this.study);
+        Study newStudy = studyRepository.saveAndFlush(this.study);
         updateExternalModelStateInCache();
         setStudy(newStudy);
         setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
@@ -510,9 +517,9 @@ public class Project {
 
     public boolean storeUnitManagement() {
         try {
-            unitManagement = repositoryService.storeUnitManagement(unitManagement);
+            unitManagement = unitManagementRepository.saveAndFlush(unitManagement);
             return true;
-        } catch (RepositoryException e) {
+        } catch (Exception e) {
             logger.error("Error storing unit management.", e);
         }
         return false;
@@ -520,9 +527,9 @@ public class Project {
 
     public boolean storeUserManagement() {
         try {
-            userManagement = repositoryService.storeUserManagement(userManagement);
+            userManagement = userManagementRepository.saveAndFlush(userManagement);
             return true;
-        } catch (RepositoryException e) {
+        } catch (Exception e) {
             logger.error("Error storing user management.", e);
         }
         return false;
@@ -530,10 +537,11 @@ public class Project {
 
     public boolean storeUserRoleManagement() {
         try {
-            UserRoleManagement userRoleManagement = repositoryService.storeUserRoleManagement(getStudy().getUserRoleManagement());
-            getStudy().setUserRoleManagement(userRoleManagement);
+            UserRoleManagement userRoleManagement = this.getStudy().getUserRoleManagement();
+            UserRoleManagement newUserRoleManagement = userRoleManagementRepository.saveAndFlush(userRoleManagement);
+            this.getStudy().setUserRoleManagement(newUserRoleManagement);
             return true;
-        } catch (RepositoryException e) {
+        } catch (Exception e) {
             logger.error("Error storing user role management.", e);
         }
         return false;
@@ -543,7 +551,6 @@ public class Project {
     public String toString() {
         final StringBuilder sb = new StringBuilder("Project{");
         sb.append("projectName='").append(projectName).append('\'');
-        sb.append(", repositoryService=").append(repositoryService);
         sb.append(", currentUser").append(currentUser);
         sb.append(", latestLoadedModification").append(latestLoadedModification);
         sb.append(", latestRepositoryModification").append(latestRepositoryModification);

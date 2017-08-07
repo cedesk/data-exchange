@@ -26,9 +26,9 @@ import javafx.scene.control.TitledPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.services.UserManagementService;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 
 import java.io.File;
 import java.net.URL;
@@ -64,8 +64,13 @@ public class ProjectSettingsController implements Initializable {
     @FXML
     private CheckBox autoloadOnStartupCheckbox;
 
+    private ApplicationSettings applicationSettings;
     private Project project;
     private ProjectSettingsListener projectSettingsListener;
+
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
 
     public void setProject(Project project) {
         this.project = project;
@@ -87,10 +92,10 @@ public class ProjectSettingsController implements Initializable {
         enableSyncCheckbox.setSelected(studySettings != null && studySettings.getSyncEnabled());
         enableSyncCheckbox.setDisable(studySettings == null);
 
-        useOsUserCheckbox.setSelected(project.getApplicationSettings().isProjectUseOsUser());
+        useOsUserCheckbox.setSelected(applicationSettings.isProjectUseOsUser());
         userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
-        userNameText.setText(project.getApplicationSettings().getProjectUserName());
-        autoloadOnStartupCheckbox.setSelected(project.getApplicationSettings().isProjectLastAutoload());
+        userNameText.setText(applicationSettings.getProjectUserName());
+        autoloadOnStartupCheckbox.setSelected(applicationSettings.isProjectLastAutoload());
 
         projectDirectoryText.setText(projectDataDir.getAbsolutePath());
     }

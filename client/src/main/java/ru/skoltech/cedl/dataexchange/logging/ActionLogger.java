@@ -17,9 +17,11 @@
 package ru.skoltech.cedl.dataexchange.logging;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.services.RepositoryService;
+import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.repository.log.LogEntryRepository;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 /**
@@ -30,8 +32,10 @@ public class ActionLogger {
     private static final Logger logger = Logger.getLogger(ActionLogger.class);
 
     private ApplicationSettings applicationSettings;
-    private RepositoryService repositoryService;
     private Project project;
+
+    @Autowired
+    private LogEntryRepository logEntryRepository;
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
@@ -41,14 +45,9 @@ public class ActionLogger {
         this.project = project;
     }
 
-    public void setRepositoryService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
-    }
-
     private static LogEntry buildEntry(String user, Long studyId, String action, String description) {
         String client = Utils.getFullHostname();
-        LogEntry logEntry = new LogEntry(user, client, action, description, studyId);
-        return logEntry;
+        return new LogEntry(user, client, action, description, studyId);
     }
 
     public void log(ActionType actionType, String description) {
@@ -60,10 +59,7 @@ public class ActionLogger {
         Long studyId = project.getStudy() != null ? project.getStudy().getId() : null;
         LogEntry logEntry = buildEntry(user, studyId, action, description);
         logger.info(logEntry.toString());
-        if (repositoryService == null) {
-            logger.error("Unable to store log in repository.");
-        }
-        repositoryService.storeLog(logEntry);
+        logEntryRepository.saveAndFlush(logEntry);
     }
 
     public enum ActionType {

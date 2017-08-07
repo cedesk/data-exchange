@@ -24,13 +24,13 @@ import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.model.ElementModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.Discipline;
-import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.entity.model.ElementModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 
 /**
  * Created by D.Knoll on 28.05.2015.

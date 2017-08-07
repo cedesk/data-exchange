@@ -25,10 +25,10 @@ import javafx.scene.input.KeyEvent;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 
 /**
  * Created by D.Knoll on 24.04.2015.

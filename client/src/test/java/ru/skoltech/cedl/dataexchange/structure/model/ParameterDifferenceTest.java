@@ -20,6 +20,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 

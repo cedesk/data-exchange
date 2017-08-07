@@ -18,9 +18,9 @@ package ru.skoltech.cedl.dataexchange.structure.view;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterComparatorByNatureAndName;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterComparatorByNatureAndName;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 
 import java.util.List;
 import java.util.stream.Collectors;
