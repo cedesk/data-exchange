@@ -16,7 +16,9 @@
 
 package ru.skoltech.cedl.dataexchange.services;
 
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.MergeException;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 
@@ -64,4 +66,25 @@ public interface DifferenceMergeService {
      * @return the list of merged differences
      */
     List<ModelDifference> revertChangesOnFirst(Project project, List<ModelDifference> modelDifferences) throws MergeException;
+
+    /**
+     * TODO add javadoc
+     *
+     * @param s1
+     * @param s2
+     * @param latestStudy1Modification
+     * @return
+     */
+    List<ModelDifference> computeStudyDifferences(Study s1, Study s2, long latestStudy1Modification);
+
+    /**
+     * Compacting all attributes differences into one study modification
+     * TODO add javadoc
+     *
+     * @param study1
+     * @param study2
+     * @param differences
+     * @return
+     */
+    ModelDifference createStudyAttributesModified(Study study1, Study study2, List<AttributeDifference> differences);
 }

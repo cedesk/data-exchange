@@ -35,4 +35,11 @@ public interface StudyService {
      * @return new instance of {@link Study}
      */
     Study createStudy(SystemModel systemModel, UserManagement userManagement);
+
+    /**
+     * TODO add javadoc
+     *
+     * @param study
+     */
+    void relinkStudySubSystems(Study study);
 }

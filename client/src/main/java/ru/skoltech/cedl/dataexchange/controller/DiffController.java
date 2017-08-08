@@ -152,7 +152,7 @@ public class DiffController implements Initializable {
         Study remoteStudy = project.getRepositoryStudy();
         long latestLoadedModification = project.getLatestLoadedModification();
         project.updateExternalModelsInStudy();
-        List<ModelDifference> modelDiffs = StudyDifference.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
+        List<ModelDifference> modelDiffs = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy, latestLoadedModification);
         displayDifferences(modelDiffs);
     }
 

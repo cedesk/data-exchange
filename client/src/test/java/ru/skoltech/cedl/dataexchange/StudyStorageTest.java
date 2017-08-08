@@ -25,6 +25,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.StudyRepository;
+import ru.skoltech.cedl.dataexchange.services.StudyService;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
@@ -36,12 +37,14 @@ import java.util.List;
  */
 public class StudyStorageTest extends AbstractApplicationContextTest {
 
+    private StudyService studyService;
     private UserRoleManagementService userRoleManagementService;
     private SystemBuilder systemBuilder;
     private StudyRepository studyRepository;
 
     @Before
     public void prepare() {
+        studyService = context.getBean(StudyService.class);
         userRoleManagementService = context.getBean(UserRoleManagementService.class);
         systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
         studyRepository = context.getBean(StudyRepository.class);
@@ -100,6 +103,7 @@ public class StudyStorageTest extends AbstractApplicationContextTest {
         UserRoleManagement userRoleManagement
                 = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, null);
         study.setUserRoleManagement(userRoleManagement);
+        studyService.relinkStudySubSystems(study);
         return study;
     }
 }

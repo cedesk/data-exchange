@@ -25,7 +25,7 @@ import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 
 /**
  * Creates basic space system.
- *  Can accept model depth parameter for creation feature {@link SystemModel}.
+ * Can accept model depth parameter for creation feature {@link SystemModel}.
  *
  * Created by D.Knoll on 12.03.2015.
  */

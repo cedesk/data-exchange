@@ -62,7 +62,6 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -782,7 +781,8 @@ public class MainController implements Initializable {
 
     public void saveProject(ActionEvent actionEvent) {
         try {
-            boolean isSyncDisabled = !project.getStudy().getStudySettings().getSyncEnabled();
+            StudySettings studySettings = project.getStudy().getStudySettings();
+            boolean isSyncDisabled = studySettings == null || !studySettings.getSyncEnabled();
             boolean isNormalUser = !project.isCurrentAdmin();
             if (isSyncDisabled && isNormalUser) {
                 Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\n" +
@@ -795,8 +795,9 @@ public class MainController implements Initializable {
                         "Merge changes, and review remaining differences?");
                 if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
                     // TODO merge remote changes
-                    List<ModelDifference> modelDifferences = StudyDifference.computeDifferences(project.getStudy(),
-                            project.getRepositoryStudy(), project.getLatestLoadedModification());
+                    List<ModelDifference> modelDifferences = differenceMergeService.computeStudyDifferences(project.getStudy(),
+                                                                                                            project.getRepositoryStudy(),
+                                                                                                            project.getLatestLoadedModification());
                     List<ModelDifference> appliedChanges = differenceMergeService.mergeChangesOntoFirst(project, modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
                         openDiffView(actionEvent);

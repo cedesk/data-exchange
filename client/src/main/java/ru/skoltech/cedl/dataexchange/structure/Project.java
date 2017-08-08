@@ -223,7 +223,7 @@ public class Project {
             setLatestRepositoryModification(repositoryStudy.getLatestModelModification());
             StudySettings localSettings = getStudy().getStudySettings();
             StudySettings remoteSettings = repositoryStudy.getStudySettings();
-            if (!localSettings.equals(remoteSettings)) {
+            if (localSettings == null || !localSettings.equals(remoteSettings)) {
                 logger.debug("updating studySettings");
                 setStudySettings(remoteSettings);
             }
@@ -292,6 +292,7 @@ public class Project {
 
     public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
         this.study.setUserRoleManagement(userRoleManagement);
+        studyService.relinkStudySubSystems(study);
         // TODO: update user information on ui
     }
 
@@ -486,7 +487,7 @@ public class Project {
 //            initializeUserRoleManagement(); //TODO initialize default UserRoleManagement?
             return false;
         }
-        this.getStudy().setUserRoleManagement(newUserRoleManagement);
+        this.setUserRoleManagement(newUserRoleManagement);
         return true;
     }
 
@@ -539,7 +540,7 @@ public class Project {
         try {
             UserRoleManagement userRoleManagement = this.getStudy().getUserRoleManagement();
             UserRoleManagement newUserRoleManagement = userRoleManagementRepository.saveAndFlush(userRoleManagement);
-            this.getStudy().setUserRoleManagement(newUserRoleManagement);
+            this.setUserRoleManagement(newUserRoleManagement);
             return true;
         } catch (Exception e) {
             logger.error("Error storing user role management.", e);
@@ -701,10 +702,12 @@ public class Project {
     }
 
     private void updatePossibleActions() {
+        StudySettings studySettings = this.getStudy().getStudySettings();
+
         canNew.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
         canLoad.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
         boolean isAdmin = isCurrentAdmin();
-        boolean isSyncEnabled = isAdmin || getStudy().getStudySettings().getSyncEnabled();
+        boolean isSyncEnabled = !isAdmin && studySettings == null || studySettings.getSyncEnabled();
         boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
         canSync.setValue(isSyncEnabled && isSavePossible);
     }

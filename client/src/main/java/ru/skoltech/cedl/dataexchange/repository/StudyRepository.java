@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.history.RevisionRepository;
 import org.springframework.data.repository.query.Param;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 
@@ -28,7 +29,7 @@ import java.util.List;
  *
  * Created by Nikolay Groshkov on 06-Aug-17.
  */
-public interface StudyRepository extends JpaRepository<Study, Long> {
+public interface StudyRepository extends JpaRepository<Study, Long>, RevisionRepository<Study, Long, Integer> {
 
     /**
      * Retrieve names of all stored studies.

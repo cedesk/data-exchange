@@ -16,21 +16,27 @@
 
 package ru.skoltech.cedl.dataexchange.entity;
 
-import javax.persistence.*;
+import org.hibernate.envers.Audited;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 
 /**
  * Created by D.Knoll on 31.10.2015.
  */
 @Entity
-@Access(AccessType.PROPERTY)
+@Audited(targetAuditMode = NOT_AUDITED)
 public class StudySettings {
-
-    private long id;
-
-    private boolean isSyncEnabled = true;
 
     @Id
     @GeneratedValue
+    private long id;
+
+    private boolean syncEnabled = true;
+
     public long getId() {
         return id;
     }
@@ -40,11 +46,11 @@ public class StudySettings {
     }
 
     public boolean getSyncEnabled() {
-        return isSyncEnabled;
+        return syncEnabled;
     }
 
     public void setSyncEnabled(boolean isSyncEnabled) {
-        this.isSyncEnabled = isSyncEnabled;
+        this.syncEnabled = isSyncEnabled;
     }
 
     @Override
@@ -54,19 +60,18 @@ public class StudySettings {
 
         StudySettings that = (StudySettings) o;
 
-        return isSyncEnabled == that.isSyncEnabled;
+        return syncEnabled == that.syncEnabled;
     }
 
     @Override
     public int hashCode() {
-        return (isSyncEnabled ? 1 : 0);
+        return (syncEnabled ? 1 : 0);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("StudySettings{");
-        sb.append("isSyncEnabled=").append(isSyncEnabled);
-        sb.append('}');
-        return sb.toString();
+        return "StudySettings{" +
+                "syncEnabled=" + syncEnabled +
+                '}';
     }
 }

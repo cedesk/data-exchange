@@ -47,6 +47,7 @@
 
     <bean id="differenceMergeService" class="ru.skoltech.cedl.dataexchange.services.impl.DifferenceMergeServiceImpl" >
         <property name="modelUpdateService" ref="modelUpdateService" />
+        <property name="studyService" ref="studyService"/>
     </bean>
 
     <bean id="repositorySchemeService" class="ru.skoltech.cedl.dataexchange.services.impl.RepositorySchemeServiceImpl" >
