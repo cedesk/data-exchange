@@ -39,7 +39,9 @@ public class ParameterRevision {
 
         // TODO: bugs in Hibernate envers https://hibernate.atlassian.net/browse/HHH-8051
         this.parameterModel.setParent(null);
-        this.parameterModel.getValueLink().setParent(null);
+        if (this.parameterModel.getValueLink() != null) {
+            this.parameterModel.getValueLink().setParent(null);
+        }
     }
 
     public int getRevisionId() {
