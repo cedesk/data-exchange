@@ -21,13 +21,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.springframework.context.ApplicationContext;
 import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
 import ru.skoltech.cedl.dataexchange.controller.TradespaceController;
-import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
-import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;
 import ru.skoltech.cedl.dataexchange.tradespace.TradespaceFactory;
@@ -44,20 +39,13 @@ public class TradespaceExplorerApplication extends ContextAwareApplication {
     private static Logger logger = Logger.getLogger(TradespaceExplorerApplication.class);
 
     public static void main(String[] args) {
-        PropertyConfigurator.configure(TradespaceExplorerApplication.class.getResource("/log4j/log4j.properties"));
-
-        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
-        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
-        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
-                "/" + applicationSettings.getCedeskAppFile());
-
+        contextInit();
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        setupContext();
+        loadContext();
         loadLastProject();
 
         FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);

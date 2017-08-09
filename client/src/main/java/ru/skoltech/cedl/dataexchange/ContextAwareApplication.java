@@ -18,11 +18,14 @@ package ru.skoltech.cedl.dataexchange;
 
 import javafx.application.Application;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializer;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 public abstract class ContextAwareApplication extends Application {
@@ -73,7 +76,7 @@ public abstract class ContextAwareApplication extends Application {
 
     }
 
-    protected void setupContext() {
+    protected void loadContext() {
         context = ApplicationContextInitializer.getInstance().getContext();
         applicationSettings = context.getBean(ApplicationSettings.class);
 
@@ -82,5 +85,17 @@ public abstract class ContextAwareApplication extends Application {
         String appVersion = applicationSettings.getApplicationVersion();
         String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
         logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
+    }
+
+    protected static void contextInit() {
+        ApplicationSettingsInitializer.initialize();
+        PropertyConfigurator.configure(TradespaceExplorerApplication.class.getResource("/log4j/log4j.properties"));
+
+        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
+        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
+        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
+                "/" + applicationSettings.getCedeskAppFile());
+
     }
 }

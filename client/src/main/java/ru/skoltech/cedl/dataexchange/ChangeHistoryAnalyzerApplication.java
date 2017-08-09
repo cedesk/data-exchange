@@ -30,20 +30,13 @@ public class ChangeHistoryAnalyzerApplication extends ContextAwareApplication {
     private static Logger logger = Logger.getLogger(ChangeHistoryAnalyzerApplication.class);
 
     public static void main(String[] args) {
-        PropertyConfigurator.configure(TradespaceExplorerApplication.class.getResource("/log4j/log4j.properties"));
-
-        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
-        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
-        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
-                "/" + applicationSettings.getCedeskAppFile());
-
+        contextInit();
         launch(args);
     }
 
     @Override
     public void start(Stage stage) throws Exception {
-        setupContext();
+        loadContext();
         loadLastProject();
 
         FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);
