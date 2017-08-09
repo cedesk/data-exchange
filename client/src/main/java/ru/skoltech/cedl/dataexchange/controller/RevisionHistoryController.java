@@ -41,16 +41,12 @@ public class RevisionHistoryController implements Initializable {
     private TableView<ParameterRevision> revisionHistoryTable;
 
     private ParameterModel parameter;
-
     private ParameterModelService parameterModelService;
 
-
-
-    public ParameterModel getParameter() {
-        return parameter;
+    private RevisionHistoryController() {
     }
 
-    public void setParameter(ParameterModel parameter) {
+    public RevisionHistoryController(ParameterModel parameter) {
         this.parameter = parameter;
     }
 
@@ -60,20 +56,17 @@ public class RevisionHistoryController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         ObservableList<ParameterRevision> items = FXCollections.observableArrayList();
         revisionHistoryTable.setItems(items);
-    }
 
-    public void updateView() {
-        if (parameter != null) {
-            try {
-                List<ParameterRevision> revisionList = parameterModelService.parameterModelChangeHistory(parameter);
-                revisionHistoryTable.getItems().clear();
-                revisionHistoryTable.getItems().addAll(revisionList);
-            } catch (Exception e) {
-                logger.error("unable to retrieve change history");
-            }
+        try {
+            List<ParameterRevision> revisionList = parameterModelService.parameterModelChangeHistory(parameter);
+            revisionList.forEach(ParameterRevision::getUnitAsText);
+            revisionHistoryTable.getItems().clear();
+            revisionHistoryTable.getItems().addAll(revisionList);
+        } catch (Exception e) {
+            logger.error("Unable to retrieve change history", e);
         }
     }
+
 }

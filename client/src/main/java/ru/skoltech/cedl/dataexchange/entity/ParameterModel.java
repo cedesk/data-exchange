@@ -30,21 +30,19 @@ import java.util.UUID;
 /**
  * Created by D.Knoll on 12.03.2015.
  */
+@Entity
+@Audited
 @XmlType(propOrder = {"name", "value", "nature", "valueSource", "unit", "isExported", "isReferenceValueOverridden", "lastModification", "uuid", "valueReference", "valueLink", "exportReference", "calculation", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
-@Entity
-@Access(AccessType.PROPERTY)
-@Audited
 public class ParameterModel implements Comparable<ParameterModel>, ModificationTimestamped, PersistedEntity {
 
     public static final ParameterNature DEFAULT_NATURE = ParameterNature.INTERNAL;
-
     public static final ParameterValueSource DEFAULT_VALUE_SOURCE = ParameterValueSource.MANUAL;
-
     public static final boolean DEFAULT_EXPORTED = false;
-
     public static final boolean DEFAULT_OVERRIDDEN = false;
 
+    @Id
+    @GeneratedValue
     @XmlTransient
     private long id;
 
@@ -52,12 +50,15 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @XmlAttribute
     private String uuid = UUID.randomUUID().toString();
 
+    @Column(nullable = false)
     @XmlAttribute
     private String name;
 
     @XmlAttribute
     private Double value;
 
+    @ManyToOne(targetEntity = Unit.class, fetch = FetchType.EAGER)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     @XmlAttribute
     @XmlJavaTypeAdapter(value = UnitAdapter.class)
     private Unit unit;
@@ -68,13 +69,18 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @XmlAttribute
     private ParameterValueSource valueSource = DEFAULT_VALUE_SOURCE;
 
+    @Transient
     private ExternalModelReference valueReference;
 
+    @ManyToOne(targetEntity = ParameterModel.class, fetch=FetchType.EAGER)
     @XmlIDREF
     private ParameterModel valueLink;
 
+    @OneToOne(targetEntity = Calculation.class, orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Calculation calculation;
 
+    @ManyToOne(targetEntity = ExternalModel.class, optional = true, cascade = CascadeType.ALL)
     @XmlTransient
     private ExternalModel importModel;
 
@@ -90,8 +96,10 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @XmlAttribute
     private boolean isExported = DEFAULT_EXPORTED;
 
+    @Transient
     private ExternalModelReference exportReference;
 
+    @ManyToOne(targetEntity = ExternalModel.class, optional = true, cascade = CascadeType.ALL)
     @XmlTransient
     private ExternalModel exportModel;
 
@@ -100,12 +108,14 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     private String description;
 
+    @Version()
     @XmlTransient
     private long version;
 
     @XmlAttribute
     private Long lastModification;
 
+    @ManyToOne(targetEntity = ModelNode.class, fetch=FetchType.EAGER)
     @XmlTransient
     private ModelNode parent;
 
@@ -133,8 +143,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     }
 
     @Override
-    @Id
-    @GeneratedValue
     public long getId() {
         return id;
     }
@@ -151,7 +159,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.uuid = uuid;
     }
 
-    @Column(nullable = false)
     public String getName() {
         return name;
     }
@@ -168,8 +175,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.value = value;
     }
 
-    @ManyToOne(targetEntity = Unit.class)
-    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     public Unit getUnit() {
         return unit;
     }
@@ -194,7 +199,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.valueSource = valueSource;
     }
 
-    @Transient
     public ExternalModelReference getValueReference() {
         if (valueReference != null) {
             return valueReference;
@@ -219,7 +223,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         }
     }
 
-    @ManyToOne(targetEntity = ParameterModel.class)
     public ParameterModel getValueLink() {
         return valueLink;
     }
@@ -228,8 +231,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.valueLink = valueLink;
     }
 
-    @OneToOne(targetEntity = Calculation.class, orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     public Calculation getCalculation() {
         return calculation;
     }
@@ -238,7 +239,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.calculation = calculation;
     }
 
-    @ManyToOne(targetEntity = ExternalModel.class, optional = true, cascade = CascadeType.ALL)
     public ExternalModel getImportModel() {
         return importModel;
     }
@@ -279,7 +279,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.isExported = isExported;
     }
 
-    @Transient
     public ExternalModelReference getExportReference() {
         if (exportReference != null) {
             return exportReference;
@@ -305,7 +304,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         }
     }
 
-    @ManyToOne(targetEntity = ExternalModel.class, optional = true, cascade = CascadeType.ALL)
     public ExternalModel getExportModel() {
         return exportModel;
     }
@@ -330,7 +328,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.description = description;
     }
 
-    @Transient
     public double getEffectiveValue() {
         if (valueSource == ParameterValueSource.LINK && valueLink != null) {
             return isReferenceValueOverridden ? overrideValue : valueLink.getEffectiveValue();
@@ -340,7 +337,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         return isReferenceValueOverridden ? overrideValue : value; // OUTPUT CAN BE OVERRIDDEN
     }
 
-    @Version()
     public long getVersion() {
         return version;
     }
@@ -359,8 +355,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.lastModification = timestamp;
     }
 
-    @ManyToOne(targetEntity = ModelNode.class)
-    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     public ModelNode getParent() {
         return parent;
     }
@@ -369,7 +363,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.parent = parent;
     }
 
-    @Transient
     public String getNodePath() {
         return (parent != null ? parent.getNodePath() : "") + "::" + name;
     }

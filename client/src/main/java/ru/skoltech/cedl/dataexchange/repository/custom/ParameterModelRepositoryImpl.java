@@ -20,11 +20,14 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
+import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.repository.ParameterModelRepositoryCustom;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link ParameterModelRepositoryCustom}.
@@ -37,13 +40,29 @@ public class ParameterModelRepositoryImpl implements ParameterModelRepositoryCus
     private EntityManager entityManager;
 
     @Override
-    public List findRevisionsOrderByRevisionNumberDesc(Long id) {
+    public List<ParameterRevision> findRevisionsOrderByRevisionNumberDesc(Long id) {
         final AuditReader reader = AuditReaderFactory.get(entityManager);
 
-        return reader.createQuery()
+        List revisions = reader.createQuery()
                 .forRevisionsOfEntity(ParameterModel.class, false, true)
                 .add(AuditEntity.id().eq(id))
                 .addOrder(AuditEntity.revisionNumber().desc())
                 .getResultList();
+
+        List<ParameterRevision> parameterRevisions = ((List<Object[]>) revisions).stream()
+                .map(revision -> new ParameterRevision((ParameterModel) revision[0], (CustomRevisionEntity) revision[1]))
+                .collect(Collectors.toList());
+
+        // intentionally travrse joined entities, not doing so produce an exception
+        parameterRevisions.forEach(ParameterRevision::getUnitAsText);
+        parameterRevisions.forEach(ParameterRevision::getNodePath);
+        parameterRevisions.forEach(ParameterRevision::getValueLink);
+        parameterRevisions.forEach(parameterRevision -> {
+            if (parameterRevision.getValueLink() != null) {
+                parameterRevision.getValueLink().getNodePath();
+            }
+        });
+
+        return parameterRevisions;
     }
 }

@@ -16,9 +16,9 @@
 
 package ru.skoltech.cedl.dataexchange.repository;
 
-import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
 
 import java.util.List;
 
@@ -27,7 +27,6 @@ import java.util.List;
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-@NoRepositoryBean
 public interface ParameterModelRepositoryCustom {
 
     /**
@@ -38,5 +37,5 @@ public interface ParameterModelRepositoryCustom {
      * @return List of revisions in array of {@link Object} format ({@link Object[]}
      */
     @Transactional(readOnly = true)
-    List findRevisionsOrderByRevisionNumberDesc(Long id);
+    List<ParameterRevision> findRevisionsOrderByRevisionNumberDesc(Long id);
 }

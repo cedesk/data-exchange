@@ -88,7 +88,7 @@
         <property name="project" ref="project" />
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController">
+    <bean class="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController" scope="prototype">
         <property name="parameterModelService" ref="parameterModelService"/>
     </bean>
 

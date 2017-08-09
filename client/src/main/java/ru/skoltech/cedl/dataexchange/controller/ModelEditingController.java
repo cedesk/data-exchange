@@ -44,6 +44,9 @@ import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
@@ -52,9 +55,6 @@ import ru.skoltech.cedl.dataexchange.services.*;
 import ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.view.*;
-import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
-import ru.skoltech.cedl.dataexchange.entity.user.User;
-import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
@@ -270,7 +270,7 @@ public class ModelEditingController implements Initializable {
         deleteParameterMenuItem.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnParameterTableView));
         parameterContextMenu.getItems().add(deleteParameterMenuItem);
         MenuItem addNodeMenuItem = new MenuItem("View history");
-        addNodeMenuItem.setOnAction(ModelEditingController.this::openParameterHistoryDialog);
+        addNodeMenuItem.setOnAction(event -> this.openParameterHistoryDialog());
         addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
@@ -408,63 +408,18 @@ public class ModelEditingController implements Initializable {
         }
     }
 
-    public void openDepencencyView(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.DEPENDENCY_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("N-Square Chart");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.NONE);
-            stage.initOwner(getAppWindow());
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+    public void openDependencyView() {
+        this.openView("N-Square Chart", Views.DEPENDENCY_WINDOW);
     }
 
-    public void openDsmView(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.DSM_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Dependency Structure Matrix");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.NONE);
-            stage.initOwner(getAppWindow());
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+    public void openDsmView() {
+        this.openView("Dependency Structure Matrix", Views.DSM_WINDOW);
     }
 
-    public void openParameterHistoryDialog(ActionEvent actionEvent) {
+    public void openParameterHistoryDialog() {
         ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem();
         Objects.requireNonNull(selectedParameter, "no parameter selected");
-
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.REVISION_HISTORY_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Revision History");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(getAppWindow());
-
-            RevisionHistoryController controller = loader.getController();
-            controller.setParameter(selectedParameter);
-            controller.updateView();
-
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+        this.openView("Revision History", Views.REVISION_HISTORY_WINDOW, Modality.APPLICATION_MODAL, selectedParameter);
     }
 
     public void refreshView(ActionEvent actionEvent) {
@@ -822,4 +777,35 @@ public class ModelEditingController implements Initializable {
             UserNotifications.showNotification(getAppWindow(), "Parameter Updated", message);
         }
     }
+
+    private void openView(String title, URL location) {
+        this.openView(title, location, Modality.NONE);
+    }
+
+    private void openView(String title, URL location, Object... args) {
+        this.openView(title, location, Modality.NONE, args);
+    }
+
+    private void openView(String title, URL location, Modality modality) {
+        this.openView(title, location, modality, new Object[0]);
+    }
+
+    private void openView(String title, URL location, Modality modality, Object... args) {
+        try {
+            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(location, args);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle(title);
+            stage.getIcons().add(IconSet.APP_ICON);
+            stage.initModality(modality);
+            stage.initOwner(getAppWindow());
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e);
+        }
+
+    }
+
 }
