@@ -19,8 +19,8 @@ package ru.skoltech.cedl.dataexchange.structure.view;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.structure.model.CompositeModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 
 import java.util.*;
 import java.util.function.Function;

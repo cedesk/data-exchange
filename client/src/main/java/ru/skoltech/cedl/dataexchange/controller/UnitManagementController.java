@@ -37,9 +37,9 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
-import ru.skoltech.cedl.dataexchange.units.model.QuantityKind;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
@@ -150,7 +150,6 @@ public class UnitManagementController implements Initializable {
             project.loadUnitManagement();
         }
     }
-
 
     public void openAddUnitDialog(ActionEvent actionEvent) {
         try {

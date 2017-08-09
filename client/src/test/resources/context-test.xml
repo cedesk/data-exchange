@@ -20,62 +20,17 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- beans of production context can be overridden here -->
-    <import resource="context-model.xml" />
     <import resource="context-controller.xml" />
-
-    <bean id="applicationSettings" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg>
-            <bean class="ru.skoltech.cedl.dataexchange.ApplicationSettings" init-method="init">
-                <property name="applicationVersion" value="${application.version}" />
-                <property name="applicationBuildTime" value="${application.build.time}" />
-                <property name="applicationDistributionServerUrl" value="${application.distribution.server.url}" />
-                <property name="cedeskAppDir" value="${cedesk.app.dir}" />
-                <property name="cedeskAppFile" value="${cedesk.app.file}" />
-                <property name="cedeskAppFileComment" value="${cedesk.app.file.comment}" />
-                <property name="cedeskLogDir" value="${cedesk.log.dir}" />
-                <property name="defaultHostName" value="${repository.default.host}" />
-                <property name="defaultSchema" value="${repository.default.schema}" />
-                <property name="defaultUserName" value="${repository.default.user.name}" />
-                <property name="defaultPassword" value="${repository.default.password}" />
-                <property name="defaultJdbcUrlPattern" value="${repository.default.jdbc.url.pattern}" />
-                <property name="repositorySchemaVersion" value="${repository.schema.version}" />
-            </bean>
-        </constructor-arg>
-    </bean>
 
     <bean id="jsoupService" class="org.mockito.Mockito" factory-method="mock" >
         <constructor-arg value="ru.skoltech.cedl.dataexchange.services.JsoupService" />
     </bean>
 
-    <bean id="persistenceFactory" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg >
-            <bean class="ru.skoltech.cedl.dataexchange.db.ApplicationSettingsPersistenceFactory">
-                <property name="jpaVendorAdapter" ref="jpaVendorAdapter" />
-                <property name="applicationSettings" ref="applicationSettings" />
-                <property name="entityManagerFactoryBuilder" ref="entityManagerFactoryBuilder" />
-            </bean>
-        </constructor-arg>
-    </bean>
-
-    <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project">
-        <property name="applicationSettings" ref="applicationSettings" />
-        <property name="repositoryManager" ref="repositoryManager" />
-        <property name="repositoryService" ref="repositoryService" />
-        <property name="repositoryStateMachine" ref="repositoryStateMachine" />
-        <property name="externalModelFileWatcher" ref="externalModelFileWatcher" />
-        <property name="externalModelFileHandler" ref="externalModelFileHandler" />
-        <property name="fileStorageService" ref="fileStorageService" />
-        <property name="studyService" ref="studyService" />
-        <property name="modelUpdateService" ref="modelUpdateService" />
-        <property name="userManagementService" ref="userManagementService" />
-        <property name="unitManagementService" ref="unitManagementService" />
-        <property name="actionLogger" ref="actionLogger" />
-    </bean>
-
     <!-- persistence -->
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" scope="prototype">
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="url" value="${datasource.driver.url}" />
         <property name="username" value="${datasource.driver.username}" />
         <property name="password" value="${datasource.driver.password}" />
     </bean>
+
 </beans>

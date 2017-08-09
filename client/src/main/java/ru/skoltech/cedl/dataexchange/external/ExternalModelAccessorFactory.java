@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.external.excel.ExcelModelEvaluator;
 import ru.skoltech.cedl.dataexchange.external.excel.ExcelModelExporter;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;

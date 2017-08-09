@@ -16,18 +16,23 @@
 
 package ru.skoltech.cedl.dataexchange.services.impl;
 
+import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.services.UserManagementService;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.Discipline;
-import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static ru.skoltech.cedl.dataexchange.repository.user.UserManagementRepository.IDENTIFIER;
 
 /**
  * Created by dknoll on 13/05/15.
  */
 public class UserManagementServiceImpl implements UserManagementService {
+
+    private static final Logger logger = Logger.getLogger(UserManagementServiceImpl.class);
 
     @Override
     public UserManagement createDefaultUserManagement() {
@@ -43,64 +48,23 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     @Override
-    public UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement) {
-        UserRoleManagement urm = new UserRoleManagement();
-
-        // add a discipline for each subsystem
-        for (ModelNode modelNode : systemModel.getSubNodes()) {
-            Discipline discipline = new Discipline(modelNode.getName(), urm);
-            urm.getDisciplines().add(discipline);
-        }
-        // add user disciplines
-        if (userManagement != null) {
-            User admin = userManagement.findUser(ADMIN_USER_NAME);
-            if (admin != null) {
-                urm.addUserDiscipline(admin, urm.getAdminDiscipline());
-            }
-        }
-        return urm;
+    public Map<String, User> userMap(UserManagement userManagement) {
+        return userManagement.getUsers().stream().collect(
+                Collectors.toMap(User::getUserName, Function.identity()));
     }
 
     @Override
-    public UserRoleManagement createDefaultUserRoleManagement(UserManagement userManagement) {
-        UserRoleManagement urm = new UserRoleManagement();
-
-        // create Disciplines
-        Discipline orbitDiscipline = new Discipline("Orbit", urm);
-        Discipline payloadDiscipline = new Discipline("Payload", urm);
-        Discipline aocsDiscipline = new Discipline("AOCS", urm);
-        Discipline powerDiscipline = new Discipline("Power", urm);
-        Discipline thermalDiscipline = new Discipline("Thermal", urm);
-        Discipline communicationDiscipline = new Discipline("Communications", urm);
-        Discipline propulsionDiscipline = new Discipline("Propulsion", urm);
-        Discipline missionDiscipline = new Discipline("Mission", urm);
-
-        // add disciplines
-        urm.getDisciplines().add(aocsDiscipline);
-        urm.getDisciplines().add(orbitDiscipline);
-        urm.getDisciplines().add(payloadDiscipline);
-        urm.getDisciplines().add(powerDiscipline);
-        urm.getDisciplines().add(thermalDiscipline);
-        urm.getDisciplines().add(communicationDiscipline);
-        urm.getDisciplines().add(propulsionDiscipline);
-        urm.getDisciplines().add(missionDiscipline);
-
-        // add user disciplines
-        if (userManagement != null) {
-            User admin = userManagement.findUser(ADMIN_USER_NAME);
-            if (admin != null) {
-                urm.addUserDiscipline(admin, urm.getAdminDiscipline());
-            }
-        }
-        return urm;
+    public boolean checkUserName(UserManagement userManagement, String userName) {
+        return userMap(userManagement).containsKey(userName);
     }
 
     @Override
-    public void addUserWithAdminRole(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName) {
-        User admin = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
-
-        userManagement.getUsers().add(admin);
-
-        userRoleManagement.addUserDiscipline(admin, userRoleManagement.getAdminDiscipline());
+    public User obtainUser(UserManagement userManagement, String userName) {
+        User user = userMap(userManagement).get(userName);
+        if (user == null) {
+            logger.error("user not found: " + userName);
+        }
+        return user;
     }
+
 }

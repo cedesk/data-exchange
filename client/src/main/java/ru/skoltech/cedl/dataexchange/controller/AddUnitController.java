@@ -28,8 +28,8 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.units.model.QuantityKind;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 
 import java.net.URL;
 import java.util.List;

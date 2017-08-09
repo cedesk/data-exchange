@@ -40,11 +40,12 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
+import ru.skoltech.cedl.dataexchange.services.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,8 +69,10 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     private ModelNode modelNode;
 
     private Project project;
+    private ActionLogger actionLogger;
     private FileStorageService fileStorageService;
     private ModelUpdateService modelUpdateService;
+    private SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService;
 
     private ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener;
     private ModelEditingController.ParameterUpdateListener parameterUpdateListener;
@@ -85,12 +88,20 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
         }
     }
 
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
+    }
+
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
     }
 
     public void setModelUpdateService(ModelUpdateService modelUpdateService) {
         this.modelUpdateService = modelUpdateService;
+    }
+
+    public void setSpreadsheetInputOutputExtractorService(SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService) {
+        this.spreadsheetInputOutputExtractorService = spreadsheetInputOutputExtractorService;
     }
 
     public ModelNode getModelNode() {
@@ -125,7 +136,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
                         renderExternalModelView(externalModel);
                         Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
                         StatusLogger.getInstance().log("added external model: " + externalModel.getName());
-                        project.getActionLogger().log(ActionLogger.ActionType.EXTERNAL_MODEL_ADD, externalModel.getNodePath());
+                        actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ADD, externalModel.getNodePath());
                         project.markStudyModified();
                     } catch (IOException e) {
                         logger.warn("Unable to import model file.", e);
@@ -159,7 +170,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
             externalModelViewContainer.getChildren().remove(argumentRow);
             project.markStudyModified();
             StatusLogger.getInstance().log("removed external model: " + externalModel.getName());
-            project.getActionLogger().log(ActionLogger.ActionType.EXTERNAL_MODEL_REMOVE, externalModel.getNodePath());
+            actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_REMOVE, externalModel.getNodePath());
         }
     }
 
@@ -205,7 +216,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
                     Platform.runLater(ExternalModelEditor.this::updateView);
                     Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
                     StatusLogger.getInstance().log("replaced external model: " + oldFileName + " > " + fileName);
-                    project.getActionLogger().log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, oldNodePath + " > " + fileName);
+                    actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, oldNodePath + " > " + fileName);
                     project.markStudyModified();
                 } catch (IOException e) {
                     logger.warn("Unable to import model file.", e);
@@ -217,7 +228,7 @@ public class ExternalModelEditor extends ScrollPane implements Initializable {
     }
 
     private void renderExternalModelView(ExternalModel externalModel) {
-        ExternalModelView editor = new ExternalModelView(project, externalModel);
+        ExternalModelView editor = new ExternalModelView(spreadsheetInputOutputExtractorService, project, externalModel);
         Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
         removeButton.setTooltip(new Tooltip("Remove external model"));
         removeButton.setOnAction(ExternalModelEditor.this::deleteExternalModel);

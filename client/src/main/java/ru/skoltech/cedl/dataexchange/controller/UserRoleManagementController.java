@@ -19,7 +19,6 @@ package ru.skoltech.cedl.dataexchange.controller;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -29,7 +28,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -40,15 +38,11 @@ import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.entity.user.*;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.Discipline;
-import ru.skoltech.cedl.dataexchange.users.model.DisciplineSubSystem;
-import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserDiscipline;
-import ru.skoltech.cedl.dataexchange.view.Views;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Predicate;
@@ -111,9 +105,14 @@ public class UserRoleManagementController implements Initializable {
     private BooleanProperty changed = new SimpleBooleanProperty(false);
 
     private Project project;
+    private UserRoleManagementService userRoleManagementService;
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     @Override
@@ -138,7 +137,9 @@ public class UserRoleManagementController implements Initializable {
             public ObservableValue call(TableColumn.CellDataFeatures<Discipline, String> param) {
                 Discipline discipline = param.getValue();
                 if (discipline != null) {
-                    long subSystemsCount = project.getUserRoleManagement().getSubSystemsOfDiscipline(discipline);
+                    UserRoleManagement userRoleManagement = project.getUserRoleManagement();
+                    List<SubSystemModel> subSystemModels = userRoleManagementService.obtainSubSystemsOfDiscipline(userRoleManagement, discipline);
+                    long subSystemsCount = subSystemModels.size();
                     return new SimpleStringProperty(String.valueOf(subSystemsCount));
                 } else {
                     return new SimpleStringProperty("");
@@ -242,7 +243,8 @@ public class UserRoleManagementController implements Initializable {
                 Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
                 return;
             }
-            if (project.getUserRoleManagement().getDisciplineMap().containsKey(disciplineName)) {
+            Map<String, Discipline> disciplineMap = userRoleManagementService.disciplineMap(project.getUserRoleManagement());
+            if (disciplineMap.containsKey(disciplineName)) {
                 Dialogues.showError("Duplicate discipline name", "There is already a discipline named like that!");
             } else {
                 Discipline discipline = new Discipline(disciplineName, project.getUserRoleManagement());
@@ -257,7 +259,7 @@ public class UserRoleManagementController implements Initializable {
     public void deleteDiscipline(ActionEvent actionEvent) {
         Discipline selectedDiscipline = getSelectedDiscipline();
         Objects.requireNonNull(selectedDiscipline, "no discipline in table view");
-        project.getUserRoleManagement().removeDiscipline(selectedDiscipline);
+        userRoleManagementService.removeDiscipline(project.getUserRoleManagement(), selectedDiscipline);
         changed.setValue(true);
         StatusLogger.getInstance().log("removed discipline: " + selectedDiscipline.getName());
         updateDisciplineTable();
@@ -266,7 +268,7 @@ public class UserRoleManagementController implements Initializable {
     public void addDisciplineSubsystem(ActionEvent actionEvent) {
         SubSystemModel subsystem = (SubSystemModel) subsystemsAvailableList.getSelectionModel().getSelectedItem();
         Discipline discipline = getSelectedDiscipline();
-        project.getUserRoleManagement().addDisciplineSubsystem(discipline, subsystem);
+        userRoleManagementService.addDisciplineSubsystem(project.getUserRoleManagement(), discipline, subsystem);
         updateSubsystems(discipline);
         changed.setValue(true);
     }
@@ -291,7 +293,7 @@ public class UserRoleManagementController implements Initializable {
         Discipline discipline = getSelectedDiscipline();
         Objects.requireNonNull(user, "user must not be null");
         Objects.requireNonNull(user, "discipline must not be null");
-        boolean duplicate = project.getUserRoleManagement().addUserDiscipline(user, discipline);
+        boolean duplicate = userRoleManagementService.addUserDiscipline(project.getUserRoleManagement(), user, discipline);
         if (duplicate) {
             StatusLogger.getInstance().log("user '" + user.getUserName() + "' can not be added twice to a discipline '" + discipline.getName() + "'");
         }

@@ -23,7 +23,7 @@ import javafx.scene.control.TableView;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ModelInconsistency;
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 
 import java.net.URL;
 import java.util.List;

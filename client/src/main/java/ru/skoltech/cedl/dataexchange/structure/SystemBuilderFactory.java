@@ -26,22 +26,17 @@ import java.util.Map;
  */
 public class SystemBuilderFactory {
 
-    private static Map<String, SystemBuilder> builderRegistry = new HashMap<>();
+    private Map<String, SystemBuilder> builderRegistry = new HashMap<>();
 
-    static {
-        register(new SimpleSystemBuilder());
-        register(new BasicSpaceSystemBuilder());
+    public SystemBuilderFactory(Map<String, SystemBuilder> builderRegistry) {
+        this.builderRegistry = builderRegistry;
     }
 
-    public static List<String> getBuilderNames() {
+    public List<String> getBuilderNames() {
         return new ArrayList<>(builderRegistry.keySet());
     }
 
-    public static void register(SystemBuilder systemBuilder) {
-        builderRegistry.put(systemBuilder.getName(), systemBuilder);
-    }
-
-    public static SystemBuilder getBuilder(String builderName) {
+    public SystemBuilder getBuilder(String builderName) {
         return builderRegistry.get(builderName);
     }
 }

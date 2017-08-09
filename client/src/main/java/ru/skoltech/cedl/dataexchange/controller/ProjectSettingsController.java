@@ -26,8 +26,9 @@ import javafx.scene.control.TitledPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
 
 import java.io.File;
 import java.net.URL;
@@ -55,103 +56,101 @@ public class ProjectSettingsController implements Initializable {
     private CheckBox enableSyncCheckbox;
 
     @FXML
-    private CheckBox autoloadOnStartupCheckbox;
-
-    @FXML
     private CheckBox useOsUserCheckbox;
 
     @FXML
     private TextField userNameText;
 
+    @FXML
+    private CheckBox autoloadOnStartupCheckbox;
+
+    private ApplicationSettings applicationSettings;
     private Project project;
+    private ProjectSettingsListener projectSettingsListener;
+
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
 
     public void setProject(Project project) {
         this.project = project;
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
-        updateView();
+    public void setProjectSettingsListener(ProjectSettingsListener projectSettingsListener) {
+        this.projectSettingsListener = projectSettingsListener;
     }
 
-    private StudySettings getStudySettings() {
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        String projectName = project.getProjectName();
+        File projectDataDir = project.getProjectDataDir();
+        StudySettings studySettings = studySettings();
+
+        teamSettingsPane.setDisable(studySettings == null);
+
+        projectNameText.setText(projectName);
+        enableSyncCheckbox.setSelected(studySettings != null && studySettings.getSyncEnabled());
+        enableSyncCheckbox.setDisable(studySettings == null);
+
+        useOsUserCheckbox.setSelected(applicationSettings.isProjectUseOsUser());
+        userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
+        userNameText.setText(applicationSettings.getProjectUserName());
+        autoloadOnStartupCheckbox.setSelected(applicationSettings.isProjectLastAutoload());
+
+        projectDirectoryText.setText(projectDataDir.getAbsolutePath());
+    }
+
+    private StudySettings studySettings() {
         if (project != null && project.getStudy() != null) {
-            boolean isAdmin = project.isCurrentAdmin();
-            if (isAdmin)
+            if (project.isCurrentAdmin()) {
                 return project.getStudy().getStudySettings();
+            }
         }
         return null;
     }
 
     public void applyAndClose(ActionEvent actionEvent) {
-        boolean succcess = updateModel();
-        if (succcess) {
-            cancel(actionEvent);
+        if (projectSettingsListener == null) {
+            close(actionEvent);
+            return;
         }
+
+        boolean repositoryWatcherAutosync = enableSyncCheckbox.isSelected();
+        boolean projectLastAutoload = autoloadOnStartupCheckbox.isSelected();
+        boolean projectUseOsUser = useOsUserCheckbox.isSelected();
+        String projectUserName = userNameText.getText();
+
+        if (!projectSettingsListener.projectSettingsChanged(repositoryWatcherAutosync, projectLastAutoload,
+                projectUseOsUser, projectUserName)) {
+            return;
+        }
+
+        logger.info("applied");
+        close(actionEvent);
     }
 
     public void cancel(ActionEvent actionEvent) {
+        close(actionEvent);
+        logger.info("canceled");
+    }
+
+    private void close(ActionEvent actionEvent) {
         Node source = (Node) actionEvent.getSource();
         Stage stage = (Stage) source.getScene().getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+        logger.info("closed");
     }
 
     public void cleanupProjectCache(ActionEvent actionEvent) {
         project.getExternalModelFileHandler().cleanupCache(project);
     }
 
-    private boolean updateModel() {
-        StudySettings studySettings = getStudySettings();
-        if (studySettings != null) {
-            boolean oldSyncEnabled = studySettings.getSyncEnabled();
-            boolean newSyncEnable = enableSyncCheckbox.isSelected();
-            studySettings.setSyncEnabled(newSyncEnable);
-            if (oldSyncEnabled != newSyncEnable) {
-                project.markStudyModified();
-            }
-            logger.info(studySettings);
-        }
-
-        project.getApplicationSettings().setAutoLoadLastProjectOnStartup(autoloadOnStartupCheckbox.isSelected());
-        project.getApplicationSettings().setUseOsUser(useOsUserCheckbox.isSelected());
-        String userName = null;
-        if (useOsUserCheckbox.isSelected()) {
-            project.getApplicationSettings().setProjectUser(null);
-            userName = project.getApplicationSettings().getProjectUser(); // get default value
-        } else {
-            userName = userNameText.getText();
-        }
-        boolean validUser = project.getUserManagement().checkUser(userName);
-        logger.info("using user: '" + userName + "', valid: " + validUser);
-        if (validUser) {
-            project.getApplicationSettings().setProjectUser(userName);
-        } else {
-            Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
-        }
-
-        return validUser;
-    }
-
-    private void updateView() {
-        String projectName = project.getProjectName();
-        projectNameText.setText(projectName);
-        StudySettings studySettings = getStudySettings();
-        if (studySettings != null) {
-            enableSyncCheckbox.setSelected(studySettings.getSyncEnabled());
-            enableSyncCheckbox.setDisable(false);
-            teamSettingsPane.setDisable(false);
-        } else {
-            enableSyncCheckbox.setDisable(true);
-            teamSettingsPane.setDisable(true);
-        }
-
-        File projectDataDir = project.getProjectDataDir();
-        projectDirectoryText.setText(projectDataDir.getAbsolutePath());
-
-        autoloadOnStartupCheckbox.setSelected(project.getApplicationSettings().getAutoLoadLastProjectOnStartup());
-        useOsUserCheckbox.setSelected(project.getApplicationSettings().getUseOsUser());
-        userNameText.setText(project.getApplicationSettings().getProjectUser());
+    /**
+     * Is called then user has been new applied changes.
+     */
+    public interface ProjectSettingsListener {
+        boolean projectSettingsChanged(boolean repositoryWatcherAutosync, boolean projectLastAutoload,
+                                       boolean projectUseOsUser, String projectUserName);
     }
 
 }

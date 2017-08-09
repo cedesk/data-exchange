@@ -19,22 +19,22 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <import resource="context-base.xml" />
     <import resource="context-model.xml" />
     <import resource="context-service.xml" />
 
-    <bean id="fxmlLoaderFactory" class="ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory" />
-
-    <bean class="ru.skoltech.cedl.dataexchange.controller.MainController" >
+    <bean class="ru.skoltech.cedl.dataexchange.controller.MainController" init-method="init" destroy-method="destroy">
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="modelEditingController" ref="modelEditingController" />
         <property name="project" ref="project" />
+        <property name="actionLogger" ref="actionLogger" />
         <property name="applicationSettings" ref="applicationSettings" />
-        <property name="repositoryManager" ref="repositoryManager" />
-        <property name="repositoryService" ref="repositoryService" />
+        <property name="systemBuilderFactory" ref="systemBuilderFactory" />
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
         <property name="updateService" ref="updateService" />
-        <property name="taskExecutor" ref="taskExecutor" />
+        <property name="executor" ref="executor" />
+        <property name="userManagementService" ref="userManagementService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.ChangeAnalysisController" >
@@ -45,13 +45,17 @@
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />
+        <property name="actionLogger" ref="actionLogger" />
         <property name="fileStorageService" ref="fileStorageService" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="modelUpdateService" ref="modelUpdateService" />
+        <property name="unitManagementService" ref="unitManagementService"/>
+        <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.DiffController">
         <property name="project" ref="project" />
-        <property name="repositoryService" ref="repositoryService" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
     </bean>
 
@@ -73,12 +77,14 @@
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserManagementController" >
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserEditingController" />
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserRoleManagementController" >
         <property name="project" ref="project" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UnitManagementController" >
@@ -91,16 +97,12 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController">
-        <property name="repositoryService" ref="repositoryService" />
+        <property name="parameterModelService" ref="parameterModelService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.ProjectSettingsController" >
         <property name="project" ref="project" />
-    </bean>
-
-    <bean class="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController">
-        <property name="fileStorageService" ref="fileStorageService" />
-        <property name="applicationSettings" ref="applicationSettings" />
+        <property name="applicationSettings" ref="applicationSettings"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.AboutController" />

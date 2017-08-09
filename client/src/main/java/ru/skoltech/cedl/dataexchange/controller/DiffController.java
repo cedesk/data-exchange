@@ -32,18 +32,19 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.db.CustomRevisionEntity;
+import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.repository.RevisionEntityRepository;
 import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
-import ru.skoltech.cedl.dataexchange.services.RepositoryService;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
-import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
-import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 
 import java.net.URL;
 import java.util.List;
@@ -72,8 +73,11 @@ public class DiffController implements Initializable {
     private TableColumn<ModelDifference, String> elementTypeColumn;
 
     private Project project;
-    private RepositoryService repositoryService;
+    private UserRoleManagementService userRoleManagementService;
     private DifferenceMergeService differenceMergeService;
+
+    @Autowired
+    private RevisionEntityRepository revisionEntityRepository;
 
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
@@ -81,8 +85,8 @@ public class DiffController implements Initializable {
         this.project = project;
     }
 
-    public void setRepositoryService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
@@ -148,7 +152,7 @@ public class DiffController implements Initializable {
         Study remoteStudy = project.getRepositoryStudy();
         long latestLoadedModification = project.getLatestLoadedModification();
         project.updateExternalModelsInStudy();
-        List<ModelDifference> modelDiffs = StudyDifference.computeDifferences(localStudy, remoteStudy, latestLoadedModification);
+        List<ModelDifference> modelDiffs = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy, latestLoadedModification);
         displayDifferences(modelDiffs);
     }
 
@@ -178,7 +182,16 @@ public class DiffController implements Initializable {
             if (modelDifference.isMergeable()) {
                 PersistedEntity persistedEntity = modelDifference.getChangedEntity();
                 try {
-                    CustomRevisionEntity revisionEntity = repositoryService.getLastRevision(persistedEntity);
+                    long id = persistedEntity.getId();
+                    Class<? extends PersistedEntity> clazz = persistedEntity.getClass();
+                    CustomRevisionEntity revisionEntity;
+                    try {
+                        revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(id, clazz);
+                    } catch (Exception e) {
+                        logger.debug("Loading revision history failed: " +
+                                persistedEntity.getClass().getSimpleName() + "[" + persistedEntity.getId() + "]");
+                        revisionEntity = null;
+                    }
                     String author = revisionEntity != null ? revisionEntity.getUsername() : "<none>";
                     modelDifference.setAuthor(author);
                 } catch (Exception e) {
@@ -216,7 +229,7 @@ public class DiffController implements Initializable {
     private boolean isEditable(ModelNode parentNode) {
         UserRoleManagement userRoleManagement = project.getUserRoleManagement();
         User user = project.getUser();
-        return UserRoleUtil.checkAccess(parentNode, user, userRoleManagement);
+        return userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, parentNode);
     }
 
     private class ActionCellFactory implements Callback<TableColumn<ModelDifference, String>, TableCell<ModelDifference, String>> {

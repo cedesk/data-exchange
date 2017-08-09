@@ -18,9 +18,9 @@ package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.PersistedEntity;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
@@ -136,7 +136,7 @@ public class ExternalModelDifference extends ModelDifference {
                 //if (e1.getLastModification() == null) { // model 1 was newly added
                 extModelDifferences.add(createAddExternalModel(m1, e1, e1.getName(), ChangeLocation.ARG1));
                 //} else { // model 2 was deleted
-                //    extModelDifferences.add(createRemoveExternalModel(m1, e1, e1.getName(), ChangeLocation.ARG2));
+                //    extModelDifferences.add(createRemoveExternalModel(m1, e1, e1.name(), ChangeLocation.ARG2));
                 //}
             } else if (e1 == null && e2 != null) {
                 Objects.requireNonNull(e2.getLastModification(), "persisted parameters always should have the timestamp set");

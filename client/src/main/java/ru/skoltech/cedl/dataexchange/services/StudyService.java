@@ -16,9 +16,9 @@
 
 package ru.skoltech.cedl.dataexchange.services;
 
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 
 /**
  * Operations with {@link Study}.
@@ -35,4 +35,11 @@ public interface StudyService {
      * @return new instance of {@link Study}
      */
     Study createStudy(SystemModel systemModel, UserManagement userManagement);
+
+    /**
+     * TODO add javadoc
+     *
+     * @param study
+     */
+    void relinkStudySubSystems(Study study);
 }

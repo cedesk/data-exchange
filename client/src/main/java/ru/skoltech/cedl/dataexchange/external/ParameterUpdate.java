@@ -16,7 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.external;
 
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 
 /**
  * Created by D.Knoll on 09.07.2015.

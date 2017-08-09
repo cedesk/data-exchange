@@ -16,23 +16,30 @@
 
 package ru.skoltech.cedl.dataexchange.services.impl;
 
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.DisciplineSubSystem;
 import ru.skoltech.cedl.dataexchange.services.StudyService;
-import ru.skoltech.cedl.dataexchange.services.UserManagementService;
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.StudySettings;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by dknoll on 25/05/15.
  */
 public class StudyServiceImpl implements StudyService {
 
-    private UserManagementService userManagementService;
+    private UserRoleManagementService userRoleManagementService;
 
-    public void setUserManagementService(UserManagementService userManagementService) {
-        this.userManagementService = userManagementService;
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     @Override
@@ -42,8 +49,31 @@ public class StudyServiceImpl implements StudyService {
         study.setSystemModel(systemModel);
         study.setName(systemModel.getName());
         UserRoleManagement userRoleManagement =
-                userManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, userManagement);
+                userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, userManagement);
         study.setUserRoleManagement(userRoleManagement);
+        this.relinkStudySubSystems(study);
         return study;
     }
+
+
+    @Override
+    public void relinkStudySubSystems(Study study) {
+        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
+        SystemModel systemModel = study.getSystemModel();
+
+        if (userRoleManagement == null) {
+            return;
+        }
+        List<DisciplineSubSystem> disciplineSubSystems = userRoleManagement.getDisciplineSubSystems();
+        // build a map of the subsystems of the systemModel by UUID
+        Map<String, SubSystemModel> subsystems
+                = systemModel.getSubNodes().stream().collect(Collectors.toMap(SubSystemModel::getUuid, Function.identity()));
+        // lookup subsystem by UUID
+        disciplineSubSystems.forEach(disciplineSubSystem
+                -> disciplineSubSystem.setSubSystem(subsystems.get(disciplineSubSystem.getSubSystem().getUuid())));
+        // remove invalid links
+        disciplineSubSystems.removeIf(disciplineSubSystem
+                -> disciplineSubSystem.getSubSystem() == null);
+    }
+
 }

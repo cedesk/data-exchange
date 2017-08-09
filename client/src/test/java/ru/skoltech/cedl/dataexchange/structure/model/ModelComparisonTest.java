@@ -18,6 +18,8 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.junit.Assert;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 
 /**
  * Created by D.Knoll on 08.07.2015.

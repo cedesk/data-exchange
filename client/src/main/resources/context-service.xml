@@ -17,21 +17,27 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
        xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
        xmlns:tx="http://www.springframework.org/schema/tx"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-                           http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd
-                           http://www.springframework.org/schema/tx    http://www.springframework.org/schema/tx/spring-tx.xsd">
-
-    <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.services.impl.FileStorageServiceImpl" >
-        <constructor-arg type="ru.skoltech.cedl.dataexchange.ApplicationSettings" ref="applicationSettings" />
-    </bean>
+       xsi:schemaLocation="http://www.springframework.org/schema/beans      http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context    http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util       http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/data/jpa   http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+                           http://www.springframework.org/schema/tx         http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <bean id="studyService" class="ru.skoltech.cedl.dataexchange.services.impl.StudyServiceImpl" >
-        <property name="userManagementService" ref="userManagementService" />
+        <property name="userRoleManagementService" ref="userRoleManagementService"/>
     </bean>
 
+    <bean id="parameterModelService" class="ru.skoltech.cedl.dataexchange.services.impl.ParameterModelServiceImpl" />
+
     <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserManagementServiceImpl" />
+
+    <bean id="userRoleManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserRoleManagementServiceImpl" >
+        <property name="userManagementService" ref="userManagementService" />
+    </bean>
 
     <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl" >
         <property name="fileStorageService" ref="fileStorageService" />
@@ -41,6 +47,11 @@
 
     <bean id="differenceMergeService" class="ru.skoltech.cedl.dataexchange.services.impl.DifferenceMergeServiceImpl" >
         <property name="modelUpdateService" ref="modelUpdateService" />
+        <property name="studyService" ref="studyService"/>
+    </bean>
+
+    <bean id="repositorySchemeService" class="ru.skoltech.cedl.dataexchange.services.impl.RepositorySchemeServiceImpl" >
+        <property name="applicationSettings" ref="applicationSettings" />
     </bean>
 
     <bean id="updateService" class="ru.skoltech.cedl.dataexchange.services.impl.UpdateServiceImpl" >
@@ -50,67 +61,51 @@
 
     <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.services.impl.JsoupServiceImpl" />
 
+    <bean class="ru.skoltech.cedl.dataexchange.services.impl.SpreadsheetInputOutputExtractorServiceImpl"
+          id="spreadsheetInputOutputExtractorService">
+        <property name="unitManagementService" ref="unitManagementService"/>
+    </bean>
+
     <!-- persistence -->
-    <bean name="persistenceFactory" class="ru.skoltech.cedl.dataexchange.db.ApplicationSettingsPersistenceFactory">
-        <property name="jpaVendorAdapter" ref="jpaVendorAdapter" />
-        <property name="applicationSettings" ref="applicationSettings" />
-        <property name="entityManagerFactoryBuilder" ref="entityManagerFactoryBuilder" />
-    </bean>
-
-    <bean id="repositoryServiceMethodInterceptor" class="ru.skoltech.cedl.dataexchange.repository.RepositoryServiceMethodInterceptor" />
-    <bean id="repositoryService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="target" >
-            <bean class="ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryServiceImpl" />
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <value>repositoryServiceMethodInterceptor</value>
-            </list>
-        </property>
-    </bean>
-    <bean id="repositoryManager" class="ru.skoltech.cedl.dataexchange.services.impl.PersistenceRepositoryManager" >
-        <property name="applicationSettings" ref="applicationSettings" />
-        <property name="jpaProperties" ref="jpaProperties" />
-        <property name="persistenceFactory" ref="persistenceFactory" />
-        <property name="repositoryServiceMethodInterceptor" ref="repositoryServiceMethodInterceptor" />
-    </bean>
-
+    <context:annotation-config />
     <tx:annotation-driven />
-    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
-        <property name="userTransaction">
-            <bean class="com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple" />
+    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository" />
+    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository"
+                      factory-class="org.springframework.data.envers.repository.support.EnversRevisionRepositoryFactoryBean" />
+
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager" />
+
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="packagesToScan" value="ru.skoltech.cedl.dataexchange.entity" />
+        <property name="jpaVendorAdapter" >
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" >
+                <property name="databasePlatform" value="${hibernate.dialect}" />
+                <property name="showSql" value="${hibernate.show.sql}" />
+            </bean>
         </property>
-        <property name="transactionManager" >
-            <bean class="com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple"/>
+        <property name="jpaPropertyMap" >
+            <util:map id="jpaProperties" map-class="java.util.HashMap">
+                <entry key="hibernate.dialect" value="${hibernate.dialect}" />
+                <entry key="hibernate.hbm2ddl.auto" value="#{ ${repository.schema.create} ? 'update' : 'validate' }" />
+                <entry key="hibernate.connection.isolation" value="${hibernate.connection.isolation}" />
+                <entry key="hibernate.format_sql" value="${hibernate.format.sql}" />
+                <entry key="org.hibernate.envers.audit_strategy" value="${hibernate.envers.audit_strategy}" />
+                <entry key="hibernate.session_factory.interceptor" value-ref="modificationInterceptor" />
+            </util:map>
         </property>
     </bean>
 
-    <bean name="entityManagerFactoryBuilder" class="org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder" >
-        <constructor-arg ref="jpaVendorAdapter" />
-        <constructor-arg ref="jpaProperties" />
-        <constructor-arg type="org.springframework.orm.jpa.persistenceunit.PersistenceUnitManager" >
-            <null/>
-        </constructor-arg>
-    </bean>
-
-    <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" >
-        <property name="databasePlatform" value="${hibernate.dialect}" />
-        <property name="showSql" value="${hibernate.show.sql}" />
-    </bean>
-
-    <util:map id="jpaProperties" map-class="java.util.HashMap">
-        <entry key="hibernate.dialect" value="${hibernate.dialect}" />
-        <entry key="hibernate.hbm2ddl.auto" value="${hibernate.hbm2ddl.auto}" />
-        <entry key="hibernate.connection.isolation" value="${hibernate.connection.isolation}" />
-        <entry key="hibernate.format_sql" value="${hibernate.format.sql}" />
-        <entry key="hibernate.transaction.jta.platform" value="${hibernate.transaction.jta.platform}" />
-        <entry key="hibernate.session_factory.interceptor" value-ref="modificationInterceptor" />
-    </util:map>
-
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" scope="prototype">
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="${datasource.driver.class.name}" />
+        <property name="url">
+            <bean factory-bean="repositoryConnectionService" factory-method="createRepositoryUrl"/>
+        </property>
+        <property name="username" value="${repository.user}" />
+        <property name="password" value="${repository.password}" />
     </bean>
 
     <bean id="modificationInterceptor"
-          class="ru.skoltech.cedl.dataexchange.repository.ModificationInterceptor" />
+          class="ru.skoltech.cedl.dataexchange.db.ModificationInterceptor" />
+
 </beans>

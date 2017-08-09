@@ -16,9 +16,13 @@
 
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import ru.skoltech.cedl.dataexchange.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Sum;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 
 import java.util.ArrayList;
 
@@ -26,34 +30,6 @@ import java.util.ArrayList;
  * Created by D.Knoll on 13.05.2015.
  */
 public class CalculationPersistenceTest extends AbstractApplicationContextTest {
-
-//    TODO: rewrite - test of persistence API is quite obvious
-//    @Test
-//    public void simpleTest() throws JAXBException, RepositoryException {
-//        Calculation calculation1 = createCalculation();
-//
-//        EntityManager entityManager = null;
-//        try {
-//            entityManager = databaseRepository.getEntityManager();
-//            EntityTransaction transaction = entityManager.getTransaction();
-//            transaction.begin();
-//            entityManager.persist(calculation1);
-//            transaction.commit();
-//            long id = calculation1.getId();
-//
-//            Calculation calculation2 = entityManager.find(Calculation.class, id);
-//            Assert.assertEquals(calculation1, calculation2);
-//
-//        } catch (Exception e) {
-//            throw new RepositoryException("Storing failed.", e);
-//        } finally {
-//            try {
-//                if (entityManager != null)
-//                    entityManager.close();
-//            } catch (Exception ignore) {
-//            }
-//        }
-//    }
 
     private Calculation createCalculation() {
         ArrayList<Argument> args = new ArrayList<>();

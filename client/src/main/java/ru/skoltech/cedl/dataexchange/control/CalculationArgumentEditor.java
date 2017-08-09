@@ -23,9 +23,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterTreeIterator;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterTreeIterator;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 
 import java.io.IOException;
 import java.net.URL;

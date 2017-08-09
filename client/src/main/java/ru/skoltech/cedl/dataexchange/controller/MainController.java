@@ -41,19 +41,28 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
-import ru.skoltech.cedl.dataexchange.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.skoltech.cedl.dataexchange.ApplicationPackage;
+import ru.skoltech.cedl.dataexchange.Identifiers;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.services.*;
+import ru.skoltech.cedl.dataexchange.repository.StudyRepository;
+import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
+import ru.skoltech.cedl.dataexchange.services.FileStorageService;
+import ru.skoltech.cedl.dataexchange.services.UpdateService;
+import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
-import ru.skoltech.cedl.dataexchange.users.model.Discipline;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.awt.*;
@@ -113,12 +122,20 @@ public class MainController implements Initializable {
 
     private Project project;
     private ApplicationSettings applicationSettings;
-    private RepositoryManager repositoryManager;
-    private RepositoryService repositoryService;
+    private UserManagementService userManagementService;
+    private SystemBuilderFactory systemBuilderFactory;
     private FileStorageService fileStorageService;
     private DifferenceMergeService differenceMergeService;
     private UpdateService updateService;
-    private Executor taskExecutor;
+    private Executor executor;
+    private ActionLogger actionLogger;
+
+    @Autowired
+    private StudyRepository studyRepository;
+
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
+    }
 
     public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
@@ -136,12 +153,12 @@ public class MainController implements Initializable {
         this.applicationSettings = applicationSettings;
     }
 
-    public void setRepositoryManager(RepositoryManager repositoryManager) {
-        this.repositoryManager = repositoryManager;
+    public void setUserManagementService(UserManagementService userManagementService) {
+        this.userManagementService = userManagementService;
     }
 
-    public void setRepositoryService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
+    public void setSystemBuilderFactory(SystemBuilderFactory systemBuilderFactory) {
+        this.systemBuilderFactory = systemBuilderFactory;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -156,8 +173,12 @@ public class MainController implements Initializable {
         this.updateService = updateService;
     }
 
-    public void setTaskExecutor(Executor taskExecutor) {
-        this.taskExecutor = taskExecutor;
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
+    public void init(){
+        project.start();
     }
 
     @Override
@@ -219,7 +240,7 @@ public class MainController implements Initializable {
     public void checkVersionUpdate(){
         String appVersion = applicationSettings.getApplicationVersion();
         if (ApplicationPackage.isRelease(appVersion)) {
-            taskExecutor.execute(() -> {
+            executor.execute(() -> {
                 Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
                 Platform.runLater(() -> MainController.this.validateLatestUpdate(latestVersionAvailable, null));
             });
@@ -314,13 +335,7 @@ public class MainController implements Initializable {
     }
 
     public void deleteProject(ActionEvent actionEvent) {
-        List<String> studyNames = null;
-        try {
-            studyNames = repositoryService.listStudies();
-        } catch (RepositoryException e) {
-            logger.error("error retrieving list of available studies");
-            return;
-        }
+        List<String> studyNames = studyRepository.findAllNames();
         if (studyNames.size() > 0) {
             Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
             if (studyChoice.isPresent()) {
@@ -333,7 +348,7 @@ public class MainController implements Initializable {
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
                             StatusLogger.getInstance().log("Successfully deleted study!", false);
-                            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
+                            actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
                         }
                     } else {
                         Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
@@ -342,11 +357,11 @@ public class MainController implements Initializable {
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             project.deleteStudy(studyName);
                             StatusLogger.getInstance().log("Successfully deleted study!", false);
-                            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
+                            actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
                         }
                     }
-                } catch (RepositoryException re) {
-                    logger.error("Failed to delete the study!", re);
+                } catch (Exception e) {
+                    logger.error("Failed to delete the study!", e);
                 }
             }
         } else {
@@ -363,7 +378,7 @@ public class MainController implements Initializable {
             try {
                 fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
                 StatusLogger.getInstance().log("Successfully exported study!", false);
-                project.getActionLogger().log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
+                actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
             } catch (IOException e) {
                 logger.error("error exporting model to file", e);
             }
@@ -375,8 +390,8 @@ public class MainController implements Initializable {
     public void importProject(ActionEvent actionEvent) {
         File importFile = null;
         if (actionEvent == null) { // invoked from startup
-            String projectToImport = applicationSettings.getProjectToImport();
-            if (projectToImport != null) {
+            String projectToImport = applicationSettings.getProjectImportName();
+            if (projectToImport != null && !projectToImport.isEmpty()) {
                 importFile = new File(fileStorageService.applicationDirectory(), projectToImport);
                 if (importFile.exists()) {
                     logger.info("importing " + importFile.getAbsolutePath());
@@ -399,12 +414,12 @@ public class MainController implements Initializable {
                 project.importSystemModel(systemModel);
                 updateView();
                 StatusLogger.getInstance().log("Successfully imported study!", false);
-                project.getActionLogger().log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName());
+                actionLogger.log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName());
             } catch (IOException e) {
-                logger.error("error importing model from file");
+                logger.error("Error importing model from file.", e);
             }
         } else {
-            logger.info("user aborted import file selection.");
+            logger.info("User aborted import file selection.");
         }
     }
 
@@ -416,29 +431,43 @@ public class MainController implements Initializable {
                 Dialogues.showError("Invalid name", Identifiers.getProjectNameValidationDescription());
                 return;
             }
-            List<String> studyNames = null;
-            try {
-                studyNames = repositoryService.listStudies();
-            } catch (RepositoryException e) {
-                logger.error("error retrieving list of available studies");
-                return;
-            }
+            List<String> studyNames = studyRepository.findAllNames();
             if (studyNames != null && studyNames.contains(projectName)) {
                 Dialogues.showError("Invalid name", "A study with this name already exists in the repository!");
                 return;
             }
 
-            Optional<String> builderName = Dialogues.chooseStudyBuilder(SystemBuilderFactory.getBuilderNames());
+            Optional<String> builderName = Dialogues.chooseStudyBuilder(systemBuilderFactory.getBuilderNames());
             if (!builderName.isPresent()) {
                 return;
             }
-            SystemBuilder builder = SystemBuilderFactory.getBuilder(builderName.get());
-            builder.setUnitManagement(project.getUnitManagement());
+            SystemBuilder builder = systemBuilderFactory.getBuilder(builderName.get());
+            if (builder.adjustsSubsystems()) {
+                builder.subsystemNames(requestSubsystemNames());
+            }
+            builder.unitManagement(project.getUnitManagement());
             SystemModel systemModel = builder.build(projectName);
             project.newStudy(systemModel);
             StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
-            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_NEW, projectName);
+            actionLogger.log(ActionLogger.ActionType.PROJECT_NEW, projectName);
             updateView();
+        }
+    }
+
+    private String[] requestSubsystemNames() {
+        while (true) {
+            Optional<String> subsystemNamesString = Dialogues.inputSubsystemNames("SubsystemA,SubsystemB");
+            if (subsystemNamesString.isPresent()) {
+                String[] subsystemNames = subsystemNamesString.get().split(",");
+                boolean correct = Arrays.stream(subsystemNames).allMatch(Identifiers::validateNodeName);
+                if (correct) {
+                    return subsystemNames;
+                } else {
+                    Dialogues.showWarning("Incorrect subsystem names", "The specified names are not valid for subsystem nodes!\n" + Identifiers.getNodeNameValidationDescription());
+                }
+            } else {
+                return new String[0];
+            }
         }
     }
 
@@ -576,20 +605,16 @@ public class MainController implements Initializable {
     }
 
     public void openProject(ActionEvent actionEvent) {
-        List<String> studyNames = null;
-        try {
-            studyNames = repositoryService.listStudies();
-        } catch (RepositoryException e) {
-            logger.error("error retrieving list of available studies");
-            return;
-        }
+        List<String> studyNames = studyRepository.findAllNames();
         if (studyNames.size() > 0) {
             Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
             if (studyChoice.isPresent()) {
                 String studyName = studyChoice.get();
                 project.setProjectName(studyName);
                 reloadProject(null);
-                this.validateUser();
+                if (!project.checkUser()) {
+                    this.displayInvalidUserDialog();
+                }
             }
         } else {
             logger.warn("list of studies is empty!");
@@ -608,13 +633,59 @@ public class MainController implements Initializable {
             stage.getIcons().add(IconSet.APP_ICON);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getAppWindow());
-            stage.setOnCloseRequest(event -> this.validateUser());
+
+            ProjectSettingsController controller = loader.getController();
+            controller.setProjectSettingsListener((repositoryWatcherAutosync, projectLastAutoload,
+                                                   projectUseOsUser, projectUserName) -> {
+                StudySettings studySettings = studySettings();
+                if (studySettings != null) {
+                    boolean oldSyncEnabled = studySettings.getSyncEnabled();
+                    studySettings.setSyncEnabled(repositoryWatcherAutosync);
+                    if (oldSyncEnabled != repositoryWatcherAutosync) {
+                        project.markStudyModified();
+                    }
+                    logger.info(studySettings);
+                }
+
+                applicationSettings.storeProjectLastAutoload(projectLastAutoload);
+                applicationSettings.storeProjectUseOsUser(projectUseOsUser);
+                String userName = null;
+                if (projectUseOsUser) {
+                    applicationSettings.storeProjectUserName(null);
+                    userName = applicationSettings.getDefaultProjectUserName(); // get default value
+                } else {
+                    userName = projectUserName;
+                }
+                boolean validUser = userManagementService.checkUserName(project.getUserManagement(), userName);
+                logger.info("using user: '" + userName + "', valid: " + validUser);
+                if (validUser) {
+                    applicationSettings.storeProjectUserName(userName);
+                } else {
+                    Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
+                }
+
+                return validUser;
+            });
+            stage.setOnCloseRequest(event -> {
+                if (!project.checkUser()) {
+                    this.displayInvalidUserDialog();
+                }
+            });
             stage.showAndWait();
 
             updateView();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
+    }
+
+    private StudySettings studySettings() {
+        if (project != null && project.getStudy() != null) {
+            if (project.isCurrentAdmin()) {
+                return project.getStudy().getStudySettings();
+            }
+        }
+        return null;
     }
 
     public void openRepositorySettingsDialog(ActionEvent actionEvent) {
@@ -630,47 +701,10 @@ public class MainController implements Initializable {
             stage.initOwner(getAppWindow());
 
             RepositorySettingsController controller = loader.getController();
-            controller.setRepositorySettingsListener((hostname, username, password, autoSynch) -> {
-                boolean validSettings = false;
+            //TODO: add auto restart application
+            controller.setRepositorySettingsListener(this::quit);
 
-                applicationSettings.setAutoSync(autoSynch);
-
-                String schema = applicationSettings.getRepositorySchema();
-
-                String newHostname = hostname == null || hostname.isEmpty() ? applicationSettings.getDefaultHostName() : hostname;
-                String newUsername = username == null || username.isEmpty() ? applicationSettings.getDefaultUserName() : username;
-                String newPassword = password == null || password.isEmpty() ? applicationSettings.getDefaultPassword() : password;
-                boolean validCredentials = repositoryManager.checkRepositoryConnection(newHostname, schema, newUsername, newPassword);
-                if (validCredentials) {
-                    applicationSettings.setRepositoryServerHostname(newHostname);
-                    applicationSettings.setRepositoryUserName(newUsername);
-                    applicationSettings.setRepositoryPassword(newPassword);
-                    try {
-                        project.connectRepository();
-                        validSettings = true;
-                        StatusLogger.getInstance().log("Successfully configured repository settings!");
-                    } catch (Exception e) {
-                        Dialogues.showError("Repository Connection Failed!",
-                                "Please verify that the access credentials for the repository are correct.");
-                    }
-                } else {
-                    Dialogues.showError("Repository Connection Failed",
-                            "The given database access credentials did not work! " +
-                            "Please verify they are correct, the database server is running and the connection is working.");
-                }
-                project.loadUserManagement();
-                project.loadUnitManagement();
-                return validSettings;
-            });
-
-            stage.setOnCloseRequest(event -> {
-                if (!project.checkRepository()) {
-                    Dialogues.showError("CEDESK Fatal Error", "CEDESK is closing because it's unable to connect to a repository!");
-                    quit(null);
-                    return;
-                }
-                this.validateUser();
-            });
+            stage.setOnCloseRequest(event -> controller.close());
             stage.showAndWait();
             updateView();
         } catch (IOException e) {
@@ -737,7 +771,7 @@ public class MainController implements Initializable {
         }
     }
 
-    public void quit(ActionEvent actionEvent) {
+    public void quit() {
         Stage stage = (Stage) applicationPane.getScene().getWindow();
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
@@ -747,24 +781,25 @@ public class MainController implements Initializable {
         try {
             boolean success = project.loadLocalStudy();
             if (success) {
-                applicationSettings.setLastUsedProject(project.getProjectName());
+                applicationSettings.storeProjectLastName(project.getProjectName());
                 StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
-                project.getActionLogger().log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName());
+                actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName());
             } else {
                 StatusLogger.getInstance().log("Loading study failed!", false);
-                project.getActionLogger().log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName() + ", loading failed");
+                actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName() + ", loading failed");
             }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading project!", true);
             logger.error("Error loading project", e);
-            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName() + ", loading failed");
+            actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName() + ", loading failed");
         }
         updateView();
     }
 
     public void saveProject(ActionEvent actionEvent) {
         try {
-            boolean isSyncDisabled = !project.getStudy().getStudySettings().getSyncEnabled();
+            StudySettings studySettings = project.getStudy().getStudySettings();
+            boolean isSyncDisabled = studySettings == null || !studySettings.getSyncEnabled();
             boolean isNormalUser = !project.isCurrentAdmin();
             if (isSyncDisabled && isNormalUser) {
                 Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\n" +
@@ -777,8 +812,9 @@ public class MainController implements Initializable {
                         "Merge changes, and review remaining differences?");
                 if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
                     // TODO merge remote changes
-                    List<ModelDifference> modelDifferences = StudyDifference.computeDifferences(project.getStudy(),
-                            project.getRepositoryStudy(), project.getLatestLoadedModification());
+                    List<ModelDifference> modelDifferences = differenceMergeService.computeStudyDifferences(project.getStudy(),
+                                                                                                            project.getRepositoryStudy(),
+                                                                                                            project.getLatestLoadedModification());
                     List<ModelDifference> appliedChanges = differenceMergeService.mergeChangesOntoFirst(project, modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
                         openDiffView(actionEvent);
@@ -789,24 +825,24 @@ public class MainController implements Initializable {
             }
             project.storeLocalStudy();
             updateView();
-            applicationSettings.setLastUsedProject(project.getProjectName());
+            applicationSettings.storeProjectLastName(project.getProjectName());
             StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
-            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());
+            actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());
         } catch (RepositoryException re) {
             logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
             StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
-            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_SAVE,
+            actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE,
                     project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
         } catch (Exception e) {
             StatusLogger.getInstance().log("Saving study failed!", true);
             logger.error("Unknown Exception", e);
-            project.getActionLogger().log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName() + ", saving failed");
+            actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName() + ", saving failed");
         }
     }
 
-    public void terminate() {
+    public void destroy() {
         try {
-            project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_STOP, "");
+            actionLogger.log(ActionLogger.ActionType.APPLICATION_STOP, "");
         } catch (Throwable ignore) {
         }
         try {
@@ -827,26 +863,25 @@ public class MainController implements Initializable {
     }
 
     public void checkRepository() {
-        taskExecutor.execute(() -> {
-            boolean validRepository = project.checkRepository();
-            Runnable mainControllerRunnable;
+        executor.execute(() -> {
+            boolean validRepository = project.checkRepositoryScheme();
             if (!validRepository) {
-                mainControllerRunnable = () -> MainController.this.openRepositorySettingsDialog(null);
+                Platform.runLater(() -> MainController.this.openRepositorySettingsDialog(null));
             } else {
-                project.connectRepository();
-                this.validateUser();
-                mainControllerRunnable = () -> MainController.this.loadLastProject();
+                if (!project.checkUser()) {
+                    Platform.runLater(this::displayInvalidUserDialog);
+                }
+                Platform.runLater(this::loadLastProject);
             }
-            Platform.runLater(mainControllerRunnable);
         });
     }
 
     private void loadLastProject() {
-        project.getActionLogger().log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
-        if (applicationSettings.getProjectToImport() != null) {
+        actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
+        if (applicationSettings.getProjectImportName() != null && !applicationSettings.getProjectImportName().isEmpty()) {
             importProject(null);
-        } else if (applicationSettings.getAutoLoadLastProjectOnStartup()) {
-            String projectName = applicationSettings.getLastUsedProject();
+        } else if (applicationSettings.isProjectLastAutoload()) {
+            String projectName = applicationSettings.getProjectLastName();
             if (projectName != null) {
                 project.setProjectName(projectName);
                 reloadProject(null);
@@ -878,7 +913,7 @@ public class MainController implements Initializable {
     private void updateView() {
         if (project.getStudy() != null) {
             studyNameLabel.setText(project.getStudy().getName());
-            userNameLabel.setText(project.getUser().getName());
+            userNameLabel.setText(project.getUser().name());
             List<Discipline> disciplinesOfUser = project.getCurrentUserDisciplines();
             if (!disciplinesOfUser.isEmpty()) {
                 String disciplineNames = disciplinesOfUser.stream()
@@ -905,15 +940,12 @@ public class MainController implements Initializable {
         }
     }
 
-    public void validateUser() {
-        boolean validUser = project.checkUser();
-        if (!validUser) {
-            String userName = applicationSettings.getProjectUser();
-            Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
-                    "Contact the administrator for the creation of a user for you.\n" +
-                    "As for now you'll be given the role of an observer, who can not perform modifications.");
-            project.getActionLogger().log(ActionLogger.ActionType.USER_VALIDATE, userName + ", not found");
-        }
+    private void displayInvalidUserDialog() {
+        String userName = applicationSettings.getProjectUserName();
+        Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
+                "Contact the administrator for the creation of a user for you.\n" +
+                "As for now you'll be given the role of an observer, who can not perform modifications.");
+        actionLogger.log(ActionLogger.ActionType.USER_VALIDATE, userName + ", not found");
     }
 
     private class UpdateDownloader implements Consumer<ActionEvent> {

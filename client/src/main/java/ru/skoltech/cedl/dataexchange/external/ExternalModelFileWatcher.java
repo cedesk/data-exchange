@@ -21,7 +21,7 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.file.DirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.file.SimpleDirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,10 +43,6 @@ public class ExternalModelFileWatcher extends Observable {
 
     private Set<File> maskedFiles = new ConcurrentSkipListSet<>();
 
-    public ExternalModelFileWatcher() {
-        SimpleDirectoryWatchService.getInstance().start();
-    }
-
     public void add(Project project, ExternalModel externalModel) {
         File file = ExternalModelFileHandler.getFilePathInCache(project, externalModel);
         watchedExternalModels.put(file, externalModel);
@@ -61,6 +57,10 @@ public class ExternalModelFileWatcher extends Observable {
     public void clear() {
         SimpleDirectoryWatchService.getInstance().clear();
         watchedExternalModels.clear();
+    }
+
+    public void start() {
+        SimpleDirectoryWatchService.getInstance().start();
     }
 
     public void close() {

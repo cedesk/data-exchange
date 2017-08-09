@@ -17,25 +17,39 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.repository.model.SystemModelRepository;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
 /**
  * Created by dknoll on 23/05/15.
  */
 public class ModelStorageTest extends AbstractApplicationContextTest {
 
+    private SystemBuilder systemBuilder;
+    private String systemModelName = "testName";
+    private SystemModelRepository systemModelRepository;
+
+    @Before
+    public void prepare() {
+        systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
+        systemModelRepository = context.getBean(SystemModelRepository.class);
+    }
+
     @Test
-    public void compareStoredAndRetrievedModel() throws RepositoryException {
-        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(2);
+    public void compareStoredAndRetrievedModel() {
+        systemBuilder.modelDepth(2);
+        SystemModel systemModel = systemBuilder.build(systemModelName);
         System.out.println(systemModel);
-        repositoryService.storeSystemModel(systemModel);
+        systemModelRepository.saveAndFlush(systemModel);
         long systemModelId = systemModel.getId();
 
-        SystemModel systemModel1 = repositoryService.loadSystemModel(systemModelId);
+        SystemModel systemModel1 = systemModelRepository.findOne(systemModelId);
         System.out.println(systemModel1);
 
         Assert.assertEquals(systemModel1.getName(), systemModel.getName());
@@ -44,11 +58,12 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void storeModifyAndStore() throws RepositoryException {
-        SystemModel generatedModel = BasicSpaceSystemBuilder.getSystemModel(1);
+    public void storeModifyAndStore() {
+        systemBuilder.modelDepth(1);
+        SystemModel generatedModel = systemBuilder.build(systemModelName);
         System.out.println(generatedModel);
 
-        SystemModel storedModel = repositoryService.storeSystemModel(generatedModel);
+        SystemModel storedModel = systemModelRepository.saveAndFlush(generatedModel);
         long systemModelId = storedModel.getId();
 
         Assert.assertEquals(generatedModel, storedModel);
@@ -59,10 +74,10 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
         int newValue = parameterModel.getValue().intValue() * 123;
         parameterModel.setValue((double) newValue);
 
-        SystemModel storedModel1 = repositoryService.storeSystemModel(storedModel);
+        SystemModel storedModel1 = systemModelRepository.saveAndFlush(storedModel);
         Assert.assertEquals(storedModel, storedModel1);
 
-        SystemModel retrievedModel = repositoryService.loadSystemModel(systemModelId);
+        SystemModel retrievedModel = systemModelRepository.findOne(systemModelId);
         ParameterModel parameterModel1 = retrievedModel.getParameterMap().get(parameterName);
         int storedValue = parameterModel1.getValue().intValue();
 
@@ -74,11 +89,12 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void storeModifyAndStore2() throws RepositoryException {
-        SystemModel storedModel = BasicSpaceSystemBuilder.getSystemModel(2);
+    public void storeModifyAndStore2() {
+        systemBuilder.modelDepth(2);
+        SystemModel storedModel = systemBuilder.build(systemModelName);
         System.out.println(storedModel);
 
-        SystemModel system0 = repositoryService.storeSystemModel(storedModel);
+        SystemModel system0 = systemModelRepository.saveAndFlush(storedModel);
         long systemModelId = storedModel.getId();
 
         ParameterModel parameterModel = storedModel.getParameters().get(0);
@@ -86,30 +102,31 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
         int newValue = parameterModel.getValue().intValue() * 123;
         parameterModel.setValue((double) newValue);
 
-        SystemModel system1 = repositoryService.storeSystemModel(storedModel);
+        SystemModel system1 = systemModelRepository.saveAndFlush(storedModel);
         Assert.assertEquals(system0, system1);
 
-        SystemModel retrievedModel = repositoryService.loadSystemModel(systemModelId);
+        SystemModel retrievedModel = systemModelRepository.findOne(systemModelId);
         ParameterModel parameterModel1 = retrievedModel.getParameterMap().get(parameterName);
         int storedValue = parameterModel1.getValue().intValue();
 
         Assert.assertEquals(newValue, storedValue);
 
-        SystemModel retrievedModel2 = repositoryService.loadSystemModel(systemModelId);
+        SystemModel retrievedModel2 = systemModelRepository.findOne(systemModelId);
         ParameterModel parameterModel2 = retrievedModel2.getParameterMap().get(parameterName);
         newValue = parameterModel2.getValue().intValue() * 123;
         parameterModel.setValue((double) newValue);
-        SystemModel system2 = repositoryService.storeSystemModel(retrievedModel2);
+        SystemModel system2 = systemModelRepository.saveAndFlush(retrievedModel2);
 
         Assert.assertEquals(system2, retrievedModel2);
     }
 
     @Test
-    public void storeModifyAndStoreNames() throws RepositoryException {
-        SystemModel storedModel = BasicSpaceSystemBuilder.getSystemModel(2);
+    public void storeModifyAndStoreNames() {
+        systemBuilder.modelDepth(2);
+        SystemModel storedModel = systemBuilder.build(systemModelName);
         System.out.println(storedModel);
 
-        repositoryService.storeSystemModel(storedModel);
+        systemModelRepository.saveAndFlush(storedModel);
         long systemModelId = storedModel.getId();
 
         ParameterModel parameterModel = storedModel.getParameters().get(0);
@@ -118,9 +135,9 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
         int newValue = parameterModel.getValue().intValue() * 123;
         parameterModel.setValue((double) newValue);
 
-        repositoryService.storeSystemModel(storedModel);
+        systemModelRepository.saveAndFlush(storedModel);
 
-        SystemModel retrievedModel = repositoryService.loadSystemModel(systemModelId);
+        SystemModel retrievedModel = systemModelRepository.findOne(systemModelId);
         ParameterModel parameterModel1 = retrievedModel.getParameterMap().get(newName);
         int storedValue = parameterModel1.getValue().intValue();
 
@@ -129,17 +146,18 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testTimeStamping() throws RepositoryException {
-        SystemModel systemModel = BasicSpaceSystemBuilder.getSystemModel(1);
+    public void testTimeStamping() {
+        systemBuilder.modelDepth(1);
+        SystemModel systemModel = systemBuilder.build(systemModelName);
         System.out.println(systemModel);
         System.out.println("----------------------------------------------------------------");
 
-        systemModel = repositoryService.storeSystemModel(systemModel);
+        systemModel = systemModelRepository.saveAndFlush(systemModel);
         long systemModelId = systemModel.getId();
         System.out.println(systemModel);
         System.out.println("----------------------------------------------------------------");
 
-        SystemModel systemModel1 = repositoryService.loadSystemModel(systemModelId);
+        SystemModel systemModel1 = systemModelRepository.findOne(systemModelId);
         System.out.println(systemModel1);
 
         Assert.assertEquals(systemModel1.getName(), systemModel.getName());

@@ -33,13 +33,13 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetInputOutputExtractor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
+import ru.skoltech.cedl.dataexchange.services.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ExternalModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterComparatorByNatureAndName;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.ParameterComparatorByNatureAndName;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 
 import java.awt.*;
 import java.io.File;
@@ -65,10 +65,13 @@ public class ExternalModelView extends HBox implements Initializable {
     @FXML
     private Button openExternalButton;
 
+    private SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService;
     private Project project;
     private ExternalModel externalModel;
 
-    public ExternalModelView(Project project, ExternalModel externalModel) {
+    public ExternalModelView(SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService,
+                             Project project, ExternalModel externalModel) {
+        this.spreadsheetInputOutputExtractorService = spreadsheetInputOutputExtractorService;
         this.project = project;
         this.externalModel = externalModel;
 
@@ -125,14 +128,14 @@ public class ExternalModelView extends HBox implements Initializable {
             try {
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
                 Workbook workbook = WorkbookFactory.getWorkbook(inputStream, filename);
-                //SpreadsheetInputOutputExtractor.guessInputSheet(workbook);
+                //SpreadsheetInputOutputExtractorServiceImpl.guessInputSheet(workbook);
                 List<String> sheetNames = WorkbookFactory.getSheetNames(workbook);
                 Optional<String> choice = chooseSheet(sheetNames);
                 if (choice.isPresent()) {
                     String sheetName = choice.get();
                     Sheet sheet = workbook.getSheet(sheetName);
                     List<ParameterModel> parameterList =
-                            SpreadsheetInputOutputExtractor.extractParameters(project, externalModel, sheet);
+                            spreadsheetInputOutputExtractorService.extractParameters(project, externalModel, sheet);
                     if (parameterList.size() > 1) {
                         parameterList.sort(new ParameterComparatorByNatureAndName());
 

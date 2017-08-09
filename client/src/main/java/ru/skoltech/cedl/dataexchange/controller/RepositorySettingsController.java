@@ -16,24 +16,32 @@
 
 package ru.skoltech.cedl.dataexchange.controller;
 
-import javafx.event.ActionEvent;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
+import ru.skoltech.cedl.dataexchange.services.RepositoryConnectionService;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executor;
 
 /**
  * Repository settings dialog.
+ * Requires application restart if settings has been changed.
  *
  * Created by D.Knoll on 22.07.2015.
  */
@@ -42,27 +50,43 @@ public class RepositorySettingsController implements Initializable {
     private static Logger logger = Logger.getLogger(RepositorySettingsController.class);
 
     @FXML
-    private CheckBox repoWatcherAutoSyncCheckbox;
+    private AnchorPane repositorySettingsPane;
 
     @FXML
-    private TextField appDirText;
+    private TextField repositoryHostTextField;
 
     @FXML
-    private TextField repoSchemaText;
+    private TextField repositoryUserTextField;
 
     @FXML
-    private TextField dbHostnameText;
+    private PasswordField repositoryPasswordTextField;
 
     @FXML
-    private TextField dbUsernameText;
+    private TextField applicationDirectoryTextField;
 
     @FXML
-    private PasswordField dbPasswordText;
+    private TextField repositorySchemaNameTextField;
 
+    @FXML
+    private CheckBox repositoryWatcherAutosyncCheckBox;
+
+    @FXML
+    public Text connectionTestText;
+
+    @FXML
+    private Button saveButton;
+
+    private RepositoryConnectionService repositoryConnectionService;
     private FileStorageService fileStorageService;
-
     private ApplicationSettings applicationSettings;
+    private Executor executor;
+
+    private BooleanProperty changed = new SimpleBooleanProperty(false);
     private RepositorySettingsListener repositorySettingsListener;
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
@@ -72,58 +96,152 @@ public class RepositorySettingsController implements Initializable {
         this.applicationSettings = applicationSettings;
     }
 
+    public void setRepositoryConnectionService(RepositoryConnectionService repositoryConnectionService) {
+        this.repositoryConnectionService = repositoryConnectionService;
+    }
+
     public void setRepositorySettingsListener(RepositorySettingsListener repositorySettingsListener) {
         this.repositorySettingsListener = repositorySettingsListener;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        String appDir = fileStorageService.applicationDirectory().getAbsolutePath();
-        appDirText.setText(appDir);
-        repoSchemaText.setText(applicationSettings.getRepositorySchema());
+        String applicationDirectory = fileStorageService.applicationDirectory().getAbsolutePath();
+        String repositorySchemaName = applicationSettings.getRepositorySchemaName();
+        String repositoryHost = applicationSettings.getRepositoryHost();
+        String repositoryUser = applicationSettings.getRepositoryUser();
+        String repositoryPassword = applicationSettings.getRepositoryPassword();
+        boolean repositoryWatcherAutosync = applicationSettings.isRepositoryWatcherAutosync();
 
-        dbHostnameText.setText(applicationSettings.getRepositoryServerHostname());
-        dbUsernameText.setText(applicationSettings.getRepositoryUserName(""));
-        dbPasswordText.setText(applicationSettings.getRepositoryPassword(""));
-        repoWatcherAutoSyncCheckbox.setSelected(applicationSettings.getAutoSync());
+        ChangeListener<Object> changeListener = (observable, oldValue, newValue) ->
+                changed.setValue(parametersChanged(repositoryHost, repositoryUser, repositoryPassword, repositoryWatcherAutosync));
+
+        repositoryHostTextField.setText(repositoryHost);
+        repositoryHostTextField.textProperty().addListener(changeListener);
+
+        repositoryUserTextField.setText(repositoryUser);
+        repositoryUserTextField.textProperty().addListener(changeListener);
+
+        repositoryPasswordTextField.setText(repositoryPassword);
+        repositoryPasswordTextField.textProperty().addListener(changeListener);
+
+        applicationDirectoryTextField.setText(applicationDirectory);
+        repositorySchemaNameTextField.setText(repositorySchemaName);
+
+        repositoryWatcherAutosyncCheckBox.setSelected(repositoryWatcherAutosync);
+        repositoryWatcherAutosyncCheckBox.selectedProperty().addListener(changeListener);
+
+        saveButton.disableProperty().bind(Bindings.not(changed));
+
+        this.test();
         logger.info("initialized");
     }
 
-    public void applyAndClose(ActionEvent actionEvent) {
-        if (repositorySettingsListener == null) {
-            close(actionEvent);
+    private boolean parametersChanged(String baseRepositoryHost, String baseRepositoryUser,
+                                      String baseRepositoryPassword, boolean baseRepositoryWatcherAutosync) {
+        String newRepositoryHost = repositoryHostTextField.getText();
+        String newRepositoryUser = repositoryUserTextField.getText();
+        String newRepositoryPassword = repositoryPasswordTextField.getText();
+        boolean newRepositoryWatcherAutosync = repositoryWatcherAutosyncCheckBox.isSelected();
+        return !baseRepositoryHost.equals(newRepositoryHost)
+                || !baseRepositoryUser.equals(newRepositoryUser)
+                || !baseRepositoryPassword.equals(newRepositoryPassword)
+                || baseRepositoryWatcherAutosync != newRepositoryWatcherAutosync;
+    }
+
+    public void save(Event event) {
+        if (!changed.getValue()) {
+            this.close();
             return;
         }
+        boolean connection = testConnection();
+        String warning = connection ? "" : "Connection is unavailable with currently provided parameters.\n\n";
 
-        boolean autoSynch = repoWatcherAutoSyncCheckbox.isSelected();
-        String hostname = dbHostnameText.getText();
-        String username = dbUsernameText.getText();
-        String password = dbPasswordText.getText();
+        ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+        ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-        if (!repositorySettingsListener.repositorySettingsChanged(hostname, username, password, autoSynch)) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Apply modification?");
+
+        Text warningText = new Text(warning);
+        warningText.setStyle("-fx-fill:red; -fx-font-weight:bold;");
+        Text alertText1 = new Text("Applying modification requires ");
+        Text alertText2 = new Text("application restart");
+        alertText2.setStyle("-fx-fill:red; -fx-font-weight:bold; -fx-underline:true;");
+        Text alertText3 = new Text(".\n");
+
+        Text questionText = new Text("Apply modification?");
+        alert.getDialogPane().setContent(new TextFlow(warningText, alertText1, alertText2, alertText3, questionText));
+        alert.getButtonTypes().setAll(yesButton, noButton, cancelButton);
+        Optional<ButtonType> result = alert.showAndWait();
+        if (!result.isPresent()) {
             return;
         }
+        if (result.get() == cancelButton) {
+            event.consume();
+        } else if (result.get() == yesButton) {
+            this.apply();
+            this.close();
+        } else if (result.get() == noButton){
+            this.close();
+        }
+    }
+
+    public void test() {
+        connectionTestText.setText("");
+
+        executor.execute(() -> {
+            boolean connection = testConnection();
+            Platform.runLater(() -> {
+                String text = connection ? "SUCCESS" : "FAILURE";
+                String color = connection ? "green" : "red";
+
+                connectionTestText.setStyle("-fx-fill:"+ color +"; -fx-font-weight:bold;");
+                connectionTestText.setText(text);
+            });
+        });
+    }
+
+    private boolean testConnection() {
+        String repositorySchemaName = applicationSettings.getRepositorySchemaName();
+        String repositoryHost = repositoryHostTextField.getText();
+        String repositoryUser = repositoryUserTextField.getText();
+        String repositoryPassword = repositoryPasswordTextField.getText();
+
+        return repositoryConnectionService.checkRepositoryConnection(repositoryHost, repositorySchemaName,
+                repositoryUser, repositoryPassword);
+    }
+
+    private void apply() {
+        if (repositorySettingsListener != null) {
+            repositorySettingsListener.repositorySettingsChanged();
+        }
+
+        String repositoryHost = repositoryHostTextField.getText();
+        String repositoryUser = repositoryUserTextField.getText();
+        String repositoryPassword = repositoryPasswordTextField.getText();
+        boolean repositoryWatcherAutosync = repositoryWatcherAutosyncCheckBox.isSelected();
+
+        applicationSettings.storeRepositoryHost(repositoryHost);
+        applicationSettings.storeRepositoryUser(repositoryUser);
+        applicationSettings.storeRepositoryPassword(repositoryPassword);
+        applicationSettings.storeRepositoryWatcherAutosync(repositoryWatcherAutosync);
+        applicationSettings.save();
 
         logger.info("applied");
-        close(actionEvent);
     }
 
-    public void cancel(ActionEvent actionEvent) {
-        close(actionEvent);
-        logger.info("canceled");
-    }
-
-    private void close(ActionEvent actionEvent) {
-        Node source = (Node) actionEvent.getSource();
-        Stage stage = (Stage) source.getScene().getWindow();
-        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    public void close() {
+        Stage stage = (Stage) repositorySettingsPane.getScene().getWindow();
+        stage.close();
         logger.info("closed");
     }
 
     /**
-     * Is called then user has been new applied changes.
+     * Is called then user has new applied changes.
      */
     public interface RepositorySettingsListener {
-        boolean repositorySettingsChanged(String hostname, String username, String password, boolean autoSynch);
+        void repositorySettingsChanged();
     }
 }

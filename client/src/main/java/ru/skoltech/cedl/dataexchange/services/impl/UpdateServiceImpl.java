@@ -21,7 +21,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.skoltech.cedl.dataexchange.ApplicationPackage;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.services.JsoupService;
 import ru.skoltech.cedl.dataexchange.services.UpdateService;
 

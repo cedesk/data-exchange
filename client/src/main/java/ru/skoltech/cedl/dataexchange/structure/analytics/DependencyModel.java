@@ -18,7 +18,7 @@ package ru.skoltech.cedl.dataexchange.structure.analytics;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 
 import java.util.*;
 import java.util.stream.Collectors;

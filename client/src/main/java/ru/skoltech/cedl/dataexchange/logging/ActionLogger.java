@@ -17,9 +17,12 @@
 package ru.skoltech.cedl.dataexchange.logging;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ApplicationSettings;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.services.RepositoryService;
+import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.repository.log.LogEntryRepository;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 /**
  * Created by D.Knoll on 08.12.2015.
@@ -29,34 +32,34 @@ public class ActionLogger {
     private static final Logger logger = Logger.getLogger(ActionLogger.class);
 
     private ApplicationSettings applicationSettings;
-    private RepositoryService repositoryService;
+    private Project project;
+
+    @Autowired
+    private LogEntryRepository logEntryRepository;
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
     }
 
-    public void setRepositoryService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    private static LogEntry buildEntry(String user, Long studyId, String action, String description) {
+        String client = Utils.getFullHostname();
+        return new LogEntry(user, client, action, description, studyId);
     }
 
     public void log(ActionType actionType, String description) {
         log(actionType.name(), description);
     }
 
-    public void log(String action, String description) {
-        String user = applicationSettings.getProjectUser();
-        LogEntry logEntry = buildEntry(user, action, description);
+    private void log(String action, String description) {
+        String user = applicationSettings.getProjectUserName();
+        Long studyId = project.getStudy() != null ? project.getStudy().getId() : null;
+        LogEntry logEntry = buildEntry(user, studyId, action, description);
         logger.info(logEntry.toString());
-        if (repositoryService == null) {
-            logger.error("Unable to store log in repository.");
-        }
-        repositoryService.storeLog(logEntry);
-    }
-
-    private static LogEntry buildEntry(String user, String action, String description) {
-        String client = Utils.getFullHostname();
-        LogEntry logEntry = new LogEntry(user, client, action, description);
-        return logEntry;
+        logEntryRepository.saveAndFlush(logEntry);
     }
 
     public enum ActionType {

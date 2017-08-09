@@ -16,7 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.services;
 
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 
 /**
  * Operations with {@link UnitManagement}.
@@ -25,10 +26,9 @@ import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
  */
 public interface UnitManagementService {
 
-    /**
-     * Default {@link UnitManagement} id in the database
-     */
-    long IDENTIFIER = 1L;
+    Unit obtainUnitByText(UnitManagement unitManagement, String unitStr);
+
+    Unit obtainUnitBySymbolOrName(UnitManagement unitManagement, String unitStr);
 
     /**
      * Load default {@link UnitManagement}.

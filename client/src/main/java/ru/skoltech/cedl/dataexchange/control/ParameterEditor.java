@@ -38,17 +38,22 @@ import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.controller.UserNotifications;
+import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
-import ru.skoltech.cedl.dataexchange.units.model.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 
 import java.io.IOException;
 import java.net.URL;
@@ -126,8 +131,10 @@ public class ParameterEditor extends AnchorPane implements Initializable {
     private HBox overrideValueGroup;
 
     private ModelUpdateService modelUpdateService;
+    private UnitManagementService unitManagementService;
 
     private Project project;
+    private ActionLogger actionLogger;
     private ParameterModel editingParameterModel;
     private ParameterModel originalParameterModel;
     private ExternalModelReference valueReference;
@@ -157,8 +164,16 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         this.project = project;
     }
 
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
+    }
+
     public void setModelUpdateService(ModelUpdateService modelUpdateService) {
         this.modelUpdateService = modelUpdateService;
+    }
+
+    public void setUnitManagementService(UnitManagementService unitManagementService) {
+        this.unitManagementService = unitManagementService;
     }
 
     public void setEditListener(Consumer<ParameterModel> updateListener) {
@@ -280,7 +295,8 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         unitComboBox.setConverter(new StringConverter<Unit>() {
             @Override
             public Unit fromString(String unitStr) {
-                return project.getUnitManagement().findUnitByText(unitStr);
+                UnitManagement unitManagement = project.getUnitManagement();
+                return unitManagementService.obtainUnitByText(unitManagement, unitStr);
             }
 
             @Override
@@ -441,7 +457,7 @@ public class ParameterEditor extends AnchorPane implements Initializable {
         project.getParameterLinkRegistry().updateSinks(project, originalParameterModel);
 
         String attDiffs = attributeDifferences.stream().map(AttributeDifference::asText).collect(Collectors.joining(","));
-        project.getActionLogger().log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, editingParameterModel.getNodePath() + ": " + attDiffs);
+        actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, editingParameterModel.getNodePath() + ": " + attDiffs);
 
         project.markStudyModified();
         editListener.accept(editingParameterModel);

@@ -17,10 +17,17 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.repository.ExternalModelRepository;
+import ru.skoltech.cedl.dataexchange.repository.model.SystemModelRepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,32 +38,41 @@ import java.net.URISyntaxException;
  */
 public class ExternalModelTest extends AbstractApplicationContextTest {
 
+    private SystemModelRepository systemModelRepository;
+    private ExternalModelRepository externalModelRepository;
+
+    @Before
+    public void prepare() {
+        systemModelRepository = context.getBean(SystemModelRepository.class);
+        externalModelRepository = context.getBean(ExternalModelRepository.class);
+    }
+
     @Test()
-    public void storeAndRetrieveAttachment() throws URISyntaxException, IOException, RepositoryException {
+    public void storeAndRetrieveAttachment() throws URISyntaxException, IOException {
         File file = new File(this.getClass().getResource("/attachment.xls").toURI());
 
         SystemModel testSat = new SystemModel("testSat");
-        repositoryService.storeSystemModel(testSat);
+        systemModelRepository.saveAndFlush(testSat);
 
         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
 
         System.err.println("before: " + externalModel.getId());
-        ExternalModel externalModel1 = repositoryService.storeExternalModel(externalModel);
+        ExternalModel externalModel1 = externalModelRepository.saveAndFlush(externalModel);
         long pk = externalModel.getId();
         System.err.println("after: " + pk);
         System.err.println("second: " + externalModel1.getId());
 
-        ExternalModel externalModel2 = repositoryService.loadExternalModel(pk);
+        ExternalModel externalModel2 = externalModelRepository.findOne(pk);
 
         Assert.assertArrayEquals(externalModel1.getAttachment(), externalModel2.getAttachment());
     }
 
     @Test
-    public void testExternalModelReferences() throws URISyntaxException, IOException, RepositoryException {
+    public void testExternalModelReferences() throws URISyntaxException, IOException {
         File file = new File(this.getClass().getResource("/attachment.xls").toURI());
 
         SystemModel testSat = new SystemModel("testSat");
-        repositoryService.storeSystemModel(testSat);
+        systemModelRepository.saveAndFlush(testSat);
 
         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
         ExternalModelReference externalModelReference = new ExternalModelReference();
@@ -68,7 +84,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         parameterModel.setValueReference(externalModelReference);
 
         testSat.addParameter(parameterModel);
-        SystemModel systemModel = repositoryService.storeSystemModel(testSat);
+        SystemModel systemModel = systemModelRepository.saveAndFlush(testSat);
 
         ExternalModelReference valueReference = systemModel.getParameters().get(0).getValueReference();
         Assert.assertEquals(externalModelReference, valueReference);
@@ -76,9 +92,9 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         ExternalModel extMo = ExternalModelFileHandler.newFromFile(file, testSat);
         valueReference.setExternalModel(extMo);
 
-        repositoryService.storeSystemModel(systemModel);
+        systemModelRepository.saveAndFlush(systemModel);
 
-        SystemModel systemModel1 = repositoryService.loadSystemModel(testSat.getId());
+        SystemModel systemModel1 = systemModelRepository.findOne(testSat.getId());
 
         ExternalModelReference reference = systemModel1.getParameters().get(0).getValueReference();
         Assert.assertEquals(valueReference, reference);

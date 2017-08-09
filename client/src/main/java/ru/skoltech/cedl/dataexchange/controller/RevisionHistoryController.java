@@ -22,10 +22,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableView;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.services.RepositoryService;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterRevision;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
+import ru.skoltech.cedl.dataexchange.services.ParameterModelService;
 
 import java.net.URL;
 import java.util.List;
@@ -43,11 +42,9 @@ public class RevisionHistoryController implements Initializable {
 
     private ParameterModel parameter;
 
-    private RepositoryService repositoryService;
+    private ParameterModelService parameterModelService;
 
-    public void setRepositoryService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
-    }
+
 
     public ParameterModel getParameter() {
         return parameter;
@@ -55,6 +52,10 @@ public class RevisionHistoryController implements Initializable {
 
     public void setParameter(ParameterModel parameter) {
         this.parameter = parameter;
+    }
+
+    public void setParameterModelService(ParameterModelService parameterModelService) {
+        this.parameterModelService = parameterModelService;
     }
 
     @Override
@@ -67,10 +68,10 @@ public class RevisionHistoryController implements Initializable {
     public void updateView() {
         if (parameter != null) {
             try {
-                List<ParameterRevision> revisionList = repositoryService.getChangeHistory(parameter);
+                List<ParameterRevision> revisionList = parameterModelService.parameterModelChangeHistory(parameter);
                 revisionHistoryTable.getItems().clear();
                 revisionHistoryTable.getItems().addAll(revisionList);
-            } catch (RepositoryException e) {
+            } catch (Exception e) {
                 logger.error("unable to retrieve change history");
             }
         }

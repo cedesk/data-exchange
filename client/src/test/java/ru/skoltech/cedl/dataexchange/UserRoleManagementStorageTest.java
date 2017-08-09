@@ -19,10 +19,13 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.repository.user.UserManagementRepository;
+import ru.skoltech.cedl.dataexchange.repository.user.UserRoleManagementRepository;
 import ru.skoltech.cedl.dataexchange.services.UserManagementService;
-import ru.skoltech.cedl.dataexchange.users.model.UserManagement;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 
 /**
  * Created by dknoll on 23/05/15.
@@ -30,23 +33,29 @@ import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
 public class UserRoleManagementStorageTest extends AbstractApplicationContextTest {
 
     private UserManagementService userManagementService;
+    private UserRoleManagementService userRoleManagementService;
+    private UserManagementRepository userManagementRepository;
+    private UserRoleManagementRepository userRoleManagementRepository;
 
     @Before
     public void prepare() {
         userManagementService = context.getBean(UserManagementService.class);
+        userRoleManagementService = context.getBean(UserRoleManagementService.class);
+        userManagementRepository = context.getBean(UserManagementRepository.class);
+        userRoleManagementRepository = context.getBean(UserRoleManagementRepository.class);
     }
 
     @Test
-    public void testStoreAndRetrieveUserManagement() throws RepositoryException {
+    public void testStoreAndRetrieveUserManagement() {
         UserManagement userManagement = userManagementService.createDefaultUserManagement();
-        UserManagement userManagement1 = repositoryService.storeUserManagement(userManagement);
+        UserManagement userManagement1 = userManagementRepository.saveAndFlush(userManagement);
 
-        UserRoleManagement userRoleManagement = userManagementService.createDefaultUserRoleManagement(userManagement1);
-        repositoryService.storeUserRoleManagement(userRoleManagement);
+        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement(userManagement1);
+        userRoleManagementRepository.saveAndFlush(userRoleManagement);
         long id = userRoleManagement.getId();
 
         System.out.println("user role management id: " + id);
-        UserRoleManagement userRoleManagement1 = repositoryService.loadUserRoleManagement(id);
+        UserRoleManagement userRoleManagement1 = userRoleManagementRepository.findOne(id);
 
         Assert.assertEquals(userRoleManagement, userRoleManagement1);
     }

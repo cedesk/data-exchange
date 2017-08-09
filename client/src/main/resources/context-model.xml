@@ -17,37 +17,13 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
        xmlns:task="http://www.springframework.org/schema/task"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-                           http://www.springframework.org/schema/task  http://www.springframework.org/schema/task/spring-task.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util   http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/task   http://www.springframework.org/schema/task/spring-task.xsd">
 
-    <import resource="context-service.xml" />
-
-    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="ignoreUnresolvablePlaceholders" value="true"/>
-        <property name="systemPropertiesMode" value="2" />
-        <property name="location">
-            <value>cedesk.properties</value>
-        </property>
-    </bean>
-
-    <bean id="applicationSettings" class="ru.skoltech.cedl.dataexchange.ApplicationSettings" init-method="init">
-        <property name="applicationVersion" value="${application.version}" />
-        <property name="applicationBuildTime" value="${application.build.time}" />
-        <property name="applicationDistributionServerUrl" value="${application.distribution.server.url}" />
-        <property name="cedeskAppDir" value="${cedesk.app.dir}" />
-        <property name="cedeskAppFile" value="${cedesk.app.file}" />
-        <property name="cedeskAppFileComment" value="${cedesk.app.file.comment}" />
-        <property name="cedeskLogDir" value="${cedesk.log.dir}" />
-        <property name="defaultHostName" value="${repository.default.host}" />
-        <property name="defaultSchema" value="${repository.default.schema}" />
-        <property name="defaultUserName" value="${repository.default.user.name}" />
-        <property name="defaultPassword" value="${repository.default.password}" />
-        <property name="defaultJdbcUrlPattern" value="${repository.default.jdbc.url.pattern}" />
-        <property name="repositorySchemaVersion" value="${repository.schema.version}" />
-    </bean>
-
-    <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.repository.RepositoryStateMachine" />
+    <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine" />
 
     <bean id="externalModelFileWatcher" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher" />
     <bean id="externalModelFileHandler" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler" >
@@ -56,28 +32,47 @@
 
     <bean id="actionLogger" class="ru.skoltech.cedl.dataexchange.logging.ActionLogger">
         <property name="applicationSettings" ref="applicationSettings" />
-        <property name="repositoryService" ref="repositoryService" />
+        <property name="project" ref="project" />
     </bean>
 
-    <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" init-method="init" >
+    <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" >
         <property name="applicationSettings" ref="applicationSettings" />
-        <property name="repositoryManager" ref="repositoryManager" />
-        <property name="repositoryService" ref="repositoryService" />
         <property name="repositoryStateMachine" ref="repositoryStateMachine" />
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry" />
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher" />
         <property name="externalModelFileHandler" ref="externalModelFileHandler" />
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="studyService" ref="studyService" />
         <property name="modelUpdateService" ref="modelUpdateService" />
         <property name="userManagementService" ref="userManagementService" />
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="unitManagementService" ref="unitManagementService" />
-        <property name="actionLogger" ref="actionLogger" />
+        <property name="repositorySchemeService" ref="repositorySchemeService"/>
     </bean>
 
-    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-        <property name="corePoolSize" value="3" />
-        <property name="maxPoolSize" value="10" />
-        <property name="waitForTasksToCompleteOnShutdown" value="true" />
+    <util:map id="builderRegistry" map-class="java.util.HashMap">
+        <entry value-ref="simpleSystemBuilder">
+            <key><bean factory-bean="simpleSystemBuilder" factory-method="asName"/></key>
+        </entry>
+        <entry value-ref="basicSpaceSystemBuilder">
+            <key><bean factory-bean="basicSpaceSystemBuilder" factory-method="asName"/></key>
+        </entry>
+    </util:map>
+
+    <bean id="systemBuilderFactory" class="ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory" >
+        <constructor-arg name="builderRegistry" ref="builderRegistry" />
+    </bean>
+
+    <bean id="systemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SystemBuilder" abstract="true" >
+        <property name="unitManagementService" ref="unitManagementService" />
+    </bean>
+
+    <bean id="simpleSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SimpleSystemBuilder" parent="systemBuilder"/>
+
+    <bean id="basicSpaceSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder" parent="systemBuilder" />
+
+    <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry" >
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
     </bean>
 
     <!-- Schedule a task for regular checking new version of remote study -->

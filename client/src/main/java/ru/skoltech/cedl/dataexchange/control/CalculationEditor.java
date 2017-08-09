@@ -33,11 +33,11 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
-import ru.skoltech.cedl.dataexchange.structure.model.Calculation;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Argument;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.Operation;
-import ru.skoltech.cedl.dataexchange.structure.model.calculation.OperationRegistry;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Operation;
+import ru.skoltech.cedl.dataexchange.entity.calculation.operation.OperationRegistry;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 
 import java.io.IOException;

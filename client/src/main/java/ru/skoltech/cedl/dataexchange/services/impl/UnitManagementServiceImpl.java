@@ -18,12 +18,17 @@ package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ClientApplication;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static ru.skoltech.cedl.dataexchange.repository.unit.UnitManagementRepository.IDENTIFIER;
 
 /**
  * Created by D.Knoll on 29.08.2015.
@@ -39,6 +44,33 @@ public class UnitManagementServiceImpl implements UnitManagementService {
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
     }
+
+    @Override
+    public Unit obtainUnitByText(UnitManagement unitManagement, String unitStr) {
+        List<Unit> units = unitManagement.getUnits().stream()
+                .filter(unit -> unitStr.equals(unit.asText()))
+                .collect(Collectors.toList());
+        if (units.isEmpty()) {
+            return null;
+        } else if (units.size() > 1) {
+            logger.warn("unitManagement contains more than one units with same texts: " + unitStr);
+        }
+        return units.get(1);
+    }
+
+    @Override
+    public Unit obtainUnitBySymbolOrName(UnitManagement unitManagement, String unitStr) {
+        List<Unit> units = unitManagement.getUnits().stream()
+                .filter(unit -> unitStr.equals(unit.getSymbol()) || unitStr.equals(unit.getName()))
+                .collect(Collectors.toList());
+        if (units.isEmpty()) {
+            return null;
+        } else if (units.size() > 1) {
+            logger.warn("unitManagement contains more than one units with same name or symbol: " + unitStr);
+        }
+        return units.get(0);
+    }
+
 
     @Override
     public UnitManagement loadDefaultUnitManagement() {

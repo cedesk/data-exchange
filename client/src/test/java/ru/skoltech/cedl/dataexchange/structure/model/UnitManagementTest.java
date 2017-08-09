@@ -19,11 +19,12 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.repository.unit.UnitManagementRepository;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 
 import java.io.IOException;
 
@@ -33,6 +34,7 @@ import java.io.IOException;
 public class UnitManagementTest extends AbstractApplicationContextTest {
 
     private UnitManagementServiceImpl unitManagementServiceImpl;
+    private UnitManagementRepository unitManagementRepository;
     private UnitManagement unitManagement;
 
     @Before
@@ -40,12 +42,14 @@ public class UnitManagementTest extends AbstractApplicationContextTest {
         unitManagementServiceImpl = new UnitManagementServiceImpl();
         unitManagementServiceImpl.setFileStorageService(context.getBean(FileStorageService.class));
 
+        unitManagementRepository = context.getBean(UnitManagementRepository.class);
+
         this.unitManagement = context.getBean(UnitManagementService.class).loadDefaultUnitManagement();
     }
 
     @Test
     public void testLoadUnitManagementFromFile() throws IOException {
-        UnitManagement um1 = unitManagementServiceImpl.loadDefaultUnitManagement();;
+        UnitManagement um1 = unitManagementServiceImpl.loadDefaultUnitManagement();
 
         Assert.assertEquals(um1.getPrefixes().size(), 20);
         Assert.assertEquals(um1.getUnits().size(), 106);
@@ -56,8 +60,8 @@ public class UnitManagementTest extends AbstractApplicationContextTest {
 
     @Test
     public void testStoreAndLoadFromDB() throws Exception {
-        UnitManagement storedUnitManagement = repositoryService.storeUnitManagement(unitManagement);
-        UnitManagement loadedUnitManagement = repositoryService.loadUnitManagement();
+        UnitManagement storedUnitManagement = unitManagementRepository.saveAndFlush(unitManagement);
+        UnitManagement loadedUnitManagement = unitManagementRepository.findOne(UnitManagementRepository.IDENTIFIER);
         Assert.assertEquals(storedUnitManagement, loadedUnitManagement);
     }
 }

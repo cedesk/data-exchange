@@ -20,11 +20,18 @@ import org.apache.log4j.Logger;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterTreeIterator;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.*;
-import ru.skoltech.cedl.dataexchange.users.UserRoleUtil;
-import ru.skoltech.cedl.dataexchange.users.model.User;
-import ru.skoltech.cedl.dataexchange.users.model.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,11 +43,17 @@ public class ParameterLinkRegistry {
 
     private Logger logger = Logger.getLogger(ParameterLinkRegistry.class);
 
+    private UserRoleManagementService userRoleManagementService;
+
     private Map<String, Set<String>> valueLinks = new HashMap<>();
 
     private DependencyGraph dependencyGraph = new DependencyGraph();
 
     public ParameterLinkRegistry() {
+    }
+
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     private static List<ModelNode> getModelNodes(SystemModel systemModel) {
@@ -229,7 +242,7 @@ public class ParameterLinkRegistry {
             Set<String> sinkIds = valueLinks.get(sourceId);
             for (String sinkId : sinkIds) {
                 ParameterModel sink = parameterDictionary.get(sinkId);
-                boolean editable = UserRoleUtil.checkAccess(sink.getParent(), user, userRoleManagement);
+                boolean editable = userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, sink.getParent());
                 if (!editable) continue;
                 if (sink.getValueSource() == ParameterValueSource.LINK) {
                     if (sink.getValueLink() == source) {
