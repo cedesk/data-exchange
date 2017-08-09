@@ -20,7 +20,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.web.WebView;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.GuiUtils;
+import ru.skoltech.cedl.dataexchange.services.GuiService;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -35,8 +35,14 @@ public class AboutController implements Initializable {
     @FXML
     private WebView contentView;
 
+    private GuiService guiService;
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        GuiUtils.loadWebView(contentView, getClass(), "about.html");
+        guiService.loadWebView(contentView, getClass(), "about.html");
     }
 }

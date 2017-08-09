@@ -41,16 +41,15 @@ public class UserEditingController implements Initializable {
 
     private User userModel;
 
-    public void setUserModel(User userModel) {
+    private UserEditingController() {
+    }
+
+    public UserEditingController(User userModel) {
         this.userModel = userModel;
-        updateView();
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-    }
-
-    private void updateView() {
         if (userModel != null) {
             userNameText.setText(userModel.getUserName());
             fullNameText.setText(userModel.getFullName());

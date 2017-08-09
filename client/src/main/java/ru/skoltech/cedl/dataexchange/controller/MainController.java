@@ -54,10 +54,8 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.repository.StudyRepository;
-import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.services.UpdateService;
-import ru.skoltech.cedl.dataexchange.services.UserManagementService;
+import ru.skoltech.cedl.dataexchange.services.*;
+import ru.skoltech.cedl.dataexchange.services.GuiService.StageStartAction;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
@@ -123,6 +121,7 @@ public class MainController implements Initializable {
     private Project project;
     private ApplicationSettings applicationSettings;
     private UserManagementService userManagementService;
+    private GuiService guiService;
     private SystemBuilderFactory systemBuilderFactory;
     private FileStorageService fileStorageService;
     private DifferenceMergeService differenceMergeService;
@@ -139,6 +138,10 @@ public class MainController implements Initializable {
 
     public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
+    }
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     public void setModelEditingController(ModelEditingController modelEditingController) {
@@ -227,7 +230,7 @@ public class MainController implements Initializable {
                     updateRemoteModel();
                     UserNotifications.showActionableNotification(getAppWindow(), "Updates on study",
                             "New version of study in repository!", "View Differences",
-                            MainController.this::openDiffView, true);
+                            actionEvent -> this.openDiffView(), true);
                 }
             }
         });
@@ -471,102 +474,35 @@ public class MainController implements Initializable {
         }
     }
 
-    public void openAboutDialog(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.ABOUT_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("About CEDESK");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(getAppWindow());
-
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+    public void openAboutDialog() {
+        guiService.openView("About CEDESK", Views.ABOUT_WINDOW, getAppWindow(), Modality.APPLICATION_MODAL);
     }
 
-    public void openConsistencyView(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.MODEL_CONSISTENCY_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Model consistency");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.NONE);
-            stage.initOwner(getAppWindow());
-            stage.showAndWait();
-
-            modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
-        } catch (IOException e) {
-            logger.error(e);
-        }
+    public void openConsistencyView() {
+        guiService.openView("Model consistency", Views.MODEL_CONSISTENCY_WINDOW, getAppWindow(), StageStartAction.SHOW_AND_WAIT);
+        modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
-    public void openDepencencyView(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.DEPENDENCY_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("N-Square Chart");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.NONE);
-            stage.initOwner(getAppWindow());
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+    public void openDepencencyView() {
+        guiService.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
     }
 
-    public void openDiffView(ActionEvent actionEvent) {
+    public void openDiffView() {
         if (project.getSystemModel() == null
                 || project.getRepositoryStudy() == null
                 || project.getRepositoryStudy().getSystemModel() == null) {
             return;
         }
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.MODEL_DIFF_WINDOW);
-            Parent root = loader.load();
 
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Model differences");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(getAppWindow());
-            stage.showAndWait();
-
-            modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
-        } catch (IOException e) {
-            logger.error(e);
-        }
+        guiService.openView("Model differences", Views.MODEL_DIFF_WINDOW, getAppWindow(), Modality.APPLICATION_MODAL, StageStartAction.SHOW_AND_WAIT);
+        modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
-    public void openDsmView(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.DSM_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Dependency Structure Matrix");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.NONE);
-            stage.initOwner(getAppWindow());
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+    public void openDsmView() {
+        guiService.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
     }
 
-    public void openGuideDialog(ActionEvent actionEvent) {
+    public void openGuideDialog() {
         try {
             FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.GUIDE_WINDOW);
             Parent root = loader.load();
@@ -714,21 +650,8 @@ public class MainController implements Initializable {
         }
     }
 
-    public void openUserManagement(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.USER_MANAGEMENT_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("User Management");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(getAppWindow());
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+    public void openUserManagement() {
+        guiService.openView("User Management", Views.USER_MANAGEMENT_WINDOW, getAppWindow(), Modality.APPLICATION_MODAL);
     }
 
     public void openUserRoleManagement(ActionEvent actionEvent) {
@@ -800,7 +723,7 @@ public class MainController implements Initializable {
                                                                                                             project.getLatestLoadedModification());
                     List<ModelDifference> appliedChanges = differenceMergeService.mergeChangesOntoFirst(project, modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
-                        openDiffView(actionEvent);
+                        openDiffView();
                     }
                 } else {
                     return;

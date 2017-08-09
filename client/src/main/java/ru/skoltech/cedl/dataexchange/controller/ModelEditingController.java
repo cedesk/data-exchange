@@ -26,13 +26,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -54,7 +50,10 @@ import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.services.*;
 import ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.view.*;
+import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItem;
+import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItemFactory;
+import ru.skoltech.cedl.dataexchange.structure.view.TextFieldTreeCell;
+import ru.skoltech.cedl.dataexchange.structure.view.ViewParameters;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
@@ -135,18 +134,17 @@ public class ModelEditingController implements Initializable {
     private BooleanProperty selectedNodeCannotHaveChildren = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(true);
 
-    private FXMLLoaderFactory fxmlLoaderFactory;
-
     private Project project;
     private ActionLogger actionLogger;
     private FileStorageService fileStorageService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
+    private GuiService guiService;
     private ModelUpdateService modelUpdateService;
     private SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService;
 
-    public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
-        this.fxmlLoaderFactory = fxmlLoaderFactory;
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     public void setProject(Project project) {
@@ -409,17 +407,17 @@ public class ModelEditingController implements Initializable {
     }
 
     public void openDependencyView() {
-        this.openView("N-Square Chart", Views.DEPENDENCY_WINDOW);
+        guiService.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
     }
 
     public void openDsmView() {
-        this.openView("Dependency Structure Matrix", Views.DSM_WINDOW);
+        guiService.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
     }
 
     public void openParameterHistoryDialog() {
         ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem();
         Objects.requireNonNull(selectedParameter, "no parameter selected");
-        this.openView("Revision History", Views.REVISION_HISTORY_WINDOW, Modality.APPLICATION_MODAL, selectedParameter);
+        guiService.openView("Revision History", Views.REVISION_HISTORY_WINDOW, getAppWindow(), Modality.APPLICATION_MODAL, selectedParameter);
     }
 
     public void refreshView(ActionEvent actionEvent) {
@@ -776,36 +774,6 @@ public class ModelEditingController implements Initializable {
             logger.info(message);
             UserNotifications.showNotification(getAppWindow(), "Parameter Updated", message);
         }
-    }
-
-    private void openView(String title, URL location) {
-        this.openView(title, location, Modality.NONE);
-    }
-
-    private void openView(String title, URL location, Object... args) {
-        this.openView(title, location, Modality.NONE, args);
-    }
-
-    private void openView(String title, URL location, Modality modality) {
-        this.openView(title, location, modality, new Object[0]);
-    }
-
-    private void openView(String title, URL location, Modality modality, Object... args) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(location, args);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle(title);
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(modality);
-            stage.initOwner(getAppWindow());
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
-
     }
 
 }
