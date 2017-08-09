@@ -15,10 +15,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.analysis.WorkPeriodAnalysis;
 import ru.skoltech.cedl.dataexchange.analysis.WorkSessionAnalysis;
-import ru.skoltech.cedl.dataexchange.logging.LogEntry;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
+import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
+import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.services.RepositoryService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
@@ -46,13 +47,13 @@ public class WorkPeriodAnalyzerApplication {
         if (objFile.canRead()) {
             logEntries = (List<LogEntry>) Utils.readFromFile(objFile);
         } else {
-            RepositoryService repositoryService = getRepositoryService();
-            logEntries = repositoryService.getLogEntries(fromId, toId);
-            Utils.writeToFile((Serializable) logEntries, objFile);
+            //RepositoryService repositoryService = getRepositoryService();
+            //logEntries = repositoryService.getLogEntries(fromId, toId);
+            //Utils.writeToFile((Serializable) logEntries, objFile);
         }
         return logEntries;
     }
-
+/*
     private static RepositoryService getRepositoryService() {
         Project project = context.getBean(Project.class);
         boolean repositoryValid = project.checkRepository();
@@ -64,10 +65,10 @@ public class WorkPeriodAnalyzerApplication {
         }
         return context.getBean(RepositoryService.class);
     }
-
+*/
     public static void main(String[] args) {
         PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
-        ApplicationContextInitializer.initialize(new String[]{"/context-model.xml"}); // headless, without GUI
+        ApplicationContextInitializer.initialize("/context-model.xml"); // headless, without GUI
         context = ApplicationContextInitializer.getInstance().getContext();
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         System.out.println("using: " + applicationSettings.getCedeskAppDir() + "/" + applicationSettings.getCedeskAppFile());

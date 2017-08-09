@@ -9,8 +9,8 @@ package ru.skoltech.cedl.dataexchange.analysis.model;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -32,12 +32,12 @@ public class WorkPeriod extends Period {
         this.usernname = username;
     }
 
-    public String getUsernname() {
-        return usernname;
+    public int getAllActionCount() {
+        return logEntries.size();
     }
 
-    public void setUsernname(String usernname) {
-        this.usernname = usernname;
+    public List<LogEntry> getLogEntries() {
+        return logEntries;
     }
 
     public Long getParameterModifications() {
@@ -48,16 +48,12 @@ public class WorkPeriod extends Period {
         this.parameterModifications = parameterModifications;
     }
 
-    public int getAllActionCount() {
-        return logEntries.size();
+    public String getUsernname() {
+        return usernname;
     }
 
-    private void incrementParameterModifications() {
-        parameterModifications++;
-    }
-
-    public List<LogEntry> getLogEntries() {
-        return logEntries;
+    public void setUsernname(String usernname) {
+        this.usernname = usernname;
     }
 
     public boolean add(ActionLogger.ActionType actionType, LogEntry logEntry) {
@@ -88,6 +84,10 @@ public class WorkPeriod extends Period {
                 ", stopTimestamp=" + stopTimestamp +
                 ", parameterModifications=" + parameterModifications +
                 '}';
+    }
+
+    private void incrementParameterModifications() {
+        parameterModifications++;
     }
 
 }

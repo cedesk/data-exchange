@@ -25,6 +25,8 @@ import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
 import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
 import ru.skoltech.cedl.dataexchange.controller.TradespaceController;
+import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;

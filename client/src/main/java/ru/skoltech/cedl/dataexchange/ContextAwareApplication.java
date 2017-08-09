@@ -21,6 +21,8 @@ import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 public abstract class ContextAwareApplication extends Application {
@@ -47,8 +49,8 @@ public abstract class ContextAwareApplication extends Application {
     protected void loadLastProject() {
         project = context.getBean(Project.class);
 
-        boolean validRepository = project.checkRepository();
-        project.connectRepository();
+       // boolean validRepository = project.checkRepositoryScheme();
+      //  project.connectRepositor
 
         boolean success = project.loadUnitManagement();
         if (!success) {
@@ -59,7 +61,7 @@ public abstract class ContextAwareApplication extends Application {
             throw new RuntimeException("loading user management failed!");
         }
 
-        String projectName = applicationSettings.getLastUsedProject();
+        String projectName = applicationSettings.getProjectLastName();
         if (projectName == null) {
             throw new RuntimeException("no study to load");
         }

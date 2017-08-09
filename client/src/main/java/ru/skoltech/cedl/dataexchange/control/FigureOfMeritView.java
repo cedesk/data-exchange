@@ -8,7 +8,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.tradespace.FigureOfMeritDefinition;
 import ru.skoltech.cedl.dataexchange.tradespace.TradespaceModelBridge;
 

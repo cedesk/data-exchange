@@ -39,7 +39,7 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.ChangeAnalysisController" >
         <property name="project" ref="project" />
-        <property name="repositoryService" ref="repositoryService" />
+        <property name="parameterModelRepository" ref="parameterModelRepository" />
     </bean>
 
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">

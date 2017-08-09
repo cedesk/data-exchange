@@ -11,8 +11,8 @@ import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import ru.skoltech.cedl.dataexchange.analysis.model.NodeChangeList;
 import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 
 import java.util.Deque;
 import java.util.HashMap;

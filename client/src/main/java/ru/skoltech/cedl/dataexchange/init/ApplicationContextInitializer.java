@@ -41,7 +41,7 @@ public class ApplicationContextInitializer {
      *
      * @param configLocation location to application context;
      */
-    static void initialize(String configLocation) {
+    public static void initialize(String configLocation) {
         if (location != null) {
             logger.warn("Application context has already been initialized.");
             return;

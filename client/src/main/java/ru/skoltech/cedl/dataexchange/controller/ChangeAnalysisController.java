@@ -21,8 +21,8 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.analysis.ParameterChangeAnalysis;
 import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
 import ru.skoltech.cedl.dataexchange.control.ChangeAnalysisView;
-import ru.skoltech.cedl.dataexchange.repository.RepositoryException;
-import ru.skoltech.cedl.dataexchange.services.RepositoryService;
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
+import ru.skoltech.cedl.dataexchange.repository.ParameterModelRepository;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import javax.imageio.ImageIO;
@@ -40,14 +40,14 @@ public class ChangeAnalysisController implements Initializable {
     private static final Logger logger = Logger.getLogger(ChangeAnalysisController.class);
 
     private Project project;
-    private RepositoryService repositoryService;
+    private ParameterModelRepository parameterModelRepository;
 
     public void setProject(Project project) {
         this.project = project;
     }
 
-    public void setRepositoryService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
+    public void setParameterModelRepository(ParameterModelRepository parameterModelRepository) {
+        this.parameterModelRepository = parameterModelRepository;
     }
 
     @FXML
@@ -63,7 +63,7 @@ public class ChangeAnalysisController implements Initializable {
     public void refreshView(ActionEvent actionEvent) {
         try {
             long systemId = project.getSystemModel().getId();
-            List<ParameterChange> changes = repositoryService.getChanges(systemId);
+            List<ParameterChange> changes = parameterModelRepository.findAllParameterChangesOfSystem(systemId);
             ParameterChangeAnalysis parameterChangeAnalysis = new ParameterChangeAnalysis(changes);
             changeAnalysisView.setAnalysis(parameterChangeAnalysis);
 

@@ -18,7 +18,10 @@ package ru.skoltech.cedl.dataexchange.repository;
 
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 
 import java.util.List;
 
@@ -39,4 +42,15 @@ public interface ParameterModelRepositoryCustom {
      */
     @Transactional(readOnly = true)
     List findRevisionsOrderByRevisionNumberDesc(Long id);
+
+
+    /**
+     * Find all revisions of paramters related to {@link SystemModel} specified by id,
+     * sorted by modification timestamp, node_id, nature.
+     *
+     * @param systemId of {@link SystemModel}
+     * @return List of {@link ParameterChange}
+     * @throws RepositoryException if query fails, e.g. due to missing database view.
+     */
+    List<ParameterChange> findAllParameterChangesOfSystem(long systemId) throws RepositoryException;
 }

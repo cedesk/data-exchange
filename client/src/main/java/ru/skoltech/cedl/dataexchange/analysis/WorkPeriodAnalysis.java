@@ -12,8 +12,8 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.EnumUtil;
 import ru.skoltech.cedl.dataexchange.analysis.model.WorkPeriod;
+import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.logging.LogEntry;
 
 import java.io.File;
 import java.io.FileWriter;

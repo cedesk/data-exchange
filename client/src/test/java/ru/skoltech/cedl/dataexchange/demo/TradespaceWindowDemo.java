@@ -24,17 +24,17 @@ import javafx.stage.Stage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import ru.skoltech.cedl.dataexchange.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.controller.TradespaceController;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SimpleSystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.model.Study;
-import ru.skoltech.cedl.dataexchange.structure.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;
 import ru.skoltech.cedl.dataexchange.tradespace.TradespaceFactory;
-import ru.skoltech.cedl.dataexchange.units.model.UnitManagement;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;
@@ -88,14 +88,14 @@ public class TradespaceWindowDemo extends Application {
         try {
             ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
             Project project = context.getBean(Project.class);
-            UnitManagement unitManagement = context.getBean(UnitManagementService.class).loadDefaultUnitManagement();
+            UnitManagementService unitManagementService = context.getBean(UnitManagementService.class);
             Study study = new Study("TS Demo");
             Field sField = Project.class.getDeclaredField("study");
             sField.setAccessible(true);
             sField.set(project, study);
 
             SimpleSystemBuilder simpleSystemBuilder = new SimpleSystemBuilder();
-            simpleSystemBuilder.setUnitManagement(unitManagement);
+            simpleSystemBuilder.setUnitManagementService(unitManagementService);
             SystemModel systemModel = simpleSystemBuilder.build(study.getName());
             study.setSystemModel(systemModel);
 

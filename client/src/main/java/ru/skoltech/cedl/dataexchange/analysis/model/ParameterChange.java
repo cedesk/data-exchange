@@ -8,8 +8,8 @@
 package ru.skoltech.cedl.dataexchange.analysis.model;
 
 import ru.skoltech.cedl.dataexchange.EnumUtil;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 
 import java.io.Serializable;
 import java.math.BigInteger;

@@ -8,7 +8,7 @@
 package ru.skoltech.cedl.dataexchange.analysis.model;
 
 import org.apache.commons.collections4.IteratorUtils;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 
 import java.util.Deque;
 import java.util.Iterator;

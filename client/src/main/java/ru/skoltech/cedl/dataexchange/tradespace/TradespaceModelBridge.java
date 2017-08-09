@@ -1,12 +1,12 @@
 package ru.skoltech.cedl.dataexchange.tradespace;
 
 import org.springframework.context.ApplicationContext;
-import ru.skoltech.cedl.dataexchange.ApplicationContextInitializer;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterTreeIterator;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterNature;
-import ru.skoltech.cedl.dataexchange.structure.model.ParameterTreeIterator;
 
 import java.util.Collection;
 import java.util.LinkedList;
