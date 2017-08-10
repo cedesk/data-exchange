@@ -56,7 +56,7 @@ public class UpdateServiceImpl implements UpdateService {
         String serverString = applicationSettings.getApplicationDistributionServerUrl();
         try {
             URL serverUrl = new URL(serverString);
-            Document doc = getDocument(serverUrl);
+            Document doc = jsoupService.jsoupParse(serverUrl);
             List<String> fileNames = this.extractFileNames(doc);
 
             ApplicationPackage applicationPackage = this.getLatest(fileNames);
@@ -100,7 +100,4 @@ public class UpdateServiceImpl implements UpdateService {
         return fileList;
     }
 
-    private Document getDocument(URL url) throws IOException {
-        return jsoupService.jsoupParse(url);
-    }
 }
