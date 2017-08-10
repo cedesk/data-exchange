@@ -75,6 +75,10 @@
         <property name="userRoleManagementService" ref="userRoleManagementService" />
     </bean>
 
+    <bean id="tradespaceModelBridge" class="ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceModelBridge" scope="prototype">
+        <constructor-arg ref="project" />
+    </bean>
+
     <!-- Schedule a task for regular checking new version of remote study -->
     <task:scheduler id="scheduler"/>
     <task:scheduled-tasks scheduler="scheduler">

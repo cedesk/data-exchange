@@ -16,12 +16,11 @@
 
 package ru.skoltech.cedl.dataexchange.entity.tradespace;
 
-import org.springframework.context.ApplicationContext;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterTreeIterator;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.Collection;
@@ -34,10 +33,15 @@ import java.util.Map;
  */
 public class TradespaceModelBridge {
 
-    public static Collection<ParameterModel> getModelOutputParameters() {
-        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
-        Project project = context.getBean(Project.class);
-        ModelNode systemModel = project.getSystemModel();
+    private final SystemModel systemModel;
+    private final Map<String, ParameterModel> parameterDictionary;
+
+    public TradespaceModelBridge(Project project) {
+        systemModel = project.getSystemModel();
+        parameterDictionary = systemModel.makeParameterDictionary();
+    }
+
+    public Collection<ParameterModel> getModelOutputParameters() {
         List<ParameterModel> parameters = new LinkedList<>();
         ParameterTreeIterator subsystemParameterIterator = new ParameterTreeIterator(systemModel,
                 parameterModel -> parameterModel.getNature() == ParameterNature.OUTPUT);
@@ -45,15 +49,22 @@ public class TradespaceModelBridge {
         return parameters;
     }
 
-    public static String getParameterName(String parameterUuid) {
+    public String getParameterName(String parameterUuid) {
         if (parameterUuid == null) return "<not defined>";
-        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
-        Project project = context.getBean(Project.class);
-        Map<String, ParameterModel> parameterDictionary = project.getStudy().getSystemModel().makeParameterDictionary();
 
         ParameterModel parameterModel = parameterDictionary.get(parameterUuid);
         if (parameterModel != null) {
             return parameterModel.getNodePath();
+        }
+        return "<not found>";
+    }
+
+    public String getParameterUnitOfMeasure(String parameterUuid) {
+        if (parameterUuid == null) return "<not defined>";
+
+        ParameterModel parameterModel = parameterDictionary.get(parameterUuid);
+        if (parameterModel != null) {
+            return parameterModel.getUnit().asText();
         }
         return "<not found>";
     }

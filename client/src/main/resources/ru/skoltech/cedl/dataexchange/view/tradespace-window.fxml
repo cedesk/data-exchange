@@ -5,17 +5,16 @@
 <?import org.controlsfx.glyphfont.Glyph?>
 <?import ru.skoltech.cedl.dataexchange.control.FiguresOfMeritEditor?>
 <?import ru.skoltech.cedl.dataexchange.control.TradespaceView?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="1100.0" stylesheets="@styling.css"
-            xmlns="http://javafx.com/javafx/8.0.112"
+<AnchorPane prefHeight="600.0" prefWidth="1100.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.121"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.TradespaceController">
     <children>
         <SplitPane dividerPositions="0.55" prefHeight="600.0" prefWidth="900.0" AnchorPane.bottomAnchor="0.0"
                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <items>
                 <AnchorPane SplitPane.resizableWithParent="true">
-                    <TitledPane collapsible="false" text="Tradespace Chart"
-                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <TitledPane collapsible="false" text="Tradespace Chart" AnchorPane.bottomAnchor="0.0"
+                                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                         <BorderPane>
                             <center>
                                 <TradespaceView fx:id="tradespaceView"/>
@@ -23,7 +22,7 @@
                             <top>
                                 <ToolBar BorderPane.alignment="CENTER">
                                     <Label text="X-Axis"/>
-                                    <ComboBox fx:id="xAxisCombo" prefWidth="150.0"/>
+                                    <ComboBox prefWidth="150.0" fx:id="xAxisCombo"/>
                                     <Label text="Y-Axis"/>
                                     <ComboBox fx:id="yAxisCombo" prefWidth="150.0"/>
                                     <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
@@ -49,11 +48,17 @@
                     </TitledPane>
                 </AnchorPane>
                 <AnchorPane SplitPane.resizableWithParent="true">
-                    <TitledPane collapsible="false" text="Figures of Merit Definitions"
-                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                        <FiguresOfMeritEditor fx:id="figuresOfMeritEditor"/>
-                    </TitledPane>
+                    <SplitPane dividerPositions="0.5" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0"
+                               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <items>
+                            <TitledPane collapsible="false" text="Figures of Merit Definitions">
+                                <FiguresOfMeritEditor fx:id="figuresOfMeritEditor"/>
+                            </TitledPane>
+                            <TitledPane collapsible="false" text="Epochs">
+                                <TextField fx:id="epochText" editable="false"/>
+                            </TitledPane>
+                        </items>
+                    </SplitPane>
                 </AnchorPane>
             </items>
         </SplitPane>

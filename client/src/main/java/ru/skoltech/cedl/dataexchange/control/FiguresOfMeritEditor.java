@@ -16,6 +16,7 @@ import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.Optimality;
 
 import java.io.IOException;
 import java.net.URL;
@@ -62,9 +63,9 @@ public class FiguresOfMeritEditor extends ScrollPane implements Initializable {
             String figureOfMeritName = figureOfMeritChoice.get();
             boolean hasSameName = tradespace.getDefinitionsMap().containsKey(figureOfMeritName);
             if (hasSameName) {
-                Dialogues.showWarning("Duplicate figure of meritname", "Such a figure of merits was already defined!");
+                Dialogues.showWarning("Duplicate figure of merit name", "Such a figure of merit was already defined!");
             } else {
-                FigureOfMeritDefinition fom = new FigureOfMeritDefinition(figureOfMeritName, "none"); // TODO add unit
+                FigureOfMeritDefinition fom = new FigureOfMeritDefinition(figureOfMeritName, "none", Optimality.MAXIMAL); // TODO add unit
                 tradespace.getDefinitions().add(fom);
                 renderFigureOfMerit(fom);
             }
@@ -94,7 +95,7 @@ public class FiguresOfMeritEditor extends ScrollPane implements Initializable {
     private void renderFigureOfMerit(FigureOfMeritDefinition figureOfMeritDefinition) {
         FigureOfMeritView editor = new FigureOfMeritView(figureOfMeritDefinition);
         Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
-        removeButton.setTooltip(new Tooltip("Remove external model"));
+        removeButton.setTooltip(new Tooltip("Remove figure of merit"));
         removeButton.setOnAction(FiguresOfMeritEditor.this::deleteFigureOfMerit);
         removeButton.setMinWidth(28);
         HBox extModRow = new HBox(6, editor, removeButton);

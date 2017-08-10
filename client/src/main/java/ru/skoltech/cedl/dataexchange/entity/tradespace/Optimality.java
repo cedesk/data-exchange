@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.entity.calculation;
+package ru.skoltech.cedl.dataexchange.entity.tradespace;
 
-/**
- * Created by D.Knoll on 23.09.2015.
- */
-public enum ArgumentType {
-    LITERAL,
-    PARAMETER
+public enum Optimality {
+    MINIMAL {
+        public String toString() {
+            return "minimal";
+        }
+    },
+    MAXIMAL {
+        public String toString() {
+            return "maximal";
+        }
+    };
 }
