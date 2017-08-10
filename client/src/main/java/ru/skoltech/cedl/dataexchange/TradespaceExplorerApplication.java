@@ -24,8 +24,8 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
 import ru.skoltech.cedl.dataexchange.controller.TradespaceController;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
-import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;
-import ru.skoltech.cedl.dataexchange.tradespace.TradespaceFactory;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceFactory;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.File;

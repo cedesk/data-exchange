@@ -1,18 +1,44 @@
-package ru.skoltech.cedl.dataexchange.tradespace;
+/*
+ * Copyright 2017 Skolkovo Institute of Science and Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+package ru.skoltech.cedl.dataexchange.entity.tradespace;
+
+import javax.persistence.*;
 import java.util.List;
 
 /**
  * Created by d.knoll on 6/23/2017.
  */
+@Entity
 public class DesignPoint {
+
+    @Id
+    @Column(name = "id")
+    @GeneratedValue
+    private long id;
 
     private String description;
 
+    @ManyToOne(targetEntity = Epoch.class)
     private Epoch epoch;
 
+    @ManyToOne(targetEntity = ModelStateLink.class)
     private ModelStateLink modelStateLink;
 
+    @OneToMany(targetEntity = FigureOfMeritValue.class)
     private List<FigureOfMeritValue> values;
 
     public DesignPoint(Epoch epoch, List<FigureOfMeritValue> values) {
@@ -42,6 +68,14 @@ public class DesignPoint {
         this.epoch = epoch;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public ModelStateLink getModelStateLink() {
         return modelStateLink;
     }
@@ -67,7 +101,8 @@ public class DesignPoint {
 
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (!epoch.equals(that.epoch)) return false;
-        if (modelStateLink != null ? !modelStateLink.equals(that.modelStateLink) : that.modelStateLink != null) return false;
+        if (modelStateLink != null ? !modelStateLink.equals(that.modelStateLink) : that.modelStateLink != null)
+            return false;
         return values.equals(that.values);
     }
 

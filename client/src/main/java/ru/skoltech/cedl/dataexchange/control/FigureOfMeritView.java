@@ -9,8 +9,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.tradespace.FigureOfMeritDefinition;
-import ru.skoltech.cedl.dataexchange.tradespace.TradespaceModelBridge;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceModelBridge;
 
 import java.io.IOException;
 import java.net.URL;

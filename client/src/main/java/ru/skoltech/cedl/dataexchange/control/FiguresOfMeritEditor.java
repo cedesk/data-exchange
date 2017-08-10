@@ -14,8 +14,8 @@ import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.controller.Dialogues;
-import ru.skoltech.cedl.dataexchange.tradespace.FigureOfMeritDefinition;
-import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
 
 import java.io.IOException;
 import java.net.URL;

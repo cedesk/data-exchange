@@ -15,9 +15,9 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.control.FiguresOfMeritEditor;
 import ru.skoltech.cedl.dataexchange.control.TradespaceView;
-import ru.skoltech.cedl.dataexchange.tradespace.FigureOfMeritChartDefinition;
-import ru.skoltech.cedl.dataexchange.tradespace.FigureOfMeritDefinition;
-import ru.skoltech.cedl.dataexchange.tradespace.MultitemporalTradespace;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritChartDefinition;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
 
 import javax.imageio.ImageIO;
 import java.io.File;

@@ -11,7 +11,7 @@ import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
-import ru.skoltech.cedl.dataexchange.tradespace.*;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
 
 import java.util.Collection;
 import java.util.LinkedList;

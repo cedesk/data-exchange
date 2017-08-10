@@ -1,12 +1,22 @@
-package ru.skoltech.cedl.dataexchange.tradespace;
+package ru.skoltech.cedl.dataexchange.entity.tradespace;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by d.knoll on 6/23/2017.
  */
+@Entity
 public class Epoch {
+
+    @Id
+    @Column(name = "id")
+    @GeneratedValue
+    private long id;
 
     private int year;
 
