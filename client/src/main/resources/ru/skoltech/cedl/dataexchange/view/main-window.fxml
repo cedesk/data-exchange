@@ -84,6 +84,8 @@
                                                         onAction="#openDepencencyView" text="N-square Chart"/>
                                                 <MenuItem
                                                         onAction="#openChangeHistoryAnalysis" text="Change History Analyis"/>
+                                                <MenuItem
+                                                        onAction="#openTradespaceExplorer" text="Tradespace Explorer"/>
                                             </items>
                                         </Menu>
                                         <Menu text="_Help">
