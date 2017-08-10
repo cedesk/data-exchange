@@ -55,17 +55,19 @@ public class TradespaceView extends AnchorPane {
             FigureOfMeritDefinition yFom = chartDefinition.getAxis2();
             if (xFom != null && yFom != null) {
                 Bounds bounds = extractBounds(tradespace, xFom, yFom);
-                ObservableList<XYChart.Data<Number, Number>> points = extractPoints(tradespace, xFom, yFom);
 
                 Axis<Number> xAxis = new NumberAxis(xFom.getName(), bounds.getMinX(), bounds.getMaxX(), bounds.getMinZ());
                 Axis<Number> yAxis = new NumberAxis(yFom.getName(), bounds.getMinY(), bounds.getMaxY(), bounds.getDepth());
                 chart = new ScatterChart<>(xAxis, yAxis);
                 chart.setTitle("Tradespace");
 
-                XYChart.Series<Number, Number> series1 = new XYChart.Series<>();
-                series1.setName("current epoch");
-                series1.setData(points);
-                chart.getData().setAll(series1);
+                for (Epoch epoch : tradespace.getEpochs()) {
+                    ObservableList<XYChart.Data<Number, Number>> points = extractPoints(tradespace, epoch, xFom, yFom);
+                    XYChart.Series<Number, Number> series1 = new XYChart.Series<>();
+                    series1.setName(epoch.asText());
+                    series1.setData(points);
+                    chart.getData().add(series1);
+                }
 
                 getChildren().setAll(chart);
                 return;
@@ -103,21 +105,23 @@ public class TradespaceView extends AnchorPane {
         return bounds;
     }
 
-    private ObservableList<XYChart.Data<Number, Number>> extractPoints(MultitemporalTradespace tradespace,
+    private ObservableList<XYChart.Data<Number, Number>> extractPoints(MultitemporalTradespace tradespace, Epoch epoch,
                                                                        FigureOfMeritDefinition fomX, FigureOfMeritDefinition fomY) {
         Collection<XYChart.Data<Number, Number>> points = new LinkedList<>();
         for (DesignPoint designPoint : tradespace.getDesignPoints()) {
             Double x = null, y = null;
-            for (FigureOfMeritValue fomValue : designPoint.getValues()) {
-                if (fomValue.getDefinition().equals(fomX)) {
-                    x = fomValue.getValue();
+            if (designPoint.getEpoch().equals(epoch)) {
+                for (FigureOfMeritValue fomValue : designPoint.getValues()) {
+                    if (fomValue.getDefinition().equals(fomX)) {
+                        x = fomValue.getValue();
+                    }
+                    if (fomValue.getDefinition().equals(fomY)) {
+                        y = fomValue.getValue();
+                    }
                 }
-                if (fomValue.getDefinition().equals(fomY)) {
-                    y = fomValue.getValue();
+                if (x != null && y != null) {
+                    points.add(new XYChart.Data<>(x, y));
                 }
-            }
-            if (x != null && y != null) {
-                points.add(new XYChart.Data<>(x, y));
             }
         }
         return FXCollections.observableArrayList(points);

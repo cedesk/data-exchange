@@ -40,6 +40,10 @@ public class Epoch {
         return epochs;
     }
 
+    public String asText() {
+        return Integer.toString(year);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

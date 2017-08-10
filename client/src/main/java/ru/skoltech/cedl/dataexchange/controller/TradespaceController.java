@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
@@ -15,6 +16,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.control.FiguresOfMeritEditor;
 import ru.skoltech.cedl.dataexchange.control.TradespaceView;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.Epoch;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritChartDefinition;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
@@ -24,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Created by d.knoll on 23/06/2017.
@@ -31,6 +34,9 @@ import java.util.ResourceBundle;
 public class TradespaceController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(TradespaceController.class);
+
+    @FXML
+    private TextField epochText;
 
     @FXML
     private ComboBox<FigureOfMeritDefinition> xAxisCombo;
@@ -58,6 +64,7 @@ public class TradespaceController implements Initializable {
         figuresOfMeritEditor.setTradespace(model);
         tradespaceView.setTradespace(model);
         updateComboBoxes();
+        updateEpochs();
     }
 
     @Override
@@ -120,6 +127,12 @@ public class TradespaceController implements Initializable {
         xAxisCombo.getSelectionModel().select(model.getDefinitions().get(0));
         yAxisCombo.setItems(FXCollections.observableArrayList(model.getDefinitions()));
         yAxisCombo.getSelectionModel().select(model.getDefinitions().get(1));
+    }
+
+    private void updateEpochs() {
+        if (model.getEpochs() != null) {
+            epochText.setText(model.getEpochs().stream().map(Epoch::asText).collect(Collectors.joining(", ")));
+        }
     }
 
     private void updateView() {
