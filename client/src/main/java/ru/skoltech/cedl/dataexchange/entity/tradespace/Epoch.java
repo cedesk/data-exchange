@@ -27,7 +27,7 @@ import java.util.List;
  * Created by d.knoll on 6/23/2017.
  */
 @Entity
-public class Epoch {
+public class Epoch implements Comparable<Epoch> {
 
     @Id
     @Column(name = "id")
@@ -58,6 +58,11 @@ public class Epoch {
 
     public String asText() {
         return Integer.toString(year);
+    }
+
+    @Override
+    public int compareTo(Epoch o) {
+        return Integer.compare(this.year, o.year);
     }
 
     @Override

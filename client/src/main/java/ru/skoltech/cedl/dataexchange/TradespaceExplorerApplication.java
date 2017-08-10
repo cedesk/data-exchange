@@ -53,9 +53,9 @@ public class TradespaceExplorerApplication extends ContextAwareApplication {
         Parent root = loader.load();
         TradespaceController tradespaceController = loader.getController();
 
-        URL url = TradespaceExplorerApplication.class.getResource("/GPUdataset_2015.csv");
+        URL url = TradespaceExplorerApplication.class.getResource("/GPUdataset_2013-2016.csv");
         File file = new File(url.getFile());
-        MultitemporalTradespace multitemporalTradespace = TradespaceFactory.readValuesForEpochFromCSV(file, 2015);
+        MultitemporalTradespace multitemporalTradespace = TradespaceFactory.readValuesForEpochFromCSV(file);
         tradespaceController.setModel(multitemporalTradespace);
 
         primaryStage.setTitle("CEDESK Tradespace Explorer");

@@ -21,9 +21,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -31,32 +29,43 @@ import java.util.stream.Collectors;
  */
 public class TradespaceFactory {
 
-    public static MultitemporalTradespace readValuesForEpochFromCSV(File file, int epoch) {
+    /**
+     * This method reads the data from a CSV file (sep=, and digit=.) assuming that the first column is the the
+     * design points description (a product name), and the last column contains the epochs year. (see GPUdataset_2013-2016.csv)
+     *
+     * @param file
+     * @return
+     */
+    public static MultitemporalTradespace readValuesForEpochFromCSV(File file) {
         MultitemporalTradespace multitemporalTradespace = new MultitemporalTradespace();
-        List<Epoch> epoches = Epoch.buildEpochs(epoch);
-        Epoch currentEpoch = epoches.get(0);
-        multitemporalTradespace.setEpochs(epoches);
+        Map<Integer, Epoch> epochMap = new HashMap<>();
 
         List<String> lines = getLines(file);
         String[] parts = lines.get(0).split(",");
 
         List<FigureOfMeritDefinition> definitions = FigureOfMeritDefinition
-                .buildFigureOfMeritDefinitions(ArrayUtils.subarray(parts, 1, parts.length));
+                .buildFigureOfMeritDefinitions(ArrayUtils.subarray(parts, 1, parts.length - 1));
         multitemporalTradespace.setDefinitions(definitions);
 
         List<DesignPoint> designPoints = new LinkedList<>();
         for (int row = 1; row < lines.size(); row++) {
             parts = lines.get(row).split(",");
-            List<FigureOfMeritValue> values = new ArrayList<>(parts.length - 1);
-            for (int col = 1; col < parts.length; col++) {
+            List<FigureOfMeritValue> values = new ArrayList<>(parts.length - 2);
+            Integer year = Integer.valueOf(parts[parts.length - 1]);
+            Epoch currentEpoch = epochMap.merge(year, new Epoch(year), (epoch1, epoch2) -> epoch2);
+            for (int col = 1; col < parts.length - 1; col++) {
                 Double value = Double.valueOf(parts[col]);
                 FigureOfMeritValue figureOfMeritValue = new FigureOfMeritValue(definitions.get(col - 1), value);
                 values.add(figureOfMeritValue);
             }
-            DesignPoint designPoint = new DesignPoint(currentEpoch, values);
+            DesignPoint designPoint = new DesignPoint(parts[0], currentEpoch, values);
             designPoints.add(designPoint);
         }
         multitemporalTradespace.setDesignPoints(designPoints);
+
+        ArrayList<Epoch> epochList = new ArrayList<>(epochMap.values());
+        epochList.sort(Comparator.naturalOrder());
+        multitemporalTradespace.setEpochs(epochList);
         return multitemporalTradespace;
     }
 
