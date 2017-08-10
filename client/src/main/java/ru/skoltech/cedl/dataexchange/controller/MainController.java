@@ -483,6 +483,10 @@ public class MainController implements Initializable {
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
+    public void openChangeHistoryAnalysis() {
+        guiService.openView("Change History Analyis", Views.CHANGE_HISTORY_ANALYSIS_WINDOW, getAppWindow());
+    }
+
     public void openDepencencyView() {
         guiService.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
     }

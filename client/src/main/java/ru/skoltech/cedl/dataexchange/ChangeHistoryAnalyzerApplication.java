@@ -13,12 +13,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.springframework.context.ApplicationContext;
 import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
-import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
-import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -40,7 +35,7 @@ public class ChangeHistoryAnalyzerApplication extends ContextAwareApplication {
         loadLastProject();
 
         FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);
-        FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.ANALYSIS_WINDOW);
+        FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.CHANGE_HISTORY_ANALYSIS_WINDOW);
 
         Parent root = loader.load();
         stage.setScene(new Scene(root));

@@ -31,7 +31,7 @@ public class Views {
     public static final URL MODEL_CONSISTENCY_WINDOW = Views.class.getResource("model-consistency-window.fxml");
     public static final URL DSM_WINDOW = Views.class.getResource("dsm-window.fxml");
     public static final URL DEPENDENCY_WINDOW = Views.class.getResource("dependency-window.fxml");
-    public static final URL ANALYSIS_WINDOW = Views.class.getResource("analysis-window.fxml");
+    public static final URL CHANGE_HISTORY_ANALYSIS_WINDOW = Views.class.getResource("analysis-window.fxml");
     public static final URL USER_MANAGEMENT_WINDOW = Views.class.getResource("user-management-window.fxml");
     public static final URL USER_EDITING_WINDOW = Views.class.getResource("user-editing-window.fxml");
     public static final URL USER_ROLES_EDITING_WINDOW = Views.class.getResource("user-role-management-window.fxml");
