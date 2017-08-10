@@ -39,7 +39,7 @@ public class FXMLLoaderFactory implements ApplicationContextAware {
 
     /**
      * Create {@link FXMLLoader} instance.
-     * Passed <i>*.fxml</i> file contains record about controler {@link Class}.
+     * Passed <i>*.fxml</i> file contains record about controller {@link Class}.
      * By use of this record required controller bean is retrieved from application context.
      *
      * @param location path to the <i>*.fxml</i> resource
@@ -50,4 +50,22 @@ public class FXMLLoaderFactory implements ApplicationContextAware {
         loader.setControllerFactory(clazz -> applicationContext.getBean(clazz));
         return loader;
     }
+
+    /**
+     * Create {@link FXMLLoader} instance.
+     * Passed <i>*.fxml</i> file contains record about controller {@link Class}.
+     * By use of this record required controller bean is retrieved from application context,
+     * where it must be stored under prototype scope.
+     * Passed arguments use for instantiating.
+     *
+     * @param location path to the <i>*.fxml</i> resource
+     * @param args arguments for controller instantiating
+     * @return FXMLLoader instance
+     */
+    public FXMLLoader createFXMLLoader(URL location, Object... args) {
+        FXMLLoader loader = new FXMLLoader(location);
+        loader.setControllerFactory(clazz -> applicationContext.getBean(clazz, args));
+        return loader;
+    }
+
 }

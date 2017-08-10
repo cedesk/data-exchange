@@ -43,6 +43,10 @@
         <property name="fileStorageService" ref="fileStorageService" />
     </bean>
 
+    <bean id="guiService" class="ru.skoltech.cedl.dataexchange.services.impl.GuiServiceImpl" >
+        <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
+    </bean>
+
     <bean id="modelUpdateService" class="ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl" />
 
     <bean id="differenceMergeService" class="ru.skoltech.cedl.dataexchange.services.impl.DifferenceMergeServiceImpl" >

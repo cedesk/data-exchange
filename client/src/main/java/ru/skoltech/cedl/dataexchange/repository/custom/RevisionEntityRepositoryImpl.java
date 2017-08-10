@@ -45,7 +45,8 @@ public class RevisionEntityRepositoryImpl implements RevisionEntityRepositoryCus
         Object[] array = (Object[]) reader.createQuery()
                 .forRevisionsOfEntity(entityClass, false, true)
                 .add(AuditEntity.id().eq(id))
-                .addOrder(AuditEntity.revisionNumber().desc()).setMaxResults(1)
+                .addOrder(AuditEntity.revisionNumber().desc())
+                .setMaxResults(1)
                 .getSingleResult();
 
         return (CustomRevisionEntity) array[1];

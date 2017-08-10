@@ -27,192 +27,151 @@
            prefWidth="900.0"
            stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
            fx:controller="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
-    <items>
-        <AnchorPane>
-            <children>
-                <TitledPane animated="false" collapsible="false" text="Structure" AnchorPane.bottomAnchor="290.0"
-                            AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                    <content>
-                        <TreeView fx:id="structureTree"/>
-                    </content>
-                </TitledPane>
-                <ToolBar prefHeight="40.0" AnchorPane.bottomAnchor="250.0" AnchorPane.leftAnchor="0.0"
-                         AnchorPane.rightAnchor="0.0">
-                    <items>
-                        <Button fx:id="addNodeButton" minWidth="28" mnemonicParsing="false" onAction="#addNode" text="">
+    <AnchorPane>
+        <TitledPane animated="false" collapsible="false" text="Structure" AnchorPane.bottomAnchor="290.0"
+                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <TreeView fx:id="structureTree"/>
+        </TitledPane>
+        <ToolBar prefHeight="40.0" AnchorPane.bottomAnchor="250.0" AnchorPane.leftAnchor="0.0"
+                 AnchorPane.rightAnchor="0.0">
+            <Button fx:id="addNodeButton" minWidth="28" mnemonicParsing="false" onAction="#addNode">
+                <tooltip>
+                    <Tooltip text="Add Node"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                </graphic>
+            </Button>
+            <Button fx:id="renameNodeButton" minWidth="28" mnemonicParsing="false" onAction="#renameNode">
+                <tooltip>
+                    <Tooltip text="Rename node"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
+                </graphic>
+            </Button>
+            <Button fx:id="deleteNodeButton" minWidth="28" mnemonicParsing="false" onAction="#deleteNode">
+                <tooltip>
+                    <Tooltip text="Remove Node"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="MINUS"/>
+                </graphic>
+            </Button>
+            <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView">
+                <tooltip>
+                    <Tooltip text="Refresh View"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                </graphic>
+            </Button>
+        </ToolBar>
+        <TitledPane fx:id="ownerPane" collapsible="false" prefHeight="70.0"
+                    text="Owners" AnchorPane.bottomAnchor="170.0" AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0">
+            <VBox>
+                <TextField fx:id="ownersText" editable="false"/>
+            </VBox>
+        </TitledPane>
+        <TitledPane fx:id="dependencyPane" collapsible="false" prefHeight="170.0"
+                    text="Dependencies" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0">
+            <VBox>
+                <Label text="upstream"/>
+                <TextField fx:id="upstreamDependenciesText" editable="false"/>
+                <Label text="downstream"/>
+                <TextField fx:id="downstreamDependenciesText" editable="false"/>
+                <HBox>
+                    <VBox.margin>
+                        <Insets top="8.0"/>
+                    </VBox.margin>
+                    <Button mnemonicParsing="false" onAction="#openDsmView" text="View DSM">
+                    </Button>
+                    <Button mnemonicParsing="false" onAction="#openDependencyView" text="View N2">
+                        <HBox.margin>
+                            <Insets left="8.0"/>
+                        </HBox.margin>
+                    </Button>
+                </HBox>
+            </VBox>
+        </TitledPane>
+    </AnchorPane>
+    <SplitPane dividerPositions="0.5" orientation="VERTICAL">
+        <TitledPane fx:id="externalModelPane" animated="false" text="External Model"
+                    AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <ExternalModelEditor fx:id="externalModelEditor" minHeight="70.0"/>
+        </TitledPane>
+        <TitledPane animated="false" text="Parameters" AnchorPane.topAnchor="70.0"
+                    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <SplitPane dividerPositions="0.5" orientation="VERTICAL">
+                <AnchorPane>
+                    <TableView fx:id="parameterTable" prefHeight="160"
+                               AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
+                               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <columns>
+                            <TableColumn fx:id="parameterNatureColumn" editable="false" prefWidth="60.0" text="Nature">
+                                <cellValueFactory>
+                                    <PropertyValueFactory property="nature"/>
+                                </cellValueFactory>
+                            </TableColumn>
+                            <TableColumn fx:id="parameterNameColumn" editable="false" prefWidth="150.0" text="Name">
+                                <cellValueFactory>
+                                    <PropertyValueFactory property="name"/>
+                                </cellValueFactory>
+                            </TableColumn>
+                            <TableColumn fx:id="parameterValueColumn" prefWidth="60.0" text="Value">
+                            </TableColumn>
+                            <TableColumn fx:id="parameterUnitColumn" prefWidth="100.0" text="Unit">
+                            </TableColumn>
+                            <TableColumn fx:id="parameterValueSourceColumn" prefWidth="100.0" text="Value Source">
+                                <cellValueFactory>
+                                    <PropertyValueFactory property="valueSource"/>
+                                </cellValueFactory>
+                            </TableColumn>
+                            <TableColumn fx:id="parameterInfoColumn" editable="false" prefWidth="160.0" text="Information">
+                            </TableColumn>
+                            <TableColumn fx:id="parameterDescriptionColumn" editable="false"
+                                         prefWidth="100.0" text="Description">
+                                <cellValueFactory>
+                                    <PropertyValueFactory property="description"/>
+                                </cellValueFactory>
+                            </TableColumn>
+                        </columns>
+                    </TableView>
+                    <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                             AnchorPane.rightAnchor="0.0">
+                        <Button fx:id="addParameterButton" minWidth="28" mnemonicParsing="false" onAction="#addParameter">
                             <tooltip>
-                                <Tooltip text="Add Node"/>
+                                <Tooltip text="Add Parameter"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
                             </graphic>
                         </Button>
-                        <Button fx:id="renameNodeButton" minWidth="28" mnemonicParsing="false" onAction="#renameNode"
-                                text="">
+                        <Button fx:id="deleteParameterButton" minWidth="28" mnemonicParsing="false" onAction="#deleteParameter">
                             <tooltip>
-                                <Tooltip text="Rename node"/>
-                            </tooltip>
-                            <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
-                            </graphic>
-                        </Button>
-                        <Button fx:id="deleteNodeButton" minWidth="28" mnemonicParsing="false" onAction="#deleteNode"
-                                text="">
-                            <tooltip>
-                                <Tooltip text="Remove Node"/>
+                                <Tooltip text="Remove Parameter"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="MINUS"/>
                             </graphic>
                         </Button>
-                        <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView" text="">
+                        <Button fx:id="viewParameterHistoryButton" minWidth="28"
+                                mnemonicParsing="false" onAction="#openParameterHistoryDialog">
                             <tooltip>
-                                <Tooltip text="Refresh View"/>
+                                <Tooltip text="View Parameter Revision History"/>
                             </tooltip>
                             <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                                <Glyph fontFamily="FontAwesome" icon="HISTORY"/>
                             </graphic>
                         </Button>
-                    </items>
-                </ToolBar>
-                <TitledPane fx:id="ownerPane" collapsible="false" prefHeight="70.0"
-                            text="Owners" AnchorPane.bottomAnchor="170.0" AnchorPane.leftAnchor="0.0"
-                            AnchorPane.rightAnchor="0.0">
-                    <content>
-                        <VBox>
-                            <children>
-                                <TextField fx:id="ownersText" editable="false"/>
-                            </children>
-                        </VBox>
-                    </content>
+                    </ToolBar>
+                </AnchorPane>
+                <TitledPane collapsible="false" text="Parameter Details">
+                    <ParameterEditor fx:id="parameterEditor" minHeight="280.0" prefHeight="340.0"/>
                 </TitledPane>
-                <TitledPane fx:id="dependencyPane" collapsible="false" prefHeight="170.0"
-                            text="Dependencies" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                            AnchorPane.rightAnchor="0.0">
-                    <content>
-                        <VBox>
-                            <children>
-                                <Label text="upstream"/>
-                                <TextField fx:id="upstreamDependenciesText" editable="false"/>
-                                <Label text="downstream"/>
-                                <TextField fx:id="downstreamDependenciesText" editable="false"/>
-                                <HBox>
-                                    <children>
-                                        <Button mnemonicParsing="false" onAction="#openDsmView" text="View DSM">
-                                        </Button>
-                                        <Button mnemonicParsing="false" onAction="#openDepencencyView" text="View N2">
-                                            <HBox.margin>
-                                                <Insets left="8.0"/>
-                                            </HBox.margin>
-                                        </Button>
-                                    </children>
-                                    <VBox.margin>
-                                        <Insets top="8.0"/>
-                                    </VBox.margin>
-                                </HBox>
-                            </children>
-                        </VBox>
-                    </content>
-                </TitledPane>
-            </children>
-        </AnchorPane>
-        <SplitPane dividerPositions="0.5" orientation="VERTICAL">
-            <items>
-                <TitledPane fx:id="externalModelPane" animated="false" expanded="true" text="External Model"
-                            AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-                    <content>
-                        <ExternalModelEditor fx:id="externalModelEditor" minHeight="70.0"/>
-                    </content>
-                </TitledPane>
-                <TitledPane animated="false" expanded="true" text="Parameters" AnchorPane.topAnchor="70.0"
-                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-                    <content>
-                        <SplitPane dividerPositions="0.5" orientation="VERTICAL">
-                            <items>
-                                <AnchorPane>
-                                    <children>
-                                        <TableView fx:id="parameterTable" prefHeight="160"
-                                                   AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
-                                                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                            <columns>
-                                                <TableColumn fx:id="parameterNatureColumn" editable="false"
-                                                             prefWidth="60.0" text="Nature">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="nature"/>
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                                <TableColumn fx:id="parameterNameColumn" editable="false"
-                                                             prefWidth="150.0" text="Name">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="name"/>
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                                <TableColumn fx:id="parameterValueColumn" prefWidth="60.0" text="Value">
-                                                </TableColumn>
-                                                <TableColumn fx:id="parameterUnitColumn" prefWidth="100.0" text="Unit">
-                                                </TableColumn>
-                                                <TableColumn fx:id="parameterValueSourceColumn" prefWidth="100.0"
-                                                             text="Value Source">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="valueSource"/>
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                                <TableColumn fx:id="parameterInfoColumn" editable="false"
-                                                             prefWidth="160.0" text="Information">
-                                                </TableColumn>
-                                                <TableColumn fx:id="parameterDescriptionColumn" editable="false"
-                                                             prefWidth="100.0" text="Description">
-                                                    <cellValueFactory>
-                                                        <PropertyValueFactory property="description"/>
-                                                    </cellValueFactory>
-                                                </TableColumn>
-                                            </columns>
-                                        </TableView>
-                                        <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                                 AnchorPane.rightAnchor="0.0">
-                                            <items>
-                                                <Button fx:id="addParameterButton" minWidth="28" mnemonicParsing="false"
-                                                        onAction="#addParameter" text="">
-                                                    <tooltip>
-                                                        <Tooltip text="Add Parameter"/>
-                                                    </tooltip>
-                                                    <graphic>
-                                                        <Glyph fontFamily="FontAwesome" icon="PLUS"/>
-                                                    </graphic>
-                                                </Button>
-                                                <Button fx:id="deleteParameterButton" minWidth="28"
-                                                        mnemonicParsing="false" onAction="#deleteParameter" text="">
-                                                    <tooltip>
-                                                        <Tooltip text="Remove Parameter"/>
-                                                    </tooltip>
-                                                    <graphic>
-                                                        <Glyph fontFamily="FontAwesome" icon="MINUS"/>
-                                                    </graphic>
-                                                </Button>
-                                                <Button fx:id="viewParameterHistoryButton" minWidth="28"
-                                                        mnemonicParsing="false" onAction="#openParameterHistoryDialog"
-                                                        text="">
-                                                    <tooltip>
-                                                        <Tooltip text="View Parameter Revision History"/>
-                                                    </tooltip>
-                                                    <graphic>
-                                                        <Glyph fontFamily="FontAwesome" icon="HISTORY"/>
-                                                    </graphic>
-                                                </Button>
-                                            </items>
-                                        </ToolBar>
-                                    </children>
-                                </AnchorPane>
-                                <TitledPane collapsible="false" expanded="true" text="Parameter Details">
-                                    <content>
-                                        <ParameterEditor fx:id="parameterEditor" minHeight="280.0" prefHeight="340.0"/>
-                                    </content>
-                                </TitledPane>
-                            </items>
-                        </SplitPane>
-                    </content>
-                </TitledPane>
-            </items>
-        </SplitPane>
-    </items>
+            </SplitPane>
+        </TitledPane>
+    </SplitPane>
 </SplitPane>

@@ -35,6 +35,7 @@
         <property name="updateService" ref="updateService" />
         <property name="executor" ref="executor" />
         <property name="userManagementService" ref="userManagementService"/>
+        <property name="guiService" ref="guiService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.ChangeAnalysisController" >
@@ -43,7 +44,6 @@
     </bean>
 
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
-        <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />
         <property name="actionLogger" ref="actionLogger" />
         <property name="fileStorageService" ref="fileStorageService" />
@@ -51,6 +51,7 @@
         <property name="modelUpdateService" ref="modelUpdateService" />
         <property name="unitManagementService" ref="unitManagementService"/>
         <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
+        <property name="guiService" ref="guiService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.DiffController">
@@ -69,6 +70,7 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.DsmController" >
         <property name="project" ref="project" />
+        <property name="guiService" ref="guiService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.TradespaceController" >
@@ -78,9 +80,10 @@
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />
         <property name="userRoleManagementService" ref="userRoleManagementService" />
+        <property name="guiService" ref="guiService"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.controller.UserEditingController" />
+    <bean class="ru.skoltech.cedl.dataexchange.controller.UserEditingController" scope="prototype" />
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserRoleManagementController" >
         <property name="project" ref="project" />
@@ -96,7 +99,7 @@
         <property name="project" ref="project" />
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController">
+    <bean class="ru.skoltech.cedl.dataexchange.controller.RevisionHistoryController" scope="prototype">
         <property name="parameterModelService" ref="parameterModelService"/>
     </bean>
 
@@ -105,8 +108,12 @@
         <property name="applicationSettings" ref="applicationSettings"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.controller.AboutController" />
+    <bean class="ru.skoltech.cedl.dataexchange.controller.AboutController" >
+        <property name="guiService" ref="guiService"/>
+    </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.controller.GuideController" />
+    <bean class="ru.skoltech.cedl.dataexchange.controller.GuideController" >
+        <property name="guiService" ref="guiService"/>
+    </bean>
 
 </beans>

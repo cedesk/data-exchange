@@ -17,6 +17,7 @@
 package ru.skoltech.cedl.dataexchange.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.history.RevisionRepository;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 
 /**
@@ -24,6 +25,8 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public interface ParameterModelRepository extends JpaRepository<ParameterModel, Long>, ParameterModelRepositoryCustom {
+public interface ParameterModelRepository extends JpaRepository<ParameterModel, Long>,
+                                                    RevisionRepository<ParameterModel, Long, Integer>,
+                                                    ParameterModelRepositoryCustom {
 
 }

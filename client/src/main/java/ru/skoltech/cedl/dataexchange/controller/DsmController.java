@@ -26,12 +26,12 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.SelectionMode;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.*;
-import ru.skoltech.cedl.dataexchange.GuiUtils;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.services.GuiService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.NumericalDSM;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -55,7 +55,12 @@ public class DsmController implements Initializable {
     @FXML
     private CheckBox weightedDsmCheckbox;
 
+    private GuiService guiService;
     private Project project;
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
+    }
 
     public void setProject(Project project) {
         this.project = project;
@@ -75,7 +80,7 @@ public class DsmController implements Initializable {
         NumericalDSM dsm = parameterLinkRegistry.makeNumericalDSM(systemModel);
         boolean weighted = weightedDsmCheckbox.isSelected();
         String code = dsm.getMatlabCode(weighted);
-        GuiUtils.copyTextToClipboard(code);
+        guiService.copyTextToClipboard(code);
     }
 
     public void refreshView(ActionEvent actionEvent) {

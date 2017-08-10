@@ -19,24 +19,21 @@ package ru.skoltech.cedl.dataexchange.controller;
 import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.services.GuiService;
+import ru.skoltech.cedl.dataexchange.services.GuiService.StageStartAction;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
-import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
@@ -67,9 +64,14 @@ public class UserManagementController implements Initializable {
     private FXMLLoaderFactory fxmlLoaderFactory;
     private Project project;
     private UserRoleManagementService userRoleManagementService;
+    private GuiService guiService;
 
     public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
+    }
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     public void setProject(Project project) {
@@ -145,29 +147,13 @@ public class UserManagementController implements Initializable {
     }
 
     public void openUserEditingView(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.USER_EDITING_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("User details");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(userTable.getScene().getWindow());
-
-            User selectedUser = userTable.getSelectionModel().getSelectedItem();
-            UserEditingController controller = loader.getController();
-            controller.setUserModel(selectedUser);
-
-            stage.showAndWait();
-            updateUsers();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+        User selectedUser = userTable.getSelectionModel().getSelectedItem();
+        Window ownerWindow = userTable.getScene().getWindow();
+        guiService.openView("User details", Views.USER_EDITING_WINDOW, ownerWindow, Modality.APPLICATION_MODAL, StageStartAction.SHOW_AND_WAIT, selectedUser);
+        updateUsers();
     }
 
-    public void updateView() {
+    private void updateView() {
         updateUsers();
     }
 

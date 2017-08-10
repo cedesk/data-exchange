@@ -16,7 +16,6 @@
 
 package ru.skoltech.cedl.dataexchange.entity;
 
-import org.hibernate.envers.RevisionType;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 
@@ -27,109 +26,85 @@ import java.util.Date;
 /**
  * Created by D.Knoll on 23.06.2015.
  */
-public class ParameterRevision extends ParameterModel {
+public class ParameterRevision {
 
-    private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private int revisionId;
+    private ParameterModel parameterModel;
+    private CustomRevisionEntity customRevisionEntity;
 
-    private Date revisionDate;
+    public ParameterRevision(ParameterModel versionedParameterModel, CustomRevisionEntity revisionEntity) {
+        this.parameterModel = versionedParameterModel;
+        this.customRevisionEntity = revisionEntity;
 
-    private String revisionAuthor;
-
-    private RevisionType revisionType;
-
-    public ParameterRevision(ParameterModel versionedParameterModel, CustomRevisionEntity revisionEntity, RevisionType revisionType) {
-        this.revisionId = revisionEntity.getId();
-        this.revisionDate = revisionEntity.getRevisionDate();
-        this.revisionAuthor = revisionEntity.getUsername();
-        this.revisionType = revisionType;
-
-        setId(versionedParameterModel.getId());
-        setName(versionedParameterModel.getName());
-        setValue(versionedParameterModel.getValue());
-        setUnit(versionedParameterModel.getUnit());
-        setIsReferenceValueOverridden(versionedParameterModel.getIsReferenceValueOverridden());
-        setOverrideValue(versionedParameterModel.getOverrideValue());
-        setDescription(versionedParameterModel.getDescription());
-        setNature(versionedParameterModel.getNature());
-        setIsExported(versionedParameterModel.getIsExported());
-        setValueSource(versionedParameterModel.getValueSource());
-        setValueReference(versionedParameterModel.getValueReference());
-        setValueLink(versionedParameterModel.getValueLink());
-        setCalculation(versionedParameterModel.getCalculation());
+        // TODO: bugs in Hibernate envers https://hibernate.atlassian.net/browse/HHH-8051
+        this.parameterModel.setParent(null);
+        if (this.parameterModel.getValueLink() != null) {
+            this.parameterModel.getValueLink().setParent(null);
+        }
     }
 
     public int getRevisionId() {
-        return revisionId;
-    }
-
-    public void setRevisionId(int revisionId) {
-        this.revisionId = revisionId;
+        return customRevisionEntity.getId();
     }
 
     public Date getRevisionDate() {
-        return revisionDate;
-    }
-
-    public void setRevisionDate(Date revisionDate) {
-        this.revisionDate = revisionDate;
-    }
-
-    public String getRevisionAuthor() {
-        return revisionAuthor;
-    }
-
-    public void setRevisionAuthor(String revisionAuthor) {
-        this.revisionAuthor = revisionAuthor;
-    }
-
-    public RevisionType getRevisionType() {
-        return revisionType;
-    }
-
-    public void setRevisionType(RevisionType revisionType) {
-        this.revisionType = revisionType;
-    }
-
-    public String getSourceDetails() {
-        if (getValueSource() == ParameterValueSource.REFERENCE && getValueReference() != null) {
-            return getValueReference().toString();
-        } else if (getValueSource() == ParameterValueSource.LINK && getValueLink() != null) {
-            return getValueLink().getNodePath();
-        } else if (getValueSource() == ParameterValueSource.CALCULATION && getCalculation() != null) {
-            return getCalculation().asText();
-        }
-        return "";
-    }
-
-    public String getUnitAsText() {
-        Unit unit = super.getUnit();
-        return unit != null ? unit.asText() : "";
+        return customRevisionEntity.getRevisionDate();
     }
 
     public String getRevisionDateAsText() {
-        return dateFormat.format(getRevisionDate());
+        return DATE_FORMAT.format(customRevisionEntity.getRevisionDate());
     }
 
-    @Override
+    public String getRevisionAuthor() {
+        return customRevisionEntity.getUsername();
+    }
+
+    public String getName() {
+        return parameterModel.getName();
+    }
+
+    public Double getValue() {
+        return parameterModel.getValue();
+    }
+
     public boolean getIsReferenceValueOverridden() {
-        return super.getIsReferenceValueOverridden();
+        return parameterModel.getIsReferenceValueOverridden();
     }
 
-    public boolean getReferenceValueOverridden() {
-        return super.getIsReferenceValueOverridden();
+    public Double getOverrideValue() {
+        return parameterModel.getOverrideValue();
     }
 
-    @Override
-    public int compareTo(ParameterModel o) {
-        if (this == o) return 0;
-        if (!(o instanceof ParameterRevision)) return -1;
+    public String getUnitAsText() {
+        Unit unit = parameterModel.getUnit();
+        return unit != null ? unit.asText() : "";
+    }
 
-        ParameterRevision that = (ParameterRevision) o;
-        int comp = Integer.compare(this.revisionId, that.revisionId);
-        if (comp != 0) return comp;
+    public ParameterNature getNature() {
+        return parameterModel.getNature();
+    }
 
-        return super.compareTo(that);
+    public ParameterValueSource getValueSource() {
+        return parameterModel.getValueSource();
+    }
+
+    public ParameterModel getValueLink() {
+        return parameterModel.getValueLink();
+    }
+
+    public String getNodePath() {
+        return parameterModel.getNodePath();
+    }
+
+    public String getSourceDetails() {
+        if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE && parameterModel.getValueReference() != null) {
+            return parameterModel.getValueReference().toString();
+        } else if (parameterModel.getValueSource() == ParameterValueSource.LINK && parameterModel.getValueLink() != null) {
+            return parameterModel.getValueLink().getNodePath();
+        } else if (parameterModel.getValueSource() == ParameterValueSource.CALCULATION && parameterModel.getCalculation() != null) {
+            return parameterModel.getCalculation().asText();
+        }
+        return "";
     }
 }
