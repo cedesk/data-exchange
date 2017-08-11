@@ -484,11 +484,11 @@ public class MainController implements Initializable {
     }
 
     public void openChangeHistoryAnalysis() {
-        guiService.openView("Change History Analyis", Views.CHANGE_HISTORY_ANALYSIS_WINDOW, getAppWindow());
+        guiService.openView("Change History Analyis [BETA]", Views.CHANGE_HISTORY_ANALYSIS_WINDOW, getAppWindow());
     }
 
     public void openTradespaceExplorer() {
-        guiService.openView("Tradespace Explorer", Views.TRADESPACE_WINDOW, getAppWindow());
+        guiService.openView("Tradespace Explorer [BETA]", Views.TRADESPACE_WINDOW, getAppWindow());
     }
 
     public void openDepencencyView() {
