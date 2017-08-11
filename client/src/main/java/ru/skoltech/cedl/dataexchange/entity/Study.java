@@ -133,7 +133,7 @@ public class Study implements PersistedEntity {
 
     @Override
     public int hashCode() {
-        int result = name.hashCode();
+        int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (systemModel != null ? systemModel.hashCode() : 0);
         result = 31 * result + (userRoleManagement != null ? userRoleManagement.hashCode() : 0);
         return result;

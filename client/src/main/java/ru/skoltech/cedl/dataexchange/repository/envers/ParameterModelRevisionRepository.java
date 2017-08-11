@@ -14,28 +14,18 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.repository.envers;
 
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.repository.history.RevisionRepository;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
-
-import java.util.List;
+import ru.skoltech.cedl.dataexchange.repository.envers.custom.ParameterModelRevisionRepositoryCustom;
 
 /**
- * Custom Data Access Operations with {@link ParameterModel} entity.
+ * Data Access Operations with {@link ParameterModel} revisions.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public interface ParameterModelRepositoryCustom {
+public interface ParameterModelRevisionRepository extends RevisionRepository<ParameterModel, Long, Integer>,
+        ParameterModelRevisionRepositoryCustom {
 
-    /**
-     * Find all revisions of {@link ParameterModel} by specified id,
-     * sorted by revision number in descending order.
-     *
-     * @param id of {@link ParameterModel}
-     * @return List of revisions in array of {@link Object} format ({@link Object[]}
-     */
-    @Transactional(readOnly = true)
-    List<ParameterRevision> findRevisionsOrderByRevisionNumberDesc(Long id);
 }

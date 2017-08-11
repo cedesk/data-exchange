@@ -73,9 +73,11 @@
     <!-- persistence -->
     <context:annotation-config />
     <tx:annotation-driven />
-    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository" />
-    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository"
+    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository.jpa" />
+    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository.envers"
                       factory-class="org.springframework.data.envers.repository.support.EnversRevisionRepositoryFactoryBean" />
+    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository.revision"
+                      factory-class="ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionRepositoryFactoryBean" />
 
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager" />
 

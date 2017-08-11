@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.repository.log.LogEntryRepository;
+import ru.skoltech.cedl.dataexchange.repository.jpa.LogEntryRepository;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 /**

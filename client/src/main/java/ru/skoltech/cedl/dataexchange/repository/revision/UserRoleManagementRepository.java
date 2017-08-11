@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.repository.revision;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityRepository;
 
 /**
- * Data Access Operations with {@link ExternalModel} entity.
+ * Data Access Operations with {@link UserRoleManagement} entity.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-
-public interface ExternalModelRepository extends JpaRepository<ExternalModel, Long> {
+public interface UserRoleManagementRepository extends JpaRevisionEntityRepository<UserRoleManagement, Long> {
 
 }

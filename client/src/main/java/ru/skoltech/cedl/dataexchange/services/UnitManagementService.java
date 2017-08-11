@@ -26,6 +26,21 @@ import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
  */
 public interface UnitManagementService {
 
+    /**
+     * Retrieve an {@link UnitManagement}
+     *
+     * @return unitManagement
+     */
+    UnitManagement findUnitManagement();
+
+    /**
+     * Saves an unitManagement.
+     *
+     * @param unitManagement unitManagement to save
+     * @return the saved unitManagement
+     */
+    UnitManagement saveUnitManagement(UnitManagement unitManagement);
+
     Unit obtainUnitByText(UnitManagement unitManagement, String unitStr);
 
     Unit obtainUnitBySymbolOrName(UnitManagement unitManagement, String unitStr);

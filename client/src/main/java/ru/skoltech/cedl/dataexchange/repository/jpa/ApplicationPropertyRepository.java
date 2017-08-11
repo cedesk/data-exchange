@@ -14,16 +14,26 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository.log;
+package ru.skoltech.cedl.dataexchange.repository.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
+import ru.skoltech.cedl.dataexchange.entity.ApplicationProperty;
 
 /**
- * Data Access Operations with {@link LogEntryRepository} entity.
+ * Data Access Operations with {@link ApplicationProperty} entity.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public interface LogEntryRepository extends JpaRepository<LogEntry, Long> {
+public interface ApplicationPropertyRepository extends JpaRepository<ApplicationProperty, Long> {
+
+    /**
+     * Id of scheme version property in the database.
+     */
+    long SCHEME_VERSION_APPLICATION_PROPERTY_ID = 1;
+
+    /**
+     * Name of the scheme version property.
+     */
+    String SCHEME_VERSION_APPLICATION_PROPERTY_NAME = "version";
 
 }

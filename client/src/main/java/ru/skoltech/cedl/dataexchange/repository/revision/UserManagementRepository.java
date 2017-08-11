@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.repository.revision;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.history.RevisionRepository;
-import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
+import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityRepository;
 
 /**
- * Data Access Operations with {@link ParameterModel} entity.
+ * Data Access Operations with {@link UserManagement} entity.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public interface ParameterModelRepository extends JpaRepository<ParameterModel, Long>,
-                                                    RevisionRepository<ParameterModel, Long, Integer>,
-                                                    ParameterModelRepositoryCustom {
+public interface UserManagementRepository extends JpaRevisionEntityRepository<UserManagement, Long> {
+
+    /**
+     * Default {@link UserManagement} id in the database
+     */
+    Long IDENTIFIER = 1L;
 
 }

@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.repository.jpa.custom;
 
+import org.apache.commons.lang3.tuple.Triple;
+import org.hibernate.envers.RevisionType;
+import org.springframework.transaction.annotation.Transactional;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 
 /**
@@ -33,6 +36,20 @@ public interface RevisionEntityRepositoryCustom {
      * @param entityClass class of entity, which persistence produced required {@link CustomRevisionEntity}
      * @return instance of {@link CustomRevisionEntity}
      */
+    @Transactional(readOnly = true)
     CustomRevisionEntity lastCustomRevisionEntity(Long id, Class entityClass);
 
+    /**
+     * Retrieve a full information about latest revision,
+     * which was stored along with entity of specified class and id.
+     * The information returns in form of {@link Triple} object, which stores an instance of changed entity,
+     * instance of {@link CustomRevisionEntity} revision entity and revision type.
+     *
+     * @param id id of entity, which persistence produced required {@link CustomRevisionEntity}
+     * @param entityClass class of entity, which persistence produced required {@link CustomRevisionEntity}
+     * @return triple object which which stores an instance of changed entity,
+     *          instance of {@link CustomRevisionEntity} revision entity and revision type.
+     */
+    @Transactional(readOnly = true)
+    <T> Triple<T, CustomRevisionEntity, RevisionType> lastRevision(Long id, Class<T> entityClass);
 }

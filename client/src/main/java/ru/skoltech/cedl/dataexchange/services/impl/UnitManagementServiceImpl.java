@@ -17,9 +17,11 @@
 package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.ClientApplication;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.repository.jpa.UnitManagementRepository;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 
@@ -28,9 +30,11 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.skoltech.cedl.dataexchange.repository.unit.UnitManagementRepository.IDENTIFIER;
+import static ru.skoltech.cedl.dataexchange.repository.jpa.UnitManagementRepository.IDENTIFIER;
 
 /**
+ * Implemntation of {@link UnitManagementService}.
+ *
  * Created by D.Knoll on 29.08.2015.
  */
 public class UnitManagementServiceImpl implements UnitManagementService {
@@ -41,8 +45,25 @@ public class UnitManagementServiceImpl implements UnitManagementService {
 
     private FileStorageService fileStorageService;
 
+    private final UnitManagementRepository unitManagementRepository;
+
+    @Autowired
+    public UnitManagementServiceImpl(UnitManagementRepository unitManagementRepository) {
+        this.unitManagementRepository = unitManagementRepository;
+    }
+
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
+    }
+
+    @Override
+    public UnitManagement findUnitManagement() {
+        return unitManagementRepository.findOne(UnitManagementRepository.IDENTIFIER);
+    }
+
+    @Override
+    public UnitManagement saveUnitManagement(UnitManagement unitManagement) {
+        return unitManagementRepository.saveAndFlush(unitManagement);
     }
 
     @Override

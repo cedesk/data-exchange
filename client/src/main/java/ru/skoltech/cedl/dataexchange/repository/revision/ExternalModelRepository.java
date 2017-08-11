@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository.model;
+package ru.skoltech.cedl.dataexchange.repository.revision;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityRepository;
 
 /**
- * Data Access Operations with {@link SystemModel} entity.
+ * Data Access Operations with {@link ExternalModel} entity.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public interface SystemModelRepository extends JpaRepository<SystemModel, Long> {
+
+public interface ExternalModelRepository extends JpaRevisionEntityRepository<ExternalModel, Long> {
 
 }

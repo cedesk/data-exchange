@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository.custom;
+package ru.skoltech.cedl.dataexchange.repository.jpa.custom.impl;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
-import ru.skoltech.cedl.dataexchange.repository.RevisionEntityRepositoryCustom;
+import ru.skoltech.cedl.dataexchange.repository.jpa.custom.RevisionEntityRepositoryCustom;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -51,4 +53,22 @@ public class RevisionEntityRepositoryImpl implements RevisionEntityRepositoryCus
 
         return (CustomRevisionEntity) array[1];
     }
+
+    @Override
+    public <T> Triple<T, CustomRevisionEntity, RevisionType> lastRevision(Long id, Class<T> entityClass) {
+        if (id == 0) {
+            return null; // quick exit for unpersisted entities
+        }
+        final AuditReader reader = AuditReaderFactory.get(entityManager);
+
+        Object[] array = (Object[]) reader.createQuery()
+                .forRevisionsOfEntity(entityClass, false, true)
+                .add(AuditEntity.id().eq(id))
+                .addOrder(AuditEntity.revisionNumber().desc())
+                .setMaxResults(1)
+                .getSingleResult();
+
+        return Triple.of((T)array[0], (CustomRevisionEntity) array[1], (RevisionType) array[2]);
+    }
+
 }

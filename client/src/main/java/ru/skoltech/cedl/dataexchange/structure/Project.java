@@ -22,7 +22,6 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
@@ -41,10 +40,6 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.repository.StudyRepository;
-import ru.skoltech.cedl.dataexchange.repository.unit.UnitManagementRepository;
-import ru.skoltech.cedl.dataexchange.repository.user.UserManagementRepository;
-import ru.skoltech.cedl.dataexchange.repository.user.UserRoleManagementRepository;
 import ru.skoltech.cedl.dataexchange.services.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -80,18 +75,6 @@ public class Project {
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
 
-    @Autowired
-    private StudyRepository studyRepository;
-
-    @Autowired
-    private UserManagementRepository userManagementRepository;
-
-    @Autowired
-    private UserRoleManagementRepository userRoleManagementRepository;
-
-    @Autowired
-    private UnitManagementRepository unitManagementRepository;
-
     private String projectName;
     private Study study;
     private UserManagement userManagement;
@@ -110,9 +93,7 @@ public class Project {
         this.projectName = projectName;
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
-        repositoryStateMachine.addObserver((o, arg) -> {
-            updatePossibleActions();
-        });
+        repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
     }
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
@@ -373,7 +354,7 @@ public class Project {
             return;
         }
         LocalTime startTime = LocalTime.now();
-        Long latestMod = studyRepository.findLatestModelModificationByName(projectName);
+        Long latestMod = studyService.findLatestModelModificationByStudyName(projectName);
         long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
         logger.info("checked repository study (" + checkDuration + "ms), " +
                 "last modification: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(latestMod)));
@@ -405,7 +386,7 @@ public class Project {
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {
-        studyRepository.deleteByName(studyName);
+        studyService.deleteStudyByName(studyName);
     }
 
     public void start() {
@@ -435,7 +416,7 @@ public class Project {
     }
 
     public boolean loadLocalStudy() {
-        Study study = studyRepository.findByName(projectName);
+        Study study = studyService.findStudyByName(projectName);
 
         if (study == null) {
             logger.error("Study not found!");
@@ -450,7 +431,7 @@ public class Project {
     }
 
     public boolean loadRepositoryStudy() {
-        Study repositoryStudy = studyRepository.findByName(projectName);
+        Study repositoryStudy = studyService.findStudyByName(projectName);
         this.setRepositoryStudy(repositoryStudy);
         if (repositoryStudy == null) {
             logger.error("Study not found!");
@@ -459,7 +440,7 @@ public class Project {
     }
 
     public boolean loadUnitManagement() {
-        unitManagement = unitManagementRepository.findOne(UnitManagementRepository.IDENTIFIER);
+        unitManagement = unitManagementService.findUnitManagement();
         if (unitManagement != null) {
             return true;
         }
@@ -469,7 +450,7 @@ public class Project {
     }
 
     public boolean loadUserManagement() {
-        userManagement = userManagementRepository.findOne(UserManagementRepository.IDENTIFIER);
+        userManagement = userManagementService.findUserManagement();
         if (userManagement != null) {
             return true;
         }
@@ -481,7 +462,7 @@ public class Project {
 
     public boolean loadUserRoleManagement() {
         long userRoleManagementId = getStudy().getUserRoleManagement().getId();
-        UserRoleManagement newUserRoleManagement = userRoleManagementRepository.findOne(userRoleManagementId);
+        UserRoleManagement newUserRoleManagement = userRoleManagementService.findUserRoleManagement(userRoleManagementId);
         if (newUserRoleManagement == null) {
             logger.error("Error loading user role management. recreating new user role management.");
 //            initializeUserRoleManagement(); //TODO initialize default UserRoleManagement?
@@ -507,7 +488,7 @@ public class Project {
             // store URM separately before study, to prevent links to deleted subsystems have storing study fail
             storeUserRoleManagement();
         }
-        Study newStudy = studyRepository.saveAndFlush(this.study);
+        Study newStudy = studyService.saveStudy(this.study);
         updateExternalModelStateInCache();
         setStudy(newStudy);
         setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
@@ -518,7 +499,7 @@ public class Project {
 
     public boolean storeUnitManagement() {
         try {
-            unitManagement = unitManagementRepository.saveAndFlush(unitManagement);
+            unitManagement = unitManagementService.saveUnitManagement(unitManagement);
             return true;
         } catch (Exception e) {
             logger.error("Error storing unit management.", e);
@@ -528,7 +509,7 @@ public class Project {
 
     public boolean storeUserManagement() {
         try {
-            userManagement = userManagementRepository.saveAndFlush(userManagement);
+            userManagement = userManagementService.saveUserManagement(userManagement);
             return true;
         } catch (Exception e) {
             logger.error("Error storing user management.", e);
@@ -539,7 +520,7 @@ public class Project {
     public boolean storeUserRoleManagement() {
         try {
             UserRoleManagement userRoleManagement = this.getStudy().getUserRoleManagement();
-            UserRoleManagement newUserRoleManagement = userRoleManagementRepository.saveAndFlush(userRoleManagement);
+            UserRoleManagement newUserRoleManagement = userRoleManagementService.saveUserRoleManagement(userRoleManagement);
             this.setUserRoleManagement(newUserRoleManagement);
             return true;
         } catch (Exception e) {

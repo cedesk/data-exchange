@@ -23,7 +23,7 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.repository.model.SystemModelRepository;
+import ru.skoltech.cedl.dataexchange.repository.revision.SystemModelRepository;
 import ru.skoltech.cedl.dataexchange.services.ParameterModelService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
