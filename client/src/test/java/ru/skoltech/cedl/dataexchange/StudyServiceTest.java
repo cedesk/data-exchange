@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
 /**
  * Created by dknoll on 23/05/15.
  */
-public class StudyStorageTest extends AbstractApplicationContextTest {
+public class StudyServiceTest extends AbstractApplicationContextTest {
 
     private ApplicationSettings applicationSettings;
     private StudyService studyService;
@@ -61,7 +61,7 @@ public class StudyStorageTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testStoreAndListStudies() {
+    public void testSaveAndListStudies() {
         String name1 = "testStudy-1";
         Study study1 = makeStudy(name1, 1);
         studyService.saveStudy(study1);
@@ -78,6 +78,47 @@ public class StudyStorageTest extends AbstractApplicationContextTest {
         List<String> storedStudyNames = studyService.findStudyNames();
 
         assertArrayEquals(createdStudies, storedStudyNames.toArray());
+    }
+
+    @Test
+    public void testSaveAndRetrieveStudy() {
+        String name = "testStudy";
+        Study studyPrototype = makeStudy(name, 2);
+        System.out.println(studyPrototype);
+
+        Study study = studyService.saveStudy(studyPrototype);
+        Study studyStored = studyService.findStudyByName(name);
+        System.out.println(studyStored);
+
+        assertEquals(studyPrototype, studyStored);
+        assertEquals(studyPrototype.getId(), studyStored.getId());
+        assertEquals(studyPrototype.getName(), studyStored.getName());
+        assertEquals(studyPrototype.getVersion(), studyStored.getVersion());
+        assertEquals(studyPrototype.getSystemModel(), studyStored.getSystemModel());
+        assertEquals(studyPrototype.getUserRoleManagement(), studyStored.getUserRoleManagement());
+
+        Triple<Study, CustomRevisionEntity, RevisionType> revision = revisionEntityRepository.lastRevision(study.getId(), Study.class);
+        assertEquals(study.getId(), revision.getLeft().getId());
+        assertEquals(applicationSettings.getProjectUserName(), revision.getMiddle().getUsername());
+        assertNull(revision.getMiddle().getTag());
+        assertEquals(RevisionType.ADD, revision.getRight());
+    }
+
+    @Test
+    public void testTagSaveStudy() {
+        String name = "testStudyTag";
+        Study studyPrototype = makeStudy(name, 2);
+        System.out.println(studyPrototype);
+
+        String tag = "tag";
+
+        Study study = studyService.saveStudy(studyPrototype, tag);
+
+        Triple<Study, CustomRevisionEntity, RevisionType> revision = revisionEntityRepository.lastRevision(study.getId(), Study.class);
+        assertEquals(study.getId(), revision.getLeft().getId());
+        assertEquals(applicationSettings.getProjectUserName(), revision.getMiddle().getUsername());
+        assertEquals(tag, revision.getMiddle().getTag());
+        assertEquals(RevisionType.ADD, revision.getRight());
     }
 
     @Test
@@ -116,29 +157,6 @@ public class StudyStorageTest extends AbstractApplicationContextTest {
         assertEquals(study2.getId(), deleteRevision2.getLeft().getId());
         assertEquals(applicationSettings.getProjectUserName(), deleteRevision2.getMiddle().getUsername());
         assertEquals(RevisionType.DEL, deleteRevision2.getRight());
-    }
-
-    @Test
-    public void testStoreAndRetrieveStudy() {
-        String name = "testStudy";
-        Study studyPrototype = makeStudy(name, 2);
-        System.out.println(studyPrototype);
-
-        Study study = studyService.saveStudy(studyPrototype);
-        Study studyStored = studyService.findStudyByName(name);
-        System.out.println(studyStored);
-
-        assertEquals(studyPrototype, studyStored);
-        assertEquals(studyPrototype.getId(), studyStored.getId());
-        assertEquals(studyPrototype.getName(), studyStored.getName());
-        assertEquals(studyPrototype.getVersion(), studyStored.getVersion());
-        assertEquals(studyPrototype.getSystemModel(), studyStored.getSystemModel());
-        assertEquals(studyPrototype.getUserRoleManagement(), studyStored.getUserRoleManagement());
-
-        Triple<Study, CustomRevisionEntity, RevisionType> revision = revisionEntityRepository.lastRevision(study.getId(), Study.class);
-        assertEquals(study.getId(), revision.getLeft().getId());
-        assertEquals(applicationSettings.getProjectUserName(), revision.getMiddle().getUsername());
-        assertEquals(RevisionType.ADD, revision.getRight());
     }
 
     private Study makeStudy(String projectName, int modelDepth) {

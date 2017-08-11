@@ -31,41 +31,51 @@ import java.util.List;
  * Created by Nikolay Groshkov on 10-Aug-17.
  */
 @NoRepositoryBean
+@Transactional
 public interface JpaRevisionEntityRepository<T, ID extends Serializable> extends JpaRepository<T, ID> {
 
-    @Transactional
     @Override
     <S extends T> S save(S entity);
 
-    @Transactional
+    /**
+     * Saves an entity and tag produced revision.
+     *
+     * @param entity entity to save
+     * @param tag tag for new revision
+     * @return the saved entity
+     */
+    <S extends T> S save(S entity, String tag);
+
     @Override
     <S extends T> List<S> save(Iterable<S> entities);
 
-    @Transactional
     @Override
     <S extends T> S saveAndFlush(S entity);
 
-    @Transactional
+    /**
+     * Saves an entity, tag produced revision and flushes changes instantly.
+     *
+     * @param entity entity to save
+     * @param tag tag for new revision
+     * @return the saved entity
+     */
+    <S extends T> S saveAndFlush(S entity, String tag);
+
     @Override
     void delete(ID id);
 
-    @Transactional
     @Override
     void delete(T entity);
 
-    @Transactional
     @Override
     void delete(Iterable<? extends T> entities);
 
-    @Transactional
     @Override
     void deleteAll();
 
-    @Transactional
     @Override
     void deleteInBatch(Iterable<T> entities);
 
-    @Transactional
     @Override
     void deleteAllInBatch();
 

@@ -21,11 +21,14 @@ import org.hibernate.envers.RevisionEntity;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.text.DateFormat;
-import java.util.Date;
 
 /**
+ * Revision entity extension.
+ * Along with basic revision information it stores
+ * the name of user who prodused change
+ * and can store a specific tag of revision.
+ *
  * Created by D.Knoll on 22.06.2015.
  */
 @Entity
@@ -36,11 +39,7 @@ public class CustomRevisionEntity extends DefaultTrackingModifiedEntitiesRevisio
     private static final long serialVersionUID = -1255842407304108513L;
 
     private String username;
-
-    @Transient
-    public Date getRevisionDate() {
-        return new Date(this.getTimestamp());
-    }
+    private String tag;
 
     public String getUsername() {
         return username;
@@ -50,24 +49,40 @@ public class CustomRevisionEntity extends DefaultTrackingModifiedEntitiesRevisio
         this.username = username;
     }
 
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof CustomRevisionEntity)) return false;
         if (!super.equals(o)) return false;
+
         CustomRevisionEntity that = (CustomRevisionEntity) o;
-        return (username.equals(that.username));
+
+        if (!username.equals(that.username)) return false;
+        return tag != null ? tag.equals(that.tag) : that.tag == null;
     }
 
+    @Override
     public int hashCode() {
-        int result;
-        result = super.getId();
-        result = 31 * result + (int) (getTimestamp() ^ (getTimestamp() >>> 32));
+        int result = super.hashCode();
+        result = 31 * result + username.hashCode();
+        result = 31 * result + (tag != null ? tag.hashCode() : 0);
         return result;
     }
 
     public String toString() {
-        return "CustomRevisionEntity(user = " + username + "id = " + getId() +
-                ", revisionDate = " + DateFormat.getDateTimeInstance().format(getRevisionDate()) +
+        return "CustomRevisionEntity(id = " + getId() +
+                ", user = " + username +
+                ", tag = " + tag +
+                ", revisionDate = " + DateFormat.getDateTimeInstance().format(this.getRevisionDate()) +
                 ", entityNames=" + getModifiedEntityNames() + ")";
     }
+
 }

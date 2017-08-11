@@ -82,6 +82,11 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
+    public Study saveStudy(Study study, String tag) {
+        return studyRepository.saveAndFlush(study, tag);
+    }
+
+    @Override
     public void deleteStudyByName(String studyName) {
         Study study = studyRepository.findByName(studyName);
         studyRepository.delete(study);

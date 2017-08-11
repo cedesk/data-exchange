@@ -51,7 +51,7 @@ public class JpaRevisionEntityRepositoryImpl<T, ID extends Serializable> extends
         this.applicationSettings = beanFactory.getBean(ApplicationSettings.class);
     }
 
-    private <S extends T> void storeUsernameOfCurrentCustomRevisionEntity(){
+    private void storeUsernameOfCurrentCustomRevisionEntity(){
         if (!entityClass.isAnnotationPresent(Audited.class)) {
             return;
         }
@@ -61,11 +61,27 @@ public class JpaRevisionEntityRepositoryImpl<T, ID extends Serializable> extends
         customRevisionEntity.setUsername(username);
     }
 
+    private void storeTagOfCurrentCustomRevisionEntity(String tag){
+        if (!entityClass.isAnnotationPresent(Audited.class)) {
+            return;
+        }
+        final AuditReader reader = AuditReaderFactory.get(entityManager);
+        CustomRevisionEntity customRevisionEntity = reader.getCurrentRevision(CustomRevisionEntity.class, true);
+        customRevisionEntity.setTag(tag);
+    }
+
     @Override
     public <S extends T> S save(S entity) {
         S newEntity = super.save(entity);
         this.storeUsernameOfCurrentCustomRevisionEntity();
         return newEntity;
+    }
+
+    @Override
+    public <S extends T> S save(S entity, String tag) {
+        S newEntry = this.save(entity);
+        this.storeTagOfCurrentCustomRevisionEntity(tag);
+        return newEntry;
     }
 
     @Override
@@ -80,6 +96,13 @@ public class JpaRevisionEntityRepositoryImpl<T, ID extends Serializable> extends
         S newEntity = super.saveAndFlush(entity);
         this.storeUsernameOfCurrentCustomRevisionEntity();
         return newEntity;
+    }
+
+    @Override
+    public <S extends T> S saveAndFlush(S entity, String tag) {
+        S newEntry = this.saveAndFlush(entity);
+        this.storeTagOfCurrentCustomRevisionEntity(tag);
+        return newEntry;
     }
 
     @Override

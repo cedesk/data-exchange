@@ -53,7 +53,7 @@ public class ParameterRevision {
     }
 
     public String getRevisionDateAsText() {
-        return DATE_FORMAT.format(customRevisionEntity.getRevisionDate());
+        return DATE_FORMAT.format(this.getRevisionDate());
     }
 
     public String getRevisionAuthor() {

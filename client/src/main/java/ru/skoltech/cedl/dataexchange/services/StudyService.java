@@ -62,6 +62,15 @@ public interface StudyService {
     Study saveStudy(Study study);
 
     /**
+     * Saves an study and tag produced revision.
+     *
+     * @param study study to save
+     * @param tag for tag new revision
+     * @return the saved study
+     */
+    Study saveStudy(Study study, String tag);
+
+    /**
      * Remove a {@link Study} with a specified name.
      * @param studyName name of the {@link Study}
      */
