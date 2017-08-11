@@ -30,8 +30,9 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "REVINFO")
-@RevisionEntity(CustomRevisionListener.class)
+@RevisionEntity
 public class CustomRevisionEntity extends DefaultTrackingModifiedEntitiesRevisionEntity {
+
     private static final long serialVersionUID = -1255842407304108513L;
 
     private String username;

@@ -16,15 +16,17 @@
 
 package ru.skoltech.cedl.dataexchange.services.impl;
 
-import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.entity.user.DisciplineSubSystem;
-import ru.skoltech.cedl.dataexchange.services.StudyService;
-import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.DisciplineSubSystem;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.repository.revision.StudyRepository;
+import ru.skoltech.cedl.dataexchange.services.StudyService;
+import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 
 import java.util.List;
 import java.util.Map;
@@ -32,11 +34,20 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
+ * Implementaion of {@link StudyService}.
+ *
  * Created by dknoll on 25/05/15.
  */
 public class StudyServiceImpl implements StudyService {
 
     private UserRoleManagementService userRoleManagementService;
+
+    private final StudyRepository studyRepository;
+
+    @Autowired
+    public StudyServiceImpl(StudyRepository studyRepository) {
+        this.studyRepository = studyRepository;
+    }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
@@ -55,6 +66,38 @@ public class StudyServiceImpl implements StudyService {
         return study;
     }
 
+    @Override
+    public List<String> findStudyNames() {
+        return studyRepository.findAllNames();
+    }
+
+    @Override
+    public Study findStudyByName(String studyName) {
+        return studyRepository.findByName(studyName);
+    }
+
+    @Override
+    public Study saveStudy(Study study) {
+        return studyRepository.saveAndFlush(study);
+    }
+
+    @Override
+    public void deleteStudyByName(String studyName) {
+        Study study = studyRepository.findByName(studyName);
+        studyRepository.delete(study);
+//        TODO: pass directly to custom and use
+//        studyRepository.deleteByName(studyName);
+    }
+
+    @Override
+    public void deleteAllStudies() {
+        studyRepository.deleteAll();
+    }
+
+    @Override
+    public Long findLatestModelModificationByStudyName(String studyName) {
+        return studyRepository.findLatestModelModificationByName(studyName);
+    }
 
     @Override
     public void relinkStudySubSystems(Study study) {

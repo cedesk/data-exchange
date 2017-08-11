@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.repository.envers.custom;
 
 import org.springframework.transaction.annotation.Transactional;
 import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
@@ -25,11 +25,11 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
 import java.util.List;
 
 /**
- * Custom Data Access Operations with {@link ParameterModel} entity.
+ * Custom Data Access Operations with {@link ParameterModel} revisions.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public interface ParameterModelRepositoryCustom {
+public interface ParameterModelRevisionRepositoryCustom {
 
     /**
      * Find all revisions of {@link ParameterModel} by specified id,
@@ -39,7 +39,7 @@ public interface ParameterModelRepositoryCustom {
      * @return List of revisions in array of {@link Object} format ({@link Object[]}
      */
     @Transactional(readOnly = true)
-    List<ParameterRevision> findRevisionsOrderByRevisionNumberDesc(Long id);
+    List<ParameterRevision> findParameterRevisionsOrderByRevisionNumberDesc(Long id);
 
     List<ParameterChange> findAllParameterChangesOfSystem(long systemId) throws RepositoryException;
 }

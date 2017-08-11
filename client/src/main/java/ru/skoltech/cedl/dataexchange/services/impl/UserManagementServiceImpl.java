@@ -17,15 +17,17 @@
 package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
+import ru.skoltech.cedl.dataexchange.repository.revision.UserManagementRepository;
 import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ru.skoltech.cedl.dataexchange.repository.user.UserManagementRepository.IDENTIFIER;
+import static ru.skoltech.cedl.dataexchange.repository.revision.UserManagementRepository.IDENTIFIER;
 
 /**
  * Created by dknoll on 13/05/15.
@@ -33,6 +35,13 @@ import static ru.skoltech.cedl.dataexchange.repository.user.UserManagementReposi
 public class UserManagementServiceImpl implements UserManagementService {
 
     private static final Logger logger = Logger.getLogger(UserManagementServiceImpl.class);
+
+    private final UserManagementRepository userManagementRepository;
+
+    @Autowired
+    public UserManagementServiceImpl(UserManagementRepository userManagementRepository) {
+        this.userManagementRepository = userManagementRepository;
+    }
 
     @Override
     public UserManagement createDefaultUserManagement() {
@@ -45,6 +54,16 @@ public class UserManagementServiceImpl implements UserManagementService {
         userManagement.getUsers().add(admin);
         userManagement.getUsers().add(expert);
         return userManagement;
+    }
+
+    @Override
+    public UserManagement findUserManagement() {
+        return userManagementRepository.findOne(UserManagementRepository.IDENTIFIER);
+    }
+
+    @Override
+    public UserManagement saveUserManagement(UserManagement userManagement) {
+        return userManagementRepository.saveAndFlush(userManagement);
     }
 
     @Override

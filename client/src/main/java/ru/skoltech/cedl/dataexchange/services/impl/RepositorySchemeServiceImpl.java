@@ -22,13 +22,15 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ApplicationProperty;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.repository.ApplicationPropertyRepository;
+import ru.skoltech.cedl.dataexchange.repository.jpa.ApplicationPropertyRepository;
 import ru.skoltech.cedl.dataexchange.services.RepositorySchemeService;
 
-import static ru.skoltech.cedl.dataexchange.repository.ApplicationPropertyRepository.SCHEME_VERSION_APPLICATION_PROPERTY_ID;
-import static ru.skoltech.cedl.dataexchange.repository.ApplicationPropertyRepository.SCHEME_VERSION_APPLICATION_PROPERTY_NAME;
+import static ru.skoltech.cedl.dataexchange.repository.jpa.ApplicationPropertyRepository.SCHEME_VERSION_APPLICATION_PROPERTY_ID;
+import static ru.skoltech.cedl.dataexchange.repository.jpa.ApplicationPropertyRepository.SCHEME_VERSION_APPLICATION_PROPERTY_NAME;
 
 /**
+ * Implemetation of {@link RepositorySchemeService}.
+ *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public class RepositorySchemeServiceImpl implements RepositorySchemeService {

@@ -26,8 +26,8 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.repository.ExternalModelRepository;
-import ru.skoltech.cedl.dataexchange.repository.model.SystemModelRepository;
+import ru.skoltech.cedl.dataexchange.repository.revision.ExternalModelRepository;
+import ru.skoltech.cedl.dataexchange.repository.revision.SystemModelRepository;
 
 import java.io.File;
 import java.io.IOException;

@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.repository.envers;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import org.springframework.data.repository.history.RevisionRepository;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.repository.envers.custom.ParameterModelRevisionRepositoryCustom;
 
 /**
- * Data Access Operations with {@link ExternalModel} entity.
+ * Data Access Operations with {@link ParameterModel} revisions.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-
-public interface ExternalModelRepository extends JpaRepository<ExternalModel, Long> {
+public interface ParameterModelRevisionRepository extends RevisionRepository<ParameterModel, Long, Integer>,
+        ParameterModelRevisionRepositoryCustom {
 
 }

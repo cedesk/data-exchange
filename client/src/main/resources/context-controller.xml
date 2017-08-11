@@ -36,6 +36,7 @@
         <property name="executor" ref="executor" />
         <property name="userManagementService" ref="userManagementService"/>
         <property name="guiService" ref="guiService"/>
+        <property name="studyService" ref="studyService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.ChangeAnalysisController" >

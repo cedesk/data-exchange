@@ -20,6 +20,8 @@ import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 
+import java.util.List;
+
 /**
  * Operations with {@link Study}.
  *
@@ -30,16 +32,58 @@ public interface StudyService {
     /**
      * Create {@link Study} based on {@link SystemModel} and {@link UserManagement}.
      *
-     * @param systemModel
-     * @param userManagement
+     * @param systemModel system model to base on
+     * @param userManagement user management to base on
      * @return new instance of {@link Study}
      */
     Study createStudy(SystemModel systemModel, UserManagement userManagement);
 
     /**
+     * Retrieve names of all studies.
+     *
+     * @return list of studies names
+     */
+    List<String> findStudyNames();
+
+    /**
+     * Retrieve a {@link Study} by its name.
+     *
+     * @param studyName name of the {@link Study}
+     * @return instance of the {@link Study}
+     */
+    Study findStudyByName(String studyName);
+
+    /**
+     * Saves an study.
+     *
+     * @param study study to save
+     * @return the saved study
+     */
+    Study saveStudy(Study study);
+
+    /**
+     * Remove a {@link Study} with a specified name.
+     * @param studyName name of the {@link Study}
+     */
+    void deleteStudyByName(String studyName);
+
+    /**
+     * Remove all stored studies.
+     */
+    void deleteAllStudies();
+
+    /**
+     * Retrieve a latest model modification timestamp of study with specified name.
+     *
+     * @param studyName name of the study.
+     * @return timestamp value of latest model modification time.
+     */
+    Long findLatestModelModificationByStudyName(String studyName);
+
+    /**
      * TODO add javadoc
      *
-     * @param study
+     * @param study study
      */
     void relinkStudySubSystems(Study study);
 }

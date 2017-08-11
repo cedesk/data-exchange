@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository.unit;
+package ru.skoltech.cedl.dataexchange.repository.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 
 /**
- * Data Access Operations with {@link UnitManagementRepository} entity.
+ * Data Access Operations with {@link LogEntryRepository} entity.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public interface UnitManagementRepository extends JpaRepository<UnitManagement, Long> {
-
-    /**
-     * Default {@link UnitManagement} id in the database
-     */
-    long IDENTIFIER = 1L;
+public interface LogEntryRepository extends JpaRepository<LogEntry, Long> {
 
 }

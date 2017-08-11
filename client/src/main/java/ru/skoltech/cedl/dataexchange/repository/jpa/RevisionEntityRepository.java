@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.repository.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
+import ru.skoltech.cedl.dataexchange.repository.jpa.custom.RevisionEntityRepositoryCustom;
 
 /**
  * Data Access Operations with {@link CustomRevisionEntity} entity.

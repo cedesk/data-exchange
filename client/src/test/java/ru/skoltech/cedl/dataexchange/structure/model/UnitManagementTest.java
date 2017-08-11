@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.repository.unit.UnitManagementRepository;
+import ru.skoltech.cedl.dataexchange.repository.jpa.UnitManagementRepository;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
 import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl;
@@ -39,10 +39,10 @@ public class UnitManagementTest extends AbstractApplicationContextTest {
 
     @Before
     public void prepare() {
-        unitManagementServiceImpl = new UnitManagementServiceImpl();
-        unitManagementServiceImpl.setFileStorageService(context.getBean(FileStorageService.class));
-
         unitManagementRepository = context.getBean(UnitManagementRepository.class);
+
+        unitManagementServiceImpl = new UnitManagementServiceImpl(unitManagementRepository);
+        unitManagementServiceImpl.setFileStorageService(context.getBean(FileStorageService.class));
 
         this.unitManagement = context.getBean(UnitManagementService.class).loadDefaultUnitManagement();
     }

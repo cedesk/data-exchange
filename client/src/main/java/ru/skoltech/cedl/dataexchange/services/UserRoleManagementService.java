@@ -39,6 +39,22 @@ public interface UserRoleManagementService {
     UserRoleManagement createUserRoleManagement();
 
     /**
+     * Retrieve an {@link UserRoleManagement} by id.
+     *
+     * @param userRoleManagementId must not be {@literal null}.
+     * @return userRoleManagement
+     */
+    UserRoleManagement findUserRoleManagement(Long userRoleManagementId);
+
+    /**
+     * Saves an userRoleManagement.
+     *
+     * @param userRoleManagement userRoleManagement to save
+     * @return the saved userRoleManagement
+     */
+    UserRoleManagement saveUserRoleManagement(UserRoleManagement userRoleManagement);
+
+    /**
      * Create {@link UserRoleManagement} based on {@link SystemModel} subsystems and
      * {@link UserManagement} disciplines.
      *

@@ -19,26 +19,28 @@ package ru.skoltech.cedl.dataexchange.services.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
-import ru.skoltech.cedl.dataexchange.repository.ParameterModelRepository;
+import ru.skoltech.cedl.dataexchange.repository.envers.ParameterModelRevisionRepository;
 import ru.skoltech.cedl.dataexchange.services.ParameterModelService;
 
 import java.util.List;
 
 /**
+ * Implementation of {@link ParameterModelService}.
+ *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public class ParameterModelServiceImpl implements ParameterModelService {
 
-    private final ParameterModelRepository parameterModelRepository;
+    private final ParameterModelRevisionRepository parameterModelRevisionRepository;
 
     @Autowired
-    public ParameterModelServiceImpl(ParameterModelRepository parameterModelRepository) {
-        this.parameterModelRepository = parameterModelRepository;
+    public ParameterModelServiceImpl(ParameterModelRevisionRepository parameterModelRevisionRepository) {
+        this.parameterModelRevisionRepository = parameterModelRevisionRepository;
     }
 
     @Override
     public List<ParameterRevision> parameterModelChangeHistory(ParameterModel parameterModel) {
         long parameterModelId = parameterModel.getId();
-        return parameterModelRepository.findRevisionsOrderByRevisionNumberDesc(parameterModelId);
+        return parameterModelRevisionRepository.findParameterRevisionsOrderByRevisionNumberDesc(parameterModelId);
     }
 }

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.repository.revision;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.history.RevisionRepository;
 import org.springframework.data.repository.query.Param;
 import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityRepository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 /**
@@ -29,7 +29,7 @@ import java.util.List;
  *
  * Created by Nikolay Groshkov on 06-Aug-17.
  */
-public interface StudyRepository extends JpaRepository<Study, Long>, RevisionRepository<Study, Long, Integer> {
+public interface StudyRepository extends JpaRevisionEntityRepository<Study, Long> {
 
     /**
      * Retrieve names of all stored studies.
@@ -60,5 +60,6 @@ public interface StudyRepository extends JpaRepository<Study, Long>, RevisionRep
      * Remove from the database a {@link Study} with a specified name.
      * @param name name of the {@link Study}
      */
+    @Transactional
     void deleteByName(String name);
 }

@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository;
+package ru.skoltech.cedl.dataexchange.repository.revision;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import ru.skoltech.cedl.dataexchange.entity.ApplicationProperty;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityRepository;
 
 /**
- * Data Access Operations with {@link ApplicationProperty} entity.
+ * Data Access Operations with {@link UserRoleManagement} entity.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public interface ApplicationPropertyRepository extends JpaRepository<ApplicationProperty, Long> {
-
-    /**
-     * Id of scheme version property in the database.
-     */
-    long SCHEME_VERSION_APPLICATION_PROPERTY_ID = 1;
-
-    /**
-     * Name of the scheme version property.
-     */
-    String SCHEME_VERSION_APPLICATION_PROPERTY_NAME = "version";
+public interface UserRoleManagementRepository extends JpaRevisionEntityRepository<UserRoleManagement, Long> {
 
 }

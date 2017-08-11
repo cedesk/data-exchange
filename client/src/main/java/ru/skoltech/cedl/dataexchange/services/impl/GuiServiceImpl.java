@@ -79,7 +79,7 @@ public class GuiServiceImpl implements GuiService {
 
     @Override
     public void openView(String title, URL location, Window ownerWindow, Modality modality, Object... args) {
-        this.openView(title, location, ownerWindow, modality, StageStartAction.SHOW, new Object[0]);
+        this.openView(title, location, ownerWindow, modality, StageStartAction.SHOW, args);
     }
 
     @Override

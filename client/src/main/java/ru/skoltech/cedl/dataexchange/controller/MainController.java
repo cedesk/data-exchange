@@ -41,7 +41,6 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
-import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.ApplicationPackage;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -53,7 +52,6 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.repository.StudyRepository;
 import ru.skoltech.cedl.dataexchange.services.*;
 import ru.skoltech.cedl.dataexchange.services.GuiService.StageStartAction;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -120,6 +118,7 @@ public class MainController implements Initializable {
 
     private Project project;
     private ApplicationSettings applicationSettings;
+    private StudyService studyService;
     private UserManagementService userManagementService;
     private GuiService guiService;
     private SystemBuilderFactory systemBuilderFactory;
@@ -129,19 +128,12 @@ public class MainController implements Initializable {
     private Executor executor;
     private ActionLogger actionLogger;
 
-    @Autowired
-    private StudyRepository studyRepository;
-
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
     }
 
     public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
-    }
-
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
     }
 
     public void setModelEditingController(ModelEditingController modelEditingController) {
@@ -156,8 +148,16 @@ public class MainController implements Initializable {
         this.applicationSettings = applicationSettings;
     }
 
+    public void setStudyService(StudyService studyService) {
+        this.studyService = studyService;
+    }
+
     public void setUserManagementService(UserManagementService userManagementService) {
         this.userManagementService = userManagementService;
+    }
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     public void setSystemBuilderFactory(SystemBuilderFactory systemBuilderFactory) {
@@ -338,7 +338,7 @@ public class MainController implements Initializable {
     }
 
     public void deleteProject(ActionEvent actionEvent) {
-        List<String> studyNames = studyRepository.findAllNames();
+        List<String> studyNames = studyService.findStudyNames();
         if (studyNames.size() > 0) {
             Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
             if (studyChoice.isPresent()) {
@@ -434,7 +434,7 @@ public class MainController implements Initializable {
                 Dialogues.showError("Invalid name", Identifiers.getProjectNameValidationDescription());
                 return;
             }
-            List<String> studyNames = studyRepository.findAllNames();
+            List<String> studyNames = studyService.findStudyNames();
             if (studyNames != null && studyNames.contains(projectName)) {
                 Dialogues.showError("Invalid name", "A study with this name already exists in the repository!");
                 return;
@@ -532,7 +532,7 @@ public class MainController implements Initializable {
     }
 
     public void openProject(ActionEvent actionEvent) {
-        List<String> studyNames = studyRepository.findAllNames();
+        List<String> studyNames = studyService.findStudyNames();
         if (studyNames.size() > 0) {
             Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
             if (studyChoice.isPresent()) {

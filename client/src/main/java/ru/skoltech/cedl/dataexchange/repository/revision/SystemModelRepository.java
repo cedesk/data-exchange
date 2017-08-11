@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository.user;
+package ru.skoltech.cedl.dataexchange.repository.revision;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityRepository;
 
 /**
- * Data Access Operations with {@link UserRoleManagement} entity.
+ * Data Access Operations with {@link SystemModel} entity.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public interface UserRoleManagementRepository extends JpaRepository<UserRoleManagement, Long> {
+public interface SystemModelRepository extends JpaRevisionEntityRepository<SystemModel, Long> {
 
 }

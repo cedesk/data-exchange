@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository.custom;
+package ru.skoltech.cedl.dataexchange.repository.envers.custom.impl;
 
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -24,7 +24,7 @@ import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
-import ru.skoltech.cedl.dataexchange.repository.ParameterModelRepositoryCustom;
+import ru.skoltech.cedl.dataexchange.repository.envers.custom.ParameterModelRevisionRepositoryCustom;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -34,17 +34,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of {@link ParameterModelRepositoryCustom}.
+ * Implementation of {@link ParameterModelRevisionRepositoryCustom}.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public class ParameterModelRepositoryImpl implements ParameterModelRepositoryCustom {
+public class ParameterModelRevisionRepositoryImpl implements ParameterModelRevisionRepositoryCustom {
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
-    public List<ParameterRevision> findRevisionsOrderByRevisionNumberDesc(Long id) {
+    public List<ParameterRevision> findParameterRevisionsOrderByRevisionNumberDesc(Long id) {
         final AuditReader reader = AuditReaderFactory.get(entityManager);
 
         List revisions = reader.createQuery()
@@ -57,7 +57,8 @@ public class ParameterModelRepositoryImpl implements ParameterModelRepositoryCus
                 .map(revision -> new ParameterRevision((ParameterModel) revision[0], (CustomRevisionEntity) revision[1]))
                 .collect(Collectors.toList());
 
-        // intentionally traverse joined entities, to force fetching, not doing so will produce an exception
+        // TODO: intentionally traverse joined entities, to force fetching, not doing so will produce an exception
+        // must be fixed somehow
         parameterRevisions.forEach(ParameterRevision::getUnitAsText);
         parameterRevisions.forEach(ParameterRevision::getNodePath);
         parameterRevisions.forEach(ParameterRevision::getValueLink);
@@ -66,6 +67,7 @@ public class ParameterModelRepositoryImpl implements ParameterModelRepositoryCus
                 parameterRevision.getValueLink().getNodePath();
             }
         });
+        parameterRevisions.forEach(ParameterRevision::getSourceDetails);
 
         return parameterRevisions;
     }

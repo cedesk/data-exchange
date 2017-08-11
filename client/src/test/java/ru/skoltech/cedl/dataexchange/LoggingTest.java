@@ -21,7 +21,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.repository.log.LogEntryRepository;
+import ru.skoltech.cedl.dataexchange.repository.jpa.LogEntryRepository;
 
 import java.lang.reflect.InvocationTargetException;
 

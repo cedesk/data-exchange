@@ -46,6 +46,21 @@ public interface UserManagementService {
     UserManagement createDefaultUserManagement();
 
     /**
+     * Retrieve an {@link UserManagement}
+     *
+     * @return userManagement
+     */
+    UserManagement findUserManagement();
+
+    /**
+     * Saves an userManagement.
+     *
+     * @param userManagement userManagement to save
+     * @return the saved userManagement
+     */
+    UserManagement saveUserManagement(UserManagement userManagement);
+
+    /**
      * Build a {@link Map} of current {@link User}s (user name as a key).
      *
      * @param userManagement {@link UserManagement} to build from

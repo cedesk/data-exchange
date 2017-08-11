@@ -17,10 +17,12 @@
 package ru.skoltech.cedl.dataexchange.services.impl;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.*;
+import ru.skoltech.cedl.dataexchange.repository.revision.UserRoleManagementRepository;
 import ru.skoltech.cedl.dataexchange.services.UserManagementService;
 import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
 
@@ -32,6 +34,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
+ * Implementation of {@link UserRoleManagementService}.
+ *
  * Created by Nikolay Groshkov on 26-Jul-17.
  */
 public class UserRoleManagementServiceImpl implements UserRoleManagementService {
@@ -39,6 +43,13 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
     private static final Logger logger = Logger.getLogger(UserRoleManagementServiceImpl.class);
 
     private UserManagementServiceImpl userManagementService;
+
+    private final UserRoleManagementRepository userRoleManagementRepository;
+
+    @Autowired
+    public UserRoleManagementServiceImpl(UserRoleManagementRepository userRoleManagementRepository) {
+        this.userRoleManagementRepository = userRoleManagementRepository;
+    }
 
     public void setUserManagementService(UserManagementServiceImpl userManagementService) {
         this.userManagementService = userManagementService;
@@ -51,6 +62,16 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
         Discipline adminDiscipline = new Discipline("Admin", userRoleManagement, true);
         userRoleManagement.getDisciplines().add(adminDiscipline);
         return userRoleManagement;
+    }
+
+    @Override
+    public UserRoleManagement findUserRoleManagement(Long userRoleManagementId) {
+        return userRoleManagementRepository.findOne(userRoleManagementId);
+    }
+
+    @Override
+    public UserRoleManagement saveUserRoleManagement(UserRoleManagement userRoleManagement) {
+        return userRoleManagementRepository.save(userRoleManagement);
     }
 
     @Override
