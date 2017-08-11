@@ -42,6 +42,9 @@ public class FigureOfMeritDefinition {
 
     private String parameterModelLink;
 
+    public FigureOfMeritDefinition() {
+    }
+
     public FigureOfMeritDefinition(String name, String unitOfMeasure, Optimality optimality) {
         this.name = name;
         this.unitOfMeasure = unitOfMeasure;

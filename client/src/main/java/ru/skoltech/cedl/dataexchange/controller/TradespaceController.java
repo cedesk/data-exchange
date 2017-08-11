@@ -23,24 +23,29 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.skoltech.cedl.dataexchange.TradespaceExplorerApplication;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.control.FiguresOfMeritEditor;
 import ru.skoltech.cedl.dataexchange.control.TradespaceView;
-import ru.skoltech.cedl.dataexchange.entity.tradespace.Epoch;
-import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritChartDefinition;
-import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
-import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
+import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.repository.jpa.TradespaceRepository;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -50,6 +55,9 @@ import java.util.stream.Collectors;
 public class TradespaceController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(TradespaceController.class);
+
+    @FXML
+    private Label studyNameLabel;
 
     @FXML
     private TextField epochText;
@@ -66,25 +74,35 @@ public class TradespaceController implements Initializable {
     @FXML
     private FiguresOfMeritEditor figuresOfMeritEditor;
 
-    private MultitemporalTradespace model;
+    @Autowired
+    private ApplicationSettings applicationSettings;
+
+    @Autowired
+    private TradespaceRepository tradespaceRepository;
+
+    private MultitemporalTradespace multitemporalTradespace;
+
+    private long studyId;
 
     public TradespaceController() {
     }
 
     public MultitemporalTradespace getModel() {
-        return model;
+        return multitemporalTradespace;
     }
 
-    public void setModel(MultitemporalTradespace model) {
-        this.model = model;
-        figuresOfMeritEditor.setTradespace(model);
-        tradespaceView.setTradespace(model);
+    public void setMultitemporalTradespace(MultitemporalTradespace multitemporalTradespace) {
+        this.multitemporalTradespace = multitemporalTradespace;
+        tradespaceView.setTradespace(multitemporalTradespace);
+        figuresOfMeritEditor.setTradespace(getModel());
         updateComboBoxes();
-        updateEpochs();
+        updateView();
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        Project project = ApplicationContextInitializer.getInstance().getContext().getBean(Project.class);
+        studyId = project.getStudy().getId();
         StringConverter<FigureOfMeritDefinition> stringConverter = new StringConverter<FigureOfMeritDefinition>() {
             @Override
             public FigureOfMeritDefinition fromString(String unitStr) {
@@ -102,19 +120,45 @@ public class TradespaceController implements Initializable {
         xAxisCombo.setConverter(stringConverter);
         xAxisCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                updateView();
+                updateTradespaceView();
             }
         });
         yAxisCombo.setConverter(stringConverter);
         yAxisCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                updateView();
+                updateTradespaceView();
             }
         });
+        if (applicationSettings.isProjectLastAutoload()) {
+            loadTradespace(null);
+        } else {
+            newTradespace(null);
+        }
+        updateView();
     }
 
-    public void refreshView(ActionEvent actionEvent) {
-        updateView();
+    public void loadSampleTradespace(ActionEvent actionEvent) {
+        URL url = TradespaceExplorerApplication.class.getResource("/GPUdataset_2013-2016.csv");
+        File file = new File(url.getFile());
+        MultitemporalTradespace multitemporalTradespace = TradespaceFactory.readValuesForEpochFromCSV(file);
+        logger.info("tradespace loaded successfully");
+        setMultitemporalTradespace(multitemporalTradespace);
+    }
+
+    public void loadTradespace(ActionEvent actionEvent) {
+        MultitemporalTradespace newTradespace = tradespaceRepository.findOne(studyId);
+        logger.info("tradespace loaded successfully");
+        setMultitemporalTradespace(newTradespace);
+    }
+
+    public void newTradespace(ActionEvent actionEvent) {
+        MultitemporalTradespace newTradespace = new MultitemporalTradespace();
+        newTradespace.setId(studyId);
+        setMultitemporalTradespace(newTradespace);
+    }
+
+    public void refreshChartView(ActionEvent actionEvent) {
+        updateTradespaceView();
     }
 
     public void saveDiagram(ActionEvent actionEvent) {
@@ -138,24 +182,35 @@ public class TradespaceController implements Initializable {
         }
     }
 
+    public void saveTradespace(ActionEvent actionEvent) {
+        tradespaceRepository.saveAndFlush(multitemporalTradespace);
+        logger.info("tradespace saved successfully");
+    }
+
     private void updateComboBoxes() {
-        xAxisCombo.setItems(FXCollections.observableArrayList(model.getDefinitions()));
-        xAxisCombo.getSelectionModel().select(model.getDefinitions().get(0));
-        yAxisCombo.setItems(FXCollections.observableArrayList(model.getDefinitions()));
-        yAxisCombo.getSelectionModel().select(model.getDefinitions().get(1));
+        List<FigureOfMeritDefinition> figureOfMeritDefinitions = multitemporalTradespace.getDefinitions();
+        xAxisCombo.setItems(FXCollections.observableArrayList(figureOfMeritDefinitions));
+        yAxisCombo.setItems(FXCollections.observableArrayList(figureOfMeritDefinitions));
+        if (figureOfMeritDefinitions.size() > 0)
+            xAxisCombo.getSelectionModel().select(figureOfMeritDefinitions.get(0));
+        if (figureOfMeritDefinitions.size() > 1)
+            yAxisCombo.getSelectionModel().select(figureOfMeritDefinitions.get(1));
     }
 
-    private void updateEpochs() {
-        if (model.getEpochs() != null) {
-            epochText.setText(model.getEpochs().stream().map(Epoch::asText).collect(Collectors.joining(", ")));
-        }
-    }
-
-    private void updateView() {
+    private void updateTradespaceView() {
         FigureOfMeritDefinition axis1 = xAxisCombo.getValue();
         FigureOfMeritDefinition axis2 = yAxisCombo.getValue();
         FigureOfMeritChartDefinition chartDef = new FigureOfMeritChartDefinition(axis1, axis2);
         tradespaceView.setChartDefinition(chartDef);
         tradespaceView.updateView();
+    }
+
+    private void updateView() {
+        Project project = ApplicationContextInitializer.getInstance().getContext().getBean(Project.class);
+        studyNameLabel.setText(project.getStudy().getName());
+
+        if (multitemporalTradespace.getEpochs() != null) {
+            epochText.setText(multitemporalTradespace.getEpochs().stream().map(Epoch::asText).collect(Collectors.joining(", ")));
+        }
     }
 }

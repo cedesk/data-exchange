@@ -93,8 +93,10 @@ public class FigureOfMeritView extends FlowPane implements Initializable {
 
         Optional<ParameterModel> parameterChoice = dialog.showAndWait();
         if (parameterChoice.isPresent()) {
+            // update model
             ParameterModel parameterModel = parameterChoice.get();
             figureOfMeritDefinition.setParameterModelLink(parameterModel.getUuid());
+            // update view
             String parameterName = tradespaceModelBridge.getParameterName(figureOfMeritDefinition.getParameterModelLink());
             parameterLinkText.setText(parameterName);
             String parameterUnitOfMeasure = tradespaceModelBridge.getParameterUnitOfMeasure(figureOfMeritDefinition.getParameterModelLink());
@@ -106,6 +108,16 @@ public class FigureOfMeritView extends FlowPane implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         optimalityChoice.setItems(FXCollections.observableArrayList(EnumSet.allOf(Optimality.class)));
+        optimalityChoice.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                figureOfMeritDefinition.setOptimality(newValue);
+            }
+        });
+        unitOfMeasureText.textProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue != null) {
+                figureOfMeritDefinition.setUnitOfMeasure(newValue);
+            }
+        });
         updateView();
     }
 

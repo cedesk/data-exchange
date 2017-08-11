@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository.user;
+package ru.skoltech.cedl.dataexchange.repository.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;

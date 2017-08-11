@@ -121,6 +121,7 @@ public class FiguresOfMeritEditor extends ScrollPane implements Initializable {
 
     private void updateView() {
         if (tradespace != null) {
+            figuresOfMeritsViewContainer.getChildren().clear();
             List<FigureOfMeritDefinition> figureOfMeritDefinitions = tradespace.getDefinitions();
             for (FigureOfMeritDefinition figureOfMeritDefinition : figureOfMeritDefinitions) {
                 renderFigureOfMerit(figureOfMeritDefinition);

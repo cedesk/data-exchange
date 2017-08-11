@@ -22,14 +22,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
-import ru.skoltech.cedl.dataexchange.controller.TradespaceController;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
-import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
-import ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceFactory;
 import ru.skoltech.cedl.dataexchange.view.Views;
-
-import java.io.File;
-import java.net.URL;
 
 /**
  * Created by d.knoll on 6/23/2017.
@@ -51,22 +45,11 @@ public class TradespaceExplorerApplication extends ContextAwareApplication {
         FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);
         FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.TRADESPACE_WINDOW);
         Parent root = loader.load();
-        TradespaceController tradespaceController = loader.getController();
-
-        URL url = TradespaceExplorerApplication.class.getResource("/GPUdataset_2013-2016.csv");
-        File file = new File(url.getFile());
-        MultitemporalTradespace multitemporalTradespace = TradespaceFactory.readValuesForEpochFromCSV(file);
-        tradespaceController.setModel(multitemporalTradespace);
 
         primaryStage.setTitle("CEDESK Tradespace Explorer");
         primaryStage.setScene(new Scene(root));
         primaryStage.getIcons().add(IconSet.APP_ICON);
         primaryStage.show();
-        /*primaryStage.setOnCloseRequest(we -> {
-            if (!tradespaceController.confirmCloseRequest()) {
-                we.consume();
-            }
-        });*/
     }
 
 }

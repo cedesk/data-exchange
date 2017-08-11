@@ -32,13 +32,13 @@ public class DesignPoint {
 
     private String description;
 
-    @ManyToOne(targetEntity = Epoch.class)
+    @ManyToOne(targetEntity = Epoch.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Epoch epoch;
 
-    @ManyToOne(targetEntity = ModelStateLink.class)
+    @ManyToOne(targetEntity = ModelStateLink.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private ModelStateLink modelStateLink;
 
-    @OneToMany(targetEntity = FigureOfMeritValue.class)
+    @OneToMany(targetEntity = FigureOfMeritValue.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<FigureOfMeritValue> values;
 
     public DesignPoint(Epoch epoch, List<FigureOfMeritValue> values) {
