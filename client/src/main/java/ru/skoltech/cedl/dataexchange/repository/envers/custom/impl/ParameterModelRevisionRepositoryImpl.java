@@ -63,6 +63,7 @@ public class ParameterModelRevisionRepositoryImpl implements ParameterModelRevis
                 parameterRevision.getValueLink().getNodePath();
             }
         });
+        parameterRevisions.forEach(ParameterRevision::getSourceDetails);
 
         return parameterRevisions;
     }
