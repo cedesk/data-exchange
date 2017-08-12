@@ -52,6 +52,9 @@ public class DesignPoint {
         this.values = values;
     }
 
+    public DesignPoint() {
+    }
+
     public String getDescription() {
         return description;
     }

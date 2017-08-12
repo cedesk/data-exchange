@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.Optimality;
-import ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceModelBridge;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class FigureOfMeritView extends FlowPane implements Initializable {
     @FXML
     private TextField parameterLinkText;
 
-    private TradespaceModelBridge tradespaceModelBridge;
+    private TradespaceToStudyBridge tradespaceToStudyBridge;
 
     public FigureOfMeritView() {
         super();
@@ -69,6 +69,7 @@ public class FigureOfMeritView extends FlowPane implements Initializable {
 
     public FigureOfMeritView(FigureOfMeritDefinition figureOfMeritDefinition) {
         this.figureOfMeritDefinition = figureOfMeritDefinition;
+        tradespaceToStudyBridge = ApplicationContextInitializer.getInstance().getContext().getBean(TradespaceToStudyBridge.class);
         // load layout
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("figure_of_merit_view.fxml"));
         fxmlLoader.setRoot(this);
@@ -79,7 +80,6 @@ public class FigureOfMeritView extends FlowPane implements Initializable {
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
-        tradespaceModelBridge = ApplicationContextInitializer.getInstance().getContext().getBean(TradespaceModelBridge.class);
     }
 
     public FigureOfMeritDefinition getFigureOfMeritDefinition() {
@@ -88,7 +88,7 @@ public class FigureOfMeritView extends FlowPane implements Initializable {
 
     public void chooseParameter(ActionEvent actionEvent) {
 
-        Collection<ParameterModel> parameters = tradespaceModelBridge.getModelOutputParameters();
+        Collection<ParameterModel> parameters = tradespaceToStudyBridge.getModelOutputParameters();
         Dialog<ParameterModel> dialog = new ParameterSelector(parameters, null);
 
         Optional<ParameterModel> parameterChoice = dialog.showAndWait();
@@ -97,9 +97,9 @@ public class FigureOfMeritView extends FlowPane implements Initializable {
             ParameterModel parameterModel = parameterChoice.get();
             figureOfMeritDefinition.setParameterModelLink(parameterModel.getUuid());
             // update view
-            String parameterName = tradespaceModelBridge.getParameterName(figureOfMeritDefinition.getParameterModelLink());
+            String parameterName = tradespaceToStudyBridge.getParameterName(figureOfMeritDefinition.getParameterModelLink());
             parameterLinkText.setText(parameterName);
-            String parameterUnitOfMeasure = tradespaceModelBridge.getParameterUnitOfMeasure(figureOfMeritDefinition.getParameterModelLink());
+            String parameterUnitOfMeasure = tradespaceToStudyBridge.getParameterUnitOfMeasure(figureOfMeritDefinition.getParameterModelLink());
             unitOfMeasureText.setText(parameterUnitOfMeasure);
             unitOfMeasureText.setEditable(false);
         }
@@ -114,7 +114,7 @@ public class FigureOfMeritView extends FlowPane implements Initializable {
             }
         });
         unitOfMeasureText.textProperty().addListener((observable, oldValue, newValue) -> {
-            if(newValue != null) {
+            if (newValue != null) {
                 figureOfMeritDefinition.setUnitOfMeasure(newValue);
             }
         });
@@ -128,9 +128,9 @@ public class FigureOfMeritView extends FlowPane implements Initializable {
             optimalityChoice.setValue(figureOfMeritDefinition.getOptimality());
 
             if (figureOfMeritDefinition.getParameterModelLink() != null) {
-                String parameterName = tradespaceModelBridge.getParameterName(figureOfMeritDefinition.getParameterModelLink());
+                String parameterName = tradespaceToStudyBridge.getParameterName(figureOfMeritDefinition.getParameterModelLink());
                 parameterLinkText.setText(parameterName);
-                String parameterUnitOfMeasure = tradespaceModelBridge.getParameterUnitOfMeasure(figureOfMeritDefinition.getParameterModelLink());
+                String parameterUnitOfMeasure = tradespaceToStudyBridge.getParameterUnitOfMeasure(figureOfMeritDefinition.getParameterModelLink());
                 unitOfMeasureText.setText(parameterUnitOfMeasure);
                 unitOfMeasureText.setEditable(false);
             }

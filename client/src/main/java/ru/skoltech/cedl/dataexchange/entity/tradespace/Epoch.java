@@ -36,6 +36,9 @@ public class Epoch implements Comparable<Epoch> {
 
     private int year;
 
+    public Epoch() {
+    }
+
     public Epoch(int year) {
         this.year = year;
     }

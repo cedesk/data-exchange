@@ -19,7 +19,6 @@ package ru.skoltech.cedl.dataexchange.entity.tradespace;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterTreeIterator;
-import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
@@ -31,28 +30,42 @@ import java.util.Map;
 /**
  * Created by d.knoll on 6/28/2017.
  */
-public class TradespaceModelBridge {
+public class TradespaceToStudyBridge {
 
-    private final SystemModel systemModel;
-    private final Map<String, ParameterModel> parameterDictionary;
+    private final Project project;
+    private SystemModel systemModel;
+    private Map<String, ParameterModel> parameterDictionary;
 
-    public TradespaceModelBridge(Project project) {
-        systemModel = project.getSystemModel();
-        parameterDictionary = systemModel.makeParameterDictionary();
+    public TradespaceToStudyBridge(Project project) {
+        this.project = project;
     }
 
     public Collection<ParameterModel> getModelOutputParameters() {
         List<ParameterModel> parameters = new LinkedList<>();
-        ParameterTreeIterator subsystemParameterIterator = new ParameterTreeIterator(systemModel,
+        ParameterTreeIterator subsystemParameterIterator = new ParameterTreeIterator(getSystemModel(),
                 parameterModel -> parameterModel.getNature() == ParameterNature.OUTPUT);
         subsystemParameterIterator.forEachRemaining(parameters::add);
         return parameters;
     }
 
+    private Map<String, ParameterModel> getParameterDictionary() {
+        if (parameterDictionary == null) {
+            parameterDictionary = getSystemModel().makeParameterDictionary();
+        }
+        return parameterDictionary;
+    }
+
+    private SystemModel getSystemModel() {
+        if (systemModel == null) {
+            systemModel = project.getSystemModel();
+        }
+        return systemModel;
+    }
+
     public String getParameterName(String parameterUuid) {
         if (parameterUuid == null) return "<not defined>";
 
-        ParameterModel parameterModel = parameterDictionary.get(parameterUuid);
+        ParameterModel parameterModel = getParameterDictionary().get(parameterUuid);
         if (parameterModel != null) {
             return parameterModel.getNodePath();
         }
@@ -62,10 +75,20 @@ public class TradespaceModelBridge {
     public String getParameterUnitOfMeasure(String parameterUuid) {
         if (parameterUuid == null) return "<not defined>";
 
-        ParameterModel parameterModel = parameterDictionary.get(parameterUuid);
+        ParameterModel parameterModel = getParameterDictionary().get(parameterUuid);
         if (parameterModel != null) {
             return parameterModel.getUnit().asText();
         }
         return "<not found>";
+    }
+
+    public Double getParameterValue(String parameterUuid) {
+        if (parameterUuid == null) return null;
+
+        ParameterModel parameterModel = getParameterDictionary().get(parameterUuid);
+        if (parameterModel != null) {
+            return parameterModel.getEffectiveValue();
+        }
+        return null;
     }
 }

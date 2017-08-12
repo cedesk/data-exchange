@@ -75,7 +75,7 @@
         <property name="userRoleManagementService" ref="userRoleManagementService" />
     </bean>
 
-    <bean id="tradespaceModelBridge" class="ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceModelBridge" scope="prototype">
+    <bean id="tradespaceModelBridge" class="ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge" scope="prototype">
         <constructor-arg ref="project" />
     </bean>
 
