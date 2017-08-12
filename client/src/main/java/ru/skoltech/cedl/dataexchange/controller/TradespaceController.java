@@ -199,13 +199,18 @@ public class TradespaceController implements Initializable {
 
     public void loadTradespace(ActionEvent actionEvent) {
         MultitemporalTradespace newTradespace = tradespaceRepository.findOne(studyId);
-        logger.info("tradespace loaded successfully");
-        setMultitemporalTradespace(newTradespace);
+        if(newTradespace != null) {
+            logger.info("tradespace loaded successfully");
+            setMultitemporalTradespace(newTradespace);
+        } else {
+            newTradespace(null);
+        }
     }
 
     public void newTradespace(ActionEvent actionEvent) {
         MultitemporalTradespace newTradespace = new MultitemporalTradespace();
         newTradespace.setId(studyId);
+        logger.info("new tradespace initialized");
         setMultitemporalTradespace(newTradespace);
     }
 
@@ -243,7 +248,7 @@ public class TradespaceController implements Initializable {
         List<String> fomTexts = new LinkedList<>();
         for (FigureOfMeritDefinition figureOfMeritDefinition : multitemporalTradespace.getDefinitions()) {
             Double parameterValue = tradespaceToStudyBridge.getParameterValue(figureOfMeritDefinition.getParameterModelLink());
-            String formattedValue = Utils.NUMBER_FORMAT.format(parameterValue);
+            String formattedValue = parameterValue != null ? Utils.NUMBER_FORMAT.format(parameterValue) : "null";
             fomTexts.add(String.format("%s: %s (%s)", figureOfMeritDefinition.getName(), formattedValue, figureOfMeritDefinition.getUnitOfMeasure()));
         }
         figureOfMeritValuesText.setText(fomTexts.stream().collect(Collectors.joining(",\n")));
