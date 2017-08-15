@@ -24,7 +24,6 @@
     <import resource="context-service.xml" />
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.MainController" init-method="init" destroy-method="destroy">
-        <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="modelEditingController" ref="modelEditingController" />
         <property name="project" ref="project" />
         <property name="actionLogger" ref="actionLogger" />
@@ -34,7 +33,6 @@
         <property name="differenceMergeService" ref="differenceMergeService" />
         <property name="updateService" ref="updateService" />
         <property name="executor" ref="executor" />
-        <property name="userManagementService" ref="userManagementService"/>
         <property name="guiService" ref="guiService"/>
         <property name="studyService" ref="studyService"/>
     </bean>
@@ -42,12 +40,32 @@
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.controller.ModelEditingController">
         <property name="project" ref="project" />
         <property name="actionLogger" ref="actionLogger" />
-        <property name="fileStorageService" ref="fileStorageService" />
         <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="modelUpdateService" ref="modelUpdateService" />
-        <property name="unitManagementService" ref="unitManagementService"/>
-        <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
         <property name="guiService" ref="guiService"/>
+        <property name="parameterEditorPane" ref="parameterEditorPane"/>
+        <property name="externalModelEditorPane" ref="externalModelEditorPane"/>
+    </bean>
+
+    <bean id="parameterEditorPane" class="ru.skoltech.cedl.dataexchange.control.ParameterEditorPane" >
+        <property name="project" ref="project" />
+        <property name="actionLogger" ref="actionLogger" />
+        <property name="guiService" ref="guiService" />
+        <property name="modelUpdateService" ref="modelUpdateService" />
+        <property name="unitManagementService" ref="unitManagementService" />
+    </bean>
+
+    <bean id="externalModelEditorPane" class="ru.skoltech.cedl.dataexchange.control.ExternalModelEditorPane" >
+        <property name="project" ref="project" />
+        <property name="actionLogger" ref="actionLogger" />
+        <property name="guiService" ref="guiService"/>
+        <property name="fileStorageService" ref="fileStorageService" />
+        <property name="modelUpdateService" ref="modelUpdateService" />
+    </bean>
+
+    <bean id="externalModelHBox" class="ru.skoltech.cedl.dataexchange.control.ExternalModelHBox" scope="prototype" >
+        <property name="project" ref="project" />
+        <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.DiffController">
@@ -70,10 +88,9 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserManagementController" >
-        <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />
-        <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="guiService" ref="guiService"/>
+        <property name="userRoleManagementService" ref="userRoleManagementService" />
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserEditingController" scope="prototype" />
@@ -84,11 +101,11 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UnitManagementController" >
-        <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
         <property name="project" ref="project" />
+        <property name="guiService" ref="guiService"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.controller.AddUnitController" >
+    <bean class="ru.skoltech.cedl.dataexchange.controller.AddUnitController" scope="prototype">
         <property name="project" ref="project" />
     </bean>
 
@@ -99,7 +116,10 @@
     <bean class="ru.skoltech.cedl.dataexchange.controller.ProjectSettingsController" >
         <property name="project" ref="project" />
         <property name="applicationSettings" ref="applicationSettings"/>
+        <property name="userManagementService" ref="userManagementService"/>
     </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.control.CalculationEditor" scope="prototype" />
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.AboutController" >
         <property name="guiService" ref="guiService"/>

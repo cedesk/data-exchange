@@ -22,9 +22,9 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.jpa.UnitManagementRepository;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
-import ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl;
+import ru.skoltech.cedl.dataexchange.service.FileStorageService;
+import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
+import ru.skoltech.cedl.dataexchange.service.impl.UnitManagementServiceImpl;
 
 import java.io.IOException;
 

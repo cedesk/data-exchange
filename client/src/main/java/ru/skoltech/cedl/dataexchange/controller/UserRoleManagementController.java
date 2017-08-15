@@ -27,21 +27,21 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.stage.Window;
-import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.entity.user.*;
-import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.user.*;
+import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.net.URL;
 import java.util.*;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
  *
  * Created by d.knoll on 10.06.2015.
  */
-public class UserRoleManagementController implements Initializable {
+public class UserRoleManagementController implements Initializable, Closeable {
 
     private static final Logger logger = Logger.getLogger(UserRoleManagementController.class);
 
@@ -169,14 +169,15 @@ public class UserRoleManagementController implements Initializable {
         updateView();
     }
 
-    public void onCloseRequest(WindowEvent windowEvent) {
+    @Override
+    public void close(Event event) {
         if (!changed.getValue()) {
             return;
         }
         project.markStudyModified();
     }
 
-    public void updateView() {
+    private void updateView() {
         updateDisciplineTable();
         updateUsers();
     }

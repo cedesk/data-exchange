@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 <!--
   ~ Copyright 2017 Skolkovo Institute of Science and Technology
   ~
@@ -20,6 +16,10 @@
   ~ limitations under the License.
   -->
 
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="repositorySettingsPane"
             stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.76-ea"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController">
@@ -108,7 +108,7 @@
             </Text>
             <Text fx:id="connectionTestText" strokeType="OUTSIDE" strokeWidth="0.0" />
             <Pane HBox.hgrow="ALWAYS"/>
-            <Button cancelButton="true" mnemonicParsing="false" onAction="#close" text="Close"/>
+            <Button cancelButton="true" mnemonicParsing="false" onAction="#cancel" text="Cancel"/>
             <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" onAction="#save" text="Save"/>
         </ToolBar>
     </VBox>

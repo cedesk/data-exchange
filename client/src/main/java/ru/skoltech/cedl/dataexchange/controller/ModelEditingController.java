@@ -27,6 +27,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Window;
@@ -34,8 +35,9 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor;
-import ru.skoltech.cedl.dataexchange.control.ParameterEditor;
+import ru.skoltech.cedl.dataexchange.control.Controls;
+import ru.skoltech.cedl.dataexchange.control.ExternalModelEditorPane;
+import ru.skoltech.cedl.dataexchange.control.ParameterEditorPane;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
@@ -47,8 +49,7 @@ import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.services.*;
-import ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl;
+import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItem;
 import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItemFactory;
@@ -82,7 +83,7 @@ public class ModelEditingController implements Initializable {
     private SplitPane viewPane;
 
     @FXML
-    private TitledPane externalModelPane;
+    private TitledPane externalModelParentPane;
 
     @FXML
     private TextField upstreamDependenciesText;
@@ -91,10 +92,7 @@ public class ModelEditingController implements Initializable {
     private TextField downstreamDependenciesText;
 
     @FXML
-    private ParameterEditor parameterEditor;
-
-    @FXML
-    private ExternalModelEditor externalModelEditor;
+    private TitledPane parameterEditorParentPane;
 
     @FXML
     private TableColumn<ParameterModel, String> parameterValueColumn;
@@ -134,17 +132,21 @@ public class ModelEditingController implements Initializable {
     private BooleanProperty selectedNodeCannotHaveChildren = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(true);
 
+    private ParameterEditorPane parameterEditorPane;
+    private ExternalModelEditorPane externalModelEditorPane;
+
     private Project project;
     private ActionLogger actionLogger;
-    private FileStorageService fileStorageService;
     private UserRoleManagementService userRoleManagementService;
-    private UnitManagementService unitManagementService;
     private GuiService guiService;
     private ModelUpdateService modelUpdateService;
-    private SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService;
 
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
+    public void setParameterEditorPane(ParameterEditorPane parameterEditorPane) {
+        this.parameterEditorPane = parameterEditorPane;
+    }
+
+    public void setExternalModelEditorPane(ExternalModelEditorPane externalModelEditorPane) {
+        this.externalModelEditorPane = externalModelEditorPane;
     }
 
     public void setProject(Project project) {
@@ -155,38 +157,25 @@ public class ModelEditingController implements Initializable {
         this.actionLogger = actionLogger;
     }
 
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
-    }
-
-    public void setUnitManagementService(UnitManagementServiceImpl unitManagementService) {
-        this.unitManagementService = unitManagementService;
-    }
-
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
+    }
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     public void setModelUpdateService(ModelUpdateService modelUpdateService) {
         this.modelUpdateService = modelUpdateService;
     }
 
-    public void setSpreadsheetInputOutputExtractorService(SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService) {
-        this.spreadsheetInputOutputExtractorService = spreadsheetInputOutputExtractorService;
-    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        parameterEditor.setProject(project);
-        parameterEditor.setActionLogger(actionLogger);
-        parameterEditor.setModelUpdateService(modelUpdateService);
-        parameterEditor.setUnitManagementService(unitManagementService);
+        Node parameterEditorPane = guiService.createControl(Controls.PARAMETER_EDITOR_CONTROL);
+        parameterEditorParentPane.setContent(parameterEditorPane);
 
-        externalModelEditor.setProject(project);
-        externalModelEditor.setActionLogger(actionLogger);
-        externalModelEditor.setFileStorageService(fileStorageService);
-        externalModelEditor.setModelUpdateService(modelUpdateService);
-        externalModelEditor.setSpreadsheetInputOutputExtractorService(spreadsheetInputOutputExtractorService);
+        Node externalModelEditorPane = guiService.createControl(Controls.EXTERNAL_MODELS_EDITOR_CONTROL);
+        externalModelParentPane.setContent(externalModelEditorPane);
 
         project.addExternalModelChangeObserver(new Observer() {
             @Override
@@ -219,7 +208,7 @@ public class ModelEditingController implements Initializable {
         structureTree.setContextMenu(makeStructureTreeContextMenu(structureNotEditable));
 
         // EXTERNAL MODEL ATTACHMENT
-        externalModelPane.disableProperty().bind(selectedNodeIsEditable.not());
+        externalModelParentPane.disableProperty().bind(selectedNodeIsEditable.not());
 
         // NODE PARAMETERS
         addParameterButton.disableProperty().bind(Bindings.or(selectedNodeIsEditable.not(), noSelectionOnStructureTreeView));
@@ -272,11 +261,9 @@ public class ModelEditingController implements Initializable {
         addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
-        parameterEditor.setVisible(false);
-        parameterEditor.setEditListener(parameterModel -> lightTableRefresh());
-
-        externalModelEditor.setProject(project);
-        externalModelEditor.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
+        this.parameterEditorPane.setVisible(false);
+        this.parameterEditorPane.setEditListener(parameterModel -> lightTableRefresh());
+        this.externalModelEditorPane.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
     }
 
     public void addNode(ActionEvent actionEvent) {
@@ -407,17 +394,25 @@ public class ModelEditingController implements Initializable {
     }
 
     public void openDependencyView() {
-        guiService.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
+        ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_WINDOW);
+        dependencyViewBuilder.ownerWindow(getAppWindow());
+        dependencyViewBuilder.show();
     }
 
     public void openDsmView() {
-        guiService.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
+        ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_WINDOW);
+        dsmViewBuilder.ownerWindow(getAppWindow());
+        dsmViewBuilder.show();
     }
 
     public void openParameterHistoryDialog() {
         ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem();
         Objects.requireNonNull(selectedParameter, "no parameter selected");
-        guiService.openView("Revision History", Views.REVISION_HISTORY_WINDOW, getAppWindow(), Modality.APPLICATION_MODAL, selectedParameter);
+
+        ViewBuilder revisionHistoryViewBuilder = guiService.createViewBuilder("Revision History", Views.REVISION_HISTORY_WINDOW);
+        revisionHistoryViewBuilder.ownerWindow(getAppWindow());
+        revisionHistoryViewBuilder.modality(Modality.APPLICATION_MODAL);
+        revisionHistoryViewBuilder.show(selectedParameter);
     }
 
     public void refreshView(ActionEvent actionEvent) {
@@ -648,10 +643,10 @@ public class ModelEditingController implements Initializable {
     }
 
     private void updateExternalModelEditor(ModelNode modelNode) {
-        externalModelEditor.setModelNode(modelNode);
+        externalModelEditorPane.setModelNode(modelNode);
         boolean hasExtModels = modelNode.getExternalModels().size() > 0;
-        externalModelEditor.setVisible(hasExtModels);
-        externalModelPane.setExpanded(hasExtModels);
+        externalModelEditorPane.setVisible(hasExtModels);
+        externalModelParentPane.setExpanded(hasExtModels);
     }
 
     private void updateOwners(ModelNode modelNode) {
@@ -669,12 +664,12 @@ public class ModelEditingController implements Initializable {
             User user = project.getUser();
             boolean editable = userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
             logger.debug("selected parameter: " + parameterModel.getNodePath() + ", editable: " + editable);
-            parameterEditor.setVisible(editable); // TODO: allow read only
+            parameterEditorPane.setVisible(editable); // TODO: allow read only
             if (editable) {
-                parameterEditor.setParameterModel(parameterModel);
+                parameterEditorPane.displayParameterModel(parameterModel);
             }
         } else {
-            parameterEditor.setVisible(false);
+            parameterEditorPane.setVisible(false);
         }
     }
 
@@ -731,8 +726,8 @@ public class ModelEditingController implements Initializable {
                 selectedNodeCannotHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
                 selectedNodeIsEditable.setValue(false);
-                externalModelPane.setExpanded(false);
-                externalModelEditor.setVisible(false);
+                externalModelParentPane.setExpanded(false);
+                externalModelEditorPane.setVisible(false);
             }
         }
     }
@@ -761,7 +756,7 @@ public class ModelEditingController implements Initializable {
             ParameterModel parameterModel = parameterUpdate.getParameterModel();
             if (parameterTable.getSelectionModel().getSelectedItem() != null &&
                     parameterTable.getSelectionModel().getSelectedItem().equals(parameterModel)) {
-                parameterEditor.setParameterModel(parameterModel); // overwriting changes made by the user
+                parameterEditorPane.displayParameterModel(parameterModel); // overwriting changes made by the user
             }
             TreeItem<ModelNode> selectedTreeItem = getSelectedTreeItem();
             if (selectedTreeItem != null &&

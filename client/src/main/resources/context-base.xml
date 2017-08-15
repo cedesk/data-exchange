@@ -70,11 +70,15 @@
         <property name="executor" ref="executor"/>
     </bean>
 
-    <bean id="repositoryConnectionService" class="ru.skoltech.cedl.dataexchange.services.impl.RepositoryConnectionServiceImpl" >
+    <bean id="repositoryConnectionService" class="ru.skoltech.cedl.dataexchange.service.impl.RepositoryConnectionServiceImpl" >
         <property name="applicationSettings" ref="applicationSettings" />
     </bean>
 
-    <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.services.impl.FileStorageServiceImpl" >
+    <bean id="guiService" class="ru.skoltech.cedl.dataexchange.service.impl.GuiServiceImpl" >
+        <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
+    </bean>
+
+    <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.service.impl.FileStorageServiceImpl" >
         <constructor-arg type="ru.skoltech.cedl.dataexchange.init.ApplicationSettings" ref="applicationSettings" />
     </bean>
 

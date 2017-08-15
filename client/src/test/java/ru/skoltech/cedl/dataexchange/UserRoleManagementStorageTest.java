@@ -24,8 +24,8 @@ import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.revision.UserManagementRepository;
 import ru.skoltech.cedl.dataexchange.repository.revision.UserRoleManagementRepository;
-import ru.skoltech.cedl.dataexchange.services.UserManagementService;
-import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.service.UserManagementService;
+import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 
 /**
  * Created by dknoll on 23/05/15.

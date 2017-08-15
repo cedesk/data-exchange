@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.services.StudyService;
+import ru.skoltech.cedl.dataexchange.service.StudyService;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**

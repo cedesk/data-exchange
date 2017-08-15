@@ -20,7 +20,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.web.WebView;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.services.GuiService;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
 
 import java.net.URL;
 import java.util.ResourceBundle;

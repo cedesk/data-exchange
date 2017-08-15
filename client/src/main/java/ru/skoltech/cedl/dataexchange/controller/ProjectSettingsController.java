@@ -16,21 +16,26 @@
 
 package ru.skoltech.cedl.dataexchange.controller;
 
-import javafx.event.ActionEvent;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.service.UserManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -39,34 +44,43 @@ import java.util.ResourceBundle;
  *
  * Created by D.Knoll on 22.07.2015.
  */
-public class ProjectSettingsController implements Initializable {
+public class ProjectSettingsController implements Initializable, Displayable, Closeable {
 
     private static Logger logger = Logger.getLogger(ProjectSettingsController.class);
+
+    @FXML
+    private AnchorPane projectSettingsPane;
 
     @FXML
     private TitledPane teamSettingsPane;
 
     @FXML
-    private TextField projectDirectoryText;
+    private TextField projectDirectoryTextField;
 
     @FXML
-    private TextField projectNameText;
+    private TextField projectNameTextField;
 
     @FXML
-    private CheckBox enableSyncCheckbox;
+    private CheckBox syncEnabledCheckBox;
 
     @FXML
-    private CheckBox useOsUserCheckbox;
+    private CheckBox projectUseOsUserCheckBox;
 
     @FXML
-    private TextField userNameText;
+    private TextField projectUserNameText;
 
     @FXML
-    private CheckBox autoloadOnStartupCheckbox;
+    private CheckBox projectLastAutoloadCheckBox;
+
+    @FXML
+    private Button saveButton;
 
     private ApplicationSettings applicationSettings;
     private Project project;
-    private ProjectSettingsListener projectSettingsListener;
+    private UserManagementService userManagementService;
+
+    private BooleanProperty changed = new SimpleBooleanProperty(false);
+    private WindowEvent closeWindowEvent;
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
@@ -76,29 +90,61 @@ public class ProjectSettingsController implements Initializable {
         this.project = project;
     }
 
-    public void setProjectSettingsListener(ProjectSettingsListener projectSettingsListener) {
-        this.projectSettingsListener = projectSettingsListener;
+    public void setUserManagementService(UserManagementService userManagementService) {
+        this.userManagementService = userManagementService;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        String projectName = project.getProjectName();
-        File projectDataDir = project.getProjectDataDir();
         StudySettings studySettings = studySettings();
+
+        String projectName = project.getProjectName();
+        boolean syncEnabled = studySettings != null && studySettings.getSyncEnabled();
+        boolean projectUseOsUser = applicationSettings.isProjectUseOsUser();
+        String projectUserName = applicationSettings.getProjectUserName();
+        boolean projectLastAutoload = applicationSettings.isProjectLastAutoload();
+
+        String projectDataDir = project.getProjectDataDir().getAbsolutePath();
+
+        ChangeListener<Object> changeListener = (observable, oldValue, newValue) ->
+                changed.setValue(parametersChanged(syncEnabled, projectUseOsUser,
+                        projectUserName, projectLastAutoload));
 
         teamSettingsPane.setDisable(studySettings == null);
 
-        projectNameText.setText(projectName);
-        enableSyncCheckbox.setSelected(studySettings != null && studySettings.getSyncEnabled());
-        enableSyncCheckbox.setDisable(studySettings == null);
+        projectNameTextField.setText(projectName);
 
-        useOsUserCheckbox.setSelected(applicationSettings.isProjectUseOsUser());
-        userNameText.disableProperty().bind(useOsUserCheckbox.selectedProperty());
-        userNameText.setText(applicationSettings.getProjectUserName());
-        autoloadOnStartupCheckbox.setSelected(applicationSettings.isProjectLastAutoload());
+        syncEnabledCheckBox.setDisable(studySettings == null);
+        syncEnabledCheckBox.setSelected(syncEnabled);
+        syncEnabledCheckBox.selectedProperty().addListener(changeListener);
 
-        projectDirectoryText.setText(projectDataDir.getAbsolutePath());
+        projectUseOsUserCheckBox.setSelected(projectUseOsUser);
+        projectUseOsUserCheckBox.selectedProperty().addListener(changeListener);
+
+        projectUserNameText.disableProperty().bind(projectUseOsUserCheckBox.selectedProperty());
+        projectUserNameText.setText(projectUserName);
+        projectUserNameText.textProperty().addListener(changeListener);
+
+        projectLastAutoloadCheckBox.setSelected(projectLastAutoload);
+        projectLastAutoloadCheckBox.selectedProperty().addListener(changeListener);
+
+        projectDirectoryTextField.setText(projectDataDir);
+
+        saveButton.disableProperty().bind(Bindings.not(changed));
     }
+
+    private boolean parametersChanged(boolean repositoryWatcherAutosync, boolean projectUseOsUser,
+                                      String projectUserName, boolean projectLastAutoload) {
+        boolean newRepositoryWatcherAutosync = syncEnabledCheckBox.isSelected();
+        boolean newProjectUseOsUser = projectUseOsUserCheckBox.isSelected();
+        String newProjectUserName = projectUserNameText.getText();
+        boolean newProjectLastAutoload = projectLastAutoloadCheckBox.isSelected();
+        return repositoryWatcherAutosync != newRepositoryWatcherAutosync
+                || projectUseOsUser != newProjectUseOsUser
+                || !projectUserName.equals(newProjectUserName)
+                || projectLastAutoload != newProjectLastAutoload;
+    }
+
 
     private StudySettings studySettings() {
         if (project != null && project.getStudy() != null) {
@@ -109,48 +155,71 @@ public class ProjectSettingsController implements Initializable {
         return null;
     }
 
-    public void applyAndClose(ActionEvent actionEvent) {
-        if (projectSettingsListener == null) {
-            close(actionEvent);
+    @Override
+    public void display(Event event) {
+        closeWindowEvent = new WindowEvent(projectSettingsPane.getScene().getWindow(), WindowEvent.WINDOW_CLOSE_REQUEST);
+    }
+
+    public void save() {
+        if (!changed.getValue()) {
+            this.close(closeWindowEvent);
             return;
         }
 
-        boolean repositoryWatcherAutosync = enableSyncCheckbox.isSelected();
-        boolean projectLastAutoload = autoloadOnStartupCheckbox.isSelected();
-        boolean projectUseOsUser = useOsUserCheckbox.isSelected();
-        String projectUserName = userNameText.getText();
+        boolean repositoryWatcherAutosync = syncEnabledCheckBox.isSelected();
+        boolean projectUseOsUser = projectUseOsUserCheckBox.isSelected();
+        String projectUserName = projectUserNameText.getText();
+        boolean projectLastAutoload = projectLastAutoloadCheckBox.isSelected();
 
-        if (!projectSettingsListener.projectSettingsChanged(repositoryWatcherAutosync, projectLastAutoload,
-                projectUseOsUser, projectUserName)) {
-            return;
+        StudySettings studySettings = studySettings();
+        if (studySettings != null) {
+            boolean oldSyncEnabled = studySettings.getSyncEnabled();
+            studySettings.setSyncEnabled(repositoryWatcherAutosync);
+            if (oldSyncEnabled != repositoryWatcherAutosync) {
+                project.markStudyModified();
+            }
+            logger.info(studySettings);
         }
 
-        logger.info("applied");
-        close(actionEvent);
+        applicationSettings.storeProjectLastAutoload(projectLastAutoload);
+        applicationSettings.storeProjectUseOsUser(projectUseOsUser);
+
+        String userName;
+        if (projectUseOsUser) {
+            applicationSettings.storeProjectUserName(null);
+            userName = applicationSettings.getDefaultProjectUserName(); // get default value
+        } else {
+            userName = projectUserName;
+        }
+        boolean validUser = userManagementService.checkUserName(project.getUserManagement(), userName);
+        logger.info("using user: '" + userName + "', valid: " + validUser);
+        if (validUser) {
+            applicationSettings.storeProjectUserName(userName);
+        } else {
+            Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
+        }
+        applicationSettings.save();
+
+        logger.info("saved");
+        this.close(closeWindowEvent);
     }
 
-    public void cancel(ActionEvent actionEvent) {
-        close(actionEvent);
-        logger.info("canceled");
+    public void cancel() {
+        this.close(closeWindowEvent);
     }
 
-    private void close(ActionEvent actionEvent) {
-        Node source = (Node) actionEvent.getSource();
-        Stage stage = (Stage) source.getScene().getWindow();
-        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    @Override
+    public void close(Event event) {
+        this.close((Stage)event.getSource());
+    }
+
+    public void close(Stage stage) {
+        stage.close();
         logger.info("closed");
     }
 
-    public void cleanupProjectCache(ActionEvent actionEvent) {
+    public void cleanupProjectCache() {
         project.getExternalModelFileHandler().cleanupCache(project);
-    }
-
-    /**
-     * Is called then user has been new applied changes.
-     */
-    public interface ProjectSettingsListener {
-        boolean projectSettingsChanged(boolean repositoryWatcherAutosync, boolean projectLastAutoload,
-                                       boolean projectUseOsUser, String projectUserName);
     }
 
 }

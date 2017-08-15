@@ -23,7 +23,7 @@
     <import resource="context-controller.xml" />
 
     <bean id="jsoupService" class="org.mockito.Mockito" factory-method="mock" >
-        <constructor-arg value="ru.skoltech.cedl.dataexchange.services.JsoupService" />
+        <constructor-arg value="ru.skoltech.cedl.dataexchange.service.JsoupService" />
     </bean>
 
     <!-- persistence -->

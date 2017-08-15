@@ -28,9 +28,9 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
-import ru.skoltech.cedl.dataexchange.services.GuiService;
-import ru.skoltech.cedl.dataexchange.services.GuiService.StageStartAction;
-import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
@@ -61,21 +61,16 @@ public class UserManagementController implements Initializable {
     @FXML
     private Button deleteUserButton;
 
-    private FXMLLoaderFactory fxmlLoaderFactory;
     private Project project;
-    private UserRoleManagementService userRoleManagementService;
     private GuiService guiService;
+    private UserRoleManagementService userRoleManagementService;
 
-    public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
-        this.fxmlLoaderFactory = fxmlLoaderFactory;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
@@ -149,7 +144,10 @@ public class UserManagementController implements Initializable {
     public void openUserEditingView(ActionEvent actionEvent) {
         User selectedUser = userTable.getSelectionModel().getSelectedItem();
         Window ownerWindow = userTable.getScene().getWindow();
-        guiService.openView("User details", Views.USER_EDITING_WINDOW, ownerWindow, Modality.APPLICATION_MODAL, StageStartAction.SHOW_AND_WAIT, selectedUser);
+        ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder("User details", Views.USER_EDITING_WINDOW);
+        userDetailsViewBuilder.ownerWindow(ownerWindow);
+        userDetailsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        userDetailsViewBuilder.showAndWait(selectedUser);
         updateUsers();
     }
 

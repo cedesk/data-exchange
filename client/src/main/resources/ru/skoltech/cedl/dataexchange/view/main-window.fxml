@@ -58,7 +58,7 @@
                             <MenuItem onAction="#openConsistencyView" text="Consistency"/>
                             <MenuItem onAction="#openDiffView" text="Differences"/>
                             <MenuItem onAction="#openDsmView" text="Design Structure Matrix"/>
-                            <MenuItem onAction="#openDepencencyView" text="N-square Chart"/>
+                            <MenuItem onAction="#openDependencyView" text="N-square Chart"/>
                         </Menu>
                         <Menu text="_Help">
                             <MenuItem onAction="#checkForApplicationUpdate" text="Check for _Update"/>
@@ -111,8 +111,10 @@
                 </ImageView>
             </HBox>
         </top>
-        <center />
-        <right />
+        <center>
+        </center>
+        <right>
+        </right>
         <bottom>
             <AnchorPane prefHeight="20.0" BorderPane.alignment="CENTER">
                 <Label fx:id="statusbarLabel" prefHeight="20.0" prefWidth="703.0" text="Statusbar"

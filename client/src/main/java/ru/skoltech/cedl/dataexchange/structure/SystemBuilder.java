@@ -16,7 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.structure;
 
-import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
+import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;

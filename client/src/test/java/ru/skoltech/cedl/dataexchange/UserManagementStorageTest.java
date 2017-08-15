@@ -22,7 +22,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.revision.UserManagementRepository;
-import ru.skoltech.cedl.dataexchange.services.UserManagementService;
+import ru.skoltech.cedl.dataexchange.service.UserManagementService;
 
 /**
  * Created by dknoll on 09.06.2015

@@ -24,7 +24,7 @@ import javafx.scene.control.TableView;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
-import ru.skoltech.cedl.dataexchange.services.ParameterModelService;
+import ru.skoltech.cedl.dataexchange.service.ParameterModelService;
 
 import java.net.URL;
 import java.util.List;

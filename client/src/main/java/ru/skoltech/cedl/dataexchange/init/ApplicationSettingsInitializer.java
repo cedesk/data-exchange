@@ -21,7 +21,7 @@ import java.util.Properties;
 
 /**
  * Initialize application settings.
- * Just because one of applcation context property placeholder dependent that application settings
+ * Just because one of application context property placeholder dependent that application settings
  * method {@link ApplicationSettingsInitializer#initialize()} must be performed before initializetion of
  * application context. This method search for properties in the path, defined by <i>cedesk.app.dir</i>
  * and <i>cedesk.app.file</i> system properties and if it is not existent, then creates one and populate

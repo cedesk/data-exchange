@@ -29,8 +29,8 @@ import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
-import ru.skoltech.cedl.dataexchange.services.StudyService;
-import ru.skoltech.cedl.dataexchange.services.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.service.StudyService;
+import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 

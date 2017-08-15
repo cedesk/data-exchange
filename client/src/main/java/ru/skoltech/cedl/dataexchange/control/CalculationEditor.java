@@ -18,38 +18,48 @@ package ru.skoltech.cedl.dataexchange.control;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
-import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.controller.Applicable;
+import ru.skoltech.cedl.dataexchange.controller.Displayable;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Operation;
 import ru.skoltech.cedl.dataexchange.entity.calculation.operation.OperationRegistry;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 
-import java.io.IOException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * Control for calculation edition.
  *
  * Created by D.Knoll on 24.09.2015.
  */
-public class CalculationEditor extends ChoiceDialog<Calculation> {
+public class CalculationEditor implements Initializable, Displayable, Applicable {
+
+    @FXML
+    private BorderPane calculationEditorBorderPane;
 
     @FXML
     private ChoiceBox<Operation> operationChoiceBox;
@@ -61,45 +71,28 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
     private VBox argumentsContainer;
 
     @FXML
-    private GridPane argumentPane;
-
-    @FXML
     private Button addButton;
 
     private final IntegerProperty argumentCount = new SimpleIntegerProperty(0);
     private final IntegerProperty minArguments = new SimpleIntegerProperty(0);
     private final IntegerProperty maxArguments = new SimpleIntegerProperty(0);
 
-    private final ParameterModel parameterModel;
+    private ParameterModel parameterModel;
     private Calculation calculation;
+
+    private EventHandler<Event> applyEventHandler;
+    private Window ownerWindow;
+
+    public CalculationEditor() {
+    }
 
     public CalculationEditor(ParameterModel parameterModel, Calculation calc) {
         this.parameterModel = parameterModel;
         this.calculation = calc != null ? calc : new Calculation();
+    }
 
-        try {
-            // load layout
-            FXMLLoader fxmlLoader = new FXMLLoader(Controls.CALCULATION_EDITOR_CONTROL);
-            fxmlLoader.setController(this);
-            DialogPane dialogPane = fxmlLoader.load();
-            super.setDialogPane(dialogPane);
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }
-
-        this.setTitle("Calculation Editor");
-        this.setHeaderText("Compose a calculation.");
-        Stage stage = (Stage) getDialogPane().getScene().getWindow();
-        stage.getIcons().add(IconSet.APP_ICON);
-        this.getDialogPane().getButtonTypes().add(ButtonType.OK);
-        this.setResultConverter(buttonType -> {
-            if (buttonType == ButtonType.OK) {
-                updateCalculationModel();
-                return calculation;
-            } else {
-                return null;
-            }
-        });
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
         // OPERATION CHOICE
         operationChoiceBox.setConverter(new StringConverter<Operation>() {
             @Override
@@ -127,26 +120,44 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
             }
         }
         addButton.disableProperty().bind(argumentCount.greaterThanOrEqualTo(maxArguments));
-        operationChoiceBox.valueProperty().addListener(new ChangeListener<Operation>() {
-            @Override
-            public void changed(ObservableValue<? extends Operation> observable, Operation oldValue, Operation operation) {
-                if (operation != null) {
-                    operationDescriptionText.setText(operation.description());
-                    minArguments.setValue(operation.minArguments());
-                    maxArguments.setValue(operation.maxArguments());
-                    updateArgumentsView(operation);
-                } else {
-                    operationDescriptionText.setText(null);
-                }
+        operationChoiceBox.valueProperty().addListener((observable, oldValue, operation1) -> {
+            if (operation1 != null) {
+                operationDescriptionText.setText(operation1.description());
+                minArguments.setValue(operation1.minArguments());
+                maxArguments.setValue(operation1.maxArguments());
+                updateArgumentsView(operation1);
+            } else {
+                operationDescriptionText.setText(null);
             }
         });
+    }
+
+    @Override
+    public void display(Event event) {
+        ownerWindow = calculationEditorBorderPane.getScene().getWindow();
+    }
+
+    @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
+    public void close(ActionEvent actionEvent) {
+        updateCalculationModel();
+        Node source = (Node) actionEvent.getSource();
+        Stage stage = (Stage) source.getScene().getWindow();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+        if (applyEventHandler != null) {
+            Event event = new Event(calculation, null, null);
+            applyEventHandler.handle(event);
+        }
     }
 
     private void updateCalculationModel() {
         List<Node> allArgumentEditors = argumentsContainer.getChildren();
         List<Argument> arguments = new LinkedList<>();
-        for (int idx = 0; idx < allArgumentEditors.size(); idx++) {
-            HBox argumentRow = (HBox) allArgumentEditors.get(idx);
+        for (Node allArgumentEditor : allArgumentEditors) {
+            HBox argumentRow = (HBox) allArgumentEditor;
             CalculationArgumentEditor cae = (CalculationArgumentEditor) argumentRow.getChildren().get(0);
             arguments.add(cae.getArgument());
         }
@@ -191,10 +202,9 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
         removeButton.setUserData(argumentRow);
         argumentsContainer.getChildren().add(argumentRow);
         argumentCount.setValue(argumentsContainer.getChildren().size());
-        getDialogPane().getScene().getWindow().sizeToScene();
     }
 
-    public void deleteArgument(ActionEvent actionEvent) {
+    private void deleteArgument(ActionEvent actionEvent) {
         Button deleteButton = (Button) actionEvent.getSource();
         HBox argumentRow = (HBox) deleteButton.getUserData();
         argumentsContainer.getChildren().remove(argumentRow);
@@ -202,11 +212,10 @@ public class CalculationEditor extends ChoiceDialog<Calculation> {
         Argument argument = editor.getArgument();
         calculation.getArguments().remove(argument);
         argumentCount.setValue(argumentsContainer.getChildren().size());
-        getDialogPane().getScene().getWindow().sizeToScene();
         updateArgumentsView(calculation.getOperation());
     }
 
-    public void addNewArgument(ActionEvent actionEvent) {
+    public void addNewArgument() {
         Operation operation = operationChoiceBox.getValue();
         Argument argument = new Argument.Literal(1);
         int pos = calculation.getArguments().size();

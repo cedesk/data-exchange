@@ -27,7 +27,7 @@ import javafx.scene.control.SelectionMode;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.*;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.services.GuiService;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.NumericalDSM;

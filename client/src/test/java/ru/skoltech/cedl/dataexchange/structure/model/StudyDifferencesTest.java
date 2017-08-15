@@ -23,7 +23,7 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.services.DifferenceMergeService;
+import ru.skoltech.cedl.dataexchange.service.DifferenceMergeService;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 
 import java.util.List;

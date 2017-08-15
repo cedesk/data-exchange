@@ -17,9 +17,6 @@
 package ru.skoltech.cedl.dataexchange;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
@@ -27,14 +24,13 @@ import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.skoltech.cedl.dataexchange.control.ErrorAlert;
-import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
-import ru.skoltech.cedl.dataexchange.controller.MainController;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializer;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.services.RepositoryConnectionService;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
+import ru.skoltech.cedl.dataexchange.service.FileStorageService;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.io.IOException;
@@ -44,7 +40,6 @@ public class ClientApplication extends Application {
     private static Logger logger = Logger.getLogger(ClientApplication.class);
 
     private ConfigurableApplicationContext context;
-    private MainController mainController;
 
     public static void main(String[] args) {
         launch(args);
@@ -84,6 +79,8 @@ public class ClientApplication extends Application {
     private void startMainController(Stage primaryStage) throws IOException {
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         FileStorageService fileStorageService = context.getBean(FileStorageService.class);
+        GuiService guiService = context.getBean(GuiService.class);
+
         System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
                 "/" + applicationSettings.getCedeskAppFile());
         logger.info("----------------------------------------------------------------------------------------------------");
@@ -92,33 +89,16 @@ public class ClientApplication extends Application {
         String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
         logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
 
-        FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);
-        FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.MAIN_WINDOW);
-        Parent root = loader.load();
-        mainController = loader.getController();
-        mainController.checkRepository();
-        mainController.checkVersionUpdate();
-
-        primaryStage.setTitle("Concurrent Engineering Data Exchange Skoltech");
-        primaryStage.setScene(new Scene(root));
-        primaryStage.getIcons().add(IconSet.APP_ICON);
-        primaryStage.show();
-        primaryStage.setOnCloseRequest(we -> {
-            if (!mainController.confirmCloseRequest()) {
-                we.consume();
-            }
-        });
+        ViewBuilder mainViewBuilder = guiService.createViewBuilder("Concurrent Engineering Data Exchange Skoltech", Views.MAIN_WINDOW);
+        mainViewBuilder.primaryStage(primaryStage);
+        mainViewBuilder.show();
     }
 
     private void startRepositorySettingsController(Stage primaryStage) throws IOException {
-        FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);
-        FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.REPOSITORY_SETTINGS_WINDOW);
-        Parent root = loader.load();
-
-        primaryStage.setTitle("Repository settings");
-        primaryStage.setScene(new Scene(root));
-        primaryStage.getIcons().add(IconSet.APP_ICON);
-        primaryStage.show();
+        GuiService guiService = context.getBean(GuiService.class);
+        ViewBuilder repositorySettingsViewBuilder = guiService.createViewBuilder("Repository settings", Views.REPOSITORY_SETTINGS_WINDOW);
+        repositorySettingsViewBuilder.primaryStage(primaryStage);
+        repositorySettingsViewBuilder.show();
     }
 
     private void displayErrorDialog(Throwable e) throws IOException {
@@ -132,7 +112,7 @@ public class ClientApplication extends Application {
         try {
             context.close();
         } catch (Exception e) {
-            logger.warn("", e);
+            logger.warn("Cannot stop context correctly: " + e.getMessage(), e);
         }
         logger.info("CEDESK stopped.");
     }

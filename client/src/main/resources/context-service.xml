@@ -27,45 +27,41 @@
                            http://www.springframework.org/schema/data/jpa   http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
                            http://www.springframework.org/schema/tx         http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-    <bean id="studyService" class="ru.skoltech.cedl.dataexchange.services.impl.StudyServiceImpl" >
+    <bean id="studyService" class="ru.skoltech.cedl.dataexchange.service.impl.StudyServiceImpl" >
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
     </bean>
 
-    <bean id="parameterModelService" class="ru.skoltech.cedl.dataexchange.services.impl.ParameterModelServiceImpl" />
+    <bean id="parameterModelService" class="ru.skoltech.cedl.dataexchange.service.impl.ParameterModelServiceImpl" />
 
-    <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserManagementServiceImpl" />
+    <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UserManagementServiceImpl" />
 
-    <bean id="userRoleManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UserRoleManagementServiceImpl" >
+    <bean id="userRoleManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UserRoleManagementServiceImpl" >
         <property name="userManagementService" ref="userManagementService" />
     </bean>
 
-    <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.services.impl.UnitManagementServiceImpl" >
+    <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UnitManagementServiceImpl" >
         <property name="fileStorageService" ref="fileStorageService" />
     </bean>
 
-    <bean id="guiService" class="ru.skoltech.cedl.dataexchange.services.impl.GuiServiceImpl" >
-        <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
-    </bean>
+    <bean id="modelUpdateService" class="ru.skoltech.cedl.dataexchange.service.impl.ModelUpdateServiceImpl" />
 
-    <bean id="modelUpdateService" class="ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl" />
-
-    <bean id="differenceMergeService" class="ru.skoltech.cedl.dataexchange.services.impl.DifferenceMergeServiceImpl" >
+    <bean id="differenceMergeService" class="ru.skoltech.cedl.dataexchange.service.impl.DifferenceMergeServiceImpl" >
         <property name="modelUpdateService" ref="modelUpdateService" />
         <property name="studyService" ref="studyService"/>
     </bean>
 
-    <bean id="repositorySchemeService" class="ru.skoltech.cedl.dataexchange.services.impl.RepositorySchemeServiceImpl" >
+    <bean id="repositorySchemeService" class="ru.skoltech.cedl.dataexchange.service.impl.RepositorySchemeServiceImpl" >
         <property name="applicationSettings" ref="applicationSettings" />
     </bean>
 
-    <bean id="updateService" class="ru.skoltech.cedl.dataexchange.services.impl.UpdateServiceImpl" >
+    <bean id="updateService" class="ru.skoltech.cedl.dataexchange.service.impl.UpdateServiceImpl" >
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="jsoupService" ref="jsoupService" />
     </bean>
 
-    <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.services.impl.JsoupServiceImpl" />
+    <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.service.impl.JsoupServiceImpl" />
 
-    <bean class="ru.skoltech.cedl.dataexchange.services.impl.SpreadsheetInputOutputExtractorServiceImpl"
+    <bean class="ru.skoltech.cedl.dataexchange.service.impl.SpreadsheetInputOutputExtractorServiceImpl"
           id="spreadsheetInputOutputExtractorService">
         <property name="unitManagementService" ref="unitManagementService"/>
     </bean>

@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.control.cell.PropertyValueFactory?>
-<?import javafx.scene.layout.*?>
-<?import org.controlsfx.glyphfont.*?>
-<?import ru.skoltech.cedl.dataexchange.control.ExternalModelEditor?>
-<?import ru.skoltech.cedl.dataexchange.control.ParameterEditor?>
 <!--
   ~ Copyright 2017 Skolkovo Institute of Science and Technology
   ~
@@ -23,6 +16,11 @@
   ~ limitations under the License.
   -->
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.glyphfont.*?>
 <SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="700.0"
            prefWidth="900.0"
            stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
@@ -98,9 +96,8 @@
         </TitledPane>
     </AnchorPane>
     <SplitPane dividerPositions="0.5" orientation="VERTICAL">
-        <TitledPane fx:id="externalModelPane" animated="false" text="External Model"
+        <TitledPane fx:id="externalModelParentPane" animated="false" text="External Model"
                     AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <ExternalModelEditor fx:id="externalModelEditor" minHeight="70.0"/>
         </TitledPane>
         <TitledPane animated="false" text="Parameters" AnchorPane.topAnchor="70.0"
                     AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
@@ -168,9 +165,7 @@
                         </Button>
                     </ToolBar>
                 </AnchorPane>
-                <TitledPane collapsible="false" text="Parameter Details">
-                    <ParameterEditor fx:id="parameterEditor" minHeight="280.0" prefHeight="340.0"/>
-                </TitledPane>
+                <TitledPane fx:id="parameterEditorParentPane" collapsible="false" text="Parameter Details" />
             </SplitPane>
         </TitledPane>
     </SplitPane>

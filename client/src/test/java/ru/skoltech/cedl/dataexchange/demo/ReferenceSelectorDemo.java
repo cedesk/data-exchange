@@ -26,8 +26,8 @@ import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
-import ru.skoltech.cedl.dataexchange.services.ModelUpdateService;
-import ru.skoltech.cedl.dataexchange.services.impl.ModelUpdateServiceImpl;
+import ru.skoltech.cedl.dataexchange.service.ModelUpdateService;
+import ru.skoltech.cedl.dataexchange.service.impl.ModelUpdateServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;

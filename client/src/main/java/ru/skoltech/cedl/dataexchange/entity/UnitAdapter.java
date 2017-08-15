@@ -18,7 +18,7 @@ package ru.skoltech.cedl.dataexchange.entity;
 
 import org.springframework.context.ApplicationContext;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
-import ru.skoltech.cedl.dataexchange.services.UnitManagementService;
+import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;

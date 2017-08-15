@@ -20,9 +20,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.services.JsoupService;
-import ru.skoltech.cedl.dataexchange.services.UpdateService;
-import ru.skoltech.cedl.dataexchange.services.impl.JsoupServiceImpl;
+import ru.skoltech.cedl.dataexchange.service.JsoupService;
+import ru.skoltech.cedl.dataexchange.service.UpdateService;
+import ru.skoltech.cedl.dataexchange.service.impl.JsoupServiceImpl;
 
 import java.io.File;
 import java.io.IOException;

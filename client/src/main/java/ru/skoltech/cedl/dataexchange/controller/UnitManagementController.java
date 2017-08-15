@@ -23,26 +23,21 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -52,7 +47,7 @@ import java.util.ResourceBundle;
  *
  * Created by d.knoll on 27.08.2015.
  */
-public class UnitManagementController implements Initializable {
+public class UnitManagementController implements Initializable, Closeable {
 
     private static final Logger logger = Logger.getLogger(UnitManagementController.class);
 
@@ -91,15 +86,15 @@ public class UnitManagementController implements Initializable {
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
 
-    private FXMLLoaderFactory fxmlLoaderFactory;
     private Project project;
-
-    public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
-        this.fxmlLoaderFactory = fxmlLoaderFactory;
-    }
+    private GuiService guiService;
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     @Override
@@ -120,16 +115,8 @@ public class UnitManagementController implements Initializable {
         updateView();
     }
 
-    public void updateView() {
-        UnitManagement unitManagement = project.getUnitManagement();
-        ObservableList<Unit> unitsList = FXCollections.observableList(unitManagement.getUnits());
-        unitsTableView.setItems(unitsList);
-
-        ObservableList<QuantityKind> quantityKindsList = FXCollections.observableList(unitManagement.getQuantityKinds());
-        quantityTableView.setItems(quantityKindsList);
-    }
-
-    public void onCloseRequest(WindowEvent windowEvent) {
+    @Override
+    public void close(Event event) {
         if (!changed.getValue()) {
             return;
         }
@@ -143,7 +130,7 @@ public class UnitManagementController implements Initializable {
         alert.getButtonTypes().setAll(yesButton, noButton, cancelButton);
         Optional<ButtonType> result = alert.showAndWait();
         if (result.get() == cancelButton) {
-            windowEvent.consume();
+            event.consume();
         } else if (result.get() == yesButton) {
             saveUnits();
         } else if (result.get() == noButton){
@@ -151,29 +138,26 @@ public class UnitManagementController implements Initializable {
         }
     }
 
+    public void updateView() {
+        ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement unitManagement = project.getUnitManagement();
+        ObservableList<Unit> unitsList = FXCollections.observableList(unitManagement.getUnits());
+        unitsTableView.setItems(unitsList);
+
+        ObservableList<QuantityKind> quantityKindsList = FXCollections.observableList(unitManagement.getQuantityKinds());
+        quantityTableView.setItems(quantityKindsList);
+    }
+
     public void openAddUnitDialog(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.UNIT_ADD_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Add new unit of measure");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(unitManagementPane.getScene().getWindow());
-
-            AddUnitController addUnitController = loader.getController();
-            addUnitController.setAddUnitListener(unit -> {
-                project.getUnitManagement().getUnits().add(unit);
-                changed.setValue(true);
-                updateView();
-            });
-
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+        ViewBuilder addUnitViewBuilder = guiService.createViewBuilder("Add new unit of measure", Views.UNIT_ADD_WINDOW);
+        addUnitViewBuilder.ownerWindow(unitManagementPane.getScene().getWindow());
+        addUnitViewBuilder.modality(Modality.APPLICATION_MODAL);
+        addUnitViewBuilder.applyEventHandler(event -> {
+            Unit unit = (Unit) event.getSource();
+            project.getUnitManagement().getUnits().add(unit);
+            changed.setValue(true);
+            updateView();
+        });
+        addUnitViewBuilder.show();
     }
 
     public void deleteUnit(ActionEvent actionEvent) {

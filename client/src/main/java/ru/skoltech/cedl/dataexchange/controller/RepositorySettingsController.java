@@ -22,6 +22,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.Event;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -29,10 +31,11 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.services.RepositoryConnectionService;
+import ru.skoltech.cedl.dataexchange.service.FileStorageService;
+import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
 
 import java.net.URL;
 import java.util.Optional;
@@ -45,7 +48,7 @@ import java.util.concurrent.Executor;
  *
  * Created by D.Knoll on 22.07.2015.
  */
-public class RepositorySettingsController implements Initializable {
+public class RepositorySettingsController implements Initializable, Displayable, Closeable, Applicable {
 
     private static Logger logger = Logger.getLogger(RepositorySettingsController.class);
 
@@ -82,7 +85,8 @@ public class RepositorySettingsController implements Initializable {
     private Executor executor;
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
-    private RepositorySettingsListener repositorySettingsListener;
+    private WindowEvent closeWindowEvent;
+    private EventHandler<Event> applyEventHandler;
 
     public void setExecutor(Executor executor) {
         this.executor = executor;
@@ -98,10 +102,6 @@ public class RepositorySettingsController implements Initializable {
 
     public void setRepositoryConnectionService(RepositoryConnectionService repositoryConnectionService) {
         this.repositoryConnectionService = repositoryConnectionService;
-    }
-
-    public void setRepositorySettingsListener(RepositorySettingsListener repositorySettingsListener) {
-        this.repositorySettingsListener = repositorySettingsListener;
     }
 
     @Override
@@ -149,11 +149,17 @@ public class RepositorySettingsController implements Initializable {
                 || baseRepositoryWatcherAutosync != newRepositoryWatcherAutosync;
     }
 
+    @Override
+    public void display(Event event) {
+        closeWindowEvent = new WindowEvent(repositorySettingsPane.getScene().getWindow(), WindowEvent.WINDOW_CLOSE_REQUEST);
+    }
+
     public void save(Event event) {
         if (!changed.getValue()) {
-            this.close();
+            this.close(closeWindowEvent);
             return;
         }
+
         boolean connection = testConnection();
         String warning = connection ? "" : "Connection is unavailable with currently provided parameters.\n\n";
 
@@ -182,10 +188,48 @@ public class RepositorySettingsController implements Initializable {
             event.consume();
         } else if (result.get() == yesButton) {
             this.apply();
-            this.close();
+            this.close(closeWindowEvent);
         } else if (result.get() == noButton){
-            this.close();
+            this.close(closeWindowEvent);
         }
+    }
+
+    public void cancel() {
+        this.close(closeWindowEvent);
+    }
+
+    @Override
+    public void close(Event event) {
+        this.close((Stage)event.getSource());
+    }
+
+    public void close(Stage stage) {
+        stage.close();
+        logger.info("closed");
+    }
+
+    @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
+    private void apply() {
+        if (applyEventHandler != null) {
+            applyEventHandler.handle(new Event(new EventType<>("APPLY")));
+        }
+
+        String repositoryHost = repositoryHostTextField.getText();
+        String repositoryUser = repositoryUserTextField.getText();
+        String repositoryPassword = repositoryPasswordTextField.getText();
+        boolean repositoryWatcherAutosync = repositoryWatcherAutosyncCheckBox.isSelected();
+
+        applicationSettings.storeRepositoryHost(repositoryHost);
+        applicationSettings.storeRepositoryUser(repositoryUser);
+        applicationSettings.storeRepositoryPassword(repositoryPassword);
+        applicationSettings.storeRepositoryWatcherAutosync(repositoryWatcherAutosync);
+        applicationSettings.save();
+
+        logger.info("applied");
     }
 
     public void test() {
@@ -211,37 +255,5 @@ public class RepositorySettingsController implements Initializable {
 
         return repositoryConnectionService.checkRepositoryConnection(repositoryHost, repositorySchemaName,
                 repositoryUser, repositoryPassword);
-    }
-
-    private void apply() {
-        if (repositorySettingsListener != null) {
-            repositorySettingsListener.repositorySettingsChanged();
-        }
-
-        String repositoryHost = repositoryHostTextField.getText();
-        String repositoryUser = repositoryUserTextField.getText();
-        String repositoryPassword = repositoryPasswordTextField.getText();
-        boolean repositoryWatcherAutosync = repositoryWatcherAutosyncCheckBox.isSelected();
-
-        applicationSettings.storeRepositoryHost(repositoryHost);
-        applicationSettings.storeRepositoryUser(repositoryUser);
-        applicationSettings.storeRepositoryPassword(repositoryPassword);
-        applicationSettings.storeRepositoryWatcherAutosync(repositoryWatcherAutosync);
-        applicationSettings.save();
-
-        logger.info("applied");
-    }
-
-    public void close() {
-        Stage stage = (Stage) repositorySettingsPane.getScene().getWindow();
-        stage.close();
-        logger.info("closed");
-    }
-
-    /**
-     * Is called then user has new applied changes.
-     */
-    public interface RepositorySettingsListener {
-        void repositorySettingsChanged();
     }
 }

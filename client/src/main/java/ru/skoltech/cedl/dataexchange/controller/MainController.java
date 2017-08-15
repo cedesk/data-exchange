@@ -20,11 +20,10 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
@@ -52,13 +51,11 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.services.*;
-import ru.skoltech.cedl.dataexchange.services.GuiService.StageStartAction;
+import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.view.Views;
 
 import java.awt.*;
@@ -78,7 +75,7 @@ import java.util.stream.Collectors;
  *
  * Created by Nikolay Groshkov on 19-Jul-17.
  */
-public class MainController implements Initializable {
+public class MainController implements Initializable, Closeable {
 
     private static final Logger logger = Logger.getLogger(MainController.class);
 
@@ -113,13 +110,11 @@ public class MainController implements Initializable {
     @FXML
     private BorderPane layoutPane;
 
-    private FXMLLoaderFactory fxmlLoaderFactory;
     private ModelEditingController modelEditingController;
 
     private Project project;
     private ApplicationSettings applicationSettings;
     private StudyService studyService;
-    private UserManagementService userManagementService;
     private GuiService guiService;
     private SystemBuilderFactory systemBuilderFactory;
     private FileStorageService fileStorageService;
@@ -130,10 +125,6 @@ public class MainController implements Initializable {
 
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
-    }
-
-    public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
-        this.fxmlLoaderFactory = fxmlLoaderFactory;
     }
 
     public void setModelEditingController(ModelEditingController modelEditingController) {
@@ -150,10 +141,6 @@ public class MainController implements Initializable {
 
     public void setStudyService(StudyService studyService) {
         this.studyService = studyService;
-    }
-
-    public void setUserManagementService(UserManagementService userManagementService) {
-        this.userManagementService = userManagementService;
     }
 
     public void setGuiService(GuiService guiService) {
@@ -187,14 +174,8 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // EDITING PANE
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.MODEL_EDITING_VIEW);
-            Parent editingPane = loader.load();
-            layoutPane.setCenter(editingPane);
-        } catch (IOException ioe) {
-            logger.error("Unable to load editing view pane.");
-            throw new RuntimeException(ioe);
-        }
+        Node modelEditingPane = guiService.createControl(Views.MODEL_EDITING_VIEW);
+        layoutPane.setCenter(modelEditingPane);
 
         // STATUSBAR
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
@@ -238,9 +219,26 @@ public class MainController implements Initializable {
         newButton.disableProperty().bind(project.canNewProperty().not());
         loadButton.disableProperty().bind(project.canLoadProperty().not());
         saveButton.disableProperty().bind(project.canSyncProperty().not());
+
+        this.checkRepository();
+        this.checkVersionUpdate();
     }
 
-    public void checkVersionUpdate(){
+    private void checkRepository() {
+        executor.execute(() -> {
+            boolean validRepository = project.checkRepositoryScheme();
+            if (!validRepository) {
+                Platform.runLater(MainController.this::openRepositorySettingsDialog);
+            } else {
+                if (!project.checkUser()) {
+                    Platform.runLater(this::displayInvalidUserDialog);
+                }
+                Platform.runLater(this::loadLastProject);
+            }
+        });
+    }
+
+    private void checkVersionUpdate(){
         String appVersion = applicationSettings.getApplicationVersion();
         if (ApplicationPackage.isRelease(appVersion)) {
             executor.execute(() -> {
@@ -313,7 +311,14 @@ public class MainController implements Initializable {
         }
     }
 
-    public boolean confirmCloseRequest() {
+    @Override
+    public void close(Event event) {
+        if (!this.confirmCloseRequest()) {
+            event.consume();
+        }
+    }
+
+    private boolean confirmCloseRequest() {
         if (project.hasLocalStudyModifications()) {
             Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
                     "Shall the modifications saved before closing?");
@@ -475,16 +480,23 @@ public class MainController implements Initializable {
     }
 
     public void openAboutDialog() {
-        guiService.openView("About CEDESK", Views.ABOUT_WINDOW, getAppWindow(), Modality.APPLICATION_MODAL);
+        ViewBuilder aboutViewBuilder = guiService.createViewBuilder("About CEDESK", Views.ABOUT_WINDOW);
+        aboutViewBuilder.ownerWindow(getAppWindow());
+        aboutViewBuilder.modality(Modality.APPLICATION_MODAL);
+        aboutViewBuilder.show();
     }
 
     public void openConsistencyView() {
-        guiService.openView("Model consistency", Views.MODEL_CONSISTENCY_WINDOW, getAppWindow(), StageStartAction.SHOW_AND_WAIT);
+        ViewBuilder modelConsistencyViewBuilder = guiService.createViewBuilder("Model consistency", Views.MODEL_CONSISTENCY_WINDOW);
+        modelConsistencyViewBuilder.ownerWindow(getAppWindow());
+        modelConsistencyViewBuilder.showAndWait();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
-    public void openDepencencyView() {
-        guiService.openView("N-Square Chart", Views.DEPENDENCY_WINDOW, getAppWindow());
+    public void openDependencyView() {
+        ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_WINDOW);
+        dependencyViewBuilder.ownerWindow(getAppWindow());
+        dependencyViewBuilder.show();
     }
 
     public void openDiffView() {
@@ -494,33 +506,28 @@ public class MainController implements Initializable {
             return;
         }
 
-        guiService.openView("Model differences", Views.MODEL_DIFF_WINDOW, getAppWindow(), Modality.APPLICATION_MODAL, StageStartAction.SHOW_AND_WAIT);
+        ViewBuilder diffViewBuilder = guiService.createViewBuilder("Model differences", Views.MODEL_DIFF_WINDOW);
+        diffViewBuilder.ownerWindow(getAppWindow());
+        diffViewBuilder.modality(Modality.APPLICATION_MODAL);
+        diffViewBuilder.showAndWait();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
     public void openDsmView() {
-        guiService.openView("Dependency Structure Matrix", Views.DSM_WINDOW, getAppWindow());
+        ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_WINDOW);
+        dsmViewBuilder.ownerWindow(getAppWindow());
+        dsmViewBuilder.show();
     }
 
     public void openGuideDialog() {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.GUIDE_WINDOW);
-            Parent root = loader.load();
+        Stage currentStage = (Stage) getAppWindow();
+        double x = currentStage.getX() + currentStage.getWidth();
+        double y = currentStage.getY();
 
-            Stage currentStage = (Stage) getAppWindow();
-
-            Stage stage = new Stage();
-            stage.setX(currentStage.getX() + currentStage.getWidth());
-            stage.setY(currentStage.getY());
-            stage.setScene(new Scene(root));
-            stage.setTitle("Process Guide");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.NONE);
-            stage.initOwner(getAppWindow());
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+        ViewBuilder guideViewBuilder = guiService.createViewBuilder("Process Guide", Views.GUIDE_WINDOW);
+        guideViewBuilder.ownerWindow(getAppWindow());
+        guideViewBuilder.xy(x, y);
+        guideViewBuilder.show();
     }
 
     public void openProject(ActionEvent actionEvent) {
@@ -541,140 +548,50 @@ public class MainController implements Initializable {
         }
     }
 
-    public void openProjectSettingsDialog(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.PROJECT_SETTINGS_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Project settings");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(getAppWindow());
-
-            ProjectSettingsController controller = loader.getController();
-            controller.setProjectSettingsListener((repositoryWatcherAutosync, projectLastAutoload,
-                                                   projectUseOsUser, projectUserName) -> {
-                StudySettings studySettings = studySettings();
-                if (studySettings != null) {
-                    boolean oldSyncEnabled = studySettings.getSyncEnabled();
-                    studySettings.setSyncEnabled(repositoryWatcherAutosync);
-                    if (oldSyncEnabled != repositoryWatcherAutosync) {
-                        project.markStudyModified();
-                    }
-                    logger.info(studySettings);
-                }
-
-                applicationSettings.storeProjectLastAutoload(projectLastAutoload);
-                applicationSettings.storeProjectUseOsUser(projectUseOsUser);
-                String userName = null;
-                if (projectUseOsUser) {
-                    applicationSettings.storeProjectUserName(null);
-                    userName = applicationSettings.getDefaultProjectUserName(); // get default value
-                } else {
-                    userName = projectUserName;
-                }
-                boolean validUser = userManagementService.checkUserName(project.getUserManagement(), userName);
-                logger.info("using user: '" + userName + "', valid: " + validUser);
-                if (validUser) {
-                    applicationSettings.storeProjectUserName(userName);
-                } else {
-                    Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
-                }
-
-                return validUser;
-            });
-            stage.setOnCloseRequest(event -> {
-                if (!project.checkUser()) {
-                    this.displayInvalidUserDialog();
-                }
-            });
-            stage.showAndWait();
-
-            updateView();
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-    private StudySettings studySettings() {
-        if (project != null && project.getStudy() != null) {
-            if (project.isCurrentAdmin()) {
-                return project.getStudy().getStudySettings();
+    public void openProjectSettingsDialog() {
+        ViewBuilder projectSettingsViewBuilder = guiService.createViewBuilder("Project settings", Views.PROJECT_SETTINGS_WINDOW);
+        projectSettingsViewBuilder.ownerWindow(getAppWindow());
+        projectSettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        projectSettingsViewBuilder.closeEventHandler(event -> {
+            if (!project.checkUser()) {
+                this.displayInvalidUserDialog();
             }
-        }
-        return null;
+        });
+        projectSettingsViewBuilder.showAndWait();
+        updateView();
     }
 
-    public void openRepositorySettingsDialog(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.REPOSITORY_SETTINGS_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Repository settings");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(getAppWindow());
-
-            RepositorySettingsController controller = loader.getController();
-            //TODO: add auto restart application
-            controller.setRepositorySettingsListener(this::quit);
-
-            stage.setOnCloseRequest(event -> controller.close());
-            stage.showAndWait();
-            updateView();
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
+    public void openRepositorySettingsDialog() {
+        ViewBuilder repositorySettingsViewBuilder = guiService.createViewBuilder("Repository settings", Views.REPOSITORY_SETTINGS_WINDOW);
+        repositorySettingsViewBuilder.ownerWindow(getAppWindow());
+        repositorySettingsViewBuilder.applyEventHandler(event -> this.quit());
+        repositorySettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        repositorySettingsViewBuilder.showAndWait();
     }
 
-    public void openUnitManagement(ActionEvent actionEvent) {
-        try {
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.UNIT_EDITING_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Unit Management");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(getAppWindow());
-            stage.setOnCloseRequest(event ->
-                    ((UnitManagementController)loader.getController()).onCloseRequest(event));
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+    public void openUnitManagement() {
+        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_EDITING_WINDOW);
+        unitEditingViewBuilder.ownerWindow(getAppWindow());
+        unitEditingViewBuilder.modality(Modality.APPLICATION_MODAL);
+        unitEditingViewBuilder.show();
     }
 
     public void openUserManagement() {
-        guiService.openView("User Management", Views.USER_MANAGEMENT_WINDOW, getAppWindow(), Modality.APPLICATION_MODAL);
+        ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder("User Management", Views.USER_MANAGEMENT_WINDOW);
+        userDetailsViewBuilder.ownerWindow(getAppWindow());
+        userDetailsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        userDetailsViewBuilder.show();
     }
 
-    public void openUserRoleManagement(ActionEvent actionEvent) {
-        try {
-            if (!checkUnsavedModifications()) {
-                return;
-            }
-
-            FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.USER_ROLES_EDITING_WINDOW);
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("User Role Management");
-            stage.getIcons().add(IconSet.APP_ICON);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(getAppWindow());
-            stage.setOnCloseRequest(event ->
-                    ((UserRoleManagementController)loader.getController()).onCloseRequest(event));
-            stage.show();
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
+    public void openUserRoleManagement() {
+        if (!checkUnsavedModifications()) {
+            return;
         }
+
+        ViewBuilder userRoleManagementViewBuilder = guiService.createViewBuilder("User Role Management", Views.USER_ROLE_MANAGEMENT_WINDOW);
+        userRoleManagementViewBuilder.ownerWindow(getAppWindow());
+        userRoleManagementViewBuilder.modality(Modality.APPLICATION_MODAL);
+        userRoleManagementViewBuilder.show();
     }
 
     public void quit() {
@@ -764,20 +681,6 @@ public class MainController implements Initializable {
             public void run() {
                 modelEditingController.updateView();
                 StatusLogger.getInstance().log("Remote model loaded for comparison.");
-            }
-        });
-    }
-
-    public void checkRepository() {
-        executor.execute(() -> {
-            boolean validRepository = project.checkRepositoryScheme();
-            if (!validRepository) {
-                Platform.runLater(() -> MainController.this.openRepositorySettingsDialog(null));
-            } else {
-                if (!project.checkUser()) {
-                    Platform.runLater(this::displayInvalidUserDialog);
-                }
-                Platform.runLater(this::loadLastProject);
             }
         });
     }

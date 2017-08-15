@@ -33,7 +33,7 @@ public class Views {
     public static final URL DEPENDENCY_WINDOW = Views.class.getResource("dependency-window.fxml");
     public static final URL USER_MANAGEMENT_WINDOW = Views.class.getResource("user-management-window.fxml");
     public static final URL USER_EDITING_WINDOW = Views.class.getResource("user-editing-window.fxml");
-    public static final URL USER_ROLES_EDITING_WINDOW = Views.class.getResource("user-role-management-window.fxml");
+    public static final URL USER_ROLE_MANAGEMENT_WINDOW = Views.class.getResource("user-role-management-window.fxml");
     public static final URL UNIT_EDITING_WINDOW = Views.class.getResource("unit-editing-window.fxml");
     public static final URL UNIT_ADD_WINDOW = Views.class.getResource("add-unit-dialog.fxml");
     public static final URL REVISION_HISTORY_WINDOW = Views.class.getResource("revision-history-window.fxml");

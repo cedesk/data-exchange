@@ -16,25 +16,27 @@
 
 package ru.skoltech.cedl.dataexchange.demo;
 
-import javafx.application.Application;
-import javafx.scene.control.Dialog;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.control.CalculationEditor;
+import ru.skoltech.cedl.dataexchange.control.Controls;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
-import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
-import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by D.Knoll on 25.09.2015.
  */
-public class CalculationEditorDemo extends Application {
+public class CalculationEditorDemo extends AbstractApplicationContextDemo {
 
     private static Logger logger = Logger.getLogger(CalculationEditorDemo.class);
 
@@ -42,7 +44,24 @@ public class CalculationEditorDemo extends Application {
         launch(args);
     }
 
-    public static ParameterModel getParameterModel() {
+    @Override
+    public void demo(Stage primaryStage) {
+        GuiService guiService = context.getBean(GuiService.class);
+
+        ParameterModel parameterModel = getParameterModel();
+
+        ViewBuilder calculationEditorViewBuilder = guiService.createViewBuilder("Calculation Editor", Controls.CALCULATION_EDITOR_CONTROL);
+        calculationEditorViewBuilder.applyEventHandler(event -> {
+            Calculation calculation = (Calculation) event.getSource();
+            if (calculation != null) {
+                System.out.println(calculation);
+            }
+        });
+        calculationEditorViewBuilder.showAndWait(parameterModel, parameterModel.getCalculation());
+
+    }
+
+    private static ParameterModel getParameterModel() {
         SystemModel systemModel = new SystemModel("ROOT-SYS");
         ParameterModel outPar = new ParameterModel("outpar", 76.45);
         systemModel.addParameter(outPar);
@@ -62,15 +81,4 @@ public class CalculationEditorDemo extends Application {
         return parameterModel;
     }
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-
-        ParameterModel parameterModel = getParameterModel();
-        Dialog<Calculation> dialog = new CalculationEditor(parameterModel, parameterModel.getCalculation());
-        Optional<Calculation> calculationOptional = dialog.showAndWait();
-        if (calculationOptional.isPresent()) {
-            Calculation calculation = calculationOptional.get();
-            System.out.println(calculation);
-        }
-    }
 }
