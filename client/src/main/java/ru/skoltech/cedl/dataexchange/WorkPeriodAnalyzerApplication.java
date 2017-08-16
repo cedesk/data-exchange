@@ -8,19 +8,15 @@
 package ru.skoltech.cedl.dataexchange;
 
 
+import javafx.application.Platform;
+import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.analysis.WorkPeriodAnalysis;
 import ru.skoltech.cedl.dataexchange.analysis.WorkSessionAnalysis;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
-import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
-import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.repository.jpa.LogEntryRepository;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
 import java.io.Serializable;
@@ -29,16 +25,15 @@ import java.util.List;
 /**
  * Created by d.knoll on 25.07.2017.
  */
-public class WorkPeriodAnalyzerApplication {
+public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
 
     private static final boolean TREAT_INCOMPLETE_PERIOD_AS_CLOSED = false;
     private static Logger logger = Logger.getLogger(WorkPeriodAnalyzerApplication.class);
-    private static ApplicationContext context;
 
     /**
      * data ony for demoSAT study, July 2016
      */
-    private static List<LogEntry> getLogEntries() throws RepositoryException {
+    private List<LogEntry> getLogEntries() throws RepositoryException {
         long fromId = 16646, toId = 17748;
         FileStorageService storageService = context.getBean(FileStorageService.class);
 
@@ -47,47 +42,29 @@ public class WorkPeriodAnalyzerApplication {
         if (objFile.canRead()) {
             logEntries = (List<LogEntry>) Utils.readFromFile(objFile);
         } else {
-            //RepositoryService repositoryService = getRepositoryService();
-            //logEntries = repositoryService.getLogEntries(fromId, toId);
-            //Utils.writeToFile((Serializable) logEntries, objFile);
+            LogEntryRepository logEntryRepository = context.getBean(LogEntryRepository.class);
+            logEntries = logEntryRepository.getLogEntries(fromId, toId);
+            Utils.writeToFile((Serializable) logEntries, objFile);
         }
         return logEntries;
     }
-/*
-    private static RepositoryService getRepositoryService() {
-        Project project = context.getBean(Project.class);
-        boolean repositoryValid = project.checkRepository();
-        if (!repositoryValid) {
-            logger.error("repository has invalid scheme");
 
-            cleanup();
-            System.exit(-1);
-        }
-        return context.getBean(RepositoryService.class);
-    }
-*/
     public static void main(String[] args) {
-        PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
-        ApplicationContextInitializer.initialize("/context-model.xml"); // headless, without GUI
-        context = ApplicationContextInitializer.getInstance().getContext();
-        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        System.out.println("using: " + applicationSettings.getCedeskAppDir() + "/" + applicationSettings.getCedeskAppFile());
+        contextInit();
+        launch(args);
+    }
 
-        logger.info("----------------------------------------------------------------------------------------------------");
-        logger.info("Opening CEDESK ...");
-        String appVersion = applicationSettings.getApplicationVersion();
-        String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
-        logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        loadContext();
+        loadLastProject();
 
         performAnalysis();
 
-        //launch(args);
-
-        cleanup();
-
+        Platform.exit();
     }
 
-    private static void performAnalysis() {
+    private void performAnalysis() {
         FileStorageService storageService = context.getBean(FileStorageService.class);
         File appDir = storageService.applicationDirectory();
         try {
@@ -106,36 +83,5 @@ public class WorkPeriodAnalyzerApplication {
             logger.error("analysis failed", e);
         }
     }
-
-    private static void cleanup() {
-        logger.info("Stopping CEDESK ...");
-        try {
-            Project project = context.getBean(Project.class);
-            project.close();
-            context.getBean(ThreadPoolTaskScheduler.class).shutdown();
-            context.getBean(ThreadPoolTaskExecutor.class).shutdown();
-        } catch (Throwable e) {
-            logger.warn("", e);
-        }
-        logger.info("CEDESK stopped.");
-    }
-
-/*
-    @Override
-    public void start(Stage stage) throws Exception {
-        Platform.runLater(() -> {
-            try {
-                WorkPeriodAnalyzerApplication.this.stop();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    @Override
-    public void stop() throws Exception {
-        cleanup();
-    }
-*/
 
 }

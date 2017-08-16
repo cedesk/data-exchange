@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.repository.jpa;
+package ru.skoltech.cedl.dataexchange.repository.jpa.custom;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
-import ru.skoltech.cedl.dataexchange.repository.jpa.custom.LogEntryRepositoryCustom;
+
+import java.util.List;
 
 /**
- * Data Access Operations with {@link LogEntryRepository} entity.
- *
- * Created by Nikolay Groshkov on 07-Aug-17.
+ * Custom Data Access Operations for {@link LogEntry} entity.
+ * <p>
+ * Created by Dominik Knoll on 16-Aug-17.
  */
-public interface LogEntryRepository extends JpaRepository<LogEntry, Long>, LogEntryRepositoryCustom {
+public interface LogEntryRepositoryCustom {
 
+    /**
+     * Retrieve a list of {@link LogEntry}s in the range from "fromId" to "toId".
+     *
+     * @param fromId the id from which the entries should be taken. May be null.
+     * @param toId   the id to which the entries should be taken. May be null.
+     * @return a list of {@link LogEntry}
+     */
+    List<LogEntry> getLogEntries(Long fromId, Long toId);
 }
