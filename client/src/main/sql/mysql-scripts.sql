@@ -110,4 +110,4 @@ CREATE OR REPLACE VIEW `overall_study_statistics` AS
         parameter_changes
             JOIN
         study ON study.systemModel_id = parameter_changes.sys_id
-    GROUP BY sys_id;
+    GROUP BY sys_id, sys_name, study_id, study_name;
