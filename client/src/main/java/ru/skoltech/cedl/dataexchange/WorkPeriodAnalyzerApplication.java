@@ -17,6 +17,7 @@ import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.repository.jpa.LogEntryRepository;
 import ru.skoltech.cedl.dataexchange.services.FileStorageService;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
 import java.io.Serializable;
@@ -34,7 +35,6 @@ public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
      * data ony for demoSAT study, July 2016
      */
     private List<LogEntry> getLogEntries() throws RepositoryException {
-        long fromId = 16646, toId = 17748;
         FileStorageService storageService = context.getBean(FileStorageService.class);
 
         File objFile = new File(storageService.applicationDirectory(), "log-entries.obj");
@@ -42,8 +42,10 @@ public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
         if (objFile.canRead()) {
             logEntries = (List<LogEntry>) Utils.readFromFile(objFile);
         } else {
+            Project project = context.getBean(Project.class);
+            long studyId = project.getStudy().getId();
             LogEntryRepository logEntryRepository = context.getBean(LogEntryRepository.class);
-            logEntries = logEntryRepository.getLogEntries(fromId, toId);
+            logEntries = logEntryRepository.getLogEntries(studyId);
             Utils.writeToFile((Serializable) logEntries, objFile);
         }
         return logEntries;
@@ -71,8 +73,8 @@ public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
             List<LogEntry> logEntries = getLogEntries();
 
             WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries, TREAT_INCOMPLETE_PERIOD_AS_CLOSED);
-            //File periodsCsvFile = new File(appDir, "work-periods.csv");
-            //workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
+            File periodsCsvFile = new File(appDir, "work-periods.csv");
+            workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
 
             WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis);
             File sessionsCsvFile = new File(appDir, "work-sessions.csv");

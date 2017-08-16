@@ -38,14 +38,13 @@ public class LogEntryRepositoryImpl implements LogEntryRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public List<LogEntry> getLogEntries(Long fromId, Long toId) {
+    public List<LogEntry> getLogEntries(Long studyId) {
         final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<LogEntry> criteriaQuery = criteriaBuilder.createQuery(LogEntry.class);
         Root<LogEntry> root = criteriaQuery.from(LogEntry.class);
-        if (fromId != null && toId != null) {
-            Predicate greaterThanOrEqualTo = criteriaBuilder.greaterThanOrEqualTo(root.get("id"), fromId);
-            Predicate lessThanOrEqualTo = criteriaBuilder.lessThanOrEqualTo(root.get("id"), toId);
-            criteriaQuery = criteriaQuery.where(greaterThanOrEqualTo, lessThanOrEqualTo);
+        if (studyId != null) {
+            Predicate equal = criteriaBuilder.equal(root.get("studyId"), studyId);
+            criteriaQuery = criteriaQuery.where(equal);
         }
         criteriaQuery = criteriaQuery.orderBy(criteriaBuilder.asc(root.get("user")), criteriaBuilder.asc(root.get("id")));
         return entityManager.createQuery(criteriaQuery).getResultList();

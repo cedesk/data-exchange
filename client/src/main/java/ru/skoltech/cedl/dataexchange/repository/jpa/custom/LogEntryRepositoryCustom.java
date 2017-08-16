@@ -30,9 +30,8 @@ public interface LogEntryRepositoryCustom {
     /**
      * Retrieve a list of {@link LogEntry}s in the range from "fromId" to "toId".
      *
-     * @param fromId the id from which the entries should be taken. May be null.
-     * @param toId   the id to which the entries should be taken. May be null.
-     * @return a list of {@link LogEntry}
+     *
+     * @param studyId@return a list of {@link LogEntry}
      */
-    List<LogEntry> getLogEntries(Long fromId, Long toId);
+    List<LogEntry> getLogEntries(Long studyId);
 }
