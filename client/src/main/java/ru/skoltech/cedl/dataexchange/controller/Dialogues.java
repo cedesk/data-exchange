@@ -122,6 +122,15 @@ public class Dialogues {
         return yesNoDialog.showAndWait();
     }
 
+    public static Optional<ButtonType> chooseYesNoCancel(String title, String text) {
+        Alert yesNoCancelDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        yesNoCancelDialog.setHeaderText(title);
+        yesNoCancelDialog.setContentText(text);
+        yesNoCancelDialog.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+        yesNoCancelDialog.setOnCloseRequest(event -> yesNoCancelDialog.close());
+        return yesNoCancelDialog.showAndWait();
+    }
+
     public static Optional<ButtonType> chooseOkCancel(String title, String text) {
         Alert yesNoDialog = new Alert(Alert.AlertType.CONFIRMATION);
         yesNoDialog.setHeaderText(title);

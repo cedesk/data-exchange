@@ -334,9 +334,9 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private boolean confirmCloseRequest() {
         if (project.hasLocalStudyModifications()) {
-            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
+            Optional<ButtonType> saveYesNoCancel = Dialogues.chooseYesNoCancel("Unsaved modifications",
                     "Shall the modifications saved before closing?");
-            if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
+            if (saveYesNoCancel.isPresent() && saveYesNoCancel.get() == ButtonType.YES) {
                 try {
                     project.storeLocalStudy();
                     return true;
@@ -347,9 +347,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                         return true;
                     }
                 }
-            } else {
-                return true;
-            }
+            } else return !saveYesNoCancel.isPresent() || saveYesNoCancel.get() != ButtonType.CANCEL;
         } else {
             return true;
         }
