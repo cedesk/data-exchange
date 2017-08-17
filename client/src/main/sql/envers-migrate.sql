@@ -43,17 +43,17 @@ CREATE PROCEDURE populate_audit (IN entityname CHAR(100), IN entity CHAR(100))
   END //
 DELIMITER ;
 
-CALL populate_audit('instrumentmodel', 'ru.skoltech.cedl.dataexchange.entity.model.InstrumentModel');
-CALL populate_audit('elementmodel', 'ru.skoltech.cedl.dataexchange.entity.model.ElementModel');
-CALL populate_audit('subsystemmodel', 'ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel');
-CALL populate_audit('discipline', 'ru.skoltech.cedl.dataexchange.entity.user.Discipline');
-CALL populate_audit('disciplinesubsystem', 'ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement');
-CALL populate_audit('user', 'ru.skoltech.cedl.dataexchange.entity.user.User');
-CALL populate_audit('userdiscipline', 'ru.skoltech.cedl.dataexchange.entity.user.UserDiscipline');
-CALL populate_audit('usermanagement', 'ru.skoltech.cedl.dataexchange.entity.user.UserManagement');
-CALL populate_audit('userrolemanagement', 'ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement');
-CALL populate_audit('systemmodel', 'ru.skoltech.cedl.dataexchange.entity.model.SystemModel');
-CALL populate_audit('studysettings', 'ru.skoltech.cedl.dataexchange.entity.StudySettings');
-CALL populate_audit('study', 'ru.skoltech.cedl.dataexchange.entity.Study');
+CALL populate_audit('InstrumentModel', 'ru.skoltech.cedl.dataexchange.entity.model.InstrumentModel');
+CALL populate_audit('ElementModel', 'ru.skoltech.cedl.dataexchange.entity.model.ElementModel');
+CALL populate_audit('SubsystemModel', 'ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel');
+CALL populate_audit('Discipline', 'ru.skoltech.cedl.dataexchange.entity.user.Discipline');
+CALL populate_audit('DisciplineSubsystem', 'ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement');
+CALL populate_audit('User', 'ru.skoltech.cedl.dataexchange.entity.user.User');
+CALL populate_audit('UserDiscipline', 'ru.skoltech.cedl.dataexchange.entity.user.UserDiscipline');
+CALL populate_audit('Usermanagement', 'ru.skoltech.cedl.dataexchange.entity.user.UserManagement');
+CALL populate_audit('UserRoleManagement', 'ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement');
+CALL populate_audit('SystemModel', 'ru.skoltech.cedl.dataexchange.entity.model.SystemModel');
+CALL populate_audit('StudySettings', 'ru.skoltech.cedl.dataexchange.entity.StudySettings');
+CALL populate_audit('Study', 'ru.skoltech.cedl.dataexchange.entity.Study');
 
 UPDATE hibernate_sequence SET next_val = (SELECT MAX(id) + 1 FROM revinfo);
