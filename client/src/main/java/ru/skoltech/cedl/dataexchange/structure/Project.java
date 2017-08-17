@@ -415,9 +415,7 @@ public class Project {
         return latestRepositoryModification;
     }
 
-    public boolean loadLocalStudy() {
-        Study study = studyService.findStudyByName(projectName);
-
+    public boolean loadLocalStudy(Study study) {
         if (study == null) {
             logger.error("Study not found!");
         } else {
@@ -428,6 +426,11 @@ public class Project {
             registerParameterLinks();
         }
         return study != null;
+    }
+
+    public boolean loadLocalStudy() {
+        Study study = studyService.findStudyByName(projectName);
+        return loadLocalStudy(study);
     }
 
     public boolean loadRepositoryStudy() {

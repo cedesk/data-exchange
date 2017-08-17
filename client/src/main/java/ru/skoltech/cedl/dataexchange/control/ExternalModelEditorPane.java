@@ -23,7 +23,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -59,7 +58,7 @@ import java.util.ResourceBundle;
  *
  * Created by D.Knoll on 03.07.2015.
  */
-public class ExternalModelEditorPane extends ScrollPane implements Initializable {
+public class ExternalModelEditorPane implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ExternalModelEditorPane.class);
 
@@ -102,8 +101,8 @@ public class ExternalModelEditorPane extends ScrollPane implements Initializable
 
     }
 
-    public ModelNode getModelNode() {
-        return modelNode;
+    public void setVisible(boolean visible) {
+        externalModelViewContainer.setVisible(visible);
     }
 
     public void setModelNode(ModelNode modelNode) {

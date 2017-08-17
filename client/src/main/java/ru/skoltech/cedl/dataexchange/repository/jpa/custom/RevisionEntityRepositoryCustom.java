@@ -16,10 +16,12 @@
 
 package ru.skoltech.cedl.dataexchange.repository.jpa.custom;
 
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.envers.RevisionType;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
+
+import java.util.List;
 
 /**
  * Custom Data Access Operations with {@link CustomRevisionEntity} entity.
@@ -42,14 +44,28 @@ public interface RevisionEntityRepositoryCustom {
     /**
      * Retrieve a full information about latest revision,
      * which was stored along with entity of specified class and id.
-     * The information returns in form of {@link Triple} object, which stores an instance of changed entity,
-     * instance of {@link CustomRevisionEntity} revision entity and revision type.
+     * The information returns in form of {@link Pair} object, which stores an instance of
+     * {@link CustomRevisionEntity} revision entity and revision type.
      *
      * @param id id of entity, which persistence produced required {@link CustomRevisionEntity}
      * @param entityClass class of entity, which persistence produced required {@link CustomRevisionEntity}
-     * @return triple object which which stores an instance of changed entity,
-     *          instance of {@link CustomRevisionEntity} revision entity and revision type.
+     * @return pair object which stores an instance of {@link CustomRevisionEntity}
+     * revision entity and revision type
      */
     @Transactional(readOnly = true)
-    <T> Triple<T, CustomRevisionEntity, RevisionType> lastRevision(Long id, Class<T> entityClass);
+    <T> Pair<CustomRevisionEntity, RevisionType> lastRevision(Long id, Class<T> entityClass);
+
+    /**
+     * Retrieve a list of full information about all tagged revisions,
+     * which was stored along with entity of specified class and id.
+     * The information returns in form of list of {@link Pair} objects, each of which stores an instance of
+     * {@link CustomRevisionEntity} revision entity and revision type.
+     *
+     * @param id id of entity, which persistence produced required {@link CustomRevisionEntity}
+     * @param entityClass class of entity, which persistence produced required {@link CustomRevisionEntity}
+     * @return list of pair objects each of which stores a tagged instance of {@link CustomRevisionEntity}
+     * revision entity and revision type
+     */
+    @Transactional(readOnly = true)
+    <T> List<Pair<CustomRevisionEntity, RevisionType>> findTaggedRevisions(Long id, Class<T> entityClass);
 }

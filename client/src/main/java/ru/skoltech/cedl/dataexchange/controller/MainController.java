@@ -19,8 +19,9 @@ package ru.skoltech.cedl.dataexchange.controller;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -32,11 +33,9 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
@@ -45,8 +44,10 @@ import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
@@ -75,7 +76,7 @@ import java.util.stream.Collectors;
  *
  * Created by Nikolay Groshkov on 19-Jul-17.
  */
-public class MainController implements Initializable, Closeable {
+public class MainController implements Initializable, Displayable, Closeable {
 
     private static final Logger logger = Logger.getLogger(MainController.class);
 
@@ -96,17 +97,19 @@ public class MainController implements Initializable, Closeable {
     @FXML
     private Button saveButton;
     @FXML
+    private Button tagButton;
+    @FXML
     private Button diffButton;
     @FXML
     private Label statusbarLabel;
     @FXML
     private Label studyNameLabel;
     @FXML
+    private Label tagLabel;
+    @FXML
     private Label userNameLabel;
     @FXML
     private Label userRoleLabel;
-    @FXML
-    private AnchorPane applicationPane;
     @FXML
     private BorderPane layoutPane;
 
@@ -122,6 +125,10 @@ public class MainController implements Initializable, Closeable {
     private UpdateService updateService;
     private Executor executor;
     private ActionLogger actionLogger;
+
+    private Stage ownerStage;
+
+    private StringProperty tagProperty = new SimpleStringProperty(null);
 
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
@@ -209,7 +216,7 @@ public class MainController implements Initializable, Closeable {
                     String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
                     logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
                     updateRemoteModel();
-                    UserNotifications.showActionableNotification(getAppWindow(), "Updates on study",
+                    UserNotifications.showActionableNotification(ownerStage, "Updates on study",
                             "New version of study in repository!", "View Differences",
                             actionEvent -> this.openDiffView(), true);
                 }
@@ -220,8 +227,19 @@ public class MainController implements Initializable, Closeable {
         loadButton.disableProperty().bind(project.canLoadProperty().not());
         saveButton.disableProperty().bind(project.canSyncProperty().not());
 
+        tagLabel.textProperty().bind(Bindings.when(tagProperty.isNull()).then("--").otherwise(tagProperty));
+        tagButton.textProperty().bind(Bindings.when(tagProperty.isNull()).then("Tag").otherwise("Untag"));
+        tagButton.tooltipProperty().bind(Bindings.when(tagProperty.isNull())
+                .then(new Tooltip("Tag current study version"))
+                .otherwise(new Tooltip("Untag current study version")));
+
         this.checkRepository();
         this.checkVersionUpdate();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
     }
 
     private void checkRepository() {
@@ -248,10 +266,6 @@ public class MainController implements Initializable, Closeable {
         }
     }
 
-    public Window getAppWindow() {
-        return applicationPane.getScene().getWindow();
-    }
-
     public void checkForApplicationUpdate(ActionEvent actionEvent) {
         Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
         validateLatestUpdate(latestVersionAvailable, actionEvent);
@@ -265,16 +279,16 @@ public class MainController implements Initializable, Closeable {
             String appVersion = applicationSettings.getApplicationVersion();
             int versionCompare = Utils.compareVersions(appVersion, packageVersion);
             if (versionCompare < 0) {
-                UserNotifications.showActionableNotification(getAppWindow(), "Application Update",
+                UserNotifications.showActionableNotification(ownerStage, "Application Update",
                         "You are using " + appVersion + ", while " + packageVersion + " is already available. Please update!",
                         "Download Update", new UpdateDownloader(applicationPackage), false);
             } else if (versionCompare > 0) {
-                UserNotifications.showNotification(getAppWindow(), "Application Update",
+                UserNotifications.showNotification(ownerStage, "Application Update",
                         "You are using " + appVersion + ", " +
                                 "which is newer than the latest available " + packageVersion + ". Please publish!");
             } else {
                 if (actionEvent != null) {
-                    UserNotifications.showNotification(getAppWindow(), "Application Update",
+                    UserNotifications.showNotification(ownerStage, "Application Update",
                             "Latest version installed. No need to update.");
                 } else {
                     StatusLogger.getInstance().log("Latest application version installed. No need to update.");
@@ -282,7 +296,7 @@ public class MainController implements Initializable, Closeable {
             }
         } else {
             if (actionEvent != null) {
-                UserNotifications.showNotification(getAppWindow(), "Update check failed",
+                UserNotifications.showNotification(ownerStage, "Update check failed",
                         "Unable to connect to Distribution Server!");
             } else {
                 StatusLogger.getInstance().log("Update check failed. Unable to connect to Distribution Server!");
@@ -300,7 +314,7 @@ public class MainController implements Initializable, Closeable {
                     project.storeLocalStudy();
                     return true;
                 } catch (RepositoryException | ExternalModelException e) {
-                    UserNotifications.showNotification(getAppWindow(), "Failed to save", "Failed to save");
+                    UserNotifications.showNotification(ownerStage, "Failed to save", "Failed to save");
                     return false;
                 }
             } else {
@@ -312,9 +326,9 @@ public class MainController implements Initializable, Closeable {
     }
 
     @Override
-    public void close(Event event) {
+    public void close(Stage stage, WindowEvent windowEvent) {
         if (!this.confirmCloseRequest()) {
-            event.consume();
+            windowEvent.consume();
         }
     }
 
@@ -481,22 +495,39 @@ public class MainController implements Initializable, Closeable {
 
     public void openAboutDialog() {
         ViewBuilder aboutViewBuilder = guiService.createViewBuilder("About CEDESK", Views.ABOUT_WINDOW);
-        aboutViewBuilder.ownerWindow(getAppWindow());
+        aboutViewBuilder.ownerWindow(ownerStage);
         aboutViewBuilder.modality(Modality.APPLICATION_MODAL);
         aboutViewBuilder.show();
     }
 
     public void openConsistencyView() {
         ViewBuilder modelConsistencyViewBuilder = guiService.createViewBuilder("Model consistency", Views.MODEL_CONSISTENCY_WINDOW);
-        modelConsistencyViewBuilder.ownerWindow(getAppWindow());
+        modelConsistencyViewBuilder.ownerWindow(ownerStage);
         modelConsistencyViewBuilder.showAndWait();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
     public void openDependencyView() {
         ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_WINDOW);
-        dependencyViewBuilder.ownerWindow(getAppWindow());
+        dependencyViewBuilder.ownerWindow(ownerStage);
         dependencyViewBuilder.show();
+    }
+
+    public void openStudyRevisionsView() {
+        Study study = project.getStudy();
+
+        ViewBuilder studyRevisionsViewBuilder = guiService.createViewBuilder("Study Revisions", Views.STUDY_REVISIONS_WINDOW);
+        studyRevisionsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        studyRevisionsViewBuilder.ownerWindow(ownerStage);
+        studyRevisionsViewBuilder.resizable(false);
+        studyRevisionsViewBuilder.applyEventHandler(event -> {
+            CustomRevisionEntity customRevisionEntity = (CustomRevisionEntity) event.getSource();
+            Study studyRevision = studyService.findStudyByRevision(study, customRevisionEntity.getId());
+            project.loadLocalStudy(studyRevision);
+            this.updateView();
+            tagProperty.setValue(customRevisionEntity.getTag());
+        });
+        studyRevisionsViewBuilder.showAndWait(study);
     }
 
     public void openDiffView() {
@@ -507,7 +538,7 @@ public class MainController implements Initializable, Closeable {
         }
 
         ViewBuilder diffViewBuilder = guiService.createViewBuilder("Model differences", Views.MODEL_DIFF_WINDOW);
-        diffViewBuilder.ownerWindow(getAppWindow());
+        diffViewBuilder.ownerWindow(ownerStage);
         diffViewBuilder.modality(Modality.APPLICATION_MODAL);
         diffViewBuilder.showAndWait();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
@@ -515,17 +546,16 @@ public class MainController implements Initializable, Closeable {
 
     public void openDsmView() {
         ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_WINDOW);
-        dsmViewBuilder.ownerWindow(getAppWindow());
+        dsmViewBuilder.ownerWindow(ownerStage);
         dsmViewBuilder.show();
     }
 
     public void openGuideDialog() {
-        Stage currentStage = (Stage) getAppWindow();
-        double x = currentStage.getX() + currentStage.getWidth();
-        double y = currentStage.getY();
+        double x = ownerStage.getX() + ownerStage.getWidth();
+        double y = ownerStage.getY();
 
         ViewBuilder guideViewBuilder = guiService.createViewBuilder("Process Guide", Views.GUIDE_WINDOW);
-        guideViewBuilder.ownerWindow(getAppWindow());
+        guideViewBuilder.ownerWindow(ownerStage);
         guideViewBuilder.xy(x, y);
         guideViewBuilder.show();
     }
@@ -550,7 +580,7 @@ public class MainController implements Initializable, Closeable {
 
     public void openProjectSettingsDialog() {
         ViewBuilder projectSettingsViewBuilder = guiService.createViewBuilder("Project settings", Views.PROJECT_SETTINGS_WINDOW);
-        projectSettingsViewBuilder.ownerWindow(getAppWindow());
+        projectSettingsViewBuilder.ownerWindow(ownerStage);
         projectSettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
         projectSettingsViewBuilder.closeEventHandler(event -> {
             if (!project.checkUser()) {
@@ -563,7 +593,7 @@ public class MainController implements Initializable, Closeable {
 
     public void openRepositorySettingsDialog() {
         ViewBuilder repositorySettingsViewBuilder = guiService.createViewBuilder("Repository settings", Views.REPOSITORY_SETTINGS_WINDOW);
-        repositorySettingsViewBuilder.ownerWindow(getAppWindow());
+        repositorySettingsViewBuilder.ownerWindow(ownerStage);
         repositorySettingsViewBuilder.applyEventHandler(event -> this.quit());
         repositorySettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
         repositorySettingsViewBuilder.showAndWait();
@@ -571,14 +601,14 @@ public class MainController implements Initializable, Closeable {
 
     public void openUnitManagement() {
         ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_EDITING_WINDOW);
-        unitEditingViewBuilder.ownerWindow(getAppWindow());
+        unitEditingViewBuilder.ownerWindow(ownerStage);
         unitEditingViewBuilder.modality(Modality.APPLICATION_MODAL);
         unitEditingViewBuilder.show();
     }
 
     public void openUserManagement() {
         ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder("User Management", Views.USER_MANAGEMENT_WINDOW);
-        userDetailsViewBuilder.ownerWindow(getAppWindow());
+        userDetailsViewBuilder.ownerWindow(ownerStage);
         userDetailsViewBuilder.modality(Modality.APPLICATION_MODAL);
         userDetailsViewBuilder.show();
     }
@@ -589,14 +619,13 @@ public class MainController implements Initializable, Closeable {
         }
 
         ViewBuilder userRoleManagementViewBuilder = guiService.createViewBuilder("User Role Management", Views.USER_ROLE_MANAGEMENT_WINDOW);
-        userRoleManagementViewBuilder.ownerWindow(getAppWindow());
+        userRoleManagementViewBuilder.ownerWindow(ownerStage);
         userRoleManagementViewBuilder.modality(Modality.APPLICATION_MODAL);
         userRoleManagementViewBuilder.show();
     }
 
     public void quit() {
-        Stage stage = (Stage) applicationPane.getScene().getWindow();
-        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+        ownerStage.close();
     }
 
     public void reloadProject(ActionEvent actionEvent) {
@@ -663,6 +692,21 @@ public class MainController implements Initializable, Closeable {
         }
     }
 
+    public void tagStudy() {
+        Study study = project.getStudy();
+        if (tagProperty.getValue() == null) {
+            ViewBuilder tagDialogViewBuilder = guiService.createViewBuilder("Tag current study version", Views.TAG_WINDOW);
+            tagDialogViewBuilder.modality(Modality.APPLICATION_MODAL);
+            tagDialogViewBuilder.ownerWindow(ownerStage);
+            tagDialogViewBuilder.resizable(false);
+            tagDialogViewBuilder.showAndWait(study);
+        } else {
+            studyService.untagStudy(study);
+        }
+        String tag = studyService.findCurrentStudyRevisionTag(study);
+        tagProperty.setValue(tag);
+    }
+
     public void destroy() {
         try {
             actionLogger.log(ActionLogger.ActionType.APPLICATION_STOP, "");
@@ -721,9 +765,14 @@ public class MainController implements Initializable, Closeable {
 
     private void updateView() {
         if (project.getStudy() != null) {
-            studyNameLabel.setText(project.getStudy().getName());
-            userNameLabel.setText(project.getUser().name());
+            Study study = project.getStudy();
+            String tag = studyService.findCurrentStudyRevisionTag(study);
+            String username = project.getUser().name();
             List<Discipline> disciplinesOfUser = project.getCurrentUserDisciplines();
+
+            tagProperty.setValue(tag);
+            studyNameLabel.setText(study.getName());
+            userNameLabel.setText(username);
             if (!disciplinesOfUser.isEmpty()) {
                 String disciplineNames = disciplinesOfUser.stream()
                         .map(Discipline::getName).collect(Collectors.joining(", "));

@@ -55,10 +55,10 @@ public class ParameterModelRevisionRepositoryImpl implements ParameterModelRevis
 
         // TODO: intentionally traverse joined entities, not doing so produce an exception
         // must be fixed somehow
-        parameterRevisions.forEach(ParameterRevision::getUnitAsText);
-        parameterRevisions.forEach(ParameterRevision::getNodePath);
-        parameterRevisions.forEach(ParameterRevision::getValueLink);
         parameterRevisions.forEach(parameterRevision -> {
+            parameterRevision.getUnitAsText();
+            parameterRevision.getNodePath();
+            parameterRevision.getValueLink();
             if (parameterRevision.getValueLink() != null) {
                 parameterRevision.getValueLink().getNodePath();
             }

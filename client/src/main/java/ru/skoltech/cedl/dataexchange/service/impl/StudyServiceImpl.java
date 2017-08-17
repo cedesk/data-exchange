@@ -16,14 +16,19 @@
 
 package ru.skoltech.cedl.dataexchange.service.impl;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.hibernate.envers.RevisionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.DisciplineSubSystem;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.repository.envers.StudyRevisionRepository;
+import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
 import ru.skoltech.cedl.dataexchange.repository.revision.StudyRepository;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
@@ -43,10 +48,14 @@ public class StudyServiceImpl implements StudyService {
     private UserRoleManagementService userRoleManagementService;
 
     private final StudyRepository studyRepository;
+    private final StudyRevisionRepository studyRevisionRepository;
+    private final RevisionEntityRepository revisionEntityRepository;
 
     @Autowired
-    public StudyServiceImpl(StudyRepository studyRepository) {
+    public StudyServiceImpl(StudyRepository studyRepository, StudyRevisionRepository studyRevisionRepository, RevisionEntityRepository revisionEntityRepository) {
         this.studyRepository = studyRepository;
+        this.studyRevisionRepository = studyRevisionRepository;
+        this.revisionEntityRepository = revisionEntityRepository;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
@@ -84,6 +93,51 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public Study saveStudy(Study study, String tag) {
         return studyRepository.saveAndFlush(study, tag);
+    }
+
+    @Override
+    public String findCurrentStudyRevisionTag(Study study) {
+        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(study.getId(), Study.class);
+        return revisionEntity.getTag();
+    }
+
+    @Override
+    public List<Pair<CustomRevisionEntity, RevisionType>> findAllStudyRevisionEntityWithTags(Study study) {
+        return revisionEntityRepository.findTaggedRevisions(study.getId(), Study.class);
+    }
+
+    @Override
+    public void tagStudy(Study study, String tag) {
+        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(study.getId(), Study.class);
+        revisionEntity.setTag(tag);
+        revisionEntityRepository.saveAndFlush(revisionEntity);
+    }
+
+    @Override
+    public void untagStudy(Study study) {
+        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(study.getId(), Study.class);
+        revisionEntity.setTag(null);
+        revisionEntityRepository.saveAndFlush(revisionEntity);
+    }
+
+    @Override
+    public void untagStudy(Study study, String tag) {
+        List<Pair<CustomRevisionEntity, RevisionType>> allTagged = this.findAllStudyRevisionEntityWithTags(study);
+        List<Pair<CustomRevisionEntity, RevisionType>> taggedWithTag = allTagged.stream()
+                .filter(triple -> triple.getLeft().getTag().equals(tag))
+                .collect(Collectors.toList());
+
+        taggedWithTag.forEach(triple -> {
+            CustomRevisionEntity revisionEntity = triple.getLeft();
+            revisionEntity.setTag(null);
+            revisionEntityRepository.saveAndFlush(revisionEntity);
+        });
+    }
+
+    @Override
+    public Study findStudyByRevision(Study study, Integer revisionNumber) {
+//        Revision<Integer, Study> revision = studyRevisionRepository.findRevision(study.getId(), revisionNumber);
+        return studyRevisionRepository.findStudyByRevision(study.getId(), revisionNumber);
     }
 
     @Override

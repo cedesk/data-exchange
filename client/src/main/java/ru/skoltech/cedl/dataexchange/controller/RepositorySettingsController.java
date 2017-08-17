@@ -27,7 +27,6 @@ import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
@@ -51,9 +50,6 @@ import java.util.concurrent.Executor;
 public class RepositorySettingsController implements Initializable, Displayable, Closeable, Applicable {
 
     private static Logger logger = Logger.getLogger(RepositorySettingsController.class);
-
-    @FXML
-    private AnchorPane repositorySettingsPane;
 
     @FXML
     private TextField repositoryHostTextField;
@@ -85,8 +81,8 @@ public class RepositorySettingsController implements Initializable, Displayable,
     private Executor executor;
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
-    private WindowEvent closeWindowEvent;
     private EventHandler<Event> applyEventHandler;
+    private Stage ownerStage;
 
     public void setExecutor(Executor executor) {
         this.executor = executor;
@@ -150,13 +146,13 @@ public class RepositorySettingsController implements Initializable, Displayable,
     }
 
     @Override
-    public void display(Event event) {
-        closeWindowEvent = new WindowEvent(repositorySettingsPane.getScene().getWindow(), WindowEvent.WINDOW_CLOSE_REQUEST);
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
     }
 
     public void save(Event event) {
         if (!changed.getValue()) {
-            this.close(closeWindowEvent);
+            this.close();
             return;
         }
 
@@ -188,23 +184,23 @@ public class RepositorySettingsController implements Initializable, Displayable,
             event.consume();
         } else if (result.get() == yesButton) {
             this.apply();
-            this.close(closeWindowEvent);
+            this.close();
         } else if (result.get() == noButton){
-            this.close(closeWindowEvent);
+            this.close();
         }
     }
 
     public void cancel() {
-        this.close(closeWindowEvent);
+        this.close();
     }
 
     @Override
-    public void close(Event event) {
-        this.close((Stage)event.getSource());
+    public void close(Stage stage, WindowEvent windowEvent) {
+        this.close();
     }
 
-    public void close(Stage stage) {
-        stage.close();
+    public void close() {
+        this.ownerStage.close();
         logger.info("closed");
     }
 

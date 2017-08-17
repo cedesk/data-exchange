@@ -127,6 +127,7 @@ public class Study implements PersistedEntity {
         Study study = (Study) o;
 
         return name.equals(study.name)
+                && (studySettings != null ? studySettings.equals(study.studySettings) : study.studySettings == null)
                 && (systemModel != null ? systemModel.equals(study.systemModel) : study.systemModel == null)
                 && (userRoleManagement != null ? userRoleManagement.equals(study.userRoleManagement) : study.userRoleManagement == null);
     }
@@ -134,6 +135,7 @@ public class Study implements PersistedEntity {
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (studySettings != null ? studySettings.hashCode() : 0);
         result = 31 * result + (systemModel != null ? systemModel.hashCode() : 0);
         result = 31 * result + (userRoleManagement != null ? userRoleManagement.hashCode() : 0);
         return result;

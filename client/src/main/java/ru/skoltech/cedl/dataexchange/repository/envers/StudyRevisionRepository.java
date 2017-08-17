@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.controller;
+package ru.skoltech.cedl.dataexchange.repository.envers;
 
-
-import javafx.stage.Stage;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
+import org.springframework.data.repository.history.RevisionRepository;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.repository.envers.custom.StudyRevisionRepositoryCustom;
 
 /**
- * Mark a JavaFX Controller which can react on startup event of parent {@link Window},
- * then it is ready.
+ * Data Access Operations with {@link Study} revisions.
  *
- * Created by Nikolay Groshkov on 13-Aug-17.
+ * Created by Nikolay Groshkov on 16-Aug-17.
  */
-public interface Displayable {
-
-    /**
-     * Reaction on parent {@link Window} startup.
-     *
-     * @param stage {@link Stage} where current view is displayed
-     * @param windowEvent startup window event
-     */
-    void display(Stage stage, WindowEvent windowEvent);
+public interface StudyRevisionRepository extends RevisionRepository<Study, Long, Integer>,
+        StudyRevisionRepositoryCustom {
 }

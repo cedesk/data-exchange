@@ -27,13 +27,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -170,7 +171,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
     }
 
     @Override
-    public void close(Event event) {
+    public void close(Stage stage, WindowEvent windowEvent) {
         if (!changed.getValue()) {
             return;
         }

@@ -33,7 +33,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -81,7 +80,7 @@ public class CalculationEditor implements Initializable, Displayable, Applicable
     private Calculation calculation;
 
     private EventHandler<Event> applyEventHandler;
-    private Window ownerWindow;
+    private Stage ownerStage;
 
     public CalculationEditor() {
     }
@@ -133,8 +132,8 @@ public class CalculationEditor implements Initializable, Displayable, Applicable
     }
 
     @Override
-    public void display(Event event) {
-        ownerWindow = calculationEditorBorderPane.getScene().getWindow();
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
     }
 
     @Override

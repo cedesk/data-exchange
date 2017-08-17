@@ -16,7 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange;
 
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.envers.RevisionType;
 import org.junit.After;
 import org.junit.Before;
@@ -97,10 +97,9 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         assertEquals(studyPrototype.getSystemModel(), studyStored.getSystemModel());
         assertEquals(studyPrototype.getUserRoleManagement(), studyStored.getUserRoleManagement());
 
-        Triple<Study, CustomRevisionEntity, RevisionType> revision = revisionEntityRepository.lastRevision(study.getId(), Study.class);
-        assertEquals(study.getId(), revision.getLeft().getId());
-        assertEquals(applicationSettings.getProjectUserName(), revision.getMiddle().getUsername());
-        assertNull(revision.getMiddle().getTag());
+        Pair<CustomRevisionEntity, RevisionType> revision = revisionEntityRepository.lastRevision(study.getId(), Study.class);
+        assertEquals(applicationSettings.getProjectUserName(), revision.getLeft().getUsername());
+        assertNull(revision.getLeft().getTag());
         assertEquals(RevisionType.ADD, revision.getRight());
     }
 
@@ -114,10 +113,9 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
 
         Study study = studyService.saveStudy(studyPrototype, tag);
 
-        Triple<Study, CustomRevisionEntity, RevisionType> revision = revisionEntityRepository.lastRevision(study.getId(), Study.class);
-        assertEquals(study.getId(), revision.getLeft().getId());
-        assertEquals(applicationSettings.getProjectUserName(), revision.getMiddle().getUsername());
-        assertEquals(tag, revision.getMiddle().getTag());
+        Pair<CustomRevisionEntity, RevisionType> revision = revisionEntityRepository.lastRevision(study.getId(), Study.class);
+        assertEquals(applicationSettings.getProjectUserName(), revision.getLeft().getUsername());
+        assertEquals(tag, revision.getLeft().getTag());
         assertEquals(RevisionType.ADD, revision.getRight());
     }
 
@@ -145,17 +143,15 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         assertNull(studyStored1);
         assertThat(studyService.findStudyNames(), not(empty()));
 
-        Triple<Study, CustomRevisionEntity, RevisionType> deleteRevision1 = revisionEntityRepository.lastRevision(study1.getId(), Study.class);
-        assertEquals(study1.getId(), deleteRevision1.getLeft().getId());
-        assertEquals(applicationSettings.getProjectUserName(), deleteRevision1.getMiddle().getUsername());
+        Pair<CustomRevisionEntity, RevisionType> deleteRevision1 = revisionEntityRepository.lastRevision(study1.getId(), Study.class);
+        assertEquals(applicationSettings.getProjectUserName(), deleteRevision1.getLeft().getUsername());
         assertEquals(RevisionType.DEL, deleteRevision1.getRight());
 
         studyService.deleteAllStudies();
         assertThat(studyService.findStudyNames(), empty());
 
-        Triple<Study, CustomRevisionEntity, RevisionType> deleteRevision2 = revisionEntityRepository.lastRevision(study2.getId(), Study.class);
-        assertEquals(study2.getId(), deleteRevision2.getLeft().getId());
-        assertEquals(applicationSettings.getProjectUserName(), deleteRevision2.getMiddle().getUsername());
+        Pair<CustomRevisionEntity, RevisionType> deleteRevision2 = revisionEntityRepository.lastRevision(study2.getId(), Study.class);
+        assertEquals(applicationSettings.getProjectUserName(), deleteRevision2.getLeft().getUsername());
         assertEquals(RevisionType.DEL, deleteRevision2.getRight());
     }
 

@@ -16,8 +16,11 @@
 
 package ru.skoltech.cedl.dataexchange.service;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.hibernate.envers.RevisionType;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 
 import java.util.List;
@@ -69,6 +72,55 @@ public interface StudyService {
      * @return the saved study
      */
     Study saveStudy(Study study, String tag);
+
+    /**
+     * Retrieve a tag of current study revision.
+     *
+     * @param study study to find a tag
+     * @return tag  of current study revision
+     */
+    String findCurrentStudyRevisionTag(Study study);
+
+    /**
+     * Retrieve all revision entities which was tagged and saved along with a specified study.
+     *
+     * @param study study which tagged revision entities to search
+     * @return a list of pair objects each of which stores a tagged instance of {@link CustomRevisionEntity}
+     * revision entity and revision type.
+     */
+    List<Pair<CustomRevisionEntity, RevisionType>> findAllStudyRevisionEntityWithTags(Study study);
+
+    /**
+     * Tag a current revision of a study.
+     *
+     * @param study study which current revision to tag
+     * @param tag for tag new revision
+     */
+    void tagStudy(Study study, String tag);
+
+    /**
+     * Clean tag from current revision of a study.
+     *
+     * @param study study from which current revision to clean tag
+     */
+    void untagStudy(Study study);
+
+    /**
+     * Clean tag of revision entity of specified {@link Study} which has a specified tag.
+     *
+     * @param study of which tagged revision entity to search for
+     * @param tag tag to clean
+     */
+    void untagStudy(Study study, String tag);
+
+    /**
+     * Retrieve an instance of {@link Study} from it revision history by revision number.
+     *
+     * @param study which revision to search for
+     * @param revisionNumber revision number of searched {@link Study}
+     * @return Study from revision
+     */
+    Study findStudyByRevision(Study study, Integer revisionNumber);
 
     /**
      * Remove a {@link Study} with a specified name.

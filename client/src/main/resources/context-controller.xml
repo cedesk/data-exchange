@@ -68,6 +68,10 @@
         <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
     </bean>
 
+    <bean class="ru.skoltech.cedl.dataexchange.controller.TagController" scope="prototype" >
+        <property name="studyService" ref="studyService"/>
+    </bean>
+
     <bean class="ru.skoltech.cedl.dataexchange.controller.DiffController">
         <property name="project" ref="project" />
         <property name="userRoleManagementService" ref="userRoleManagementService" />
@@ -85,6 +89,10 @@
     <bean class="ru.skoltech.cedl.dataexchange.controller.DsmController" >
         <property name="project" ref="project" />
         <property name="guiService" ref="guiService"/>
+    </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.controller.StudyRevisionsController" scope="prototype">
+        <property name="studyService" ref="studyService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.controller.UserManagementController" >

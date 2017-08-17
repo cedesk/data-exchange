@@ -20,14 +20,12 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
-import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
@@ -47,9 +45,6 @@ import java.util.ResourceBundle;
 public class ProjectSettingsController implements Initializable, Displayable, Closeable {
 
     private static Logger logger = Logger.getLogger(ProjectSettingsController.class);
-
-    @FXML
-    private AnchorPane projectSettingsPane;
 
     @FXML
     private TitledPane teamSettingsPane;
@@ -80,7 +75,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
     private UserManagementService userManagementService;
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
-    private WindowEvent closeWindowEvent;
+    private Stage ownerStage;
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
@@ -156,13 +151,13 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
     }
 
     @Override
-    public void display(Event event) {
-        closeWindowEvent = new WindowEvent(projectSettingsPane.getScene().getWindow(), WindowEvent.WINDOW_CLOSE_REQUEST);
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
     }
 
     public void save() {
         if (!changed.getValue()) {
-            this.close(closeWindowEvent);
+            this.close();
             return;
         }
 
@@ -201,20 +196,20 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         applicationSettings.save();
 
         logger.info("saved");
-        this.close(closeWindowEvent);
+        this.close();
     }
 
     public void cancel() {
-        this.close(closeWindowEvent);
+        this.close();
     }
 
     @Override
-    public void close(Event event) {
-        this.close((Stage)event.getSource());
+    public void close(Stage stage, WindowEvent windowEvent) {
+        this.close();
     }
 
-    public void close(Stage stage) {
-        stage.close();
+    public void close() {
+        ownerStage.close();
         logger.info("closed");
     }
 

@@ -23,12 +23,13 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
@@ -116,7 +117,7 @@ public class UnitManagementController implements Initializable, Closeable {
     }
 
     @Override
-    public void close(Event event) {
+    public void close(Stage stage, WindowEvent windowEvent) {
         if (!changed.getValue()) {
             return;
         }
@@ -130,7 +131,7 @@ public class UnitManagementController implements Initializable, Closeable {
         alert.getButtonTypes().setAll(yesButton, noButton, cancelButton);
         Optional<ButtonType> result = alert.showAndWait();
         if (result.get() == cancelButton) {
-            event.consume();
+            windowEvent.consume();
         } else if (result.get() == yesButton) {
             saveUnits();
         } else if (result.get() == noButton){

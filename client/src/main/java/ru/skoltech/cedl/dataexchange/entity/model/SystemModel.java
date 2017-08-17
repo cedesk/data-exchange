@@ -20,6 +20,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.envers.Audited;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 
 import javax.persistence.*;
@@ -93,4 +94,9 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
         return dictionary;
     }
     //----------------
+
+    @Override
+    public Iterator<ExternalModel> externalModelsIterator() {
+        return super.externalModelsIterator();
+    }
 }

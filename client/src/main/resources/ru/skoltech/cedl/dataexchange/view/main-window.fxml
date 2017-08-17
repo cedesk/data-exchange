@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.*?>
 <!--
   ~ Copyright 2017 Skolkovo Institute of Science and Technology
   ~
@@ -21,12 +16,19 @@
   ~ limitations under the License.
   -->
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="applicationPane" maxHeight="-Infinity" maxWidth="-Infinity"
-            minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0"
-            stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
-            fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController">
-    <BorderPane fx:id="layoutPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
+            fx:controller="ru.skoltech.cedl.dataexchange.controller.MainController"
+            maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="700.0" prefWidth="1000.0" >
+    <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"
+                fx:id="layoutPane">
         <center>
         </center>
         <top>
@@ -59,6 +61,7 @@
                             <MenuItem onAction="#openDiffView" text="Differences"/>
                             <MenuItem onAction="#openDsmView" text="Design Structure Matrix"/>
                             <MenuItem onAction="#openDependencyView" text="N-square Chart"/>
+                            <MenuItem onAction="#openStudyRevisionsView" text="Study Revisions"/>
                         </Menu>
                         <Menu text="_Help">
                             <MenuItem onAction="#checkForApplicationUpdate" text="Check for _Update"/>
@@ -73,7 +76,17 @@
                         <Button fx:id="newButton" onAction="#newProject" text="_New"/>
                         <Separator orientation="VERTICAL"/>
                         <Button fx:id="loadButton" onAction="#reloadProject" text="_Reload"/>
-                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" onAction="#saveProject" text="_Save"/>
+                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" onAction="#saveProject" text="_Save" >
+                            <tooltip>
+                                <Tooltip text="Save current study" />
+                            </tooltip>
+                        </Button>
+                        <Separator orientation="VERTICAL"/>
+                        <Button fx:id="tagButton" layoutX="10.0" prefWidth="60" layoutY="13.0" onAction="#tagStudy" text="_Tag">
+                            <tooltip>
+                                <Tooltip text="Tag current study version" />
+                            </tooltip>
+                        </Button>
                         <Separator orientation="VERTICAL"/>
                         <Button fx:id="diffButton" onAction="#openDiffView" text="View _Changes"/>
                         <Separator orientation="VERTICAL"/>
@@ -87,6 +100,12 @@
                                 </HBox.margin>
                             </Label>
                             <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--" />
+                            <Label styleClass="projectDetailsLabels" text="Tag:">
+                                <HBox.margin>
+                                    <Insets left="20.0" right="4.0"/>
+                                </HBox.margin>
+                            </Label>
+                            <Label fx:id="tagLabel" styleClass="projectDetailsText" text="--" />
                             <Label styleClass="projectDetailsLabels" text="User:">
                                 <HBox.margin>
                                     <Insets left="20.0" right="4.0"/>
@@ -117,8 +136,9 @@
         </right>
         <bottom>
             <AnchorPane prefHeight="20.0" BorderPane.alignment="CENTER">
-                <Label fx:id="statusbarLabel" prefHeight="20.0" prefWidth="703.0" text="Statusbar"
-                       AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                <Label AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0"
+                       prefHeight="20.0" prefWidth="703.0"
+                       fx:id="statusbarLabel" text="Statusbar"/>
             </AnchorPane>
         </bottom>
     </BorderPane>

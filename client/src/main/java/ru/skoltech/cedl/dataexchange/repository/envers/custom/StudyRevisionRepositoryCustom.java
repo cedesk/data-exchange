@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,26 +14,25 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.controller;
+package ru.skoltech.cedl.dataexchange.repository.envers.custom;
 
-
-import javafx.stage.Stage;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
+import org.springframework.transaction.annotation.Transactional;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 
 /**
- * Mark a JavaFX Controller which can react on startup event of parent {@link Window},
- * then it is ready.
+ * Custom Data Access Operations with {@link Study} revisions.
  *
- * Created by Nikolay Groshkov on 13-Aug-17.
+ * Created by Nikolay Groshkov on 17-Aug-17.
  */
-public interface Displayable {
+public interface StudyRevisionRepositoryCustom {
 
     /**
-     * Reaction on parent {@link Window} startup.
+     * Find {@link Study} by revision number.
      *
-     * @param stage {@link Stage} where current view is displayed
-     * @param windowEvent startup window event
+     * @param id of a searched {@link Study}
+     * @param revisionNumber a number of revision of searched {@link Study}
+     * @return instance of searched {@link Study}
      */
-    void display(Stage stage, WindowEvent windowEvent);
+    @Transactional(readOnly = true)
+    Study findStudyByRevision(Long id, Integer revisionNumber);
 }

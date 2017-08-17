@@ -56,6 +56,7 @@ public class ViewBuilder<T> {
     private Modality modality = Modality.NONE;
     private Double x;
     private Double y;
+    private boolean resizable = true;
 
     private T controller;
     private EventHandler<WindowEvent> displayEventHandler;
@@ -133,6 +134,16 @@ public class ViewBuilder<T> {
     }
 
     /**
+     * Setup a resizable parameter of a feature view
+     * (<i>true</i> by default).
+     *
+     * @param resizable resizable parameter of view
+     */
+    public void resizable(boolean resizable) {
+        this.resizable = resizable;
+    }
+
+    /**
      * Setup an event handler which is performed when a feature view will be displayed.
      *
      * @param displayEventHandler display event handler of view
@@ -188,10 +199,10 @@ public class ViewBuilder<T> {
             Parent root = loader.load();
             controller = loader.getController();
             if (displayEventHandler == null) {
-                displayEventHandler = event -> ((Displayable) controller).display(event);
+                displayEventHandler = event -> ((Displayable) controller).display((Stage) event.getSource(), event);
             }
             if (closeEventHandler == null) {
-                closeEventHandler = event -> ((Closeable) controller).close(event);
+                closeEventHandler = event -> ((Closeable) controller).close((Stage) event.getSource(), event);
             }
 
             Stage stage = primaryStage != null ? primaryStage : new Stage();
@@ -204,6 +215,7 @@ public class ViewBuilder<T> {
             stage.setScene(new Scene(root));
             stage.setTitle(title);
             stage.getIcons().add(IconSet.APP_ICON);
+            stage.setResizable(resizable);
 
             if (primaryStage == null) {
                 stage.initModality(modality);

@@ -20,7 +20,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -28,7 +27,9 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
@@ -149,7 +150,7 @@ public class ParameterEditorPane implements Initializable, Displayable {
     private Calculation calculation;
     private Consumer<ParameterModel> editListener;
     private AutoCompletionBinding<String> binding;
-    private Window ownerWindow;
+    private Stage ownerStage;
 
     public void setProject(Project project) {
         this.project = project;
@@ -261,8 +262,8 @@ public class ParameterEditorPane implements Initializable, Displayable {
     }
 
     @Override
-    public void display(Event event) {
-        ownerWindow = parameterEditorPane.getScene().getWindow();
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
     }
 
     public void setVisible(boolean visible) {
@@ -336,7 +337,7 @@ public class ParameterEditorPane implements Initializable, Displayable {
 
     public void editCalculation(ActionEvent actionEvent) {
         ViewBuilder calculationEditorViewBuilder = guiService.createViewBuilder("Calculation Editor", Controls.CALCULATION_EDITOR_CONTROL);
-        calculationEditorViewBuilder.ownerWindow(ownerWindow);
+        calculationEditorViewBuilder.ownerWindow(ownerStage);
         calculationEditorViewBuilder.applyEventHandler(event -> {
             Calculation calculation = (Calculation) event.getSource();
             if (calculation != null) {

@@ -19,8 +19,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefWidth="500" stylesheets="@styling.css"
-            xmlns="http://javafx.com/javafx/8.0.112" fx:id="projectSettingsPane"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.112" stylesheets="@styling.css"
+            prefWidth="500"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.ProjectSettingsController">
     <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <TitledPane fx:id="teamSettingsPane" animated="false" collapsible="false" text="Team-wide settings">

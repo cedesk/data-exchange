@@ -1,8 +1,8 @@
 out/
 target/
-application.settings
 .idea/workspace.xml
 .idea/libraries/
+.idea/dataSources/
 .idea/markdown*
 .clover/
 .DS_Store

@@ -16,8 +16,9 @@
 
 package ru.skoltech.cedl.dataexchange.controller;
 
-import javafx.event.Event;
+import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 
 /**
  * Mark a JavaFX Controller which can react on close event of parent {@link Window}.
@@ -29,7 +30,8 @@ public interface Closeable {
     /**
      * Reaction on parent {@link Window} close.
      *
-     * @param event window close event.
+     * @param stage {@link Stage} which is going to be closed
+     * @param windowEvent window close event
      */
-    void close(Event event);
+    void close(Stage stage, WindowEvent windowEvent);
 }

@@ -20,8 +20,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="repositorySettingsPane"
-            stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.76-ea"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.76-ea"
             fx:controller="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController">
     <VBox>
         <TitledPane animated="false" text="Repository">
