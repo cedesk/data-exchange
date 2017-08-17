@@ -59,8 +59,11 @@
                             <MenuItem onAction="#openDiffView" text="Differences"/>
                             <MenuItem onAction="#openDsmView" text="Design Structure Matrix"/>
                             <MenuItem onAction="#openDepencencyView" text="N-square Chart"/>
-                            <MenuItem onAction="#openChangeHistoryAnalysis" text="Change History Analyis"/>
+                        </Menu>
+                        <Menu text="_Tools">
                             <MenuItem onAction="#openTradespaceExplorer" text="Tradespace Explorer"/>
+                            <MenuItem onAction="#runWorkSessionAnalysis" text="Run Work Session Analysis"/>
+                            <MenuItem onAction="#openChangeHistoryAnalysis" text="Change History Analyis"/>
                         </Menu>
                         <Menu text="_Help">
                             <MenuItem onAction="#checkForApplicationUpdate" text="Check for _Update"/>

@@ -28,6 +28,7 @@
         <property name="modelEditingController" ref="modelEditingController" />
         <property name="project" ref="project" />
         <property name="actionLogger" ref="actionLogger" />
+        <property name="logEntryService" ref="logEntryService" />
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="systemBuilderFactory" ref="systemBuilderFactory" />
         <property name="fileStorageService" ref="fileStorageService" />
