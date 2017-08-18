@@ -34,6 +34,10 @@ public class Views {
     public static final URL TAG_VIEW = Views.class.getResource("tag.fxml");
     public static final URL DSM_VIEW = Views.class.getResource("dsm.fxml");
     public static final URL DEPENDENCY_VIEW = Views.class.getResource("dependency.fxml");
+    public static final URL CHANGE_HISTORY_ANALYSIS_VIEW = Views.class.getResource("analysis.fxml");
+    public static final URL TRADESPACE_VIEW = Views.class.getResource("tradespace.fxml");
+    public static final URL FIGURES_OF_MERIT_EDITOR_VIEW = Views.class.getResource("figures-of-merit-editor.fxml");
+    public static final URL FIGURE_OF_MERIT_VIEW = Views.class.getResource("figure-of-merit.fxml");
     public static final URL STUDY_REVISIONS_VIEW = Views.class.getResource("study-revisions.fxml");
     public static final URL USER_MANAGEMENT_VIEW = Views.class.getResource("user-management.fxml");
     public static final URL USER_EDITING_VIEW = Views.class.getResource("user-editing.fxml");

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.services;
+package ru.skoltech.cedl.dataexchange.service;
 
 import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 

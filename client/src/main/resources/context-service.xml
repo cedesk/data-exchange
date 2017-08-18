@@ -31,7 +31,7 @@
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
     </bean>
 
-    <bean id="logEntryService" class="ru.skoltech.cedl.dataexchange.services.impl.LogEntryServiceImpl"/>
+    <bean id="logEntryService" class="ru.skoltech.cedl.dataexchange.service.impl.LogEntryServiceImpl"/>
 
     <bean id="parameterModelService" class="ru.skoltech.cedl.dataexchange.service.impl.ParameterModelServiceImpl" />
 

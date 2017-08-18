@@ -16,14 +16,11 @@
 
 package ru.skoltech.cedl.dataexchange;
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
-import ru.skoltech.cedl.dataexchange.view.Views;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.ui.Views;
 
 /**
  * Created by d.knoll on 6/23/2017.
@@ -42,14 +39,10 @@ public class TradespaceExplorerApplication extends ContextAwareApplication {
         loadContext();
         loadLastProject();
 
-        FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);
-        FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.TRADESPACE_WINDOW);
-        Parent root = loader.load();
-
-        primaryStage.setTitle("CEDESK Tradespace Explorer");
-        primaryStage.setScene(new Scene(root));
-        primaryStage.getIcons().add(IconSet.APP_ICON);
-        primaryStage.show();
+        GuiService guiService = context.getBean(GuiService.class);
+        ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder("CEDESK Tradespace Explorer", Views.TRADESPACE_VIEW);
+        tradespaceViewBuilder.primaryStage(primaryStage);
+        tradespaceViewBuilder.show();
     }
 
 }

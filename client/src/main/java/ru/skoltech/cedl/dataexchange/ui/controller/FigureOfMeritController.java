@@ -14,41 +14,36 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.ui.control;
+package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.VBox;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.Optimality;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge;
-import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.ui.Views;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
+ * Controller for figure of merit.
+ *
  * Created by D.Knoll on 24.09.2015.
  */
-public class FigureOfMeritView implements Initializable {
+public class FigureOfMeritController implements Initializable {
 
-    private static final Logger logger = Logger.getLogger(FigureOfMeritView.class);
+    private static final Logger logger = Logger.getLogger(FigureOfMeritController.class);
 
-    @FXML
-    public VBox figuresOfMeritsViewContainer;
     @FXML
     private TextField figureOfMeritNameText;
     @FXML
@@ -60,48 +55,27 @@ public class FigureOfMeritView implements Initializable {
 
     private FigureOfMeritDefinition figureOfMeritDefinition;
     private TradespaceToStudyBridge tradespaceToStudyBridge;
+    private GuiService guiService;
 
-    public FigureOfMeritView() {
+    public FigureOfMeritController() {
         super();
         figureOfMeritDefinition = new FigureOfMeritDefinition("figure of merit", "unit", Optimality.MAXIMAL);
     }
 
-    public FigureOfMeritView(FigureOfMeritDefinition figureOfMeritDefinition) {
+    public FigureOfMeritController(FigureOfMeritDefinition figureOfMeritDefinition) {
         this.figureOfMeritDefinition = figureOfMeritDefinition;
-        tradespaceToStudyBridge = ApplicationContextInitializer.getInstance().getContext().getBean(TradespaceToStudyBridge.class);
-        // load layout
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("figure_of_merit_view.fxml"));
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
+    }
 
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
+    }
+
+    public void setTradespaceModelBridge(TradespaceToStudyBridge tradespaceModelBridge) {
+        this.tradespaceToStudyBridge = tradespaceModelBridge;
     }
 
     public FigureOfMeritDefinition getFigureOfMeritDefinition() {
         return figureOfMeritDefinition;
-    }
-
-    public void chooseParameter(ActionEvent actionEvent) {
-
-        Collection<ParameterModel> parameters = tradespaceToStudyBridge.getModelOutputParameters();
-        Dialog<ParameterModel> dialog = new ParameterSelector(parameters, null);
-
-        Optional<ParameterModel> parameterChoice = dialog.showAndWait();
-        if (parameterChoice.isPresent()) {
-            // update model
-            ParameterModel parameterModel = parameterChoice.get();
-            figureOfMeritDefinition.setParameterModelLink(parameterModel.getUuid());
-            // update view
-            String parameterName = tradespaceToStudyBridge.getParameterName(figureOfMeritDefinition.getParameterModelLink());
-            parameterLinkText.setText(parameterName);
-            String parameterUnitOfMeasure = tradespaceToStudyBridge.getParameterUnitOfMeasure(figureOfMeritDefinition.getParameterModelLink());
-            unitOfMeasureText.setText(parameterUnitOfMeasure);
-            unitOfMeasureText.setEditable(false);
-        }
     }
 
     @Override
@@ -118,6 +92,26 @@ public class FigureOfMeritView implements Initializable {
             }
         });
         updateView();
+    }
+
+    public void chooseParameter() {
+        Collection<ParameterModel> parameters = tradespaceToStudyBridge.getModelOutputParameters();
+
+        ViewBuilder parameterSelectorViewBuilder = guiService.createViewBuilder("Link Selector", Views.PARAMETER_SELECTOR_VIEW);
+        parameterSelectorViewBuilder.applyEventHandler(event -> {
+            ParameterModel parameterModel = (ParameterModel) event.getSource();
+            if (parameterModel != null) {
+                // update model
+                figureOfMeritDefinition.setParameterModelLink(parameterModel.getUuid());
+                // update view
+                String parameterName = tradespaceToStudyBridge.getParameterName(figureOfMeritDefinition.getParameterModelLink());
+                parameterLinkText.setText(parameterName);
+                String parameterUnitOfMeasure = tradespaceToStudyBridge.getParameterUnitOfMeasure(figureOfMeritDefinition.getParameterModelLink());
+                unitOfMeasureText.setText(parameterUnitOfMeasure);
+                unitOfMeasureText.setEditable(false);
+            }
+        });
+        parameterSelectorViewBuilder.showAndWait(parameters, null);
     }
 
     private void updateView() {

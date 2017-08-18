@@ -22,7 +22,7 @@
 <?import org.controlsfx.glyphfont.Glyph?>
 <ScrollPane xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css"
             fitToHeight="true" fitToWidth="true" prefWidth="300.0"
-            fx:controller="ru.skoltech.cedl.dataexchange.ui.control.FiguresOfMeritEditor">
+            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController">
     <HBox spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
           AnchorPane.topAnchor="0.0">
         <padding>
@@ -33,7 +33,7 @@
                 <Insets right="16.0"/>
             </padding>
         </VBox>
-        <Button minWidth="28" mnemonicParsing="false" onAction="#addFigureOfMerit" text="">
+        <Button minWidth="28" mnemonicParsing="false" onAction="#addFigureOfMerit">
             <tooltip>
                 <Tooltip text="Add external model"/>
             </tooltip>
@@ -41,7 +41,7 @@
                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
             </graphic>
         </Button>
-        <Button minWidth="28" disable="true" mnemonicParsing="false" onAction="#reloadValues" text="">
+        <Button minWidth="28" disable="true" mnemonicParsing="false" onAction="#reloadValues">
             <tooltip>
                 <Tooltip text="Refresh values from external models"/>
             </tooltip>

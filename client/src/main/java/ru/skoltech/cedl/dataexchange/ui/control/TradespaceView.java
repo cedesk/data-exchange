@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.control;
+package ru.skoltech.cedl.dataexchange.ui.control;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

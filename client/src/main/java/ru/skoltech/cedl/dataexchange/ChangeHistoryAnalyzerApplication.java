@@ -8,14 +8,11 @@
 package ru.skoltech.cedl.dataexchange;
 
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
-import ru.skoltech.cedl.dataexchange.view.Views;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.ui.Views;
 
 /**
  * Created by d.knoll on 29.12.2016.
@@ -30,18 +27,14 @@ public class ChangeHistoryAnalyzerApplication extends ContextAwareApplication {
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage primaryStage) throws Exception {
         loadContext();
         loadLastProject();
 
-        FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);
-        FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.CHANGE_HISTORY_ANALYSIS_WINDOW);
-
-        Parent root = loader.load();
-        stage.setScene(new Scene(root));
-        stage.setTitle("Parameter Change Analysis");
-        stage.getIcons().add(IconSet.APP_ICON);
-        stage.show();
+        GuiService guiService = context.getBean(GuiService.class);
+        ViewBuilder changeHistoryAnalysisViewBuilder = guiService.createViewBuilder("Parameter Change Analysis", Views.CHANGE_HISTORY_ANALYSIS_VIEW);
+        changeHistoryAnalysisViewBuilder.primaryStage(primaryStage);
+        changeHistoryAnalysisViewBuilder.show();
     }
 
 }

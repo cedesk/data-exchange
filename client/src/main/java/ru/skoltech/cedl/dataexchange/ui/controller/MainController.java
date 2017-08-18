@@ -56,8 +56,6 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
-import ru.skoltech.cedl.dataexchange.repository.jpa.LogEntryRepository;
-import ru.skoltech.cedl.dataexchange.services.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
@@ -544,11 +542,15 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openChangeHistoryAnalysis() {
-        guiService.openView("Change History Analyis [BETA]", Views.CHANGE_HISTORY_ANALYSIS_WINDOW, getAppWindow());
+        ViewBuilder changeHistoryAnalysisViewBuilder = guiService.createViewBuilder("Change History Analyis [BETA]", Views.CHANGE_HISTORY_ANALYSIS_VIEW);
+        changeHistoryAnalysisViewBuilder.ownerWindow(ownerStage);
+        changeHistoryAnalysisViewBuilder.show();
     }
 
     public void openTradespaceExplorer() {
-        guiService.openView("Tradespace Explorer [BETA]", Views.TRADESPACE_WINDOW, getAppWindow());
+        ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder("Tradespace Explorer [BETA]", Views.TRADESPACE_VIEW);
+        tradespaceViewBuilder.ownerWindow(ownerStage);
+        tradespaceViewBuilder.show();
     }
 
     public void openDependencyView() {

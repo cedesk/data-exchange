@@ -1,11 +1,20 @@
 /*
- * Copyright (C) 2017 Dominik Knoll and Nikolay Groshkov - All Rights Reserved
- * You may use, distribute and modify this code under the terms of the MIT license.
+ * Copyright 2017 Skolkovo Institute of Science and Technology
  *
- *  See file LICENSE.txt or go to https://opensource.org/licenses/MIT for full license details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.controller;
+package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -20,7 +29,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.analysis.ParameterChangeAnalysis;
 import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
-import ru.skoltech.cedl.dataexchange.control.ChangeAnalysisView;
+import ru.skoltech.cedl.dataexchange.ui.control.ChangeAnalysisView;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.envers.ParameterModelRevisionRepository;
 import ru.skoltech.cedl.dataexchange.structure.Project;

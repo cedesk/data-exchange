@@ -38,7 +38,7 @@
         <property name="studyService" ref="studyService"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.controller.ChangeAnalysisController" >
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ChangeAnalysisController" >
         <property name="project" ref="project" />
         <property name="parameterModelRepository" ref="parameterModelRevisionRepository" />
     </bean>
@@ -97,7 +97,21 @@
         <property name="guiService" ref="guiService"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.controller.TradespaceController" />
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TradespaceController" >
+        <property name="project" ref="project"/>
+        <property name="applicationSettings" ref="applicationSettings"/>
+        <property name="tradespaceModelBridge" ref="tradespaceModelBridge"/>
+        <property name="guiService" ref="guiService"/>
+    </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController" scope="prototype" >
+        <property name="guiService" ref="guiService"/>
+    </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.FigureOfMeritController" scope="prototype" >
+        <property name="tradespaceModelBridge" ref="tradespaceModelBridge"/>
+        <property name="guiService" ref="guiService"/>
+    </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.StudyRevisionsController" scope="prototype">
         <property name="studyService" ref="studyService"/>

@@ -16,7 +16,7 @@ import ru.skoltech.cedl.dataexchange.analysis.WorkSessionAnalysis;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.repository.jpa.LogEntryRepository;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
+import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;

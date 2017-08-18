@@ -105,6 +105,12 @@
                                 </HBox.margin>
                             </Label>
                             <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--" />
+                            <Label styleClass="projectDetailsLabels" text="Tag:">
+                                <HBox.margin>
+                                    <Insets left="20.0" right="4.0"/>
+                                </HBox.margin>
+                            </Label>
+                            <Label fx:id="tagLabel" styleClass="projectDetailsText" text="--" />
                             <Label styleClass="projectDetailsLabels" text="User:">
                                 <HBox.margin>
                                     <Insets left="20.0" right="4.0"/>

@@ -25,7 +25,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializer;
-import ru.skoltech.cedl.dataexchange.services.FileStorageService;
+import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 public abstract class ContextAwareApplication extends Application {
