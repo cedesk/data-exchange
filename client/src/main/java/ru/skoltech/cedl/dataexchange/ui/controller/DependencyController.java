@@ -111,12 +111,12 @@ public class DependencyController implements Initializable {
         if (sourceGroup.getSelectedToggle() == sourceLocalRadio) {
             systemModel = project.getSystemModel();
             ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
-            dependencyModel = parameterLinkRegistry.getDependencyModel(systemModel);
+            dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
         } else { // if (sourceGroup.getSelectedToggle() == sourceRepositoryRadio) {
             systemModel = project.getRepositoryStudy().getSystemModel();
             ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
             parameterLinkRegistry.registerAllParameters(systemModel);
-            dependencyModel = parameterLinkRegistry.getDependencyModel(systemModel);
+            dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
         }
 
         if (sortOrderGroup.getSelectedToggle() == sortDefaultRadio) {

@@ -63,7 +63,6 @@ public class RevisionHistoryController implements Initializable {
 
         try {
             List<ParameterRevision> revisionList = parameterModelService.parameterModelChangeHistory(parameter);
-            revisionList.forEach(ParameterRevision::getUnitAsText);
             revisionHistoryTable.getItems().clear();
             revisionHistoryTable.getItems().addAll(revisionList);
         } catch (Exception e) {

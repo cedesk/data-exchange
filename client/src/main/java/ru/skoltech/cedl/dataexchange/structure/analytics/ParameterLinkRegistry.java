@@ -32,6 +32,7 @@ import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -98,25 +99,6 @@ public class ParameterLinkRegistry {
         dependencyGraph = new DependencyGraph();
     }
 
-    public DependencyModel getDependencyModel(SystemModel rootNode) {
-        DependencyModel dependencyModel = new DependencyModel();
-        List<ModelNode> modelNodeList = getModelNodes(rootNode);
-        modelNodeList.forEach(modelNode -> dependencyModel.addElement(modelNode.getName()));
-
-        for (ModelNode fromVertex : modelNodeList) {
-            String fromVertexName = fromVertex.getName();
-            for (ModelNode toVertex : modelNodeList) {
-                if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
-                        dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
-                    Collection<ParameterModel> linkingParams = getLinkingParams(fromVertex, toVertex);
-                    String toVertexName = toVertex.getName();
-                    dependencyModel.addConnection(fromVertexName, toVertexName, linkingParams);
-                }
-            }
-        }
-        return dependencyModel;
-    }
-
     public List<ParameterModel> getDependentParameters(ParameterModel source) {
         List<ParameterModel> dependentParameters = new LinkedList<>();
         SystemModel systemModel = source.getParent().findRoot();
@@ -153,6 +135,25 @@ public class ParameterLinkRegistry {
             return sourceNames;
         }
         return "";
+    }
+
+    public DependencyModel makeDependencyModel(SystemModel rootNode) {
+        DependencyModel dependencyModel = new DependencyModel();
+        List<ModelNode> modelNodeList = getModelNodes(rootNode);
+        modelNodeList.forEach(modelNode -> dependencyModel.addElement(modelNode.getName()));
+
+        for (ModelNode fromVertex : modelNodeList) {
+            String fromVertexName = fromVertex.getName();
+            for (ModelNode toVertex : modelNodeList) {
+                if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
+                        dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
+                    Collection<ParameterModel> linkingParams = getLinkingParams(fromVertex, toVertex);
+                    String toVertexName = toVertex.getName();
+                    dependencyModel.addConnection(fromVertexName, toVertexName, linkingParams);
+                }
+            }
+        }
+        return dependencyModel;
     }
 
     public NumericalDSM makeNumericalDSM(SystemModel systemModel) {
@@ -279,7 +280,12 @@ public class ParameterLinkRegistry {
 
     private Collection<ParameterModel> getLinkingParams(ModelNode toVertex, ModelNode fromVertex) {
         List<ParameterModel> sources = new LinkedList<>();
-        ParameterTreeIterator it = new ParameterTreeIterator(fromVertex);
+        Iterator<ParameterModel> it;
+        if (fromVertex.getParent() == null) { // if root, only consider its immediate parameters
+            it = fromVertex.getParameters().iterator();
+        } else { // if other node, consider all parameters of subnodes
+            it = new ParameterTreeIterator(fromVertex);
+        }
         while (it.hasNext()) {
             ParameterModel pm = it.next();
             if (pm.getValueSource() == ParameterValueSource.LINK &&
@@ -288,6 +294,8 @@ public class ParameterLinkRegistry {
                 sources.add(pm);
             }
         }
+        logger.debug("from: " + fromVertex.getName() + ", to: " + toVertex.getName());
+        sources.forEach(parameterModel -> logger.debug("\t" + parameterModel.getNodePath() + " -> " + parameterModel.getValueLink().getNodePath()));
         return sources;
     }
 

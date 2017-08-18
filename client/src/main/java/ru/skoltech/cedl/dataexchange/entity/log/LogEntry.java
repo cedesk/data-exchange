@@ -16,14 +16,18 @@
 
 package ru.skoltech.cedl.dataexchange.entity.log;
 
+import ru.skoltech.cedl.dataexchange.Utils;
+
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Created by dknoll on 04/12/15.
  */
 @Entity
 @Access(AccessType.PROPERTY)
-public class LogEntry {
+public class LogEntry implements Serializable {
 
     private long id;
 
@@ -64,6 +68,11 @@ public class LogEntry {
 
     public Long getLogTimestamp() {
         return logTimestamp;
+    }
+
+    @Transient
+    public String getLogTimestampFormatted() {
+        return Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(logTimestamp));
     }
 
     public void setLogTimestamp(Long logTimestamp) {

@@ -1,0 +1,47 @@
+/*
+ * Copyright (C) 2017 Dominik Knoll and Nikolay Groshkov - All Rights Reserved
+ * You may use, distribute and modify this code under the terms of the MIT license.
+ *
+ *  See file LICENSE.txt or go to https://opensource.org/licenses/MIT for full license details.
+ */
+
+package ru.skoltech.cedl.dataexchange;
+
+
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
+import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
+import ru.skoltech.cedl.dataexchange.view.Views;
+
+/**
+ * Created by d.knoll on 29.12.2016.
+ */
+public class ChangeHistoryAnalyzerApplication extends ContextAwareApplication {
+
+    private static Logger logger = Logger.getLogger(ChangeHistoryAnalyzerApplication.class);
+
+    public static void main(String[] args) {
+        contextInit();
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage stage) throws Exception {
+        loadContext();
+        loadLastProject();
+
+        FXMLLoaderFactory fxmlLoaderFactory = context.getBean(FXMLLoaderFactory.class);
+        FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(Views.CHANGE_HISTORY_ANALYSIS_WINDOW);
+
+        Parent root = loader.load();
+        stage.setScene(new Scene(root));
+        stage.setTitle("Parameter Change Analysis");
+        stage.getIcons().add(IconSet.APP_ICON);
+        stage.show();
+    }
+
+}

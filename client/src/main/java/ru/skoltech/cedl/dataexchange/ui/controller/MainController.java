@@ -43,9 +43,12 @@ import ru.skoltech.cedl.dataexchange.ApplicationPackage;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.analysis.WorkPeriodAnalysis;
+import ru.skoltech.cedl.dataexchange.analysis.WorkSessionAnalysis;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
@@ -53,6 +56,8 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
+import ru.skoltech.cedl.dataexchange.repository.jpa.LogEntryRepository;
+import ru.skoltech.cedl.dataexchange.services.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
@@ -125,13 +130,17 @@ public class MainController implements Initializable, Displayable, Closeable {
     private UpdateService updateService;
     private Executor executor;
     private ActionLogger actionLogger;
-
+    private LogEntryService logEntryService;
     private Stage ownerStage;
 
     private StringProperty tagProperty = new SimpleStringProperty(null);
 
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
+    }
+
+    public void setLogEntryService(LogEntryService logEntryService) {
+        this.logEntryService = logEntryService;
     }
 
     public void setModelEditingController(ModelEditingController modelEditingController) {
@@ -269,6 +278,35 @@ public class MainController implements Initializable, Displayable, Closeable {
     public void checkForApplicationUpdate(ActionEvent actionEvent) {
         Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
         validateLatestUpdate(latestVersionAvailable, actionEvent);
+    }
+
+    public void runWorkSessionAnalysis(ActionEvent actionEvent) {
+        File projectDataDir = project.getProjectDataDir();
+        String dateAndTime = Utils.getFormattedDateAndTime();
+        try {
+            long studyId = project.getStudy().getId();
+            List<LogEntry> logEntries = logEntryService.getLogEntries(studyId);
+
+            WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries, false);
+            File periodsCsvFile = new File(projectDataDir, "work-periods_" + dateAndTime + ".csv");
+            workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
+
+            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis);
+            File sessionsCsvFile = new File(projectDataDir, "work-sessions_" + dateAndTime + ".csv");
+            workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
+            workSessionAnalysis.printWorkSessions();
+
+            Optional<ButtonType> showResults = Dialogues.chooseYesNo("Show results", "Do you want to open the analysis results spreadsheet?");
+            if(showResults.isPresent() && showResults.get() == ButtonType.YES) {
+                Desktop desktop = Desktop.getDesktop();
+                if (sessionsCsvFile.isFile() && desktop.isSupported(Desktop.Action.EDIT)) {
+                    desktop.edit(sessionsCsvFile);
+                }
+            }
+
+        } catch (Exception e) {
+            logger.error("analysis failed", e);
+        }
     }
 
     private void validateLatestUpdate(Optional<ApplicationPackage> latestVersionAvailable, ActionEvent actionEvent) {
@@ -503,6 +541,14 @@ public class MainController implements Initializable, Displayable, Closeable {
         modelConsistencyViewBuilder.ownerWindow(ownerStage);
         modelConsistencyViewBuilder.showAndWait();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
+    }
+
+    public void openChangeHistoryAnalysis() {
+        guiService.openView("Change History Analyis [BETA]", Views.CHANGE_HISTORY_ANALYSIS_WINDOW, getAppWindow());
+    }
+
+    public void openTradespaceExplorer() {
+        guiService.openView("Tradespace Explorer [BETA]", Views.TRADESPACE_WINDOW, getAppWindow());
     }
 
     public void openDependencyView() {

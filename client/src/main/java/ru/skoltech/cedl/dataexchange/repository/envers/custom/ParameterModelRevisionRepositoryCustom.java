@@ -17,6 +17,8 @@
 package ru.skoltech.cedl.dataexchange.repository.envers.custom;
 
 import org.springframework.transaction.annotation.Transactional;
+import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
 
@@ -38,4 +40,6 @@ public interface ParameterModelRevisionRepositoryCustom {
      */
     @Transactional(readOnly = true)
     List<ParameterRevision> findParameterRevisionsOrderByRevisionNumberDesc(Long id);
+
+    List<ParameterChange> findAllParameterChangesOfSystem(long systemId) throws RepositoryException;
 }

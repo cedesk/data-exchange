@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.entity.calculation;
+package ru.skoltech.cedl.dataexchange.repository.jpa;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
 
 /**
- * Created by D.Knoll on 23.09.2015.
+ * Data Access Operations with {@link ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace} entity.
+ * <p>
+ * Created by Dominik Knoll on 10-Aug-17.
  */
-public enum ArgumentType {
-    LITERAL,
-    PARAMETER
+public interface TradespaceRepository extends JpaRepository<MultitemporalTradespace, Long> {
 }

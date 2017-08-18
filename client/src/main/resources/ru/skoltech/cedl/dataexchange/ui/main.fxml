@@ -63,6 +63,11 @@
                             <MenuItem onAction="#openDependencyView" text="N-square Chart"/>
                             <MenuItem onAction="#openStudyRevisionsView" text="Study Revisions"/>
                         </Menu>
+                        <Menu text="_Tools">
+                            <MenuItem onAction="#openTradespaceExplorer" text="Tradespace Explorer"/>
+                            <MenuItem onAction="#runWorkSessionAnalysis" text="Run Work Session Analysis"/>
+                            <MenuItem onAction="#openChangeHistoryAnalysis" text="Change History Analyis"/>
+                        </Menu>
                         <Menu text="_Help">
                             <MenuItem onAction="#checkForApplicationUpdate" text="Check for _Update"/>
                             <MenuItem onAction="#openGuideDialog" text="_Process Guide"/>
@@ -100,12 +105,6 @@
                                 </HBox.margin>
                             </Label>
                             <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--" />
-                            <Label styleClass="projectDetailsLabels" text="Tag:">
-                                <HBox.margin>
-                                    <Insets left="20.0" right="4.0"/>
-                                </HBox.margin>
-                            </Label>
-                            <Label fx:id="tagLabel" styleClass="projectDetailsText" text="--" />
                             <Label styleClass="projectDetailsLabels" text="User:">
                                 <HBox.margin>
                                     <Insets left="20.0" right="4.0"/>

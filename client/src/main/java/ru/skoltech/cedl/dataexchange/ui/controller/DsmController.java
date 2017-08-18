@@ -86,7 +86,7 @@ public class DsmController implements Initializable {
     public void refreshView(ActionEvent actionEvent) {
         SystemModel systemModel = project.getSystemModel();
         ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
-        DependencyModel dependencyModel = parameterLinkRegistry.getDependencyModel(systemModel);
+        DependencyModel dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
 
         spreadsheetView.setShowRowHeader(true);
         spreadsheetView.setShowColumnHeader(true);

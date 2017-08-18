@@ -27,6 +27,7 @@
         <property name="modelEditingController" ref="modelEditingController" />
         <property name="project" ref="project" />
         <property name="actionLogger" ref="actionLogger" />
+        <property name="logEntryService" ref="logEntryService" />
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="systemBuilderFactory" ref="systemBuilderFactory" />
         <property name="fileStorageService" ref="fileStorageService" />
@@ -35,6 +36,11 @@
         <property name="executor" ref="executor" />
         <property name="guiService" ref="guiService"/>
         <property name="studyService" ref="studyService"/>
+    </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.controller.ChangeAnalysisController" >
+        <property name="project" ref="project" />
+        <property name="parameterModelRepository" ref="parameterModelRevisionRepository" />
     </bean>
 
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.ui.controller.ModelEditingController">
@@ -90,6 +96,8 @@
         <property name="project" ref="project" />
         <property name="guiService" ref="guiService"/>
     </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.controller.TradespaceController" />
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.StudyRevisionsController" scope="prototype">
         <property name="studyService" ref="studyService"/>

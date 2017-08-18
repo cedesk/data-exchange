@@ -105,6 +105,14 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
+    public static Optional<String> inputEpochs() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Epochs");
+        dialog.setHeaderText("Please insert the years of all Epochs.");
+        dialog.setContentText("Years separated by comma");
+        return dialog.showAndWait();
+    }
+
     public static Optional<ButtonType> chooseNewOrLoadStudy() {
         Alert repositoryTypeDialog = new Alert(Alert.AlertType.CONFIRMATION);
         repositoryTypeDialog.setTitle("Start with a study");

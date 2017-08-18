@@ -19,6 +19,8 @@ package ru.skoltech.cedl.dataexchange.repository.envers.custom.impl;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
@@ -26,6 +28,8 @@ import ru.skoltech.cedl.dataexchange.repository.envers.custom.ParameterModelRevi
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +57,7 @@ public class ParameterModelRevisionRepositoryImpl implements ParameterModelRevis
                 .map(revision -> new ParameterRevision((ParameterModel) revision[0], (CustomRevisionEntity) revision[1]))
                 .collect(Collectors.toList());
 
-        // TODO: intentionally traverse joined entities, not doing so produce an exception
+        // TODO: intentionally traverse joined entities, to force fetching, not doing so will produce an exception
         // must be fixed somehow
         parameterRevisions.forEach(parameterRevision -> {
             parameterRevision.getUnitAsText();
@@ -63,7 +67,26 @@ public class ParameterModelRevisionRepositoryImpl implements ParameterModelRevis
                 parameterRevision.getValueLink().getNodePath();
             }
         });
+        parameterRevisions.forEach(ParameterRevision::getSourceDetails);
 
         return parameterRevisions;
+    }
+
+    @Override
+    public List<ParameterChange> findAllParameterChangesOfSystem(long systemId) throws RepositoryException {
+        List<ParameterChange> resultList = new ArrayList<>();
+        try {
+            Query nativeQuery = entityManager.createNativeQuery("SELECT " +
+                    "rev_id, param_id, valueLink_id, node_id, timestamp, nature, valueSource, name, node_name " +
+                    "FROM parameter_changes WHERE sys_id = " + systemId + " ORDER BY timestamp, node_id, nature ASC");
+            List<Object[]> nativeQueryResultList = nativeQuery.getResultList();
+            for (Object[] row : nativeQueryResultList) {
+                ParameterChange pc = new ParameterChange(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]);
+                resultList.add(pc);
+            }
+            return resultList;
+        } catch (Exception e) {
+            throw new RepositoryException("ParameterChange loading failed.", e);
+        }
     }
 }
