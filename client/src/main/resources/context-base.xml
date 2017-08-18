@@ -61,9 +61,9 @@
         <property name="studyModelDepth" value="${study.model.depth}" />
     </bean>
 
-    <bean id="fxmlLoaderFactory" class="ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory" />
+    <bean id="fxmlLoaderFactory" class="ru.skoltech.cedl.dataexchange.ui.controller.FXMLLoaderFactory" />
 
-    <bean class="ru.skoltech.cedl.dataexchange.controller.RepositorySettingsController">
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.RepositorySettingsController">
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="repositoryConnectionService" ref="repositoryConnectionService"/>

@@ -22,7 +22,7 @@ import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import ru.skoltech.cedl.dataexchange.controller.Dialogues;
+import ru.skoltech.cedl.dataexchange.ui.controller.Dialogues;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;

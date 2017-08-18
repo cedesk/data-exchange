@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import ru.skoltech.cedl.dataexchange.control.ErrorAlert;
+import ru.skoltech.cedl.dataexchange.ui.control.ErrorAlert;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializer;
@@ -31,7 +31,7 @@ import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
-import ru.skoltech.cedl.dataexchange.view.Views;
+import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.io.IOException;
 
@@ -89,14 +89,14 @@ public class ClientApplication extends Application {
         String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
         logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
 
-        ViewBuilder mainViewBuilder = guiService.createViewBuilder("Concurrent Engineering Data Exchange Skoltech", Views.MAIN_WINDOW);
+        ViewBuilder mainViewBuilder = guiService.createViewBuilder("Concurrent Engineering Data Exchange Skoltech", Views.MAIN_VIEW);
         mainViewBuilder.primaryStage(primaryStage);
         mainViewBuilder.show();
     }
 
     private void startRepositorySettingsController(Stage primaryStage) throws IOException {
         GuiService guiService = context.getBean(GuiService.class);
-        ViewBuilder repositorySettingsViewBuilder = guiService.createViewBuilder("Repository settings", Views.REPOSITORY_SETTINGS_WINDOW);
+        ViewBuilder repositorySettingsViewBuilder = guiService.createViewBuilder("Repository settings", Views.REPOSITORY_SETTINGS_VIEW);
         repositorySettingsViewBuilder.primaryStage(primaryStage);
         repositorySettingsViewBuilder.show();
     }

@@ -16,40 +16,40 @@
 
 package ru.skoltech.cedl.dataexchange.demo;
 
-import javafx.application.Application;
-import javafx.scene.control.Dialog;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.control.ReferenceSelector;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.ParameterUpdate;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ModelUpdateService;
-import ru.skoltech.cedl.dataexchange.service.impl.ModelUpdateServiceImpl;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * Created by D.Knoll on 25.09.2015.
  */
-public class ReferenceSelectorDemo extends Application {
+public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
 
     private static Logger logger = Logger.getLogger(ReferenceSelectorDemo.class);
 
-    private static Project project;
-    private static ModelUpdateService modelUpdateService;
+    private Project project;
 
-    public static ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
-        project = new Project();
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    private ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
+        project = context.getBean(Project.class);
         project.init("TEST");
-        modelUpdateService = new ModelUpdateServiceImpl();
         Study study = new Study("TEST");
         Field field = Project.class.getDeclaredField("study");
         field.setAccessible(true);
@@ -78,33 +78,35 @@ public class ReferenceSelectorDemo extends Application {
         return parameterModel;
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void demo(Stage primaryStage) {
+        try {
+            ModelUpdateService modelUpdateService = context.getBean(ModelUpdateService.class);
+            GuiService guiService = context.getBean(GuiService.class);
 
-        ParameterModel parameterModel = getParameterModel();
-        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
 
-        System.out.println(parameterModel);
-        modelUpdateService.applyParameterChangesFromExternalModel(project, parameterModel, externalModelFileHandler,
-                new Consumer<ParameterUpdate>() {
-                    @Override
-                    public void accept(ParameterUpdate parameterUpdate) {
-                        System.out.println(parameterUpdate);
-                    }
-                });
-        ExternalModelReference valueReference = parameterModel.getValueReference();
-        List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
-        Dialog<ExternalModelReference> dialog = new ReferenceSelector(project, valueReference, externalModels);
-        Optional<ExternalModelReference> referenceOptional = dialog.showAndWait();
-        if (referenceOptional.isPresent()) {
-            ExternalModelReference externalModelReference = referenceOptional.get();
-            System.out.println(externalModelReference);
+            ParameterModel parameterModel = getParameterModel();
+            ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
+
+            System.out.println(parameterModel);
+            modelUpdateService.applyParameterChangesFromExternalModel(project, parameterModel, externalModelFileHandler,
+                    System.out::println);
+
+            ExternalModelReference valueReference = parameterModel.getValueReference();
+            List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
+
+            ViewBuilder referenceSelectorViewBuilder = guiService.createViewBuilder("Reference Selector", Views.REFERENCE_SELECTOR_VIEW);
+            referenceSelectorViewBuilder.ownerWindow(primaryStage);
+            referenceSelectorViewBuilder.applyEventHandler(event -> {
+                ExternalModelReference externalModelReference = (ExternalModelReference) event.getSource();
+                System.out.println(externalModelReference);
+            });
+            referenceSelectorViewBuilder.showAndWait(valueReference, externalModels);
+        } catch (IllegalAccessException | NoSuchFieldException | ExternalModelException e) {
+            e.printStackTrace();
+        } finally {
+            primaryStage.fireEvent(new WindowEvent(primaryStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+
         }
-        primaryStage.fireEvent(new WindowEvent(primaryStage, WindowEvent.WINDOW_CLOSE_REQUEST));
-        System.exit(1);
     }
 }

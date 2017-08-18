@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2017 Skolkovo Institute of Science and Technology
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/null"
+            stylesheets="@styling.css"
+            prefHeight="480.0" prefWidth="800.0"
+            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ReferenceSelectorController">
+    <top>
+        <VBox spacing="5">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Choose a cell from the spreadsheet." />
+            <HBox spacing="24.0" BorderPane.alignment="CENTER_LEFT">
+                <ComboBox fx:id="attachmentChooser" prefWidth="200.0"/>
+                <ComboBox fx:id="sheetChooser" prefWidth="200.0"/>
+                <TextField fx:id="referenceText" editable="false" prefWidth="200.0" promptText="cellName"/>
+                <Button mnemonicParsing="false" onAction="#chooseSelectedCell" text="Choose Cell"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <BorderPane>
+            <padding>
+                <Insets right="10" bottom="10" left="10"/>
+            </padding>
+            <center>
+                <SpreadsheetView fx:id="spreadsheetView" editable="false" prefWidth="500.0" BorderPane.alignment="CENTER"/>
+            </center>
+        </BorderPane>
+    </center>
+    <bottom>
+        <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+            <Button defaultButton="true" mnemonicParsing="false" onAction="#apply" text="Ok"/>
+            <Button cancelButton="true" mnemonicParsing="false" onAction="#close" text="Cancel"/>
+        </ToolBar>
+    </bottom>
+</BorderPane>

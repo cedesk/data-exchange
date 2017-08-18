@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2017 Skolkovo Institute of Science and Technology
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.40"
+            stylesheets="@styling.css"
+            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ParameterSelectorController">
+    <top>
+        <BorderPane>
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <center>
+                <Label text="Choose a parameter from another subsystem." />
+            </center>
+        </BorderPane>
+    </top>
+    <center>
+        <GridPane hgap="8.0" vgap="4.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0"
+                  AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
+            <padding>
+                <Insets right="10" bottom="10" left="10"/>
+            </padding>
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="100.0" prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="500.0" minWidth="100.0" prefWidth="400.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+            </rowConstraints>
+            <Label text="Subsystem" GridPane.halignment="RIGHT"/>
+            <Label text="Parameter" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
+            <Label text="Value" GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
+            <Label text="Description" GridPane.halignment="RIGHT" GridPane.rowIndex="3"/>
+            <ChoiceBox fx:id="subsystemChoiceBox" prefWidth="200.0" GridPane.columnIndex="1"/>
+            <ChoiceBox fx:id="parameterChoiceBox" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <HBox spacing="16.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <TextField fx:id="valueText" editable="false" prefWidth="120.0"/>
+                <TextField fx:id="unitText" editable="false" prefWidth="200.0"/>
+            </HBox>
+            <TextArea fx:id="descriptionText" editable="false" prefHeight="50.0" prefWidth="200.0"
+                      GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        </GridPane>
+    </center>
+    <bottom>
+        <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+            <Button defaultButton="true" mnemonicParsing="false" onAction="#apply" text="Ok"/>
+            <Button cancelButton="true" mnemonicParsing="false" onAction="#close" text="Cancel"/>
+        </ToolBar>
+    </bottom>
+</BorderPane>

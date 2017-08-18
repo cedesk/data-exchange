@@ -26,10 +26,10 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.controller.Applicable;
-import ru.skoltech.cedl.dataexchange.controller.Closeable;
-import ru.skoltech.cedl.dataexchange.controller.Displayable;
-import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
+import ru.skoltech.cedl.dataexchange.ui.controller.Applicable;
+import ru.skoltech.cedl.dataexchange.ui.controller.Closeable;
+import ru.skoltech.cedl.dataexchange.ui.controller.Displayable;
+import ru.skoltech.cedl.dataexchange.ui.controller.FXMLLoaderFactory;
 import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 
 import java.io.IOException;

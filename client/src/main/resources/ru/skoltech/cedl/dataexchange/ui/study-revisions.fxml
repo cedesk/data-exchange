@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2017 Skolkovo Institute of Science and Technology
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.112"
+            prefWidth="400" prefHeight="300"
+            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.StudyRevisionsController">
+     <center>
+        <BorderPane>
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <center>
+                <TableView fx:id="tagTableView" prefHeight="100">
+                    <columns>
+                        <TableColumn fx:id="dateColumn" editable="false" prefWidth="60.0" text="Date">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="nature"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="tagColumn" editable="false" prefWidth="150.0" text="Tag">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="name"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="revisionColumn" editable="false" prefWidth="150.0" text="Revision">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="name"/>
+                            </cellValueFactory>
+                        </TableColumn>
+                    </columns>
+                </TableView>
+            </center>
+        </BorderPane>
+    </center>
+    <bottom>
+        <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+            <Button fx:id="loadButton" defaultButton="true" mnemonicParsing="false"
+                    onAction="#load" text="Load"/>
+            <Button cancelButton="true" mnemonicParsing="false" onAction="#close"
+                    text="Cancel"/>
+        </ToolBar>
+    </bottom>
+</BorderPane>

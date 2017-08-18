@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2017 Skolkovo Institute of Science and Technology
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.glyphfont.Glyph?>
+<SplitPane xmlns:fx="http://javafx.com/fxml/1" dividerPositions="0.33" prefHeight="600.0" prefWidth="800.0"
+           stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8"
+           fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.UserRoleManagementController">
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+        <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <Button fx:id="addDisciplineButton" mnemonicParsing="false" onAction="#addDiscipline" minWidth="28">
+                <tooltip>
+                    <Tooltip text="Add discipline"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                </graphic>
+            </Button>
+            <Button fx:id="deleteDisciplineButton" mnemonicParsing="false" onAction="#deleteDiscipline" minWidth="28">
+                <tooltip>
+                    <Tooltip text="Remove discipline"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="MINUS"/>
+                </graphic>
+            </Button>
+            <Pane HBox.hgrow="ALWAYS"/>
+        </ToolBar>
+        <Label text="Disciplines" styleClass="sectionTitle" AnchorPane.leftAnchor="0.0"
+               AnchorPane.rightAnchor="0.0"
+               AnchorPane.topAnchor="0.0">
+            <padding>
+                <Insets left="8.0" top="4.0"/>
+            </padding>
+        </Label>
+        <TableView fx:id="disciplinesTable" prefHeight="441.0" prefWidth="388.0" AnchorPane.bottomAnchor="40.0"
+                   AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
+            <columns>
+                <TableColumn fx:id="disciplineNameColumn" minWidth="100.0" prefWidth="-1.0" text="Name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="name"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="subsystemCountColumn" minWidth="50.0" prefWidth="-1.0" text="#Subsystems">
+                </TableColumn>
+                <TableColumn fx:id="disciplineDescriptionColumn" minWidth="100.0" prefWidth="-1.0"
+                             text="Description">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="description"/>
+                    </cellValueFactory>
+                </TableColumn>
+            </columns>
+        </TableView>
+    </AnchorPane>
+    <AnchorPane>
+        <SplitPane dividerPositions="0.4" orientation="VERTICAL" prefHeight="513.0" prefWidth="396.0"
+                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                   AnchorPane.topAnchor="0.0">
+            <BorderPane fx:id="subsystemsPane" prefHeight="200.0" prefWidth="200.0">
+                <top>
+                    <Label alignment="BASELINE_LEFT" text="Subsystems" styleClass="sectionTitle">
+                        <padding>
+                            <Insets left="8.0" top="4.0"/>
+                        </padding>
+                    </Label>
+                </top>
+                <left>
+                    <VBox>
+                        <Label alignment="BASELINE_LEFT" text="assigned" styleClass="sectionTitle">
+                            <padding>
+                                <Insets left="16.0"/>
+                            </padding>
+                        </Label>
+                        <ListView fx:id="subsystemsAssignedList" prefWidth="200.0"
+                                  BorderPane.alignment="CENTER"/>
+                    </VBox>
+                </left>
+                <right>
+                    <VBox>
+                        <Label alignment="BASELINE_LEFT" text="unassigned" styleClass="sectionTitle">
+                            <padding>
+                                <Insets left="16.0"/>
+                            </padding>
+                        </Label>
+                        <ListView fx:id="subsystemsAvailableList" BorderPane.alignment="CENTER"/>
+                    </VBox>
+                </right>
+                <center>
+                    <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+                        <Button fx:id="addSubsystemButton" mnemonicParsing="false"
+                                onAction="#addDisciplineSubsystem" text="&lt;&lt;">
+                            <VBox.margin>
+                                <Insets bottom="8.0"/>
+                            </VBox.margin>
+                        </Button>
+                        <Button fx:id="deleteSubsystemButton" mnemonicParsing="false"
+                                onAction="#deleteDisciplineSubsystem" text="&gt;&gt;"/>
+                    </VBox>
+                </center>
+                <padding>
+                    <Insets bottom="4.0" left="4.0" right="4.0"/>
+                </padding>
+            </BorderPane>
+            <BorderPane fx:id="userRolePane" prefHeight="200.0" prefWidth="200.0">
+                <top>
+                    <Label styleClass="sectionTitle" text="Users">
+                        <padding>
+                            <Insets left="8.0" top="4.0"/>
+                        </padding>
+                    </Label>
+                </top>
+                <right>
+                    <VBox>
+                        <Label styleClass="sectionTitle" text="available">
+                            <padding>
+                                <Insets left="16.0"/>
+                            </padding>
+                        </Label>
+                        <TableView fx:id="userTable" BorderPane.alignment="CENTER">
+                            <columns>
+                                <TableColumn fx:id="userNameColumn" minWidth="80.0"
+                                             prefWidth="-1.0" text="Name">
+                                    <cellValueFactory>
+                                        <PropertyValueFactory property="userName"/>
+                                    </cellValueFactory>
+                                </TableColumn>
+                                <TableColumn fx:id="userFullNameColumn" minWidth="160.0"
+                                             prefWidth="-1.0" text="Full Name">
+                                    <cellValueFactory>
+                                        <PropertyValueFactory property="fullName"/>
+                                    </cellValueFactory>
+                                </TableColumn>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </right>
+                <center>
+                    <VBox alignment="CENTER">
+                        <Button fx:id="addUserRoleButton" mnemonicParsing="false"
+                                onAction="#addUserRole" text="&lt;&lt;" BorderPane.alignment="CENTER">
+                            <VBox.margin>
+                                <Insets bottom="8.0"/>
+                            </VBox.margin>
+                        </Button>
+                        <Button fx:id="deleteUserRoleButton" mnemonicParsing="false"
+                                onAction="#deleteUserRole" text="&gt;&gt;"/>
+                    </VBox>
+                </center>
+                <left>
+                    <VBox>
+                        <Label styleClass="sectionTitle" text="assigned" underline="true">
+                            <padding>
+                                <Insets left="16.0"/>
+                            </padding>
+                        </Label>
+                        <ListView fx:id="userRolesAssignedList" prefWidth="200.0"
+                                  BorderPane.alignment="CENTER"/>
+                    </VBox>
+                </left>
+                <padding>
+                    <Insets bottom="4.0" left="4.0" right="4.0"/>
+                </padding>
+            </BorderPane>
+        </SplitPane>
+    </AnchorPane>
+</SplitPane>

@@ -23,7 +23,7 @@ import javafx.scene.input.DataFormat;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.controller.FXMLLoaderFactory;
+import ru.skoltech.cedl.dataexchange.ui.controller.FXMLLoaderFactory;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 
@@ -64,7 +64,10 @@ public class GuiServiceImpl implements GuiService {
     public <T extends Node> T createControl(URL location, Object... args) {
         try {
             FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(location, args);
-            return loader.load();
+            T control = loader.load();
+            Object controller = loader.getController();
+            control.setUserData(controller);
+            return control;
         } catch (IOException e) {
             logger.error("Unable to load control: " + location, e);
             throw new RuntimeException(e);

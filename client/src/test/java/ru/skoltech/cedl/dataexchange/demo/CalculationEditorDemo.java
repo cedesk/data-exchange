@@ -18,7 +18,6 @@ package ru.skoltech.cedl.dataexchange.demo;
 
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.control.Controls;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
@@ -29,6 +28,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -50,7 +50,7 @@ public class CalculationEditorDemo extends AbstractApplicationContextDemo {
 
         ParameterModel parameterModel = getParameterModel();
 
-        ViewBuilder calculationEditorViewBuilder = guiService.createViewBuilder("Calculation Editor", Controls.CALCULATION_EDITOR_CONTROL);
+        ViewBuilder calculationEditorViewBuilder = guiService.createViewBuilder("Calculation Editor", Views.CALCULATION_EDITOR_VIEW);
         calculationEditorViewBuilder.applyEventHandler(event -> {
             Calculation calculation = (Calculation) event.getSource();
             if (calculation != null) {

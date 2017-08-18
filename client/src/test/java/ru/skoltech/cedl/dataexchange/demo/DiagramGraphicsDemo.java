@@ -23,7 +23,7 @@ package ru.skoltech.cedl.dataexchange.demo;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import ru.skoltech.cedl.dataexchange.control.DiagramView;
+import ru.skoltech.cedl.dataexchange.ui.control.DiagramView;
 
 public class DiagramGraphicsDemo extends Application {
 

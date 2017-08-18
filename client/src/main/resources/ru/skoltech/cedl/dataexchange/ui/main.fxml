@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2017 Skolkovo Institute of Science and Technology
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
+            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.MainController"
+            maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="700.0" prefWidth="1000.0" >
+    <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"
+                fx:id="layoutPane">
+        <center>
+        </center>
+        <top>
+            <HBox prefHeight="48.0" prefWidth="800.0" BorderPane.alignment="CENTER">
+                <VBox HBox.hgrow="ALWAYS">
+                    <MenuBar>
+                        <Menu text="_Project">
+                            <MenuItem onAction="#newProject" text="_New..."/>
+                            <MenuItem onAction="#openProject" text="_Open..."/>
+                            <MenuItem onAction="#saveProject" text="_Save"/>
+                            <SeparatorMenuItem/>
+                            <MenuItem onAction="#importProject" text="_Import"/>
+                            <MenuItem fx:id="exportMenu" onAction="#exportProject" text="_Export"/>
+                            <SeparatorMenuItem/>
+                            <MenuItem fx:id="deleteMenu" onAction="#deleteProject" text="_Delete..."/>
+                            <SeparatorMenuItem/>
+                            <MenuItem onAction="#quit" text="_Quit"/>
+                        </Menu>
+                        <Menu text="_Edit">
+                            <MenuItem fx:id="usersMenu" onAction="#openUserManagement" text="Users"/>
+                            <MenuItem fx:id="usersAndDisciplinesMenu" onAction="#openUserRoleManagement"
+                                      text="User-Discipline Assignment"/>
+                            <MenuItem onAction="#openUnitManagement" text="Units and _Measures"/>
+                            <SeparatorMenuItem/>
+                            <MenuItem onAction="#openProjectSettingsDialog" text="_Project Settings"/>
+                            <MenuItem onAction="#openRepositorySettingsDialog" text="_Repository Settings"/>
+                        </Menu>
+                        <Menu text="_View">
+                            <MenuItem onAction="#openConsistencyView" text="Consistency"/>
+                            <MenuItem onAction="#openDiffView" text="Differences"/>
+                            <MenuItem onAction="#openDsmView" text="Design Structure Matrix"/>
+                            <MenuItem onAction="#openDependencyView" text="N-square Chart"/>
+                            <MenuItem onAction="#openStudyRevisionsView" text="Study Revisions"/>
+                        </Menu>
+                        <Menu text="_Help">
+                            <MenuItem onAction="#checkForApplicationUpdate" text="Check for _Update"/>
+                            <MenuItem onAction="#openGuideDialog" text="_Process Guide"/>
+                            <MenuItem onAction="#openAboutDialog" text="_About"/>
+                        </Menu>
+                    </MenuBar>
+                    <ToolBar>
+                        <VBox.margin>
+                            <Insets/>
+                        </VBox.margin>
+                        <Button fx:id="newButton" onAction="#newProject" text="_New"/>
+                        <Separator orientation="VERTICAL"/>
+                        <Button fx:id="loadButton" onAction="#reloadProject" text="_Reload"/>
+                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" onAction="#saveProject" text="_Save" >
+                            <tooltip>
+                                <Tooltip text="Save current study" />
+                            </tooltip>
+                        </Button>
+                        <Separator orientation="VERTICAL"/>
+                        <Button fx:id="tagButton" layoutX="10.0" prefWidth="60" layoutY="13.0" onAction="#tagStudy" text="_Tag">
+                            <tooltip>
+                                <Tooltip text="Tag current study version" />
+                            </tooltip>
+                        </Button>
+                        <Separator orientation="VERTICAL"/>
+                        <Button fx:id="diffButton" onAction="#openDiffView" text="View _Changes"/>
+                        <Separator orientation="VERTICAL"/>
+                        <HBox fillHeight="false">
+                            <padding>
+                                <Insets bottom="3.0" left="6.0" right="3.0" top="6.0"/>
+                            </padding>
+                            <Label styleClass="projectDetailsLabels" text="Project:">
+                                <HBox.margin>
+                                    <Insets right="4.0"/>
+                                </HBox.margin>
+                            </Label>
+                            <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--" />
+                            <Label styleClass="projectDetailsLabels" text="Tag:">
+                                <HBox.margin>
+                                    <Insets left="20.0" right="4.0"/>
+                                </HBox.margin>
+                            </Label>
+                            <Label fx:id="tagLabel" styleClass="projectDetailsText" text="--" />
+                            <Label styleClass="projectDetailsLabels" text="User:">
+                                <HBox.margin>
+                                    <Insets left="20.0" right="4.0"/>
+                                </HBox.margin>
+                            </Label>
+                            <Label fx:id="userNameLabel" styleClass="projectDetailsText" text="--" />
+                            <Label styleClass="projectDetailsLabels" text="Roles:">
+                                <HBox.margin>
+                                    <Insets left="20.0" right="4.0"/>
+                                </HBox.margin>
+                            </Label>
+                            <Label fx:id="userRoleLabel" styleClass="projectDetailsText" text="--">
+                            </Label>
+                        </HBox>
+                    </ToolBar>
+                </VBox>
+                <ImageView fitHeight="60.0" fitWidth="100.0">
+                    <HBox.margin>
+                        <Insets/>
+                    </HBox.margin>
+                    <Image url="@controller/cedesk-logo.png"/>
+                </ImageView>
+            </HBox>
+        </top>
+        <center>
+        </center>
+        <right>
+        </right>
+        <bottom>
+            <AnchorPane prefHeight="20.0" BorderPane.alignment="CENTER">
+                <Label AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0"
+                       prefHeight="20.0" prefWidth="703.0"
+                       fx:id="statusbarLabel" text="Statusbar"/>
+            </AnchorPane>
+        </bottom>
+    </BorderPane>
+</AnchorPane>
