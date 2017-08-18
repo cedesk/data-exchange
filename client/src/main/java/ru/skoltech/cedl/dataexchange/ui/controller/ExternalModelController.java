@@ -112,6 +112,11 @@ public class ExternalModelController implements Initializable {
         }
     }
 
+    /**
+     * TODO: not used any longer
+     *
+     * @deprecated
+     */
     public void startWizard() {
         ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         String filename = externalModel.getName();

@@ -41,6 +41,7 @@ import java.util.List;
 
 /**
  * Created by D.Knoll on 14.06.2016.
+ * @deprecated
  */
 public class SpreadsheetInputOutputExtractorServiceImpl implements SpreadsheetInputOutputExtractorService {
 

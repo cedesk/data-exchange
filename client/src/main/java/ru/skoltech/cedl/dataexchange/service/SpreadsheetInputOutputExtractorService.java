@@ -28,6 +28,7 @@ import java.util.List;
  * TODO: javadoc needed
  *
  * Created by Nikolay Groshkov on 31.07.2017.
+ * @deprecated
  */
 public interface SpreadsheetInputOutputExtractorService {
 
