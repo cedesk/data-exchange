@@ -97,7 +97,9 @@ public class StudyServiceImpl implements StudyService {
 
     @Override
     public String findCurrentStudyRevisionTag(Study study) {
-        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(study.getId(), Study.class);
+        long studyId = study.getId();
+        if(studyId == 0) return ""; // quick return for unstored studies
+        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(studyId, Study.class);
         return revisionEntity.getTag();
     }
 
