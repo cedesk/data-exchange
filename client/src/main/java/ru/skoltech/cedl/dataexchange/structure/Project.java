@@ -417,7 +417,7 @@ public class Project {
 
     public boolean loadLocalStudy(Study study) {
         if (study == null) {
-            logger.error("Study not found!");
+            logger.warn("Study not found!");
         } else {
             this.setStudy(study);
             Platform.runLater(this::loadRepositoryStudy);
@@ -458,7 +458,7 @@ public class Project {
             return true;
         }
 
-        logger.error("Error loading user management. recreating new user management.");
+        logger.warn("Error loading user management. recreating new user management.");
         initializeUserManagement();
         return false;
     }

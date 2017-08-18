@@ -29,7 +29,7 @@ import static ru.skoltech.cedl.dataexchange.repository.jpa.ApplicationPropertyRe
 import static ru.skoltech.cedl.dataexchange.repository.jpa.ApplicationPropertyRepository.SCHEME_VERSION_APPLICATION_PROPERTY_NAME;
 
 /**
- * Implemetation of {@link RepositorySchemeService}.
+ * Implementation of {@link RepositorySchemeService}.
  *
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
@@ -39,8 +39,12 @@ public class RepositorySchemeServiceImpl implements RepositorySchemeService {
 
     private ApplicationSettings applicationSettings;
 
+    private final ApplicationPropertyRepository applicationPropertyRepository;
+
     @Autowired
-    private ApplicationPropertyRepository applicationPropertyRepository;
+    public RepositorySchemeServiceImpl(ApplicationPropertyRepository applicationPropertyRepository) {
+        this.applicationPropertyRepository = applicationPropertyRepository;
+    }
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
@@ -49,17 +53,14 @@ public class RepositorySchemeServiceImpl implements RepositorySchemeService {
     @Override
     public boolean checkSchemeVersion() {
         String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
-        String actualSchemaVersion = null;
-        try {
-            ApplicationProperty schemeVersionProperty = applicationPropertyRepository.findOne(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
-            actualSchemaVersion = schemeVersionProperty.getValue();
-        } catch (Exception e) {
-            logger.debug("error loading the applications version property", e);
-        }
-        if (actualSchemaVersion == null) {
-            logger.error("No DB Schema Version!");
+
+        ApplicationProperty schemeVersionProperty = applicationPropertyRepository.findOne(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
+        if (schemeVersionProperty == null) {
+            logger.warn("No DB Schema Version!");
             return false;
         }
+
+        String actualSchemaVersion = schemeVersionProperty.getValue();
         int versionCompare = Utils.compareVersions(actualSchemaVersion, currentSchemaVersion);
 
         if (versionCompare < 0) {
@@ -80,16 +81,14 @@ public class RepositorySchemeServiceImpl implements RepositorySchemeService {
     @Override
     public boolean checkAndStoreSchemeVersion() {
         String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
-        String actualSchemaVersion = null;
-        try {
-            ApplicationProperty schemeVersionProperty = applicationPropertyRepository.findOne(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
-            actualSchemaVersion = schemeVersionProperty.getValue();
-        } catch (Exception e) {
-            logger.debug("error loading the applications version property", e);
-        }
-        if (actualSchemaVersion == null) {
+
+        ApplicationProperty schemeVersionProperty = applicationPropertyRepository.findOne(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
+        if (schemeVersionProperty == null) {
+            logger.warn("No DB Schema Version!");
             return this.saveRepositoryVersion(currentSchemaVersion);
         }
+
+        String actualSchemaVersion = schemeVersionProperty.getValue();
 
         if (Utils.compareVersions(actualSchemaVersion, currentSchemaVersion) > 0) {
             StatusLogger.getInstance().log("Downgrade your CEDESK Client! "
