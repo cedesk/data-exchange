@@ -100,7 +100,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     @FXML
     private Button saveButton;
     @FXML
-    private Button tagButton;
+    private MenuItem tagMenu;
     @FXML
     private Button diffButton;
     @FXML
@@ -235,11 +235,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         saveButton.disableProperty().bind(project.canSyncProperty().not());
 
         tagLabel.textProperty().bind(Bindings.when(tagProperty.isNull()).then("--").otherwise(tagProperty));
-        tagButton.textProperty().bind(Bindings.when(tagProperty.isNull()).then("Tag").otherwise("Untag"));
-        tagButton.tooltipProperty().bind(Bindings.when(tagProperty.isNull())
-                .then(new Tooltip("Tag current study version"))
-                .otherwise(new Tooltip("Untag current study version")));
-
+        tagMenu.textProperty().bind(Bindings.when(tagProperty.isNull()).then("_Tag current revision...").otherwise("_Untag current revision"));
         this.checkRepository();
         this.checkVersionUpdate();
     }
@@ -741,7 +737,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     public void tagStudy() {
         Study study = project.getStudy();
         if (tagProperty.getValue() == null) {
-            ViewBuilder tagDialogViewBuilder = guiService.createViewBuilder("Tag current study version", Views.TAG_VIEW);
+            ViewBuilder tagDialogViewBuilder = guiService.createViewBuilder("Tag current study revision", Views.TAG_VIEW);
             tagDialogViewBuilder.modality(Modality.APPLICATION_MODAL);
             tagDialogViewBuilder.ownerWindow(ownerStage);
             tagDialogViewBuilder.resizable(false);
@@ -833,6 +829,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             boolean userIsAdmin = project.isCurrentAdmin();
             deleteMenu.setDisable(!userIsAdmin);
             usersMenu.setDisable(!userIsAdmin);
+            tagMenu.setDisable(!userIsAdmin);
             usersAndDisciplinesMenu.setDisable(!userIsAdmin);
             modelEditingController.updateView();
         } else {

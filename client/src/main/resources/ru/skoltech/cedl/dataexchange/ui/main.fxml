@@ -38,7 +38,9 @@
                         <Menu text="_Project">
                             <MenuItem onAction="#newProject" text="_New..."/>
                             <MenuItem onAction="#openProject" text="_Open..."/>
+                            <MenuItem onAction="#openStudyRevisionsView" text="_Load tagged revision..."/>
                             <MenuItem onAction="#saveProject" text="_Save"/>
+                            <MenuItem fx:id="tagMenu" onAction="#tagStudy" text="_Tag current revision"/>
                             <SeparatorMenuItem/>
                             <MenuItem onAction="#importProject" text="_Import"/>
                             <MenuItem fx:id="exportMenu" onAction="#exportProject" text="_Export"/>
@@ -61,7 +63,6 @@
                             <MenuItem onAction="#openDiffView" text="Differences"/>
                             <MenuItem onAction="#openDsmView" text="Design Structure Matrix"/>
                             <MenuItem onAction="#openDependencyView" text="N-square Chart"/>
-                            <MenuItem onAction="#openStudyRevisionsView" text="Study Revisions"/>
                         </Menu>
                         <Menu text="_Tools">
                             <MenuItem onAction="#openTradespaceExplorer" text="Tradespace Explorer"/>
@@ -84,12 +85,6 @@
                         <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" onAction="#saveProject" text="_Save" >
                             <tooltip>
                                 <Tooltip text="Save current study" />
-                            </tooltip>
-                        </Button>
-                        <Separator orientation="VERTICAL"/>
-                        <Button fx:id="tagButton" layoutX="10.0" prefWidth="60" layoutY="13.0" onAction="#tagStudy" text="_Tag">
-                            <tooltip>
-                                <Tooltip text="Tag current study version" />
                             </tooltip>
                         </Button>
                         <Separator orientation="VERTICAL"/>
