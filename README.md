@@ -10,6 +10,7 @@ On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
 ## Release History and Notes
 
+* 2018-08-21 - Version 1.30   (versioning capability for studies, Spring Data introduction, GUI services)
 * 2018-07-26 - Version 1.29.1 (fixed *.exe build, logging and shutdown errors)
 * 2018-07-24 - Version 1.29   (open source release, added copyright and MIT license)
 * 2018-07-21 - Version 1.28   (introduce DI via Spring context)
