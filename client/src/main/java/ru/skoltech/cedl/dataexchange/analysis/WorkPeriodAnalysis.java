@@ -26,11 +26,11 @@ public class WorkPeriodAnalysis {
 
     private static final Logger logger = Logger.getLogger(WorkPeriodAnalysis.class);
     private final static EnumSet<ActionLogger.ActionType> ACTIONS_TO_ANALYZE = EnumSet.of(
-            ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL,
             ActionLogger.ActionType.PARAMETER_ADD,
+            ActionLogger.ActionType.PARAMETER_REMOVE,
+            ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL,
             ActionLogger.ActionType.PARAMETER_MODIFY_LINK,
             ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE,
-            ActionLogger.ActionType.PARAMETER_REMOVE,
             ActionLogger.ActionType.NODE_ADD,
             ActionLogger.ActionType.NODE_REMOVE);
     private List<LogEntry> logEntries;

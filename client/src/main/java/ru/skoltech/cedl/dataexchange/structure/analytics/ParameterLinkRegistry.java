@@ -28,6 +28,7 @@ import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
@@ -46,6 +47,8 @@ public class ParameterLinkRegistry {
 
     private UserRoleManagementService userRoleManagementService;
 
+    private ActionLogger actionLogger;
+
     private Map<String, Set<String>> valueLinks = new HashMap<>();
 
     private DependencyGraph dependencyGraph = new DependencyGraph();
@@ -55,6 +58,10 @@ public class ParameterLinkRegistry {
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
+    }
+
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     private static List<ModelNode> getModelNodes(SystemModel systemModel) {
@@ -250,7 +257,8 @@ public class ParameterLinkRegistry {
                         logger.info("updating sink '" + sink.getNodePath() + "' from source '" + source.getNodePath() + "'");
                         sink.setValue(source.getEffectiveValue());
                         sink.setUnit(source.getUnit());
-                        // TODO: notify UI ?
+                        // TODO: notify UI ?]
+                        actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_LINK, sink.getNodePath());
                     } else {
                         logger.error("model changed, sink '" + sink.getNodePath() + "' no longer referencing '" + source.getNodePath() + "'");
                     }

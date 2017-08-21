@@ -45,7 +45,9 @@
         <property name="fileStorageService" ref="fileStorageService" />
     </bean>
 
-    <bean id="modelUpdateService" class="ru.skoltech.cedl.dataexchange.service.impl.ModelUpdateServiceImpl" />
+    <bean id="modelUpdateService" class="ru.skoltech.cedl.dataexchange.service.impl.ModelUpdateServiceImpl">
+        <property name="actionLogger" ref="actionLogger" />
+    </bean>
 
     <bean id="differenceMergeService" class="ru.skoltech.cedl.dataexchange.service.impl.DifferenceMergeServiceImpl" >
         <property name="modelUpdateService" ref="modelUpdateService" />

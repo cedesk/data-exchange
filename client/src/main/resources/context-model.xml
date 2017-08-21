@@ -73,6 +73,7 @@
 
     <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry" >
         <property name="userRoleManagementService" ref="userRoleManagementService" />
+        <property name="actionLogger" ref="actionLogger" />
     </bean>
 
     <bean id="tradespaceModelBridge" class="ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge" scope="prototype">
