@@ -31,13 +31,30 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link RevisionEntityRepositoryCustom}
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public class RevisionEntityRepositoryImpl implements RevisionEntityRepositoryCustom {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Override
+    public <T> List<Pair<CustomRevisionEntity, RevisionType>> findTaggedRevisions(Long id, Class<T> entityClass) {
+        assert id != null;
+        final AuditReader reader = AuditReaderFactory.get(entityManager);
+
+        List revisions = reader.createQuery()
+                .forRevisionsOfEntity(entityClass, false, true)
+                .add(AuditEntity.id().eq(id))
+                .addOrder(AuditEntity.revisionNumber().desc())
+                .getResultList();
+
+        return ((List<Object[]>) revisions).stream()
+                .map(objects -> Pair.of((CustomRevisionEntity) objects[1], (RevisionType) objects[2]))
+                .filter(triple -> triple.getLeft().getTag() != null)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public CustomRevisionEntity lastCustomRevisionEntity(Long id, Class entityClass) {
@@ -67,23 +84,6 @@ public class RevisionEntityRepositoryImpl implements RevisionEntityRepositoryCus
                 .getSingleResult();
 
         return Pair.of((CustomRevisionEntity) array[1], (RevisionType) array[2]);
-    }
-
-    @Override
-    public <T> List<Pair<CustomRevisionEntity, RevisionType>> findTaggedRevisions(Long id, Class<T> entityClass) {
-        assert id != null;
-        final AuditReader reader = AuditReaderFactory.get(entityManager);
-
-        List revisions = reader.createQuery()
-                .forRevisionsOfEntity(entityClass, false, true)
-                .add(AuditEntity.id().eq(id))
-                .addOrder(AuditEntity.revisionNumber().desc())
-                .getResultList();
-
-        return ((List<Object[]>) revisions).stream()
-                .map(objects -> Pair.of((CustomRevisionEntity) objects[1], (RevisionType) objects[2]))
-                .filter(triple -> triple.getLeft().getTag() != null)
-                .collect(Collectors.toList());
     }
 
 }

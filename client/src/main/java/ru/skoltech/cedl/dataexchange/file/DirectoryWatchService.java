@@ -56,19 +56,19 @@ public interface DirectoryWatchService {
         }
 
         /**
-         * Called when the file is modified.
-         *
-         * @param modifiedFile The file path.
-         */
-        default void onFileModify(File modifiedFile) {
-        }
-
-        /**
          * Called when the file is deleted.
          *
          * @param deletedFile The file path.
          */
         default void onFileDelete(File deletedFile) {
+        }
+
+        /**
+         * Called when the file is modified.
+         *
+         * @param modifiedFile The file path.
+         */
+        default void onFileModify(File modifiedFile) {
         }
     }
 }

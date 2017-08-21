@@ -31,12 +31,12 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.ui.control.DiagramView;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.ui.control.DiagramView;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -49,7 +49,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for dependency checks.
- *
+ * <p>
  * Created by D.Knoll on 02.11.2015.
  */
 public class DependencyController implements Initializable {

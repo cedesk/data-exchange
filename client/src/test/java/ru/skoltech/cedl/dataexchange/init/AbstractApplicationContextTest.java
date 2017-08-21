@@ -28,14 +28,14 @@ import static ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializerT
 
 /**
  * Abstract class which holds all objects for testing in application context.
- *
+ * <p>
  * Created by Nikolay Groshkov on 30-Jun-17.
  */
 public abstract class AbstractApplicationContextTest {
 
+    protected static ApplicationContext context;
     private static File cedeskAppDir;
     private static File cedeskAppFile;
-    protected static ApplicationContext context;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -50,17 +50,17 @@ public abstract class AbstractApplicationContextTest {
         context = ApplicationContextInitializer.getInstance().getContext();
     }
 
-    @Before
-    public void before() {
+    @AfterClass
+    public static void afterClass() {
+        deleteApplicationSettings(cedeskAppDir, cedeskAppFile);
     }
 
     @After
     public void after() {
     }
 
-    @AfterClass
-    public static void afterClass() {
-        deleteApplicationSettings(cedeskAppDir, cedeskAppFile);
+    @Before
+    public void before() {
     }
 
 }

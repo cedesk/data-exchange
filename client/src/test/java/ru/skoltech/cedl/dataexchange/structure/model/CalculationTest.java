@@ -18,8 +18,8 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.junit.Assert;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Margin;
 import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
 

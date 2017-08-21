@@ -34,7 +34,7 @@ import static ru.skoltech.cedl.dataexchange.repository.jpa.UnitManagementReposit
 
 /**
  * Implementation of {@link UnitManagementService}.
- *
+ * <p>
  * Created by D.Knoll on 29.08.2015.
  */
 public class UnitManagementServiceImpl implements UnitManagementService {
@@ -42,10 +42,8 @@ public class UnitManagementServiceImpl implements UnitManagementService {
     private static final Logger logger = Logger.getLogger(UnitManagementServiceImpl.class);
 
     private final String UNIT_MANAGEMENT_RELATIVE_PATH = "units/unit-management.xml";
-
-    private FileStorageService fileStorageService;
-
     private final UnitManagementRepository unitManagementRepository;
+    private FileStorageService fileStorageService;
 
     @Autowired
     public UnitManagementServiceImpl(UnitManagementRepository unitManagementRepository) {
@@ -62,8 +60,30 @@ public class UnitManagementServiceImpl implements UnitManagementService {
     }
 
     @Override
-    public UnitManagement saveUnitManagement(UnitManagement unitManagement) {
-        return unitManagementRepository.saveAndFlush(unitManagement);
+    public UnitManagement loadDefaultUnitManagement() {
+        UnitManagement unitManagement = null;
+        try {
+            InputStream inputStream = ClientApplication.class.getResourceAsStream(UNIT_MANAGEMENT_RELATIVE_PATH);
+            unitManagement = fileStorageService.loadUnitManagement(inputStream);
+            unitManagement.setId(IDENTIFIER);
+        } catch (IOException e) {
+            logger.error("error loading unit management from file", e);
+        }
+
+        return unitManagement;
+    }
+
+    @Override
+    public Unit obtainUnitBySymbolOrName(UnitManagement unitManagement, String unitStr) {
+        List<Unit> units = unitManagement.getUnits().stream()
+                .filter(unit -> unitStr.equals(unit.getSymbol()) || unitStr.equals(unit.getName()))
+                .collect(Collectors.toList());
+        if (units.isEmpty()) {
+            return null;
+        } else if (units.size() > 1) {
+            logger.warn("unitManagement contains more than one units with same name or symbol: " + unitStr);
+        }
+        return units.get(0);
     }
 
     @Override
@@ -80,30 +100,7 @@ public class UnitManagementServiceImpl implements UnitManagementService {
     }
 
     @Override
-    public Unit obtainUnitBySymbolOrName(UnitManagement unitManagement, String unitStr) {
-        List<Unit> units = unitManagement.getUnits().stream()
-                .filter(unit -> unitStr.equals(unit.getSymbol()) || unitStr.equals(unit.getName()))
-                .collect(Collectors.toList());
-        if (units.isEmpty()) {
-            return null;
-        } else if (units.size() > 1) {
-            logger.warn("unitManagement contains more than one units with same name or symbol: " + unitStr);
-        }
-        return units.get(0);
-    }
-
-
-    @Override
-    public UnitManagement loadDefaultUnitManagement() {
-        UnitManagement unitManagement = null;
-        try {
-            InputStream inputStream = ClientApplication.class.getResourceAsStream(UNIT_MANAGEMENT_RELATIVE_PATH);
-            unitManagement = fileStorageService.loadUnitManagement(inputStream);
-            unitManagement.setId(IDENTIFIER);
-        } catch (IOException e) {
-            logger.error("error loading unit management from file", e);
-        }
-
-        return unitManagement;
+    public UnitManagement saveUnitManagement(UnitManagement unitManagement) {
+        return unitManagementRepository.saveAndFlush(unitManagement);
     }
 }

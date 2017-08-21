@@ -25,22 +25,26 @@
             font-size: 10pt;
             /*width: 280px;*/
         }
+
         h1 {
             font-size: 1.5em;
             margin-bottom: 0.2em;
             margin-top: 0.4em;
         }
+
         h2 {
             font-size: 1.3em;
             margin-bottom: 0.2em;
             margin-top: 0.4em;
         }
+
         h3 {
             font-size: 1.15em;
             font-style: italic;
             margin-bottom: 0.2em;
             margin-top: 0.4em;
         }
+
         img {
             /*float:right;*/
             width: 250px;
@@ -48,11 +52,11 @@
     </style>
     <script language="JavaScript">
         function toggle_visibility(id) {
-          var e = document.getElementById(id);
-          if(e.style.display == 'none')
-            e.style.display = 'block';
-          else
-            e.style.display = 'none';
+            var e = document.getElementById(id);
+            if (e.style.display == 'none')
+                e.style.display = 'block';
+            else
+                e.style.display = 'none';
         }
     </script>
 </head>
@@ -74,8 +78,10 @@
     </div>
 
     <h3>Systems Decomposition</h3>
-    <div>Based on the high-level functions the system has to fulfill, subsystems are identified and assigned to discipline
-        experts present in the team. The structure of the system is encoded and stored in a system model.</div>
+    <div>Based on the high-level functions the system has to fulfill, subsystems are identified and assigned to
+        discipline
+        experts present in the team. The structure of the system is encoded and stored in a system model.
+    </div>
 
     <h3>Connecting Subsystem Models</h3>
     <div>After each subsystem has defined it’s input and output parameters, the discipline expert together with the team
@@ -85,7 +91,8 @@
         and the value can be determined freely by the discipline expert. It also happens that more than one subsystem
         claims to produce a certain output, and it must be decided which discipline shall produce and own it and the
         other disciplines take it as an input. In this step the subsystem model interfaces are refined in order to be
-        able to interconnect them.</div>
+        able to interconnect them.
+    </div>
 
     <h3>Design Iterations</h3>
     <div>The core of the design study are the concurrent design iterations. The goal of each iteration is to consolidate
@@ -93,21 +100,25 @@
         or to the output values produced by other subsystems. Since dependency relationships of subsystems are
         transitive and can form cycles, the design of subsystems potentially needs to re-iterated. The process of a
         single design iteration is described in the next section. Throughout the design study an arbitrary number of
-        design iterations can occur, and they operate on a storage which keeps the state of the system model.</div>
+        design iterations can occur, and they operate on a storage which keeps the state of the system model.
+    </div>
 
     <h3>Compile Study Report</h3>
-    <div>In conclusion of a Phase A design study one or more resulting system designs, which were evaluated to satisfy the
+    <div>In conclusion of a Phase A design study one or more resulting system designs, which were evaluated to satisfy
+        the
         mission requirements need to be documented and characterized according to common or mission specific performance
         measures (e.g. mass, cost, risk, schedule). For the continuation of the project, in case of approval of the
         results of the design study, the system requirements contained in the documentation will serve as starting point
-        for the Phase B.</div>
+        for the Phase B.
+    </div>
 </div>
 
 <h2>Iteration Perspective <a href="#2" onclick="toggle_visibility('iteration_perspective');">&gt;&gt;</a></h2>
 <div id="iteration_perspective" style="display: block;">
     <img src="design-iteration.png" alt="Iteration Perspective"/>
     <div>From the dependencies among elements in system model a design structure matrix (DSM) can be derived.
-        Based on this DSM a clustering algorithms determines an optimal sequence for updating one subsystem after the other.
+        Based on this DSM a clustering algorithms determines an optimal sequence for updating one subsystem after the
+        other.
         Using this schedule one discipline is taken at a time and the responsible expert is asked to update his
         subsystem model. The internals of this action are described in a separate procedure in the next section. After
         that, depending on whether the subsystem’s output parameter values have changed, the schedule is updated or not.
@@ -115,7 +126,8 @@
         again. In case the update of a discipline model led to changes of subsystem interfaces and thereby also
         dependencies, the schedule needs to be recalculated. Once there are no more disciplines on the schedule, it
         means the integrated system models has converged and represents a feasible point design and the iteration is
-        finished.</div>
+        finished.
+    </div>
 </div>
 
 <h2>Discipline Perspective <a href="#3" onclick="toggle_visibility('discipline_perspective');">&gt;&gt;</a></h2>
@@ -126,7 +138,8 @@
         executes a calculation, runs a simulation, performs decisions based on prior knowledge or a combination of them.
         After that all the subsystem’s output parameters are updated. In parallel the expert checks the model for
         integrity, and in case additional input or output parameters are needed the interface is modified accordingly.
-        Changes to the parameters are reflected in the stored system model.</div>
+        Changes to the parameters are reflected in the stored system model.
+    </div>
 </div>
 
 </body>

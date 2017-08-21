@@ -133,27 +133,6 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
         }
     }
 
-    private ParameterUpdate getParameterUpdate(Project project, ParameterModel parameterModel, ExternalModelReference valueReference, ExternalModelEvaluator evaluator) throws ExternalModelException {
-        ParameterUpdate parameterUpdate = null;
-        String valueReferenceString = valueReference.toString();
-        String nodePath = parameterModel.getNodePath();
-        try {
-            Double value = evaluator.getValue(project, valueReference.getTarget());
-            if (Double.isNaN(value)) {
-                StatusLogger.getInstance().log("invalid value for parameter '" + nodePath + "' from '" + valueReferenceString + "'", true);
-            } else if (!Precision.equals(parameterModel.getValue(), value, 2)) {
-                parameterUpdate = new ParameterUpdate(parameterModel, value);
-            } else {
-                logger.debug("no change for " + parameterModel.getName() + " from " + valueReferenceString);
-            }
-        } catch (ExternalModelException e) {
-            StatusLogger.getInstance().log("unable to evaluate value for parameter '" + nodePath + "' from '" + valueReferenceString + "'", true);
-            actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, nodePath + "#" + valueReferenceString);
-            throw e;
-        }
-        return parameterUpdate;
-    }
-
     @Override
     public void applyParameterChangesToExternalModel(Project project, ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
@@ -177,5 +156,26 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
             }
         }
         exporter.flushModifications(project, externalModelFileWatcher);
+    }
+
+    private ParameterUpdate getParameterUpdate(Project project, ParameterModel parameterModel, ExternalModelReference valueReference, ExternalModelEvaluator evaluator) throws ExternalModelException {
+        ParameterUpdate parameterUpdate = null;
+        String valueReferenceString = valueReference.toString();
+        String nodePath = parameterModel.getNodePath();
+        try {
+            Double value = evaluator.getValue(project, valueReference.getTarget());
+            if (Double.isNaN(value)) {
+                StatusLogger.getInstance().log("invalid value for parameter '" + nodePath + "' from '" + valueReferenceString + "'", true);
+            } else if (!Precision.equals(parameterModel.getValue(), value, 2)) {
+                parameterUpdate = new ParameterUpdate(parameterModel, value);
+            } else {
+                logger.debug("no change for " + parameterModel.getName() + " from " + valueReferenceString);
+            }
+        } catch (ExternalModelException e) {
+            StatusLogger.getInstance().log("unable to evaluate value for parameter '" + nodePath + "' from '" + valueReferenceString + "'", true);
+            actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, nodePath + "#" + valueReferenceString);
+            throw e;
+        }
+        return parameterUpdate;
     }
 }

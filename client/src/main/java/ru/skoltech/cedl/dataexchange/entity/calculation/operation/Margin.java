@@ -24,13 +24,8 @@ public class Margin extends Operation {
     private static final String[] argNames = new String[]{"argument", "percentage"};
 
     @Override
-    public String name() {
-        return "Margin";
-    }
-
-    @Override
-    public String description() {
-        return "Adds a percentage of margin to the argument, given by the formula: argument * (1 + percentage)";
+    public double apply(double[] arguments) {
+        return arguments[0] * (1 + arguments[1]);
     }
 
     @Override
@@ -41,8 +36,8 @@ public class Margin extends Operation {
     }
 
     @Override
-    public int minArguments() {
-        return 2;
+    public String description() {
+        return "Adds a percentage of margin to the argument, given by the formula: argument * (1 + percentage)";
     }
 
     @Override
@@ -51,7 +46,12 @@ public class Margin extends Operation {
     }
 
     @Override
-    public double apply(double[] arguments) {
-        return arguments[0] * (1 + arguments[1]);
+    public int minArguments() {
+        return 2;
+    }
+
+    @Override
+    public String name() {
+        return "Margin";
     }
 }

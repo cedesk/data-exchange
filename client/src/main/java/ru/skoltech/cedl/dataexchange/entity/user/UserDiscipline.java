@@ -52,20 +52,20 @@ public class UserDiscipline {
         this.discipline = discipline;
     }
 
+    public Discipline getDiscipline() {
+        return discipline;
+    }
+
+    public void setDiscipline(Discipline discipline) {
+        this.discipline = discipline;
+    }
+
     public long getId() {
         return id;
     }
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public UserRoleManagement getUserRoleManagement() {
-        return userRoleManagement;
-    }
-
-    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
-        this.userRoleManagement = userRoleManagement;
     }
 
     public User getUser() {
@@ -76,12 +76,12 @@ public class UserDiscipline {
         this.user = user;
     }
 
-    public Discipline getDiscipline() {
-        return discipline;
+    public UserRoleManagement getUserRoleManagement() {
+        return userRoleManagement;
     }
 
-    public void setDiscipline(Discipline discipline) {
-        this.discipline = discipline;
+    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
+        this.userRoleManagement = userRoleManagement;
     }
 
     @Override

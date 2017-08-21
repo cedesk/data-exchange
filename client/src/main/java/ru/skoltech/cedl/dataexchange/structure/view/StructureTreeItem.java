@@ -52,43 +52,6 @@ public class StructureTreeItem extends TreeItem<ModelNode> {
         setFlashOverlay(false);
     }
 
-    public ModelNode getRemoteValue() {
-        return remoteValue;
-    }
-
-    public void setRemoteValue(ModelNode remoteValue) {
-        this.remoteValue = remoteValue;
-    }
-
-    private void updateIcon() {
-        boolean overlaysNeeded = false;
-        for (TreeItem<ModelNode> childNode : getChildren()) {
-            overlaysNeeded = ((StructureTreeItem) childNode).hasFlashOverlay();
-            if (overlaysNeeded) break;
-        }
-        ModelNode localModelNode = getValue();
-        ModelNode remoteModelNode = getRemoteValue();
-        overlaysNeeded = overlaysNeeded || !localModelNode.equalsFlat(remoteModelNode);
-        setFlashOverlay(overlaysNeeded);
-    }
-
-    private boolean hasRemoteDifference() {
-        if (remoteValue != null) {
-            return !getValue().equals(remoteValue);
-        }
-        return true;
-    }
-
-    public void setFlashOverlay(boolean overlayFlash) {
-        if (getGraphic() != null && hasFlashOverlay() == overlayFlash) return;
-        IconType iconType = getIconTypeForModel();
-        setGraphic(getImageView(iconType, overlayFlash));
-    }
-
-    public boolean hasFlashOverlay() {
-        return getGraphic() instanceof Group;
-    }
-
     private IconType getIconTypeForModel() {
         ModelNode model = getValue();
         if (model instanceof SystemModel) {
@@ -103,6 +66,30 @@ public class StructureTreeItem extends TreeItem<ModelNode> {
             logger.fatal("UNKNOWN model encountered: " + model.getName() + " (" + model.getClass().getName() + "");
             return null;
         }
+    }
+
+    public ModelNode getRemoteValue() {
+        return remoteValue;
+    }
+
+    public void setRemoteValue(ModelNode remoteValue) {
+        this.remoteValue = remoteValue;
+    }
+
+    public void setFlashOverlay(boolean overlayFlash) {
+        if (getGraphic() != null && hasFlashOverlay() == overlayFlash) return;
+        IconType iconType = getIconTypeForModel();
+        setGraphic(getImageView(iconType, overlayFlash));
+    }
+
+    public boolean hasFlashOverlay() {
+        return getGraphic() instanceof Group;
+    }
+
+    public void updateValues(ModelNode localModel, ModelNode remoteModel) {
+        setValue(localModel);
+        setRemoteValue(remoteModel);
+        //TODO: updateIcon();
     }
 
     private Node getImageView(IconType iconType, boolean overlayFlash) {
@@ -122,9 +109,22 @@ public class StructureTreeItem extends TreeItem<ModelNode> {
         }
     }
 
-    public void updateValues(ModelNode localModel, ModelNode remoteModel) {
-        setValue(localModel);
-        setRemoteValue(remoteModel);
-        //TODO: updateIcon();
+    private boolean hasRemoteDifference() {
+        if (remoteValue != null) {
+            return !getValue().equals(remoteValue);
+        }
+        return true;
+    }
+
+    private void updateIcon() {
+        boolean overlaysNeeded = false;
+        for (TreeItem<ModelNode> childNode : getChildren()) {
+            overlaysNeeded = ((StructureTreeItem) childNode).hasFlashOverlay();
+            if (overlaysNeeded) break;
+        }
+        ModelNode localModelNode = getValue();
+        ModelNode remoteModelNode = getRemoteValue();
+        overlaysNeeded = overlaysNeeded || !localModelNode.equalsFlat(remoteModelNode);
+        setFlashOverlay(overlaysNeeded);
     }
 }

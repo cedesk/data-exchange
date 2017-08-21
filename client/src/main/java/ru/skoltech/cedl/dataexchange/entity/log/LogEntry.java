@@ -56,6 +56,30 @@ public class LogEntry implements Serializable {
         this.studyId = studyId;
     }
 
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Id
     @GeneratedValue
     public long getId() {
@@ -70,45 +94,13 @@ public class LogEntry implements Serializable {
         return logTimestamp;
     }
 
-    @Transient
-    public String getLogTimestampFormatted() {
-        return Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(logTimestamp));
-    }
-
     public void setLogTimestamp(Long logTimestamp) {
         this.logTimestamp = logTimestamp;
     }
 
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public String getClient() {
-        return client;
-    }
-
-    public void setClient(String client) {
-        this.client = client;
-    }
-
-    public String getAction() {
-        return action;
-    }
-
-    public void setAction(String action) {
-        this.action = action;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    @Transient
+    public String getLogTimestampFormatted() {
+        return Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(logTimestamp));
     }
 
     public Long getStudyId() {
@@ -117,6 +109,14 @@ public class LogEntry implements Serializable {
 
     public void setStudyId(Long studyId) {
         this.studyId = studyId;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
     }
 
     @Override

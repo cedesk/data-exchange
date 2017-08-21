@@ -29,7 +29,7 @@ package ru.skoltech.cedl.dataexchange.init;
  * <p>
  * To save all changed user specific properties (by use of <i>.store*()</i> methods) method
  * {@link ApplicationSettings#save()} must be performed thereafter.
- *
+ * <p>
  * Created by Nikolay Groshkov on 05-Aug-17.
  */
 public interface ApplicationSettings {
@@ -95,20 +95,6 @@ public interface ApplicationSettings {
     String STUDY_MODEL_DEPTH = "study.model.depth";
 
     /**
-     * Retrieve path to directory with actual <i>application.settings</i> file.
-     *
-     * @return path to directory with actual <i>application.settings</i> file
-     */
-    String getCedeskAppDir();
-
-    /**
-     * Retrieve name of actual <i>application.settings</i> file.
-     *
-     * @return name of actual <i>application.settings</i> file
-     */
-    String getCedeskAppFile();
-
-    /**
      * Retrieve application build time.
      * It is base (stored in <i>cedesk.properties</i>) property.
      *
@@ -133,12 +119,50 @@ public interface ApplicationSettings {
     String getApplicationVersion();
 
     /**
+     * Retrieve path to directory with actual <i>application.settings</i> file.
+     *
+     * @return path to directory with actual <i>application.settings</i> file
+     */
+    String getCedeskAppDir();
+
+    /**
+     * Retrieve name of actual <i>application.settings</i> file.
+     *
+     * @return name of actual <i>application.settings</i> file
+     */
+    String getCedeskAppFile();
+
+    /**
      * Retrieve comment header for specific user properties file (<i>application.settings</i>).
      * It is base (stored in <i>cedesk.properties</i>) property.
      *
      * @return comment header for specific user properties file
      */
     String getCedeskAppFileComment();
+
+    /**
+     * Retrieve default project name for import on startup.
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return default project name for import on startup.
+     */
+    String getDefaultProjectImportName();
+
+    /**
+     * Retrieve default last time loaded project name.
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return default last time loaded project name
+     */
+    String getDefaultProjectLastName();
+
+    /**
+     * Retrieve default last time loaded project user name.
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return default last time loaded project user name
+     */
+    String getDefaultProjectUserName();
 
     /**
      * Retrieve default repository hostname.
@@ -149,12 +173,12 @@ public interface ApplicationSettings {
     String getDefaultRepositoryHost();
 
     /**
-     * Retrieve default setting for repository schema creation on application startup.
+     * Retrieve default repository password for provided default user.
      * It is base (stored in <i>cedesk.properties</i>) property.
      *
-     * @return default setting for repository schema creation on application startup
+     * @return default repository password for provided default user
      */
-    boolean isDefaultRepositorySchemaCreate();
+    String getDefaultRepositoryPassword();
 
     /**
      * Retrieve default repository schema name.
@@ -173,166 +197,12 @@ public interface ApplicationSettings {
     String getDefaultRepositoryUser();
 
     /**
-     * Retrieve default repository password for provided default user.
-     * It is base (stored in <i>cedesk.properties</i>) property.
-     *
-     * @return default repository password for provided default user
-     */
-    String getDefaultRepositoryPassword();
-
-    /**
-     * Retrieve default setting runtime repository synchronization.
-     * It is base (stored in <i>cedesk.properties</i>) property.
-     *
-     * @return default setting runtime repository synchronization
-     */
-    boolean isDefaultRepositoryWatcherAutosync();
-
-    /**
-     * Retrieve default setting for autoload last time loaded project on startup.
-     * It is base (stored in <i>cedesk.properties</i>) property.
-     *
-     * @return default setting for autoload last time loaded project on startup
-     */
-    boolean isDefaultProjectLastAutoload();
-
-    /**
-     * Retrieve default last time loaded project name.
-     * It is base (stored in <i>cedesk.properties</i>) property.
-     *
-     * @return default last time loaded project name
-     */
-    String getDefaultProjectLastName();
-
-    /**
-     * Retrieve default setting for usage OS user name as project user.
-     * It is base (stored in <i>cedesk.properties</i>) property.
-     *
-     * @return default setting for usage OS user name as project user
-     */
-    boolean isDefaultProjectUseOsUser();
-
-    /**
-     * Retrieve default last time loaded project user name.
-     * It is base (stored in <i>cedesk.properties</i>) property.
-     *
-     * @return default last time loaded project user name
-     */
-    String getDefaultProjectUserName();
-
-    /**
-     * Retrieve default project name for import on startup.
-     * It is base (stored in <i>cedesk.properties</i>) property.
-     *
-     * @return default project name for import on startup.
-     */
-    String getDefaultProjectImportName();
-
-    /**
      * Retrieve default study model depth.
      * It is base (stored in <i>cedesk.properties</i>) property.
      *
      * @return default study model depth
      */
     String getDefaultStudyModelDepth();
-
-    /**
-     * Retrieve repository JDBC url pattern (with according places host and schema name replacements).
-     * It is base (stored in <i>cedesk.properties</i>) property.
-     *
-     * @return pattern of repository JDBC url
-     */
-    String getRepositoryJdbcUrlPattern();
-
-    /**
-     * Retrieve current repository schema version.
-     * It is base (stored in <i>cedesk.properties</i>) property.
-     *
-     * @return current repository schema version
-     */
-    String getRepositorySchemaVersion();
-
-
-    //--------------------------------------
-    /**
-     * Retrieve current repository hostname.
-     * It is user specific (stored in <i>application.settings</i>) property.
-     *
-     * @return current repository hostname
-     */
-    String getRepositoryHost();
-
-    /**
-     * Retrieve current setting for repository schema creation on application startup.
-     * It is user specific (stored in <i>application.settings</i>) property.
-     *
-     * @return current setting for repository schema creation on application startup
-     */
-    boolean isRepositorySchemaCreate();
-
-    /**
-     * Retrieve current repository schema name.
-     * It is user specific (stored in <i>application.settings</i>) property.
-     *
-     * @return current repository schema name.
-     */
-    String getRepositorySchemaName();
-
-    /**
-     * Retrieve current repository user name.
-     * It is user specific (stored in <i>application.settings</i>) property.
-     *
-     * @return current repository user name
-     */
-    String getRepositoryUser();
-
-    /**
-     * Retrieve current repository password for provided default user.
-     * It is user specific (stored in <i>application.settings</i>) property.
-     *
-     * @return current repository password for provided default user
-     */
-    String getRepositoryPassword();
-
-    /**
-     * Retrieve current setting runtime repository synchronization.
-     * It is user specific (stored in <i>application.settings</i>) property.
-     *
-     * @return current setting runtime repository synchronization
-     */
-    boolean isRepositoryWatcherAutosync();
-
-    /**
-     * Retrieve current setting for autoload last time loaded project on startup.
-     * It is user specific (stored in <i>application.settings</i>) property.
-     *
-     * @return current setting for autoload last time loaded project on startup
-     */
-    boolean isProjectLastAutoload();
-
-    /**
-     * Retrieve current last time loaded project name.
-     * It is user specific (stored in <i>application.settings</i>) property.
-     *
-     * @return current last time loaded project name
-     */
-    String getProjectLastName();
-
-    /**
-     * Retrieve current setting for usage OS user name as project user.
-     * It is user specific (stored in <i>application.settings</i>) property.
-     *
-     * @return current setting for usage OS user name as project user
-     */
-    boolean isProjectUseOsUser();
-
-    /**
-     * Retrieve current last time loaded project user name.
-     * It is user specific (stored in <i>application.settings</i>) property.
-     *
-     * @return current last time loaded project user name
-     */
-    String getProjectUserName();
 
     /**
      * Retrieve current project name for import on startup.
@@ -343,6 +213,73 @@ public interface ApplicationSettings {
     String getProjectImportName();
 
     /**
+     * Retrieve current last time loaded project name.
+     * It is user specific (stored in <i>application.settings</i>) property.
+     *
+     * @return current last time loaded project name
+     */
+    String getProjectLastName();
+
+    /**
+     * Retrieve current last time loaded project user name.
+     * It is user specific (stored in <i>application.settings</i>) property.
+     *
+     * @return current last time loaded project user name
+     */
+    String getProjectUserName();
+
+    /**
+     * Retrieve current repository hostname.
+     * It is user specific (stored in <i>application.settings</i>) property.
+     *
+     * @return current repository hostname
+     */
+    String getRepositoryHost();
+
+    /**
+     * Retrieve repository JDBC url pattern (with according places host and schema name replacements).
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return pattern of repository JDBC url
+     */
+    String getRepositoryJdbcUrlPattern();
+
+    /**
+     * Retrieve current repository password for provided default user.
+     * It is user specific (stored in <i>application.settings</i>) property.
+     *
+     * @return current repository password for provided default user
+     */
+    String getRepositoryPassword();
+
+
+    //--------------------------------------
+
+    /**
+     * Retrieve current repository schema name.
+     * It is user specific (stored in <i>application.settings</i>) property.
+     *
+     * @return current repository schema name.
+     */
+    String getRepositorySchemaName();
+
+    /**
+     * Retrieve current repository schema version.
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return current repository schema version
+     */
+    String getRepositorySchemaVersion();
+
+    /**
+     * Retrieve current repository user name.
+     * It is user specific (stored in <i>application.settings</i>) property.
+     *
+     * @return current repository user name
+     */
+    String getRepositoryUser();
+
+    /**
      * Retrieve current study model depth.
      * It is user specific (stored in <i>application.settings</i>) property.
      *
@@ -350,112 +287,96 @@ public interface ApplicationSettings {
      */
     String getStudyModelDepth();
 
+    /**
+     * Retrieve default setting for autoload last time loaded project on startup.
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return default setting for autoload last time loaded project on startup
+     */
+    boolean isDefaultProjectLastAutoload();
+
+    /**
+     * Retrieve default setting for usage OS user name as project user.
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return default setting for usage OS user name as project user
+     */
+    boolean isDefaultProjectUseOsUser();
+
+    /**
+     * Retrieve default setting for repository schema creation on application startup.
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return default setting for repository schema creation on application startup
+     */
+    boolean isDefaultRepositorySchemaCreate();
+
+    /**
+     * Retrieve default setting runtime repository synchronization.
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return default setting runtime repository synchronization
+     */
+    boolean isDefaultRepositoryWatcherAutosync();
+
+    /**
+     * Retrieve current setting for autoload last time loaded project on startup.
+     * It is user specific (stored in <i>application.settings</i>) property.
+     *
+     * @return current setting for autoload last time loaded project on startup
+     */
+    boolean isProjectLastAutoload();
+
+    /**
+     * Retrieve current setting for usage OS user name as project user.
+     * It is user specific (stored in <i>application.settings</i>) property.
+     *
+     * @return current setting for usage OS user name as project user
+     */
+    boolean isProjectUseOsUser();
+
+    /**
+     * Retrieve current setting for repository schema creation on application startup.
+     * It is user specific (stored in <i>application.settings</i>) property.
+     *
+     * @return current setting for repository schema creation on application startup
+     */
+    boolean isRepositorySchemaCreate();
+
+    /**
+     * Retrieve current setting runtime repository synchronization.
+     * It is user specific (stored in <i>application.settings</i>) property.
+     *
+     * @return current setting runtime repository synchronization
+     */
+    boolean isRepositoryWatcherAutosync();
+
 
     //-------------------------------------
+
     /**
-     * Store a new value of current repository hostname.
+     * Save all currently stored user specific properties in the <i>application.settings</i>.
+     * This method always must be performed after change of of properties if its actual storage required.
+     */
+    void save();
+
+    /**
+     * Store a new value of current project name for import on startup.
      * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
      * To have new property saved in the file(<i>application.setting</i>)
      * method {@link ApplicationSettings#save()} must be performed thereafter.
      */
-    void storeRepositoryHost();
+    void storeProjectImportName();
 
     /**
-     * Store a new value of current repository hostname.
+     * Store a new value of current project name for import on startup.
      * To have new property saved in the file(<i>application.setting</i>)
      * method {@link ApplicationSettings#save()} must be performed thereafter.
      *
-     * @param repositoryHost new value for current repository hostname to store
+     * @param projectImportName new value for current project name for import
+     *                          on startup to store
      */
-    void storeRepositoryHost(String repositoryHost);
-
-    /**
-     * Store a new value of current setting for repository schema creation on application startup.
-     * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
-     * To have new property saved in the file(<i>application.setting</i>)
-     * method {@link ApplicationSettings#save()} must be performed thereafter.
-     */
-    void storeRepositorySchemaCreate();
-
-    /**
-     * Store a new value of current setting for repository schema creation on application startup.
-     * To have new property saved in the file(<i>application.setting</i>)
-     * method {@link ApplicationSettings#save()} must be performed thereafter.
-     *
-     * @param repositorySchemaCreate new value for current setting for repository schema creation
-     *                               on application startup to store
-     */
-    void storeRepositorySchemaCreate(boolean repositorySchemaCreate);
-
-    /**
-     * Store a new value of current repository schema name.
-     * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
-     * To have new property saved in the file(<i>application.setting</i>)
-     * method {@link ApplicationSettings#save()} must be performed thereafter.
-     */
-    void storeRepositorySchemaName();
-
-    /**
-     * Store a new value of current repository schema name.
-     * To have new property saved in the file(<i>application.setting</i>)
-     * method {@link ApplicationSettings#save()} must be performed thereafter.
-     *
-     * @param repositorySchemaName new value for current  repository schema name to store
-     */
-    void storeRepositorySchemaName(String repositorySchemaName);
-
-    /**
-     * Store a new value of current repository user name.
-     * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
-     * To have new property saved in the file(<i>application.setting</i>)
-     * method {@link ApplicationSettings#save()} must be performed thereafter.
-     */
-    void storeRepositoryUser();
-
-    /**
-     * Store a new value of current repository user name.
-     * To have new property saved in the file(<i>application.setting</i>)
-     * method {@link ApplicationSettings#save()} must be performed thereafter.
-     *
-     * @param repositoryUser new value for current repository user name to store
-     */
-    void storeRepositoryUser(String repositoryUser);
-
-    /**
-     * Store a new value of current repository password for provided default user.
-     * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
-     * To have new property saved in the file(<i>application.setting</i>)
-     * method {@link ApplicationSettings#save()} must be performed thereafter.
-     */
-    void storeRepositoryPassword();
-
-    /**
-     * Store a new value of current repository password for provided default user.
-     * To have new property saved in the file(<i>application.setting</i>)
-     * method {@link ApplicationSettings#save()} must be performed thereafter.
-     *
-     * @param repositoryPassword new value for current repository password for provided
-     *                           default user to store
-     */
-    void storeRepositoryPassword(String repositoryPassword);
-
-    /**
-     * Store a new value of current setting runtime repository synchronization.
-     * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
-     * To have new property saved in the file(<i>application.setting</i>)
-     * method {@link ApplicationSettings#save()} must be performed thereafter.
-     */
-    void storeRepositoryWatcherAutosync();
-
-    /**
-     * Store a new value of current setting runtime repository synchronization.
-     * To have new property saved in the file(<i>application.setting</i>)
-     * method {@link ApplicationSettings#save()} must be performed thereafter.
-     *
-     * @param repositoryWatcherAutosync new value for current  setting runtime
-     *                                  repository synchronization to store
-     */
-    void storeRepositoryWatcherAutosync(boolean repositoryWatcherAutosync);
+    void storeProjectImportName(String projectImportName);
 
     /**
      * Store a new value of current setting for autoload last time loaded project on startup.
@@ -528,22 +449,109 @@ public interface ApplicationSettings {
     void storeProjectUserName(String projectUserName);
 
     /**
-     * Store a new value of current project name for import on startup.
+     * Store a new value of current repository hostname.
      * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
      * To have new property saved in the file(<i>application.setting</i>)
      * method {@link ApplicationSettings#save()} must be performed thereafter.
      */
-    void storeProjectImportName();
+    void storeRepositoryHost();
 
     /**
-     * Store a new value of current project name for import on startup.
+     * Store a new value of current repository hostname.
      * To have new property saved in the file(<i>application.setting</i>)
      * method {@link ApplicationSettings#save()} must be performed thereafter.
      *
-     * @param projectImportName new value for current project name for import
-     *                          on startup to store
+     * @param repositoryHost new value for current repository hostname to store
      */
-    void storeProjectImportName(String projectImportName);
+    void storeRepositoryHost(String repositoryHost);
+
+    /**
+     * Store a new value of current repository password for provided default user.
+     * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
+     * To have new property saved in the file(<i>application.setting</i>)
+     * method {@link ApplicationSettings#save()} must be performed thereafter.
+     */
+    void storeRepositoryPassword();
+
+    /**
+     * Store a new value of current repository password for provided default user.
+     * To have new property saved in the file(<i>application.setting</i>)
+     * method {@link ApplicationSettings#save()} must be performed thereafter.
+     *
+     * @param repositoryPassword new value for current repository password for provided
+     *                           default user to store
+     */
+    void storeRepositoryPassword(String repositoryPassword);
+
+    /**
+     * Store a new value of current setting for repository schema creation on application startup.
+     * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
+     * To have new property saved in the file(<i>application.setting</i>)
+     * method {@link ApplicationSettings#save()} must be performed thereafter.
+     */
+    void storeRepositorySchemaCreate();
+
+    /**
+     * Store a new value of current setting for repository schema creation on application startup.
+     * To have new property saved in the file(<i>application.setting</i>)
+     * method {@link ApplicationSettings#save()} must be performed thereafter.
+     *
+     * @param repositorySchemaCreate new value for current setting for repository schema creation
+     *                               on application startup to store
+     */
+    void storeRepositorySchemaCreate(boolean repositorySchemaCreate);
+
+    /**
+     * Store a new value of current repository schema name.
+     * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
+     * To have new property saved in the file(<i>application.setting</i>)
+     * method {@link ApplicationSettings#save()} must be performed thereafter.
+     */
+    void storeRepositorySchemaName();
+
+    /**
+     * Store a new value of current repository schema name.
+     * To have new property saved in the file(<i>application.setting</i>)
+     * method {@link ApplicationSettings#save()} must be performed thereafter.
+     *
+     * @param repositorySchemaName new value for current  repository schema name to store
+     */
+    void storeRepositorySchemaName(String repositorySchemaName);
+
+    /**
+     * Store a new value of current repository user name.
+     * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
+     * To have new property saved in the file(<i>application.setting</i>)
+     * method {@link ApplicationSettings#save()} must be performed thereafter.
+     */
+    void storeRepositoryUser();
+
+    /**
+     * Store a new value of current repository user name.
+     * To have new property saved in the file(<i>application.setting</i>)
+     * method {@link ApplicationSettings#save()} must be performed thereafter.
+     *
+     * @param repositoryUser new value for current repository user name to store
+     */
+    void storeRepositoryUser(String repositoryUser);
+
+    /**
+     * Store a new value of current setting runtime repository synchronization.
+     * Use default value (from base, i.e <i>cedesk.properties</i>, properties) for it.
+     * To have new property saved in the file(<i>application.setting</i>)
+     * method {@link ApplicationSettings#save()} must be performed thereafter.
+     */
+    void storeRepositoryWatcherAutosync();
+
+    /**
+     * Store a new value of current setting runtime repository synchronization.
+     * To have new property saved in the file(<i>application.setting</i>)
+     * method {@link ApplicationSettings#save()} must be performed thereafter.
+     *
+     * @param repositoryWatcherAutosync new value for current  setting runtime
+     *                                  repository synchronization to store
+     */
+    void storeRepositoryWatcherAutosync(boolean repositoryWatcherAutosync);
 
     /**
      * Store a new value of current study model depth.
@@ -561,10 +569,4 @@ public interface ApplicationSettings {
      * @param studyModelDepth new value for current study model depth. to store
      */
     void storeStudyModelDepth(String studyModelDepth);
-
-    /**
-     * Save all currently stored user specific properties in the <i>application.settings</i>.
-     * This method always must be performed after change of of properties if its actual storage required.
-     */
-    void save();
 }

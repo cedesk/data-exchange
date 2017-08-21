@@ -18,7 +18,9 @@ package ru.skoltech.cedl.dataexchange.entity.user;
 
 import org.hibernate.envers.Audited;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -56,22 +58,6 @@ public class User implements Comparable<User> {
         this.salt = salt;
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
     public String getFullName() {
         return fullName;
     }
@@ -80,12 +66,12 @@ public class User implements Comparable<User> {
         this.fullName = fullName;
     }
 
-    public String getSalt() {
-        return salt;
+    public long getId() {
+        return id;
     }
 
-    public void setSalt(String salt) {
-        this.salt = salt;
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getPasswordHash() {
@@ -96,15 +82,20 @@ public class User implements Comparable<User> {
         this.passwordHash = passwordHash;
     }
 
-    /**
-     * @return fullname if present, otherwise username
-     */
-    public String name() {
-        if (fullName != null && !fullName.isEmpty()) {
-            return fullName;
-        } else {
-            return userName;
-        }
+    public String getSalt() {
+        return salt;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     @Override
@@ -132,6 +123,17 @@ public class User implements Comparable<User> {
         result = 31 * result + (salt != null ? salt.hashCode() : 0);
         result = 31 * result + (passwordHash != null ? passwordHash.hashCode() : 0);
         return result;
+    }
+
+    /**
+     * @return fullname if present, otherwise username
+     */
+    public String name() {
+        if (fullName != null && !fullName.isEmpty()) {
+            return fullName;
+        } else {
+            return userName;
+        }
     }
 
     @Override

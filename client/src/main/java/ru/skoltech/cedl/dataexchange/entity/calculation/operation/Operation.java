@@ -33,28 +33,28 @@ import java.io.Serializable;
 @XmlSeeAlso({Sum.class, Margin.class, Min.class, Max.class})
 public abstract class Operation implements Comparable<Operation>, Serializable {
 
-    public abstract String name();
-
-    public abstract String description();
+    public abstract double apply(double[] argumentValues);
 
     public abstract String argumentName(int index);
-
-    public abstract int minArguments();
-
-    public abstract int maxArguments();
-
-    public abstract double apply(double[] argumentValues);
 
     @Override
     public int compareTo(Operation o) {
         return name().compareTo(o.name());
     }
 
+    public abstract String description();
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         return (o != null && getClass() == o.getClass());
     }
+
+    public abstract int maxArguments();
+
+    public abstract int minArguments();
+
+    public abstract String name();
 
     @Override
     public String toString() {

@@ -19,11 +19,6 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.service.UserManagementService;
-import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
-import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
-import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.entity.model.ElementModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
@@ -31,6 +26,11 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.service.UserManagementService;
+import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
+import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
 /**
  * Created by D.Knoll on 28.05.2015.

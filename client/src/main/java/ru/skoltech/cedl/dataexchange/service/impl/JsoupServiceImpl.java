@@ -27,7 +27,7 @@ import java.nio.charset.Charset;
 
 /**
  * Implementation of {@link JsoupService}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 19-Jul-17.
  */
 public class JsoupServiceImpl implements JsoupService {
@@ -35,7 +35,7 @@ public class JsoupServiceImpl implements JsoupService {
     private static final int TIMEOUT_MILLIS = 10000;
 
     @Override
-    public Document jsoupParse(URL url) throws IOException{
+    public Document jsoupParse(URL url) throws IOException {
         return Jsoup.parse(url, TIMEOUT_MILLIS);
     }
 

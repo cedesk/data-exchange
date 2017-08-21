@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for reference selector.
- *
+ * <p>
  * Created by dknoll on 01/07/15.
  */
 public class ReferenceSelectorController implements Initializable, Displayable, Applicable {
@@ -93,8 +93,70 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
         this.externalModels = externalModels;
     }
 
+    private List<String> getSheetNames() {
+        List<String> sheetNames = new LinkedList<>();
+        try {
+            ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
+            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
+            sheetNames = WorkbookFactory.getSheetNames(inputStream, externalModel.getName());
+            Predicate<String> nameTest = SHEET_NAME_PATTERN.asPredicate();
+            List<String> validSheets = new ArrayList<>(sheetNames.size());
+            List<String> invalidSheets = new ArrayList<>(sheetNames.size());
+            for (String sname : sheetNames) {
+                if (nameTest.test(sname)) {
+                    validSheets.add(sname);
+                } else {
+                    invalidSheets.add(sname);
+                }
+            }
+            if (invalidSheets.size() > 0) {
+                String invalidSheetNames = invalidSheets.stream().collect(Collectors.joining(","));
+                Dialogues.showWarning("Invalid sheet name found in external model",
+                        "The sheets '" + invalidSheetNames + "' can not be referenced. Make sure they are named with latin characters and numbers.");
+            }
+            sheetNames = validSheets;
+            inputStream.close();
+        } catch (IOException | ExternalModelException e) {
+            Dialogues.showWarning("No sheets found in external model.", "This external model could not be opened to extract sheets.");
+            logger.warn("This external model could not be opened to extract sheets.", e);
+        }
+        return sheetNames;
+    }
+
+    @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void apply() {
+        this.chooseSelectedCell();
+        if (applyEventHandler != null) {
+            Event event = new Event(this.reference, null, null);
+            applyEventHandler.handle(event);
+        }
+        this.close();
+    }
+
+    public void chooseSelectedCell() {
+        TablePosition focusedCell = spreadsheetView.getSelectionModel().getFocusedCell();
+        if (focusedCell != null && focusedCell.getRow() >= 0) {
+            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(sheetChooser.getValue(), focusedCell);
+            reference = new ExternalModelReference(externalModel, coordinates.toString());
+            referenceText.textProperty().setValue(reference.toString());
+        }
+    }
+
+    public void close() {
+        ownerStage.close();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
     }
 
     @Override
@@ -125,7 +187,7 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
                 referenceText.textProperty().setValue(reference.toString());
                 List<String> sheetNames = getSheetNames();
                 sheetChooser.setItems(FXCollections.observableArrayList(sheetNames));
-                if(sheetNames.isEmpty()) {
+                if (sheetNames.isEmpty()) {
                     clearGrid();
                 }
             }
@@ -165,55 +227,6 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
         }
     }
 
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    @Override
-    public void setOnApply(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
-    }
-
-    private List<String> getSheetNames() {
-        List<String> sheetNames = new LinkedList<>();
-        try {
-            ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
-            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
-            sheetNames = WorkbookFactory.getSheetNames(inputStream, externalModel.getName());
-            Predicate<String> nameTest = SHEET_NAME_PATTERN.asPredicate();
-            List<String> validSheets = new ArrayList<>(sheetNames.size());
-            List<String> invalidSheets = new ArrayList<>(sheetNames.size());
-            for (String sname : sheetNames) {
-                if (nameTest.test(sname)) {
-                    validSheets.add(sname);
-                } else {
-                    invalidSheets.add(sname);
-                }
-            }
-            if (invalidSheets.size() > 0) {
-                String invalidSheetNames = invalidSheets.stream().collect(Collectors.joining(","));
-                Dialogues.showWarning("Invalid sheet name found in external model",
-                        "The sheets '" + invalidSheetNames + "' can not be referenced. Make sure they are named with latin characters and numbers.");
-            }
-            sheetNames = validSheets;
-            inputStream.close();
-        } catch (IOException | ExternalModelException e) {
-            Dialogues.showWarning("No sheets found in external model.", "This external model could not be opened to extract sheets.");
-            logger.warn("This external model could not be opened to extract sheets.", e);
-        }
-        return sheetNames;
-    }
-
-    public void chooseSelectedCell() {
-        TablePosition focusedCell = spreadsheetView.getSelectionModel().getFocusedCell();
-        if (focusedCell != null && focusedCell.getRow() >= 0) {
-            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(sheetChooser.getValue(), focusedCell);
-            reference = new ExternalModelReference(externalModel, coordinates.toString());
-            referenceText.textProperty().setValue(reference.toString());
-        }
-    }
-
     private void clearGrid() {
         spreadsheetView.setGrid(new GridBase(0, 0));
     }
@@ -244,18 +257,5 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
         } catch (Exception ex) {
             logger.error("Error reading external model spreadsheet.", ex);
         }
-    }
-
-    public void apply() {
-        this.chooseSelectedCell();
-        if (applyEventHandler != null) {
-            Event event = new Event(this.reference, null, null);
-            applyEventHandler.handle(event);
-        }
-        this.close();
-    }
-
-    public void close() {
-        ownerStage.close();
     }
 }

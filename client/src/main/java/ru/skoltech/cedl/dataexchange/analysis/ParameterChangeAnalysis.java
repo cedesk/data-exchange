@@ -34,10 +34,6 @@ public class ParameterChangeAnalysis {
         analyse();
     }
 
-    public List<ParameterChange> getParameterChangeList() {
-        return parameterChangeList;
-    }
-
     public MultiValuedMap<Long, Long> getCausalConnections() {
         return causalConnections;
     }
@@ -46,18 +42,8 @@ public class ParameterChangeAnalysis {
         return nodeChanges;
     }
 
-    private String format(ParameterChange change) {
-        return String.format("[%d]%s::%s", change.parameterId, change.nodeName, change.parameterName);
-    }
-
-    private void graphAddEdge(
-            ParameterChange sourceChange, ParameterChange targetChange,
-            ChangeCausality changeCausality) {
-        String srcPar = format(sourceChange); //sourceChange.parameterId.toString();
-        String tgtPar = format(targetChange); //targetChange.parameterId.toString();
-        System.out.printf("Rev:%d,Par:%s  <<" + changeCausality.asText() + ">>  Rev:%d,Par:%s\n",
-                sourceChange.revisionId, srcPar, targetChange.revisionId, tgtPar);
-        causalConnections.put(sourceChange.revisionId, targetChange.revisionId);
+    public List<ParameterChange> getParameterChangeList() {
+        return parameterChangeList;
     }
 
     /*
@@ -121,6 +107,20 @@ public class ParameterChangeAnalysis {
 
         }
         System.out.println("Link causes: " + linkCauses + ", Model causes: " + nodeModelCauses + ", Unknown Source: " + unknownSource + ", Internal: " + internalParameters);
+    }
+
+    private String format(ParameterChange change) {
+        return String.format("[%d]%s::%s", change.parameterId, change.nodeName, change.parameterName);
+    }
+
+    private void graphAddEdge(
+            ParameterChange sourceChange, ParameterChange targetChange,
+            ChangeCausality changeCausality) {
+        String srcPar = format(sourceChange); //sourceChange.parameterId.toString();
+        String tgtPar = format(targetChange); //targetChange.parameterId.toString();
+        System.out.printf("Rev:%d,Par:%s  <<" + changeCausality.asText() + ">>  Rev:%d,Par:%s\n",
+                sourceChange.revisionId, srcPar, targetChange.revisionId, tgtPar);
+        causalConnections.put(sourceChange.revisionId, targetChange.revisionId);
     }
 
 }

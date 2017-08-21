@@ -95,49 +95,13 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
         return false;
     }
 
-    private Path getDirPath(WatchKey key) {
-        return watchKeyToDirPathMap.get(key);
-    }
-
-    private Set<OnFileChangeListener> getListeners(Path dir) {
-        return dirPathToListenersMap.get(dir);
-    }
-
-    private Set<OnFileChangeListener> matchedListeners(Path dir, Path file) {
-        return getListeners(dir)
-                .stream()
-                .filter(listener -> matchesAny(file, listenerToFilePatternsMap.get(listener)))
-                .collect(Collectors.toSet());
-    }
-
-    private void notifyListeners(WatchKey key) {
-        for (WatchEvent<?> event : key.pollEvents()) {
-            WatchEvent.Kind eventKind = event.kind();
-
-            // Overflow occurs when the watch event queue is overflown
-            // with events.
-            if (eventKind.equals(OVERFLOW)) {
-                // TODO: Notify all listeners.
-                return;
-            }
-
-            WatchEvent<Path> pathEvent = cast(event);
-            Path filePath = pathEvent.context();
-            Path dirPath = getDirPath(key);
-
-            File file = new File(dirPath.toFile(), filePath.toString());
-
-            if (eventKind.equals(ENTRY_CREATE)) {
-                matchedListeners(dirPath, filePath)
-                        .forEach(listener -> listener.onFileCreate(file));
-            } else if (eventKind.equals(ENTRY_MODIFY)) {
-                matchedListeners(dirPath, filePath)
-                        .forEach(listener -> listener.onFileModify(file));
-            } else if (eventKind.equals(ENTRY_DELETE)) {
-                matchedListeners(dirPath, filePath)
-                        .forEach(listener -> listener.onFileDelete(file));
-            }
-        }
+    /**
+     * Empty the list of registered directory watchers.
+     */
+    public void clear() {
+        dirPathToListenersMap.clear();
+        watchKeyToDirPathMap.clear();
+        listenerToFilePatternsMap.clear();
     }
 
     /**
@@ -181,43 +145,6 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
     }
 
     /**
-     * Empty the list of registered directory watchers.
-     */
-    public void clear() {
-        dirPathToListenersMap.clear();
-        watchKeyToDirPathMap.clear();
-        listenerToFilePatternsMap.clear();
-    }
-
-    /**
-     * Start this <code>SimpleDirectoryWatchService</code> instance by spawning a new thread.
-     *
-     * @see #stop()
-     */
-    public void start() {
-        if (isRunning.compareAndSet(false, true)) {
-            runnerThread = new Thread(this, DirectoryWatchService.class.getSimpleName());
-            runnerThread.start();
-        }
-    }
-
-    /**
-     * Stop this <code>SimpleDirectoryWatchService</code> thread.
-     * The killing happens lazily, giving the running thread an opportunity
-     * to finish the work at hand.
-     *
-     * @see #start()
-     */
-    public void stop() {
-        logger.info("Stopping file watcher service...");
-        isRunning.set(false);
-        try {
-            runnerThread.join();
-        } catch (InterruptedException ignore) {
-        }
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -258,6 +185,79 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
 
         isRunning.set(false);
         logger.info("Stopped file watcher service.");
+    }
+
+    /**
+     * Start this <code>SimpleDirectoryWatchService</code> instance by spawning a new thread.
+     *
+     * @see #stop()
+     */
+    public void start() {
+        if (isRunning.compareAndSet(false, true)) {
+            runnerThread = new Thread(this, DirectoryWatchService.class.getSimpleName());
+            runnerThread.start();
+        }
+    }
+
+    /**
+     * Stop this <code>SimpleDirectoryWatchService</code> thread.
+     * The killing happens lazily, giving the running thread an opportunity
+     * to finish the work at hand.
+     *
+     * @see #start()
+     */
+    public void stop() {
+        logger.info("Stopping file watcher service...");
+        isRunning.set(false);
+        try {
+            runnerThread.join();
+        } catch (InterruptedException ignore) {
+        }
+    }
+
+    private Path getDirPath(WatchKey key) {
+        return watchKeyToDirPathMap.get(key);
+    }
+
+    private Set<OnFileChangeListener> getListeners(Path dir) {
+        return dirPathToListenersMap.get(dir);
+    }
+
+    private Set<OnFileChangeListener> matchedListeners(Path dir, Path file) {
+        return getListeners(dir)
+                .stream()
+                .filter(listener -> matchesAny(file, listenerToFilePatternsMap.get(listener)))
+                .collect(Collectors.toSet());
+    }
+
+    private void notifyListeners(WatchKey key) {
+        for (WatchEvent<?> event : key.pollEvents()) {
+            WatchEvent.Kind eventKind = event.kind();
+
+            // Overflow occurs when the watch event queue is overflown
+            // with events.
+            if (eventKind.equals(OVERFLOW)) {
+                // TODO: Notify all listeners.
+                return;
+            }
+
+            WatchEvent<Path> pathEvent = cast(event);
+            Path filePath = pathEvent.context();
+            Path dirPath = getDirPath(key);
+
+            File file = new File(dirPath.toFile(), filePath.toString());
+
+            if (eventKind.equals(ENTRY_CREATE)) {
+                matchedListeners(dirPath, filePath)
+                        .forEach(listener -> listener.onFileCreate(file));
+            } else if (eventKind.equals(ENTRY_MODIFY)) {
+                matchedListeners(dirPath, filePath)
+                        .forEach(listener -> listener.onFileModify(file));
+            } else if (eventKind.equals(ENTRY_DELETE)) {
+                matchedListeners(dirPath, filePath)
+                        .forEach(listener -> listener.onFileDelete(file));
+            }
+        }
     }
 
     private static class SingletonHolder {

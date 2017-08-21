@@ -22,7 +22,7 @@ import ru.skoltech.cedl.dataexchange.repository.envers.custom.StudyRevisionRepos
 
 /**
  * Data Access Operations with {@link Study} revisions.
- *
+ * <p>
  * Created by Nikolay Groshkov on 16-Aug-17.
  */
 public interface StudyRevisionRepository extends RevisionRepository<Study, Long, Integer>,

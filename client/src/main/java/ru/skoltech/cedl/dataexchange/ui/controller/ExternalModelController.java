@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for display external model.
- *
+ * <p>
  * Created by D.Knoll on 24.09.2015.
  */
 public class ExternalModelController implements Initializable {

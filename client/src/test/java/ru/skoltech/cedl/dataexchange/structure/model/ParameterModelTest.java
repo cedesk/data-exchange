@@ -38,7 +38,7 @@ public class ParameterModelTest {
         Assert.assertEquals("same name and value, but not equal", p1, p2);
 
         ParameterModel p3 = Utils.copyBean(p1, new ParameterModel());
-        p3.setValue(p1.getValue()+3.1);
+        p3.setValue(p1.getValue() + 3.1);
         Assert.assertNotEquals("same name and different value, but equal", p1, p3);
 
         ParameterModel p4 = Utils.copyBean(p1, new ParameterModel());

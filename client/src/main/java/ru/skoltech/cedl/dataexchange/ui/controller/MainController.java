@@ -137,6 +137,26 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.actionLogger = actionLogger;
     }
 
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
+
+    public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
+        this.differenceMergeService = differenceMergeService;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
+    public void setFileStorageService(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
+    }
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
+    }
+
     public void setLogEntryService(LogEntryService logEntryService) {
         this.logEntryService = logEntryService;
     }
@@ -149,36 +169,154 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.project = project;
     }
 
-    public void setApplicationSettings(ApplicationSettings applicationSettings) {
-        this.applicationSettings = applicationSettings;
-    }
-
     public void setStudyService(StudyService studyService) {
         this.studyService = studyService;
-    }
-
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
     }
 
     public void setSystemBuilderFactory(SystemBuilderFactory systemBuilderFactory) {
         this.systemBuilderFactory = systemBuilderFactory;
     }
 
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
-    }
-
-    public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
-        this.differenceMergeService = differenceMergeService;
-    }
-
     public void setUpdateService(UpdateService updateService) {
         this.updateService = updateService;
     }
 
-    public void setExecutor(Executor executor) {
-        this.executor = executor;
+    public void checkForApplicationUpdate(ActionEvent actionEvent) {
+        Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
+        validateLatestUpdate(latestVersionAvailable, actionEvent);
+    }
+
+    public boolean checkUnsavedModifications() {
+        if (project.hasLocalStudyModifications()) {
+            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
+                    "Modifications to the model must to be saved before managing user discipline assignment. " +
+                            "Shall it be saved now?");
+            if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
+                try {
+                    project.storeLocalStudy();
+                    return true;
+                } catch (RepositoryException | ExternalModelException e) {
+                    UserNotifications.showNotification(ownerStage, "Failed to save", "Failed to save");
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void close(Stage stage, WindowEvent windowEvent) {
+        if (!this.confirmCloseRequest()) {
+            windowEvent.consume();
+        }
+    }
+
+    public void deleteProject(ActionEvent actionEvent) {
+        List<String> studyNames = studyService.findStudyNames();
+        if (studyNames.size() > 0) {
+            Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
+            if (studyChoice.isPresent()) {
+                String studyName = studyChoice.get();
+                try {
+                    if (studyName.equals(project.getProjectName())) {
+                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
+                                "You are deleting the currently loaded project. Unexpected behavior can appear!\n" +
+                                        "WARNING: This is not reversible!");
+                        if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
+                            project.deleteStudy(studyName);
+                            StatusLogger.getInstance().log("Successfully deleted study!", false);
+                            actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
+                        }
+                    } else {
+                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
+                                "Are you really sure to delete project '" + studyName + "' from the repository?\n" +
+                                        "WARNING: This is not reversible!");
+                        if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
+                            project.deleteStudy(studyName);
+                            StatusLogger.getInstance().log("Successfully deleted study!", false);
+                            actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to delete the study!", e);
+                }
+            }
+        } else {
+            logger.warn("list of studies is empty!");
+            Dialogues.showWarning("Repository empty", "There are no studies available in the repository!");
+        }
+    }
+
+    public void destroy() {
+        try {
+            actionLogger.log(ActionLogger.ActionType.APPLICATION_STOP, "");
+        } catch (Throwable ignore) {
+        }
+        try {
+            project.close();
+        } catch (Throwable ignore) {
+        }
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
+    public void exportProject(ActionEvent actionEvent) {
+        File exportPath = Dialogues.chooseExportPath(fileStorageService.applicationDirectory());
+        if (exportPath != null) {
+            String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
+            File outputFile = new File(exportPath, outputFileName);
+            try {
+                fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
+                StatusLogger.getInstance().log("Successfully exported study!", false);
+                actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
+            } catch (IOException e) {
+                logger.error("error exporting model to file", e);
+            }
+        } else {
+            logger.info("user aborted export path selection.");
+        }
+    }
+
+    public void importProject(ActionEvent actionEvent) {
+        File importFile = null;
+        if (actionEvent == null) { // invoked from startup
+            String projectToImport = applicationSettings.getProjectImportName();
+            if (projectToImport != null && !projectToImport.isEmpty()) {
+                importFile = new File(fileStorageService.applicationDirectory(), projectToImport);
+                if (importFile.exists()) {
+                    logger.info("importing " + importFile.getAbsolutePath());
+                } else {
+                    logger.info("missing project to import " + importFile.getAbsolutePath());
+                    importFile = null;
+                }
+            } else {
+                logger.error("missing setting: project.import.name");
+            }
+        }
+        if (importFile == null) {
+            // TODO: warn user about replacing current project
+            importFile = Dialogues.chooseImportFile(fileStorageService.applicationDirectory());
+        }
+        if (importFile != null) {
+            // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
+            try {
+                SystemModel systemModel = fileStorageService.loadSystemModel(importFile);
+                project.importSystemModel(systemModel);
+                updateView();
+                StatusLogger.getInstance().log("Successfully imported study!", false);
+                actionLogger.log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName());
+            } catch (IOException e) {
+                logger.error("Error importing model from file.", e);
+            }
+        } else {
+            logger.info("User aborted import file selection.");
+        }
     }
 
     public void init() {
@@ -240,245 +378,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.checkVersionUpdate();
     }
 
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    private void checkRepository() {
-        executor.execute(() -> {
-            boolean validRepository = project.checkRepositoryScheme();
-            if (!validRepository) {
-                Platform.runLater(MainController.this::openRepositorySettingsDialog);
-            } else {
-                if (!project.checkUser()) {
-                    Platform.runLater(this::displayInvalidUserDialog);
-                }
-                Platform.runLater(this::loadLastProject);
-            }
-        });
-    }
-
-    private void checkVersionUpdate() {
-        String appVersion = applicationSettings.getApplicationVersion();
-        if (ApplicationPackage.isRelease(appVersion)) {
-            executor.execute(() -> {
-                Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
-                Platform.runLater(() -> MainController.this.validateLatestUpdate(latestVersionAvailable, null));
-            });
-        }
-    }
-
-    public void checkForApplicationUpdate(ActionEvent actionEvent) {
-        Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
-        validateLatestUpdate(latestVersionAvailable, actionEvent);
-    }
-
-    public void runWorkSessionAnalysis(ActionEvent actionEvent) {
-        File projectDataDir = project.getProjectDataDir();
-        String dateAndTime = Utils.getFormattedDateAndTime();
-        try {
-            long studyId = project.getStudy().getId();
-            List<LogEntry> logEntries = logEntryService.getLogEntries(studyId);
-
-            WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries, false);
-            File periodsCsvFile = new File(projectDataDir, "work-periods_" + dateAndTime + ".csv");
-            workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
-
-            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis);
-            File sessionsCsvFile = new File(projectDataDir, "work-sessions_" + dateAndTime + ".csv");
-            workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
-            workSessionAnalysis.printWorkSessions();
-
-            Optional<ButtonType> showResults = Dialogues.chooseYesNo("Show results", "Do you want to open the analysis results spreadsheet?");
-            if (showResults.isPresent() && showResults.get() == ButtonType.YES) {
-                Desktop desktop = Desktop.getDesktop();
-                if (sessionsCsvFile.isFile() && desktop.isSupported(Desktop.Action.EDIT)) {
-                    try {
-                        desktop.edit(sessionsCsvFile);
-                    } catch (IOException ioe) {
-                        StatusLogger.getInstance().log("unable to open file: " + sessionsCsvFile.getAbsolutePath(), true);
-                        logger.warn("unable to open file: " + sessionsCsvFile.getAbsolutePath());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error("analysis failed", e);
-        }
-    }
-
-    private void validateLatestUpdate(Optional<ApplicationPackage> latestVersionAvailable, ActionEvent actionEvent) {
-        if (latestVersionAvailable.isPresent()) {
-            ApplicationPackage applicationPackage = latestVersionAvailable.get();
-            logger.info("available package: " + applicationPackage.toString());
-            String packageVersion = applicationPackage.getVersion();
-            String appVersion = applicationSettings.getApplicationVersion();
-            int versionCompare = Utils.compareVersions(appVersion, packageVersion);
-            if (versionCompare < 0) {
-                UserNotifications.showActionableNotification(ownerStage, "Application Update",
-                        "You are using " + appVersion + ", while " + packageVersion + " is already available. Please update!",
-                        "Download Update", new UpdateDownloader(applicationPackage), false);
-            } else if (versionCompare > 0) {
-                UserNotifications.showNotification(ownerStage, "Application Update",
-                        "You are using " + appVersion + ", " +
-                                "which is newer than the latest available " + packageVersion + ". Please publish!");
-            } else {
-                if (actionEvent != null) {
-                    UserNotifications.showNotification(ownerStage, "Application Update",
-                            "Latest version installed. No need to update.");
-                } else {
-                    StatusLogger.getInstance().log("Latest application version installed. No need to update.");
-                }
-            }
-        } else {
-            if (actionEvent != null) {
-                UserNotifications.showNotification(ownerStage, "Update check failed",
-                        "Unable to connect to Distribution Server!");
-            } else {
-                StatusLogger.getInstance().log("Update check failed. Unable to connect to Distribution Server!");
-            }
-        }
-    }
-
-    public boolean checkUnsavedModifications() {
-        if (project.hasLocalStudyModifications()) {
-            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
-                    "Modifications to the model must to be saved before managing user discipline assignment. " +
-                            "Shall it be saved now?");
-            if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
-                try {
-                    project.storeLocalStudy();
-                    return true;
-                } catch (RepositoryException | ExternalModelException e) {
-                    UserNotifications.showNotification(ownerStage, "Failed to save", "Failed to save");
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        } else {
-            return true;
-        }
-    }
-
-    @Override
-    public void close(Stage stage, WindowEvent windowEvent) {
-        if (!this.confirmCloseRequest()) {
-            windowEvent.consume();
-        }
-    }
-
-    private boolean confirmCloseRequest() {
-        if (project.hasLocalStudyModifications()) {
-            Optional<ButtonType> saveYesNoCancel = Dialogues.chooseYesNoCancel("Unsaved modifications",
-                    "Shall the modifications saved before closing?");
-            if (saveYesNoCancel.isPresent() && saveYesNoCancel.get() == ButtonType.YES) {
-                try {
-                    project.storeLocalStudy();
-                    return true;
-                } catch (RepositoryException | ExternalModelException e) {
-                    Optional<ButtonType> closeAnyway = Dialogues.chooseYesNo("Failed to save",
-                            "Shall the program close anyway?");
-                    if (closeAnyway.isPresent() && closeAnyway.get() == ButtonType.YES) {
-                        return true;
-                    }
-                }
-            } else return !saveYesNoCancel.isPresent() || saveYesNoCancel.get() != ButtonType.CANCEL;
-        } else {
-            return true;
-        }
-        return false;
-    }
-
-    public void deleteProject(ActionEvent actionEvent) {
-        List<String> studyNames = studyService.findStudyNames();
-        if (studyNames.size() > 0) {
-            Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
-            if (studyChoice.isPresent()) {
-                String studyName = studyChoice.get();
-                try {
-                    if (studyName.equals(project.getProjectName())) {
-                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
-                                "You are deleting the currently loaded project. Unexpected behavior can appear!\n" +
-                                        "WARNING: This is not reversible!");
-                        if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
-                            project.deleteStudy(studyName);
-                            StatusLogger.getInstance().log("Successfully deleted study!", false);
-                            actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
-                        }
-                    } else {
-                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
-                                "Are you really sure to delete project '" + studyName + "' from the repository?\n" +
-                                        "WARNING: This is not reversible!");
-                        if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
-                            project.deleteStudy(studyName);
-                            StatusLogger.getInstance().log("Successfully deleted study!", false);
-                            actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
-                        }
-                    }
-                } catch (Exception e) {
-                    logger.error("Failed to delete the study!", e);
-                }
-            }
-        } else {
-            logger.warn("list of studies is empty!");
-            Dialogues.showWarning("Repository empty", "There are no studies available in the repository!");
-        }
-    }
-
-    public void exportProject(ActionEvent actionEvent) {
-        File exportPath = Dialogues.chooseExportPath(fileStorageService.applicationDirectory());
-        if (exportPath != null) {
-            String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
-            File outputFile = new File(exportPath, outputFileName);
-            try {
-                fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
-                StatusLogger.getInstance().log("Successfully exported study!", false);
-                actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
-            } catch (IOException e) {
-                logger.error("error exporting model to file", e);
-            }
-        } else {
-            logger.info("user aborted export path selection.");
-        }
-    }
-
-    public void importProject(ActionEvent actionEvent) {
-        File importFile = null;
-        if (actionEvent == null) { // invoked from startup
-            String projectToImport = applicationSettings.getProjectImportName();
-            if (projectToImport != null && !projectToImport.isEmpty()) {
-                importFile = new File(fileStorageService.applicationDirectory(), projectToImport);
-                if (importFile.exists()) {
-                    logger.info("importing " + importFile.getAbsolutePath());
-                } else {
-                    logger.info("missing project to import " + importFile.getAbsolutePath());
-                    importFile = null;
-                }
-            } else {
-                logger.error("missing setting: project.import.name");
-            }
-        }
-        if (importFile == null) {
-            // TODO: warn user about replacing current project
-            importFile = Dialogues.chooseImportFile(fileStorageService.applicationDirectory());
-        }
-        if (importFile != null) {
-            // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
-            try {
-                SystemModel systemModel = fileStorageService.loadSystemModel(importFile);
-                project.importSystemModel(systemModel);
-                updateView();
-                StatusLogger.getInstance().log("Successfully imported study!", false);
-                actionLogger.log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName());
-            } catch (IOException e) {
-                logger.error("Error importing model from file.", e);
-            }
-        } else {
-            logger.info("User aborted import file selection.");
-        }
-    }
-
     public void newProject(ActionEvent actionEvent) {
         Optional<String> choice = Dialogues.inputStudyName(Project.DEFAULT_PROJECT_NAME);
         if (choice.isPresent()) {
@@ -510,28 +409,17 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    private String[] requestSubsystemNames() {
-        while (true) {
-            Optional<String> subsystemNamesString = Dialogues.inputSubsystemNames("SubsystemA,SubsystemB");
-            if (subsystemNamesString.isPresent()) {
-                String[] subsystemNames = subsystemNamesString.get().split(",");
-                boolean correct = Arrays.stream(subsystemNames).allMatch(Identifiers::validateNodeName);
-                if (correct) {
-                    return subsystemNames;
-                } else {
-                    Dialogues.showWarning("Incorrect subsystem names", "The specified names are not valid for subsystem nodes!\n" + Identifiers.getNodeNameValidationDescription());
-                }
-            } else {
-                return new String[0];
-            }
-        }
-    }
-
     public void openAboutDialog() {
         ViewBuilder aboutViewBuilder = guiService.createViewBuilder("About CEDESK", Views.ABOUT_VIEW);
         aboutViewBuilder.ownerWindow(ownerStage);
         aboutViewBuilder.modality(Modality.APPLICATION_MODAL);
         aboutViewBuilder.show();
+    }
+
+    public void openChangeHistoryAnalysis() {
+        ViewBuilder changeHistoryAnalysisViewBuilder = guiService.createViewBuilder("Change History Analyis [BETA]", Views.CHANGE_HISTORY_ANALYSIS_VIEW);
+        changeHistoryAnalysisViewBuilder.ownerWindow(ownerStage);
+        changeHistoryAnalysisViewBuilder.show();
     }
 
     public void openConsistencyView() {
@@ -541,39 +429,10 @@ public class MainController implements Initializable, Displayable, Closeable {
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
-    public void openChangeHistoryAnalysis() {
-        ViewBuilder changeHistoryAnalysisViewBuilder = guiService.createViewBuilder("Change History Analyis [BETA]", Views.CHANGE_HISTORY_ANALYSIS_VIEW);
-        changeHistoryAnalysisViewBuilder.ownerWindow(ownerStage);
-        changeHistoryAnalysisViewBuilder.show();
-    }
-
-    public void openTradespaceExplorer() {
-        ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder("Tradespace Explorer [BETA]", Views.TRADESPACE_VIEW);
-        tradespaceViewBuilder.ownerWindow(ownerStage);
-        tradespaceViewBuilder.show();
-    }
-
     public void openDependencyView() {
         ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
         dependencyViewBuilder.ownerWindow(ownerStage);
         dependencyViewBuilder.show();
-    }
-
-    public void openStudyRevisionsView() {
-        Study study = project.getStudy();
-
-        ViewBuilder studyRevisionsViewBuilder = guiService.createViewBuilder("Study Revisions", Views.STUDY_REVISIONS_VIEW);
-        studyRevisionsViewBuilder.modality(Modality.APPLICATION_MODAL);
-        studyRevisionsViewBuilder.ownerWindow(ownerStage);
-        studyRevisionsViewBuilder.resizable(false);
-        studyRevisionsViewBuilder.applyEventHandler(event -> {
-            CustomRevisionEntity customRevisionEntity = (CustomRevisionEntity) event.getSource();
-            Study studyRevision = studyService.findStudyByRevision(study, customRevisionEntity.getId());
-            project.loadLocalStudy(studyRevision);
-            this.updateView();
-            tagProperty.setValue(customRevisionEntity.getTag());
-        });
-        studyRevisionsViewBuilder.showAndWait(study);
     }
 
     public void openDiffView() {
@@ -645,6 +504,29 @@ public class MainController implements Initializable, Displayable, Closeable {
         repositorySettingsViewBuilder.showAndWait();
     }
 
+    public void openStudyRevisionsView() {
+        Study study = project.getStudy();
+
+        ViewBuilder studyRevisionsViewBuilder = guiService.createViewBuilder("Study Revisions", Views.STUDY_REVISIONS_VIEW);
+        studyRevisionsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        studyRevisionsViewBuilder.ownerWindow(ownerStage);
+        studyRevisionsViewBuilder.resizable(false);
+        studyRevisionsViewBuilder.applyEventHandler(event -> {
+            CustomRevisionEntity customRevisionEntity = (CustomRevisionEntity) event.getSource();
+            Study studyRevision = studyService.findStudyByRevision(study, customRevisionEntity.getId());
+            project.loadLocalStudy(studyRevision);
+            this.updateView();
+            tagProperty.setValue(customRevisionEntity.getTag());
+        });
+        studyRevisionsViewBuilder.showAndWait(study);
+    }
+
+    public void openTradespaceExplorer() {
+        ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder("Tradespace Explorer [BETA]", Views.TRADESPACE_VIEW);
+        tradespaceViewBuilder.ownerWindow(ownerStage);
+        tradespaceViewBuilder.show();
+    }
+
     public void openUnitManagement() {
         ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_EDITING_VIEW);
         unitEditingViewBuilder.ownerWindow(ownerStage);
@@ -692,6 +574,39 @@ public class MainController implements Initializable, Displayable, Closeable {
             actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName() + ", loading failed");
         }
         updateView();
+    }
+
+    public void runWorkSessionAnalysis(ActionEvent actionEvent) {
+        File projectDataDir = project.getProjectDataDir();
+        String dateAndTime = Utils.getFormattedDateAndTime();
+        try {
+            long studyId = project.getStudy().getId();
+            List<LogEntry> logEntries = logEntryService.getLogEntries(studyId);
+
+            WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries, false);
+            File periodsCsvFile = new File(projectDataDir, "work-periods_" + dateAndTime + ".csv");
+            workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
+
+            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis);
+            File sessionsCsvFile = new File(projectDataDir, "work-sessions_" + dateAndTime + ".csv");
+            workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
+            workSessionAnalysis.printWorkSessions();
+
+            Optional<ButtonType> showResults = Dialogues.chooseYesNo("Show results", "Do you want to open the analysis results spreadsheet?");
+            if (showResults.isPresent() && showResults.get() == ButtonType.YES) {
+                Desktop desktop = Desktop.getDesktop();
+                if (sessionsCsvFile.isFile() && desktop.isSupported(Desktop.Action.EDIT)) {
+                    try {
+                        desktop.edit(sessionsCsvFile);
+                    } catch (IOException ioe) {
+                        StatusLogger.getInstance().log("unable to open file: " + sessionsCsvFile.getAbsolutePath(), true);
+                        logger.warn("unable to open file: " + sessionsCsvFile.getAbsolutePath());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("analysis failed", e);
+        }
     }
 
     public void saveProject(ActionEvent actionEvent) {
@@ -753,17 +668,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         tagProperty.setValue(tag);
     }
 
-    public void destroy() {
-        try {
-            actionLogger.log(ActionLogger.ActionType.APPLICATION_STOP, "");
-        } catch (Throwable ignore) {
-        }
-        try {
-            project.close();
-        } catch (Throwable ignore) {
-        }
-    }
-
     public void updateRemoteModel() {
         project.loadRepositoryStudy();
         Platform.runLater(new Runnable() {
@@ -773,6 +677,60 @@ public class MainController implements Initializable, Displayable, Closeable {
                 StatusLogger.getInstance().log("Remote model loaded for comparison.");
             }
         });
+    }
+
+    private void checkRepository() {
+        executor.execute(() -> {
+            boolean validRepository = project.checkRepositoryScheme();
+            if (!validRepository) {
+                Platform.runLater(MainController.this::openRepositorySettingsDialog);
+            } else {
+                if (!project.checkUser()) {
+                    Platform.runLater(this::displayInvalidUserDialog);
+                }
+                Platform.runLater(this::loadLastProject);
+            }
+        });
+    }
+
+    private void checkVersionUpdate() {
+        String appVersion = applicationSettings.getApplicationVersion();
+        if (ApplicationPackage.isRelease(appVersion)) {
+            executor.execute(() -> {
+                Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
+                Platform.runLater(() -> MainController.this.validateLatestUpdate(latestVersionAvailable, null));
+            });
+        }
+    }
+
+    private boolean confirmCloseRequest() {
+        if (project.hasLocalStudyModifications()) {
+            Optional<ButtonType> saveYesNoCancel = Dialogues.chooseYesNoCancel("Unsaved modifications",
+                    "Shall the modifications saved before closing?");
+            if (saveYesNoCancel.isPresent() && saveYesNoCancel.get() == ButtonType.YES) {
+                try {
+                    project.storeLocalStudy();
+                    return true;
+                } catch (RepositoryException | ExternalModelException e) {
+                    Optional<ButtonType> closeAnyway = Dialogues.chooseYesNo("Failed to save",
+                            "Shall the program close anyway?");
+                    if (closeAnyway.isPresent() && closeAnyway.get() == ButtonType.YES) {
+                        return true;
+                    }
+                }
+            } else return !saveYesNoCancel.isPresent() || saveYesNoCancel.get() != ButtonType.CANCEL;
+        } else {
+            return true;
+        }
+        return false;
+    }
+
+    private void displayInvalidUserDialog() {
+        String userName = applicationSettings.getProjectUserName();
+        Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
+                "Contact the administrator for the creation of a user for you.\n" +
+                "As for now you'll be given the role of an observer, who can not perform modifications.");
+        actionLogger.log(ActionLogger.ActionType.USER_VALIDATE, userName + ", not found");
     }
 
     private void loadLastProject() {
@@ -791,6 +749,23 @@ public class MainController implements Initializable, Displayable, Closeable {
                 } else if (choice.isPresent() && choice.get() == Dialogues.NEW_STUDY_BUTTON) {
                     newProject(null);
                 }
+            }
+        }
+    }
+
+    private String[] requestSubsystemNames() {
+        while (true) {
+            Optional<String> subsystemNamesString = Dialogues.inputSubsystemNames("SubsystemA,SubsystemB");
+            if (subsystemNamesString.isPresent()) {
+                String[] subsystemNames = subsystemNamesString.get().split(",");
+                boolean correct = Arrays.stream(subsystemNames).allMatch(Identifiers::validateNodeName);
+                if (correct) {
+                    return subsystemNames;
+                } else {
+                    Dialogues.showWarning("Incorrect subsystem names", "The specified names are not valid for subsystem nodes!\n" + Identifiers.getNodeNameValidationDescription());
+                }
+            } else {
+                return new String[0];
             }
         }
     }
@@ -845,12 +820,37 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    private void displayInvalidUserDialog() {
-        String userName = applicationSettings.getProjectUserName();
-        Dialogues.showWarning("Invalid User", "User '" + userName + "' is not registered on the repository.\n" +
-                "Contact the administrator for the creation of a user for you.\n" +
-                "As for now you'll be given the role of an observer, who can not perform modifications.");
-        actionLogger.log(ActionLogger.ActionType.USER_VALIDATE, userName + ", not found");
+    private void validateLatestUpdate(Optional<ApplicationPackage> latestVersionAvailable, ActionEvent actionEvent) {
+        if (latestVersionAvailable.isPresent()) {
+            ApplicationPackage applicationPackage = latestVersionAvailable.get();
+            logger.info("available package: " + applicationPackage.toString());
+            String packageVersion = applicationPackage.getVersion();
+            String appVersion = applicationSettings.getApplicationVersion();
+            int versionCompare = Utils.compareVersions(appVersion, packageVersion);
+            if (versionCompare < 0) {
+                UserNotifications.showActionableNotification(ownerStage, "Application Update",
+                        "You are using " + appVersion + ", while " + packageVersion + " is already available. Please update!",
+                        "Download Update", new UpdateDownloader(applicationPackage), false);
+            } else if (versionCompare > 0) {
+                UserNotifications.showNotification(ownerStage, "Application Update",
+                        "You are using " + appVersion + ", " +
+                                "which is newer than the latest available " + packageVersion + ". Please publish!");
+            } else {
+                if (actionEvent != null) {
+                    UserNotifications.showNotification(ownerStage, "Application Update",
+                            "Latest version installed. No need to update.");
+                } else {
+                    StatusLogger.getInstance().log("Latest application version installed. No need to update.");
+                }
+            }
+        } else {
+            if (actionEvent != null) {
+                UserNotifications.showNotification(ownerStage, "Update check failed",
+                        "Unable to connect to Distribution Server!");
+            } else {
+                StatusLogger.getInstance().log("Update check failed. Unable to connect to Distribution Server!");
+            }
+        }
     }
 
     private class UpdateDownloader implements Consumer<ActionEvent> {

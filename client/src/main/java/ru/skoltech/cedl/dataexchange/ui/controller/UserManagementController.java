@@ -42,7 +42,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for user management.
- *
+ * <p>
  * Created by d.knoll on 10.06.2015.
  */
 public class UserManagementController implements Initializable {
@@ -65,39 +65,16 @@ public class UserManagementController implements Initializable {
     private GuiService guiService;
     private UserRoleManagementService userRoleManagementService;
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
     }
 
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        BooleanBinding noSelectionOnUserTable = userTable.getSelectionModel().selectedItemProperty().isNull();
-        // USERS
-        editUserButton.disableProperty().bind(noSelectionOnUserTable);
-        deleteUserButton.disableProperty().bind(noSelectionOnUserTable);
-        userTable.setOnMousePressed(event -> {
-            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
-                UserManagementController.this.openUserEditingView(null);
-            }
-        });
-        updateView();
-    }
-
-    private void updateUsers() {
-        if (project.getUserManagement() != null) {
-            List<User> allUsers = project.getUserManagement().getUsers();
-            userTable.getItems().clear();
-            userTable.getItems().addAll(allUsers);
-            userTable.getItems().sort(Comparator.naturalOrder());
-        }
     }
 
     public void addUser(ActionEvent actionEvent) {
@@ -126,6 +103,30 @@ public class UserManagementController implements Initializable {
         updateUsers();
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        BooleanBinding noSelectionOnUserTable = userTable.getSelectionModel().selectedItemProperty().isNull();
+        // USERS
+        editUserButton.disableProperty().bind(noSelectionOnUserTable);
+        deleteUserButton.disableProperty().bind(noSelectionOnUserTable);
+        userTable.setOnMousePressed(event -> {
+            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                UserManagementController.this.openUserEditingView(null);
+            }
+        });
+        updateView();
+    }
+
+    public void openUserEditingView(ActionEvent actionEvent) {
+        User selectedUser = userTable.getSelectionModel().getSelectedItem();
+        Window ownerWindow = userTable.getScene().getWindow();
+        ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder("User details", Views.USER_EDITING_VIEW);
+        userDetailsViewBuilder.ownerWindow(ownerWindow);
+        userDetailsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        userDetailsViewBuilder.showAndWait(selectedUser);
+        updateUsers();
+    }
+
     public void reloadUsers(ActionEvent actionEvent) {
         boolean success = project.loadUserManagement();
         updateUsers();
@@ -141,14 +142,13 @@ public class UserManagementController implements Initializable {
         }
     }
 
-    public void openUserEditingView(ActionEvent actionEvent) {
-        User selectedUser = userTable.getSelectionModel().getSelectedItem();
-        Window ownerWindow = userTable.getScene().getWindow();
-        ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder("User details", Views.USER_EDITING_VIEW);
-        userDetailsViewBuilder.ownerWindow(ownerWindow);
-        userDetailsViewBuilder.modality(Modality.APPLICATION_MODAL);
-        userDetailsViewBuilder.showAndWait(selectedUser);
-        updateUsers();
+    private void updateUsers() {
+        if (project.getUserManagement() != null) {
+            List<User> allUsers = project.getUserManagement().getUsers();
+            userTable.getItems().clear();
+            userTable.getItems().addAll(allUsers);
+            userTable.getItems().sort(Comparator.naturalOrder());
+        }
     }
 
     private void updateView() {

@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  * Operations with {@link Study}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 06-Jul-17.
  */
 public interface StudyService {
@@ -35,11 +35,65 @@ public interface StudyService {
     /**
      * Create {@link Study} based on {@link SystemModel} and {@link UserManagement}.
      *
-     * @param systemModel system model to base on
+     * @param systemModel    system model to base on
      * @param userManagement user management to base on
      * @return new instance of {@link Study}
      */
     Study createStudy(SystemModel systemModel, UserManagement userManagement);
+
+    /**
+     * Remove all stored studies.
+     */
+    void deleteAllStudies();
+
+    /**
+     * Remove a {@link Study} with a specified name.
+     *
+     * @param studyName name of the {@link Study}
+     */
+    void deleteStudyByName(String studyName);
+
+    /**
+     * Retrieve all revision entities which was tagged and saved along with a specified study.
+     *
+     * @param study study which tagged revision entities to search
+     * @return a list of pair objects each of which stores a tagged instance of {@link CustomRevisionEntity}
+     * revision entity and revision type.
+     */
+    List<Pair<CustomRevisionEntity, RevisionType>> findAllStudyRevisionEntityWithTags(Study study);
+
+    /**
+     * Retrieve a tag of current study revision.
+     *
+     * @param study study to find a tag
+     * @return tag  of current study revision
+     */
+    String findCurrentStudyRevisionTag(Study study);
+
+    /**
+     * Retrieve a latest model modification timestamp of study with specified name.
+     *
+     * @param studyName name of the study.
+     * @return timestamp value of latest model modification time.
+     */
+    Long findLatestModelModificationByStudyName(String studyName);
+
+    /**
+     * Retrieve a {@link Study} by its name.
+     *
+     * @param studyName name of the {@link Study}
+     * @return instance of the {@link Study}
+     */
+    Study findStudyByName(String studyName);
+
+    /**
+     * Retrieve an instance of {@link Study} from it revision history by revision number.
+     *
+     * @param study          which revision to search for
+     * @param revisionNumber revision number of searched {@link Study}
+     * @return Study from revision
+     */
+    Study findStudyByRevision(Study study, Integer revisionNumber);
 
     /**
      * Retrieve names of all studies.
@@ -49,12 +103,11 @@ public interface StudyService {
     List<String> findStudyNames();
 
     /**
-     * Retrieve a {@link Study} by its name.
+     * TODO add javadoc
      *
-     * @param studyName name of the {@link Study}
-     * @return instance of the {@link Study}
+     * @param study study
      */
-    Study findStudyByName(String studyName);
+    void relinkStudySubSystems(Study study);
 
     /**
      * Saves an study.
@@ -68,33 +121,16 @@ public interface StudyService {
      * Saves an study and tag produced revision.
      *
      * @param study study to save
-     * @param tag for tag new revision
+     * @param tag   for tag new revision
      * @return the saved study
      */
     Study saveStudy(Study study, String tag);
 
     /**
-     * Retrieve a tag of current study revision.
-     *
-     * @param study study to find a tag
-     * @return tag  of current study revision
-     */
-    String findCurrentStudyRevisionTag(Study study);
-
-    /**
-     * Retrieve all revision entities which was tagged and saved along with a specified study.
-     *
-     * @param study study which tagged revision entities to search
-     * @return a list of pair objects each of which stores a tagged instance of {@link CustomRevisionEntity}
-     * revision entity and revision type.
-     */
-    List<Pair<CustomRevisionEntity, RevisionType>> findAllStudyRevisionEntityWithTags(Study study);
-
-    /**
      * Tag a current revision of a study.
      *
      * @param study study which current revision to tag
-     * @param tag for tag new revision
+     * @param tag   for tag new revision
      */
     void tagStudy(Study study, String tag);
 
@@ -109,42 +145,7 @@ public interface StudyService {
      * Clean tag of revision entity of specified {@link Study} which has a specified tag.
      *
      * @param study of which tagged revision entity to search for
-     * @param tag tag to clean
+     * @param tag   tag to clean
      */
     void untagStudy(Study study, String tag);
-
-    /**
-     * Retrieve an instance of {@link Study} from it revision history by revision number.
-     *
-     * @param study which revision to search for
-     * @param revisionNumber revision number of searched {@link Study}
-     * @return Study from revision
-     */
-    Study findStudyByRevision(Study study, Integer revisionNumber);
-
-    /**
-     * Remove a {@link Study} with a specified name.
-     * @param studyName name of the {@link Study}
-     */
-    void deleteStudyByName(String studyName);
-
-    /**
-     * Remove all stored studies.
-     */
-    void deleteAllStudies();
-
-    /**
-     * Retrieve a latest model modification timestamp of study with specified name.
-     *
-     * @param studyName name of the study.
-     * @return timestamp value of latest model modification time.
-     */
-    Long findLatestModelModificationByStudyName(String studyName);
-
-    /**
-     * TODO add javadoc
-     *
-     * @param study study
-     */
-    void relinkStudySubSystems(Study study);
 }

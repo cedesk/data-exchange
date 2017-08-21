@@ -22,7 +22,7 @@ import ru.skoltech.cedl.dataexchange.repository.envers.custom.ParameterModelRevi
 
 /**
  * Data Access Operations with {@link ParameterModel} revisions.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public interface ParameterModelRevisionRepository extends RevisionRepository<ParameterModel, Long, Integer>,

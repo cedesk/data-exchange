@@ -35,21 +35,26 @@ public class OperationRegistry {
         register(new Max());
     }
 
-    private static void register(Operation operation) {
-        registry.put(operation.name(), operation);
-    }
-
-    public static Collection<? extends Class> getClasses() {
-        return registry.values().stream().map(Object::getClass).collect(Collectors.toList());
-    }
-
     public static Collection<Operation> getAll() {
         List<Operation> operationList = new ArrayList<>(registry.values());
         operationList.sort(Comparator.<Operation>naturalOrder());
         return operationList;
     }
 
+    public static Collection<? extends Class> getClasses() {
+        return registry.values().stream().map(Object::getClass).collect(Collectors.toList());
+    }
+
+    private static void register(Operation operation) {
+        registry.put(operation.name(), operation);
+    }
+
     public static class OperationAdapter extends XmlAdapter<String, Operation> {
+
+        @Override
+        public String marshal(Operation operation) throws Exception {
+            return operation.name();
+        }
 
         @Override
         public Operation unmarshal(String name) throws Exception {
@@ -58,11 +63,6 @@ public class OperationRegistry {
             } else {
                 throw new IllegalArgumentException("no such operation found! " + name);
             }
-        }
-
-        @Override
-        public String marshal(Operation operation) throws Exception {
-            return operation.name();
         }
     }
 

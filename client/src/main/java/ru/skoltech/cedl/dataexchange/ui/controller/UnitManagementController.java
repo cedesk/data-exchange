@@ -45,19 +45,16 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for unit management.
- *
+ * <p>
  * Created by d.knoll on 27.08.2015.
  */
 public class UnitManagementController implements Initializable, Closeable {
 
     private static final Logger logger = Logger.getLogger(UnitManagementController.class);
-
-    @FXML
-    private AnchorPane unitManagementPane;
-
     @FXML
     public TableColumn<Unit, String> unitQuantityKindColumn;
-
+    @FXML
+    private AnchorPane unitManagementPane;
     @FXML
     private AnchorPane unitsDetailPane;
 
@@ -90,30 +87,15 @@ public class UnitManagementController implements Initializable, Closeable {
     private Project project;
     private GuiService guiService;
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        unitQuantityKindColumn.setCellValueFactory(param -> {
-            if (param != null && param.getValue() != null && param.getValue().getQuantityKind() != null) {
-                return new SimpleStringProperty(param.getValue().getQuantityKind().asText());
-            } else {
-                return new SimpleStringProperty();
-            }
-        });
+    public void setProject(Project project) {
+        this.project = project;
+    }
 
-        deleteUnitButton.setDisable(true);
-        saveUnitsButton.disableProperty().bind(Bindings.not(changed));
-
-        deleteQuantityKindButton.setDisable(true);
-        addQuantityKindButton.setDisable(true);
-        updateView();
+    public void addQuantityKind(ActionEvent actionEvent) {
     }
 
     @Override
@@ -134,18 +116,33 @@ public class UnitManagementController implements Initializable, Closeable {
             windowEvent.consume();
         } else if (result.get() == yesButton) {
             saveUnits();
-        } else if (result.get() == noButton){
+        } else if (result.get() == noButton) {
             project.loadUnitManagement();
         }
     }
 
-    public void updateView() {
-        ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement unitManagement = project.getUnitManagement();
-        ObservableList<Unit> unitsList = FXCollections.observableList(unitManagement.getUnits());
-        unitsTableView.setItems(unitsList);
+    public void deleteQuantityKind(ActionEvent actionEvent) {
+    }
 
-        ObservableList<QuantityKind> quantityKindsList = FXCollections.observableList(unitManagement.getQuantityKinds());
-        quantityTableView.setItems(quantityKindsList);
+    public void deleteUnit(ActionEvent actionEvent) {
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        unitQuantityKindColumn.setCellValueFactory(param -> {
+            if (param != null && param.getValue() != null && param.getValue().getQuantityKind() != null) {
+                return new SimpleStringProperty(param.getValue().getQuantityKind().asText());
+            } else {
+                return new SimpleStringProperty();
+            }
+        });
+
+        deleteUnitButton.setDisable(true);
+        saveUnitsButton.disableProperty().bind(Bindings.not(changed));
+
+        deleteQuantityKindButton.setDisable(true);
+        addQuantityKindButton.setDisable(true);
+        updateView();
     }
 
     public void openAddUnitDialog(ActionEvent actionEvent) {
@@ -161,9 +158,6 @@ public class UnitManagementController implements Initializable, Closeable {
         addUnitViewBuilder.show();
     }
 
-    public void deleteUnit(ActionEvent actionEvent) {
-    }
-
     public void saveUnits() {
         boolean success = project.storeUnitManagement();
         if (!success) {
@@ -172,9 +166,12 @@ public class UnitManagementController implements Initializable, Closeable {
         changed.setValue(false);
     }
 
-    public void addQuantityKind(ActionEvent actionEvent) {
-    }
+    public void updateView() {
+        ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement unitManagement = project.getUnitManagement();
+        ObservableList<Unit> unitsList = FXCollections.observableList(unitManagement.getUnits());
+        unitsTableView.setItems(unitsList);
 
-    public void deleteQuantityKind(ActionEvent actionEvent) {
+        ObservableList<QuantityKind> quantityKindsList = FXCollections.observableList(unitManagement.getQuantityKinds());
+        quantityTableView.setItems(quantityKindsList);
     }
 }

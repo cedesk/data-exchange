@@ -26,11 +26,11 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 import ru.skoltech.cedl.dataexchange.ui.controller.Applicable;
 import ru.skoltech.cedl.dataexchange.ui.controller.Closeable;
 import ru.skoltech.cedl.dataexchange.ui.controller.Displayable;
 import ru.skoltech.cedl.dataexchange.ui.controller.FXMLLoaderFactory;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
 
 import java.io.IOException;
 import java.net.URL;
@@ -41,8 +41,8 @@ import java.net.URL;
  * must be used for launching a new view.
  *
  * @param <T> type of JavaFX controller.
- *
- * Created by Nikolay Groshkov on 12-Aug-17.
+ *            <p>
+ *            Created by Nikolay Groshkov on 12-Aug-17.
  */
 public class ViewBuilder<T> {
 
@@ -67,13 +67,58 @@ public class ViewBuilder<T> {
      * Create an instance of {@link ViewBuilder}.
      *
      * @param fxmlLoaderFactory loader factory of <i>*.fxml</i> files
-     * @param title title of feature view
-     * @param location location of <i>*.fxml</i> file of feature view
+     * @param title             title of feature view
+     * @param location          location of <i>*.fxml</i> file of feature view
      */
     public ViewBuilder(FXMLLoaderFactory fxmlLoaderFactory, String title, URL location) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
         this.title = title;
         this.location = location;
+    }
+
+    /**
+     * Setup an event handler which is performed when a feature view will produce some changes.
+     *
+     * @param applyEventHandler apply event handler of view
+     */
+    public void applyEventHandler(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
+    /**
+     * Setup an event handler which is performed when a feature view will be closed.
+     *
+     * @param closeEventHandler close event handler of view
+     */
+    public void closeEventHandler(EventHandler<WindowEvent> closeEventHandler) {
+        this.closeEventHandler = closeEventHandler;
+    }
+
+    /**
+     * Setup an event handler which is performed when a feature view will be displayed.
+     *
+     * @param displayEventHandler display event handler of view
+     */
+    public void displayEventHandler(EventHandler<WindowEvent> displayEventHandler) {
+        this.displayEventHandler = displayEventHandler;
+    }
+
+    /**
+     * Setup a modality of a feature view.
+     *
+     * @param modality modality of view
+     */
+    public void modality(Modality modality) {
+        this.modality = modality;
+    }
+
+    /**
+     * Setup an owner {@link Window} of a feature view.
+     *
+     * @param ownerWindow owner {@link Window}
+     */
+    public void ownerWindow(Window ownerWindow) {
+        this.ownerWindow = ownerWindow;
     }
 
     /**
@@ -87,53 +132,6 @@ public class ViewBuilder<T> {
     }
 
     /**
-     * Setup an owner {@link Window} of a feature view.
-     *
-     * @param ownerWindow owner {@link Window}
-     */
-    public void ownerWindow(Window ownerWindow) {
-        this.ownerWindow = ownerWindow;
-    }
-
-    /**
-     * Setup a modality of a feature view.
-     *
-     * @param modality modality of view
-     */
-    public void modality(Modality modality) {
-        this.modality = modality;
-    }
-
-    /**
-     * Setup a horizontal location on the screen of a feature view.
-     *
-     * @param x horizontal location of view
-     */
-    public void x(double x) {
-        this.x = x;
-    }
-
-    /**
-     * Setup a vertical location on the screen of a feature view.
-     *
-     * @param y vertical location of view
-     */
-    public void y(double y) {
-        this.y = y;
-    }
-
-    /**
-     * Setup both horizontal and vertical location on the screen of a feature view.
-     *
-     * @param x horizontal location of view
-     * @param y vertical location of view
-     */
-    public void xy(double x, double y) {
-        x(x);
-        y(y);
-    }
-
-    /**
      * Setup a resizable parameter of a feature view
      * (<i>true</i> by default).
      *
@@ -141,33 +139,6 @@ public class ViewBuilder<T> {
      */
     public void resizable(boolean resizable) {
         this.resizable = resizable;
-    }
-
-    /**
-     * Setup an event handler which is performed when a feature view will be displayed.
-     *
-     * @param displayEventHandler display event handler of view
-     */
-    public void displayEventHandler(EventHandler<WindowEvent> displayEventHandler) {
-        this.displayEventHandler = displayEventHandler;
-    }
-
-    /**
-     * Setup an event handler which is performed when a feature view will be closed.
-     *
-     * @param closeEventHandler close event handler of view
-     */
-    public void closeEventHandler(EventHandler<WindowEvent> closeEventHandler) {
-        this.closeEventHandler = closeEventHandler;
-    }
-
-    /**
-     * Setup an event handler which is performed when a feature view will produce some changes.
-     *
-     * @param applyEventHandler apply event handler of view
-     */
-    public void applyEventHandler(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
     }
 
     /**
@@ -191,6 +162,35 @@ public class ViewBuilder<T> {
     public T showAndWait(Object... args) {
         this.createStage(args).showAndWait();
         return controller;
+    }
+
+    /**
+     * Setup a horizontal location on the screen of a feature view.
+     *
+     * @param x horizontal location of view
+     */
+    public void x(double x) {
+        this.x = x;
+    }
+
+    /**
+     * Setup both horizontal and vertical location on the screen of a feature view.
+     *
+     * @param x horizontal location of view
+     * @param y vertical location of view
+     */
+    public void xy(double x, double y) {
+        x(x);
+        y(y);
+    }
+
+    /**
+     * Setup a vertical location on the screen of a feature view.
+     *
+     * @param y vertical location of view
+     */
+    public void y(double y) {
+        this.y = y;
     }
 
     private Stage createStage(Object... args) {
@@ -234,7 +234,7 @@ public class ViewBuilder<T> {
 
             if (applyEventHandler != null) {
                 if (controller instanceof Applicable) {
-                    ((Applicable)controller).setOnApply(applyEventHandler);
+                    ((Applicable) controller).setOnApply(applyEventHandler);
                 } else {
                     logger.warn("Cannot setup applyEventHandler because controller " +
                             controller.getClass().getCanonicalName() +
@@ -248,5 +248,5 @@ public class ViewBuilder<T> {
             throw new RuntimeException("Unable to load view: " + location, e);
         }
     }
-        
+
 }

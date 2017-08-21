@@ -15,55 +15,56 @@
   ~ limitations under the License.
   -->
 
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:jpa="http://www.springframework.org/schema/data/jpa"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans      http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/context    http://www.springframework.org/schema/context/spring-context.xsd
                            http://www.springframework.org/schema/util       http://www.springframework.org/schema/util/spring-util.xsd
                            http://www.springframework.org/schema/data/jpa   http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
                            http://www.springframework.org/schema/tx         http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-    <bean id="studyService" class="ru.skoltech.cedl.dataexchange.service.impl.StudyServiceImpl" >
+    <bean id="studyService" class="ru.skoltech.cedl.dataexchange.service.impl.StudyServiceImpl">
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
     </bean>
 
     <bean id="logEntryService" class="ru.skoltech.cedl.dataexchange.service.impl.LogEntryServiceImpl"/>
 
-    <bean id="parameterModelService" class="ru.skoltech.cedl.dataexchange.service.impl.ParameterModelServiceImpl" />
+    <bean id="parameterModelService" class="ru.skoltech.cedl.dataexchange.service.impl.ParameterModelServiceImpl"/>
 
-    <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UserManagementServiceImpl" />
+    <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UserManagementServiceImpl"/>
 
-    <bean id="userRoleManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UserRoleManagementServiceImpl" >
-        <property name="userManagementService" ref="userManagementService" />
+    <bean id="userRoleManagementService"
+          class="ru.skoltech.cedl.dataexchange.service.impl.UserRoleManagementServiceImpl">
+        <property name="userManagementService" ref="userManagementService"/>
     </bean>
 
-    <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UnitManagementServiceImpl" >
-        <property name="fileStorageService" ref="fileStorageService" />
+    <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UnitManagementServiceImpl">
+        <property name="fileStorageService" ref="fileStorageService"/>
     </bean>
 
     <bean id="modelUpdateService" class="ru.skoltech.cedl.dataexchange.service.impl.ModelUpdateServiceImpl">
-        <property name="actionLogger" ref="actionLogger" />
+        <property name="actionLogger" ref="actionLogger"/>
     </bean>
 
-    <bean id="differenceMergeService" class="ru.skoltech.cedl.dataexchange.service.impl.DifferenceMergeServiceImpl" >
-        <property name="modelUpdateService" ref="modelUpdateService" />
+    <bean id="differenceMergeService" class="ru.skoltech.cedl.dataexchange.service.impl.DifferenceMergeServiceImpl">
+        <property name="modelUpdateService" ref="modelUpdateService"/>
         <property name="studyService" ref="studyService"/>
     </bean>
 
-    <bean id="repositorySchemeService" class="ru.skoltech.cedl.dataexchange.service.impl.RepositorySchemeServiceImpl" >
-        <property name="applicationSettings" ref="applicationSettings" />
+    <bean id="repositorySchemeService" class="ru.skoltech.cedl.dataexchange.service.impl.RepositorySchemeServiceImpl">
+        <property name="applicationSettings" ref="applicationSettings"/>
     </bean>
 
-    <bean id="updateService" class="ru.skoltech.cedl.dataexchange.service.impl.UpdateServiceImpl" >
-        <property name="applicationSettings" ref="applicationSettings" />
-        <property name="jsoupService" ref="jsoupService" />
+    <bean id="updateService" class="ru.skoltech.cedl.dataexchange.service.impl.UpdateServiceImpl">
+        <property name="applicationSettings" ref="applicationSettings"/>
+        <property name="jsoupService" ref="jsoupService"/>
     </bean>
 
-    <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.service.impl.JsoupServiceImpl" />
+    <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.service.impl.JsoupServiceImpl"/>
 
     <bean class="ru.skoltech.cedl.dataexchange.service.impl.SpreadsheetInputOutputExtractorServiceImpl"
           id="spreadsheetInputOutputExtractorService">
@@ -71,47 +72,47 @@
     </bean>
 
     <!-- persistence -->
-    <context:annotation-config />
-    <tx:annotation-driven />
-    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository.jpa" />
+    <context:annotation-config/>
+    <tx:annotation-driven/>
+    <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository.jpa"/>
     <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository.envers"
-                      factory-class="org.springframework.data.envers.repository.support.EnversRevisionRepositoryFactoryBean" />
+                      factory-class="org.springframework.data.envers.repository.support.EnversRevisionRepositoryFactoryBean"/>
     <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository.revision"
-                      factory-class="ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionRepositoryFactoryBean" />
+                      factory-class="ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionRepositoryFactoryBean"/>
 
-    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager" />
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"/>
 
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <property name="dataSource" ref="dataSource" />
-        <property name="packagesToScan" value="ru.skoltech.cedl.dataexchange.entity" />
-        <property name="jpaVendorAdapter" >
-            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" >
-                <property name="databasePlatform" value="${hibernate.dialect}" />
-                <property name="showSql" value="${hibernate.show.sql}" />
+        <property name="dataSource" ref="dataSource"/>
+        <property name="packagesToScan" value="ru.skoltech.cedl.dataexchange.entity"/>
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="databasePlatform" value="${hibernate.dialect}"/>
+                <property name="showSql" value="${hibernate.show.sql}"/>
             </bean>
         </property>
-        <property name="jpaPropertyMap" >
+        <property name="jpaPropertyMap">
             <util:map id="jpaProperties" map-class="java.util.HashMap">
-                <entry key="hibernate.dialect" value="${hibernate.dialect}" />
-                <entry key="hibernate.hbm2ddl.auto" value="#{ ${repository.schema.create} ? 'update' : 'validate' }" />
-                <entry key="hibernate.connection.isolation" value="${hibernate.connection.isolation}" />
-                <entry key="hibernate.format_sql" value="${hibernate.format.sql}" />
-                <entry key="org.hibernate.envers.audit_strategy" value="${hibernate.envers.audit_strategy}" />
-                <entry key="hibernate.session_factory.interceptor" value-ref="modificationInterceptor" />
+                <entry key="hibernate.dialect" value="${hibernate.dialect}"/>
+                <entry key="hibernate.hbm2ddl.auto" value="#{ ${repository.schema.create} ? 'update' : 'validate' }"/>
+                <entry key="hibernate.connection.isolation" value="${hibernate.connection.isolation}"/>
+                <entry key="hibernate.format_sql" value="${hibernate.format.sql}"/>
+                <entry key="org.hibernate.envers.audit_strategy" value="${hibernate.envers.audit_strategy}"/>
+                <entry key="hibernate.session_factory.interceptor" value-ref="modificationInterceptor"/>
             </util:map>
         </property>
     </bean>
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="${datasource.driver.class.name}" />
+        <property name="driverClassName" value="${datasource.driver.class.name}"/>
         <property name="url">
             <bean factory-bean="repositoryConnectionService" factory-method="createRepositoryUrl"/>
         </property>
-        <property name="username" value="${repository.user}" />
-        <property name="password" value="${repository.password}" />
+        <property name="username" value="${repository.user}"/>
+        <property name="password" value="${repository.password}"/>
     </bean>
 
     <bean id="modificationInterceptor"
-          class="ru.skoltech.cedl.dataexchange.db.ModificationInterceptor" />
+          class="ru.skoltech.cedl.dataexchange.db.ModificationInterceptor"/>
 
 </beans>

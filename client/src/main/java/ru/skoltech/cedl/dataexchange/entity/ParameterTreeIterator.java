@@ -38,16 +38,6 @@ public class ParameterTreeIterator implements Iterator<ParameterModel> {
         buildList(modelNode, filter);
     }
 
-    private void buildList(ModelNode modelNode, Predicate<ParameterModel> filter) {
-        list.addAll(modelNode.getParameters().stream().filter(filter).collect(Collectors.toList()));
-        if (modelNode instanceof CompositeModelNode) {
-            CompositeModelNode<ModelNode> compositeModelNode = (CompositeModelNode<ModelNode>) modelNode;
-            for (ModelNode child : compositeModelNode.getSubNodes()) {
-                buildList(child, filter);
-            }
-        }
-    }
-
     @Override
     public boolean hasNext() {
         return !list.isEmpty();
@@ -61,5 +51,15 @@ public class ParameterTreeIterator implements Iterator<ParameterModel> {
     @Override
     public void remove() {
         throw new UnsupportedOperationException();
+    }
+
+    private void buildList(ModelNode modelNode, Predicate<ParameterModel> filter) {
+        list.addAll(modelNode.getParameters().stream().filter(filter).collect(Collectors.toList()));
+        if (modelNode instanceof CompositeModelNode) {
+            CompositeModelNode<ModelNode> compositeModelNode = (CompositeModelNode<ModelNode>) modelNode;
+            for (ModelNode child : compositeModelNode.getSubNodes()) {
+                buildList(child, filter);
+            }
+        }
     }
 }

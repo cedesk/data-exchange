@@ -54,7 +54,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for editing external model.
- *
+ * <p>
  * Created by D.Knoll on 03.07.2015.
  */
 public class ExternalModelEditorController implements Initializable {
@@ -75,38 +75,33 @@ public class ExternalModelEditorController implements Initializable {
     private ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener;
     private ModelEditingController.ParameterUpdateListener parameterUpdateListener;
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
-    }
-
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
     }
 
-    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
-        this.modelUpdateService = modelUpdateService;
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-
-    }
-
-    public void setVisible(boolean visible) {
-        externalModelViewContainer.setVisible(visible);
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     public void setModelNode(ModelNode modelNode) {
         this.modelNode = modelNode;
         updateView();
+    }
+
+    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
+        this.modelUpdateService = modelUpdateService;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public void setVisible(boolean visible) {
+        externalModelViewContainer.setVisible(visible);
     }
 
     public void addExternalModel() {
@@ -140,6 +135,28 @@ public class ExternalModelEditorController implements Initializable {
         }
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+    }
+
+    public void reloadExternalModels() {
+        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
+        for (ExternalModel externalModel : modelNode.getExternalModels())
+            try {
+                modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler,
+                        Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
+            } catch (ExternalModelException e) {
+                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
+            }
+    }
+
+    public void setListeners(ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener,
+                             ModelEditingController.ParameterUpdateListener parameterUpdateListener) {
+        this.externalModelUpdateListener = externalModelUpdateListener;
+        this.parameterUpdateListener = parameterUpdateListener;
+    }
+
     private void deleteExternalModel(ActionEvent actionEvent) {
         Button deleteButton = (Button) actionEvent.getSource();
         Pair pair = (Pair) deleteButton.getUserData();
@@ -163,23 +180,6 @@ public class ExternalModelEditorController implements Initializable {
             StatusLogger.getInstance().log("removed external model: " + externalModel.getName());
             actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_REMOVE, externalModel.getNodePath());
         }
-    }
-
-    public void reloadExternalModels() {
-        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
-        for (ExternalModel externalModel : modelNode.getExternalModels())
-            try {
-                modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler,
-                        Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
-            } catch (ExternalModelException e) {
-                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
-            }
-    }
-
-    public void setListeners(ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener,
-                             ModelEditingController.ParameterUpdateListener parameterUpdateListener) {
-        this.externalModelUpdateListener = externalModelUpdateListener;
-        this.parameterUpdateListener = parameterUpdateListener;
     }
 
     private void exchangeExternalModel(ActionEvent actionEvent) {

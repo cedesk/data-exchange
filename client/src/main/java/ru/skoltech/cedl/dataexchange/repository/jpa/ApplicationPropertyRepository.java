@@ -21,7 +21,7 @@ import ru.skoltech.cedl.dataexchange.entity.ApplicationProperty;
 
 /**
  * Data Access Operations with {@link ApplicationProperty} entity.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public interface ApplicationPropertyRepository extends JpaRepository<ApplicationProperty, Long> {

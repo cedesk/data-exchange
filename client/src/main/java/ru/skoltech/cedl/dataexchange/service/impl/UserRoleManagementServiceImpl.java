@@ -35,16 +35,14 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link UserRoleManagementService}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 26-Jul-17.
  */
 public class UserRoleManagementServiceImpl implements UserRoleManagementService {
 
     private static final Logger logger = Logger.getLogger(UserRoleManagementServiceImpl.class);
-
-    private UserManagementServiceImpl userManagementService;
-
     private final UserRoleManagementRepository userRoleManagementRepository;
+    private UserManagementServiceImpl userManagementService;
 
     @Autowired
     public UserRoleManagementServiceImpl(UserRoleManagementRepository userRoleManagementRepository) {
@@ -55,42 +53,76 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
         this.userManagementService = userManagementService;
     }
 
-    @Override
-    public UserRoleManagement createUserRoleManagement() {
-        UserRoleManagement userRoleManagement = new UserRoleManagement();
-
-        Discipline adminDiscipline = new Discipline("Admin", userRoleManagement, true);
-        userRoleManagement.getDisciplines().add(adminDiscipline);
-        return userRoleManagement;
-    }
-
-    @Override
-    public UserRoleManagement findUserRoleManagement(Long userRoleManagementId) {
-        return userRoleManagementRepository.findOne(userRoleManagementId);
-    }
-
-    @Override
-    public UserRoleManagement saveUserRoleManagement(UserRoleManagement userRoleManagement) {
-        return userRoleManagementRepository.save(userRoleManagement);
-    }
-
-    @Override
-    public UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement) {
-        UserRoleManagement urm = this.createUserRoleManagement();
-
-        // add a discipline for each subsystem
-        for (ModelNode modelNode : systemModel.getSubNodes()) {
-            Discipline discipline = new Discipline(modelNode.getName(), urm);
-            urm.getDisciplines().add(discipline);
+    private static ModelNode findOwningSubSystem(ModelNode modelNode) {
+        if (modelNode.isRootNode()) {
+            return modelNode;
         }
-        // add user disciplines
-        if (userManagement != null) {
-            User admin = userManagementService.obtainUser(userManagement, UserManagementService.ADMIN_USER_NAME);
-            if (admin != null) {
-                this.addAdminDiscipline(urm, admin);
-            }
+        ModelNode parent = modelNode.getParent();
+        while (!parent.isRootNode()) {
+            modelNode = parent;
+            parent = parent.getParent();
         }
-        return urm;
+        return modelNode;
+    }
+
+    @Override
+    public boolean addAdminDiscipline(UserRoleManagement userRoleManagement, User user) {
+        Discipline adminDiscipline = this.obtainAdminDiscipline(userRoleManagement);
+        return this.addUserDiscipline(userRoleManagement, user, adminDiscipline);
+    }
+
+    @Override
+    public boolean addDisciplineSubsystem(UserRoleManagement userRoleManagement, Discipline discipline, SubSystemModel subSystem) {
+        DisciplineSubSystem disciplineSubSystem = new DisciplineSubSystem(userRoleManagement, discipline, subSystem);
+        boolean found = !this.obtainSubSystemsOfDiscipline(userRoleManagement, discipline).isEmpty();
+        if (!found) {
+            disciplineSubSystem.setUserRoleManagement(userRoleManagement);
+            userRoleManagement.getDisciplineSubSystems().add(disciplineSubSystem);
+        }
+        return found;
+    }
+
+    @Override
+    public boolean addUserDiscipline(UserRoleManagement userRoleManagement, User user, Discipline discipline) {
+        UserDiscipline userDiscipline = new UserDiscipline(userRoleManagement, user, discipline);
+        boolean found = userRoleManagement.getUserDisciplines().contains(userDiscipline);
+        if (!found) {
+            userDiscipline.setUserRoleManagement(userRoleManagement);
+            userRoleManagement.getUserDisciplines().add(userDiscipline);
+        }
+        return found;
+    }
+
+    @Override
+    public void addUserWithAdminRole(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName) {
+        User admin = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
+        userManagement.getUsers().add(admin);
+        this.addAdminDiscipline(userRoleManagement, admin);
+    }
+
+    @Override
+    public boolean checkUserAccessToModelNode(UserRoleManagement userRoleManagement, User user, ModelNode modelNode) {
+        // check username contained in user management
+        if (user == null)
+            return false;
+
+        // check the users associated disciplines
+        ModelNode subSystem = findOwningSubSystem(modelNode);
+        Discipline discipline = this.obtainDisciplineOfSubSystem(userRoleManagement, subSystem);
+        List<Discipline> disciplinesOfUser = this.obtainDisciplinesOfUser(userRoleManagement, user);
+        for (Discipline userDiscipline : disciplinesOfUser) {
+            if (userDiscipline.equals(discipline) || userDiscipline.isBuiltIn())
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkUserAdmin(UserRoleManagement userRoleManagement, User user) {
+        for (Discipline discipline : this.obtainDisciplinesOfUser(userRoleManagement, user)) {
+            if (discipline.isBuiltIn()) return true;
+        }
+        return false;
     }
 
     @Override
@@ -128,12 +160,43 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
     }
 
     @Override
-    public void addUserWithAdminRole(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName) {
-        User admin = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
-        userManagement.getUsers().add(admin);
-        this.addAdminDiscipline(userRoleManagement, admin);
+    public UserRoleManagement createUserRoleManagement() {
+        UserRoleManagement userRoleManagement = new UserRoleManagement();
+
+        Discipline adminDiscipline = new Discipline("Admin", userRoleManagement, true);
+        userRoleManagement.getDisciplines().add(adminDiscipline);
+        return userRoleManagement;
     }
 
+    @Override
+    public UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement) {
+        UserRoleManagement urm = this.createUserRoleManagement();
+
+        // add a discipline for each subsystem
+        for (ModelNode modelNode : systemModel.getSubNodes()) {
+            Discipline discipline = new Discipline(modelNode.getName(), urm);
+            urm.getDisciplines().add(discipline);
+        }
+        // add user disciplines
+        if (userManagement != null) {
+            User admin = userManagementService.obtainUser(userManagement, UserManagementService.ADMIN_USER_NAME);
+            if (admin != null) {
+                this.addAdminDiscipline(urm, admin);
+            }
+        }
+        return urm;
+    }
+
+    @Override
+    public Map<String, Discipline> disciplineMap(UserRoleManagement userRoleManagement) {
+        return userRoleManagement.getDisciplines().stream().collect(
+                Collectors.toMap(Discipline::getName, Function.identity()));
+    }
+
+    @Override
+    public UserRoleManagement findUserRoleManagement(Long userRoleManagementId) {
+        return userRoleManagementRepository.findOne(userRoleManagementId);
+    }
 
     @Override
     public Discipline obtainAdminDiscipline(UserRoleManagement userRoleManagement) {
@@ -145,71 +208,6 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
             throw new RuntimeException("inconsistent UserManagement!");
         }
         return adminDisciplines.get(0);
-    }
-
-    @Override
-    public Map<String, Discipline> disciplineMap(UserRoleManagement userRoleManagement) {
-        return userRoleManagement.getDisciplines().stream().collect(
-                Collectors.toMap(Discipline::getName, Function.identity()));
-    }
-
-    @Override
-    public void removeDiscipline(UserRoleManagement userRoleManagement, Discipline discipline) {
-        userRoleManagement.getUserDisciplines().removeIf(userDiscipline -> userDiscipline.getDiscipline().equals(discipline));
-        userRoleManagement.getDisciplineSubSystems().removeIf(disciplineSubSystem -> disciplineSubSystem.getDiscipline().equals(discipline));
-        userRoleManagement.getDisciplines().remove(discipline);
-    }
-
-    @Override
-    public boolean addUserDiscipline(UserRoleManagement userRoleManagement, User user, Discipline discipline) {
-        UserDiscipline userDiscipline = new UserDiscipline(userRoleManagement, user, discipline);
-        boolean found = userRoleManagement.getUserDisciplines().contains(userDiscipline);
-        if (!found) {
-            userDiscipline.setUserRoleManagement(userRoleManagement);
-            userRoleManagement.getUserDisciplines().add(userDiscipline);
-        }
-        return found;
-    }
-
-    @Override
-    public boolean addAdminDiscipline(UserRoleManagement userRoleManagement, User user) {
-        Discipline adminDiscipline = this.obtainAdminDiscipline(userRoleManagement);
-        return this.addUserDiscipline(userRoleManagement, user, adminDiscipline);
-    }
-
-    @Override
-    public List<User> obtainUsersOfDiscipline(UserRoleManagement userRoleManagement, Discipline discipline) {
-        return userRoleManagement.getUserDisciplines().stream()
-                .filter(userDiscipline -> userDiscipline.getDiscipline().equals(discipline))
-                .map(UserDiscipline::getUser).distinct()
-                .collect(Collectors.toCollection(LinkedList::new));
-    }
-
-    @Override
-    public List<Discipline> obtainDisciplinesOfUser(UserRoleManagement userRoleManagement, User user) {
-        return userRoleManagement.getUserDisciplines().stream()
-                .filter(userDiscipline -> userDiscipline.getUser().equals(user))
-                .map(UserDiscipline::getDiscipline).distinct()
-                .collect(Collectors.toCollection(LinkedList::new));
-    }
-
-    @Override
-    public boolean addDisciplineSubsystem(UserRoleManagement userRoleManagement, Discipline discipline, SubSystemModel subSystem) {
-        DisciplineSubSystem disciplineSubSystem = new DisciplineSubSystem(userRoleManagement, discipline, subSystem);
-        boolean found = !this.obtainSubSystemsOfDiscipline(userRoleManagement, discipline).isEmpty();
-        if (!found) {
-            disciplineSubSystem.setUserRoleManagement(userRoleManagement);
-            userRoleManagement.getDisciplineSubSystems().add(disciplineSubSystem);
-        }
-        return found;
-    }
-
-    @Override
-    public List<SubSystemModel> obtainSubSystemsOfDiscipline(UserRoleManagement userRoleManagement, Discipline discipline) {
-        return userRoleManagement.getDisciplineSubSystems().stream()
-                .filter(disciplineSubSystem -> disciplineSubSystem.getDiscipline().equals(discipline))
-                .map(DisciplineSubSystem::getSubSystem).distinct()
-                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
@@ -230,40 +228,39 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
     }
 
     @Override
-    public boolean checkUserAdmin(UserRoleManagement userRoleManagement, User user) {
-        for (Discipline discipline : this.obtainDisciplinesOfUser(userRoleManagement, user)) {
-            if (discipline.isBuiltIn()) return true;
-        }
-        return false;
+    public List<Discipline> obtainDisciplinesOfUser(UserRoleManagement userRoleManagement, User user) {
+        return userRoleManagement.getUserDisciplines().stream()
+                .filter(userDiscipline -> userDiscipline.getUser().equals(user))
+                .map(UserDiscipline::getDiscipline).distinct()
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
-    public boolean checkUserAccessToModelNode(UserRoleManagement userRoleManagement, User user, ModelNode modelNode) {
-        // check username contained in user management
-        if (user == null)
-            return false;
-
-        // check the users associated disciplines
-        ModelNode subSystem = findOwningSubSystem(modelNode);
-        Discipline discipline = this.obtainDisciplineOfSubSystem(userRoleManagement, subSystem);
-        List<Discipline> disciplinesOfUser = this.obtainDisciplinesOfUser(userRoleManagement, user);
-        for (Discipline userDiscipline : disciplinesOfUser) {
-            if (userDiscipline.equals(discipline) || userDiscipline.isBuiltIn())
-                return true;
-        }
-        return false;
+    public List<SubSystemModel> obtainSubSystemsOfDiscipline(UserRoleManagement userRoleManagement, Discipline discipline) {
+        return userRoleManagement.getDisciplineSubSystems().stream()
+                .filter(disciplineSubSystem -> disciplineSubSystem.getDiscipline().equals(discipline))
+                .map(DisciplineSubSystem::getSubSystem).distinct()
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    private static ModelNode findOwningSubSystem(ModelNode modelNode) {
-        if (modelNode.isRootNode()) {
-            return modelNode;
-        }
-        ModelNode parent = modelNode.getParent();
-        while (!parent.isRootNode()) {
-            modelNode = parent;
-            parent = parent.getParent();
-        }
-        return modelNode;
+    @Override
+    public List<User> obtainUsersOfDiscipline(UserRoleManagement userRoleManagement, Discipline discipline) {
+        return userRoleManagement.getUserDisciplines().stream()
+                .filter(userDiscipline -> userDiscipline.getDiscipline().equals(discipline))
+                .map(UserDiscipline::getUser).distinct()
+                .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    @Override
+    public void removeDiscipline(UserRoleManagement userRoleManagement, Discipline discipline) {
+        userRoleManagement.getUserDisciplines().removeIf(userDiscipline -> userDiscipline.getDiscipline().equals(discipline));
+        userRoleManagement.getDisciplineSubSystems().removeIf(disciplineSubSystem -> disciplineSubSystem.getDiscipline().equals(discipline));
+        userRoleManagement.getDisciplines().remove(discipline);
+    }
+
+    @Override
+    public UserRoleManagement saveUserRoleManagement(UserRoleManagement userRoleManagement) {
+        return userRoleManagementRepository.save(userRoleManagement);
     }
 
 }

@@ -64,6 +64,15 @@ public class UpdateServiceImplTest extends AbstractApplicationContextTest {
     }
 
     @Test
+    public void testLocal() throws URISyntaxException, IOException {
+        List<String> links = updateService.extractFileNames(file);
+
+        System.out.println(links.stream().collect(Collectors.joining("\n")));
+
+        Assert.assertArrayEquals(FILE_NAMES.toArray(), links.toArray());
+    }
+
+    @Test
     public void testRemote() {
         Optional<ApplicationPackage> versionAvailable = updateService.getLatestVersionAvailable();
         Assert.assertTrue(versionAvailable.isPresent());
@@ -71,15 +80,6 @@ public class UpdateServiceImplTest extends AbstractApplicationContextTest {
         String version = versionAvailable.get().getVersion();
         String url = versionAvailable.get().getUrl();
         System.out.println("Latest version on server: " + version + ", " + url);
-    }
-
-    @Test
-    public void testLocal() throws URISyntaxException, IOException {
-        List<String> links = updateService.extractFileNames(file);
-
-        System.out.println(links.stream().collect(Collectors.joining("\n")));
-
-        Assert.assertArrayEquals(FILE_NAMES.toArray(), links.toArray());
     }
 
     @Test

@@ -26,10 +26,18 @@ import java.util.List;
 
 /**
  * Data Access Operations with {@link Study} entity.
- *
+ * <p>
  * Created by Nikolay Groshkov on 06-Aug-17.
  */
 public interface StudyRepository extends JpaRevisionEntityRepository<Study, Long> {
+
+    /**
+     * Remove from the database a {@link Study} with a specified name.
+     *
+     * @param name name of the {@link Study}
+     */
+    @Transactional
+    void deleteByName(String name);
 
     /**
      * Retrieve names of all stored studies.
@@ -40,15 +48,6 @@ public interface StudyRepository extends JpaRevisionEntityRepository<Study, Long
     List<String> findAllNames();
 
     /**
-     * Retrieve a latest model modification timestamp of study with specified name.
-     *
-     * @param name name of the study.
-     * @return timestamp value of latest model modification time.
-     */
-    @Query("SELECT latestModelModification FROM Study WHERE name = :name")
-    Long findLatestModelModificationByName(@Param("name") String name);
-
-    /**
      * Retrieve a {@link Study} by name.
      *
      * @param name name of the {@link Study}
@@ -57,9 +56,11 @@ public interface StudyRepository extends JpaRevisionEntityRepository<Study, Long
     Study findByName(String name);
 
     /**
-     * Remove from the database a {@link Study} with a specified name.
-     * @param name name of the {@link Study}
+     * Retrieve a latest model modification timestamp of study with specified name.
+     *
+     * @param name name of the study.
+     * @return timestamp value of latest model modification time.
      */
-    @Transactional
-    void deleteByName(String name);
+    @Query("SELECT latestModelModification FROM Study WHERE name = :name")
+    Long findLatestModelModificationByName(@Param("name") String name);
 }

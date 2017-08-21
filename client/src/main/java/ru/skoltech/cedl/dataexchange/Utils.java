@@ -40,6 +40,42 @@ public class Utils {
     public static final DecimalFormat NUMBER_FORMAT = new DecimalFormat("###0.0##");
     private static final Logger logger = Logger.getLogger(Utils.class);
 
+    public static String getDomain() {
+        try {
+            String hostname = InetAddress.getLocalHost().getHostName().toLowerCase();
+            String canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+            String tmp = canonicalHostName.replace(hostname, "");
+            if (tmp.length() > 0)
+                return tmp.substring(1);
+        } catch (UnknownHostException e) {
+            // ignore
+        }
+        return "localdomain";
+    }
+
+    public static String getFormattedDateAndTime() {
+        Date now = new Date();
+        return TIME_AND_DATE_FOR_FILENAMES.format(now);
+    }
+
+    public static String getFullHostname() {
+        try {
+            return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+        } catch (UnknownHostException e) {
+            // ignore
+        }
+        return "localhost.localdomain";
+    }
+
+    public static String getHostname() {
+        try {
+            return InetAddress.getLocalHost().getHostName().toLowerCase();
+        } catch (UnknownHostException e) {
+            // ignore
+        }
+        return "localhost";
+    }
+
     /**
      * Compares two version strings.
      * <p>
@@ -81,11 +117,6 @@ public class Utils {
         }
     }
 
-    public static String getFormattedDateAndTime() {
-        Date now = new Date();
-        return TIME_AND_DATE_FOR_FILENAMES.format(now);
-    }
-
     public static <T> T copyBean(T source, T target) {
         try {
             PropertyUtils.copyProperties(target, source);
@@ -93,37 +124,6 @@ public class Utils {
             logger.error("error copying bean " + source.toString(), e);
         }
         return target;
-    }
-
-    public static String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName().toLowerCase();
-        } catch (UnknownHostException e) {
-            // ignore
-        }
-        return "localhost";
-    }
-
-    public static String getFullHostname() {
-        try {
-            return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
-        } catch (UnknownHostException e) {
-            // ignore
-        }
-        return "localhost.localdomain";
-    }
-
-    public static String getDomain() {
-        try {
-            String hostname = InetAddress.getLocalHost().getHostName().toLowerCase();
-            String canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
-            String tmp = canonicalHostName.replace(hostname, "");
-            if (tmp.length() > 0)
-                return tmp.substring(1);
-        } catch (UnknownHostException e) {
-            // ignore
-        }
-        return "localdomain";
     }
 
     public static String getExtension(String fileName) {

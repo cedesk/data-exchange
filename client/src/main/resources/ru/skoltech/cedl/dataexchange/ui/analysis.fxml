@@ -20,8 +20,8 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <?import ru.skoltech.cedl.dataexchange.ui.control.ChangeAnalysisView?>
-<AnchorPane prefHeight="600.0" prefWidth="1200.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112"
-            xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="1200.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.112"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ChangeAnalysisController">
     <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                 AnchorPane.topAnchor="0.0">

@@ -81,6 +81,10 @@ public class DiffController implements Initializable {
 
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
+    public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
+        this.differenceMergeService = differenceMergeService;
+    }
+
     public void setProject(Project project) {
         this.project = project;
     }
@@ -89,8 +93,29 @@ public class DiffController implements Initializable {
         this.userRoleManagementService = userRoleManagementService;
     }
 
-    public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
-        this.differenceMergeService = differenceMergeService;
+    public void acceptAll(ActionEvent actionEvent) {
+        try {
+            List<ModelDifference> appliedDifferences = differenceMergeService.mergeChangesOntoFirst(project, modelDifferences);
+            if (appliedDifferences.size() > 0) {
+                project.markStudyModified();
+            }
+            if (modelDifferences.size() == 0) {
+                close(null);
+            }
+        } catch (MergeException me) {
+            StatusLogger.getInstance().log(me.getMessage(), true);
+        }
+    }
+
+    public void close(ActionEvent actionEvent) {
+        Stage stage = (Stage) diffTable.getScene().getWindow();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
+    public void displayDifferences(List<ModelDifference> modelDiffs) {
+        addChangeAuthors(modelDiffs);
+        modelDifferences.clear();
+        modelDifferences.addAll(modelDiffs);
     }
 
     @Override
@@ -120,31 +145,6 @@ public class DiffController implements Initializable {
         });
         project.loadRepositoryStudy();
         refreshView(null);
-    }
-
-    public void acceptAll(ActionEvent actionEvent) {
-        try {
-            List<ModelDifference> appliedDifferences = differenceMergeService.mergeChangesOntoFirst(project, modelDifferences);
-            if (appliedDifferences.size() > 0) {
-                project.markStudyModified();
-            }
-            if (modelDifferences.size() == 0) {
-                close(null);
-            }
-        } catch (MergeException me) {
-            StatusLogger.getInstance().log(me.getMessage(), true);
-        }
-    }
-
-    public void close(ActionEvent actionEvent) {
-        Stage stage = (Stage) diffTable.getScene().getWindow();
-        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
-    }
-
-    public void displayDifferences(List<ModelDifference> modelDiffs) {
-        addChangeAuthors(modelDiffs);
-        modelDifferences.clear();
-        modelDifferences.addAll(modelDiffs);
     }
 
     public void refreshView(ActionEvent actionEvent) {

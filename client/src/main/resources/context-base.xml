@@ -15,77 +15,80 @@
   ~ limitations under the License.
   -->
 
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans      http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/context    http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:property-placeholder location="classpath:cedesk.properties" ignore-unresolvable="true"  system-properties-mode="OVERRIDE"/>
-    <context:property-placeholder location="file:${cedesk.app.dir}/${cedesk.app.file}" ignore-unresolvable="true" system-properties-mode="OVERRIDE"/>
+    <context:property-placeholder location="classpath:cedesk.properties" ignore-unresolvable="true"
+                                  system-properties-mode="OVERRIDE"/>
+    <context:property-placeholder location="file:${cedesk.app.dir}/${cedesk.app.file}" ignore-unresolvable="true"
+                                  system-properties-mode="OVERRIDE"/>
 
     <bean id="applicationSettings" class="ru.skoltech.cedl.dataexchange.init.impl.ApplicationSettingsImpl">
-        <constructor-arg name="cedeskAppDir" value="${cedesk.app.dir}" />
-        <constructor-arg name="cedeskAppFile" value="${cedesk.app.file}" />
+        <constructor-arg name="cedeskAppDir" value="${cedesk.app.dir}"/>
+        <constructor-arg name="cedeskAppFile" value="${cedesk.app.file}"/>
 
-        <property name="applicationVersion" value="${application.version}" />
-        <property name="applicationBuildTime" value="${application.build.time}" />
-        <property name="applicationDistributionServerUrl" value="${application.distribution.server.url}" />
-        <property name="cedeskAppFileComment" value="${cedesk.app.file.comment}" />
-        <property name="defaultRepositoryHost" value="${default.repository.host}" />
-        <property name="defaultRepositorySchemaCreate" value="${default.repository.schema.create}" />
-        <property name="defaultRepositorySchemaName" value="${default.repository.schema.name}" />
-        <property name="defaultRepositoryUser" value="${default.repository.user}" />
-        <property name="defaultRepositoryPassword" value="${default.repository.password}" />
-        <property name="defaultRepositoryWatcherAutosync" value="${default.repository.watcher.autosync}" />
-        <property name="defaultProjectLastAutoload" value="${default.project.last.autoload}" />
-        <property name="defaultProjectLastName" value="${default.project.last.name}" />
-        <property name="defaultProjectUseOsUser" value="${default.project.use.os.user}" />
-        <property name="defaultProjectUserName" value="${default.project.user.name}" />
-        <property name="defaultProjectImportName" value="${default.project.import.name}" />
-        <property name="defaultStudyModelDepth" value="${study.model.depth}" />
-        <property name="repositoryJdbcUrlPattern" value="${repository.jdbc.url.pattern}" />
-        <property name="repositorySchemaVersion" value="${repository.schema.version}" />
+        <property name="applicationVersion" value="${application.version}"/>
+        <property name="applicationBuildTime" value="${application.build.time}"/>
+        <property name="applicationDistributionServerUrl" value="${application.distribution.server.url}"/>
+        <property name="cedeskAppFileComment" value="${cedesk.app.file.comment}"/>
+        <property name="defaultRepositoryHost" value="${default.repository.host}"/>
+        <property name="defaultRepositorySchemaCreate" value="${default.repository.schema.create}"/>
+        <property name="defaultRepositorySchemaName" value="${default.repository.schema.name}"/>
+        <property name="defaultRepositoryUser" value="${default.repository.user}"/>
+        <property name="defaultRepositoryPassword" value="${default.repository.password}"/>
+        <property name="defaultRepositoryWatcherAutosync" value="${default.repository.watcher.autosync}"/>
+        <property name="defaultProjectLastAutoload" value="${default.project.last.autoload}"/>
+        <property name="defaultProjectLastName" value="${default.project.last.name}"/>
+        <property name="defaultProjectUseOsUser" value="${default.project.use.os.user}"/>
+        <property name="defaultProjectUserName" value="${default.project.user.name}"/>
+        <property name="defaultProjectImportName" value="${default.project.import.name}"/>
+        <property name="defaultStudyModelDepth" value="${study.model.depth}"/>
+        <property name="repositoryJdbcUrlPattern" value="${repository.jdbc.url.pattern}"/>
+        <property name="repositorySchemaVersion" value="${repository.schema.version}"/>
 
-        <property name="repositoryHost" value="${repository.host}" />
-        <property name="repositorySchemaCreate" value="${repository.schema.create}" />
-        <property name="repositorySchemaName" value="${repository.schema.name}" />
-        <property name="repositoryUser" value="${repository.user}" />
-        <property name="repositoryPassword" value="${repository.password}" />
-        <property name="repositoryWatcherAutosync" value="${repository.watcher.autosync}" />
-        <property name="projectLastAutoload" value="${project.last.autoload}" />
-        <property name="projectLastName" value="${project.last.name}" />
-        <property name="projectUseOsUser" value="${project.use.os.user}" />
-        <property name="projectUserName" value="${project.user.name}" />
-        <property name="projectImportName" value="${project.import.name}" />
-        <property name="studyModelDepth" value="${study.model.depth}" />
+        <property name="repositoryHost" value="${repository.host}"/>
+        <property name="repositorySchemaCreate" value="${repository.schema.create}"/>
+        <property name="repositorySchemaName" value="${repository.schema.name}"/>
+        <property name="repositoryUser" value="${repository.user}"/>
+        <property name="repositoryPassword" value="${repository.password}"/>
+        <property name="repositoryWatcherAutosync" value="${repository.watcher.autosync}"/>
+        <property name="projectLastAutoload" value="${project.last.autoload}"/>
+        <property name="projectLastName" value="${project.last.name}"/>
+        <property name="projectUseOsUser" value="${project.use.os.user}"/>
+        <property name="projectUserName" value="${project.user.name}"/>
+        <property name="projectImportName" value="${project.import.name}"/>
+        <property name="studyModelDepth" value="${study.model.depth}"/>
     </bean>
 
-    <bean id="fxmlLoaderFactory" class="ru.skoltech.cedl.dataexchange.ui.controller.FXMLLoaderFactory" />
+    <bean id="fxmlLoaderFactory" class="ru.skoltech.cedl.dataexchange.ui.controller.FXMLLoaderFactory"/>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.RepositorySettingsController">
-        <property name="fileStorageService" ref="fileStorageService" />
-        <property name="applicationSettings" ref="applicationSettings" />
+        <property name="fileStorageService" ref="fileStorageService"/>
+        <property name="applicationSettings" ref="applicationSettings"/>
         <property name="repositoryConnectionService" ref="repositoryConnectionService"/>
         <property name="executor" ref="executor"/>
     </bean>
 
-    <bean id="repositoryConnectionService" class="ru.skoltech.cedl.dataexchange.service.impl.RepositoryConnectionServiceImpl" >
-        <property name="applicationSettings" ref="applicationSettings" />
+    <bean id="repositoryConnectionService"
+          class="ru.skoltech.cedl.dataexchange.service.impl.RepositoryConnectionServiceImpl">
+        <property name="applicationSettings" ref="applicationSettings"/>
     </bean>
 
-    <bean id="guiService" class="ru.skoltech.cedl.dataexchange.service.impl.GuiServiceImpl" >
-        <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory" />
+    <bean id="guiService" class="ru.skoltech.cedl.dataexchange.service.impl.GuiServiceImpl">
+        <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory"/>
     </bean>
 
-    <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.service.impl.FileStorageServiceImpl" >
-        <constructor-arg type="ru.skoltech.cedl.dataexchange.init.ApplicationSettings" ref="applicationSettings" />
+    <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.service.impl.FileStorageServiceImpl">
+        <constructor-arg type="ru.skoltech.cedl.dataexchange.init.ApplicationSettings" ref="applicationSettings"/>
     </bean>
 
     <bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-        <property name="corePoolSize" value="3" />
-        <property name="maxPoolSize" value="10" />
-        <property name="waitForTasksToCompleteOnShutdown" value="true" />
+        <property name="corePoolSize" value="3"/>
+        <property name="maxPoolSize" value="10"/>
+        <property name="waitForTasksToCompleteOnShutdown" value="true"/>
     </bean>
 
 </beans>

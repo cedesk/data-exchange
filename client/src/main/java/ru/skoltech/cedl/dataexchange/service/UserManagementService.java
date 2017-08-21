@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  * Operations with {@link UserManagement}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 06-Jul-17.
  */
 public interface UserManagementService {
@@ -37,6 +37,15 @@ public interface UserManagementService {
      * {@link User} name of observer.
      */
     String OBSERVER_USER_NAME = "observer";
+
+    /**
+     * Check if {@link UserManagement} contains {@link User} with specified name.
+     *
+     * @param userManagement {@link UserManagement} to check from
+     * @param userName       checked user name
+     * @return <i>true</i> if {@link User} exists, <i>false</i> if opposite
+     */
+    boolean checkUserName(UserManagement userManagement, String userName);
 
     /**
      * Create default {@link UserManagement}.
@@ -53,6 +62,15 @@ public interface UserManagementService {
     UserManagement findUserManagement();
 
     /**
+     * Retrieve from {@link UserManagement} an {@link User} with specified name.
+     *
+     * @param userManagement {@link UserManagement} to search from
+     * @param userName       to search for
+     * @return instance of {@link User} if found, <i>null</i> if opposite
+     */
+    User obtainUser(UserManagement userManagement, String userName);
+
+    /**
      * Saves an userManagement.
      *
      * @param userManagement userManagement to save
@@ -67,22 +85,4 @@ public interface UserManagementService {
      * @return map with user names as keys and users itself as values.
      */
     Map<String, User> userMap(UserManagement userManagement);
-
-    /**
-     * Check if {@link UserManagement} contains {@link User} with specified name.
-     *
-     * @param userManagement {@link UserManagement} to check from
-     * @param userName checked user name
-     * @return <i>true</i> if {@link User} exists, <i>false</i> if opposite
-     */
-    boolean checkUserName(UserManagement userManagement, String userName);
-
-    /**
-     * Retrieve from {@link UserManagement} an {@link User} with specified name.
-     *
-     * @param userManagement {@link UserManagement} to search from
-     * @param userName to search for
-     * @return instance of {@link User} if found, <i>null</i> if opposite
-     */
-    User obtainUser(UserManagement userManagement, String userName);
 }

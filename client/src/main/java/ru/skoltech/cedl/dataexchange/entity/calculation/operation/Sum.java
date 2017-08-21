@@ -22,13 +22,12 @@ package ru.skoltech.cedl.dataexchange.entity.calculation.operation;
 public class Sum extends Operation {
 
     @Override
-    public String name() {
-        return "Sum";
-    }
-
-    @Override
-    public String description() {
-        return "This operation sums all arguments";
+    public double apply(double[] arguments) {
+        double result = 0;
+        for (Double arg : arguments) {
+            result += arg;
+        }
+        return result;
     }
 
     @Override
@@ -39,8 +38,8 @@ public class Sum extends Operation {
     }
 
     @Override
-    public int minArguments() {
-        return 2;
+    public String description() {
+        return "This operation sums all arguments";
     }
 
     @Override
@@ -49,11 +48,12 @@ public class Sum extends Operation {
     }
 
     @Override
-    public double apply(double[] arguments) {
-        double result = 0;
-        for (Double arg : arguments) {
-            result += arg;
-        }
-        return result;
+    public int minArguments() {
+        return 2;
+    }
+
+    @Override
+    public String name() {
+        return "Sum";
     }
 }

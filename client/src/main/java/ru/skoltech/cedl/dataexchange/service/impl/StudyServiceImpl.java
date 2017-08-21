@@ -40,16 +40,15 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link StudyService}.
- *
+ * <p>
  * Created by dknoll on 25/05/15.
  */
 public class StudyServiceImpl implements StudyService {
 
-    private UserRoleManagementService userRoleManagementService;
-
     private final StudyRepository studyRepository;
     private final StudyRevisionRepository studyRevisionRepository;
     private final RevisionEntityRepository revisionEntityRepository;
+    private UserRoleManagementService userRoleManagementService;
 
     @Autowired
     public StudyServiceImpl(StudyRepository studyRepository, StudyRevisionRepository studyRevisionRepository, RevisionEntityRepository revisionEntityRepository) {
@@ -76,13 +75,70 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
-    public List<String> findStudyNames() {
-        return studyRepository.findAllNames();
+    public void deleteAllStudies() {
+        studyRepository.deleteAll();
+    }
+
+    @Override
+    public void deleteStudyByName(String studyName) {
+        Study study = studyRepository.findByName(studyName);
+        studyRepository.delete(study);
+//        TODO: pass directly to custom and use
+//        studyRepository.deleteByName(studyName);
+    }
+
+    @Override
+    public List<Pair<CustomRevisionEntity, RevisionType>> findAllStudyRevisionEntityWithTags(Study study) {
+        return revisionEntityRepository.findTaggedRevisions(study.getId(), Study.class);
+    }
+
+    @Override
+    public String findCurrentStudyRevisionTag(Study study) {
+        long studyId = study.getId();
+        if (studyId == 0) return ""; // quick return for unstored studies
+        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(studyId, Study.class);
+        return revisionEntity.getTag();
+    }
+
+    @Override
+    public Long findLatestModelModificationByStudyName(String studyName) {
+        return studyRepository.findLatestModelModificationByName(studyName);
     }
 
     @Override
     public Study findStudyByName(String studyName) {
         return studyRepository.findByName(studyName);
+    }
+
+    @Override
+    public Study findStudyByRevision(Study study, Integer revisionNumber) {
+//        Revision<Integer, Study> revision = studyRevisionRepository.findRevision(study.getId(), revisionNumber);
+        return studyRevisionRepository.findStudyByRevision(study.getId(), revisionNumber);
+    }
+
+    @Override
+    public List<String> findStudyNames() {
+        return studyRepository.findAllNames();
+    }
+
+    @Override
+    public void relinkStudySubSystems(Study study) {
+        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
+        SystemModel systemModel = study.getSystemModel();
+
+        if (userRoleManagement == null) {
+            return;
+        }
+        List<DisciplineSubSystem> disciplineSubSystems = userRoleManagement.getDisciplineSubSystems();
+        // build a map of the subsystems of the systemModel by UUID
+        Map<String, SubSystemModel> subsystems
+                = systemModel.getSubNodes().stream().collect(Collectors.toMap(SubSystemModel::getUuid, Function.identity()));
+        // lookup subsystem by UUID
+        disciplineSubSystems.forEach(disciplineSubSystem
+                -> disciplineSubSystem.setSubSystem(subsystems.get(disciplineSubSystem.getSubSystem().getUuid())));
+        // remove invalid links
+        disciplineSubSystems.removeIf(disciplineSubSystem
+                -> disciplineSubSystem.getSubSystem() == null);
     }
 
     @Override
@@ -93,19 +149,6 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public Study saveStudy(Study study, String tag) {
         return studyRepository.saveAndFlush(study, tag);
-    }
-
-    @Override
-    public String findCurrentStudyRevisionTag(Study study) {
-        long studyId = study.getId();
-        if(studyId == 0) return ""; // quick return for unstored studies
-        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(studyId, Study.class);
-        return revisionEntity.getTag();
-    }
-
-    @Override
-    public List<Pair<CustomRevisionEntity, RevisionType>> findAllStudyRevisionEntityWithTags(Study study) {
-        return revisionEntityRepository.findTaggedRevisions(study.getId(), Study.class);
     }
 
     @Override
@@ -134,50 +177,6 @@ public class StudyServiceImpl implements StudyService {
             revisionEntity.setTag(null);
             revisionEntityRepository.saveAndFlush(revisionEntity);
         });
-    }
-
-    @Override
-    public Study findStudyByRevision(Study study, Integer revisionNumber) {
-//        Revision<Integer, Study> revision = studyRevisionRepository.findRevision(study.getId(), revisionNumber);
-        return studyRevisionRepository.findStudyByRevision(study.getId(), revisionNumber);
-    }
-
-    @Override
-    public void deleteStudyByName(String studyName) {
-        Study study = studyRepository.findByName(studyName);
-        studyRepository.delete(study);
-//        TODO: pass directly to custom and use
-//        studyRepository.deleteByName(studyName);
-    }
-
-    @Override
-    public void deleteAllStudies() {
-        studyRepository.deleteAll();
-    }
-
-    @Override
-    public Long findLatestModelModificationByStudyName(String studyName) {
-        return studyRepository.findLatestModelModificationByName(studyName);
-    }
-
-    @Override
-    public void relinkStudySubSystems(Study study) {
-        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
-        SystemModel systemModel = study.getSystemModel();
-
-        if (userRoleManagement == null) {
-            return;
-        }
-        List<DisciplineSubSystem> disciplineSubSystems = userRoleManagement.getDisciplineSubSystems();
-        // build a map of the subsystems of the systemModel by UUID
-        Map<String, SubSystemModel> subsystems
-                = systemModel.getSubNodes().stream().collect(Collectors.toMap(SubSystemModel::getUuid, Function.identity()));
-        // lookup subsystem by UUID
-        disciplineSubSystems.forEach(disciplineSubSystem
-                -> disciplineSubSystem.setSubSystem(subsystems.get(disciplineSubSystem.getSubSystem().getUuid())));
-        // remove invalid links
-        disciplineSubSystems.removeIf(disciplineSubSystem
-                -> disciplineSubSystem.getSubSystem() == null);
     }
 
 }

@@ -17,9 +17,9 @@
 package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;

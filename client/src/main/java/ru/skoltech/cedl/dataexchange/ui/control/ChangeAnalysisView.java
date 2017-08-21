@@ -26,8 +26,6 @@ import javafx.scene.shape.*;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Rotate;
 import org.apache.commons.collections4.MapIterator;
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import ru.skoltech.cedl.dataexchange.analysis.ParameterChangeAnalysis;
 
 import java.net.URL;
@@ -66,8 +64,38 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
     public ChangeAnalysisView() {
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void setAnalysis(ParameterChangeAnalysis analysis) {
+        getChildren().clear();
+        analysis.getParameterChangeList().forEach(parameterChange -> {
+            Long revisionId = parameterChange.revisionId;
+            Long nodeId = parameterChange.nodeId;
+            String nodeName = parameterChange.nodeName;
+            addElement(revisionId, nodeId, nodeName);
+        });
+        MapIterator<Long, Long> connectionsIterator = analysis.getCausalConnections().mapIterator();
+        while (connectionsIterator.hasNext()) {
+            connectionsIterator.next();
+            Long srcRevId = connectionsIterator.getKey();
+            Long tgtRevId = connectionsIterator.getValue();
+            addConnection(srcRevId, tgtRevId, "");
+        }
+
+    }
+
+    public void addConnection(Long from, Long to, String description) {
+        DiagramElement fromEl = elements.get(from);
+        DiagramElement toEl = elements.get(to);
+        if (fromEl == null || toEl == null) {
+            System.err.println("ignoring connection" +
+                    (fromEl == null ? ", missing srcRev: " + from : "") +
+                    (toEl == null ? ", missing tgtRev: " + to : ""));
+            return;
+        }
+
+        DiagramConnection connection = new DiagramConnection(fromEl, toEl, description);
+        //fromConnections.put(fromEl.get(), connection);
+        //toConnections.put(toEl.getName(), connection);
+        getChildren().add(connection);
     }
 
     public void addElement(Long revisionId, Long nodeId, String nodeName) {
@@ -77,6 +105,28 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
         getChildren().add(diagramElement);
         setMinWidth(diagramElement.getLayoutX() + elementXPadding);
         setMinHeight(diagramElement.getLayoutY() + elementYPadding);
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+    }
+
+    private int getHorizontalIndex(long revisionId) {
+        if (!nodeHorizontalIndex.containsKey(revisionId)) {
+            int idx = nodeHorizontalIndex.size();
+            nodeHorizontalIndex.put(revisionId, idx);
+            return idx;
+        }
+        return nodeHorizontalIndex.get(revisionId);
+    }
+
+    private int getVerticalIndex(long nodeId) {
+        if (!nodeVerticalIndex.containsKey(nodeId)) {
+            int idx = nodeVerticalIndex.size();
+            nodeVerticalIndex.put(nodeId, idx);
+            return idx;
+        }
+        return nodeVerticalIndex.get(nodeId);
     }
 
     private void makeNodeLabel(Long nodeId, String nodeName) {
@@ -96,58 +146,6 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
             caption.setLayoutY(y - 2 * elementSize);
             getChildren().addAll(line, caption);
         }
-    }
-
-    public void addConnection(Long from, Long to, String description) {
-        DiagramElement fromEl = elements.get(from);
-        DiagramElement toEl = elements.get(to);
-        if (fromEl == null || toEl == null) {
-            System.err.println("ignoring connection" +
-                    (fromEl == null ? ", missing srcRev: " + from : "") +
-                    (toEl == null ? ", missing tgtRev: " + to : ""));
-            return;
-        }
-
-        DiagramConnection connection = new DiagramConnection(fromEl, toEl, description);
-        //fromConnections.put(fromEl.get(), connection);
-        //toConnections.put(toEl.getName(), connection);
-        getChildren().add(connection);
-    }
-
-    public void setAnalysis(ParameterChangeAnalysis analysis) {
-        getChildren().clear();
-        analysis.getParameterChangeList().forEach(parameterChange -> {
-            Long revisionId = parameterChange.revisionId;
-            Long nodeId = parameterChange.nodeId;
-            String nodeName = parameterChange.nodeName;
-            addElement(revisionId, nodeId, nodeName);
-        });
-        MapIterator<Long, Long> connectionsIterator = analysis.getCausalConnections().mapIterator();
-        while (connectionsIterator.hasNext()) {
-            connectionsIterator.next();
-            Long srcRevId = connectionsIterator.getKey();
-            Long tgtRevId = connectionsIterator.getValue();
-            addConnection(srcRevId, tgtRevId, "");
-        }
-
-    }
-
-    private int getHorizontalIndex(long revisionId) {
-        if (!nodeHorizontalIndex.containsKey(revisionId)) {
-            int idx = nodeHorizontalIndex.size();
-            nodeHorizontalIndex.put(revisionId, idx);
-            return idx;
-        }
-        return nodeHorizontalIndex.get(revisionId);
-    }
-
-    private int getVerticalIndex(long nodeId) {
-        if (!nodeVerticalIndex.containsKey(nodeId)) {
-            int idx = nodeVerticalIndex.size();
-            nodeVerticalIndex.put(nodeId, idx);
-            return idx;
-        }
-        return nodeVerticalIndex.get(nodeId);
     }
 
     private class DiagramElement extends Group {
@@ -178,6 +176,10 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
             });
         }
 
+        public long getNodeId() {
+            return nodeId;
+        }
+
         public boolean isSelected() {
             return this.isSelected;
         }
@@ -189,10 +191,6 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
 
         private void toggleSelection() {
             setSelected(!isSelected);
-        }
-
-        public long getNodeId() {
-            return nodeId;
         }
 
     }
@@ -247,8 +245,8 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
             });
         }
 
-        private void toggleSelection() {
-            setSelected(!isSelected);
+        boolean isLower() {
+            return getVerticalIndex(fromEl.getNodeId()) > getVerticalIndex(toEl.getNodeId());
         }
 
         public boolean isSelected() {
@@ -266,8 +264,8 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
             return getVerticalIndex(fromEl.getNodeId()) < getVerticalIndex(toEl.getNodeId());
         }
 
-        boolean isLower() {
-            return getVerticalIndex(fromEl.getNodeId()) > getVerticalIndex(toEl.getNodeId());
+        private void toggleSelection() {
+            setSelected(!isSelected);
         }
 
     }

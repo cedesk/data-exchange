@@ -19,9 +19,9 @@ package ru.skoltech.cedl.dataexchange.entity.calculation;
 import org.apache.commons.collections.ListUtils;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Operation;
 import ru.skoltech.cedl.dataexchange.entity.calculation.operation.OperationRegistry;
-import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.calculation.operation.OperationRegistry.OperationAdapter;
 
 import javax.persistence.*;
@@ -52,6 +52,17 @@ public class Calculation {
     @XmlElement(type = Object.class)
     private List<Argument> arguments = new LinkedList<>();
 
+    @OneToMany(targetEntity = Argument.class,/* mappedBy = "parent", */orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderColumn(name = "id")
+    @Fetch(FetchMode.SELECT)
+    public List<Argument> getArguments() {
+        return arguments;
+    }
+
+    public void setArguments(List<Argument> arguments) {
+        this.arguments = arguments;
+    }
+
     public static Class[] getEntityClasses() {
         List<Class> classList = new ArrayList<>();
         classList.add(Calculation.class);
@@ -70,6 +81,18 @@ public class Calculation {
         this.id = id;
     }
 
+    @Transient
+    public List<ParameterModel> getLinkedParameters() {
+        List<ParameterModel> linkedParameters = new LinkedList<>();
+        for (Argument argument : getArguments()) {
+            if (argument instanceof Argument.Parameter) {
+                ParameterModel parameter = ((Argument.Parameter) argument).getLink();
+                linkedParameters.add(parameter);
+            }
+        }
+        return linkedParameters;
+    }
+
     @Convert(converter = OperationRegistry.Converter.class)
     public Operation getOperation() {
         return operation;
@@ -77,52 +100,6 @@ public class Calculation {
 
     public void setOperation(Operation operation) {
         this.operation = operation;
-    }
-
-    @OneToMany(targetEntity = Argument.class,/* mappedBy = "parent", */orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @OrderColumn(name = "id")
-    @Fetch(FetchMode.SELECT)
-    public List<Argument> getArguments() {
-        return arguments;
-    }
-
-    public void setArguments(List<Argument> arguments) {
-        this.arguments = arguments;
-    }
-
-    public boolean valid() {
-        int args = arguments.size();
-        return operation != null
-                && operation.minArguments() <= args
-                && operation.maxArguments() >= args;
-    }
-
-    public Double evaluate() throws IllegalArgumentException {
-        if (!valid()) throw new IllegalArgumentException("number of arguments");
-        double[] argValues = new double[arguments.size()];
-        for (int i = 0; i < arguments.size(); i++) {
-            argValues[i] = arguments.get(i).getEffectiveValue();
-        }
-        return operation.apply(argValues);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Calculation that = (Calculation) o;
-
-        if (operation != null ? !operation.equals(that.operation) : that.operation != null) return false;
-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
-        return ListUtils.isEqualList(arguments, that.arguments);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = operation != null ? operation.hashCode() : 0;
-        result = 31 * result + (arguments != null ? arguments.hashCode() : 0);
-        return result;
     }
 
     public String asText() {
@@ -141,6 +118,34 @@ public class Calculation {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Calculation that = (Calculation) o;
+
+        if (operation != null ? !operation.equals(that.operation) : that.operation != null) return false;
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        return ListUtils.isEqualList(arguments, that.arguments);
+    }
+
+    public Double evaluate() throws IllegalArgumentException {
+        if (!valid()) throw new IllegalArgumentException("number of arguments");
+        double[] argValues = new double[arguments.size()];
+        for (int i = 0; i < arguments.size(); i++) {
+            argValues[i] = arguments.get(i).getEffectiveValue();
+        }
+        return operation.apply(argValues);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = operation != null ? operation.hashCode() : 0;
+        result = 31 * result + (arguments != null ? arguments.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Calculation{");
         sb.append("operation=").append(operation);
@@ -149,15 +154,10 @@ public class Calculation {
         return sb.toString();
     }
 
-    @Transient
-    public List<ParameterModel> getLinkedParameters() {
-        List<ParameterModel> linkedParameters = new LinkedList<>();
-        for (Argument argument : getArguments()) {
-            if (argument instanceof Argument.Parameter) {
-                ParameterModel parameter = ((Argument.Parameter) argument).getLink();
-                linkedParameters.add(parameter);
-            }
-        }
-        return linkedParameters;
+    public boolean valid() {
+        int args = arguments.size();
+        return operation != null
+                && operation.minArguments() <= args
+                && operation.maxArguments() >= args;
     }
 }

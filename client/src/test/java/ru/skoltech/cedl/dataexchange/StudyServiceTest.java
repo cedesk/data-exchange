@@ -51,6 +51,11 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
     private SystemBuilder systemBuilder;
     private RevisionEntityRepository revisionEntityRepository;
 
+    @After
+    public void cleanup() {
+        studyService.deleteAllStudies();
+    }
+
     @Before
     public void prepare() {
         applicationSettings = context.getBean(ApplicationSettings.class);
@@ -58,6 +63,42 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         userRoleManagementService = context.getBean(UserRoleManagementService.class);
         systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
         revisionEntityRepository = context.getBean(RevisionEntityRepository.class);
+    }
+
+    @Test
+    public void testDeleteStudy() {
+        String name1 = "testStudyToDelete1";
+        Study studyPrototype1 = makeStudy(name1, 2);
+
+        String name2 = "testStudyToDelete2";
+        Study studyPrototype2 = makeStudy(name2, 2);
+
+        System.out.println(studyPrototype1 + ", " + studyPrototype2);
+
+        Study study1 = studyService.saveStudy(studyPrototype1);
+        Study study2 = studyService.saveStudy(studyPrototype2);
+
+        Study studyStored1 = studyService.findStudyByName(name1);
+        Study studyStored2 = studyService.findStudyByName(name2);
+
+        assertEquals(studyPrototype1.getName(), studyStored1.getName());
+        assertEquals(studyPrototype2.getName(), studyStored2.getName());
+
+        studyService.deleteStudyByName(name1);
+        studyStored1 = studyService.findStudyByName(name1);
+        assertNull(studyStored1);
+        assertThat(studyService.findStudyNames(), not(empty()));
+
+        Pair<CustomRevisionEntity, RevisionType> deleteRevision1 = revisionEntityRepository.lastRevision(study1.getId(), Study.class);
+        assertEquals(applicationSettings.getProjectUserName(), deleteRevision1.getLeft().getUsername());
+        assertEquals(RevisionType.DEL, deleteRevision1.getRight());
+
+        studyService.deleteAllStudies();
+        assertThat(studyService.findStudyNames(), empty());
+
+        Pair<CustomRevisionEntity, RevisionType> deleteRevision2 = revisionEntityRepository.lastRevision(study2.getId(), Study.class);
+        assertEquals(applicationSettings.getProjectUserName(), deleteRevision2.getLeft().getUsername());
+        assertEquals(RevisionType.DEL, deleteRevision2.getRight());
     }
 
     @Test
@@ -119,42 +160,6 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         assertEquals(RevisionType.ADD, revision.getRight());
     }
 
-    @Test
-    public void testDeleteStudy() {
-        String name1 = "testStudyToDelete1";
-        Study studyPrototype1 = makeStudy(name1, 2);
-
-        String name2 = "testStudyToDelete2";
-        Study studyPrototype2 = makeStudy(name2, 2);
-
-        System.out.println(studyPrototype1 + ", " + studyPrototype2);
-
-        Study study1 = studyService.saveStudy(studyPrototype1);
-        Study study2 = studyService.saveStudy(studyPrototype2);
-
-        Study studyStored1 = studyService.findStudyByName(name1);
-        Study studyStored2 = studyService.findStudyByName(name2);
-
-        assertEquals(studyPrototype1.getName(), studyStored1.getName());
-        assertEquals(studyPrototype2.getName(), studyStored2.getName());
-
-        studyService.deleteStudyByName(name1);
-        studyStored1 = studyService.findStudyByName(name1);
-        assertNull(studyStored1);
-        assertThat(studyService.findStudyNames(), not(empty()));
-
-        Pair<CustomRevisionEntity, RevisionType> deleteRevision1 = revisionEntityRepository.lastRevision(study1.getId(), Study.class);
-        assertEquals(applicationSettings.getProjectUserName(), deleteRevision1.getLeft().getUsername());
-        assertEquals(RevisionType.DEL, deleteRevision1.getRight());
-
-        studyService.deleteAllStudies();
-        assertThat(studyService.findStudyNames(), empty());
-
-        Pair<CustomRevisionEntity, RevisionType> deleteRevision2 = revisionEntityRepository.lastRevision(study2.getId(), Study.class);
-        assertEquals(applicationSettings.getProjectUserName(), deleteRevision2.getLeft().getUsername());
-        assertEquals(RevisionType.DEL, deleteRevision2.getRight());
-    }
-
     private Study makeStudy(String projectName, int modelDepth) {
         Study study = new Study();
         study.setStudySettings(new StudySettings());
@@ -167,10 +172,5 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         study.setUserRoleManagement(userRoleManagement);
         studyService.relinkStudySubSystems(study);
         return study;
-    }
-
-    @After
-    public void cleanup() {
-        studyService.deleteAllStudies();
     }
 }

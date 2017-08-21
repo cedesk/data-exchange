@@ -26,7 +26,7 @@ import java.io.StringWriter;
 
 /**
  * Alert Dialog for notifications about application errors
- *
+ * <p>
  * Created by Nikolay Groshkov on 04-Aug-17.
  */
 public class ErrorAlert extends Alert {

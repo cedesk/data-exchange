@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- *
  * Created by D.Knoll on 18.03.2015.
  */
 public class ApplicationSettingsImpl implements ApplicationSettings {
@@ -85,25 +84,6 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
     }
 
     @Override
-    public String getCedeskAppDir() {
-        return cedeskAppDir;
-    }
-
-    @Override
-    public String getCedeskAppFile() {
-        return cedeskAppFile;
-    }
-
-    @Override
-    public String getApplicationVersion() {
-        return applicationVersion;
-    }
-
-    public void setApplicationVersion(String applicationVersion) {
-        this.applicationVersion = applicationVersion;
-    }
-
-    @Override
     public String getApplicationBuildTime() {
         return applicationBuildTime;
     }
@@ -122,12 +102,58 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
     }
 
     @Override
+    public String getApplicationVersion() {
+        return applicationVersion;
+    }
+
+    public void setApplicationVersion(String applicationVersion) {
+        this.applicationVersion = applicationVersion;
+    }
+
+    @Override
+    public String getCedeskAppDir() {
+        return cedeskAppDir;
+    }
+
+    @Override
+    public String getCedeskAppFile() {
+        return cedeskAppFile;
+    }
+
+    @Override
     public String getCedeskAppFileComment() {
         return cedeskAppFileComment;
     }
 
     public void setCedeskAppFileComment(String cedeskAppFileComment) {
         this.cedeskAppFileComment = cedeskAppFileComment;
+    }
+
+    @Override
+    public String getDefaultProjectImportName() {
+        return defaultProjectImportName;
+    }
+
+    public void setDefaultProjectImportName(String defaultProjectImportName) {
+        this.defaultProjectImportName = defaultProjectImportName;
+    }
+
+    @Override
+    public String getDefaultProjectLastName() {
+        return defaultProjectLastName;
+    }
+
+    public void setDefaultProjectLastName(String defaultProjectLastName) {
+        this.defaultProjectLastName = defaultProjectLastName;
+    }
+
+    @Override
+    public String getDefaultProjectUserName() {
+        return defaultProjectUserName;
+    }
+
+    public void setDefaultProjectUserName(String defaultProjectUserName) {
+        this.defaultProjectUserName = defaultProjectUserName;
     }
 
     @Override
@@ -140,12 +166,12 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
     }
 
     @Override
-    public boolean isDefaultRepositorySchemaCreate() {
-        return defaultRepositorySchemaCreate;
+    public String getDefaultRepositoryPassword() {
+        return defaultRepositoryPassword;
     }
 
-    public void setDefaultRepositorySchemaCreate(boolean defaultRepositorySchemaCreate) {
-        this.defaultRepositorySchemaCreate = defaultRepositorySchemaCreate;
+    public void setDefaultRepositoryPassword(String defaultRepositoryPassword) {
+        this.defaultRepositoryPassword = defaultRepositoryPassword;
     }
 
     @Override
@@ -167,185 +193,12 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
     }
 
     @Override
-    public String getDefaultRepositoryPassword() {
-        return defaultRepositoryPassword;
-    }
-
-    public void setDefaultRepositoryPassword(String defaultRepositoryPassword) {
-        this.defaultRepositoryPassword = defaultRepositoryPassword;
-    }
-
-    @Override
-    public boolean isDefaultRepositoryWatcherAutosync() {
-        return defaultRepositoryWatcherAutosync;
-    }
-
-    public void setDefaultRepositoryWatcherAutosync(boolean defaultRepositoryWatcherAutosync) {
-        this.defaultRepositoryWatcherAutosync = defaultRepositoryWatcherAutosync;
-    }
-
-    @Override
-    public boolean isDefaultProjectLastAutoload() {
-        return defaultProjectLastAutoload;
-    }
-
-    public void setDefaultProjectLastAutoload(boolean defaultProjectLastAutoload) {
-        this.defaultProjectLastAutoload = defaultProjectLastAutoload;
-    }
-
-    @Override
-    public String getDefaultProjectLastName() {
-        return defaultProjectLastName;
-    }
-
-    public void setDefaultProjectLastName(String defaultProjectLastName) {
-        this.defaultProjectLastName = defaultProjectLastName;
-    }
-
-    @Override
-    public boolean isDefaultProjectUseOsUser() {
-        return defaultProjectUseOsUser;
-    }
-
-    public void setDefaultProjectUseOsUser(boolean defaultProjectUseOsUser) {
-        this.defaultProjectUseOsUser = defaultProjectUseOsUser;
-    }
-
-    @Override
-    public String getDefaultProjectUserName() {
-        return defaultProjectUserName;
-    }
-
-    public void setDefaultProjectUserName(String defaultProjectUserName) {
-        this.defaultProjectUserName = defaultProjectUserName;
-    }
-
-    @Override
-    public String getDefaultProjectImportName() {
-        return defaultProjectImportName;
-    }
-
-    public void setDefaultProjectImportName(String defaultProjectImportName) {
-        this.defaultProjectImportName = defaultProjectImportName;
-    }
-
-    @Override
     public String getDefaultStudyModelDepth() {
         return defaultStudyModelDepth;
     }
 
     public void setDefaultStudyModelDepth(String defaultStudyModelDepth) {
         this.defaultStudyModelDepth = defaultStudyModelDepth;
-    }
-
-    @Override
-    public String getRepositoryJdbcUrlPattern() {
-        return repositoryJdbcUrlPattern;
-    }
-
-    public void setRepositoryJdbcUrlPattern(String repositoryJdbcUrlPattern) {
-        this.repositoryJdbcUrlPattern = repositoryJdbcUrlPattern;
-    }
-
-    @Override
-    public String getRepositorySchemaVersion() {
-        return repositorySchemaVersion;
-    }
-
-    public void setRepositorySchemaVersion(String repositorySchemaVersion) {
-        this.repositorySchemaVersion = repositorySchemaVersion;
-    }
-
-
-    //--------------------------------------
-    @Override
-    public String getRepositoryHost() {
-        return repositoryHost;
-    }
-
-    public void setRepositoryHost(String repositoryHost) {
-        this.repositoryHost = repositoryHost;
-    }
-
-    @Override
-    public boolean isRepositorySchemaCreate() {
-        return repositorySchemaCreate;
-    }
-
-    public void setRepositorySchemaCreate(boolean repositorySchemaCreate) {
-        this.repositorySchemaCreate = repositorySchemaCreate;
-    }
-
-    @Override
-    public String getRepositorySchemaName() {
-        return repositorySchemaName;
-    }
-
-    public void setRepositorySchemaName(String repositorySchemaName) {
-        this.repositorySchemaName = repositorySchemaName;
-    }
-
-    @Override
-    public String getRepositoryUser() {
-        return repositoryUser;
-    }
-
-    public void setRepositoryUser(String repositoryUser) {
-        this.repositoryUser = repositoryUser;
-    }
-
-    @Override
-    public String getRepositoryPassword() {
-        return repositoryPassword;
-    }
-
-    public void setRepositoryPassword(String repositoryPassword) {
-        this.repositoryPassword = repositoryPassword;
-    }
-
-    @Override
-    public boolean isRepositoryWatcherAutosync() {
-        return repositoryWatcherAutosync;
-    }
-
-    public void setRepositoryWatcherAutosync(boolean repositoryWatcherAutosync) {
-        this.repositoryWatcherAutosync = repositoryWatcherAutosync;
-    }
-
-    @Override
-    public boolean isProjectLastAutoload() {
-        return projectLastAutoload;
-    }
-
-    public void setProjectLastAutoload(boolean projectLastAutoload) {
-        this.projectLastAutoload = projectLastAutoload;
-    }
-
-    @Override
-    public String getProjectLastName() {
-        return projectLastName;
-    }
-
-    public void setProjectLastName(String projectLastName) {
-        this.projectLastName = projectLastName;
-    }
-
-    @Override
-    public boolean isProjectUseOsUser() {
-        return projectUseOsUser;
-    }
-
-    public void setProjectUseOsUser(boolean projectUseOsUser) {
-        this.projectUseOsUser = projectUseOsUser;
-    }
-
-    @Override
-    public String getProjectUserName() {
-        return projectUserName;
-    }
-
-    public void setProjectUserName(String projectUserName) {
-        this.projectUserName = projectUserName;
     }
 
     @Override
@@ -358,6 +211,79 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
     }
 
     @Override
+    public String getProjectLastName() {
+        return projectLastName;
+    }
+
+    public void setProjectLastName(String projectLastName) {
+        this.projectLastName = projectLastName;
+    }
+
+    @Override
+    public String getProjectUserName() {
+        return projectUserName;
+    }
+
+    public void setProjectUserName(String projectUserName) {
+        this.projectUserName = projectUserName;
+    }
+
+    //--------------------------------------
+    @Override
+    public String getRepositoryHost() {
+        return repositoryHost;
+    }
+
+    public void setRepositoryHost(String repositoryHost) {
+        this.repositoryHost = repositoryHost;
+    }
+
+    @Override
+    public String getRepositoryJdbcUrlPattern() {
+        return repositoryJdbcUrlPattern;
+    }
+
+    public void setRepositoryJdbcUrlPattern(String repositoryJdbcUrlPattern) {
+        this.repositoryJdbcUrlPattern = repositoryJdbcUrlPattern;
+    }
+
+    @Override
+    public String getRepositoryPassword() {
+        return repositoryPassword;
+    }
+
+    public void setRepositoryPassword(String repositoryPassword) {
+        this.repositoryPassword = repositoryPassword;
+    }
+
+    @Override
+    public String getRepositorySchemaName() {
+        return repositorySchemaName;
+    }
+
+    public void setRepositorySchemaName(String repositorySchemaName) {
+        this.repositorySchemaName = repositorySchemaName;
+    }
+
+    @Override
+    public String getRepositorySchemaVersion() {
+        return repositorySchemaVersion;
+    }
+
+    public void setRepositorySchemaVersion(String repositorySchemaVersion) {
+        this.repositorySchemaVersion = repositorySchemaVersion;
+    }
+
+    @Override
+    public String getRepositoryUser() {
+        return repositoryUser;
+    }
+
+    public void setRepositoryUser(String repositoryUser) {
+        this.repositoryUser = repositoryUser;
+    }
+
+    @Override
     public String getStudyModelDepth() {
         return studyModelDepth;
     }
@@ -366,65 +292,110 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
         this.studyModelDepth = studyModelDepth;
     }
 
-    //-------------------------------------
     @Override
-    public void storeRepositoryHost() {
-        this.storeRepositoryHost(defaultRepositoryHost);
+    public boolean isDefaultProjectLastAutoload() {
+        return defaultProjectLastAutoload;
+    }
+
+    public void setDefaultProjectLastAutoload(boolean defaultProjectLastAutoload) {
+        this.defaultProjectLastAutoload = defaultProjectLastAutoload;
     }
 
     @Override
-    public void storeRepositoryHost(String repositoryHost) {
-        this.setRepositoryHost(repositoryHost);
+    public boolean isDefaultProjectUseOsUser() {
+        return defaultProjectUseOsUser;
+    }
+
+    public void setDefaultProjectUseOsUser(boolean defaultProjectUseOsUser) {
+        this.defaultProjectUseOsUser = defaultProjectUseOsUser;
     }
 
     @Override
-    public void storeRepositorySchemaCreate() {
-        this.storeRepositorySchemaCreate(defaultRepositorySchemaCreate);
+    public boolean isDefaultRepositorySchemaCreate() {
+        return defaultRepositorySchemaCreate;
+    }
+
+    public void setDefaultRepositorySchemaCreate(boolean defaultRepositorySchemaCreate) {
+        this.defaultRepositorySchemaCreate = defaultRepositorySchemaCreate;
     }
 
     @Override
-    public void storeRepositorySchemaCreate(boolean repositorySchemaCreate) {
-        this.setRepositorySchemaCreate(repositorySchemaCreate);
+    public boolean isDefaultRepositoryWatcherAutosync() {
+        return defaultRepositoryWatcherAutosync;
+    }
+
+    public void setDefaultRepositoryWatcherAutosync(boolean defaultRepositoryWatcherAutosync) {
+        this.defaultRepositoryWatcherAutosync = defaultRepositoryWatcherAutosync;
     }
 
     @Override
-    public void storeRepositorySchemaName() {
-        this.storeRepositorySchemaName(defaultRepositorySchemaName);
+    public boolean isProjectLastAutoload() {
+        return projectLastAutoload;
+    }
+
+    public void setProjectLastAutoload(boolean projectLastAutoload) {
+        this.projectLastAutoload = projectLastAutoload;
     }
 
     @Override
-    public void storeRepositorySchemaName(String repositorySchemaName) {
-        this.setRepositorySchemaName(repositorySchemaName);
+    public boolean isProjectUseOsUser() {
+        return projectUseOsUser;
+    }
+
+    public void setProjectUseOsUser(boolean projectUseOsUser) {
+        this.projectUseOsUser = projectUseOsUser;
     }
 
     @Override
-    public void storeRepositoryUser() {
-        this.storeRepositoryUser(defaultRepositoryUser);
+    public boolean isRepositorySchemaCreate() {
+        return repositorySchemaCreate;
+    }
+
+    public void setRepositorySchemaCreate(boolean repositorySchemaCreate) {
+        this.repositorySchemaCreate = repositorySchemaCreate;
     }
 
     @Override
-    public void storeRepositoryUser(String repositoryUser) {
-        this.setRepositoryUser(repositoryUser);
+    public boolean isRepositoryWatcherAutosync() {
+        return repositoryWatcherAutosync;
+    }
+
+    public void setRepositoryWatcherAutosync(boolean repositoryWatcherAutosync) {
+        this.repositoryWatcherAutosync = repositoryWatcherAutosync;
     }
 
     @Override
-    public void storeRepositoryPassword() {
-        this.storeRepositoryPassword(defaultRepositoryPassword);
+    public void save() {
+        try (FileWriter fileWriter = new FileWriter(file)) {
+            Properties applicationSettings = new Properties();
+
+            applicationSettings.setProperty(REPOSITORY_HOST, repositoryHost);
+            applicationSettings.setProperty(REPOSITORY_SCHEMA_NAME, repositorySchemaName);
+            applicationSettings.setProperty(REPOSITORY_SCHEMA_CREATE, String.valueOf(repositorySchemaCreate));
+            applicationSettings.setProperty(REPOSITORY_USER, repositoryUser);
+            applicationSettings.setProperty(REPOSITORY_PASSWORD, repositoryPassword);
+            applicationSettings.setProperty(REPOSITORY_WATCHER_AUTOSYNC, String.valueOf(repositoryWatcherAutosync));
+            applicationSettings.setProperty(PROJECT_LAST_AUTOLOAD, String.valueOf(projectLastAutoload));
+            applicationSettings.setProperty(PROJECT_LAST_NAME, projectLastName);
+            applicationSettings.setProperty(PROJECT_USE_OS_USER, String.valueOf(projectUseOsUser));
+            applicationSettings.setProperty(PROJECT_USER_NAME, projectUserName);
+            applicationSettings.setProperty(PROJECT_IMPORT_NAME, projectImportName);
+            applicationSettings.setProperty(STUDY_MODEL_DEPTH, studyModelDepth);
+
+            applicationSettings.store(fileWriter, cedeskAppFileComment);
+        } catch (IOException e) {
+            logger.error("Error saving application settings!");
+        }
     }
 
     @Override
-    public void storeRepositoryPassword(String repositoryPassword) {
-        this.setRepositoryPassword(repositoryPassword);
+    public void storeProjectImportName() {
+        this.storeProjectImportName(defaultProjectImportName);
     }
 
     @Override
-    public void storeRepositoryWatcherAutosync() {
-        this.storeRepositoryWatcherAutosync(defaultRepositoryWatcherAutosync);
-    }
-
-    @Override
-    public void storeRepositoryWatcherAutosync(boolean repositoryWatcherAutosync) {
-        this.setRepositoryWatcherAutosync(repositoryWatcherAutosync);
+    public void storeProjectImportName(String projectImportName) {
+        this.setProjectImportName(projectImportName);
     }
 
     @Override
@@ -467,14 +438,65 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
         this.setProjectUserName(projectUserName);
     }
 
+    //-------------------------------------
     @Override
-    public void storeProjectImportName() {
-        this.storeProjectImportName(defaultProjectImportName);
+    public void storeRepositoryHost() {
+        this.storeRepositoryHost(defaultRepositoryHost);
     }
 
     @Override
-    public void storeProjectImportName(String projectImportName) {
-        this.setProjectImportName(projectImportName);
+    public void storeRepositoryHost(String repositoryHost) {
+        this.setRepositoryHost(repositoryHost);
+    }
+
+    @Override
+    public void storeRepositoryPassword() {
+        this.storeRepositoryPassword(defaultRepositoryPassword);
+    }
+
+    @Override
+    public void storeRepositoryPassword(String repositoryPassword) {
+        this.setRepositoryPassword(repositoryPassword);
+    }
+
+    @Override
+    public void storeRepositorySchemaCreate() {
+        this.storeRepositorySchemaCreate(defaultRepositorySchemaCreate);
+    }
+
+    @Override
+    public void storeRepositorySchemaCreate(boolean repositorySchemaCreate) {
+        this.setRepositorySchemaCreate(repositorySchemaCreate);
+    }
+
+    @Override
+    public void storeRepositorySchemaName() {
+        this.storeRepositorySchemaName(defaultRepositorySchemaName);
+    }
+
+    @Override
+    public void storeRepositorySchemaName(String repositorySchemaName) {
+        this.setRepositorySchemaName(repositorySchemaName);
+    }
+
+    @Override
+    public void storeRepositoryUser() {
+        this.storeRepositoryUser(defaultRepositoryUser);
+    }
+
+    @Override
+    public void storeRepositoryUser(String repositoryUser) {
+        this.setRepositoryUser(repositoryUser);
+    }
+
+    @Override
+    public void storeRepositoryWatcherAutosync() {
+        this.storeRepositoryWatcherAutosync(defaultRepositoryWatcherAutosync);
+    }
+
+    @Override
+    public void storeRepositoryWatcherAutosync(boolean repositoryWatcherAutosync) {
+        this.setRepositoryWatcherAutosync(repositoryWatcherAutosync);
     }
 
     @Override
@@ -485,30 +507,6 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
     @Override
     public void storeStudyModelDepth(String studyModelDepth) {
         this.setStudyModelDepth(studyModelDepth);
-    }
-
-    @Override
-    public void save() {
-        try (FileWriter fileWriter = new FileWriter(file)) {
-            Properties applicationSettings = new Properties();
-
-            applicationSettings.setProperty(REPOSITORY_HOST, repositoryHost);
-            applicationSettings.setProperty(REPOSITORY_SCHEMA_NAME, repositorySchemaName);
-            applicationSettings.setProperty(REPOSITORY_SCHEMA_CREATE, String.valueOf(repositorySchemaCreate));
-            applicationSettings.setProperty(REPOSITORY_USER, repositoryUser);
-            applicationSettings.setProperty(REPOSITORY_PASSWORD, repositoryPassword);
-            applicationSettings.setProperty(REPOSITORY_WATCHER_AUTOSYNC, String.valueOf(repositoryWatcherAutosync));
-            applicationSettings.setProperty(PROJECT_LAST_AUTOLOAD, String.valueOf(projectLastAutoload));
-            applicationSettings.setProperty(PROJECT_LAST_NAME, projectLastName);
-            applicationSettings.setProperty(PROJECT_USE_OS_USER, String.valueOf(projectUseOsUser));
-            applicationSettings.setProperty(PROJECT_USER_NAME, projectUserName);
-            applicationSettings.setProperty(PROJECT_IMPORT_NAME, projectImportName);
-            applicationSettings.setProperty(STUDY_MODEL_DEPTH, studyModelDepth);
-
-            applicationSettings.store(fileWriter, cedeskAppFileComment);
-        } catch (IOException e) {
-            logger.error("Error saving application settings!");
-        }
     }
 
 }

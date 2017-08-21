@@ -21,7 +21,7 @@ import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 
 /**
  * Data Access Operations with {@link UnitManagementRepository} entity.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public interface UnitManagementRepository extends JpaRepository<UnitManagement, Long> {

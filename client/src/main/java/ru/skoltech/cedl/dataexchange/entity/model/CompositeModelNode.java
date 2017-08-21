@@ -64,6 +64,11 @@ public class CompositeModelNode<S extends ModelNode> extends ModelNode {
         this.subNodes = subNodes;
     }
 
+    @Transient
+    public Map<String, ModelNode> getSubNodesMap() {
+        return this.getSubNodes().stream().collect(Collectors.toMap(ModelNode::getName, o -> o));
+    }
+
     //--------------
     @Transient
     public boolean isLeafNode() {
@@ -74,20 +79,6 @@ public class CompositeModelNode<S extends ModelNode> extends ModelNode {
         subnode.setParent(this);
         subNodes.add(subnode);
     }
-
-    public boolean removeSubNode(Object o) {
-        return subNodes.remove(o);
-    }
-
-    public Iterator<ModelNode> treeIterator() {
-        return new ModelTreeIterator(this);
-    }
-
-    @Transient
-    public Map<String, ModelNode> getSubNodesMap() {
-        return this.getSubNodes().stream().collect(Collectors.toMap(ModelNode::getName, o -> o));
-    }
-    //----------------
 
     @Override
     public boolean equals(Object obj) {
@@ -105,6 +96,26 @@ public class CompositeModelNode<S extends ModelNode> extends ModelNode {
      */
     public boolean equalsFlat(ModelNode otherNode) {
         return super.equals(otherNode);
+    }
+    //----------------
+
+    public boolean removeSubNode(Object o) {
+        return subNodes.remove(o);
+    }
+
+    @Override
+    public String toString() {
+        return "CompositeModelNode{" +
+                "subNodes=" + subNodes +
+                ", name='" + name + '\'' +
+                ", uuid='" + uuid + '\'' +
+                ", parameters=" + parameters +
+                ", lastModification=" + lastModification +
+                '}';
+    }
+
+    public Iterator<ModelNode> treeIterator() {
+        return new ModelTreeIterator(this);
     }
 
     private boolean equalSubNodes(CompositeModelNode otherNode) {
@@ -126,16 +137,5 @@ public class CompositeModelNode<S extends ModelNode> extends ModelNode {
             if (!res) return false;
         }
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return "CompositeModelNode{" +
-                "subNodes=" + subNodes +
-                ", name='" + name + '\'' +
-                ", uuid='" + uuid + '\'' +
-                ", parameters=" + parameters +
-                ", lastModification=" + lastModification +
-                '}';
     }
 }

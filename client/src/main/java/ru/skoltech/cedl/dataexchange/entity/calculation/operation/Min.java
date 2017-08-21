@@ -25,13 +25,9 @@ import java.util.OptionalDouble;
 public class Min extends Operation {
 
     @Override
-    public String name() {
-        return "Min";
-    }
-
-    @Override
-    public String description() {
-        return "This operation finds the minimum among all arguments";
+    public double apply(double[] arguments) {
+        OptionalDouble optionalDouble = Arrays.stream(arguments).min();
+        return optionalDouble.getAsDouble();
     }
 
     @Override
@@ -42,8 +38,8 @@ public class Min extends Operation {
     }
 
     @Override
-    public int minArguments() {
-        return 2;
+    public String description() {
+        return "This operation finds the minimum among all arguments";
     }
 
     @Override
@@ -52,8 +48,12 @@ public class Min extends Operation {
     }
 
     @Override
-    public double apply(double[] arguments) {
-        OptionalDouble optionalDouble = Arrays.stream(arguments).min();
-        return optionalDouble.getAsDouble();
+    public int minArguments() {
+        return 2;
+    }
+
+    @Override
+    public String name() {
+        return "Min";
     }
 }

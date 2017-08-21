@@ -9,7 +9,6 @@ package ru.skoltech.cedl.dataexchange;
 
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by D.Knoll on 28.12.2016.

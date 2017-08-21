@@ -20,7 +20,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<ScrollPane xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css"
+<ScrollPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.112" stylesheets="@styling.css"
             fitToHeight="true" fitToWidth="true" prefWidth="300.0"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController">
     <HBox spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"

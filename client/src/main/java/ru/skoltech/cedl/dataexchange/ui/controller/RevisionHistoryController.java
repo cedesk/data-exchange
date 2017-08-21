@@ -32,7 +32,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for parameter revision history view.
- *
+ * <p>
  * Created by D.Knoll on 23.06.2015.
  */
 public class RevisionHistoryController implements Initializable {

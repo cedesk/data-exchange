@@ -40,6 +40,26 @@ public class CalculationEditorDemo extends AbstractApplicationContextDemo {
 
     private static Logger logger = Logger.getLogger(CalculationEditorDemo.class);
 
+    private static ParameterModel getParameterModel() {
+        SystemModel systemModel = new SystemModel("ROOT-SYS");
+        ParameterModel outPar = new ParameterModel("outpar", 76.45);
+        systemModel.addParameter(outPar);
+        outPar.setNature(ParameterNature.OUTPUT);
+        ParameterModel parameterModel = new ParameterModel("param", 123.45);
+        systemModel.addParameter(parameterModel);
+        parameterModel.setValueSource(ParameterValueSource.CALCULATION);
+        Calculation calculation = new Calculation();
+        calculation.setOperation(new Sum());
+        List<Argument> args = new LinkedList<>();
+        Argument.Literal lit1 = new Argument.Literal(123);
+        args.add(lit1);
+        Argument.Literal lit2 = new Argument.Literal(.45);
+        args.add(lit2);
+        calculation.setArguments(args);
+        parameterModel.setCalculation(calculation);
+        return parameterModel;
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -59,26 +79,6 @@ public class CalculationEditorDemo extends AbstractApplicationContextDemo {
         });
         calculationEditorViewBuilder.showAndWait(parameterModel, parameterModel.getCalculation());
 
-    }
-
-    private static ParameterModel getParameterModel() {
-        SystemModel systemModel = new SystemModel("ROOT-SYS");
-        ParameterModel outPar = new ParameterModel("outpar", 76.45);
-        systemModel.addParameter(outPar);
-        outPar.setNature(ParameterNature.OUTPUT);
-        ParameterModel parameterModel = new ParameterModel("param", 123.45);
-        systemModel.addParameter(parameterModel);
-        parameterModel.setValueSource(ParameterValueSource.CALCULATION);
-        Calculation calculation = new Calculation();
-        calculation.setOperation(new Sum());
-        List<Argument> args = new LinkedList<>();
-        Argument.Literal lit1 = new Argument.Literal(123);
-        args.add(lit1);
-        Argument.Literal lit2 = new Argument.Literal(.45);
-        args.add(lit2);
-        calculation.setArguments(args);
-        parameterModel.setCalculation(calculation);
-        return parameterModel;
     }
 
 }

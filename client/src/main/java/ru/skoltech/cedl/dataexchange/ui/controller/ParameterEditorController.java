@@ -39,7 +39,6 @@ import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
@@ -59,6 +58,7 @@ import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 import ru.skoltech.cedl.dataexchange.ui.Views;
+import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
 import java.net.URL;
 import java.util.EnumSet;
@@ -70,7 +70,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for parameter editing.
- *
+ * <p>
  * Created by D.Knoll on 03.07.2015.
  */
 public class ParameterEditorController implements Initializable, Displayable {
@@ -156,24 +156,103 @@ public class ParameterEditorController implements Initializable, Displayable {
     private AutoCompletionBinding<String> binding;
     private Stage ownerStage;
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
+    }
+
+    public void setEditListener(Consumer<ParameterModel> updateListener) {
+        this.editListener = updateListener;
     }
 
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
     }
 
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
-    }
-
     public void setModelUpdateService(ModelUpdateService modelUpdateService) {
         this.modelUpdateService = modelUpdateService;
     }
 
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     public void setUnitManagementService(UnitManagementService unitManagementService) {
         this.unitManagementService = unitManagementService;
+    }
+
+    public void setVisible(boolean visible) {
+        parameterEditorPane.setVisible(visible);
+    }
+
+    public void applyChanges(ActionEvent actionEvent) {
+        updateModel();
+    }
+
+    public void chooseParameter() {
+        ModelNode parameterOwningNode = originalParameterModel.getParent();
+        SystemModel systemModel = parameterOwningNode.findRoot();
+
+        // filter list of parameters
+        List<ParameterModel> parameters = new LinkedList<>();
+        systemModel.parametersTreeIterator().forEachRemaining(parameter -> {
+            if (parameter.getParent() != parameterOwningNode &&
+                    parameter.getNature() == ParameterNature.OUTPUT) {
+                parameters.add(parameter);
+            }
+        });
+
+        ViewBuilder parameterSelectorViewBuilder = guiService.createViewBuilder("Link Selector", Views.PARAMETER_SELECTOR_VIEW);
+        parameterSelectorViewBuilder.applyEventHandler(event -> {
+            ParameterModel parameterModel = (ParameterModel) event.getSource();
+            if (parameterModel != null) {
+                valueLinkParameter = parameterModel;
+                parameterLinkText.setText(valueLinkParameter.getNodePath());
+                valueText.setText(convertToText(valueLinkParameter.getValue()));
+                unitComboBox.setValue(valueLinkParameter.getUnit());
+            } else {
+                parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : null);
+            }
+        });
+        parameterSelectorViewBuilder.showAndWait(parameters, valueLinkParameter);
+    }
+
+    public void chooseSource() {
+        displayReferenceSelectorView(valueReference, valueReferenceText);
+    }
+
+    public void chooseTarget() {
+        displayReferenceSelectorView(exportReference, exportReferenceText);
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
+    public void displayParameterModel(ParameterModel parameterModel) {
+        this.originalParameterModel = parameterModel;
+        updateView(originalParameterModel);
+    }
+
+    public void editCalculation() {
+        ViewBuilder calculationEditorViewBuilder = guiService.createViewBuilder("Calculation Editor", Views.CALCULATION_EDITOR_VIEW);
+        calculationEditorViewBuilder.ownerWindow(ownerStage);
+        calculationEditorViewBuilder.applyEventHandler(event -> {
+            Calculation calculation = (Calculation) event.getSource();
+            if (calculation != null) {
+                this.calculation = calculation;
+                if (calculation.valid()) {
+                    calculationText.setText(calculation.asText());
+                    valueText.setText(convertToText(calculation.evaluate()));
+                    logger.debug(originalParameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
+                } else {
+                    Dialogues.showError("Invalid calculation", "The composed calculation is invalid and therefor will be ignored.");
+                }
+            } else {
+                calculationText.setText(this.calculation != null ? this.calculation.asText() : null);
+            }
+        });
+        calculationEditorViewBuilder.showAndWait(editingParameterModel, calculation);
     }
 
     @Override
@@ -265,62 +344,22 @@ public class ParameterEditorController implements Initializable, Displayable {
         });
     }
 
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    public void setVisible(boolean visible) {
-        parameterEditorPane.setVisible(visible);
-    }
-
-    public void displayParameterModel(ParameterModel parameterModel) {
-        this.originalParameterModel = parameterModel;
+    public void revertChanges(ActionEvent actionEvent) {
         updateView(originalParameterModel);
     }
 
-    public void setEditListener(Consumer<ParameterModel> updateListener) {
-        this.editListener = updateListener;
+    private Double convertTextToDouble(String text) {
+        try {
+            return Double.parseDouble(text);
+        } catch (NumberFormatException nfe) {
+            // ignore
+        }
+        return null;
     }
 
-    public void applyChanges(ActionEvent actionEvent) {
-        updateModel();
-    }
-
-    public void chooseParameter() {
-        ModelNode parameterOwningNode = originalParameterModel.getParent();
-        SystemModel systemModel = parameterOwningNode.findRoot();
-
-        // filter list of parameters
-        List<ParameterModel> parameters = new LinkedList<>();
-        systemModel.parametersTreeIterator().forEachRemaining(parameter -> {
-            if (parameter.getParent() != parameterOwningNode &&
-                    parameter.getNature() == ParameterNature.OUTPUT) {
-                parameters.add(parameter);
-            }
-        });
-
-        ViewBuilder parameterSelectorViewBuilder = guiService.createViewBuilder("Link Selector", Views.PARAMETER_SELECTOR_VIEW);
-        parameterSelectorViewBuilder.applyEventHandler(event -> {
-            ParameterModel parameterModel = (ParameterModel) event.getSource();
-            if (parameterModel != null) {
-                valueLinkParameter = parameterModel;
-                parameterLinkText.setText(valueLinkParameter.getNodePath());
-                valueText.setText(convertToText(valueLinkParameter.getValue()));
-                unitComboBox.setValue(valueLinkParameter.getUnit());
-            } else {
-                parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : null);
-            }
-        });
-        parameterSelectorViewBuilder.showAndWait(parameters, valueLinkParameter);
-    }
-
-    public void chooseSource() {
-        displayReferenceSelectorView(valueReference, valueReferenceText);
-    }
-
-    public void chooseTarget() {
-        displayReferenceSelectorView(exportReference, exportReferenceText);
+    private String convertToText(Double value) {
+        if (value == null) return "";
+        return Utils.NUMBER_FORMAT.format(value);
     }
 
     private void displayReferenceSelectorView(ExternalModelReference externalModelReference, TextField externalModelReferenceTextField) {
@@ -331,31 +370,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         referenceSelectorViewBuilder.ownerWindow(ownerStage);
         referenceSelectorViewBuilder.applyEventHandler(applyEventHandler);
         referenceSelectorViewBuilder.showAndWait(externalModelReference, externalModels);
-    }
-
-    public void editCalculation() {
-        ViewBuilder calculationEditorViewBuilder = guiService.createViewBuilder("Calculation Editor", Views.CALCULATION_EDITOR_VIEW);
-        calculationEditorViewBuilder.ownerWindow(ownerStage);
-        calculationEditorViewBuilder.applyEventHandler(event -> {
-            Calculation calculation = (Calculation) event.getSource();
-            if (calculation != null) {
-                this.calculation = calculation;
-                if (calculation.valid()) {
-                    calculationText.setText(calculation.asText());
-                    valueText.setText(convertToText(calculation.evaluate()));
-                    logger.debug(originalParameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
-                } else {
-                    Dialogues.showError("Invalid calculation", "The composed calculation is invalid and therefor will be ignored.");
-                }
-            } else {
-                calculationText.setText(this.calculation != null ? this.calculation.asText() : null);
-            }
-        });
-        calculationEditorViewBuilder.showAndWait(editingParameterModel, calculation);
-    }
-
-    public void revertChanges(ActionEvent actionEvent) {
-        updateView(originalParameterModel);
     }
 
     private void updateModel() {
@@ -475,16 +489,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         editListener.accept(editingParameterModel);
     }
 
-
-    private Double convertTextToDouble(String text) {
-        try {
-            return Double.parseDouble(text);
-        } catch (NumberFormatException nfe) {
-            // ignore
-        }
-        return null;
-    }
-
     private void updateView(ParameterModel parameterModel) {
         // refresh unit's list, since list can be changed
         List<Unit> units = project.getUnitManagement().getUnits();
@@ -525,11 +529,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         } else {
             dependentsText.setText("");
         }
-    }
-
-    private String convertToText(Double value) {
-        if (value == null) return "";
-        return Utils.NUMBER_FORMAT.format(value);
     }
 
     private class ExternalModelReferenceEventHandler implements EventHandler<Event> {

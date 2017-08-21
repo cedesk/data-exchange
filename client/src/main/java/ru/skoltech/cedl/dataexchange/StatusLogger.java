@@ -49,12 +49,12 @@ public class StatusLogger {
         return lastMessage.get();
     }
 
-    public StringProperty lastMessageProperty() {
-        return lastMessage;
-    }
-
     public Collection<String> getLastMessages() {
         return lineBuffer;
+    }
+
+    public StringProperty lastMessageProperty() {
+        return lastMessage;
     }
 
     public void log(String msg, boolean error) {

@@ -28,11 +28,10 @@ import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.*;
@@ -56,12 +55,12 @@ public class ParameterLinkRegistry {
     public ParameterLinkRegistry() {
     }
 
-    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
-        this.userRoleManagementService = userRoleManagementService;
-    }
-
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
+    }
+
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     private static List<ModelNode> getModelNodes(SystemModel systemModel) {

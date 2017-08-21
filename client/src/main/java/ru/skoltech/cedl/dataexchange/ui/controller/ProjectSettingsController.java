@@ -39,7 +39,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for adjustment of project settings.
- *
+ * <p>
  * Created by D.Knoll on 22.07.2015.
  */
 public class ProjectSettingsController implements Initializable, Displayable, Closeable {
@@ -89,6 +89,29 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         this.userManagementService = userManagementService;
     }
 
+    public void cancel() {
+        this.close();
+    }
+
+    public void cleanupProjectCache() {
+        project.getExternalModelFileHandler().cleanupCache(project);
+    }
+
+    public void close() {
+        ownerStage.close();
+        logger.info("closed");
+    }
+
+    @Override
+    public void close(Stage stage, WindowEvent windowEvent) {
+        this.close();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         StudySettings studySettings = studySettings();
@@ -126,33 +149,6 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         projectDirectoryTextField.setText(projectDataDir);
 
         saveButton.disableProperty().bind(Bindings.not(changed));
-    }
-
-    private boolean parametersChanged(boolean repositoryWatcherAutosync, boolean projectUseOsUser,
-                                      String projectUserName, boolean projectLastAutoload) {
-        boolean newRepositoryWatcherAutosync = syncEnabledCheckBox.isSelected();
-        boolean newProjectUseOsUser = projectUseOsUserCheckBox.isSelected();
-        String newProjectUserName = projectUserNameText.getText();
-        boolean newProjectLastAutoload = projectLastAutoloadCheckBox.isSelected();
-        return repositoryWatcherAutosync != newRepositoryWatcherAutosync
-                || projectUseOsUser != newProjectUseOsUser
-                || !projectUserName.equals(newProjectUserName)
-                || projectLastAutoload != newProjectLastAutoload;
-    }
-
-
-    private StudySettings studySettings() {
-        if (project != null && project.getStudy() != null) {
-            if (project.isCurrentAdmin()) {
-                return project.getStudy().getStudySettings();
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
     }
 
     public void save() {
@@ -199,22 +195,25 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         this.close();
     }
 
-    public void cancel() {
-        this.close();
+    private boolean parametersChanged(boolean repositoryWatcherAutosync, boolean projectUseOsUser,
+                                      String projectUserName, boolean projectLastAutoload) {
+        boolean newRepositoryWatcherAutosync = syncEnabledCheckBox.isSelected();
+        boolean newProjectUseOsUser = projectUseOsUserCheckBox.isSelected();
+        String newProjectUserName = projectUserNameText.getText();
+        boolean newProjectLastAutoload = projectLastAutoloadCheckBox.isSelected();
+        return repositoryWatcherAutosync != newRepositoryWatcherAutosync
+                || projectUseOsUser != newProjectUseOsUser
+                || !projectUserName.equals(newProjectUserName)
+                || projectLastAutoload != newProjectLastAutoload;
     }
 
-    @Override
-    public void close(Stage stage, WindowEvent windowEvent) {
-        this.close();
-    }
-
-    public void close() {
-        ownerStage.close();
-        logger.info("closed");
-    }
-
-    public void cleanupProjectCache() {
-        project.getExternalModelFileHandler().cleanupCache(project);
+    private StudySettings studySettings() {
+        if (project != null && project.getStudy() != null) {
+            if (project.isCurrentAdmin()) {
+                return project.getStudy().getStudySettings();
+            }
+        }
+        return null;
     }
 
 }

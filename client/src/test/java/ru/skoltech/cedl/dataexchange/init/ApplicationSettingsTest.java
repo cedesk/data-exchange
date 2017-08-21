@@ -74,6 +74,11 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
     }
 
     @Test
+    public void testGetApplicationSettings() {
+        testGetApplicationSettings(applicationSettingsProperties);
+    }
+
+    @Test
     public void testGetCedeskProperties() {
         assertThat(applicationSettings.getCedeskAppDir(), is(cedeskAppFile.getParent()));
         assertThat(applicationSettings.getCedeskAppFile(), is(cedeskAppFile.getName()));
@@ -98,27 +103,6 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testGetApplicationSettings() {
-        testGetApplicationSettings(applicationSettingsProperties);
-    }
-
-    private void testGetApplicationSettings(Properties appSettingsProps) {
-        assertThat(applicationSettings.getRepositoryHost(), is(appSettingsProps.getProperty(REPOSITORY_HOST)));
-        assertThat(applicationSettings.isRepositorySchemaCreate(), is(Boolean.valueOf(appSettingsProps.getProperty(REPOSITORY_SCHEMA_CREATE))));
-        assertThat(applicationSettings.getRepositorySchemaName(), is(appSettingsProps.getProperty(REPOSITORY_SCHEMA_NAME)));
-        assertThat(applicationSettings.getRepositoryUser(), is(appSettingsProps.getProperty(REPOSITORY_USER)));
-        assertThat(applicationSettings.getRepositoryPassword(), is(appSettingsProps.getProperty(REPOSITORY_PASSWORD)));
-        assertThat(applicationSettings.isRepositoryWatcherAutosync(), is(Boolean.valueOf(appSettingsProps.getProperty(REPOSITORY_WATCHER_AUTOSYNC))));
-        assertThat(applicationSettings.isProjectLastAutoload(), is(Boolean.valueOf(appSettingsProps.getProperty(PROJECT_LAST_AUTOLOAD))));
-        assertThat(applicationSettings.getProjectLastName(), is(appSettingsProps.getProperty(PROJECT_LAST_NAME)));
-        assertThat(applicationSettings.isProjectUseOsUser(), is(Boolean.valueOf(appSettingsProps.getProperty(PROJECT_USE_OS_USER))));
-        assertThat(applicationSettings.getProjectUserName(), is(appSettingsProps.getProperty(PROJECT_USER_NAME)));
-        assertThat(applicationSettings.getProjectImportName(), is(appSettingsProps.getProperty(PROJECT_IMPORT_NAME)));
-        assertThat(applicationSettings.getStudyModelDepth(), is(appSettingsProps.getProperty(STUDY_MODEL_DEPTH)));
-    }
-
-
-    @Test
     public void testStoreApplicationSettings() {
         String newRepositoryHost = "testRepositoryHost";
 
@@ -135,5 +119,20 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
         newSettingsProps = ApplicationSettingsInitializer.applicationSettings(cedeskAppFile);
         testGetApplicationSettings(newSettingsProps);
         assertThat(newSettingsProps.get(REPOSITORY_HOST), is(newRepositoryHost));
+    }
+
+    private void testGetApplicationSettings(Properties appSettingsProps) {
+        assertThat(applicationSettings.getRepositoryHost(), is(appSettingsProps.getProperty(REPOSITORY_HOST)));
+        assertThat(applicationSettings.isRepositorySchemaCreate(), is(Boolean.valueOf(appSettingsProps.getProperty(REPOSITORY_SCHEMA_CREATE))));
+        assertThat(applicationSettings.getRepositorySchemaName(), is(appSettingsProps.getProperty(REPOSITORY_SCHEMA_NAME)));
+        assertThat(applicationSettings.getRepositoryUser(), is(appSettingsProps.getProperty(REPOSITORY_USER)));
+        assertThat(applicationSettings.getRepositoryPassword(), is(appSettingsProps.getProperty(REPOSITORY_PASSWORD)));
+        assertThat(applicationSettings.isRepositoryWatcherAutosync(), is(Boolean.valueOf(appSettingsProps.getProperty(REPOSITORY_WATCHER_AUTOSYNC))));
+        assertThat(applicationSettings.isProjectLastAutoload(), is(Boolean.valueOf(appSettingsProps.getProperty(PROJECT_LAST_AUTOLOAD))));
+        assertThat(applicationSettings.getProjectLastName(), is(appSettingsProps.getProperty(PROJECT_LAST_NAME)));
+        assertThat(applicationSettings.isProjectUseOsUser(), is(Boolean.valueOf(appSettingsProps.getProperty(PROJECT_USE_OS_USER))));
+        assertThat(applicationSettings.getProjectUserName(), is(appSettingsProps.getProperty(PROJECT_USER_NAME)));
+        assertThat(applicationSettings.getProjectImportName(), is(appSettingsProps.getProperty(PROJECT_IMPORT_NAME)));
+        assertThat(applicationSettings.getStudyModelDepth(), is(appSettingsProps.getProperty(STUDY_MODEL_DEPTH)));
     }
 }

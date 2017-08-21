@@ -64,18 +64,6 @@ public class BasicSpaceSystemBuilderTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testBuildWithoutName() {
-        basicSpaceSystemBuilder.build(null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testBuildModelDepthZero() {
-        String systemModelName = "testName";
-        basicSpaceSystemBuilder.modelDepth(0);
-        basicSpaceSystemBuilder.build(systemModelName);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void testBuildModelDepthBig() {
         String systemModelName = "testName";
         basicSpaceSystemBuilder.modelDepth(5);
@@ -83,16 +71,29 @@ public class BasicSpaceSystemBuilderTest {
     }
 
     @Test
-    public void testBuildModelDepthOne() {
+    public void testBuildModelDepthFour() {
         String systemModelName = "testName";
-        basicSpaceSystemBuilder.modelDepth(1);
+        basicSpaceSystemBuilder.modelDepth(4);
         SystemModel systemModel = basicSpaceSystemBuilder.build(systemModelName);
 
         assertNotNull(systemModel);
         assertThat(systemModel.getName(), is(systemModelName));
         assertNull(systemModel.getParent());
 
-        assertThat(systemModel.getSubNodes(), empty());
+        testSubSystemModel(systemModel.getSubNodes());
+        for (SubSystemModel subSystemModel : systemModel.getSubNodes()) {
+            assertThat(subSystemModel.getSubNodes(), hasSize(1));
+            assertThat(subSystemModel.getSubNodes(), everyItem(isA(ElementModel.class)));
+            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("name", startsWith("element"))));
+            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("parameters", hasSize(2))));
+            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("parameters",
+                    hasItem(hasProperty("name", startsWith("parameter"))))));
+            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("subNodes", hasSize(1))));
+            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("subNodes",
+                    everyItem(hasProperty("parameters", hasSize(2))))));
+            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("subNodes",
+                    everyItem(hasProperty("parameters", hasItem(hasProperty("name", startsWith("parameter"))))))));
+        }
 
         assertThat(systemModel.getParameters(), hasSize(2));
         assertThat(systemModel.getParameters(), hasItem(
@@ -113,17 +114,16 @@ public class BasicSpaceSystemBuilderTest {
     }
 
     @Test
-    public void testBuildModelDepthTwo() {
+    public void testBuildModelDepthOne() {
         String systemModelName = "testName";
-        basicSpaceSystemBuilder.modelDepth(2);
+        basicSpaceSystemBuilder.modelDepth(1);
         SystemModel systemModel = basicSpaceSystemBuilder.build(systemModelName);
 
         assertNotNull(systemModel);
         assertThat(systemModel.getName(), is(systemModelName));
         assertNull(systemModel.getParent());
 
-        testSubSystemModel(systemModel.getSubNodes());
-        assertThat(systemModel.getSubNodes(), everyItem(hasProperty("subNodes", empty())));
+        assertThat(systemModel.getSubNodes(), empty());
 
         assertThat(systemModel.getParameters(), hasSize(2));
         assertThat(systemModel.getParameters(), hasItem(
@@ -183,9 +183,9 @@ public class BasicSpaceSystemBuilderTest {
     }
 
     @Test
-    public void testBuildModelDepthFour() {
+    public void testBuildModelDepthTwo() {
         String systemModelName = "testName";
-        basicSpaceSystemBuilder.modelDepth(4);
+        basicSpaceSystemBuilder.modelDepth(2);
         SystemModel systemModel = basicSpaceSystemBuilder.build(systemModelName);
 
         assertNotNull(systemModel);
@@ -193,19 +193,7 @@ public class BasicSpaceSystemBuilderTest {
         assertNull(systemModel.getParent());
 
         testSubSystemModel(systemModel.getSubNodes());
-        for (SubSystemModel subSystemModel : systemModel.getSubNodes()) {
-            assertThat(subSystemModel.getSubNodes(), hasSize(1));
-            assertThat(subSystemModel.getSubNodes(), everyItem(isA(ElementModel.class)));
-            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("name", startsWith("element"))));
-            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("parameters", hasSize(2))));
-            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("parameters",
-                    hasItem(hasProperty("name", startsWith("parameter"))))));
-            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("subNodes", hasSize(1))));
-            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("subNodes",
-                    everyItem(hasProperty("parameters", hasSize(2))))));
-            assertThat(subSystemModel.getSubNodes(), everyItem(hasProperty("subNodes",
-                    everyItem(hasProperty("parameters", hasItem(hasProperty("name", startsWith("parameter"))))))));
-        }
+        assertThat(systemModel.getSubNodes(), everyItem(hasProperty("subNodes", empty())));
 
         assertThat(systemModel.getParameters(), hasSize(2));
         assertThat(systemModel.getParameters(), hasItem(
@@ -223,6 +211,18 @@ public class BasicSpaceSystemBuilderTest {
         ));
 
         assertTrue(systemModel.getExternalModels().isEmpty());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testBuildModelDepthZero() {
+        String systemModelName = "testName";
+        basicSpaceSystemBuilder.modelDepth(0);
+        basicSpaceSystemBuilder.build(systemModelName);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testBuildWithoutName() {
+        basicSpaceSystemBuilder.build(null);
     }
 
     private void testSubSystemModel(List<SubSystemModel> subNodes) {

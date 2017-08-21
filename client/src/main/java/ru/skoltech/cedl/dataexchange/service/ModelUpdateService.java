@@ -16,10 +16,10 @@
 
 package ru.skoltech.cedl.dataexchange.service;
 
-import ru.skoltech.cedl.dataexchange.external.*;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.List;
 import java.util.function.Consumer;

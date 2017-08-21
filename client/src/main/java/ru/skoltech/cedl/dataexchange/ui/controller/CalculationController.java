@@ -51,27 +51,22 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for calculation edition.
- *
+ * <p>
  * Created by D.Knoll on 24.09.2015.
  */
 public class CalculationController implements Initializable, Applicable {
 
-    @FXML
-    private ChoiceBox<Operation> operationChoiceBox;
-
-    @FXML
-    private TextArea operationDescriptionText;
-
-    @FXML
-    private VBox argumentsContainer;
-
-    @FXML
-    private Button addButton;
-
     private final IntegerProperty argumentCount = new SimpleIntegerProperty(0);
     private final IntegerProperty minArguments = new SimpleIntegerProperty(0);
     private final IntegerProperty maxArguments = new SimpleIntegerProperty(0);
-
+    @FXML
+    private ChoiceBox<Operation> operationChoiceBox;
+    @FXML
+    private TextArea operationDescriptionText;
+    @FXML
+    private VBox argumentsContainer;
+    @FXML
+    private Button addButton;
     private ParameterModel parameterModel;
     private Calculation calculation;
 
@@ -92,17 +87,44 @@ public class CalculationController implements Initializable, Applicable {
     }
 
     @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
+    public void addNewArgument() {
+        Operation operation = operationChoiceBox.getValue();
+        Argument argument = new Argument.Literal(1);
+        int pos = calculation.getArguments().size();
+        if (pos <= operation.maxArguments()) {
+            calculation.getArguments().add(argument);
+            String argumentName = operation.argumentName(pos);
+            renderArgument(argumentName, argument);
+        }
+    }
+
+    public void close(ActionEvent actionEvent) {
+        updateCalculationModel();
+        Node source = (Node) actionEvent.getSource();
+        Stage stage = (Stage) source.getScene().getWindow();
+        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
+        if (applyEventHandler != null) {
+            Event event = new Event(calculation, null, null);
+            applyEventHandler.handle(event);
+        }
+    }
+
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
         // OPERATION CHOICE
         operationChoiceBox.setConverter(new StringConverter<Operation>() {
             @Override
-            public String toString(Operation operation) {
-                return operation.name();
+            public Operation fromString(String string) {
+                return null;
             }
 
             @Override
-            public Operation fromString(String string) {
-                return null;
+            public String toString(Operation operation) {
+                return operation.name();
             }
         });
         operationChoiceBox.setItems(FXCollections.observableArrayList(OperationRegistry.getAll()));
@@ -132,32 +154,28 @@ public class CalculationController implements Initializable, Applicable {
         });
     }
 
-    @Override
-    public void setOnApply(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
+    private void deleteArgument(ActionEvent actionEvent) {
+        Button deleteButton = (Button) actionEvent.getSource();
+        HBox argumentRow = (HBox) deleteButton.getUserData();
+        argumentsContainer.getChildren().remove(argumentRow);
+        CalculationArgumentController controller = (CalculationArgumentController) argumentRow.getChildren().get(0).getUserData();
+        Argument argument = controller.getArgument();
+        calculation.getArguments().remove(argument);
+        argumentCount.setValue(argumentsContainer.getChildren().size());
+        updateArgumentsView(calculation.getOperation());
     }
 
-    public void close(ActionEvent actionEvent) {
-        updateCalculationModel();
-        Node source = (Node) actionEvent.getSource();
-        Stage stage = (Stage) source.getScene().getWindow();
-        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
-        if (applyEventHandler != null) {
-            Event event = new Event(calculation, null, null);
-            applyEventHandler.handle(event);
-        }
-    }
-
-    private void updateCalculationModel() {
-        List<Node> allArgumentEditors = argumentsContainer.getChildren();
-        List<Argument> arguments = new LinkedList<>();
-        for (Node allArgumentEditor : allArgumentEditors) {
-            HBox argumentRow = (HBox) allArgumentEditor;
-            CalculationArgumentController cae = (CalculationArgumentController) argumentRow.getChildren().get(0).getUserData();
-            arguments.add(cae.getArgument());
-        }
-        calculation.setArguments(arguments);
-        calculation.setOperation(operationChoiceBox.getValue());
+    private void renderArgument(String argName, Argument argument) {
+        Node calculationArgumentNode = guiService.createControl(Views.CALCULATION_ARGUMENT_VIEW, argName, argument, parameterModel);
+        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
+        removeButton.setTooltip(new Tooltip("remove argument"));
+        removeButton.setOnAction(CalculationController.this::deleteArgument);
+        removeButton.setMinWidth(20);
+        removeButton.disableProperty().bind(argumentCount.lessThanOrEqualTo(minArguments));
+        HBox argumentRow = new HBox(4, calculationArgumentNode, removeButton);
+        removeButton.setUserData(argumentRow);
+        argumentsContainer.getChildren().add(argumentRow);
+        argumentCount.setValue(argumentsContainer.getChildren().size());
     }
 
     private void updateArgumentsView(Operation operation) {
@@ -186,38 +204,15 @@ public class CalculationController implements Initializable, Applicable {
         argumentCount.setValue(argumentsContainer.getChildren().size());
     }
 
-    private void renderArgument(String argName, Argument argument) {
-        Node calculationArgumentNode = guiService.createControl(Views.CALCULATION_ARGUMENT_VIEW, argName, argument, parameterModel);
-        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
-        removeButton.setTooltip(new Tooltip("remove argument"));
-        removeButton.setOnAction(CalculationController.this::deleteArgument);
-        removeButton.setMinWidth(20);
-        removeButton.disableProperty().bind(argumentCount.lessThanOrEqualTo(minArguments));
-        HBox argumentRow = new HBox(4, calculationArgumentNode, removeButton);
-        removeButton.setUserData(argumentRow);
-        argumentsContainer.getChildren().add(argumentRow);
-        argumentCount.setValue(argumentsContainer.getChildren().size());
-    }
-
-    private void deleteArgument(ActionEvent actionEvent) {
-        Button deleteButton = (Button) actionEvent.getSource();
-        HBox argumentRow = (HBox) deleteButton.getUserData();
-        argumentsContainer.getChildren().remove(argumentRow);
-        CalculationArgumentController controller = (CalculationArgumentController) argumentRow.getChildren().get(0).getUserData();
-        Argument argument = controller.getArgument();
-        calculation.getArguments().remove(argument);
-        argumentCount.setValue(argumentsContainer.getChildren().size());
-        updateArgumentsView(calculation.getOperation());
-    }
-
-    public void addNewArgument() {
-        Operation operation = operationChoiceBox.getValue();
-        Argument argument = new Argument.Literal(1);
-        int pos = calculation.getArguments().size();
-        if (pos <= operation.maxArguments()) {
-            calculation.getArguments().add(argument);
-            String argumentName = operation.argumentName(pos);
-            renderArgument(argumentName, argument);
+    private void updateCalculationModel() {
+        List<Node> allArgumentEditors = argumentsContainer.getChildren();
+        List<Argument> arguments = new LinkedList<>();
+        for (Node allArgumentEditor : allArgumentEditors) {
+            HBox argumentRow = (HBox) allArgumentEditor;
+            CalculationArgumentController cae = (CalculationArgumentController) argumentRow.getChildren().get(0).getUserData();
+            arguments.add(cae.getArgument());
         }
+        calculation.setArguments(arguments);
+        calculation.setOperation(operationChoiceBox.getValue());
     }
 }

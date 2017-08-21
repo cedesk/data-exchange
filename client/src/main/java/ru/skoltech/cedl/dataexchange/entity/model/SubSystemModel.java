@@ -39,6 +39,13 @@ public class SubSystemModel extends CompositeModelNode<ElementModel> {
         super(name);
     }
 
+    //---------------
+    @Override
+    @Transient
+    public String getNodePath() {
+        return NODE_SEPARATOR + name;
+    }
+
     @Override
     @ManyToOne(targetEntity = SystemModel.class)
     public ModelNode getParent() {
@@ -50,13 +57,6 @@ public class SubSystemModel extends CompositeModelNode<ElementModel> {
     @Fetch(FetchMode.SELECT)
     public List<ElementModel> getSubNodes() {
         return super.getSubNodes();
-    }
-
-    //---------------
-    @Override
-    @Transient
-    public String getNodePath() {
-        return NODE_SEPARATOR + name;
     }
     //---------------
 }

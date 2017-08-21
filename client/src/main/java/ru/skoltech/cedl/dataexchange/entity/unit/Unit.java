@@ -49,6 +49,14 @@ public class Unit {
     @XmlAttribute(name = "quantityKind")
     private String quantityKindStr;
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public long getId() {
         return id;
     }
@@ -65,22 +73,6 @@ public class Unit {
         this.name = name;
     }
 
-    public String getSymbol() {
-        return symbol;
-    }
-
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public QuantityKind getQuantityKind() {
         return quantityKind;
     }
@@ -95,6 +87,14 @@ public class Unit {
 
     public void setQuantityKindStr(String quantityKindStr) {
         this.quantityKindStr = quantityKindStr;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
     }
 
     public String asText() {

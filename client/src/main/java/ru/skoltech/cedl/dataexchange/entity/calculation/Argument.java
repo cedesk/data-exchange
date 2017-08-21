@@ -48,6 +48,9 @@ public abstract class Argument {
         return Arrays.asList(Literal.class, Parameter.class);
     }
 
+    @Transient
+    public abstract double getEffectiveValue();
+
     @Id
     @GeneratedValue
     public long getId() {
@@ -68,9 +71,6 @@ public abstract class Argument {
         this.parent = parent;
     }
 
-    @Transient
-    public abstract double getEffectiveValue();
-
     public abstract String asText();
 
     @XmlType
@@ -90,6 +90,12 @@ public abstract class Argument {
             this.value = value;
         }
 
+        @Override
+        @Transient
+        public double getEffectiveValue() {
+            return value;
+        }
+
         public double getValue() {
             return value;
         }
@@ -99,22 +105,8 @@ public abstract class Argument {
         }
 
         @Override
-        @Transient
-        public double getEffectiveValue() {
-            return value;
-        }
-
-        @Override
         public String asText() {
             return Double.toString(value);
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("Literal{");
-            sb.append("value=").append(value);
-            sb.append('}');
-            return sb.toString();
         }
 
         @Override
@@ -131,6 +123,14 @@ public abstract class Argument {
         public int hashCode() {
             long temp = Double.doubleToLongBits(value);
             return (int) (temp ^ (temp >>> 32));
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("Literal{");
+            sb.append("value=").append(value);
+            sb.append('}');
+            return sb.toString();
         }
     }
 
@@ -152,6 +152,12 @@ public abstract class Argument {
             this.link = link;
         }
 
+        @Override
+        @Transient
+        public double getEffectiveValue() {
+            return link.getEffectiveValue();
+        }
+
         @OneToOne(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, orphanRemoval = true)
         public ParameterModel getLink() {
             return link;
@@ -162,22 +168,8 @@ public abstract class Argument {
         }
 
         @Override
-        @Transient
-        public double getEffectiveValue() {
-            return link.getEffectiveValue();
-        }
-
-        @Override
         public String asText() {
             return link != null ? link.getNodePath() : null;
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("Parameter{");
-            sb.append("link=").append(link != null ? link.getNodePath() : null);
-            sb.append('}');
-            return sb.toString();
         }
 
         @Override
@@ -193,6 +185,14 @@ public abstract class Argument {
         @Override
         public int hashCode() {
             return link != null ? link.hashCode() : 0;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("Parameter{");
+            sb.append("link=").append(link != null ? link.getNodePath() : null);
+            sb.append('}');
+            return sb.toString();
         }
     }
 }

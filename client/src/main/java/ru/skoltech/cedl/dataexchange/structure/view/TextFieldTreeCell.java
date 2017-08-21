@@ -22,13 +22,13 @@ import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import ru.skoltech.cedl.dataexchange.ui.controller.Dialogues;
-import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.ui.controller.Dialogues;
 
 /**
  * Created by D.Knoll on 24.04.2015.
@@ -45,6 +45,17 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
         this.setEditable(editable);
     }
 
+    private String getString() {
+        return getItem() == null ? "" : getItem().getName();
+    }
+
+    @Override
+    public void cancelEdit() {
+        super.cancelEdit();
+        setText(getString());
+        setGraphic(getTreeItem().getGraphic());
+    }
+
     @Override
     public void startEdit() {
         if (!isEditable()) return;
@@ -57,13 +68,6 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
         setText(null);
         setGraphic(textField);
         textField.selectAll();
-    }
-
-    @Override
-    public void cancelEdit() {
-        super.cancelEdit();
-        setText(getString());
-        setGraphic(getTreeItem().getGraphic());
     }
 
     @Override
@@ -118,9 +122,5 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
                 }
             }
         });
-    }
-
-    private String getString() {
-        return getItem() == null ? "" : getItem().getName();
     }
 }

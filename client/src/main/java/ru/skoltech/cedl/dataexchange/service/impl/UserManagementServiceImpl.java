@@ -44,6 +44,11 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     @Override
+    public boolean checkUserName(UserManagement userManagement, String userName) {
+        return userMap(userManagement).containsKey(userName);
+    }
+
+    @Override
     public UserManagement createDefaultUserManagement() {
         UserManagement userManagement = new UserManagement();
         userManagement.setId(IDENTIFIER);
@@ -62,6 +67,15 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     @Override
+    public User obtainUser(UserManagement userManagement, String userName) {
+        User user = userMap(userManagement).get(userName);
+        if (user == null) {
+            logger.error("user not found: " + userName);
+        }
+        return user;
+    }
+
+    @Override
     public UserManagement saveUserManagement(UserManagement userManagement) {
         return userManagementRepository.saveAndFlush(userManagement);
     }
@@ -70,20 +84,6 @@ public class UserManagementServiceImpl implements UserManagementService {
     public Map<String, User> userMap(UserManagement userManagement) {
         return userManagement.getUsers().stream().collect(
                 Collectors.toMap(User::getUserName, Function.identity()));
-    }
-
-    @Override
-    public boolean checkUserName(UserManagement userManagement, String userName) {
-        return userMap(userManagement).containsKey(userName);
-    }
-
-    @Override
-    public User obtainUser(UserManagement userManagement, String userName) {
-        User user = userMap(userManagement).get(userName);
-        if (user == null) {
-            logger.error("user not found: " + userName);
-        }
-        return user;
     }
 
 }

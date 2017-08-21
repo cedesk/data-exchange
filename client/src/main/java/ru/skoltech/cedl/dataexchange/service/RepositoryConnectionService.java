@@ -18,10 +18,30 @@ package ru.skoltech.cedl.dataexchange.service;
 
 /**
  * Service for repository connection operations.
- *
+ * <p>
  * Created by Nikolay Groshkov on 04-Aug-17.
  */
 public interface RepositoryConnectionService {
+
+    /**
+     * Check database connection based on passed parameters.
+     *
+     * @param hostName name of host server
+     * @param schema   name of schema
+     * @param userName name of user
+     * @param password user password
+     * @return <i>true</i> if connection is possible, <i>false</i> - if opposite
+     */
+    boolean checkRepositoryConnection(String hostName, String schema, String userName, String password);
+
+    /**
+     * Create repository URL.
+     *
+     * @param hostName host name
+     * @param schema   schema name
+     * @return repository URL
+     */
+    String createRepositoryUrl(String hostName, String schema);
 
     /**
      * Create repository URL with default hostname and schema.
@@ -29,26 +49,5 @@ public interface RepositoryConnectionService {
      * @return repository URL
      */
     String createRepositoryUrl();
-
-    /**
-     * Create repository URL.
-     *
-     * @param hostName host name
-     * @param schema schema name
-     * @return repository URL
-     */
-    String createRepositoryUrl(String hostName, String schema);
-
-
-    /**
-     * Check database connection based on passed parameters.
-     *
-     * @param hostName name of host server
-     * @param schema name of schema
-     * @param userName name of user
-     * @param password user password
-     * @return <i>true</i> if connection is possible, <i>false</i> - if opposite
-     */
-    boolean checkRepositoryConnection(String hostName, String schema, String userName, String password);
 
 }

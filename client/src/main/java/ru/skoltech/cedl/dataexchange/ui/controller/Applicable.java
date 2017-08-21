@@ -21,7 +21,7 @@ import javafx.event.EventHandler;
 
 /**
  * Mark a JavaFX Controller which allow to apply changes.
- *
+ * <p>
  * Created by Nikolay Groshkov on 13-Aug-17.
  */
 public interface Applicable {

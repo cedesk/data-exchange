@@ -8,7 +8,6 @@
 package ru.skoltech.cedl.dataexchange.analysis.model;
 
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -22,10 +21,6 @@ public class NodeChangeList {
         return changeGroups.peekLast() != null ? changeGroups.getLast().nodeId : null;
     }
 
-    private boolean isNewNodeId(Long nodeId) {
-        return changeGroups.peekLast() == null || !changeGroups.getLast().nodeId.equals(nodeId);
-    }
-
     public void addChange(ParameterChange parameterChange) {
         if (isNewNodeId(parameterChange.nodeId)) {
             ParameterChangeGroup pcg = new ParameterChangeGroup(parameterChange);
@@ -34,6 +29,14 @@ public class NodeChangeList {
             changeGroups.getLast().add(parameterChange);
         }
 
+    }
+
+    public Deque<ParameterChange> getCurrentGroupInputs(Long nodeId) {
+        if (isCurrentNode(nodeId)) {
+            return changeGroups.getLast().inputChanges;
+        } else {
+            return null;
+        }
     }
 
     public boolean hasCurrentGroupInputs(Long nodeId) {
@@ -46,11 +49,7 @@ public class NodeChangeList {
                 && changeGroups.getLast().nodeId.equals(nodeId);
     }
 
-    public Deque<ParameterChange> getCurrentGroupInputs(Long nodeId) {
-        if (isCurrentNode(nodeId)) {
-            return changeGroups.getLast().inputChanges;
-        } else {
-            return null;
-        }
+    private boolean isNewNodeId(Long nodeId) {
+        return changeGroups.peekLast() == null || !changeGroups.getLast().nodeId.equals(nodeId);
     }
 }

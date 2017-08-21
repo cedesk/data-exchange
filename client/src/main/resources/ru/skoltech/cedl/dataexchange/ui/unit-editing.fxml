@@ -41,7 +41,7 @@
                                     <PropertyValueFactory property="symbol"/>
                                 </cellValueFactory>
                             </TableColumn>
-                            <TableColumn fx:id="unitQuantityKindColumn" prefWidth="150.0" text="Quantity Kind" />
+                            <TableColumn fx:id="unitQuantityKindColumn" prefWidth="150.0" text="Quantity Kind"/>
                         </columns>
                     </TableView>
                     <ToolBar layoutX="-11.0" layoutY="479.0" AnchorPane.bottomAnchor="0.0"
@@ -49,7 +49,8 @@
                         <Button fx:id="addUnitButton" mnemonicParsing="false" onAction="#openAddUnitDialog" text="Add"/>
                         <Button fx:id="deleteUnitButton" mnemonicParsing="false" onAction="#deleteUnit" text="Delete"/>
                         <Pane HBox.hgrow="ALWAYS"/>
-                        <Button fx:id="saveUnitsButton" mnemonicParsing="false" onAction="#saveUnits" minWidth="28" text="Save">
+                        <Button fx:id="saveUnitsButton" mnemonicParsing="false" onAction="#saveUnits" minWidth="28"
+                                text="Save">
                             <tooltip>
                                 <Tooltip text="Save changes"/>
                             </tooltip>
@@ -80,8 +81,10 @@
                     </TableView>
                     <ToolBar layoutX="-11.0" layoutY="479.0" AnchorPane.bottomAnchor="0.0"
                              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-                        <Button fx:id="addQuantityKindButton" mnemonicParsing="false" onAction="#addQuantityKind" text="Add"/>
-                        <Button fx:id="deleteQuantityKindButton" mnemonicParsing="false" onAction="#deleteQuantityKind" text="Delete"/>
+                        <Button fx:id="addQuantityKindButton" mnemonicParsing="false" onAction="#addQuantityKind"
+                                text="Add"/>
+                        <Button fx:id="deleteQuantityKindButton" mnemonicParsing="false" onAction="#deleteQuantityKind"
+                                text="Delete"/>
                     </ToolBar>
                 </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="567.0" prefWidth="800.0"/>

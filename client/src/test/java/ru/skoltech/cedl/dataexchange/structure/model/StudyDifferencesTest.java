@@ -38,16 +38,6 @@ public class StudyDifferencesTest extends AbstractApplicationContextTest {
     private Study st1;
     private Study st2;
 
-    @Before
-    public void prepare() {
-        st1 = new Study();
-        st1.setName("s1");
-        st1.setVersion(1);
-        st1.setLatestModelModification(System.currentTimeMillis());
-
-        differenceMergeService = context.getBean(DifferenceMergeService.class);
-    }
-
     @Test
     public void equalStudies() throws Exception {
         st2 = st1;
@@ -75,6 +65,16 @@ public class StudyDifferencesTest extends AbstractApplicationContextTest {
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, differences.get(0).getChangeLocation());
 
         differences.get(0).mergeDifference();
+    }
+
+    @Before
+    public void prepare() {
+        st1 = new Study();
+        st1.setName("s1");
+        st1.setVersion(1);
+        st1.setLatestModelModification(System.currentTimeMillis());
+
+        differenceMergeService = context.getBean(DifferenceMergeService.class);
     }
 
 }

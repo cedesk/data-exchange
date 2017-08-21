@@ -17,9 +17,9 @@
 package ru.skoltech.cedl.dataexchange.external.excel;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 
 import java.io.*;
 import java.text.ParseException;
@@ -39,20 +39,6 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
     public ExcelModelExporter(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
         super.externalModel = externalModel;
         super.externalModelFileHandler = externalModelFileHandler;
-    }
-
-    @Override
-    public void setValue(Project project, String target, Double value) throws ExternalModelException {
-        try {
-            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
-            if (spreadsheetAccessor == null) {
-                spreadsheetAccessor = getSpreadsheetAccessor(project);
-            }
-            logger.debug("setting " + value + " on cell " + target + " in " + externalModel.getNodePath());
-            spreadsheetAccessor.setNumericValue(coordinates, value);
-        } catch (ParseException e) {
-            logger.error("error parsing coordinates: " + target);
-        }
     }
 
     public void flushModifications(Project project, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
@@ -89,6 +75,20 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
             } finally {
                 close();
             }
+        }
+    }
+
+    @Override
+    public void setValue(Project project, String target, Double value) throws ExternalModelException {
+        try {
+            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
+            if (spreadsheetAccessor == null) {
+                spreadsheetAccessor = getSpreadsheetAccessor(project);
+            }
+            logger.debug("setting " + value + " on cell " + target + " in " + externalModel.getNodePath());
+            spreadsheetAccessor.setNumericValue(coordinates, value);
+        } catch (ParseException e) {
+            logger.error("error parsing coordinates: " + target);
         }
     }
 

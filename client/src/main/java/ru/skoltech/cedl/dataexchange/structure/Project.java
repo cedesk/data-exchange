@@ -89,35 +89,9 @@ public class Project {
     private BooleanProperty canLoad = new SimpleBooleanProperty(false);
     private BooleanProperty canSync = new SimpleBooleanProperty(false);
 
-    public void init(String projectName) {
-        this.projectName = projectName;
-        this.repositoryStateMachine.reset();
-        this.repositoryStudy = null;
-        repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
-    }
-
-    public void setApplicationSettings(ApplicationSettings applicationSettings) {
-        this.applicationSettings = applicationSettings;
-    }
-
-    public void setRepositorySchemeService(RepositorySchemeService repositorySchemeService) {
-        this.repositorySchemeService = repositorySchemeService;
-    }
-
-    public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
-        this.repositoryStateMachine = repositoryStateMachine;
-    }
-
-    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
-        this.parameterLinkRegistry = parameterLinkRegistry;
-    }
-
-    public ExternalModelFileWatcher getExternalModelFileWatcher() {
-        return externalModelFileWatcher;
-    }
-
-    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
-        this.externalModelFileWatcher = externalModelFileWatcher;
+    public List<Discipline> getCurrentUserDisciplines() {
+        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
+        return userRoleManagementService.obtainDisciplinesOfUser(userRoleManagement, getUser());
     }
 
     public ExternalModelFileHandler getExternalModelFileHandler() {
@@ -128,37 +102,12 @@ public class Project {
         this.externalModelFileHandler = externalModelFileHandler;
     }
 
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
+    public ExternalModelFileWatcher getExternalModelFileWatcher() {
+        return externalModelFileWatcher;
     }
 
-    public void setStudyService(StudyService studyService) {
-        this.studyService = studyService;
-    }
-
-    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
-        this.modelUpdateService = modelUpdateService;
-    }
-
-    public void setUserManagementService(UserManagementService userManagementService) {
-        this.userManagementService = userManagementService;
-    }
-
-    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
-        this.userRoleManagementService = userRoleManagementService;
-    }
-
-    public void setUnitManagementService(UnitManagementService unitManagementService) {
-        this.unitManagementService = unitManagementService;
-    }
-
-    public static void setLogger(Logger logger) {
-        Project.logger = logger;
-    }
-
-    public List<Discipline> getCurrentUserDisciplines() {
-        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
-        return userRoleManagementService.obtainDisciplinesOfUser(userRoleManagement, getUser());
+    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
+        this.externalModelFileWatcher = externalModelFileWatcher;
     }
 
     public long getLatestLoadedModification() {
@@ -183,6 +132,17 @@ public class Project {
 
     public ParameterLinkRegistry getParameterLinkRegistry() {
         return parameterLinkRegistry;
+    }
+
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public File getProjectDataDir() {
+        String projectName = this.getProjectName();
+        String hostname = applicationSettings.getRepositoryHost();
+        String schema = applicationSettings.getRepositorySchemaName();
+        return fileStorageService.dataDir(hostname, schema, projectName);
     }
 
     public String getProjectName() {
@@ -290,9 +250,49 @@ public class Project {
         return repositoryStateMachine.wasLoadedOrSaved();
     }
 
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
+
+    public void setFileStorageService(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
+    }
+
+    public static void setLogger(Logger logger) {
+        Project.logger = logger;
+    }
+
+    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
+        this.modelUpdateService = modelUpdateService;
+    }
+
+    public void setRepositorySchemeService(RepositorySchemeService repositorySchemeService) {
+        this.repositorySchemeService = repositorySchemeService;
+    }
+
+    public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
+        this.repositoryStateMachine = repositoryStateMachine;
+    }
+
+    public void setStudyService(StudyService studyService) {
+        this.studyService = studyService;
+    }
+
     public void setStudySettings(StudySettings studySettings) {
         this.study.setStudySettings(studySettings);
         updatePossibleActions();
+    }
+
+    public void setUnitManagementService(UnitManagementService unitManagementService) {
+        this.unitManagementService = unitManagementService;
+    }
+
+    public void setUserManagementService(UserManagementService userManagementService) {
+        this.userManagementService = userManagementService;
+    }
+
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     public void addChangedExternalModel(ExternalModel externalModel) {
@@ -341,6 +341,14 @@ public class Project {
         return false;
     }
 
+    public boolean checkRepositoryScheme() {
+        boolean validScheme = repositorySchemeService.checkSchemeVersion();
+        if (!validScheme && applicationSettings.isRepositorySchemaCreate()) {
+            validScheme = repositorySchemeService.checkAndStoreSchemeVersion();
+        }
+        return validScheme;
+    }
+
     /**
      * Check current version of study in the repository.
      * Has to be performed regularly for user's ability to synchronize remote and local study.
@@ -377,24 +385,12 @@ public class Project {
         return userManagementService.checkUserName(userManagement, userName);
     }
 
-    public boolean checkRepositoryScheme() {
-        boolean validScheme = repositorySchemeService.checkSchemeVersion();
-        if (!validScheme && applicationSettings.isRepositorySchemaCreate()) {
-            validScheme = repositorySchemeService.checkAndStoreSchemeVersion();
-        }
-        return validScheme;
+    public void close() throws Throwable {
+        externalModelFileWatcher.close();
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {
         studyService.deleteStudyByName(studyName);
-    }
-
-    public void start() {
-        externalModelFileWatcher.start();
-    }
-
-    public void close() throws Throwable {
-        externalModelFileWatcher.close();
     }
 
     public boolean hasLocalStudyModifications() {
@@ -405,6 +401,13 @@ public class Project {
         reinitializeProject(systemModel);
         reinitializeUniqueIdentifiers(systemModel);
         initializeStateOfExternalModels();
+    }
+
+    public void init(String projectName) {
+        this.projectName = projectName;
+        this.repositoryStateMachine.reset();
+        this.repositoryStudy = null;
+        repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
     }
 
     public LongProperty latestLoadedModificationProperty() {
@@ -481,6 +484,10 @@ public class Project {
 
     public void newStudy(SystemModel systemModel) {
         reinitializeProject(systemModel);
+    }
+
+    public void start() {
+        externalModelFileWatcher.start();
     }
 
     public void storeLocalStudy() throws RepositoryException, ExternalModelException {
@@ -585,7 +592,7 @@ public class Project {
         }
     }
 
-     private void initializeStateOfExternalModels() {
+    private void initializeStateOfExternalModels() {
         externalModelFileWatcher.clear();
         externalModelFileHandler.getChangedExternalModels().clear();
         Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), new AccessChecker());
@@ -617,14 +624,14 @@ public class Project {
         }
     }
 
-    private void initializeUserManagement() {
-        userManagement = userManagementService.createDefaultUserManagement();
-        storeUserManagement();
-    }
-
     private void initializeUnitManagement() {
         unitManagement = unitManagementService.loadDefaultUnitManagement();
         storeUnitManagement();
+    }
+
+    private void initializeUserManagement() {
+        userManagement = userManagementService.createDefaultUserManagement();
+        storeUserManagement();
     }
 
     private void registerParameterLinks() {
@@ -703,12 +710,5 @@ public class Project {
             User user = Project.this.getUser();
             return userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
         }
-    }
-
-    public File getProjectDataDir() {
-        String projectName = this.getProjectName();
-        String hostname = applicationSettings.getRepositoryHost();
-        String schema = applicationSettings.getRepositorySchemaName();
-        return fileStorageService.dataDir(hostname, schema, projectName);
     }
 }

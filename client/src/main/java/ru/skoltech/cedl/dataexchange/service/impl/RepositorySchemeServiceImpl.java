@@ -30,16 +30,14 @@ import static ru.skoltech.cedl.dataexchange.repository.jpa.ApplicationPropertyRe
 
 /**
  * Implementation of {@link RepositorySchemeService}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public class RepositorySchemeServiceImpl implements RepositorySchemeService {
 
     private static final Logger logger = Logger.getLogger(RepositorySchemeServiceImpl.class);
-
-    private ApplicationSettings applicationSettings;
-
     private final ApplicationPropertyRepository applicationPropertyRepository;
+    private ApplicationSettings applicationSettings;
 
     @Autowired
     public RepositorySchemeServiceImpl(ApplicationPropertyRepository applicationPropertyRepository) {
@@ -48,6 +46,28 @@ public class RepositorySchemeServiceImpl implements RepositorySchemeService {
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
+    }
+
+    @Override
+    public boolean checkAndStoreSchemeVersion() {
+        String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
+
+        ApplicationProperty schemeVersionProperty = applicationPropertyRepository.findOne(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
+        if (schemeVersionProperty == null) {
+            logger.warn("No DB Schema Version!");
+            return this.saveRepositoryVersion(currentSchemaVersion);
+        }
+
+        String actualSchemaVersion = schemeVersionProperty.getValue();
+
+        if (Utils.compareVersions(actualSchemaVersion, currentSchemaVersion) > 0) {
+            StatusLogger.getInstance().log("Downgrade your CEDESK Client! "
+                    + "Current Application Version (" + currentSchemaVersion + ") "
+                    + "is older than current DB Schema Version " + actualSchemaVersion);
+            return false;
+        }
+
+        return this.saveRepositoryVersion(currentSchemaVersion);
     }
 
     @Override
@@ -76,28 +96,6 @@ public class RepositorySchemeServiceImpl implements RepositorySchemeService {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public boolean checkAndStoreSchemeVersion() {
-        String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
-
-        ApplicationProperty schemeVersionProperty = applicationPropertyRepository.findOne(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
-        if (schemeVersionProperty == null) {
-            logger.warn("No DB Schema Version!");
-            return this.saveRepositoryVersion(currentSchemaVersion);
-        }
-
-        String actualSchemaVersion = schemeVersionProperty.getValue();
-
-        if (Utils.compareVersions(actualSchemaVersion, currentSchemaVersion) > 0) {
-            StatusLogger.getInstance().log("Downgrade your CEDESK Client! "
-                    + "Current Application Version (" + currentSchemaVersion + ") "
-                    + "is older than current DB Schema Version " + actualSchemaVersion);
-            return false;
-        }
-
-        return this.saveRepositoryVersion(currentSchemaVersion);
     }
 
     private boolean saveRepositoryVersion(String schemaVersion) {

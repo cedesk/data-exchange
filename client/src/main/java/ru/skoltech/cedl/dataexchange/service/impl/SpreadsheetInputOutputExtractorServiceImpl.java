@@ -23,14 +23,14 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.model.ExternalLinksTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.service.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -41,6 +41,7 @@ import java.util.List;
 
 /**
  * Created by D.Knoll on 14.06.2016.
+ *
  * @deprecated
  */
 public class SpreadsheetInputOutputExtractorServiceImpl implements SpreadsheetInputOutputExtractorService {
@@ -51,32 +52,6 @@ public class SpreadsheetInputOutputExtractorServiceImpl implements SpreadsheetIn
 
     public void setUnitManagementService(UnitManagementService unitManagementService) {
         this.unitManagementService = unitManagementService;
-    }
-
-    @Override
-    public Sheet guessInputSheet(Workbook wb) {
-        return guessSheet(wb, "input");
-    }
-
-    @Override
-    public Sheet guessOutputSheet(Workbook wb) {
-        return guessSheet(wb, "output");
-    }
-
-    private Sheet guessSheet(Workbook wb, String input) {
-        int sheets = wb.getNumberOfSheets();
-        if (sheets == 1) {
-            return wb.getSheetAt(0);
-        } else {
-            for (int i = 0; i < sheets; i++) {
-                String name = wb.getSheetName(i);
-                if (name.equalsIgnoreCase(input)) {
-                    return wb.getSheetAt(i);
-                }
-            }
-            int sheetIndex = wb.getActiveSheetIndex();
-            return wb.getSheetAt(sheetIndex);
-        }
     }
 
     @Override
@@ -140,6 +115,31 @@ public class SpreadsheetInputOutputExtractorServiceImpl implements SpreadsheetIn
         return parameters;
     }
 
+    @Override
+    public Sheet guessInputSheet(Workbook wb) {
+        return guessSheet(wb, "input");
+    }
+
+    @Override
+    public Sheet guessOutputSheet(Workbook wb) {
+        return guessSheet(wb, "output");
+    }
+
+    private String clarifyFormula(String cellFormula, List<String> otherWorkbooks) {
+        String result;
+        if (cellFormula.contains("[")) {
+            String simpleFormula = cellFormula;
+            for (int idx = 0; idx < otherWorkbooks.size(); idx++) {
+                simpleFormula = simpleFormula.replace("[" + (idx + 1) + "]", "[" + otherWorkbooks.get(idx) + "]");
+            }
+            result = EXT_SRC + simpleFormula;
+        } else {
+            result = SOURCE + cellFormula;
+        }
+        result = result.replace("$", ""); // simplify references
+        return result;
+    }
+
     /**
      * Looking into the numberCell to the right
      *
@@ -162,60 +162,6 @@ public class SpreadsheetInputOutputExtractorServiceImpl implements SpreadsheetIn
         }
         return null;
     }
-
-    private ParameterModel makeParameter(Project project, Sheet sheet, ExternalModel externalModel,
-                                                List<String> externalLinks, Cell nameCell,
-                                                ParameterNature nature, Cell numberCell) {
-        String parameterName = SpreadsheetCellValueAccessor.getValueAsString(nameCell);
-        int rowIndex = numberCell.getRowIndex() + 1;
-        int columnIndex = numberCell.getColumnIndex() + 1;
-        SpreadsheetCoordinates coordinates = new SpreadsheetCoordinates(sheet.getSheetName(), rowIndex, columnIndex);
-        logger.info("found " + nature.name().toLowerCase() + " parameter '" + parameterName + "' in " + coordinates.toString());
-        ParameterModel parameter = new ParameterModel();
-        parameter.setName(parameterName);
-        parameter.setNature(nature);
-        Unit unit = extractUnit(project, numberCell);
-        parameter.setUnit(unit);
-        ExternalModelReference exportReference = new ExternalModelReference(externalModel, coordinates.toString());
-        boolean isFormula = numberCell.getCellTypeEnum() == CellType.FORMULA;
-        if (isFormula) {
-            String cellFormula = numberCell.getCellFormula();
-            String sourceDescription = clarifyFormula(cellFormula, externalLinks);
-            parameter.setDescription(sourceDescription);
-        }
-        if (nature == ParameterNature.INPUT || nature == ParameterNature.INTERNAL) {
-            parameter.setIsExported(true);
-            parameter.setExportReference(exportReference);
-        }
-        if (nature == ParameterNature.OUTPUT) {
-            parameter.setValueSource(ParameterValueSource.REFERENCE);
-            parameter.setValueReference(exportReference);
-        }
-        try {
-            Double numericValue = SpreadsheetCellValueAccessor.getNumericValue(numberCell);
-            parameter.setValue(numericValue);
-        } catch (ExternalModelException e) {
-            logger.warn("error reading value for parameter '" + parameterName + "' from " + exportReference.toString());
-            parameter.setValue(Double.NaN);
-        }
-        return parameter;
-    }
-
-    private String clarifyFormula(String cellFormula, List<String> otherWorkbooks) {
-        String result;
-        if (cellFormula.contains("[")) {
-            String simpleFormula = cellFormula;
-            for (int idx = 0; idx < otherWorkbooks.size(); idx++) {
-                simpleFormula = simpleFormula.replace("[" + (idx + 1) + "]", "[" + otherWorkbooks.get(idx) + "]");
-            }
-            result = EXT_SRC + simpleFormula;
-        } else {
-            result = SOURCE + cellFormula;
-        }
-        result = result.replace("$", ""); // simplify references
-        return result;
-    }
-
 
     private List<String> getWorkbookReferences(Workbook workbook) {
         List<String> references = new LinkedList<>();
@@ -264,6 +210,60 @@ public class SpreadsheetInputOutputExtractorServiceImpl implements SpreadsheetIn
             }
         }
         return references;
+    }
+
+    private Sheet guessSheet(Workbook wb, String input) {
+        int sheets = wb.getNumberOfSheets();
+        if (sheets == 1) {
+            return wb.getSheetAt(0);
+        } else {
+            for (int i = 0; i < sheets; i++) {
+                String name = wb.getSheetName(i);
+                if (name.equalsIgnoreCase(input)) {
+                    return wb.getSheetAt(i);
+                }
+            }
+            int sheetIndex = wb.getActiveSheetIndex();
+            return wb.getSheetAt(sheetIndex);
+        }
+    }
+
+    private ParameterModel makeParameter(Project project, Sheet sheet, ExternalModel externalModel,
+                                         List<String> externalLinks, Cell nameCell,
+                                         ParameterNature nature, Cell numberCell) {
+        String parameterName = SpreadsheetCellValueAccessor.getValueAsString(nameCell);
+        int rowIndex = numberCell.getRowIndex() + 1;
+        int columnIndex = numberCell.getColumnIndex() + 1;
+        SpreadsheetCoordinates coordinates = new SpreadsheetCoordinates(sheet.getSheetName(), rowIndex, columnIndex);
+        logger.info("found " + nature.name().toLowerCase() + " parameter '" + parameterName + "' in " + coordinates.toString());
+        ParameterModel parameter = new ParameterModel();
+        parameter.setName(parameterName);
+        parameter.setNature(nature);
+        Unit unit = extractUnit(project, numberCell);
+        parameter.setUnit(unit);
+        ExternalModelReference exportReference = new ExternalModelReference(externalModel, coordinates.toString());
+        boolean isFormula = numberCell.getCellTypeEnum() == CellType.FORMULA;
+        if (isFormula) {
+            String cellFormula = numberCell.getCellFormula();
+            String sourceDescription = clarifyFormula(cellFormula, externalLinks);
+            parameter.setDescription(sourceDescription);
+        }
+        if (nature == ParameterNature.INPUT || nature == ParameterNature.INTERNAL) {
+            parameter.setIsExported(true);
+            parameter.setExportReference(exportReference);
+        }
+        if (nature == ParameterNature.OUTPUT) {
+            parameter.setValueSource(ParameterValueSource.REFERENCE);
+            parameter.setValueReference(exportReference);
+        }
+        try {
+            Double numericValue = SpreadsheetCellValueAccessor.getNumericValue(numberCell);
+            parameter.setValue(numericValue);
+        } catch (ExternalModelException e) {
+            logger.warn("error reading value for parameter '" + parameterName + "' from " + exportReference.toString());
+            parameter.setValue(Double.NaN);
+        }
+        return parameter;
     }
 
     private String simplifyFilename(String linkedFileName) {

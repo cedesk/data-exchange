@@ -129,6 +129,10 @@ public class DependencyModel {
             return from.getName();
         }
 
+        public Collection<ParameterModel> getLinkingParameters() {
+            return linkingParameters;
+        }
+
         public int getStrength() {
             return linkingParameters.size();
         }
@@ -139,10 +143,6 @@ public class DependencyModel {
 
         public String getToName() {
             return to.getName();
-        }
-
-        public Collection<ParameterModel> getLinkingParameters() {
-            return linkingParameters;
         }
     }
 }

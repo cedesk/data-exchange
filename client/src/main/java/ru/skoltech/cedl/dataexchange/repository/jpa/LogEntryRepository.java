@@ -22,7 +22,7 @@ import ru.skoltech.cedl.dataexchange.repository.jpa.custom.LogEntryRepositoryCus
 
 /**
  * Data Access Operations with {@link LogEntryRepository} entity.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public interface LogEntryRepository extends JpaRepository<LogEntry, Long>, LogEntryRepositoryCustom {

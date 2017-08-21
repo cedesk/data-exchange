@@ -28,8 +28,8 @@ import javafx.scene.shape.*;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.math3.util.Precision;
-import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 
 import java.net.URL;
 import java.util.*;

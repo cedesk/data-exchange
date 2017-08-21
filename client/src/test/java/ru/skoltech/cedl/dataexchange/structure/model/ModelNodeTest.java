@@ -36,13 +36,13 @@ public class ModelNodeTest {
     private ModelNode modelNode;
     private long currentDate = new Date().getTime();
 
+    @After
+    public void cleanup() {
+    }
+
     @Before
     public void prepare() {
         modelNode = new SystemModel();
-    }
-
-    @After
-    public void cleanup() {
     }
 
     @Test

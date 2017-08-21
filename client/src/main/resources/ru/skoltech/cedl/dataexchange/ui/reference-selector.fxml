@@ -29,7 +29,7 @@
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <Label text="Choose a cell from the spreadsheet." />
+            <Label text="Choose a cell from the spreadsheet."/>
             <HBox spacing="24.0" BorderPane.alignment="CENTER_LEFT">
                 <ComboBox fx:id="attachmentChooser" prefWidth="200.0"/>
                 <ComboBox fx:id="sheetChooser" prefWidth="200.0"/>
@@ -44,7 +44,8 @@
                 <Insets right="10" bottom="10" left="10"/>
             </padding>
             <center>
-                <SpreadsheetView fx:id="spreadsheetView" editable="false" prefWidth="500.0" BorderPane.alignment="CENTER"/>
+                <SpreadsheetView fx:id="spreadsheetView" editable="false" prefWidth="500.0"
+                                 BorderPane.alignment="CENTER"/>
             </center>
         </BorderPane>
     </center>

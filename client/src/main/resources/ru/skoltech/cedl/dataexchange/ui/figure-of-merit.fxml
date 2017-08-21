@@ -20,9 +20,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.FlowPane?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<FlowPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css"
-        style="-fx-border-width: 1; -fx-border-color: grey; -fx-border-style: solid;" prefWidth="300"
-        fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.FigureOfMeritController">
+<FlowPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121" stylesheets="@styling.css"
+          style="-fx-border-width: 1; -fx-border-color: grey; -fx-border-style: solid;" prefWidth="300"
+          fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.FigureOfMeritController">
     <padding>
         <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
     </padding>

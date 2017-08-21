@@ -22,7 +22,7 @@ import ru.skoltech.cedl.dataexchange.repository.jpa.custom.RevisionEntityReposit
 
 /**
  * Data Access Operations with {@link CustomRevisionEntity} entity.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public interface RevisionEntityRepository extends JpaRepository<CustomRevisionEntity, Integer>, RevisionEntityRepositoryCustom {

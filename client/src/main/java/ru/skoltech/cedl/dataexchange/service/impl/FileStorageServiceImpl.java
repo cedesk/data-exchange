@@ -21,12 +21,9 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.*;
-import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
-import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.unit.Prefix;
 import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
@@ -34,6 +31,9 @@ import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -47,22 +47,20 @@ import java.util.Set;
 
 /**
  * Implementation of service which handles operations with file system.
- *
+ * <p>
  * Created by D.Knoll on 13.03.2015.
  */
 public class FileStorageServiceImpl implements FileStorageService {
 
-    private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
-
     private static final Class[] MODEL_CLASSES = new Class[]{
             SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class,
             ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
-
+    private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
     private final File applicationDirectory;
 
     /**
      * Service defines an application directory at the start up.
-     *
+     * <p>
      * If <i>cedesk.app.dir</i> property defined as absolute path then use it.
      * Id <i>cedesk.app.dir</i> property defined as relative path, then prepend <i>user.home</i> system property to it.
      * TODO: write a test
@@ -91,10 +89,18 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public File dataDir(String repositoryUrl, String repositoryScheme, String projectName) {
-        File repoDir = new File(this.applicationDirectory(), repositoryUrl);
-        File schemaDir = new File(repoDir, repositoryScheme);
-        return new File(schemaDir, projectName);
+    public boolean checkFileExistenceAndNonEmptiness(File file) {
+        if (file.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                if (br.readLine() == null) {
+                    return false;
+                }
+            } catch (IOException e) {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -112,18 +118,85 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public boolean checkFileExistenceAndNonEmptiness(File file) {
-        if (file.exists()) {
-            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                if (br.readLine() == null) {
-                    return false;
-                }
-            } catch (IOException e) {
-                return false;
-            }
-            return true;
+    public File dataDir(String repositoryUrl, String repositoryScheme, String projectName) {
+        File repoDir = new File(this.applicationDirectory(), repositoryUrl);
+        File schemaDir = new File(repoDir, repositoryScheme);
+        return new File(schemaDir, projectName);
+    }
+
+    @Override
+    public Calculation loadCalculation(File inputFile) throws IOException {
+        try (FileInputStream inp = new FileInputStream(inputFile)) {
+            final Class[] MC = Calculation.getEntityClasses();
+            JAXBContext ct = JAXBContext.newInstance(MC);
+
+            Unmarshaller u = ct.createUnmarshaller();
+
+            return (Calculation) u.unmarshal(inp);
+        } catch (JAXBException e) {
+            throw new IOException("Error reading calculation from XML file.", e);
         }
-        return false;
+    }
+
+    @Override
+    public SystemModel loadSystemModel(File inputFile) throws IOException {
+        try (FileInputStream inp = new FileInputStream(inputFile)) {
+            Set<Class> modelClasses = new HashSet<>();
+            modelClasses.addAll(Arrays.asList(MODEL_CLASSES));
+            modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
+            JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
+
+            Unmarshaller u = jc.createUnmarshaller();
+            SystemModel systemModel = (SystemModel) u.unmarshal(inp);
+
+            File inputFolder = inputFile.getParentFile();
+
+            postProcessSystemModel(systemModel, null, inputFolder);
+            return systemModel;
+        } catch (JAXBException e) {
+            throw new IOException("Error reading system model from XML file.", e);
+        }
+    }
+
+    @Override
+    public UnitManagement loadUnitManagement(InputStream inputStream) throws IOException {
+        try (BufferedInputStream inp = new BufferedInputStream(inputStream)) {
+            JAXBContext ct = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
+
+            Unmarshaller u = ct.createUnmarshaller();
+            UnitManagement unitManagement = (UnitManagement) u.unmarshal(inp);
+            postProcessUnitManagement(unitManagement);
+            return unitManagement;
+        } catch (JAXBException e) {
+            throw new IOException("Error reading unit management from XML file.", e);
+        }
+    }
+
+    @Override
+    public UserRoleManagement loadUserRoleManagement(File inputFile) throws IOException {
+        try (FileInputStream inp = new FileInputStream(inputFile)) {
+            JAXBContext ct = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
+
+            Unmarshaller u = ct.createUnmarshaller();
+            return (UserRoleManagement) u.unmarshal(inp);
+        } catch (JAXBException e) {
+            throw new IOException("Error reading user management from XML file.", e);
+        }
+    }
+
+    @Override
+    public void storeCalculation(Calculation calculation, File outputFile) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+            final Class[] MC = Calculation.getEntityClasses();
+            JAXBContext jc = JAXBContext.newInstance(MC);
+
+            Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            m.marshal(calculation, fos);
+        } catch (JAXBException e) {
+            throw new IOException("Error writing system model to XML file.", e);
+        }
     }
 
     @Override
@@ -156,22 +229,36 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public SystemModel loadSystemModel(File inputFile) throws IOException {
-        try (FileInputStream inp = new FileInputStream(inputFile)) {
-            Set<Class> modelClasses = new HashSet<>();
-            modelClasses.addAll(Arrays.asList(MODEL_CLASSES));
-            modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
-            JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
+    public void storeUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
+        this.createDirectory(outputFile.getParentFile());
 
-            Unmarshaller u = jc.createUnmarshaller();
-            SystemModel systemModel = (SystemModel) u.unmarshal(inp);
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 
-            File inputFolder = inputFile.getParentFile();
+            JAXBContext jc = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
 
-            postProcessSystemModel(systemModel, null, inputFolder);
-            return systemModel;
+            Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            m.marshal(unitManagement, fos);
         } catch (JAXBException e) {
-            throw new IOException("Error reading system model from XML file.", e);
+            throw new IOException("Error writing unit management to XML file.", e);
+        }
+    }
+
+    @Override
+    public void storeUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
+        this.createDirectory(outputFile.getParentFile());
+
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+
+            JAXBContext jc = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
+
+            Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            m.marshal(userRoleManagement, fos);
+        } catch (JAXBException e) {
+            throw new IOException("Error writing user management to XML file.", e);
         }
     }
 
@@ -225,66 +312,6 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
     }
 
-    @Override
-    public void storeUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
-        this.createDirectory(outputFile.getParentFile());
-
-        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
-
-            JAXBContext jc = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
-
-            Marshaller m = jc.createMarshaller();
-            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(userRoleManagement, fos);
-        } catch (JAXBException e) {
-            throw new IOException("Error writing user management to XML file.", e);
-        }
-    }
-
-    @Override
-    public UserRoleManagement loadUserRoleManagement(File inputFile) throws IOException {
-        try (FileInputStream inp = new FileInputStream(inputFile)) {
-            JAXBContext ct = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
-
-            Unmarshaller u = ct.createUnmarshaller();
-            return (UserRoleManagement) u.unmarshal(inp);
-        } catch (JAXBException e) {
-            throw new IOException("Error reading user management from XML file.", e);
-        }
-    }
-
-    @Override
-    public void storeUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
-        this.createDirectory(outputFile.getParentFile());
-
-        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
-
-            JAXBContext jc = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
-
-            Marshaller m = jc.createMarshaller();
-            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(unitManagement, fos);
-        } catch (JAXBException e) {
-            throw new IOException("Error writing unit management to XML file.", e);
-        }
-    }
-
-    @Override
-    public UnitManagement loadUnitManagement(InputStream inputStream) throws IOException {
-        try (BufferedInputStream inp = new BufferedInputStream(inputStream)) {
-            JAXBContext ct = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
-
-            Unmarshaller u = ct.createUnmarshaller();
-            UnitManagement unitManagement = (UnitManagement) u.unmarshal(inp);
-            postProcessUnitManagement(unitManagement);
-            return unitManagement;
-        } catch (JAXBException e) {
-            throw new IOException("Error reading unit management from XML file.", e);
-        }
-    }
-
     private void postProcessUnitManagement(UnitManagement unitManagement) {
         for (Unit unit : unitManagement.getUnits()) {
             String quantityKindStr = unit.getQuantityKindStr();
@@ -293,35 +320,6 @@ public class FileStorageServiceImpl implements FileStorageService {
                 QuantityKind quantityKind = unitManagement.getQuantityKinds().get(qtki);
                 unit.setQuantityKind(quantityKind);
             }
-        }
-    }
-
-    @Override
-    public void storeCalculation(Calculation calculation, File outputFile) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
-            final Class[] MC = Calculation.getEntityClasses();
-            JAXBContext jc = JAXBContext.newInstance(MC);
-
-            Marshaller m = jc.createMarshaller();
-            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(calculation, fos);
-        } catch (JAXBException e) {
-            throw new IOException("Error writing system model to XML file.", e);
-        }
-    }
-
-    @Override
-    public Calculation loadCalculation(File inputFile) throws IOException {
-        try (FileInputStream inp = new FileInputStream(inputFile)) {
-            final Class[] MC = Calculation.getEntityClasses();
-            JAXBContext ct = JAXBContext.newInstance(MC);
-
-            Unmarshaller u = ct.createUnmarshaller();
-
-            return (Calculation) u.unmarshal(inp);
-        } catch (JAXBException e) {
-            throw new IOException("Error reading calculation from XML file.", e);
         }
     }
 

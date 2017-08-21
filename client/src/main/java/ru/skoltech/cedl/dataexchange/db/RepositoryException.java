@@ -41,6 +41,14 @@ public class RepositoryException extends Exception {
         super(cause);
     }
 
+    public String getEntityAsString() {
+        return entityAsString;
+    }
+
+    public void setEntityAsString(String entityAsString) {
+        this.entityAsString = entityAsString;
+    }
+
     public String getEntityClassName() {
         return entityClassName;
     }
@@ -55,14 +63,6 @@ public class RepositoryException extends Exception {
 
     public void setEntityIdentifier(String entityIdentifier) {
         this.entityIdentifier = entityIdentifier;
-    }
-
-    public String getEntityAsString() {
-        return entityAsString;
-    }
-
-    public void setEntityAsString(String entityAsString) {
-        this.entityAsString = entityAsString;
     }
 
     public String getEntityName() {

@@ -21,9 +21,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableView;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ModelInconsistency;
-import ru.skoltech.cedl.dataexchange.entity.Study;
 
 import java.net.URL;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for consistency validation window.
- *
+ * <p>
  * Created by D.Knoll on 26.06.2017.
  */
 public class ConsistencyController implements Initializable {

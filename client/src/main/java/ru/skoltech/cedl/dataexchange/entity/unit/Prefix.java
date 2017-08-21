@@ -40,6 +40,14 @@ public class Prefix {
     @XmlAttribute
     private Double factor;
 
+    public Double getFactor() {
+        return factor;
+    }
+
+    public void setFactor(Double factor) {
+        this.factor = factor;
+    }
+
     @Id
     @GeneratedValue
     public long getId() {
@@ -64,14 +72,6 @@ public class Prefix {
 
     public void setSymbol(String symbol) {
         this.symbol = symbol;
-    }
-
-    public Double getFactor() {
-        return factor;
-    }
-
-    public void setFactor(Double factor) {
-        this.factor = factor;
     }
 
     @Override

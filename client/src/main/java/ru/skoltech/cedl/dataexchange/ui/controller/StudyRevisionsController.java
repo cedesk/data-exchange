@@ -43,13 +43,13 @@ import static ru.skoltech.cedl.dataexchange.Utils.TIME_AND_DATE_FOR_USER_INTERFA
 
 /**
  * Controller for tagging a study.
- *
+ * <p>
  * Created by Nikolay Groshkov on 16-Aug-17.
  */
 public class StudyRevisionsController implements Initializable, Applicable, Displayable {
 
     @FXML
-    private TableColumn<Pair< CustomRevisionEntity, RevisionType>, String> dateColumn;
+    private TableColumn<Pair<CustomRevisionEntity, RevisionType>, String> dateColumn;
     @FXML
     private TableColumn<Pair<CustomRevisionEntity, RevisionType>, String> tagColumn;
     @FXML
@@ -72,8 +72,22 @@ public class StudyRevisionsController implements Initializable, Applicable, Disp
         this.study = study;
     }
 
+    @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
     public void setStudyService(StudyService studyService) {
         this.studyService = studyService;
+    }
+
+    public void close() {
+        this.ownerStage.close();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
     }
 
     @Override
@@ -98,16 +112,6 @@ public class StudyRevisionsController implements Initializable, Applicable, Disp
         });
     }
 
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    @Override
-    public void setOnApply(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
-    }
-
     public void load() {
         Pair<CustomRevisionEntity, RevisionType> item = tagTableView.getSelectionModel().getSelectedItem();
         CustomRevisionEntity customRevisionEntity = item.getLeft();
@@ -116,10 +120,6 @@ public class StudyRevisionsController implements Initializable, Applicable, Disp
             applyEventHandler.handle(event);
         }
         this.close();
-    }
-
-    public void close() {
-        this.ownerStage.close();
     }
 
 }

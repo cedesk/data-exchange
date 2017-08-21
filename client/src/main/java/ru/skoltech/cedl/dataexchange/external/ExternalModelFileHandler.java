@@ -18,12 +18,12 @@ package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelTreeIterator;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.service.FileStorageService;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.*;
 import java.nio.file.*;
@@ -43,12 +43,12 @@ public class ExternalModelFileHandler {
 
     private Set<ExternalModel> changedExternalModels = new HashSet<>();
 
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
-    }
-
     public Set<ExternalModel> getChangedExternalModels() {
         return changedExternalModels;
+    }
+
+    public void setFileStorageService(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
     }
 
     public static ExternalModel newFromFile(File file, ModelNode parent) throws IOException {
@@ -228,7 +228,7 @@ public class ExternalModelFileHandler {
                 if (file.isFile() && !toBeKept.contains(file.getAbsolutePath())) { // files not to be kept
                     logger.info("deleting: '" + file.getAbsolutePath() + "'");
                     file.delete();
-                } else if (file.isDirectory() && file.list() != null&& file.list().length == 0) { // empty directories
+                } else if (file.isDirectory() && file.list() != null && file.list().length == 0) { // empty directories
                     logger.info("deleting: '" + file.getAbsolutePath() + "'");
                     file.delete();
                 } else {
