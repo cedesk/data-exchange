@@ -34,6 +34,9 @@ public class FigureOfMeritValue {
 
     private Double value;
 
+    public FigureOfMeritValue() {
+    }
+
     public FigureOfMeritValue(FigureOfMeritDefinition definition, Double value) {
         this.definition = definition;
         this.value = value;
