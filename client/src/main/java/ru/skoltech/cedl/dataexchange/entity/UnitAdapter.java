@@ -17,11 +17,11 @@
 package ru.skoltech.cedl.dataexchange.entity;
 
 import org.springframework.context.ApplicationContext;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
@@ -30,6 +30,11 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  */
 public class UnitAdapter extends XmlAdapter<String, Unit> {
     @Override
+    public String marshal(Unit unit) throws Exception {
+        return unit != null ? unit.asText() : "";
+    }
+
+    @Override
     public Unit unmarshal(String unitStr) throws Exception {
         // TODO: rewrite for proper injection
         ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
@@ -37,10 +42,5 @@ public class UnitAdapter extends XmlAdapter<String, Unit> {
         UnitManagementService unitManagementService = context.getBean(UnitManagementService.class);
         UnitManagement unitManagement = project.getUnitManagement();
         return unitManagementService.obtainUnitByText(unitManagement, unitStr);
-    }
-
-    @Override
-    public String marshal(Unit unit) throws Exception {
-        return unit != null ? unit.asText() : "";
     }
 }

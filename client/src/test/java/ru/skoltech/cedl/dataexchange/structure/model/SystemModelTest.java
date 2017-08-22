@@ -41,6 +41,10 @@ public class SystemModelTest {
     private ParameterModel parameterModel;
     private long currentDate = new Date().getTime();
 
+    @After
+    public void cleanup() {
+    }
+
     @Before
     public void prepare() {
         systemModel = new SystemModel();
@@ -66,10 +70,6 @@ public class SystemModelTest {
 
         externalModel = new ExternalModel();
         parameterModel = new ParameterModel();
-    }
-
-    @After
-    public void cleanup() {
     }
 
     @Test

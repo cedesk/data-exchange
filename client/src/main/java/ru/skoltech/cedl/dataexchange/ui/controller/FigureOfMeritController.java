@@ -37,7 +37,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for figure of merit.
- *
+ * <p>
  * Created by D.Knoll on 24.09.2015.
  */
 public class FigureOfMeritController implements Initializable {
@@ -66,32 +66,16 @@ public class FigureOfMeritController implements Initializable {
         this.figureOfMeritDefinition = figureOfMeritDefinition;
     }
 
+    public FigureOfMeritDefinition getFigureOfMeritDefinition() {
+        return figureOfMeritDefinition;
+    }
+
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
     }
 
     public void setTradespaceModelBridge(TradespaceToStudyBridge tradespaceModelBridge) {
         this.tradespaceToStudyBridge = tradespaceModelBridge;
-    }
-
-    public FigureOfMeritDefinition getFigureOfMeritDefinition() {
-        return figureOfMeritDefinition;
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        optimalityChoice.setItems(FXCollections.observableArrayList(EnumSet.allOf(Optimality.class)));
-        optimalityChoice.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                figureOfMeritDefinition.setOptimality(newValue);
-            }
-        });
-        unitOfMeasureText.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                figureOfMeritDefinition.setUnitOfMeasure(newValue);
-            }
-        });
-        updateView();
     }
 
     public void chooseParameter() {
@@ -112,6 +96,22 @@ public class FigureOfMeritController implements Initializable {
             }
         });
         parameterSelectorViewBuilder.showAndWait(parameters, null);
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        optimalityChoice.setItems(FXCollections.observableArrayList(EnumSet.allOf(Optimality.class)));
+        optimalityChoice.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                figureOfMeritDefinition.setOptimality(newValue);
+            }
+        });
+        unitOfMeasureText.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                figureOfMeritDefinition.setUnitOfMeasure(newValue);
+            }
+        });
+        updateView();
     }
 
     private void updateView() {

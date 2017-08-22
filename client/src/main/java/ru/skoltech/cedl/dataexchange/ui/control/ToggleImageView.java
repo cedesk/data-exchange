@@ -44,13 +44,12 @@ public class ToggleImageView extends ImageView {
         initialize();
     }
 
-    private void initialize() {
-        activeState.addListener((observable, oldValue, newValue) -> {
-                    if (newValue != null) {
-                        toggle(newValue);
-                    }
-                }
-        );
+    public Image getActiveImage() {
+        return activeImage;
+    }
+
+    public void setActiveImage(Image activeImage) {
+        this.activeImage = activeImage;
     }
 
     public boolean getActiveState() {
@@ -61,8 +60,25 @@ public class ToggleImageView extends ImageView {
         this.activeState.set(activeState);
     }
 
+    public Image getInactiveImage() {
+        return inactiveImage;
+    }
+
+    public void setInactiveImage(Image inactiveImage) {
+        this.inactiveImage = inactiveImage;
+    }
+
     public BooleanProperty activeStateProperty() {
         return activeState;
+    }
+
+    private void initialize() {
+        activeState.addListener((observable, oldValue, newValue) -> {
+                    if (newValue != null) {
+                        toggle(newValue);
+                    }
+                }
+        );
     }
 
     private void toggle(boolean active) {
@@ -71,21 +87,5 @@ public class ToggleImageView extends ImageView {
         } else {
             super.setImage(getInactiveImage());
         }
-    }
-
-    public Image getActiveImage() {
-        return activeImage;
-    }
-
-    public void setActiveImage(Image activeImage) {
-        this.activeImage = activeImage;
-    }
-
-    public Image getInactiveImage() {
-        return inactiveImage;
-    }
-
-    public void setInactiveImage(Image inactiveImage) {
-        this.inactiveImage = inactiveImage;
     }
 }

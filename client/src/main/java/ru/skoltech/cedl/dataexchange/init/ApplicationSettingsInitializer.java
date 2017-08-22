@@ -26,7 +26,7 @@ import java.util.Properties;
  * application context. This method search for properties in the path, defined by <i>cedesk.app.dir</i>
  * and <i>cedesk.app.file</i> system properties and if it is not existent, then creates one and populate
  * with default values from <i>cedesk.properties</i>
- *
+ * <p>
  * Created by Nikolay Groshkov on 02-Aug-17.
  */
 public class ApplicationSettingsInitializer {

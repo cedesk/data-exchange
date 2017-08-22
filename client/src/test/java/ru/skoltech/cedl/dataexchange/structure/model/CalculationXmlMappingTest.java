@@ -22,11 +22,11 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
-import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
-import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -42,21 +42,21 @@ public class CalculationXmlMappingTest extends AbstractApplicationContextTest {
 
     private FileStorageService fileStorageService;
 
+    private Calculation getCalc() {
+        Calculation calc = new Calculation();
+        calc.setOperation(new Sum());
+
+        ArrayList<Argument> args = new ArrayList<>();
+        args.add(new Argument.Literal(1.0));
+        args.add(new Argument.Literal(3.0));
+        args.add(new Argument.Parameter(new ParameterModel("par", 12.34, ParameterNature.OUTPUT, ParameterValueSource.MANUAL)));
+        calc.setArguments(args);
+        return calc;
+    }
+
     @Before
     public void prepare() {
         fileStorageService = context.getBean(FileStorageService.class);
-    }
-
-    @Test
-    public void testSimpleTest() throws JAXBException {
-        Calculation calculation = getCalc();
-        final Class[] MC = Calculation.getEntityClasses();
-
-        JAXBContext jc = JAXBContext.newInstance(MC);
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        marshaller.marshal(calculation, System.out);
     }
 
     @Test
@@ -72,15 +72,15 @@ public class CalculationXmlMappingTest extends AbstractApplicationContextTest {
         Assert.assertNotEquals(calc, recalc);
     }
 
-    private Calculation getCalc() {
-        Calculation calc = new Calculation();
-        calc.setOperation(new Sum());
+    @Test
+    public void testSimpleTest() throws JAXBException {
+        Calculation calculation = getCalc();
+        final Class[] MC = Calculation.getEntityClasses();
 
-        ArrayList<Argument> args = new ArrayList<>();
-        args.add(new Argument.Literal(1.0));
-        args.add(new Argument.Literal(3.0));
-        args.add(new Argument.Parameter(new ParameterModel("par", 12.34, ParameterNature.OUTPUT, ParameterValueSource.MANUAL)));
-        calc.setArguments(args);
-        return calc;
+        JAXBContext jc = JAXBContext.newInstance(MC);
+        Marshaller marshaller = jc.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        marshaller.marshal(calculation, System.out);
     }
 }

@@ -30,16 +30,16 @@ public class ParameterUpdate {
         this.value = value;
     }
 
-    public void apply() {
-        parameterModel.setValue(value);
-    }
-
     public ParameterModel getParameterModel() {
         return parameterModel;
     }
 
     public Double getValue() {
         return value;
+    }
+
+    public void apply() {
+        parameterModel.setValue(value);
     }
 
     @Override

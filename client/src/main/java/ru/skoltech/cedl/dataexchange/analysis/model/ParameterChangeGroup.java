@@ -35,6 +35,18 @@ public class ParameterChangeGroup {
         this(parameterChange.nodeId, parameterChange.nodeName, parameterChange.revisionId);
     }
 
+    public Iterator<ParameterChange> getChangeIterator() {
+        return IteratorUtils.chainedIterator(inputChanges.iterator(), outputChanges.iterator());
+    }
+
+    public ParameterChange getLastInput() {
+        return inputChanges.getLast();
+    }
+
+    public ParameterChange getLastOutput() {
+        return outputChanges.getLast();
+    }
+
     public void add(ParameterChange parameterChange) {
         if (parameterChange.nature == ParameterNature.INPUT) {
             inputChanges.addLast(parameterChange);
@@ -49,17 +61,5 @@ public class ParameterChangeGroup {
 
     public boolean hasOutputChanges() {
         return outputChanges.size() > 1;
-    }
-
-    public ParameterChange getLastInput() {
-        return inputChanges.getLast();
-    }
-
-    public ParameterChange getLastOutput() {
-        return outputChanges.getLast();
-    }
-
-    public Iterator<ParameterChange> getChangeIterator() {
-        return IteratorUtils.chainedIterator(inputChanges.iterator(), outputChanges.iterator());
     }
 }

@@ -71,12 +71,28 @@ public class Study implements PersistedEntity {
         this.id = id;
     }
 
+    public Long getLatestModelModification() {
+        return latestModelModification;
+    }
+
+    public void setLatestModelModification(Long latestModelModification) {
+        this.latestModelModification = latestModelModification;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public StudySettings getStudySettings() {
+        return studySettings;
+    }
+
+    public void setStudySettings(StudySettings studySettings) {
+        this.studySettings = studySettings;
     }
 
     public SystemModel getSystemModel() {
@@ -93,22 +109,6 @@ public class Study implements PersistedEntity {
 
     public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
         this.userRoleManagement = userRoleManagement;
-    }
-
-    public StudySettings getStudySettings() {
-        return studySettings;
-    }
-
-    public void setStudySettings(StudySettings studySettings) {
-        this.studySettings = studySettings;
-    }
-
-    public Long getLatestModelModification() {
-        return latestModelModification;
-    }
-
-    public void setLatestModelModification(Long latestModelModification) {
-        this.latestModelModification = latestModelModification;
     }
 
     public long getVersion() {

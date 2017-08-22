@@ -28,50 +28,10 @@ import java.util.List;
 
 /**
  * Service for merging differences of projects.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Jul-17.
  */
 public interface DifferenceMergeService {
-
-    /**
-     * TODO add javadoc
-     *
-     * @param project
-     * @param modelDifference
-     * @return
-     * @throws MergeException
-     */
-    boolean mergeOne(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                     ExternalModelFileHandler externalModelFileHandler, ModelDifference modelDifference) throws MergeException;
-
-    /**
-     * TODO add javadoc
-     *
-     * @param project
-     * @param modelDifference
-     * @return
-     * @throws MergeException
-     */
-    boolean revertOne(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                      ExternalModelFileHandler externalModelFileHandler, ModelDifference modelDifference) throws MergeException;
-
-    /**
-     * TODO add javadoc
-     *
-     * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
-     * @return the list of merged differences
-     */
-    List<ModelDifference> mergeChangesOntoFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                                                ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException;
-
-    /**
-     * TODO add javadoc
-     *
-     * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
-     * @return the list of merged differences
-     */
-    List<ModelDifference> revertChangesOnFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                                               ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException;
 
     /**
      * TODO add javadoc
@@ -93,4 +53,44 @@ public interface DifferenceMergeService {
      * @return
      */
     ModelDifference createStudyAttributesModified(Study study1, Study study2, List<AttributeDifference> differences);
+
+    /**
+     * TODO add javadoc
+     *
+     * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
+     * @return the list of merged differences
+     */
+    List<ModelDifference> mergeChangesOntoFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                                                ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException;
+
+    /**
+     * TODO add javadoc
+     *
+     * @param project
+     * @param modelDifference
+     * @return
+     * @throws MergeException
+     */
+    boolean mergeOne(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                     ExternalModelFileHandler externalModelFileHandler, ModelDifference modelDifference) throws MergeException;
+
+    /**
+     * TODO add javadoc
+     *
+     * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
+     * @return the list of merged differences
+     */
+    List<ModelDifference> revertChangesOnFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                                               ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException;
+
+    /**
+     * TODO add javadoc
+     *
+     * @param project
+     * @param modelDifference
+     * @return
+     * @throws MergeException
+     */
+    boolean revertOne(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                      ExternalModelFileHandler externalModelFileHandler, ModelDifference modelDifference) throws MergeException;
 }

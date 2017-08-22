@@ -20,7 +20,7 @@ import javax.transaction.Transactional;
 
 /**
  * Operations with repository scheme versions.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public interface RepositorySchemeService {

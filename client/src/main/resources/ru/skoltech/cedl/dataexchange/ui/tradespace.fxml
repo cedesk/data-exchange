@@ -21,8 +21,8 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <?import ru.skoltech.cedl.dataexchange.ui.control.TradespaceView?>
-<AnchorPane prefHeight="600.0" prefWidth="1100.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.121"
-            xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="1100.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.121"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.TradespaceController">
     <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                 AnchorPane.topAnchor="0.0">
@@ -66,7 +66,8 @@
                 <AnchorPane SplitPane.resizableWithParent="true">
                     <SplitPane dividerPositions="0.3, 0.3" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0"
                                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                        <TitledPane fx:id="figuresOfMeritEditorPane" collapsible="false" text="Figures of Merit Definitions" />
+                        <TitledPane fx:id="figuresOfMeritEditorPane" collapsible="false"
+                                    text="Figures of Merit Definitions"/>
                         <TitledPane collapsible="false" text="Epochs">
                             <HBox>
                                 <TextField fx:id="epochText" editable="false" prefWidth="300"/>

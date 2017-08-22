@@ -32,13 +32,6 @@ public class RepositoryStateMachine extends Observable {
         state = RepositoryState.INITIAL;
     }
 
-    @Override
-    public String toString() {
-        return "RepositoryStateMachine{" +
-                "state=" + state +
-                '}';
-    }
-
     public RepositoryState getState() {
         return state;
     }
@@ -59,6 +52,14 @@ public class RepositoryStateMachine extends Observable {
         }
     }
 
+    public boolean hasModifications() {
+        return state == RepositoryState.DIRTY;
+    }
+
+    public boolean isActionPossible(RepositoryActions action) {
+        return state.possibleActions().contains(action);
+    }
+
     public void performAction(RepositoryActions action) {
         RepositoryState newState = state.performAction(action);
         setState(newState);
@@ -68,20 +69,19 @@ public class RepositoryStateMachine extends Observable {
         return state.possibleActions();
     }
 
-    public boolean isActionPossible(RepositoryActions action) {
-        return state.possibleActions().contains(action);
-    }
-
     public void reset() {
         this.setState(RepositoryState.INITIAL);
     }
 
-    public boolean wasLoadedOrSaved() {
-        return wasLoadedOrSaved;
+    @Override
+    public String toString() {
+        return "RepositoryStateMachine{" +
+                "state=" + state +
+                '}';
     }
 
-    public boolean hasModifications() {
-        return state == RepositoryState.DIRTY;
+    public boolean wasLoadedOrSaved() {
+        return wasLoadedOrSaved;
     }
 
     public enum RepositoryState {
@@ -144,9 +144,9 @@ public class RepositoryStateMachine extends Observable {
             }
         };
 
-        abstract EnumSet<RepositoryActions> possibleActions();
-
         abstract RepositoryState performAction(RepositoryActions action);
+
+        abstract EnumSet<RepositoryActions> possibleActions();
     }
 
     public enum RepositoryActions {

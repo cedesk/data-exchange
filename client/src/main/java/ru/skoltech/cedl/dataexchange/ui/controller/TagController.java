@@ -43,7 +43,7 @@ import static ru.skoltech.cedl.dataexchange.Utils.TIME_AND_DATE_FOR_USER_INTERFA
 
 /**
  * Controller for tagging a study.
- *
+ * <p>
  * Created by Nikolay Groshkov on 16-Aug-17.
  */
 public class TagController implements Initializable, Displayable {
@@ -74,6 +74,15 @@ public class TagController implements Initializable, Displayable {
         this.studyService = studyService;
     }
 
+    public void close() {
+        this.ownerStage.close();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         tagButton.disableProperty().bind(Bindings.isEmpty(tagTextField.textProperty()));
@@ -97,20 +106,11 @@ public class TagController implements Initializable, Displayable {
         });
     }
 
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
     public void tag() {
         String tag = tagTextField.getText();
         studyService.untagStudy(study, tag);
         studyService.tagStudy(study, tagTextField.getText());
         this.close();
-    }
-
-    public void close() {
-        this.ownerStage.close();
     }
 
 }

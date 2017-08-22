@@ -18,16 +18,17 @@ package ru.skoltech.cedl.dataexchange.service;
 
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.List;
 
 /**
  * TODO: javadoc needed
- *
+ * <p>
  * Created by Nikolay Groshkov on 31.07.2017.
+ *
  * @deprecated
  */
 public interface SpreadsheetInputOutputExtractorService {
@@ -44,6 +45,17 @@ public interface SpreadsheetInputOutputExtractorService {
 
     /**
      * TODO: javadoc needed
+     *
+     * @param project
+     * @param externalModel
+     * @param sheet
+     * @return
+     */
+    List<ParameterModel> extractParameters(Project project, ExternalModel externalModel, Sheet sheet);
+
+    /**
+     * TODO: javadoc needed
+     *
      * @param wb
      * @return
      */
@@ -56,14 +68,4 @@ public interface SpreadsheetInputOutputExtractorService {
      * @return
      */
     Sheet guessOutputSheet(Workbook wb);
-
-    /**
-     * TODO: javadoc needed
-     *
-     * @param project
-     * @param externalModel
-     * @param sheet
-     * @return
-     */
-    List<ParameterModel> extractParameters(Project project, ExternalModel externalModel, Sheet sheet);
 }

@@ -31,7 +31,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for consistency validation window.
- *
+ * <p>
  * Created by D.Knoll on 26.06.2017.
  */
 public class ConsistencyController implements Initializable {

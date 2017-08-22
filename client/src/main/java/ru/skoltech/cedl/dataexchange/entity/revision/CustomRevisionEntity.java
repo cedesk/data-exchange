@@ -28,7 +28,7 @@ import java.text.DateFormat;
  * Along with basic revision information it stores
  * the name of user who prodused change
  * and can store a specific tag of revision.
- *
+ * <p>
  * Created by D.Knoll on 22.06.2015.
  */
 @Entity
@@ -41,20 +41,20 @@ public class CustomRevisionEntity extends DefaultTrackingModifiedEntitiesRevisio
     private String username;
     private String tag;
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getTag() {
         return tag;
     }
 
     public void setTag(String tag) {
         this.tag = tag;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     @Override

@@ -48,7 +48,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for dependency checks.
- *
+ * <p>
  * Created by D.Knoll on 02.11.2015.
  */
 public class DependencyController implements Initializable {

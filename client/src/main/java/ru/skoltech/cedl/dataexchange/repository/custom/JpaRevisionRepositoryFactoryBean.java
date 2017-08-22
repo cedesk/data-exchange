@@ -33,7 +33,7 @@ import java.io.Serializable;
 
 /**
  * Extension of {@link JpaRepositoryFactoryBean} which register repositories of {@link JpaRevisionEntityRepository}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 11-Aug-17.
  */
 public class JpaRevisionRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends JpaRepositoryFactoryBean<T, S, ID> {
@@ -52,7 +52,7 @@ public class JpaRevisionRepositoryFactoryBean<T extends Repository<S, ID>, S, ID
         return new JpaRevisionRepositoryFactory(entityManager);
     }
 
-     public static class JpaRevisionRepositoryFactory extends JpaRepositoryFactory {
+    public static class JpaRevisionRepositoryFactory extends JpaRepositoryFactory {
 
         private BeanFactory beanFactory;
 
@@ -67,15 +67,15 @@ public class JpaRevisionRepositoryFactoryBean<T extends Repository<S, ID>, S, ID
         }
 
         @Override
+        protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
+            return JpaRevisionEntityRepositoryImpl.class;
+        }
+
+        @Override
         protected <T, ID extends Serializable> SimpleJpaRepository<T, ID> getTargetRepository(
                 RepositoryInformation information, EntityManager entityManager) {
             JpaEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
             return getTargetRepositoryViaReflection(information, entityInformation, entityManager, beanFactory);
-        }
-
-        @Override
-        protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
-            return JpaRevisionEntityRepositoryImpl.class;
         }
     }
 }

@@ -44,8 +44,28 @@ public class ParameterRevision {
         }
     }
 
-    public int getRevisionId() {
-        return customRevisionEntity.getId();
+    public boolean getIsReferenceValueOverridden() {
+        return parameterModel.getIsReferenceValueOverridden();
+    }
+
+    public String getName() {
+        return parameterModel.getName();
+    }
+
+    public ParameterNature getNature() {
+        return parameterModel.getNature();
+    }
+
+    public String getNodePath() {
+        return parameterModel.getNodePath();
+    }
+
+    public Double getOverrideValue() {
+        return parameterModel.getOverrideValue();
+    }
+
+    public String getRevisionAuthor() {
+        return customRevisionEntity.getUsername();
     }
 
     public Date getRevisionDate() {
@@ -56,45 +76,8 @@ public class ParameterRevision {
         return DATE_FORMAT.format(this.getRevisionDate());
     }
 
-    public String getRevisionAuthor() {
-        return customRevisionEntity.getUsername();
-    }
-
-    public String getName() {
-        return parameterModel.getName();
-    }
-
-    public Double getValue() {
-        return parameterModel.getValue();
-    }
-
-    public boolean getIsReferenceValueOverridden() {
-        return parameterModel.getIsReferenceValueOverridden();
-    }
-
-    public Double getOverrideValue() {
-        return parameterModel.getOverrideValue();
-    }
-
-    public String getUnitAsText() {
-        Unit unit = parameterModel.getUnit();
-        return unit != null ? unit.asText() : "";
-    }
-
-    public ParameterNature getNature() {
-        return parameterModel.getNature();
-    }
-
-    public ParameterValueSource getValueSource() {
-        return parameterModel.getValueSource();
-    }
-
-    public ParameterModel getValueLink() {
-        return parameterModel.getValueLink();
-    }
-
-    public String getNodePath() {
-        return parameterModel.getNodePath();
+    public int getRevisionId() {
+        return customRevisionEntity.getId();
     }
 
     public String getSourceDetails() {
@@ -106,5 +89,22 @@ public class ParameterRevision {
             return parameterModel.getCalculation().asText();
         }
         return "";
+    }
+
+    public String getUnitAsText() {
+        Unit unit = parameterModel.getUnit();
+        return unit != null ? unit.asText() : "";
+    }
+
+    public Double getValue() {
+        return parameterModel.getValue();
+    }
+
+    public ParameterModel getValueLink() {
+        return parameterModel.getValueLink();
+    }
+
+    public ParameterValueSource getValueSource() {
+        return parameterModel.getValueSource();
     }
 }

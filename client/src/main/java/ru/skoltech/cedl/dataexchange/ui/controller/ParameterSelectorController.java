@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for parameter selection.
- *
+ * <p>
  * Created by D.Knoll on 08.09.2015.
  */
 public class ParameterSelectorController implements Initializable, Displayable, Applicable {
@@ -69,17 +69,40 @@ public class ParameterSelectorController implements Initializable, Displayable, 
     }
 
     @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
+    public void apply() {
+        if (applyEventHandler != null) {
+            ParameterModel parameterModel = parameterChoiceBox.getSelectionModel().getSelectedItem();
+            Event event = new Event(parameterModel, null, null);
+            applyEventHandler.handle(event);
+        }
+        this.close();
+    }
+
+    public void close() {
+        ownerStage.close();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
         // SUBSYSTEM CHOICE
         subsystemChoiceBox.setConverter(new StringConverter<ModelNode>() {
             @Override
-            public String toString(ModelNode modelNode) {
-                return modelNode.getNodePath();
+            public ModelNode fromString(String string) {
+                return null;
             }
 
             @Override
-            public ModelNode fromString(String string) {
-                return null;
+            public String toString(ModelNode modelNode) {
+                return modelNode.getNodePath();
             }
         });
         subsystemChoiceBox.getItems().addAll(nodeParametersMap.keySet());
@@ -91,13 +114,13 @@ public class ParameterSelectorController implements Initializable, Displayable, 
         // PARAMETER CHOICE
         parameterChoiceBox.setConverter(new StringConverter<ParameterModel>() {
             @Override
-            public String toString(ParameterModel object) {
-                return object.getName();
+            public ParameterModel fromString(String string) {
+                return null;
             }
 
             @Override
-            public ParameterModel fromString(String string) {
-                return null;
+            public String toString(ParameterModel object) {
+                return object.getName();
             }
         });
         parameterChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -117,30 +140,6 @@ public class ParameterSelectorController implements Initializable, Displayable, 
         } else {
             subsystemChoiceBox.getSelectionModel().selectFirst();
         }
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    @Override
-    public void setOnApply(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
-    }
-
-
-    public void apply() {
-        if (applyEventHandler != null) {
-            ParameterModel parameterModel = parameterChoiceBox.getSelectionModel().getSelectedItem();
-            Event event = new Event(parameterModel, null, null);
-            applyEventHandler.handle(event);
-        }
-        this.close();
-    }
-
-    public void close() {
-        ownerStage.close();
     }
 
 }

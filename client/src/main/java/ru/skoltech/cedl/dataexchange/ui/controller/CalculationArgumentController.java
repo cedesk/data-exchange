@@ -23,13 +23,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
-import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterTreeIterator;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.ui.Views;
+import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
 import java.net.URL;
 import java.util.LinkedList;
@@ -38,7 +38,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for calculation arguments.
- *
+ * <p>
  * Created by D.Knoll on 24.09.2015.
  */
 public class CalculationArgumentController implements Initializable {
@@ -72,40 +72,25 @@ public class CalculationArgumentController implements Initializable {
         this.parameterModel = parameterModel;
     }
 
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        argNameText.setText(argName);
-        argNumericValueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
-        argNumericValueText.disableProperty().bind(linkRadio.selectedProperty());
-        argLinkButton.disableProperty().bind(literalRadio.selectedProperty());
-
+    public Argument getArgument() {
         if (argument instanceof Argument.Literal) {
-            literalRadio.setSelected(true);
-        } else {
-            linkRadio.setSelected(true);
-            argParameterValueLinkText.setText(argument.asText());
+            double argumentValue = getLiteralValue();
+            ((Argument.Literal) argument).setValue(argumentValue);
         }
-        argNumericValueText.setText(String.valueOf(argument.getEffectiveValue()));
-        literalRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
-
-            if (newValue != null) {
-                if (newValue) {
-                    double argumentValue = getLiteralValue();
-                    argument = new Argument.Literal(argumentValue);
-                } else {
-                    argument = new Argument.Parameter();
-                }
-            }
-        });
+        return argument;
     }
 
     private double getLiteralValue() {
         String argValText = argNumericValueText.getText();
         return argValText.isEmpty() ? 0 : Double.parseDouble(argValText);
+    }
+
+    public void setArgumentName(String argumentName) {
+        argNameText.setText(argumentName);
+    }
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     public void chooseParameter() {
@@ -137,15 +122,30 @@ public class CalculationArgumentController implements Initializable {
         parameterSelectorViewBuilder.showAndWait(parameters, valueLinkParameter);
     }
 
-    public void setArgumentName(String argumentName) {
-        argNameText.setText(argumentName);
-    }
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        argNameText.setText(argName);
+        argNumericValueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
+        argNumericValueText.disableProperty().bind(linkRadio.selectedProperty());
+        argLinkButton.disableProperty().bind(literalRadio.selectedProperty());
 
-    public Argument getArgument() {
         if (argument instanceof Argument.Literal) {
-            double argumentValue = getLiteralValue();
-            ((Argument.Literal) argument).setValue(argumentValue);
+            literalRadio.setSelected(true);
+        } else {
+            linkRadio.setSelected(true);
+            argParameterValueLinkText.setText(argument.asText());
         }
-        return argument;
+        argNumericValueText.setText(String.valueOf(argument.getEffectiveValue()));
+        literalRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
+
+            if (newValue != null) {
+                if (newValue) {
+                    double argumentValue = getLiteralValue();
+                    argument = new Argument.Literal(argumentValue);
+                } else {
+                    argument = new Argument.Parameter();
+                }
+            }
+        });
     }
 }

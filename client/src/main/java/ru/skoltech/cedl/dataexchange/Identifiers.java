@@ -38,6 +38,22 @@ public class Identifiers {
 
     private static final String PROJECT_NAME_RULE_DESCRIPTION = "Project names must be at least of 4 character and contain only alphanumeric characters and minus '-' inside!";
 
+    public static String getNodeNameValidationDescription() {
+        return NODE_NAME_RULE_DESCRIPTION;
+    }
+
+    public static String getParameterNameValidationDescription() {
+        return PARAMETER_NAME_RULE_DESCRIPTION;
+    }
+
+    public static String getProjectNameValidationDescription() {
+        return PROJECT_NAME_RULE_DESCRIPTION;
+    }
+
+    public static String getUserNameValidationDescription() {
+        return USER_NAME_RULE_DESCRIPTION;
+    }
+
     public static boolean validateNodeName(String nodeName) {
         if (nodeName.length() < 1) return false;
         return NODE_NAME_RULE.matcher(nodeName).matches();
@@ -56,21 +72,5 @@ public class Identifiers {
     public static boolean validateProjectName(String projectName) {
         if (projectName.length() < 5) return false;
         return PROJECT_NAME_RULE.matcher(projectName).matches();
-    }
-
-    public static String getNodeNameValidationDescription() {
-        return NODE_NAME_RULE_DESCRIPTION;
-    }
-
-    public static String getParameterNameValidationDescription() {
-        return PARAMETER_NAME_RULE_DESCRIPTION;
-    }
-
-    public static String getUserNameValidationDescription() {
-        return USER_NAME_RULE_DESCRIPTION;
-    }
-
-    public static String getProjectNameValidationDescription() {
-        return PROJECT_NAME_RULE_DESCRIPTION;
     }
 }

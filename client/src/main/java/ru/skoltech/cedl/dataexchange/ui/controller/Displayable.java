@@ -24,7 +24,7 @@ import javafx.stage.WindowEvent;
 /**
  * Mark a JavaFX Controller which can react on startup event of parent {@link Window},
  * then it is ready.
- *
+ * <p>
  * Created by Nikolay Groshkov on 13-Aug-17.
  */
 public interface Displayable {
@@ -32,7 +32,7 @@ public interface Displayable {
     /**
      * Reaction on parent {@link Window} startup.
      *
-     * @param stage {@link Stage} where current view is displayed
+     * @param stage       {@link Stage} where current view is displayed
      * @param windowEvent startup window event
      */
     void display(Stage stage, WindowEvent windowEvent);

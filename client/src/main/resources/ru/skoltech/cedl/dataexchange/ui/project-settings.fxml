@@ -22,7 +22,8 @@
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.112" stylesheets="@styling.css"
             prefWidth="500"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ProjectSettingsController">
-    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
         <TitledPane fx:id="teamSettingsPane" animated="false" collapsible="false" text="Team-wide settings">
             <GridPane hgap="8.0" vgap="2.0">
                 <columnConstraints>
@@ -54,8 +55,10 @@
                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                 </rowConstraints>
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Use OS user" GridPane.halignment="RIGHT"/>
-                <CheckBox fx:id="projectUseOsUserCheckBox" graphicTextGap="8.0" mnemonicParsing="false" GridPane.columnIndex="1"/>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Study User" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
+                <CheckBox fx:id="projectUseOsUserCheckBox" graphicTextGap="8.0" mnemonicParsing="false"
+                          GridPane.columnIndex="1"/>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Study User" GridPane.halignment="RIGHT"
+                      GridPane.rowIndex="1"/>
                 <TextField fx:id="projectUserNameText" promptText="username" GridPane.columnIndex="1"
                            GridPane.columnSpan="2147483647" GridPane.rowIndex="1"/>
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Autoload last project on startup"
@@ -76,7 +79,8 @@
                 </rowConstraints>
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Project Directory" GridPane.halignment="RIGHT"/>
                 <TextField fx:id="projectDirectoryTextField" editable="false" GridPane.columnIndex="1"/>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Clean up" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Clean up" GridPane.halignment="RIGHT"
+                      GridPane.rowIndex="1"/>
                 <Button mnemonicParsing="false" onAction="#cleanupProjectCache"
                         text="Delete unused files" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
             </GridPane>

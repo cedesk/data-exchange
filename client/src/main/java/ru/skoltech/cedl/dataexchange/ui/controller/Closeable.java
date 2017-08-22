@@ -22,7 +22,7 @@ import javafx.stage.WindowEvent;
 
 /**
  * Mark a JavaFX Controller which can react on close event of parent {@link Window}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 13-Aug-17.
  */
 public interface Closeable {
@@ -30,7 +30,7 @@ public interface Closeable {
     /**
      * Reaction on parent {@link Window} close.
      *
-     * @param stage {@link Stage} which is going to be closed
+     * @param stage       {@link Stage} which is going to be closed
      * @param windowEvent window close event
      */
     void close(Stage stage, WindowEvent windowEvent);

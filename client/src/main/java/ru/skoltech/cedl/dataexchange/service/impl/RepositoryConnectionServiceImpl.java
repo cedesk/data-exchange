@@ -37,19 +37,6 @@ public class RepositoryConnectionServiceImpl implements RepositoryConnectionServ
     }
 
     @Override
-    public String createRepositoryUrl() {
-        String repositoryHost = applicationSettings.getRepositoryHost();
-        String repositorySchemaName = applicationSettings.getRepositorySchemaName();
-        return this.createRepositoryUrl(repositoryHost, repositorySchemaName);
-    }
-
-    @Override
-    public String createRepositoryUrl(String repositoryHost, String repositorySchemaName) {
-        String defaultJdbcUrlPattern = applicationSettings.getRepositoryJdbcUrlPattern();
-        return String.format(defaultJdbcUrlPattern, repositoryHost, repositorySchemaName);
-    }
-
-    @Override
     public boolean checkRepositoryConnection(String hostName, String schema, String userName, String password) {
         String url = this.createRepositoryUrl(hostName, schema);
 
@@ -63,6 +50,19 @@ public class RepositoryConnectionServiceImpl implements RepositoryConnectionServ
             return false;
         }
 
+    }
+
+    @Override
+    public String createRepositoryUrl(String repositoryHost, String repositorySchemaName) {
+        String defaultJdbcUrlPattern = applicationSettings.getRepositoryJdbcUrlPattern();
+        return String.format(defaultJdbcUrlPattern, repositoryHost, repositorySchemaName);
+    }
+
+    @Override
+    public String createRepositoryUrl() {
+        String repositoryHost = applicationSettings.getRepositoryHost();
+        String repositorySchemaName = applicationSettings.getRepositorySchemaName();
+        return this.createRepositoryUrl(repositoryHost, repositorySchemaName);
     }
 
 }

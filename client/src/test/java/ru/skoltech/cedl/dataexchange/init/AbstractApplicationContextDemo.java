@@ -22,21 +22,25 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.File;
 
-import static ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializerTest.createCedeskAppDir;
-import static ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializerTest.createCedeskAppFile;
-import static ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializerTest.deleteApplicationSettings;
+import static ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializerTest.*;
 
 /**
  * Abstract extension of JavaFX {@link Application} which loads an test application context.
- *
+ * <p>
  * Created by Nikolay Groshkov on 14-Aug-17.
  */
 public abstract class AbstractApplicationContextDemo extends Application {
 
+    protected ConfigurableApplicationContext context;
     private File cedeskAppDir;
     private File cedeskAppFile;
-    protected ConfigurableApplicationContext context;
 
+    /**
+     * Method which is called after test application context is ready.
+     *
+     * @param primaryStage the primary stage for this application
+     */
+    public abstract void demo(Stage primaryStage);
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -52,13 +56,6 @@ public abstract class AbstractApplicationContextDemo extends Application {
 
         this.demo(primaryStage);
     }
-
-    /**
-     * Method which is called after test application context is ready.
-     *
-     * @param primaryStage the primary stage for this application
-     */
-    public abstract void demo(Stage primaryStage);
 
     @Override
     public void stop() throws Exception {

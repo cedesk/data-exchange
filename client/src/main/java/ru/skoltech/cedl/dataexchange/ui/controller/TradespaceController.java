@@ -52,13 +52,15 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for tradespace.
- * 
+ * <p>
  * Created by d.knoll on 23/06/2017.
  */
 public class TradespaceController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(TradespaceController.class);
-
+    private final TradespaceRepository tradespaceRepository;
+    @FXML
+    public TitledPane figuresOfMeritEditorPane;
     @FXML
     private Label studyNameLabel;
     @FXML
@@ -73,11 +75,6 @@ public class TradespaceController implements Initializable {
     private ComboBox<FigureOfMeritDefinition> yAxisCombo;
     @FXML
     private TradespaceView tradespaceView;
-    @FXML
-    public TitledPane figuresOfMeritEditorPane;
-
-    private final TradespaceRepository tradespaceRepository;
-    
     private Project project;
     private ApplicationSettings applicationSettings;
     private GuiService guiService;
@@ -91,20 +88,63 @@ public class TradespaceController implements Initializable {
         this.tradespaceRepository = tradespaceRepository;
     }
 
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
+    private MultitemporalTradespace getModel() {
+        return multitemporalTradespace;
     }
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
     }
 
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
+    }
+
+    private void setMultitemporalTradespace(MultitemporalTradespace multitemporalTradespace) {
+        this.multitemporalTradespace = multitemporalTradespace;
+        tradespaceView.setTradespace(multitemporalTradespace);
+        FiguresOfMeritEditorController figuresOfMeritEditorController = (FiguresOfMeritEditorController) figuresOfMeritEditorPane.getContent().getUserData();
+        figuresOfMeritEditorController.setTradespace(getModel());
+        updateComboBoxes();
+        updateView();
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     public void setTradespaceModelBridge(TradespaceToStudyBridge tradespaceModelBridge) {
         this.tradespaceToStudyBridge = tradespaceModelBridge;
+    }
+
+    public void addDesignPoint(ActionEvent actionEvent) {
+        DesignPoint dp = new DesignPoint();
+        // TODO validate epoch not null
+        dp.setEpoch(epochChoice.getValue());
+        List<FigureOfMeritValue> fomValues = new LinkedList<>();
+        for (FigureOfMeritDefinition figureOfMeritDefinition : multitemporalTradespace.getDefinitions()) {
+            Double parameterValue = tradespaceToStudyBridge.getParameterValue(figureOfMeritDefinition.getParameterModelLink());
+            fomValues.add(new FigureOfMeritValue(figureOfMeritDefinition, parameterValue));
+        }
+        dp.setValues(fomValues);
+        dp.setDescription("from study model"); // TODO: add revision ... tradespaceRepository.getCurrentRevisionNumber()
+        multitemporalTradespace.getDesignPoints().add(dp);
+    }
+
+    public void editEpochs(ActionEvent actionEvent) {
+        Optional<String> epochStringOptional = Dialogues.inputEpochs();
+        if (epochStringOptional.isPresent()) {
+            String epochString = epochStringOptional.get();
+            // TODO: add validation
+            String[] epochs = epochString.split(",");
+            Integer[] years = new Integer[epochs.length];
+            for (int i = 0; i < epochs.length; i++) {
+                years[i] = Integer.valueOf(epochs[i]);
+            }
+            // TODO: not replace existing epochs, but keep existing and add and remove accordingly
+            multitemporalTradespace.setEpochs(Epoch.buildEpochs(years));
+            epochText.setText(multitemporalTradespace.getEpochs().stream().map(Epoch::asText).collect(Collectors.joining(", ")));
+        }
     }
 
     @Override
@@ -159,49 +199,6 @@ public class TradespaceController implements Initializable {
         updateView();
     }
 
-    private MultitemporalTradespace getModel() {
-        return multitemporalTradespace;
-    }
-
-    private void setMultitemporalTradespace(MultitemporalTradespace multitemporalTradespace) {
-        this.multitemporalTradespace = multitemporalTradespace;
-        tradespaceView.setTradespace(multitemporalTradespace);
-        FiguresOfMeritEditorController figuresOfMeritEditorController = (FiguresOfMeritEditorController) figuresOfMeritEditorPane.getContent().getUserData();
-        figuresOfMeritEditorController.setTradespace(getModel());
-        updateComboBoxes();
-        updateView();
-    }
-
-    public void addDesignPoint(ActionEvent actionEvent) {
-        DesignPoint dp = new DesignPoint();
-        // TODO validate epoch not null
-        dp.setEpoch(epochChoice.getValue());
-        List<FigureOfMeritValue> fomValues = new LinkedList<>();
-        for (FigureOfMeritDefinition figureOfMeritDefinition : multitemporalTradespace.getDefinitions()) {
-            Double parameterValue = tradespaceToStudyBridge.getParameterValue(figureOfMeritDefinition.getParameterModelLink());
-            fomValues.add(new FigureOfMeritValue(figureOfMeritDefinition, parameterValue));
-        }
-        dp.setValues(fomValues);
-        dp.setDescription("from study model"); // TODO: add revision ... tradespaceRepository.getCurrentRevisionNumber()
-        multitemporalTradespace.getDesignPoints().add(dp);
-    }
-
-    public void editEpochs(ActionEvent actionEvent) {
-        Optional<String> epochStringOptional = Dialogues.inputEpochs();
-        if (epochStringOptional.isPresent()) {
-            String epochString = epochStringOptional.get();
-            // TODO: add validation
-            String[] epochs = epochString.split(",");
-            Integer[] years = new Integer[epochs.length];
-            for (int i = 0; i < epochs.length; i++) {
-                years[i] = Integer.valueOf(epochs[i]);
-            }
-            // TODO: not replace existing epochs, but keep existing and add and remove accordingly
-            multitemporalTradespace.setEpochs(Epoch.buildEpochs(years));
-            epochText.setText(multitemporalTradespace.getEpochs().stream().map(Epoch::asText).collect(Collectors.joining(", ")));
-        }
-    }
-
     public void loadSampleTradespace(ActionEvent actionEvent) {
         URL url = TradespaceExplorerApplication.class.getResource("/GPUdataset_2013-2016.csv");
         File file = new File(url.getFile());
@@ -212,7 +209,7 @@ public class TradespaceController implements Initializable {
 
     public void loadTradespace(ActionEvent actionEvent) {
         MultitemporalTradespace newTradespace = tradespaceRepository.findOne(studyId);
-        if(newTradespace != null) {
+        if (newTradespace != null) {
             logger.info("tradespace loaded successfully");
             setMultitemporalTradespace(newTradespace);
         } else {

@@ -35,7 +35,7 @@
                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                 </rowConstraints>
                 <TextField fx:id="repositoryHostTextField" promptText="hostname (leave empty to use default)"
-                           GridPane.columnIndex="1" />
+                           GridPane.columnIndex="1"/>
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="DB hostname">
                     <GridPane.margin>
                         <Insets/>
@@ -78,7 +78,8 @@
                         <Insets right="8.0"/>
                     </GridPane.margin>
                 </Text>
-                <TextField fx:id="repositorySchemaNameTextField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                <TextField fx:id="repositorySchemaNameTextField" editable="false" GridPane.columnIndex="1"
+                           GridPane.rowIndex="1"/>
             </GridPane>
         </TitledPane>
         <TitledPane animated="false" layoutX="10.0" layoutY="150.0" text="Watcher">
@@ -105,7 +106,7 @@
                     <Insets left="8.0"/>
                 </GridPane.margin>
             </Text>
-            <Text fx:id="connectionTestText" strokeType="OUTSIDE" strokeWidth="0.0" />
+            <Text fx:id="connectionTestText" strokeType="OUTSIDE" strokeWidth="0.0"/>
             <Pane HBox.hgrow="ALWAYS"/>
             <Button cancelButton="true" mnemonicParsing="false" onAction="#cancel" text="Cancel"/>
             <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" onAction="#save" text="Save"/>

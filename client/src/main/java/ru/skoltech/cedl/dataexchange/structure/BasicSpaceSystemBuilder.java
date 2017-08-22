@@ -26,7 +26,7 @@ import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 /**
  * Creates basic space system.
  * Can accept model depth parameter for creation feature {@link SystemModel}.
- *
+ * <p>
  * Created by D.Knoll on 12.03.2015.
  */
 public class BasicSpaceSystemBuilder extends SystemBuilder {
@@ -39,15 +39,14 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
     private Unit massUnit = retrieveUnit("kg");
     private Unit powerUnit = retrieveUnit("W");
 
+    @Override
+    public boolean adjustsModelDepth() {
+        return true;
+    }
 
     @Override
     public String asName() {
         return "Basic Space System";
-    }
-
-    @Override
-    public boolean adjustsModelDepth() {
-        return true;
     }
 
     @Override
@@ -58,38 +57,6 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
         SystemModel systemModel = createSystemModel(modelDepth);
         systemModel.setName(systemName);
         return systemModel;
-    }
-
-    private SystemModel createSystemModel(int modelDepth) {
-        if (modelDepth < MIN_MODEL_DEPTH || modelDepth > MAX_MODEL_DEPTH)
-            throw new IllegalArgumentException("model depth must be >= " + MIN_MODEL_DEPTH
-                    + " and <=" + MAX_MODEL_DEPTH);
-
-        SystemModel system = new SystemModel("Spacecraft " + systemsCnt++);
-        system.addParameter(createMassParameter(massUnit));
-        system.addParameter(createPowerParameter(powerUnit));
-
-        if (modelDepth < 2) return system;
-        system.addSubNode(createSubSystem("Mission", modelDepth - 1));
-        system.addSubNode(createSubSystem("Payload", modelDepth - 1));
-        system.addSubNode(createSubSystem("Orbit", modelDepth - 1));
-        system.addSubNode(createSubSystem("Structure", modelDepth - 1));
-        system.addSubNode(createSubSystem("Power", modelDepth - 1));
-        system.addSubNode(createSubSystem("Thermal", modelDepth - 1));
-        system.addSubNode(createSubSystem("AOCS", modelDepth - 1));
-        system.addSubNode(createSubSystem("Communications", modelDepth - 1));
-        return system;
-    }
-
-    private SubSystemModel createSubSystem(String name, int level) {
-        SubSystemModel subSystem = new SubSystemModel(name);
-        subSystem.addParameter(createMassParameter(massUnit));
-        subSystem.addParameter(createPowerParameter(powerUnit));
-        //subSystem.addParameter(createParameter());
-
-        if (level < 2) return subSystem;
-        subSystem.addSubNode(createElement("element" + elementCnt++, level - 1));
-        return subSystem;
     }
 
     private ElementModel createElement(String name, int level) {
@@ -147,6 +114,38 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
             parameterModel.setIsExported(false);
         }
         return parameterModel;
+    }
+
+    private SubSystemModel createSubSystem(String name, int level) {
+        SubSystemModel subSystem = new SubSystemModel(name);
+        subSystem.addParameter(createMassParameter(massUnit));
+        subSystem.addParameter(createPowerParameter(powerUnit));
+        //subSystem.addParameter(createParameter());
+
+        if (level < 2) return subSystem;
+        subSystem.addSubNode(createElement("element" + elementCnt++, level - 1));
+        return subSystem;
+    }
+
+    private SystemModel createSystemModel(int modelDepth) {
+        if (modelDepth < MIN_MODEL_DEPTH || modelDepth > MAX_MODEL_DEPTH)
+            throw new IllegalArgumentException("model depth must be >= " + MIN_MODEL_DEPTH
+                    + " and <=" + MAX_MODEL_DEPTH);
+
+        SystemModel system = new SystemModel("Spacecraft " + systemsCnt++);
+        system.addParameter(createMassParameter(massUnit));
+        system.addParameter(createPowerParameter(powerUnit));
+
+        if (modelDepth < 2) return system;
+        system.addSubNode(createSubSystem("Mission", modelDepth - 1));
+        system.addSubNode(createSubSystem("Payload", modelDepth - 1));
+        system.addSubNode(createSubSystem("Orbit", modelDepth - 1));
+        system.addSubNode(createSubSystem("Structure", modelDepth - 1));
+        system.addSubNode(createSubSystem("Power", modelDepth - 1));
+        system.addSubNode(createSubSystem("Thermal", modelDepth - 1));
+        system.addSubNode(createSubSystem("AOCS", modelDepth - 1));
+        system.addSubNode(createSubSystem("Communications", modelDepth - 1));
+        return system;
     }
 
 }

@@ -23,38 +23,45 @@ import java.net.URL;
 
 /**
  * Operations with GUI
- *
+ * <p>
  * Created by Nikolay Groshkov on 09-Aug-17.
  */
 public interface GuiService {
 
     /**
-     * Create a new instance of View Builder for GUI creation.
+     * TODO: add javadoc
      *
-     * @param title the of the view
-     * @param location location of <i>*.fxml</i> file.
-     * @return instance of {@link ViewBuilder}.
+     * @param code
      */
-    ViewBuilder createViewBuilder(String title, URL location);
-
-    /**
-     * Create a new JavaFX control instance.
-     *
-     * @param location location of <i>*.fxml</i> file of control.
-     * @param <T> type of control
-     * @return an instance of new control.
-     */
-    <T extends Node> T createControl(URL location);
+    void copyTextToClipboard(String code);
 
     /**
      * Create a new JavaFX control instance, based on some arguments.
      *
      * @param location location of <i>*.fxml</i> file of control.
-     * @param args arguments for control constructor.
-     * @param <T> type of control
+     * @param args     arguments for control constructor.
+     * @param <T>      type of control
      * @return an instance of new control.
      */
     <T extends Node> T createControl(URL location, Object... args);
+
+    /**
+     * Create a new JavaFX control instance.
+     *
+     * @param location location of <i>*.fxml</i> file of control.
+     * @param <T>      type of control
+     * @return an instance of new control.
+     */
+    <T extends Node> T createControl(URL location);
+
+    /**
+     * Create a new instance of View Builder for GUI creation.
+     *
+     * @param title    the of the view
+     * @param location location of <i>*.fxml</i> file.
+     * @return instance of {@link ViewBuilder}.
+     */
+    ViewBuilder createViewBuilder(String title, URL location);
 
     /**
      * TODO: add javadoc
@@ -64,11 +71,4 @@ public interface GuiService {
      * @param filename
      */
     void loadWebView(WebView guideView, Class resourceClass, String filename);
-
-    /**
-     * TODO: add javadoc
-     *
-     * @param code
-     */
-    void copyTextToClipboard(String code);
 }

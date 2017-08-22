@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * Implementation of {@link LogEntryService}.
- *
+ * <p>
  * Created by Dominik Knoll on 18/07/2017.
  */
 public class LogEntryServiceImpl implements LogEntryService {

@@ -126,7 +126,8 @@
                                     <PropertyValueFactory property="valueSource"/>
                                 </cellValueFactory>
                             </TableColumn>
-                            <TableColumn fx:id="parameterInfoColumn" editable="false" prefWidth="160.0" text="Information">
+                            <TableColumn fx:id="parameterInfoColumn" editable="false" prefWidth="160.0"
+                                         text="Information">
                             </TableColumn>
                             <TableColumn fx:id="parameterDescriptionColumn" editable="false"
                                          prefWidth="100.0" text="Description">
@@ -138,7 +139,8 @@
                     </TableView>
                     <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                              AnchorPane.rightAnchor="0.0">
-                        <Button fx:id="addParameterButton" minWidth="28" mnemonicParsing="false" onAction="#addParameter">
+                        <Button fx:id="addParameterButton" minWidth="28" mnemonicParsing="false"
+                                onAction="#addParameter">
                             <tooltip>
                                 <Tooltip text="Add Parameter"/>
                             </tooltip>
@@ -146,7 +148,8 @@
                                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
                             </graphic>
                         </Button>
-                        <Button fx:id="deleteParameterButton" minWidth="28" mnemonicParsing="false" onAction="#deleteParameter">
+                        <Button fx:id="deleteParameterButton" minWidth="28" mnemonicParsing="false"
+                                onAction="#deleteParameter">
                             <tooltip>
                                 <Tooltip text="Remove Parameter"/>
                             </tooltip>
@@ -165,7 +168,7 @@
                         </Button>
                     </ToolBar>
                 </AnchorPane>
-                <TitledPane fx:id="parameterEditorParentPane" collapsible="false" text="Parameter Details" />
+                <TitledPane fx:id="parameterEditorParentPane" collapsible="false" text="Parameter Details"/>
             </SplitPane>
         </TitledPane>
     </SplitPane>

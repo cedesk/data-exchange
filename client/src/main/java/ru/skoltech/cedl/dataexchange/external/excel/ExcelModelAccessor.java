@@ -17,10 +17,10 @@
 package ru.skoltech.cedl.dataexchange.external.excel;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 
 import java.io.IOException;
 import java.io.InputStream;

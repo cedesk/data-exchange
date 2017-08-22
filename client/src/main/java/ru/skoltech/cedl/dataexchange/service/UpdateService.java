@@ -25,14 +25,14 @@ import java.util.Optional;
 
 /**
  * Service to monitor application's updates in the repository.
- *
+ * <p>
  * Created by Nikolay Groshkov on 18-Jul-17.
  */
 public interface UpdateService {
 
     Optional<ApplicationPackage> getLatestVersionAvailable();
 
-    ApplicationPackage getLatest(List<String> fileNames);
-
     List<String> extractFileNames(File file) throws IOException;
+
+    ApplicationPackage getLatest(List<String> fileNames);
 }

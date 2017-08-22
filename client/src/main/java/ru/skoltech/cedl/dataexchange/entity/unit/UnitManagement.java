@@ -77,20 +77,20 @@ public class UnitManagement {
         this.prefixes = prefixes;
     }
 
-    public List<Unit> getUnits() {
-        return units;
-    }
-
-    public void setUnits(List<Unit> units) {
-        this.units = units;
-    }
-
     public List<QuantityKind> getQuantityKinds() {
         return quantityKinds;
     }
 
     public void setQuantityKinds(List<QuantityKind> quantityKinds) {
         this.quantityKinds = quantityKinds;
+    }
+
+    public List<Unit> getUnits() {
+        return units;
+    }
+
+    public void setUnits(List<Unit> units) {
+        this.units = units;
     }
 
     @Override

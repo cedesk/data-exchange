@@ -21,7 +21,7 @@ import ru.skoltech.cedl.dataexchange.entity.Study;
 
 /**
  * Custom Data Access Operations with {@link Study} revisions.
- *
+ * <p>
  * Created by Nikolay Groshkov on 17-Aug-17.
  */
 public interface StudyRevisionRepositoryCustom {
@@ -29,7 +29,7 @@ public interface StudyRevisionRepositoryCustom {
     /**
      * Find {@link Study} by revision number.
      *
-     * @param id of a searched {@link Study}
+     * @param id             of a searched {@link Study}
      * @param revisionNumber a number of revision of searched {@link Study}
      * @return instance of searched {@link Study}
      */

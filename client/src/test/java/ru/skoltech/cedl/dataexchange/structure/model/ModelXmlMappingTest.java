@@ -24,8 +24,9 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
@@ -33,7 +34,6 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 
 import java.io.File;
 import java.io.IOException;

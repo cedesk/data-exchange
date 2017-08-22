@@ -35,12 +35,6 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
     private String systemModelName = "testName";
     private SystemModelRepository systemModelRepository;
 
-    @Before
-    public void prepare() {
-        systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
-        systemModelRepository = context.getBean(SystemModelRepository.class);
-    }
-
     @Test
     public void compareStoredAndRetrievedModel() {
         systemBuilder.modelDepth(2);
@@ -55,6 +49,12 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
         Assert.assertEquals(systemModel1.getName(), systemModel.getName());
         Assert.assertArrayEquals(systemModel1.getParameters().toArray(), systemModel.getParameters().toArray());
         Assert.assertEquals(systemModel1, systemModel);
+    }
+
+    @Before
+    public void prepare() {
+        systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
+        systemModelRepository = context.getBean(SystemModelRepository.class);
     }
 
     @Test

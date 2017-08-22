@@ -64,6 +64,14 @@ public class Discipline implements Comparable<Discipline> {
         this.userRoleManagement = userRoleManagement;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public long getId() {
         return id;
     }
@@ -80,12 +88,12 @@ public class Discipline implements Comparable<Discipline> {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public UserRoleManagement getUserRoleManagement() {
+        return userRoleManagement;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
+        this.userRoleManagement = userRoleManagement;
     }
 
     public boolean isBuiltIn() {
@@ -96,20 +104,10 @@ public class Discipline implements Comparable<Discipline> {
         this.builtIn = builtIn;
     }
 
-    public UserRoleManagement getUserRoleManagement() {
-        return userRoleManagement;
-    }
-
-    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
-        this.userRoleManagement = userRoleManagement;
-    }
-
     @Override
-    public String toString() {
-        return "Discipline{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                '}';
+    public int compareTo(Discipline other) {
+        int builtinCompare = Boolean.compare(builtIn, other.builtIn);
+        return builtinCompare != 0 ? -builtinCompare : name.compareTo(other.name);
     }
 
     @Override
@@ -130,8 +128,10 @@ public class Discipline implements Comparable<Discipline> {
     }
 
     @Override
-    public int compareTo(Discipline other) {
-        int builtinCompare = Boolean.compare(builtIn, other.builtIn);
-        return builtinCompare != 0 ? -builtinCompare : name.compareTo(other.name);
+    public String toString() {
+        return "Discipline{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

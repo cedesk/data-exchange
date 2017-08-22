@@ -26,10 +26,12 @@ import java.util.List;
 
 /**
  * Custom Data Access Operations with {@link ParameterModel} revisions.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public interface ParameterModelRevisionRepositoryCustom {
+
+    List<ParameterChange> findAllParameterChangesOfSystem(long systemId) throws RepositoryException;
 
     /**
      * Find all revisions of {@link ParameterModel} by specified id,
@@ -40,6 +42,4 @@ public interface ParameterModelRevisionRepositoryCustom {
      */
     @Transactional(readOnly = true)
     List<ParameterRevision> findParameterRevisionsOrderByRevisionNumberDesc(Long id);
-
-    List<ParameterChange> findAllParameterChangesOfSystem(long systemId) throws RepositoryException;
 }

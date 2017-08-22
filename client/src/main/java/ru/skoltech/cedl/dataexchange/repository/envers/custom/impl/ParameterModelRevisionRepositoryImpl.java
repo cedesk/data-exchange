@@ -35,13 +35,31 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link ParameterModelRevisionRepositoryCustom}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public class ParameterModelRevisionRepositoryImpl implements ParameterModelRevisionRepositoryCustom {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Override
+    public List<ParameterChange> findAllParameterChangesOfSystem(long systemId) throws RepositoryException {
+        List<ParameterChange> resultList = new ArrayList<>();
+        try {
+            Query nativeQuery = entityManager.createNativeQuery("SELECT " +
+                    "rev_id, param_id, valueLink_id, node_id, timestamp, nature, valueSource, name, node_name " +
+                    "FROM parameter_changes WHERE sys_id = " + systemId + " ORDER BY timestamp, node_id, nature ASC");
+            List<Object[]> nativeQueryResultList = nativeQuery.getResultList();
+            for (Object[] row : nativeQueryResultList) {
+                ParameterChange pc = new ParameterChange(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]);
+                resultList.add(pc);
+            }
+            return resultList;
+        } catch (Exception e) {
+            throw new RepositoryException("ParameterChange loading failed.", e);
+        }
+    }
 
     @Override
     public List<ParameterRevision> findParameterRevisionsOrderByRevisionNumberDesc(Long id) {
@@ -70,23 +88,5 @@ public class ParameterModelRevisionRepositoryImpl implements ParameterModelRevis
         parameterRevisions.forEach(ParameterRevision::getSourceDetails);
 
         return parameterRevisions;
-    }
-
-    @Override
-    public List<ParameterChange> findAllParameterChangesOfSystem(long systemId) throws RepositoryException {
-        List<ParameterChange> resultList = new ArrayList<>();
-        try {
-            Query nativeQuery = entityManager.createNativeQuery("SELECT " +
-                    "rev_id, param_id, valueLink_id, node_id, timestamp, nature, valueSource, name, node_name " +
-                    "FROM parameter_changes WHERE sys_id = " + systemId + " ORDER BY timestamp, node_id, nature ASC");
-            List<Object[]> nativeQueryResultList = nativeQuery.getResultList();
-            for (Object[] row : nativeQueryResultList) {
-                ParameterChange pc = new ParameterChange(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]);
-                resultList.add(pc);
-            }
-            return resultList;
-        } catch (Exception e) {
-            throw new RepositoryException("ParameterChange loading failed.", e);
-        }
     }
 }

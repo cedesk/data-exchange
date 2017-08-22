@@ -21,7 +21,7 @@ import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 
 /**
  * Operations with {@link UnitManagement}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 06-Jul-17.
  */
 public interface UnitManagementService {
@@ -34,21 +34,21 @@ public interface UnitManagementService {
     UnitManagement findUnitManagement();
 
     /**
+     * Load default {@link UnitManagement}.
+     *
+     * @return unit management
+     */
+    UnitManagement loadDefaultUnitManagement();
+
+    Unit obtainUnitBySymbolOrName(UnitManagement unitManagement, String unitStr);
+
+    Unit obtainUnitByText(UnitManagement unitManagement, String unitStr);
+
+    /**
      * Saves an unitManagement.
      *
      * @param unitManagement unitManagement to save
      * @return the saved unitManagement
      */
     UnitManagement saveUnitManagement(UnitManagement unitManagement);
-
-    Unit obtainUnitByText(UnitManagement unitManagement, String unitStr);
-
-    Unit obtainUnitBySymbolOrName(UnitManagement unitManagement, String unitStr);
-
-    /**
-     * Load default {@link UnitManagement}.
-     *
-     * @return unit management
-     */
-    UnitManagement loadDefaultUnitManagement();
 }

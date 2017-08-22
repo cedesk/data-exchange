@@ -23,9 +23,9 @@ import javafx.scene.input.DataFormat;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.ui.controller.FXMLLoaderFactory;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.ui.controller.FXMLLoaderFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link GuiService}
- *
+ * <p>
  * Created by D.Knoll on 27.03.2017.
  */
 public class GuiServiceImpl implements GuiService {
@@ -51,13 +51,11 @@ public class GuiServiceImpl implements GuiService {
     }
 
     @Override
-    public ViewBuilder createViewBuilder(String title, URL location) {
-        return new ViewBuilder(fxmlLoaderFactory, title, location);
-    }
-
-    @Override
-    public <T extends Node> T createControl(URL location) {
-        return this.createControl(location, new Object[0]);
+    public void copyTextToClipboard(String code) {
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        HashMap<DataFormat, Object> content = new HashMap<>();
+        content.put(DataFormat.PLAIN_TEXT, code);
+        clipboard.setContent(content);
     }
 
     @Override
@@ -72,6 +70,16 @@ public class GuiServiceImpl implements GuiService {
             logger.error("Unable to load control: " + location, e);
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public <T extends Node> T createControl(URL location) {
+        return this.createControl(location, new Object[0]);
+    }
+
+    @Override
+    public ViewBuilder createViewBuilder(String title, URL location) {
+        return new ViewBuilder(fxmlLoaderFactory, title, location);
     }
 
     @Override
@@ -90,13 +98,5 @@ public class GuiServiceImpl implements GuiService {
         content = content.replace("src=\"", "src=\"" + baseLocation);
 
         webEngine.loadContent(content);
-    }
-
-    @Override
-    public void copyTextToClipboard(String code) {
-        Clipboard clipboard = Clipboard.getSystemClipboard();
-        HashMap<DataFormat, Object> content = new HashMap<>();
-        content.put(DataFormat.PLAIN_TEXT, code);
-        clipboard.setContent(content);
     }
 }

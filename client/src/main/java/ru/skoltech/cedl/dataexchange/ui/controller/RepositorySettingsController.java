@@ -44,34 +44,26 @@ import java.util.concurrent.Executor;
 /**
  * Controller for repository settings view.
  * Requires application restart if settings has been changed.
- *
+ * <p>
  * Created by D.Knoll on 22.07.2015.
  */
 public class RepositorySettingsController implements Initializable, Displayable, Closeable, Applicable {
 
     private static Logger logger = Logger.getLogger(RepositorySettingsController.class);
-
-    @FXML
-    private TextField repositoryHostTextField;
-
-    @FXML
-    private TextField repositoryUserTextField;
-
-    @FXML
-    private PasswordField repositoryPasswordTextField;
-
-    @FXML
-    private TextField applicationDirectoryTextField;
-
-    @FXML
-    private TextField repositorySchemaNameTextField;
-
-    @FXML
-    private CheckBox repositoryWatcherAutosyncCheckBox;
-
     @FXML
     public Text connectionTestText;
-
+    @FXML
+    private TextField repositoryHostTextField;
+    @FXML
+    private TextField repositoryUserTextField;
+    @FXML
+    private PasswordField repositoryPasswordTextField;
+    @FXML
+    private TextField applicationDirectoryTextField;
+    @FXML
+    private TextField repositorySchemaNameTextField;
+    @FXML
+    private CheckBox repositoryWatcherAutosyncCheckBox;
     @FXML
     private Button saveButton;
 
@@ -84,6 +76,10 @@ public class RepositorySettingsController implements Initializable, Displayable,
     private EventHandler<Event> applyEventHandler;
     private Stage ownerStage;
 
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
+
     public void setExecutor(Executor executor) {
         this.executor = executor;
     }
@@ -92,12 +88,32 @@ public class RepositorySettingsController implements Initializable, Displayable,
         this.fileStorageService = fileStorageService;
     }
 
-    public void setApplicationSettings(ApplicationSettings applicationSettings) {
-        this.applicationSettings = applicationSettings;
+    @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
     }
 
     public void setRepositoryConnectionService(RepositoryConnectionService repositoryConnectionService) {
         this.repositoryConnectionService = repositoryConnectionService;
+    }
+
+    public void cancel() {
+        this.close();
+    }
+
+    @Override
+    public void close(Stage stage, WindowEvent windowEvent) {
+        this.close();
+    }
+
+    public void close() {
+        this.ownerStage.close();
+        logger.info("closed");
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
     }
 
     @Override
@@ -131,23 +147,6 @@ public class RepositorySettingsController implements Initializable, Displayable,
 
         this.test();
         logger.info("initialized");
-    }
-
-    private boolean parametersChanged(String baseRepositoryHost, String baseRepositoryUser,
-                                      String baseRepositoryPassword, boolean baseRepositoryWatcherAutosync) {
-        String newRepositoryHost = repositoryHostTextField.getText();
-        String newRepositoryUser = repositoryUserTextField.getText();
-        String newRepositoryPassword = repositoryPasswordTextField.getText();
-        boolean newRepositoryWatcherAutosync = repositoryWatcherAutosyncCheckBox.isSelected();
-        return !baseRepositoryHost.equals(newRepositoryHost)
-                || !baseRepositoryUser.equals(newRepositoryUser)
-                || !baseRepositoryPassword.equals(newRepositoryPassword)
-                || baseRepositoryWatcherAutosync != newRepositoryWatcherAutosync;
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
     }
 
     public void save(Event event) {
@@ -185,28 +184,24 @@ public class RepositorySettingsController implements Initializable, Displayable,
         } else if (result.get() == yesButton) {
             this.apply();
             this.close();
-        } else if (result.get() == noButton){
+        } else if (result.get() == noButton) {
             this.close();
         }
     }
 
-    public void cancel() {
-        this.close();
-    }
+    public void test() {
+        connectionTestText.setText("");
 
-    @Override
-    public void close(Stage stage, WindowEvent windowEvent) {
-        this.close();
-    }
+        executor.execute(() -> {
+            boolean connection = testConnection();
+            Platform.runLater(() -> {
+                String text = connection ? "SUCCESS" : "FAILURE";
+                String color = connection ? "green" : "red";
 
-    public void close() {
-        this.ownerStage.close();
-        logger.info("closed");
-    }
-
-    @Override
-    public void setOnApply(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
+                connectionTestText.setStyle("-fx-fill:" + color + "; -fx-font-weight:bold;");
+                connectionTestText.setText(text);
+            });
+        });
     }
 
     private void apply() {
@@ -228,19 +223,16 @@ public class RepositorySettingsController implements Initializable, Displayable,
         logger.info("applied");
     }
 
-    public void test() {
-        connectionTestText.setText("");
-
-        executor.execute(() -> {
-            boolean connection = testConnection();
-            Platform.runLater(() -> {
-                String text = connection ? "SUCCESS" : "FAILURE";
-                String color = connection ? "green" : "red";
-
-                connectionTestText.setStyle("-fx-fill:"+ color +"; -fx-font-weight:bold;");
-                connectionTestText.setText(text);
-            });
-        });
+    private boolean parametersChanged(String baseRepositoryHost, String baseRepositoryUser,
+                                      String baseRepositoryPassword, boolean baseRepositoryWatcherAutosync) {
+        String newRepositoryHost = repositoryHostTextField.getText();
+        String newRepositoryUser = repositoryUserTextField.getText();
+        String newRepositoryPassword = repositoryPasswordTextField.getText();
+        boolean newRepositoryWatcherAutosync = repositoryWatcherAutosyncCheckBox.isSelected();
+        return !baseRepositoryHost.equals(newRepositoryHost)
+                || !baseRepositoryUser.equals(newRepositoryUser)
+                || !baseRepositoryPassword.equals(newRepositoryPassword)
+                || baseRepositoryWatcherAutosync != newRepositoryWatcherAutosync;
     }
 
     private boolean testConnection() {

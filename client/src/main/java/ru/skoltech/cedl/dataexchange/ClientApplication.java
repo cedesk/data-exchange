@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import ru.skoltech.cedl.dataexchange.ui.control.ErrorAlert;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializer;
@@ -32,6 +31,7 @@ import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.ui.Views;
+import ru.skoltech.cedl.dataexchange.ui.control.ErrorAlert;
 
 import java.io.IOException;
 
@@ -76,6 +76,22 @@ public class ClientApplication extends Application {
         }
     }
 
+    @Override
+    public void stop() throws Exception {
+        logger.info("Stopping CEDESK ...");
+        try {
+            context.close();
+        } catch (Exception e) {
+            logger.warn("Cannot stop context correctly: " + e.getMessage(), e);
+        }
+        logger.info("CEDESK stopped.");
+    }
+
+    private void displayErrorDialog(Throwable e) throws IOException {
+        Alert errorAlert = new ErrorAlert(e);
+        errorAlert.showAndWait();
+    }
+
     private void startMainController(Stage primaryStage) throws IOException {
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         FileStorageService fileStorageService = context.getBean(FileStorageService.class);
@@ -99,21 +115,5 @@ public class ClientApplication extends Application {
         ViewBuilder repositorySettingsViewBuilder = guiService.createViewBuilder("Repository settings", Views.REPOSITORY_SETTINGS_VIEW);
         repositorySettingsViewBuilder.primaryStage(primaryStage);
         repositorySettingsViewBuilder.show();
-    }
-
-    private void displayErrorDialog(Throwable e) throws IOException {
-        Alert errorAlert = new ErrorAlert(e);
-        errorAlert.showAndWait();
-    }
-
-    @Override
-    public void stop() throws Exception {
-        logger.info("Stopping CEDESK ...");
-        try {
-            context.close();
-        } catch (Exception e) {
-            logger.warn("Cannot stop context correctly: " + e.getMessage(), e);
-        }
-        logger.info("CEDESK stopped.");
     }
 }

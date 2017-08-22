@@ -60,33 +60,6 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
     public ExternalModel() {
     }
 
-    @Override
-    @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @Column(length = 100 * 1024 * 1024) // 100MB
     @Lob
     public byte[] getAttachment() {
@@ -97,13 +70,15 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
         this.attachment = attachment;
     }
 
-    @Version()
-    public long getVersion() {
-        return version;
+    @Override
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    public long getId() {
+        return id;
     }
 
-    public void setVersion(long version) {
-        this.version = version;
+    public void setId(long id) {
+        this.id = id;
     }
 
     @Override
@@ -116,6 +91,19 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
         this.lastModification = lastModification;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Transient
+    public String getNodePath() {
+        return parent.getNodePath() + "#" + name;
+    }
+
     @ManyToOne(targetEntity = ModelNode.class)
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     public ModelNode getParent() {
@@ -124,6 +112,23 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
 
     public void setParent(ModelNode parent) {
         this.parent = parent;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    @Version()
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
     }
 
     /*
@@ -165,10 +170,5 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
         }
         sb.append('}');
         return sb.toString();
-    }
-
-    @Transient
-    public String getNodePath() {
-        return parent.getNodePath() + "#" + name;
     }
 }

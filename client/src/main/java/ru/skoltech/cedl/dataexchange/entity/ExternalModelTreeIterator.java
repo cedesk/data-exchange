@@ -37,18 +37,6 @@ public class ExternalModelTreeIterator implements Iterator<ExternalModel> {
         buildList(modelNode, accessChecker);
     }
 
-    private void buildList(ModelNode modelNode, Predicate<ModelNode> accessChecker) {
-        if (accessChecker.test(modelNode)) {
-            list.addAll(modelNode.getExternalModels());
-            if (modelNode instanceof CompositeModelNode) {
-                CompositeModelNode<ModelNode> compositeModelNode = (CompositeModelNode<ModelNode>) modelNode;
-                for (ModelNode child : compositeModelNode.getSubNodes()) {
-                    buildList(child, accessChecker);
-                }
-            }
-        }
-    }
-
     @Override
     public boolean hasNext() {
         return !list.isEmpty();
@@ -62,5 +50,17 @@ public class ExternalModelTreeIterator implements Iterator<ExternalModel> {
     @Override
     public void remove() {
         throw new UnsupportedOperationException();
+    }
+
+    private void buildList(ModelNode modelNode, Predicate<ModelNode> accessChecker) {
+        if (accessChecker.test(modelNode)) {
+            list.addAll(modelNode.getExternalModels());
+            if (modelNode instanceof CompositeModelNode) {
+                CompositeModelNode<ModelNode> compositeModelNode = (CompositeModelNode<ModelNode>) modelNode;
+                for (ModelNode child : compositeModelNode.getSubNodes()) {
+                    buildList(child, accessChecker);
+                }
+            }
+        }
     }
 }

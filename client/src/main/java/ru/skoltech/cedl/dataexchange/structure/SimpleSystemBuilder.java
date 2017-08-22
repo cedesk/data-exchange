@@ -18,11 +18,11 @@ package ru.skoltech.cedl.dataexchange.structure;
 
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
-import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 
 import java.util.LinkedList;
@@ -32,19 +32,19 @@ import java.util.stream.Collectors;
 /**
  * Simple model builder.
  * Can accept subsystem models names for creation feature {@link SystemModel}.
- *
+ * <p>
  * Created by d.knoll on 27/06/2017.
  */
 public class SimpleSystemBuilder extends SystemBuilder {
 
     @Override
-    public String asName() {
-        return "Simple System (from subsystem names)";
+    public boolean adjustsSubsystems() {
+        return true;
     }
 
     @Override
-    public boolean adjustsSubsystems() {
-        return true;
+    public String asName() {
+        return "Simple System (from subsystem names)";
     }
 
     @Override

@@ -35,7 +35,7 @@ import java.util.Optional;
 
 /**
  * Implementation of {@link UpdateService}
- *
+ * <p>
  * Created by D.Knoll on 28.11.2015.
  */
 public class UpdateServiceImpl implements UpdateService {
@@ -44,14 +44,6 @@ public class UpdateServiceImpl implements UpdateService {
 
     private ApplicationSettings applicationSettings;
     private JsoupService jsoupService;
-
-    public void setApplicationSettings(ApplicationSettings applicationSettings) {
-        this.applicationSettings = applicationSettings;
-    }
-
-    public void setJsoupService(JsoupService jsoupService) {
-        this.jsoupService = jsoupService;
-    }
 
     @Override
     public Optional<ApplicationPackage> getLatestVersionAvailable() {
@@ -74,6 +66,20 @@ public class UpdateServiceImpl implements UpdateService {
         return Optional.empty();
     }
 
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
+
+    public void setJsoupService(JsoupService jsoupService) {
+        this.jsoupService = jsoupService;
+    }
+
+    @Override
+    public List<String> extractFileNames(File file) throws IOException {
+        Document doc = jsoupService.jsoupParse(file);
+        return extractFileNames(doc);
+    }
+
     @Override
     public ApplicationPackage getLatest(List<String> fileNames) {
         ApplicationPackage latestAppPkg = null;
@@ -84,12 +90,6 @@ public class UpdateServiceImpl implements UpdateService {
             }
         }
         return latestAppPkg;
-    }
-
-    @Override
-    public List<String> extractFileNames(File file) throws IOException {
-        Document doc = jsoupService.jsoupParse(file);
-        return extractFileNames(doc);
     }
 
     private List<String> extractFileNames(Document doc) {

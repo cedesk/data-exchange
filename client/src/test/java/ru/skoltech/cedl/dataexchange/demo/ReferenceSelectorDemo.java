@@ -44,10 +44,6 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
 
     private Project project;
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     private ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
         project = context.getBean(Project.class);
         project.init("TEST");
@@ -77,6 +73,10 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
             System.exit(-1);
         }
         return parameterModel;
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 
     @Override

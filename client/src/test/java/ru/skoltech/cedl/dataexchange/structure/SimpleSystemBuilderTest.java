@@ -19,16 +19,16 @@ package ru.skoltech.cedl.dataexchange.structure;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
-import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.operation.Sum;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 
 import java.util.Arrays;
 
@@ -59,7 +59,7 @@ public class SimpleSystemBuilderTest extends AbstractApplicationContextTest {
                 hasProperty("valueSource", is(ParameterValueSource.MANUAL)),
                 hasProperty("value", any(Double.class)),
                 hasProperty("calculation", nullValue())
-                );
+        );
         basicPowerParameterModelMatcher = allOf(
                 hasProperty("name", is("power")),
                 hasProperty("nature", is(ParameterNature.OUTPUT)),
@@ -67,43 +67,6 @@ public class SimpleSystemBuilderTest extends AbstractApplicationContextTest {
                 hasProperty("value", any(Double.class)),
                 hasProperty("calculation", nullValue())
         );
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testBuildWithoutName() {
-        simpleSystemBuilder.build(null);
-    }
-
-    @Test
-    public void testBuildWithoutSubsystems() {
-        String systemModelName = "testName";
-
-        SystemModel systemModel = simpleSystemBuilder.build(systemModelName);
-
-        assertNotNull(systemModel);
-        assertThat(systemModel.getName(), is(systemModelName));
-        assertNull(systemModel.getParent());
-
-        assertThat(systemModel.getSubNodes(), empty());
-
-        assertThat(systemModel.getParameters(), hasSize(2));
-        assertThat(systemModel.getParameters(), hasItem(
-                allOf(
-                        basicMassParameterModelMatcher,
-                        hasProperty("unit", nullValue()),
-                        hasProperty("parent", is(systemModel))
-                )
-        ));
-
-        assertThat(systemModel.getParameters(), hasItem(
-                allOf(
-                        basicPowerParameterModelMatcher,
-                        hasProperty("unit", nullValue()),
-                        hasProperty("parent", is(systemModel))
-                )
-        ));
-
-        assertTrue(systemModel.getExternalModels().isEmpty());
     }
 
     @Test
@@ -143,12 +106,84 @@ public class SimpleSystemBuilderTest extends AbstractApplicationContextTest {
         ));
         assertThat(systemModel.getParameters(), hasItem(
                 allOf(
-                       basicPowerParameterModelMatcher,
-                       hasProperty("unit", nullValue()),
-                       hasProperty("calculation", nullValue()),
-                       hasProperty("parent", is(systemModel))
+                        basicPowerParameterModelMatcher,
+                        hasProperty("unit", nullValue()),
+                        hasProperty("calculation", nullValue()),
+                        hasProperty("parent", is(systemModel))
                 )
         ));
+    }
+
+    @Test
+    public void testBuildWithThreeSubsystems() {
+        String systemModelName = "testName";
+        String subsystemModelName1 = "SubsystemA";
+        String subsystemModelName2 = "SubsystemB";
+        String subsystemModelName3 = "SubsystemC";
+
+        simpleSystemBuilder = new SimpleSystemBuilder();
+        simpleSystemBuilder.subsystemNames(subsystemModelName1, subsystemModelName2, subsystemModelName3);
+        SystemModel systemModel = simpleSystemBuilder.build(systemModelName);
+
+
+        Matcher<ParameterModel> massParameterModelMatcher = allOf(
+                basicMassParameterModelMatcher,
+                hasProperty("unit", nullValue()),
+                hasProperty("parent", hasProperty("name", anyOf(is(subsystemModelName1), is(subsystemModelName2), is(subsystemModelName3))))
+        );
+        Matcher<ParameterModel> powerParameterModelMatcher = allOf(
+                basicPowerParameterModelMatcher,
+                hasProperty("unit", nullValue()),
+                hasProperty("parent", hasProperty("name", anyOf(is(subsystemModelName1), is(subsystemModelName2), is(subsystemModelName3))))
+        );
+
+
+        assertThat(systemModel.getSubNodes(), hasSize(3));
+        assertThat(systemModel.getSubNodes(), hasItem(hasProperty("name", is(subsystemModelName1))));
+        assertThat(systemModel.getSubNodes(), hasItem(hasProperty("name", is(subsystemModelName2))));
+        assertThat(systemModel.getSubNodes(), hasItem(hasProperty("name", is(subsystemModelName3))));
+
+        assertThat(systemModel.getSubNodes(), everyItem(hasProperty("parameters", hasSize(2))));
+        assertThat(systemModel.getSubNodes(), everyItem(hasProperty("parameters", hasItem(massParameterModelMatcher))));
+        assertThat(systemModel.getSubNodes(), everyItem(hasProperty("parameters", hasItem(powerParameterModelMatcher))));
+
+        assertThat(systemModel.getParameters(), hasSize(2));
+        assertThat(systemModel.getParameters(), hasItem(allOf(
+                hasProperty("name", is("mass")),
+                hasProperty("unit", nullValue()),
+                hasProperty("parent", is(systemModel)),
+                hasProperty("valueSource", is(ParameterValueSource.CALCULATION)),
+                hasProperty("calculation",
+                        allOf(
+                                hasProperty("operation", isA(Sum.class)),
+                                hasProperty("arguments", hasSize(3)),
+                                hasProperty("arguments", everyItem(isA(Argument.Parameter.class))),
+                                hasProperty("arguments",
+                                        everyItem(
+                                                hasProperty("link", massParameterModelMatcher)
+                                        )
+                                )
+                        )
+                )
+        )));
+        assertThat(systemModel.getParameters(), hasItem(allOf(
+                hasProperty("name", is("power")),
+                hasProperty("unit", nullValue()),
+                hasProperty("parent", is(systemModel)),
+                hasProperty("valueSource", is(ParameterValueSource.CALCULATION)),
+                hasProperty("calculation",
+                        allOf(
+                                hasProperty("operation", isA(Sum.class)),
+                                hasProperty("arguments", hasSize(3)),
+                                hasProperty("arguments", everyItem(isA(Argument.Parameter.class))),
+                                hasProperty("arguments",
+                                        everyItem(
+                                                hasProperty("link", powerParameterModelMatcher)
+                                        )
+                                )
+                        )
+                )
+        )));
     }
 
     @Test
@@ -290,75 +325,40 @@ public class SimpleSystemBuilderTest extends AbstractApplicationContextTest {
         )));
     }
 
-    @Test
-    public void testBuildWithThreeSubsystems() {
-        String systemModelName = "testName";
-        String subsystemModelName1 = "SubsystemA";
-        String subsystemModelName2 = "SubsystemB";
-        String subsystemModelName3 = "SubsystemC";
+    @Test(expected = IllegalArgumentException.class)
+    public void testBuildWithoutName() {
+        simpleSystemBuilder.build(null);
+    }
 
-        simpleSystemBuilder = new SimpleSystemBuilder();
-        simpleSystemBuilder.subsystemNames(subsystemModelName1, subsystemModelName2, subsystemModelName3);
+    @Test
+    public void testBuildWithoutSubsystems() {
+        String systemModelName = "testName";
+
         SystemModel systemModel = simpleSystemBuilder.build(systemModelName);
 
+        assertNotNull(systemModel);
+        assertThat(systemModel.getName(), is(systemModelName));
+        assertNull(systemModel.getParent());
 
-        Matcher<ParameterModel> massParameterModelMatcher = allOf(
-                basicMassParameterModelMatcher,
-                hasProperty("unit", nullValue()),
-                hasProperty("parent", hasProperty("name", anyOf(is(subsystemModelName1), is(subsystemModelName2), is(subsystemModelName3))))
-        );
-        Matcher<ParameterModel> powerParameterModelMatcher = allOf(
-                basicPowerParameterModelMatcher,
-                hasProperty("unit", nullValue()),
-                hasProperty("parent", hasProperty("name", anyOf(is(subsystemModelName1), is(subsystemModelName2), is(subsystemModelName3))))
-        );
-
-
-        assertThat(systemModel.getSubNodes(), hasSize(3));
-        assertThat(systemModel.getSubNodes(), hasItem(hasProperty("name", is(subsystemModelName1))));
-        assertThat(systemModel.getSubNodes(), hasItem(hasProperty("name", is(subsystemModelName2))));
-        assertThat(systemModel.getSubNodes(), hasItem(hasProperty("name", is(subsystemModelName3))));
-
-        assertThat(systemModel.getSubNodes(), everyItem(hasProperty("parameters", hasSize(2))));
-        assertThat(systemModel.getSubNodes(), everyItem(hasProperty("parameters", hasItem(massParameterModelMatcher))));
-        assertThat(systemModel.getSubNodes(), everyItem(hasProperty("parameters", hasItem(powerParameterModelMatcher))));
+        assertThat(systemModel.getSubNodes(), empty());
 
         assertThat(systemModel.getParameters(), hasSize(2));
-        assertThat(systemModel.getParameters(), hasItem(allOf(
-                hasProperty("name", is("mass")),
-                hasProperty("unit", nullValue()),
-                hasProperty("parent", is(systemModel)),
-                hasProperty("valueSource", is(ParameterValueSource.CALCULATION)),
-                hasProperty("calculation",
-                        allOf(
-                                hasProperty("operation", isA(Sum.class)),
-                                hasProperty("arguments", hasSize(3)),
-                                hasProperty("arguments", everyItem(isA(Argument.Parameter.class))),
-                                hasProperty("arguments",
-                                        everyItem(
-                                                hasProperty("link", massParameterModelMatcher)
-                                        )
-                                )
-                        )
+        assertThat(systemModel.getParameters(), hasItem(
+                allOf(
+                        basicMassParameterModelMatcher,
+                        hasProperty("unit", nullValue()),
+                        hasProperty("parent", is(systemModel))
                 )
-        )));
-        assertThat(systemModel.getParameters(), hasItem(allOf(
-                hasProperty("name", is("power")),
-                hasProperty("unit", nullValue()),
-                hasProperty("parent", is(systemModel)),
-                hasProperty("valueSource", is(ParameterValueSource.CALCULATION)),
-                hasProperty("calculation",
-                        allOf(
-                                hasProperty("operation", isA(Sum.class)),
-                                hasProperty("arguments", hasSize(3)),
-                                hasProperty("arguments", everyItem(isA(Argument.Parameter.class))),
-                                hasProperty("arguments",
-                                        everyItem(
-                                                hasProperty("link", powerParameterModelMatcher)
-                                        )
-                                )
-                        )
+        ));
+
+        assertThat(systemModel.getParameters(), hasItem(
+                allOf(
+                        basicPowerParameterModelMatcher,
+                        hasProperty("unit", nullValue()),
+                        hasProperty("parent", is(systemModel))
                 )
-        )));
+        ));
+
+        assertTrue(systemModel.getExternalModels().isEmpty());
     }
 }

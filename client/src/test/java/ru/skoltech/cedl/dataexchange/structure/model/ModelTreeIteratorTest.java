@@ -26,7 +26,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.hasItem;
 
 /**
  * Created by Nikolay Groshkov on 14-Jun-17.
@@ -37,6 +37,10 @@ public class ModelTreeIteratorTest {
     private CompositeModelNode compositeModelNodeForExceptions;
     private Iterator<ModelNode> iterator;
 
+    @After
+    public void cleanup() {
+    }
+
     @Before
     public void prepare() {
         compositeModelNode = new CompositeModelNode();
@@ -46,10 +50,6 @@ public class ModelTreeIteratorTest {
         compositeModelNodeForExceptions = new CompositeModelNode();
         compositeModelNodeForExceptions.setUuid("uuid");
         compositeModelNodeForExceptions.setName("name");
-    }
-
-    @After
-    public void cleanup() {
     }
 
     @Test
@@ -134,7 +134,7 @@ public class ModelTreeIteratorTest {
     }
 
     // test next() on an empty collection (throws exception)
-    @Test(expected=NoSuchElementException.class)
+    @Test(expected = NoSuchElementException.class)
     public void testNoSuchElementException() {
         iterator = compositeModelNodeForExceptions.treeIterator();
         iterator.next();
@@ -142,7 +142,7 @@ public class ModelTreeIteratorTest {
     }
 
     // test remove on that collection: UnsupportedOperationException
-    @Test(expected=UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testRemove() {
         iterator = compositeModelNodeForExceptions.treeIterator();
         iterator.remove();

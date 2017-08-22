@@ -47,6 +47,13 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
         super(name);
     }
 
+    //--------------------
+    @Override
+    @Transient
+    public String getNodePath() {
+        return name;
+    }
+
     @Override
     @ManyToOne(targetEntity = SystemModel.class)
     public ModelNode getParent() {
@@ -60,11 +67,9 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
         return super.getSubNodes();
     }
 
-    //--------------------
     @Override
-    @Transient
-    public String getNodePath() {
-        return name;
+    public Iterator<ExternalModel> externalModelsIterator() {
+        return super.externalModelsIterator();
     }
 
     /**
@@ -83,6 +88,7 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
         }
         return latest;
     }
+    //----------------
 
     /**
      * @return a map for looking up any parameter in the system model (tree) by it's UUID.
@@ -92,11 +98,5 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
         Iterator<ParameterModel> pmi = parametersTreeIterator();
         pmi.forEachRemaining(parameterModel -> dictionary.put(parameterModel.getUuid(), parameterModel));
         return dictionary;
-    }
-    //----------------
-
-    @Override
-    public Iterator<ExternalModel> externalModelsIterator() {
-        return super.externalModelsIterator();
     }
 }

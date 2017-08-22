@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.service.impl;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;

@@ -28,7 +28,7 @@
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
             <center>
-                <Label text="Choose a parameter from another subsystem." />
+                <Label text="Choose a parameter from another subsystem."/>
             </center>
         </BorderPane>
     </top>

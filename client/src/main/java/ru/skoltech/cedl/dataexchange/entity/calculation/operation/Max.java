@@ -25,13 +25,9 @@ import java.util.OptionalDouble;
 public class Max extends Operation {
 
     @Override
-    public String name() {
-        return "Max";
-    }
-
-    @Override
-    public String description() {
-        return "This operation finds the maximum among all arguments";
+    public double apply(double[] arguments) {
+        OptionalDouble optionalDouble = Arrays.stream(arguments).max();
+        return optionalDouble.getAsDouble();
     }
 
     @Override
@@ -42,8 +38,8 @@ public class Max extends Operation {
     }
 
     @Override
-    public int minArguments() {
-        return 2;
+    public String description() {
+        return "This operation finds the maximum among all arguments";
     }
 
     @Override
@@ -52,8 +48,12 @@ public class Max extends Operation {
     }
 
     @Override
-    public double apply(double[] arguments) {
-        OptionalDouble optionalDouble = Arrays.stream(arguments).max();
-        return optionalDouble.getAsDouble();
+    public int minArguments() {
+        return 2;
+    }
+
+    @Override
+    public String name() {
+        return "Max";
     }
 }

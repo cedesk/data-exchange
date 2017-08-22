@@ -25,7 +25,7 @@
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.MainController"
             maxHeight="-Infinity" maxWidth="-Infinity"
             minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="700.0" prefWidth="1000.0" >
+            prefHeight="700.0" prefWidth="1000.0">
     <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                 AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"
                 fx:id="layoutPane">
@@ -82,9 +82,9 @@
                         <Button fx:id="newButton" onAction="#newProject" text="_New"/>
                         <Separator orientation="VERTICAL"/>
                         <Button fx:id="loadButton" onAction="#reloadProject" text="_Reload"/>
-                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" onAction="#saveProject" text="_Save" >
+                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" onAction="#saveProject" text="_Save">
                             <tooltip>
-                                <Tooltip text="Save current study" />
+                                <Tooltip text="Save current study"/>
                             </tooltip>
                         </Button>
                         <Separator orientation="VERTICAL"/>
@@ -99,19 +99,19 @@
                                     <Insets right="4.0"/>
                                 </HBox.margin>
                             </Label>
-                            <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--" />
+                            <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--"/>
                             <Label styleClass="projectDetailsLabels" text="Tag:">
                                 <HBox.margin>
                                     <Insets left="20.0" right="4.0"/>
                                 </HBox.margin>
                             </Label>
-                            <Label fx:id="tagLabel" styleClass="projectDetailsText" text="--" />
+                            <Label fx:id="tagLabel" styleClass="projectDetailsText" text="--"/>
                             <Label styleClass="projectDetailsLabels" text="User:">
                                 <HBox.margin>
                                     <Insets left="20.0" right="4.0"/>
                                 </HBox.margin>
                             </Label>
-                            <Label fx:id="userNameLabel" styleClass="projectDetailsText" text="--" />
+                            <Label fx:id="userNameLabel" styleClass="projectDetailsText" text="--"/>
                             <Label styleClass="projectDetailsLabels" text="Roles:">
                                 <HBox.margin>
                                     <Insets left="20.0" right="4.0"/>

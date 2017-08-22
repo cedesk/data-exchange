@@ -72,7 +72,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @Transient
     private ExternalModelReference valueReference;
 
-    @ManyToOne(targetEntity = ParameterModel.class, fetch=FetchType.EAGER)
+    @ManyToOne(targetEntity = ParameterModel.class, fetch = FetchType.EAGER)
     @XmlIDREF
     private ParameterModel valueLink;
 
@@ -115,7 +115,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @XmlAttribute
     private Long lastModification;
 
-    @ManyToOne(targetEntity = ModelNode.class, fetch=FetchType.EAGER)
+    @ManyToOne(targetEntity = ModelNode.class, fetch = FetchType.EAGER)
     @XmlTransient
     private ModelNode parent;
 
@@ -142,95 +142,6 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.description = description;
     }
 
-    @Override
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Double getValue() {
-        return value;
-    }
-
-    public void setValue(Double value) {
-        this.value = value;
-    }
-
-    public Unit getUnit() {
-        return unit;
-    }
-
-    public void setUnit(Unit unit) {
-        this.unit = unit;
-    }
-
-    public ParameterNature getNature() {
-        return nature == null ? DEFAULT_NATURE : nature;
-    }
-
-    public void setNature(ParameterNature nature) {
-        this.nature = nature;
-    }
-
-    public ParameterValueSource getValueSource() {
-        return valueSource == null ? DEFAULT_VALUE_SOURCE : valueSource;
-    }
-
-    public void setValueSource(ParameterValueSource valueSource) {
-        this.valueSource = valueSource;
-    }
-
-    public ExternalModelReference getValueReference() {
-        if (valueReference != null) {
-            return valueReference;
-        }
-        if (importModel == null || importField == null) {
-            return null;
-        }
-        valueReference = new ExternalModelReference();
-        valueReference.setExternalModel(importModel);
-        valueReference.setTarget(importField);
-        return valueReference;
-    }
-
-    public void setValueReference(ExternalModelReference valueReference) {
-        this.valueReference = valueReference;
-        if (valueReference != null) {
-            this.importModel = valueReference.getExternalModel();
-            this.importField = valueReference.getTarget();
-        } else {
-            this.importModel = null;
-            this.importField = null;
-        }
-    }
-
-    public ParameterModel getValueLink() {
-        return valueLink;
-    }
-
-    public void setValueLink(ParameterModel valueLink) {
-        this.valueLink = valueLink;
-    }
-
     public Calculation getCalculation() {
         return calculation;
     }
@@ -239,44 +150,38 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.calculation = calculation;
     }
 
-    public ExternalModel getImportModel() {
-        return importModel;
+    public String getDescription() {
+        return description;
     }
 
-    public void setImportModel(ExternalModel importModel) {
-        this.importModel = importModel;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public String getImportField() {
-        return importField;
+    public double getEffectiveValue() {
+        if (valueSource == ParameterValueSource.LINK && valueLink != null) {
+            return isReferenceValueOverridden ? overrideValue : valueLink.getEffectiveValue();
+        } else if (valueSource == ParameterValueSource.CALCULATION && calculation != null && calculation.valid()) {
+            return isReferenceValueOverridden ? overrideValue : calculation.evaluate();
+        }
+        Double effectiveValue = isReferenceValueOverridden ? overrideValue : value; // OUTPUT CAN BE OVERRIDDEN;
+        return effectiveValue != null ? effectiveValue.doubleValue() : Double.NaN;
     }
 
-    public void setImportField(String importField) {
-        this.importField = importField;
+    public String getExportField() {
+        return exportField;
     }
 
-    public boolean getIsReferenceValueOverridden() {
-        return isReferenceValueOverridden;
+    public void setExportField(String exportField) {
+        this.exportField = exportField;
     }
 
-    public void setIsReferenceValueOverridden(boolean isReferenceValueOverridden) {
-        this.isReferenceValueOverridden = isReferenceValueOverridden;
+    public ExternalModel getExportModel() {
+        return exportModel;
     }
 
-    public Double getOverrideValue() {
-        return overrideValue;
-    }
-
-    public void setOverrideValue(Double overrideValue) {
-        this.overrideValue = overrideValue;
-    }
-
-    public boolean getIsExported() {
-        return isExported;
-    }
-
-    public void setIsExported(boolean isExported) {
-        this.isExported = isExported;
+    public void setExportModel(ExternalModel exportModel) {
+        this.exportModel = exportModel;
     }
 
     public ExternalModelReference getExportReference() {
@@ -304,45 +209,45 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         }
     }
 
-    public ExternalModel getExportModel() {
-        return exportModel;
+    @Override
+    public long getId() {
+        return id;
     }
 
-    public void setExportModel(ExternalModel exportModel) {
-        this.exportModel = exportModel;
+    public void setId(long id) {
+        this.id = id;
     }
 
-    public String getExportField() {
-        return exportField;
+    public String getImportField() {
+        return importField;
     }
 
-    public void setExportField(String exportField) {
-        this.exportField = exportField;
+    public void setImportField(String importField) {
+        this.importField = importField;
     }
 
-    public String getDescription() {
-        return description;
+    public ExternalModel getImportModel() {
+        return importModel;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setImportModel(ExternalModel importModel) {
+        this.importModel = importModel;
     }
 
-    public double getEffectiveValue() {
-        if (valueSource == ParameterValueSource.LINK && valueLink != null) {
-            return isReferenceValueOverridden ? overrideValue : valueLink.getEffectiveValue();
-        } else if (valueSource == ParameterValueSource.CALCULATION && calculation != null && calculation.valid()) {
-            return isReferenceValueOverridden ? overrideValue : calculation.evaluate();
-        }
-        return isReferenceValueOverridden ? overrideValue : value; // OUTPUT CAN BE OVERRIDDEN
+    public boolean getIsExported() {
+        return isExported;
     }
 
-    public long getVersion() {
-        return version;
+    public void setIsExported(boolean isExported) {
+        this.isExported = isExported;
     }
 
-    public void setVersion(long version) {
-        this.version = version;
+    public boolean getIsReferenceValueOverridden() {
+        return isReferenceValueOverridden;
+    }
+
+    public void setIsReferenceValueOverridden(boolean isReferenceValueOverridden) {
+        this.isReferenceValueOverridden = isReferenceValueOverridden;
     }
 
     @Override
@@ -355,6 +260,34 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.lastModification = timestamp;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ParameterNature getNature() {
+        return nature == null ? DEFAULT_NATURE : nature;
+    }
+
+    public void setNature(ParameterNature nature) {
+        this.nature = nature;
+    }
+
+    public String getNodePath() {
+        return (parent != null ? parent.getNodePath() : "") + "::" + name;
+    }
+
+    public Double getOverrideValue() {
+        return overrideValue;
+    }
+
+    public void setOverrideValue(Double overrideValue) {
+        this.overrideValue = overrideValue;
+    }
+
     public ModelNode getParent() {
         return parent;
     }
@@ -363,8 +296,76 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.parent = parent;
     }
 
-    public String getNodePath() {
-        return (parent != null ? parent.getNodePath() : "") + "::" + name;
+    public Unit getUnit() {
+        return unit;
+    }
+
+    public void setUnit(Unit unit) {
+        this.unit = unit;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public Double getValue() {
+        return value;
+    }
+
+    public void setValue(Double value) {
+        this.value = value;
+    }
+
+    public ParameterModel getValueLink() {
+        return valueLink;
+    }
+
+    public void setValueLink(ParameterModel valueLink) {
+        this.valueLink = valueLink;
+    }
+
+    public ExternalModelReference getValueReference() {
+        if (valueReference != null) {
+            return valueReference;
+        }
+        if (importModel == null || importField == null) {
+            return null;
+        }
+        valueReference = new ExternalModelReference();
+        valueReference.setExternalModel(importModel);
+        valueReference.setTarget(importField);
+        return valueReference;
+    }
+
+    public void setValueReference(ExternalModelReference valueReference) {
+        this.valueReference = valueReference;
+        if (valueReference != null) {
+            this.importModel = valueReference.getExternalModel();
+            this.importField = valueReference.getTarget();
+        } else {
+            this.importModel = null;
+            this.importField = null;
+        }
+    }
+
+    public ParameterValueSource getValueSource() {
+        return valueSource == null ? DEFAULT_VALUE_SOURCE : valueSource;
+    }
+
+    public void setValueSource(ParameterValueSource valueSource) {
+        this.valueSource = valueSource;
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
     }
 
     /**

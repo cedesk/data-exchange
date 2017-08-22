@@ -32,15 +32,15 @@ import java.util.List;
 
 /**
  * Implemetation of {@link JpaRevisionEntityRepository}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 10-Aug-17.
  */
 public class JpaRevisionEntityRepositoryImpl<T, ID extends Serializable> extends SimpleJpaRepository<T, ID>
-                                                                        implements JpaRevisionEntityRepository<T, ID>, Serializable {
+        implements JpaRevisionEntityRepository<T, ID>, Serializable {
 
+    private final EntityManager entityManager;
     private Class<T> entityClass;
     private ApplicationSettings applicationSettings;
-    private final EntityManager entityManager;
 
     public JpaRevisionEntityRepositoryImpl(JpaEntityInformation<T, ?> entityInformation,
                                            EntityManager entityManager,
@@ -51,23 +51,40 @@ public class JpaRevisionEntityRepositoryImpl<T, ID extends Serializable> extends
         this.applicationSettings = beanFactory.getBean(ApplicationSettings.class);
     }
 
-    private void storeUsernameOfCurrentCustomRevisionEntity(){
-        if (!entityClass.isAnnotationPresent(Audited.class)) {
-            return;
-        }
-        String username = applicationSettings.getProjectUserName();
-        final AuditReader reader = AuditReaderFactory.get(entityManager);
-        CustomRevisionEntity customRevisionEntity = reader.getCurrentRevision(CustomRevisionEntity.class, true);
-        customRevisionEntity.setUsername(username);
+    @Override
+    public void delete(ID id) {
+        super.delete(id);
+        this.storeUsernameOfCurrentCustomRevisionEntity();
     }
 
-    private void storeTagOfCurrentCustomRevisionEntity(String tag){
-        if (!entityClass.isAnnotationPresent(Audited.class)) {
-            return;
-        }
-        final AuditReader reader = AuditReaderFactory.get(entityManager);
-        CustomRevisionEntity customRevisionEntity = reader.getCurrentRevision(CustomRevisionEntity.class, true);
-        customRevisionEntity.setTag(tag);
+    @Override
+    public void delete(T entity) {
+        super.delete(entity);
+        this.storeUsernameOfCurrentCustomRevisionEntity();
+    }
+
+    @Override
+    public void delete(Iterable<? extends T> entities) {
+        super.delete(entities);
+        this.storeUsernameOfCurrentCustomRevisionEntity();
+    }
+
+    @Override
+    public void deleteAll() {
+        super.deleteAll();
+        this.storeUsernameOfCurrentCustomRevisionEntity();
+    }
+
+    @Override
+    public void deleteAllInBatch() {
+        super.deleteAllInBatch();
+        this.storeUsernameOfCurrentCustomRevisionEntity();
+    }
+
+    @Override
+    public void deleteInBatch(Iterable<T> entities) {
+        super.deleteInBatch(entities);
+        this.storeUsernameOfCurrentCustomRevisionEntity();
     }
 
     @Override
@@ -105,39 +122,22 @@ public class JpaRevisionEntityRepositoryImpl<T, ID extends Serializable> extends
         return newEntry;
     }
 
-    @Override
-    public void delete(ID id) {
-        super.delete(id);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
+    private void storeTagOfCurrentCustomRevisionEntity(String tag) {
+        if (!entityClass.isAnnotationPresent(Audited.class)) {
+            return;
+        }
+        final AuditReader reader = AuditReaderFactory.get(entityManager);
+        CustomRevisionEntity customRevisionEntity = reader.getCurrentRevision(CustomRevisionEntity.class, true);
+        customRevisionEntity.setTag(tag);
     }
 
-    @Override
-    public void delete(T entity) {
-        super.delete(entity);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
-    }
-
-    @Override
-    public void delete(Iterable<? extends T> entities) {
-        super.delete(entities);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
-    }
-
-    @Override
-    public void deleteAll() {
-        super.deleteAll();
-        this.storeUsernameOfCurrentCustomRevisionEntity();
-    }
-
-    @Override
-    public void deleteInBatch(Iterable<T> entities) {
-        super.deleteInBatch(entities);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
-    }
-
-    @Override
-    public void deleteAllInBatch() {
-        super.deleteAllInBatch();
-        this.storeUsernameOfCurrentCustomRevisionEntity();
+    private void storeUsernameOfCurrentCustomRevisionEntity() {
+        if (!entityClass.isAnnotationPresent(Audited.class)) {
+            return;
+        }
+        String username = applicationSettings.getProjectUserName();
+        final AuditReader reader = AuditReaderFactory.get(entityManager);
+        CustomRevisionEntity customRevisionEntity = reader.getCurrentRevision(CustomRevisionEntity.class, true);
+        customRevisionEntity.setUsername(username);
     }
 }

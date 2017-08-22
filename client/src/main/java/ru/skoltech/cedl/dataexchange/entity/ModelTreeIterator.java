@@ -34,16 +34,6 @@ public class ModelTreeIterator implements Iterator<ModelNode> {
         iterator = list.iterator();
     }
 
-    private void buildList(ModelNode modelNode) {
-        list.add(modelNode);
-        if (modelNode instanceof CompositeModelNode) {
-            CompositeModelNode<ModelNode> compositeModelNode = (CompositeModelNode<ModelNode>) modelNode;
-            for (ModelNode child : compositeModelNode.getSubNodes()) {
-                buildList(child);
-            }
-        }
-    }
-
     @Override
     public boolean hasNext() {
         return iterator.hasNext();
@@ -57,5 +47,15 @@ public class ModelTreeIterator implements Iterator<ModelNode> {
     @Override
     public void remove() {
         throw new UnsupportedOperationException();
+    }
+
+    private void buildList(ModelNode modelNode) {
+        list.add(modelNode);
+        if (modelNode instanceof CompositeModelNode) {
+            CompositeModelNode<ModelNode> compositeModelNode = (CompositeModelNode<ModelNode>) modelNode;
+            for (ModelNode child : compositeModelNode.getSubNodes()) {
+                buildList(child);
+            }
+        }
     }
 }

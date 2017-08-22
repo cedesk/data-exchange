@@ -21,7 +21,7 @@ import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityReposito
 
 /**
  * Data Access Operations with {@link ExternalModel} entity.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 

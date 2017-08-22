@@ -27,7 +27,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for about window.
- *
+ * <p>
  * Created by D.Knoll on 23.06.2015.
  */
 public class AboutController implements Initializable {

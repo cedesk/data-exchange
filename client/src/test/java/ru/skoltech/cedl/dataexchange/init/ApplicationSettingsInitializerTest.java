@@ -36,10 +36,10 @@ public class ApplicationSettingsInitializerTest {
     private static final String CEDESK_APP_DIR_PROPERTY = "cedesk.app.dir";
     private static final String CEDESK_APP_FILE_PROPERTY = "cedesk.app.file";
 
-    private static final String TEST_CEDESK_APP_DIR =  ".test-cedesk";
+    private static final String TEST_CEDESK_APP_DIR = ".test-cedesk";
     private static final String TEST_CEDESK_APP_FILE = "test-application.settings";
 
-    private static final Properties cedeskProperties  = ApplicationSettingsInitializer.cedeskProperties();
+    private static final Properties cedeskProperties = ApplicationSettingsInitializer.cedeskProperties();
 
     private File cedeskAppDir;
     private File cedeskAppFile;
@@ -47,6 +47,49 @@ public class ApplicationSettingsInitializerTest {
     private File testCedeskAppDir;
     private File testCedeskAppFile;
 
+    static File createCedeskAppDir() throws IOException {
+        String cedeskAppDirProperty = cedeskProperties.getProperty(CEDESK_APP_DIR_PROPERTY);
+        File cedeskAppDir = new File(System.getProperty("user.home"), cedeskAppDirProperty);
+        if (cedeskAppDir.exists()) {
+            return cedeskAppDir;
+        }
+        boolean dirCreated = cedeskAppDir.mkdir();
+        if (!dirCreated) {
+            throw new IOException("Cannot create application settings dir: " + cedeskAppDir.getAbsolutePath());
+        }
+        return cedeskAppDir;
+    }
+
+    static File createCedeskAppFile(File cedeskAppDir) throws IOException {
+        String cedeskAppFileProperty = cedeskProperties.getProperty(CEDESK_APP_FILE_PROPERTY);
+        File cedeskAppFile = new File(cedeskAppDir, cedeskAppFileProperty);
+        String defaultAppFilePath = ClassLoader.getSystemResource("application.settings").getFile();
+        File defaultAppFile = new File(defaultAppFilePath);
+
+        if (cedeskAppFile.exists()) {
+            boolean deleted = cedeskAppFile.delete();
+            if (!deleted) {
+                throw new IOException("Cannot delete existed application settings file: " + cedeskAppFile.getAbsolutePath());
+            }
+        }
+        Files.copy(defaultAppFile.toPath(), cedeskAppFile.toPath());
+
+        return cedeskAppFile;
+    }
+
+    static void deleteApplicationSettings(File cedeskAppDir, File cedeskAppFile) {
+        boolean fileDeleted = cedeskAppFile.delete();
+        if (!fileDeleted) {
+            System.out.println("Cannot delete settings file: " + cedeskAppFile.getAbsolutePath());
+        }
+        System.out.println("Application settings file has been deleted: " + cedeskAppFile.getAbsolutePath());
+
+        boolean dirDeleted = cedeskAppDir.delete();
+        if (!dirDeleted) {
+            System.out.println("Cannot delete settings directory: " + cedeskAppDir.getAbsolutePath());
+        }
+        System.out.println("Application settings directory has been deleted: " + cedeskAppDir.getAbsolutePath());
+    }
 
     @Before
     public void prepare() throws Exception {
@@ -67,34 +110,22 @@ public class ApplicationSettingsInitializerTest {
         deleteApplicationSettings(testCedeskAppDir, testCedeskAppFile);
     }
 
-    static File createCedeskAppDir() throws IOException {
-        String cedeskAppDirProperty = cedeskProperties.getProperty(CEDESK_APP_DIR_PROPERTY);
-        File cedeskAppDir = new File(System.getProperty("user.home"), cedeskAppDirProperty);
-        if (cedeskAppDir.exists()) {
-            return cedeskAppDir;
-        }
-        boolean dirCreated = cedeskAppDir.mkdir();
-        if (!dirCreated) {
-            throw new IOException("Cannot create application settings dir: " + cedeskAppDir.getAbsolutePath());
-        }
-        return cedeskAppDir;
+    @After
+    public void shutdown() {
+        System.clearProperty(CEDESK_APP_DIR_PROPERTY);
+        System.clearProperty(CEDESK_APP_FILE_PROPERTY);
+
+        deleteApplicationSettings(cedeskAppDir, cedeskAppFile);
+        deleteApplicationSettings(testCedeskAppDir, testCedeskAppFile);
     }
 
-    static File createCedeskAppFile(File cedeskAppDir) throws IOException {
-        String cedeskAppFileProperty = cedeskProperties.getProperty(CEDESK_APP_FILE_PROPERTY);
-        File cedeskAppFile =  new File(cedeskAppDir, cedeskAppFileProperty);
-        String defaultAppFilePath = ClassLoader.getSystemResource("application.settings").getFile();
-        File defaultAppFile = new File(defaultAppFilePath);
+    @Test
+    public void testCedeskProperties() {
+        Properties cedeskProperties = ApplicationSettingsInitializer.cedeskProperties();
 
-        if(cedeskAppFile.exists()) {
-            boolean deleted = cedeskAppFile.delete();
-            if (!deleted) {
-                throw new IOException("Cannot delete existed application settings file: " + cedeskAppFile.getAbsolutePath());
-            }
-        }
-        Files.copy(defaultAppFile.toPath(), cedeskAppFile.toPath());
-
-        return cedeskAppFile;
+        assertNotNull(cedeskProperties);
+        assertFalse(cedeskProperties.isEmpty());
+        assertTrue(cedeskProperties.containsKey("repository.jdbc.url.pattern"));
     }
 
     @Test
@@ -123,38 +154,6 @@ public class ApplicationSettingsInitializerTest {
         Properties testApplicationSettings = ApplicationSettingsInitializer.applicationSettings(testCedeskAppFile);
         testApplicationSettings.forEach((key, value) ->
                 assertThat(cedeskProperties.get(DEFAULT_PROPERTY_PERIX + key), is(value)));
-    }
-
-    @Test
-    public void testCedeskProperties() {
-        Properties cedeskProperties = ApplicationSettingsInitializer.cedeskProperties();
-
-        assertNotNull(cedeskProperties);
-        assertFalse(cedeskProperties.isEmpty());
-        assertTrue(cedeskProperties.containsKey("repository.jdbc.url.pattern"));
-    }
-
-    @After
-    public void shutdown() {
-        System.clearProperty(CEDESK_APP_DIR_PROPERTY);
-        System.clearProperty(CEDESK_APP_FILE_PROPERTY);
-
-        deleteApplicationSettings(cedeskAppDir, cedeskAppFile);
-        deleteApplicationSettings(testCedeskAppDir, testCedeskAppFile);
-    }
-
-    static void deleteApplicationSettings(File cedeskAppDir, File cedeskAppFile) {
-        boolean fileDeleted = cedeskAppFile.delete();
-        if (!fileDeleted) {
-            System.out.println("Cannot delete settings file: " + cedeskAppFile.getAbsolutePath());
-        }
-        System.out.println("Application settings file has been deleted: " + cedeskAppFile.getAbsolutePath());
-
-        boolean dirDeleted = cedeskAppDir.delete();
-        if (!dirDeleted) {
-            System.out.println("Cannot delete settings directory: " + cedeskAppDir.getAbsolutePath());
-        }
-        System.out.println("Application settings directory has been deleted: " + cedeskAppDir.getAbsolutePath());
     }
 
 }

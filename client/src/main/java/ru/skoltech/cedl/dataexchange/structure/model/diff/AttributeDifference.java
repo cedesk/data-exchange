@@ -30,6 +30,11 @@ public class AttributeDifference {
         this.value2 = String.valueOf(value2);
     }
 
+    public String asText() {
+        return "[" + attributeName + ": v1='" + value1 + '\'' +
+                ", v2='" + value2 + "']";
+    }
+
     @Override
     public String toString() {
         return "AttributeDifference{" +
@@ -37,10 +42,5 @@ public class AttributeDifference {
                 ", value1='" + value1 + '\'' +
                 ", value2='" + value2 + '\'' +
                 '}';
-    }
-
-    public String asText() {
-        return "[" + attributeName + ": v1='" + value1 + '\'' +
-                ", v2='" + value2 + "']";
     }
 }

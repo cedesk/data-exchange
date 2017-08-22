@@ -24,7 +24,7 @@ import java.net.URL;
 
 /**
  * Access to <b>jsoup</b> parser library.
- *
+ * <p>
  * Created by Nikolay Groshkov on 19-Jul-17.
  */
 public interface JsoupService {

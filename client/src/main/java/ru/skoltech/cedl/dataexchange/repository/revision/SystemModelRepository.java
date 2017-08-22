@@ -21,7 +21,7 @@ import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityReposito
 
 /**
  * Data Access Operations with {@link SystemModel} entity.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
 public interface SystemModelRepository extends JpaRevisionEntityRepository<SystemModel, Long> {

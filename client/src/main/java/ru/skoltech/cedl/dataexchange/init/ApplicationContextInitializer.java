@@ -17,48 +17,21 @@
 package ru.skoltech.cedl.dataexchange.init;
 
 import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Singleton which holds application context and expose it through application.
- *
+ * <p>
  * Created by Nikolay Groshkov on 03-Jul-17.
  */
 public class ApplicationContextInitializer {
 
-    private static Logger logger = Logger.getLogger(ApplicationContextInitializer.class);
     public static final String BASE_CONTEXT_LOCATION = "/context-base.xml";
     public static final String CONTEXT_LOCATION = "/context-controller.xml";
-
+    private static Logger logger = Logger.getLogger(ApplicationContextInitializer.class);
     private static String location;
     private static ApplicationContextInitializer instance;
-
-    /**
-     * Provide a special path to the application context.
-     * For testing purposes.
-     *
-     * @param configLocation location to application context;
-     */
-    public static void initialize(String configLocation) {
-        if (location != null) {
-            logger.warn("Application context has already been initialized.");
-            return;
-        }
-        location = configLocation;
-    }
-
-    public static ApplicationContextInitializer getInstance() {
-        if (instance == null) {
-            if (location == null) {
-                location = CONTEXT_LOCATION;
-            }
-            instance = new ApplicationContextInitializer(location);
-        }
-        return instance;
-    }
-
     private final ConfigurableApplicationContext context;
 
     private ApplicationContextInitializer(String configLocation) {
@@ -72,5 +45,29 @@ public class ApplicationContextInitializer {
      */
     public ConfigurableApplicationContext getContext() {
         return context;
+    }
+
+    public static ApplicationContextInitializer getInstance() {
+        if (instance == null) {
+            if (location == null) {
+                location = CONTEXT_LOCATION;
+            }
+            instance = new ApplicationContextInitializer(location);
+        }
+        return instance;
+    }
+
+    /**
+     * Provide a special path to the application context.
+     * For testing purposes.
+     *
+     * @param configLocation location to application context;
+     */
+    public static void initialize(String configLocation) {
+        if (location != null) {
+            logger.warn("Application context has already been initialized.");
+            return;
+        }
+        location = configLocation;
     }
 }

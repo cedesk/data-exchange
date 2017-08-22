@@ -20,7 +20,7 @@ import java.net.URL;
 
 /**
  * URL constants define paths to view <i>*.fxml</i> files.
- *
+ * <p>
  * Created by D.Knoll on 20.03.2015.
  */
 public class Views {

@@ -73,6 +73,22 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         this.name = name;
     }
 
+    @Transient
+    public Map<String, ExternalModel> getExternalModelMap() {
+        return this.getExternalModels().stream().collect(Collectors.toMap(ExternalModel::getName, o -> o));
+    }
+
+    //TODO: fix EAGER
+    @OneToMany(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
+    @Fetch(FetchMode.SELECT)
+    public List<ExternalModel> getExternalModels() {
+        return externalModels;
+    }
+
+    public void setExternalModels(List<ExternalModel> externalModels) {
+        this.externalModels = externalModels;
+    }
+
     @Override
     @Id
     @GeneratedValue
@@ -82,6 +98,45 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    @Override
+    public Long getLastModification() {
+        return lastModification;
+    }
+
+    @Override
+    public void setLastModification(Long timestamp) {
+        this.lastModification = timestamp;
+    }
+
+    @Column(nullable = false)
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Transient
+    public String getNodePath() {
+        return isRootNode() ? name : parent.getNodePath() + NODE_SEPARATOR + name;
+    }
+
+    @Transient
+    public Map<String, ParameterModel> getParameterMap() {
+        return this.getParameters().stream().collect(Collectors.toMap(ParameterModel::getName, o -> o));
+    }
+
+    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
+    @Fetch(FetchMode.SELECT)
+    public List<ParameterModel> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(List<ParameterModel> parameters) {
+        this.parameters = parameters;
     }
 
     @Transient
@@ -101,54 +156,9 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         this.uuid = uuid;
     }
 
-    @Column(nullable = false)
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @OneToMany(targetEntity = ParameterModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
-    @Fetch(FetchMode.SELECT)
-    public List<ParameterModel> getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(List<ParameterModel> parameters) {
-        this.parameters = parameters;
-    }
-
-    //TODO: fix EAGER
-    @OneToMany(targetEntity = ExternalModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "parent", orphanRemoval = true)
-    @Fetch(FetchMode.SELECT)
-    public List<ExternalModel> getExternalModels() {
-        return externalModels;
-    }
-
-    public void setExternalModels(List<ExternalModel> externalModels) {
-        this.externalModels = externalModels;
-    }
-
-    @Override
-    public Long getLastModification() {
-        return lastModification;
-    }
-
-    @Override
-    public void setLastModification(Long timestamp) {
-        this.lastModification = timestamp;
-    }
-
-    //-------
     @Transient
-    public SystemModel findRoot() {
-        if (parent == null) {
-            return (SystemModel) this;
-        } else {
-            return parent.findRoot();
-        }
+    public boolean isLeafNode() {
+        return true;
     }
 
     @Transient
@@ -156,14 +166,9 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         return parent == null;
     }
 
-    @Transient
-    public boolean isLeafNode() {
-        return true;
-    }
-
-    @Transient
-    public String getNodePath() {
-        return isRootNode() ? name : parent.getNodePath() + NODE_SEPARATOR + name;
+    public void addExternalModel(ExternalModel externalModel) {
+        externalModels.add(externalModel);
+        externalModel.setParent(this);
     }
 
     public void addParameter(ParameterModel parameter) {
@@ -171,33 +176,16 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         parameter.setParent(this);
     }
 
-    public boolean hasParameter(String parameterName) {
-        return getParameterMap().containsKey(parameterName);
+    /**
+     * For natural ordering by name.
+     *
+     * @param other
+     * @return <code>name.compareTo(other.name)</code>
+     */
+    @Override
+    public int compareTo(ModelNode other) {
+        return name.compareTo(other.name);
     }
-
-    public void addExternalModel(ExternalModel externalModel) {
-        externalModels.add(externalModel);
-        externalModel.setParent(this);
-    }
-
-    public Iterator<ExternalModel> externalModelsIterator() {
-        return new ExternalModelTreeIterator(this);
-    }
-
-    public Iterator<ParameterModel> parametersTreeIterator() {
-        return new ParameterTreeIterator(this);
-    }
-
-    @Transient
-    public Map<String, ParameterModel> getParameterMap() {
-        return this.getParameters().stream().collect(Collectors.toMap(ParameterModel::getName, o -> o));
-    }
-
-    @Transient
-    public Map<String, ExternalModel> getExternalModelMap() {
-        return this.getExternalModels().stream().collect(Collectors.toMap(ExternalModel::getName, o -> o));
-    }
-    //-------------
 
     @Override
     public boolean equals(Object obj) {
@@ -215,43 +203,10 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         return equals(otherNode);
     }
 
-    private boolean equalParameters(ModelNode otherNode) {
-        if (this.parameters.size() != otherNode.parameters.size())
-            return false;
-        Map<String, ParameterModel> otherParameterMap = otherNode.getParameters().stream().collect(
-                Collectors.toMap(ParameterModel::getUuid, Function.identity())
-        );
-        for (ParameterModel parameterModel : parameters) {
-            String parameterUuid = parameterModel.getUuid();
-            if (otherParameterMap.containsKey(parameterUuid)) {
-                if (!parameterModel.equals(otherParameterMap.get(parameterUuid))) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-        return true;
+    public Iterator<ExternalModel> externalModelsIterator() {
+        return new ExternalModelTreeIterator(this);
     }
-
-    private boolean equalExternalModels(ModelNode otherNode) {
-        if (this.externalModels.size() != otherNode.externalModels.size())
-            return false;
-        Map<String, ExternalModel> otherExternalModelMap = otherNode.getExternalModels().stream().collect(
-                Collectors.toMap(ExternalModel::getUuid, Function.identity())
-        );
-        for (ExternalModel externalModel : externalModels) {
-            String externalModelUuid = externalModel.getUuid();
-            if (otherExternalModelMap.containsKey(externalModelUuid)) {
-                if (!externalModel.equals(otherExternalModelMap.get(externalModelUuid))) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
+    //-------------
 
     public Long findLatestModificationCurrentNode() {
         Long latest = Utils.INVALID_TIME;
@@ -274,6 +229,24 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         return latest;
     }
 
+    //-------
+    @Transient
+    public SystemModel findRoot() {
+        if (parent == null) {
+            return (SystemModel) this;
+        } else {
+            return parent.findRoot();
+        }
+    }
+
+    public boolean hasParameter(String parameterName) {
+        return getParameterMap().containsKey(parameterName);
+    }
+
+    public Iterator<ParameterModel> parametersTreeIterator() {
+        return new ParameterTreeIterator(this);
+    }
+
     @Override
     public String toString() {
         return "ModelNode{" +
@@ -284,14 +257,41 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
                 '}';
     }
 
-    /**
-     * For natural ordering by name.
-     *
-     * @param other
-     * @return <code>name.compareTo(other.name)</code>
-     */
-    @Override
-    public int compareTo(ModelNode other) {
-        return name.compareTo(other.name);
+    private boolean equalExternalModels(ModelNode otherNode) {
+        if (this.externalModels.size() != otherNode.externalModels.size())
+            return false;
+        Map<String, ExternalModel> otherExternalModelMap = otherNode.getExternalModels().stream().collect(
+                Collectors.toMap(ExternalModel::getUuid, Function.identity())
+        );
+        for (ExternalModel externalModel : externalModels) {
+            String externalModelUuid = externalModel.getUuid();
+            if (otherExternalModelMap.containsKey(externalModelUuid)) {
+                if (!externalModel.equals(otherExternalModelMap.get(externalModelUuid))) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean equalParameters(ModelNode otherNode) {
+        if (this.parameters.size() != otherNode.parameters.size())
+            return false;
+        Map<String, ParameterModel> otherParameterMap = otherNode.getParameters().stream().collect(
+                Collectors.toMap(ParameterModel::getUuid, Function.identity())
+        );
+        for (ParameterModel parameterModel : parameters) {
+            String parameterUuid = parameterModel.getUuid();
+            if (otherParameterMap.containsKey(parameterUuid)) {
+                if (!parameterModel.equals(otherParameterMap.get(parameterUuid))) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 }

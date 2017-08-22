@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for user's roles management.
- *
+ * <p>
  * Created by d.knoll on 10.06.2015.
  */
 public class UserRoleManagementController implements Initializable, Closeable {
@@ -108,12 +108,98 @@ public class UserRoleManagementController implements Initializable, Closeable {
     private Project project;
     private UserRoleManagementService userRoleManagementService;
 
+    public Window getAppWindow() {
+        return subsystemsPane.getScene().getWindow();
+    }
+
+    public Discipline getSelectedDiscipline() {
+        return (Discipline) disciplinesTable.getSelectionModel().getSelectedItem();
+    }
+
+    public User getSelectedUser() {
+        return (User) userTable.getSelectionModel().getSelectedItem();
+    }
+
     public void setProject(Project project) {
         this.project = project;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
+    }
+
+    public void addDiscipline(ActionEvent actionEvent) {
+        Optional<String> disciplineNameChoice = Dialogues.inputDisciplineName("new-discipline");
+        if (disciplineNameChoice.isPresent()) {
+            String disciplineName = disciplineNameChoice.get();
+
+            if (!Identifiers.validateNodeName(disciplineName)) {
+                Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
+                return;
+            }
+            Map<String, Discipline> disciplineMap = userRoleManagementService.disciplineMap(project.getUserRoleManagement());
+            if (disciplineMap.containsKey(disciplineName)) {
+                Dialogues.showError("Duplicate discipline name", "There is already a discipline named like that!");
+            } else {
+                Discipline discipline = new Discipline(disciplineName, project.getUserRoleManagement());
+                project.getUserRoleManagement().getDisciplines().add(discipline);
+                changed.setValue(true);
+                StatusLogger.getInstance().log("added discipline: " + discipline.getName());
+            }
+        }
+        updateDisciplineTable();
+    }
+
+    public void addDisciplineSubsystem(ActionEvent actionEvent) {
+        SubSystemModel subsystem = (SubSystemModel) subsystemsAvailableList.getSelectionModel().getSelectedItem();
+        Discipline discipline = getSelectedDiscipline();
+        userRoleManagementService.addDisciplineSubsystem(project.getUserRoleManagement(), discipline, subsystem);
+        updateSubsystems(discipline);
+        changed.setValue(true);
+    }
+
+    public void addUserRole(ActionEvent actionEvent) {
+        User user = getSelectedUser();
+        Discipline discipline = getSelectedDiscipline();
+        Objects.requireNonNull(user, "user must not be null");
+        Objects.requireNonNull(user, "discipline must not be null");
+        boolean duplicate = userRoleManagementService.addUserDiscipline(project.getUserRoleManagement(), user, discipline);
+        if (duplicate) {
+            StatusLogger.getInstance().log("user '" + user.getUserName() + "' can not be added twice to a discipline '" + discipline.getName() + "'");
+        }
+        updateUserDisciplines(discipline);
+        changed.setValue(true);
+    }
+
+    @Override
+    public void close(Stage stage, WindowEvent windowEvent) {
+        if (!changed.getValue()) {
+            return;
+        }
+        project.markStudyModified();
+    }
+
+    public void deleteDiscipline(ActionEvent actionEvent) {
+        Discipline selectedDiscipline = getSelectedDiscipline();
+        Objects.requireNonNull(selectedDiscipline, "no discipline in table view");
+        userRoleManagementService.removeDiscipline(project.getUserRoleManagement(), selectedDiscipline);
+        changed.setValue(true);
+        StatusLogger.getInstance().log("removed discipline: " + selectedDiscipline.getName());
+        updateDisciplineTable();
+    }
+
+    public void deleteDisciplineSubsystem(ActionEvent actionEvent) {
+        DisciplineSubSystem disciplineSubsystem = (DisciplineSubSystem) subsystemsAssignedList.getSelectionModel().getSelectedItem();
+        project.getUserRoleManagement().getDisciplineSubSystems().remove(disciplineSubsystem);
+        updateSubsystems(getSelectedDiscipline());
+        changed.setValue(true);
+    }
+
+    public void deleteUserRole(ActionEvent actionEvent) {
+        UserDiscipline selectedUserDiscipline = (UserDiscipline) userRolesAssignedList.getSelectionModel().getSelectedItem();
+        project.getUserRoleManagement().getUserDisciplines().remove(selectedUserDiscipline);
+        updateUserDisciplines(getSelectedDiscipline());
+        changed.setValue(true);
     }
 
     @Override
@@ -170,19 +256,6 @@ public class UserRoleManagementController implements Initializable, Closeable {
         updateView();
     }
 
-    @Override
-    public void close(Stage stage, WindowEvent windowEvent) {
-        if (!changed.getValue()) {
-            return;
-        }
-        project.markStudyModified();
-    }
-
-    private void updateView() {
-        updateDisciplineTable();
-        updateUsers();
-    }
-
     private void updateDisciplineTable() {
         if (project.getUserRoleManagement() != null) {
             List<Discipline> disciplines = project.getUserRoleManagement().getDisciplines();
@@ -236,82 +309,9 @@ public class UserRoleManagementController implements Initializable, Closeable {
         }
     }
 
-    public void addDiscipline(ActionEvent actionEvent) {
-        Optional<String> disciplineNameChoice = Dialogues.inputDisciplineName("new-discipline");
-        if (disciplineNameChoice.isPresent()) {
-            String disciplineName = disciplineNameChoice.get();
-
-            if (!Identifiers.validateNodeName(disciplineName)) {
-                Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
-                return;
-            }
-            Map<String, Discipline> disciplineMap = userRoleManagementService.disciplineMap(project.getUserRoleManagement());
-            if (disciplineMap.containsKey(disciplineName)) {
-                Dialogues.showError("Duplicate discipline name", "There is already a discipline named like that!");
-            } else {
-                Discipline discipline = new Discipline(disciplineName, project.getUserRoleManagement());
-                project.getUserRoleManagement().getDisciplines().add(discipline);
-                changed.setValue(true);
-                StatusLogger.getInstance().log("added discipline: " + discipline.getName());
-            }
-        }
+    private void updateView() {
         updateDisciplineTable();
-    }
-
-    public void deleteDiscipline(ActionEvent actionEvent) {
-        Discipline selectedDiscipline = getSelectedDiscipline();
-        Objects.requireNonNull(selectedDiscipline, "no discipline in table view");
-        userRoleManagementService.removeDiscipline(project.getUserRoleManagement(), selectedDiscipline);
-        changed.setValue(true);
-        StatusLogger.getInstance().log("removed discipline: " + selectedDiscipline.getName());
-        updateDisciplineTable();
-    }
-
-    public void addDisciplineSubsystem(ActionEvent actionEvent) {
-        SubSystemModel subsystem = (SubSystemModel) subsystemsAvailableList.getSelectionModel().getSelectedItem();
-        Discipline discipline = getSelectedDiscipline();
-        userRoleManagementService.addDisciplineSubsystem(project.getUserRoleManagement(), discipline, subsystem);
-        updateSubsystems(discipline);
-        changed.setValue(true);
-    }
-
-    public void deleteDisciplineSubsystem(ActionEvent actionEvent) {
-        DisciplineSubSystem disciplineSubsystem = (DisciplineSubSystem) subsystemsAssignedList.getSelectionModel().getSelectedItem();
-        project.getUserRoleManagement().getDisciplineSubSystems().remove(disciplineSubsystem);
-        updateSubsystems(getSelectedDiscipline());
-        changed.setValue(true);
-    }
-
-    public Discipline getSelectedDiscipline() {
-        return (Discipline) disciplinesTable.getSelectionModel().getSelectedItem();
-    }
-
-    public User getSelectedUser() {
-        return (User) userTable.getSelectionModel().getSelectedItem();
-    }
-
-    public void addUserRole(ActionEvent actionEvent) {
-        User user = getSelectedUser();
-        Discipline discipline = getSelectedDiscipline();
-        Objects.requireNonNull(user, "user must not be null");
-        Objects.requireNonNull(user, "discipline must not be null");
-        boolean duplicate = userRoleManagementService.addUserDiscipline(project.getUserRoleManagement(), user, discipline);
-        if (duplicate) {
-            StatusLogger.getInstance().log("user '" + user.getUserName() + "' can not be added twice to a discipline '" + discipline.getName() + "'");
-        }
-        updateUserDisciplines(discipline);
-        changed.setValue(true);
-    }
-
-    public void deleteUserRole(ActionEvent actionEvent) {
-        UserDiscipline selectedUserDiscipline = (UserDiscipline) userRolesAssignedList.getSelectionModel().getSelectedItem();
-        project.getUserRoleManagement().getUserDisciplines().remove(selectedUserDiscipline);
-        updateUserDisciplines(getSelectedDiscipline());
-        changed.setValue(true);
-    }
-
-    public Window getAppWindow() {
-        return subsystemsPane.getScene().getWindow();
+        updateUsers();
     }
 
     private class SubsystemsViewCellFactory implements Callback<ListView<SubSystemModel>, ListCell<SubSystemModel>> {

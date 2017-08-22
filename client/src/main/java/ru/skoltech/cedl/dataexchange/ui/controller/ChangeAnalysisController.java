@@ -29,10 +29,10 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.analysis.ParameterChangeAnalysis;
 import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
-import ru.skoltech.cedl.dataexchange.ui.control.ChangeAnalysisView;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.repository.envers.ParameterModelRevisionRepository;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.ui.control.ChangeAnalysisView;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -50,17 +50,16 @@ public class ChangeAnalysisController implements Initializable {
 
     private Project project;
     private ParameterModelRevisionRepository parameterModelRepository;
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
+    @FXML
+    private ChangeAnalysisView changeAnalysisView;
 
     public void setParameterModelRepository(ParameterModelRevisionRepository parameterModelRepository) {
         this.parameterModelRepository = parameterModelRepository;
     }
 
-    @FXML
-    private ChangeAnalysisView changeAnalysisView;
+    public void setProject(Project project) {
+        this.project = project;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {

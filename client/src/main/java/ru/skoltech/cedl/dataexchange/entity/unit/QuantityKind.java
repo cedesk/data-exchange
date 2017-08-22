@@ -40,6 +40,14 @@ public class QuantityKind {
     @XmlAttribute
     private String description;
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Id
     @GeneratedValue
     public long getId() {
@@ -64,14 +72,6 @@ public class QuantityKind {
 
     public void setSymbol(String symbol) {
         this.symbol = symbol;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String asText() {

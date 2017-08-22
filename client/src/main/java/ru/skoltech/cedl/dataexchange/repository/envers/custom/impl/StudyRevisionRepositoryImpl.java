@@ -27,7 +27,7 @@ import javax.persistence.PersistenceContext;
 
 /**
  * Implementation of {@link StudyRevisionRepositoryCustom}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 17-Aug-17.
  */
 public class StudyRevisionRepositoryImpl implements StudyRevisionRepositoryCustom {

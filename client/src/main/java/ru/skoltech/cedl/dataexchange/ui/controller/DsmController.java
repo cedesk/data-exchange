@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for display Dependency Structure Matrix.
- *
+ * <p>
  * Created by D.Knoll on 02.11.2015.
  */
 public class DsmController implements Initializable {
@@ -71,13 +71,6 @@ public class DsmController implements Initializable {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        spreadsheetView.setRowHeaderWidth(60);
-        Platform.runLater(() -> refreshView(null));
-    }
-
     public void generateCode(ActionEvent actionEvent) {
         final SystemModel systemModel = project.getSystemModel();
 
@@ -85,6 +78,13 @@ public class DsmController implements Initializable {
         boolean weighted = weightedDsmCheckbox.isSelected();
         String code = dsm.getMatlabCode(weighted);
         guiService.copyTextToClipboard(code);
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        spreadsheetView.setRowHeaderWidth(60);
+        Platform.runLater(() -> refreshView(null));
     }
 
     public void refreshView(ActionEvent actionEvent) {

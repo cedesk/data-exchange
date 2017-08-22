@@ -36,6 +36,18 @@ public abstract class ContextAwareApplication extends Application {
     protected ApplicationSettings applicationSettings;
     protected Project project;
 
+    protected static void contextInit() {
+        ApplicationSettingsInitializer.initialize();
+        PropertyConfigurator.configure(TradespaceExplorerApplication.class.getResource("/log4j/log4j.properties"));
+
+        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
+        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
+        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
+        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
+                "/" + applicationSettings.getCedeskAppFile());
+
+    }
+
     @Override
     public void stop() throws Exception {
         logger.info("Stopping CEDESK " + getClass().getSimpleName() + "...");
@@ -49,11 +61,22 @@ public abstract class ContextAwareApplication extends Application {
         logger.info("CEDESK stopped.");
     }
 
+    protected void loadContext() {
+        context = ApplicationContextInitializer.getInstance().getContext();
+        applicationSettings = context.getBean(ApplicationSettings.class);
+
+        logger.info("----------------------------------------------------------------------------------------------------");
+        logger.info("Opening CEDESK " + getClass().getSimpleName() + "...");
+        String appVersion = applicationSettings.getApplicationVersion();
+        String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
+        logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
+    }
+
     protected void loadLastProject() {
         project = context.getBean(Project.class);
 
-       // boolean validRepository = project.checkRepositoryScheme();
-      //  project.connectRepositor
+        // boolean validRepository = project.checkRepositoryScheme();
+        //  project.connectRepositor
 
         boolean success = project.loadUnitManagement();
         if (!success) {
@@ -73,29 +96,6 @@ public abstract class ContextAwareApplication extends Application {
         if (!success) {
             throw new RuntimeException("loading study failed!");
         }
-
-    }
-
-    protected void loadContext() {
-        context = ApplicationContextInitializer.getInstance().getContext();
-        applicationSettings = context.getBean(ApplicationSettings.class);
-
-        logger.info("----------------------------------------------------------------------------------------------------");
-        logger.info("Opening CEDESK " + getClass().getSimpleName() + "...");
-        String appVersion = applicationSettings.getApplicationVersion();
-        String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
-        logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
-    }
-
-    protected static void contextInit() {
-        ApplicationSettingsInitializer.initialize();
-        PropertyConfigurator.configure(TradespaceExplorerApplication.class.getResource("/log4j/log4j.properties"));
-
-        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
-        ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
-        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
-                "/" + applicationSettings.getCedeskAppFile());
 
     }
 }

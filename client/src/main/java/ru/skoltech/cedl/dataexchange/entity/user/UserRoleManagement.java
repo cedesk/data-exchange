@@ -59,12 +59,12 @@ public class UserRoleManagement {
     public UserRoleManagement() {
     }
 
-    public long getId() {
-        return id;
+    public List<DisciplineSubSystem> getDisciplineSubSystems() {
+        return disciplineSubSystems;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setDisciplineSubSystems(List<DisciplineSubSystem> disciplineSubSystems) {
+        this.disciplineSubSystems = disciplineSubSystems;
     }
 
     public List<Discipline> getDisciplines() {
@@ -75,20 +75,20 @@ public class UserRoleManagement {
         this.disciplines = disciplines;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public List<UserDiscipline> getUserDisciplines() {
         return userDisciplines;
     }
 
     public void setUserDisciplines(List<UserDiscipline> userDisciplines) {
         this.userDisciplines = userDisciplines;
-    }
-
-    public List<DisciplineSubSystem> getDisciplineSubSystems() {
-        return disciplineSubSystems;
-    }
-
-    public void setDisciplineSubSystems(List<DisciplineSubSystem> disciplineSubSystems) {
-        this.disciplineSubSystems = disciplineSubSystems;
     }
 
     @Override

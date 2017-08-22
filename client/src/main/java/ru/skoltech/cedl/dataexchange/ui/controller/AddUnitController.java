@@ -36,7 +36,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for unit addition window.
- *
+ * <p>
  * Created by Nikolay Groshkov on 09-Jun-17.
  */
 public class AddUnitController implements Initializable, Displayable, Applicable {
@@ -56,8 +56,41 @@ public class AddUnitController implements Initializable, Displayable, Applicable
     private Stage ownerStage;
     private EventHandler<Event> applyEventHandler;
 
+    @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void addUnit() {
+        String name = nameText.getText();
+        String symbol = symbolText.getText();
+        String description = descriptionText.getText();
+        QuantityKind quantityKind = quantityKindComboBox.getSelectionModel().getSelectedItem();
+
+        Unit unit = new Unit();
+        unit.setName(name);
+        unit.setSymbol(symbol);
+        unit.setDescription(description);
+        unit.setQuantityKind(quantityKind);
+
+        if (applyEventHandler != null) {
+            Event event = new Event(unit, null, null);
+            applyEventHandler.handle(event);
+        }
+        this.close();
+    }
+
+    public void close() {
+        ownerStage.close();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
     }
 
     @Override
@@ -89,42 +122,9 @@ public class AddUnitController implements Initializable, Displayable, Applicable
         this.updateView();
     }
 
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    @Override
-    public void setOnApply(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
-    }
-
     private void updateView() {
         List<QuantityKind> quantityKindList = project.getUnitManagement().getQuantityKinds();
         quantityKindComboBox.setItems(FXCollections.observableArrayList(quantityKindList));
-    }
-
-    public void addUnit() {
-        String name = nameText.getText();
-        String symbol = symbolText.getText();
-        String description = descriptionText.getText();
-        QuantityKind quantityKind = quantityKindComboBox.getSelectionModel().getSelectedItem();
-
-        Unit unit = new Unit();
-        unit.setName(name);
-        unit.setSymbol(symbol);
-        unit.setDescription(description);
-        unit.setQuantityKind(quantityKind);
-
-        if (applyEventHandler != null) {
-            Event event = new Event(unit, null, null);
-            applyEventHandler.handle(event);
-        }
-        this.close();
-    }
-
-    public void close() {
-        ownerStage.close();
     }
 
 }

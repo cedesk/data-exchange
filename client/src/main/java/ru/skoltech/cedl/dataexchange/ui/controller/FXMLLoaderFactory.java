@@ -25,7 +25,7 @@ import java.net.URL;
 
 /**
  * Factory for creation {@link FXMLLoader}s which are based on context controllers.
- *
+ * <p>
  * Created by Nikolay Groshkov on 19-Jul-17.
  */
 public class FXMLLoaderFactory implements ApplicationContextAware {
@@ -59,7 +59,7 @@ public class FXMLLoaderFactory implements ApplicationContextAware {
      * Passed arguments use for instantiating.
      *
      * @param location path to the <i>*.fxml</i> resource
-     * @param args arguments for controller instantiating
+     * @param args     arguments for controller instantiating
      * @return FXMLLoader instance
      */
     public FXMLLoader createFXMLLoader(URL location, Object... args) {

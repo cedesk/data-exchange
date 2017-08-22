@@ -41,7 +41,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for figures of merit editor.
- *
+ * <p>
  * Created by D.Knoll on 28.06.2017.
  */
 public class FiguresOfMeritEditorController implements Initializable {
@@ -57,14 +57,6 @@ public class FiguresOfMeritEditorController implements Initializable {
     public FiguresOfMeritEditorController() {
     }
 
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-    }
-
     public MultitemporalTradespace getTradespace() {
         return tradespace;
     }
@@ -72,6 +64,10 @@ public class FiguresOfMeritEditorController implements Initializable {
     public void setTradespace(MultitemporalTradespace tradespace) {
         this.tradespace = tradespace;
         updateView();
+    }
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     public void addFigureOfMerit() {
@@ -89,19 +85,12 @@ public class FiguresOfMeritEditorController implements Initializable {
         }
     }
 
-    public void reloadValues() {
-        // update FOMvalues from Model
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
     }
 
-    private void renderFigureOfMerit(FigureOfMeritDefinition figureOfMeritDefinition) {
-        Node figuresOfMeritsNode = guiService.createControl(Views.FIGURE_OF_MERIT_VIEW, figureOfMeritDefinition);
-        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
-        removeButton.setTooltip(new Tooltip("Remove figure of merit"));
-        removeButton.setOnAction(FiguresOfMeritEditorController.this::deleteFigureOfMerit);
-        removeButton.setMinWidth(28);
-        HBox extModRow = new HBox(6, figuresOfMeritsNode, removeButton);
-        removeButton.setUserData(extModRow);
-        figuresOfMeritsViewContainer.getChildren().add(extModRow);
+    public void reloadValues() {
+        // update FOMvalues from Model
     }
 
     private void deleteFigureOfMerit(ActionEvent actionEvent) {
@@ -114,6 +103,17 @@ public class FiguresOfMeritEditorController implements Initializable {
             tradespace.getDefinitions().remove(fomDef); // TODO: remove also data from design points?
             figuresOfMeritsViewContainer.getChildren().remove(argumentRow);
         }
+    }
+
+    private void renderFigureOfMerit(FigureOfMeritDefinition figureOfMeritDefinition) {
+        Node figuresOfMeritsNode = guiService.createControl(Views.FIGURE_OF_MERIT_VIEW, figureOfMeritDefinition);
+        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
+        removeButton.setTooltip(new Tooltip("Remove figure of merit"));
+        removeButton.setOnAction(FiguresOfMeritEditorController.this::deleteFigureOfMerit);
+        removeButton.setMinWidth(28);
+        HBox extModRow = new HBox(6, figuresOfMeritsNode, removeButton);
+        removeButton.setUserData(extModRow);
+        figuresOfMeritsViewContainer.getChildren().add(extModRow);
     }
 
     private void updateView() {

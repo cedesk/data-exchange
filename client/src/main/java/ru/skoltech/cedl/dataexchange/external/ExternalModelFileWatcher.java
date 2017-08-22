@@ -18,10 +18,10 @@ package ru.skoltech.cedl.dataexchange.external;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.file.DirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.file.SimpleDirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,16 +59,16 @@ public class ExternalModelFileWatcher extends Observable {
         watchedExternalModels.clear();
     }
 
-    public void start() {
-        SimpleDirectoryWatchService.getInstance().start();
-    }
-
     public void close() {
         SimpleDirectoryWatchService.getInstance().stop();
     }
 
     public void maskChangesTo(File file) {
         this.maskedFiles.add(file);
+    }
+
+    public void start() {
+        SimpleDirectoryWatchService.getInstance().start();
     }
 
     public void unmaskChangesTo(File file) {

@@ -44,6 +44,23 @@ public class ExternalModelReference {
         this.target = target;
     }
 
+    public ExternalModel getExternalModel() {
+        return externalModel;
+    }
+
+    public void setExternalModel(ExternalModel externalModel) {
+        this.externalModel = externalModel;
+    }
+
+    @Column(nullable = true)
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
     public static ExternalModelReference valueOf(String string, ModelNode modelNode) {
         Objects.requireNonNull(string);
         String[] parts = string.split(":");
@@ -61,23 +78,6 @@ public class ExternalModelReference {
                 return externalModel;
         }
         throw new IllegalArgumentException("invalid external model name");
-    }
-
-    public ExternalModel getExternalModel() {
-        return externalModel;
-    }
-
-    public void setExternalModel(ExternalModel externalModel) {
-        this.externalModel = externalModel;
-    }
-
-    @Column(nullable = true)
-    public String getTarget() {
-        return target;
-    }
-
-    public void setTarget(String target) {
-        this.target = target;
     }
 
     @Override
