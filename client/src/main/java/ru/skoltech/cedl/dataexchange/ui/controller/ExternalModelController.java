@@ -62,6 +62,7 @@ public class ExternalModelController implements Initializable {
     private Button openExternalButton;
 
     private Project project;
+    private ExternalModelFileHandler externalModelFileHandler;
     private SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService;
 
     private ExternalModel externalModel;
@@ -75,6 +76,10 @@ public class ExternalModelController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setSpreadsheetInputOutputExtractorService(SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService) {
@@ -99,7 +104,6 @@ public class ExternalModelController implements Initializable {
     }
 
     public void openExternalModel() {
-        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         try {
             File file = externalModelFileHandler.cacheFile(project, externalModel);
             openFile(file);
@@ -118,7 +122,6 @@ public class ExternalModelController implements Initializable {
      * @deprecated
      */
     public void startWizard() {
-        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         String filename = externalModel.getName();
         if (WorkbookFactory.isWorkbookFile(filename)) {
             try {

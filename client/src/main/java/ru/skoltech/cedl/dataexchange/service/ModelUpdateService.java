@@ -20,6 +20,7 @@ import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -39,8 +40,11 @@ public interface ModelUpdateService {
      * @param parameterUpdateListener
      * @throws ExternalModelException
      */
-    void applyParameterChangesFromExternalModel(Project project, ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler,
-                                                List<? extends Consumer<ModelUpdate>> modelUpdateListeners, Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException;
+    void applyParameterChangesFromExternalModel(Project project, ExternalModel externalModel,
+                                                ParameterLinkRegistry parameterLinkRegistry,
+                                                ExternalModelFileHandler externalModelFileHandler,
+                                                List<? extends Consumer<ModelUpdate>> modelUpdateListeners,
+                                                Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException;
 
     /**
      * TODO add javadoc
@@ -51,7 +55,9 @@ public interface ModelUpdateService {
      * @param parameterUpdateListener
      * @throws ExternalModelException
      */
-    void applyParameterChangesFromExternalModel(Project project, ParameterModel parameterModel, ExternalModelFileHandler externalModelFileHandler,
+    void applyParameterChangesFromExternalModel(Project project, ParameterModel parameterModel,
+                                                ParameterLinkRegistry parameterLinkRegistry,
+                                                ExternalModelFileHandler externalModelFileHandler,
                                                 Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException;
 
     /**
@@ -63,5 +69,7 @@ public interface ModelUpdateService {
      * @param externalModelFileWatcher
      * @throws ExternalModelException
      */
-    void applyParameterChangesToExternalModel(Project project, ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException;
+    void applyParameterChangesToExternalModel(Project project, ExternalModel externalModel,
+                                              ExternalModelFileHandler externalModelFileHandler,
+                                              ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException;
 }

@@ -34,8 +34,11 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.service.impl.UnitManagementServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
@@ -140,7 +143,7 @@ public class UnitManagementController implements Initializable, Closeable {
     }
 
     public void updateView() {
-        ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement unitManagement = project.getUnitManagement();
+        UnitManagement unitManagement = project.getUnitManagement();
         ObservableList<Unit> unitsList = FXCollections.observableList(unitManagement.getUnits());
         unitsTableView.setItems(unitsList);
 

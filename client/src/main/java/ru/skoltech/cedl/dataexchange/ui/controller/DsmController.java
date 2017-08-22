@@ -55,15 +55,20 @@ public class DsmController implements Initializable {
     @FXML
     private CheckBox weightedDsmCheckbox;
 
-    private GuiService guiService;
     private Project project;
+    private GuiService guiService;
+    private ParameterLinkRegistry parameterLinkRegistry;
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
 
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
     @Override
@@ -75,7 +80,6 @@ public class DsmController implements Initializable {
 
     public void generateCode(ActionEvent actionEvent) {
         final SystemModel systemModel = project.getSystemModel();
-        ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
 
         NumericalDSM dsm = parameterLinkRegistry.makeNumericalDSM(systemModel);
         boolean weighted = weightedDsmCheckbox.isSelected();
@@ -85,7 +89,6 @@ public class DsmController implements Initializable {
 
     public void refreshView(ActionEvent actionEvent) {
         SystemModel systemModel = project.getSystemModel();
-        ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
         DependencyModel dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
 
         spreadsheetView.setShowRowHeader(true);

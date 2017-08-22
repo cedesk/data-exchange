@@ -16,14 +16,14 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableView;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ModelInconsistency;
-import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 
 import java.net.URL;
 import java.util.List;
@@ -42,20 +42,25 @@ public class ConsistencyController implements Initializable {
     private TableView<ModelInconsistency> inconsistenciesTable;
 
     private Project project;
+    private ParameterLinkRegistry parameterLinkRegistry;
 
     public void setProject(Project project) {
         this.project = project;
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        refreshView(null);
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
-    public void refreshView(ActionEvent actionEvent) {
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        refreshView();
+    }
+
+    public void refreshView() {
         Study localStudy = project.getStudy();
         inconsistenciesTable.getItems().clear();
-        List<ModelInconsistency> modelInconsistencies = ModelInconsistency.analyzeModel(project, localStudy);
+        List<ModelInconsistency> modelInconsistencies = ModelInconsistency.analyzeModel(project, parameterLinkRegistry, localStudy);
         inconsistenciesTable.getItems().addAll(modelInconsistencies);
     }
 

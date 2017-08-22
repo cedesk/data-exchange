@@ -75,6 +75,7 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
     private SpreadsheetView spreadsheetView;
 
     private Project project;
+    private ExternalModelFileHandler externalModelFileHandler;
 
     private ExternalModelReference reference;
     private ExternalModel externalModel;
@@ -95,6 +96,10 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     @Override
@@ -178,7 +183,6 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
     private List<String> getSheetNames() {
         List<String> sheetNames = new LinkedList<>();
         try {
-            ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
             InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
             sheetNames = WorkbookFactory.getSheetNames(inputStream, externalModel.getName());
             Predicate<String> nameTest = SHEET_NAME_PATTERN.asPredicate();
@@ -221,7 +225,6 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
     private void refreshTable() {
         try {
             if (externalModel.getAttachment() != null) {
-                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
                 String fileName = externalModel.getName();
                 // TODO: generalize approach for other external model types, now only for SPREADSHEETS

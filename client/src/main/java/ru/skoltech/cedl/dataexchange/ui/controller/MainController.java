@@ -18,9 +18,9 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -53,12 +53,14 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
@@ -118,39 +120,40 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private ModelEditingController modelEditingController;
 
-    private Project project;
     private ApplicationSettings applicationSettings;
+    private ActionLogger actionLogger;
+    private Project project;
     private StudyService studyService;
     private GuiService guiService;
-    private SystemBuilderFactory systemBuilderFactory;
     private FileStorageService fileStorageService;
     private DifferenceMergeService differenceMergeService;
     private UpdateService updateService;
-    private Executor executor;
-    private ActionLogger actionLogger;
+    private RepositorySchemeService repositorySchemeService;
     private LogEntryService logEntryService;
+    private SystemBuilderFactory systemBuilderFactory;
+    private ParameterLinkRegistry parameterLinkRegistry;
+    private ExternalModelFileHandler externalModelFileHandler;
+    private Executor executor;
+
     private Stage ownerStage;
 
     private StringProperty tagProperty = new SimpleStringProperty(null);
-
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
-    }
-
-    public void setLogEntryService(LogEntryService logEntryService) {
-        this.logEntryService = logEntryService;
-    }
+    private ChangeListener<Boolean> repositoryNewerListener;
 
     public void setModelEditingController(ModelEditingController modelEditingController) {
         this.modelEditingController = modelEditingController;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
+    }
+
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public void setStudyService(StudyService studyService) {
@@ -159,10 +162,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
-    }
-
-    public void setSystemBuilderFactory(SystemBuilderFactory systemBuilderFactory) {
-        this.systemBuilderFactory = systemBuilderFactory;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -175,6 +174,26 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setUpdateService(UpdateService updateService) {
         this.updateService = updateService;
+    }
+
+    public void setRepositorySchemeService(RepositorySchemeService repositorySchemeService) {
+        this.repositorySchemeService = repositorySchemeService;
+    }
+
+    public void setLogEntryService(LogEntryService logEntryService) {
+        this.logEntryService = logEntryService;
+    }
+
+    public void setSystemBuilderFactory(SystemBuilderFactory systemBuilderFactory) {
+        this.systemBuilderFactory = systemBuilderFactory;
+    }
+
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setExecutor(Executor executor) {
@@ -195,12 +214,14 @@ public class MainController implements Initializable, Displayable, Closeable {
         statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
         statusbarLabel.setOnMouseClicked(this::showStatusMessages);
 
-        // TOOLBAR
-        BooleanBinding repositoryNewer = Bindings.greaterThan(
-                project.latestRepositoryModificationProperty(),
-                project.latestLoadedModificationProperty());
-        //diffButton.disableProperty().bind(repositoryNewer.not());
-        repositoryNewer.addListener((observable, oldValue, newValue) -> {
+        newButton.disableProperty().bind(project.canNewProperty().not());
+        loadButton.disableProperty().bind(project.canLoadProperty().not());
+        saveButton.disableProperty().bind(project.canSyncProperty().not());
+
+        tagLabel.textProperty().bind(Bindings.when(tagProperty.isNull()).then("--").otherwise(tagProperty));
+        tagMenu.textProperty().bind(Bindings.when(tagProperty.isNull()).then("_Tag current revision...").otherwise("_Untag current revision"));
+
+        repositoryNewerListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
                 if (newValue) {
                     ImageView imageView = new ImageView(new Image(FLASH_ICON_URL));
@@ -209,33 +230,23 @@ public class MainController implements Initializable, Displayable, Closeable {
                     imageView.setSmooth(true);
                     diffButton.setGraphic(imageView);
                     diffButton.setGraphicTextGap(8);
+
+                    executor.execute(() -> {
+                        project.loadCurrentRepositoryStudy();
+                        Platform.runLater(() -> {
+                            modelEditingController.updateView();
+                            StatusLogger.getInstance().log("Remote model loaded for comparison.");
+                            UserNotifications.showActionableNotification(ownerStage, "Updates on study",
+                                    "New version of study in repository!", "View Differences",
+                                    actionEvent -> this.openDiffView(), true);
+                        });
+                    });
                 } else {
                     diffButton.setGraphic(null);
                 }
             }
-        });
-        project.latestRepositoryModificationProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null && oldValue != null && oldValue.longValue() > 0) {
-                long timeOfModificationInRepository = newValue.longValue();
-                long timeOfModificationLoaded = project.getLatestLoadedModification();
-                if (timeOfModificationInRepository > Utils.INVALID_TIME && timeOfModificationInRepository > timeOfModificationLoaded) {
-                    String repoTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationInRepository));
-                    String loadedTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timeOfModificationLoaded));
-                    logger.info("repository updated: " + repoTime + ", model loaded: " + loadedTime);
-                    updateRemoteModel();
-                    UserNotifications.showActionableNotification(ownerStage, "Updates on study",
-                            "New version of study in repository!", "View Differences",
-                            actionEvent -> this.openDiffView(), true);
-                }
-            }
-        });
+        };
 
-        newButton.disableProperty().bind(project.canNewProperty().not());
-        loadButton.disableProperty().bind(project.canLoadProperty().not());
-        saveButton.disableProperty().bind(project.canSyncProperty().not());
-
-        tagLabel.textProperty().bind(Bindings.when(tagProperty.isNull()).then("--").otherwise(tagProperty));
-        tagMenu.textProperty().bind(Bindings.when(tagProperty.isNull()).then("_Tag current revision...").otherwise("_Untag current revision"));
         this.checkRepository();
         this.checkVersionUpdate();
     }
@@ -247,17 +258,26 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private void checkRepository() {
         executor.execute(() -> {
-            boolean validRepository = project.checkRepositoryScheme();
-            if (!validRepository) {
+            boolean validRepositoryScheme = this.checkRepositoryScheme();
+            if (!validRepositoryScheme) {
                 Platform.runLater(MainController.this::openRepositorySettingsDialog);
-            } else {
-                if (!project.checkUser()) {
-                    Platform.runLater(this::displayInvalidUserDialog);
-                }
-                Platform.runLater(this::loadLastProject);
+                return;
             }
+            if (!project.checkUser()) {
+                Platform.runLater(this::displayInvalidUserDialog);
+            }
+            Platform.runLater(this::loadLastProject);
         });
     }
+
+    private boolean checkRepositoryScheme() {
+        boolean validScheme = repositorySchemeService.checkSchemeVersion();
+        if (!validScheme && applicationSettings.isRepositorySchemaCreate()) {
+            return repositorySchemeService.checkAndStoreSchemeVersion();
+        }
+        return validScheme;
+    }
+
 
     private void checkVersionUpdate(){
         String appVersion = applicationSettings.getApplicationVersion();
@@ -266,6 +286,30 @@ public class MainController implements Initializable, Displayable, Closeable {
                 Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
                 Platform.runLater(() -> MainController.this.validateLatestUpdate(latestVersionAvailable, null));
             });
+        }
+    }
+
+    private void loadLastProject() {
+        actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
+        String projectImportName = applicationSettings.getProjectImportName();
+        if (projectImportName != null && !projectImportName.isEmpty()) {
+            this.importProject(null);
+        } else if (applicationSettings.isProjectLastAutoload()) {
+            String projectName = applicationSettings.getProjectLastName();
+            if (projectName != null) {
+                project.setProjectName(projectName);
+                this.reloadProject();
+
+                project.repositoryNewer().addListener(repositoryNewerListener);
+                //diffButton.disableProperty().bind(repositoryNewer.not());
+            } else {
+                Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
+                if (choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {
+                    this.openProject(null);
+                } else if (choice.isPresent() && choice.get() == Dialogues.NEW_STUDY_BUTTON) {
+                    this.newProject(null);
+                }
+            }
         }
     }
 
@@ -343,7 +387,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                             "Shall it be saved now?");
             if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
                 try {
-                    project.storeLocalStudy();
+                    project.storeStudy();
                     return true;
                 } catch (RepositoryException | ExternalModelException e) {
                     UserNotifications.showNotification(ownerStage, "Failed to save", "Failed to save");
@@ -370,7 +414,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                     "Shall the modifications saved before closing?");
             if (saveYesNoCancel.isPresent() && saveYesNoCancel.get() == ButtonType.YES) {
                 try {
-                    project.storeLocalStudy();
+                    project.storeStudy();
                     return true;
                 } catch (RepositoryException | ExternalModelException e) {
                     Optional<ButtonType> closeAnyway = Dialogues.chooseYesNo("Failed to save",
@@ -393,24 +437,21 @@ public class MainController implements Initializable, Displayable, Closeable {
             if (studyChoice.isPresent()) {
                 String studyName = studyChoice.get();
                 try {
+                    Optional<ButtonType> chooseYesNo;
                     if (studyName.equals(project.getProjectName())) {
-                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
+                        chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
                                 "You are deleting the currently loaded project. Unexpected behavior can appear!\n" +
                                         "WARNING: This is not reversible!");
-                        if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
-                            project.deleteStudy(studyName);
-                            StatusLogger.getInstance().log("Successfully deleted study!", false);
-                            actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
-                        }
                     } else {
-                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
+                        chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
                                 "Are you really sure to delete project '" + studyName + "' from the repository?\n" +
                                         "WARNING: This is not reversible!");
-                        if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
-                            project.deleteStudy(studyName);
-                            StatusLogger.getInstance().log("Successfully deleted study!", false);
-                            actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
-                        }
+                    }
+                    if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
+                        project.repositoryNewer().removeListener(repositoryNewerListener);
+                        project.deleteStudy(studyName);
+                        StatusLogger.getInstance().log("Successfully deleted study!", false);
+                        actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
                     }
                 } catch (Exception e) {
                     logger.error("Failed to delete the study!", e);
@@ -565,7 +606,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         studyRevisionsViewBuilder.applyEventHandler(event -> {
             CustomRevisionEntity customRevisionEntity = (CustomRevisionEntity) event.getSource();
             Study studyRevision = studyService.findStudyByRevision(study, customRevisionEntity.getId());
-            project.loadLocalStudy(studyRevision);
+            project.loadLocalStudy(customRevisionEntity.getId(), studyRevision);
             this.updateView();
             tagProperty.setValue(customRevisionEntity.getTag());
         });
@@ -609,7 +650,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             if (studyChoice.isPresent()) {
                 String studyName = studyChoice.get();
                 project.setProjectName(studyName);
-                reloadProject(null);
+                this.reloadProject();
                 if (!project.checkUser()) {
                     this.displayInvalidUserDialog();
                 }
@@ -670,24 +711,25 @@ public class MainController implements Initializable, Displayable, Closeable {
         ownerStage.close();
     }
 
-    public void reloadProject(ActionEvent actionEvent) {
+    public void reloadProject() {
         modelEditingController.clearView();
+        String projectName =  project.getProjectName();
         try {
-            boolean success = project.loadLocalStudy();
+            boolean success = project.loadCurrentLocalStudy();
             if (success) {
-                applicationSettings.storeProjectLastName(project.getProjectName());
-                StatusLogger.getInstance().log("Successfully loaded study: " + project.getProjectName(), false);
-                actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName());
+                applicationSettings.storeProjectLastName(projectName);
+                StatusLogger.getInstance().log("Successfully loaded study: " + projectName, false);
+                actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, projectName);
             } else {
                 StatusLogger.getInstance().log("Loading study failed!", false);
-                actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName() + ", loading failed");
+                actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, projectName + ", loading failed");
             }
         } catch (Exception e) {
             StatusLogger.getInstance().log("Error loading project!", true);
             logger.error("Error loading project", e);
-            actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, project.getProjectName() + ", loading failed");
+            actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, projectName + ", loading failed");
         }
-        updateView();
+        this.updateView();
     }
 
     public void saveProject(ActionEvent actionEvent) {
@@ -708,8 +750,9 @@ public class MainController implements Initializable, Displayable, Closeable {
                     // TODO merge remote changes
                     List<ModelDifference> modelDifferences = differenceMergeService.computeStudyDifferences(project.getStudy(),
                                                                                                             project.getRepositoryStudy(),
-                                                                                                            project.getLatestLoadedModification());
-                    List<ModelDifference> appliedChanges = differenceMergeService.mergeChangesOntoFirst(project, modelDifferences);
+                                                                                                            project.getStudy().getLatestModelModification());
+                    List<ModelDifference> appliedChanges = differenceMergeService.mergeChangesOntoFirst(project, parameterLinkRegistry,
+                            externalModelFileHandler, modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
                         openDiffView();
                     }
@@ -717,7 +760,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                     return;
                 }
             }
-            project.storeLocalStudy();
+            project.storeStudy();
             updateView();
             applicationSettings.storeProjectLastName(project.getProjectName());
             StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
@@ -757,37 +800,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         try {
             project.close();
         } catch (Throwable ignore) {
-        }
-    }
-
-    public void updateRemoteModel() {
-        project.loadRepositoryStudy();
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                modelEditingController.updateView();
-                StatusLogger.getInstance().log("Remote model loaded for comparison.");
-            }
-        });
-    }
-
-    private void loadLastProject() {
-        actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
-        if (applicationSettings.getProjectImportName() != null && !applicationSettings.getProjectImportName().isEmpty()) {
-            importProject(null);
-        } else if (applicationSettings.isProjectLastAutoload()) {
-            String projectName = applicationSettings.getProjectLastName();
-            if (projectName != null) {
-                project.setProjectName(projectName);
-                reloadProject(null);
-            } else {
-                Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
-                if (choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {
-                    openProject(null);
-                } else if (choice.isPresent() && choice.get() == Dialogues.NEW_STUDY_BUTTON) {
-                    newProject(null);
-                }
-            }
         }
     }
 

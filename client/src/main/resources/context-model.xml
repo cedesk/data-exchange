@@ -25,11 +25,6 @@
 
     <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine" />
 
-    <bean id="externalModelFileWatcher" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher" />
-    <bean id="externalModelFileHandler" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler" >
-        <property name="fileStorageService" ref="fileStorageService" />
-    </bean>
-
     <bean id="actionLogger" class="ru.skoltech.cedl.dataexchange.logging.ActionLogger">
         <property name="applicationSettings" ref="applicationSettings" />
         <property name="project" ref="project" />
@@ -47,7 +42,6 @@
         <property name="userManagementService" ref="userManagementService" />
         <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="unitManagementService" ref="unitManagementService" />
-        <property name="repositorySchemeService" ref="repositorySchemeService"/>
     </bean>
 
     <util:map id="builderRegistry" map-class="java.util.HashMap">
@@ -74,6 +68,11 @@
     <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry" >
         <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="actionLogger" ref="actionLogger" />
+    </bean>
+
+    <bean id="externalModelFileWatcher" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher" />
+    <bean id="externalModelFileHandler" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler" >
+        <property name="fileStorageService" ref="fileStorageService" />
     </bean>
 
     <bean id="tradespaceModelBridge" class="ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge" scope="prototype">

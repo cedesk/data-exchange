@@ -48,6 +48,7 @@ import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItem;
 import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItemFactory;
 import ru.skoltech.cedl.dataexchange.structure.view.TextFieldTreeCell;
@@ -137,6 +138,8 @@ public class ModelEditingController implements Initializable {
     private UserRoleManagementService userRoleManagementService;
     private GuiService guiService;
     private ModelUpdateService modelUpdateService;
+    private ParameterLinkRegistry parameterLinkRegistry;
+    private ExternalModelFileHandler externalModelFileHandler;
 
     public void setParameterEditorController(ParameterEditorController parameterEditorController) {
         this.parameterEditorController = parameterEditorController;
@@ -166,6 +169,14 @@ public class ModelEditingController implements Initializable {
         this.modelUpdateService = modelUpdateService;
     }
 
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Node parameterEditorPane = guiService.createControl(Views.PARAMETER_EDITOR_VIEW);
@@ -178,9 +189,8 @@ public class ModelEditingController implements Initializable {
             @Override
             public void update(Observable o, Object arg) {
                 ExternalModel externalModel = (ExternalModel) arg;
-                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 try {
-                    modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler,
+                    modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, parameterLinkRegistry, externalModelFileHandler,
                             Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ParameterUpdateListener());
                 } catch (ExternalModelException e) {
                     logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
@@ -339,7 +349,7 @@ public class ModelEditingController implements Initializable {
             List<ParameterModel> dependentParameters = new LinkedList<>();
             for (ParameterModel parameterModel : deleteNode.getParameters()) {
                 if (parameterModel.getNature() == ParameterNature.OUTPUT) {
-                    dependentParameters.addAll(project.getParameterLinkRegistry().getDependentParameters(parameterModel));
+                    dependentParameters.addAll(parameterLinkRegistry.getDependentParameters(parameterModel));
                 }
             }
             if (dependentParameters.size() > 0) {
@@ -372,7 +382,7 @@ public class ModelEditingController implements Initializable {
     public void deleteParameter(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem();
-        List<ParameterModel> dependentParameters = project.getParameterLinkRegistry().getDependentParameters(parameterModel);
+        List<ParameterModel> dependentParameters = parameterLinkRegistry.getDependentParameters(parameterModel);
         if (dependentParameters.size() > 0) {
             String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
             Dialogues.showWarning("Parameter deletion impossible!", "This parameter is referenced by " + dependentParams);
@@ -382,7 +392,7 @@ public class ModelEditingController implements Initializable {
         Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Parameter deletion", "Are you sure you want to delete this parameter?");
         if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
             selectedItem.getValue().getParameters().remove(parameterModel);
-            project.getParameterLinkRegistry().removeSink(parameterModel);
+            parameterLinkRegistry.removeSink(parameterModel);
             StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
             actionLogger.log(ActionLogger.ActionType.PARAMETER_REMOVE, parameterModel.getNodePath());
             updateParameterTable(selectedItem);
@@ -590,7 +600,6 @@ public class ModelEditingController implements Initializable {
             return null;
         }
         String parameterName = null;
-        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         if (WorkbookFactory.isWorkbookFile(filename)) {
             try (InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel)) {
                 String sheetName = nameCellCoordinates.getSheetName();
@@ -629,11 +638,11 @@ public class ModelEditingController implements Initializable {
     }
 
     private void updateDependencies(ModelNode modelNode) {
-        String upstreamDependencies = project.getParameterLinkRegistry().getUpstreamDependencies(modelNode);
+        String upstreamDependencies = parameterLinkRegistry.getUpstreamDependencies(modelNode);
         upstreamDependenciesText.setText(upstreamDependencies);
         if (upstreamDependencies.length() > 0)
             upstreamDependenciesText.setTooltip(new Tooltip(upstreamDependencies));
-        String downstreamDependencies = project.getParameterLinkRegistry().getDownstreamDependencies(modelNode);
+        String downstreamDependencies = parameterLinkRegistry.getDownstreamDependencies(modelNode);
         downstreamDependenciesText.setText(downstreamDependencies);
         if (downstreamDependencies.length() > 0)
             downstreamDependenciesText.setTooltip(new Tooltip(downstreamDependencies));

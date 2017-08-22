@@ -25,17 +25,20 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.MainController" init-method="init" destroy-method="destroy">
         <property name="modelEditingController" ref="modelEditingController" />
-        <property name="project" ref="project" />
-        <property name="actionLogger" ref="actionLogger" />
-        <property name="logEntryService" ref="logEntryService" />
         <property name="applicationSettings" ref="applicationSettings" />
-        <property name="systemBuilderFactory" ref="systemBuilderFactory" />
+        <property name="actionLogger" ref="actionLogger" />
+        <property name="project" ref="project" />
+        <property name="guiService" ref="guiService"/>
+        <property name="studyService" ref="studyService"/>
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
         <property name="updateService" ref="updateService" />
+        <property name="repositorySchemeService" ref="repositorySchemeService"/>
+        <property name="logEntryService" ref="logEntryService" />
+        <property name="systemBuilderFactory" ref="systemBuilderFactory" />
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="executor" ref="executor" />
-        <property name="guiService" ref="guiService"/>
-        <property name="studyService" ref="studyService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ChangeAnalysisController" >
@@ -51,6 +54,8 @@
         <property name="guiService" ref="guiService"/>
         <property name="parameterEditorController" ref="parameterEditorController"/>
         <property name="externalModelEditorController" ref="externalModelEditorController"/>
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
     </bean>
 
     <bean id="parameterEditorController" class="ru.skoltech.cedl.dataexchange.ui.controller.ParameterEditorController" >
@@ -59,6 +64,9 @@
         <property name="guiService" ref="guiService" />
         <property name="modelUpdateService" ref="modelUpdateService" />
         <property name="unitManagementService" ref="unitManagementService" />
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
+        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
     </bean>
 
     <bean id="externalModelEditorController" class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelEditorController" >
@@ -67,11 +75,14 @@
         <property name="guiService" ref="guiService"/>
         <property name="fileStorageService" ref="fileStorageService" />
         <property name="modelUpdateService" ref="modelUpdateService" />
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelController" scope="prototype" >
         <property name="project" ref="project" />
         <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TagController" scope="prototype" >
@@ -82,19 +93,26 @@
         <property name="project" ref="project" />
         <property name="userRoleManagementService" ref="userRoleManagementService" />
         <property name="differenceMergeService" ref="differenceMergeService" />
+        <property name="tradespaceRepository" ref="tradespaceRepository"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
+        <property name="executor" ref="executor"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ConsistencyController" >
         <property name="project" ref="project" />
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.DependencyController" >
         <property name="project" ref="project" />
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.DsmController" >
         <property name="project" ref="project" />
         <property name="guiService" ref="guiService"/>
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TradespaceController" >
@@ -147,10 +165,12 @@
         <property name="project" ref="project" />
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="userManagementService" ref="userManagementService"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ReferenceSelectorController" scope="prototype">
         <property name="project" ref="project"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ParameterSelectorController" scope="prototype" />

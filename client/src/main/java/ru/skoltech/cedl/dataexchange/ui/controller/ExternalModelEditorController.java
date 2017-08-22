@@ -43,6 +43,7 @@ import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.io.File;
@@ -69,6 +70,8 @@ public class ExternalModelEditorController implements Initializable {
     private GuiService guiService;
     private FileStorageService fileStorageService;
     private ModelUpdateService modelUpdateService;
+    private ParameterLinkRegistry parameterLinkRegistry;
+    private ExternalModelFileHandler externalModelFileHandler;
 
     private ModelNode modelNode;
 
@@ -93,6 +96,14 @@ public class ExternalModelEditorController implements Initializable {
 
     public void setModelUpdateService(ModelUpdateService modelUpdateService) {
         this.modelUpdateService = modelUpdateService;
+    }
+
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     @Override
@@ -166,10 +177,10 @@ public class ExternalModelEditorController implements Initializable {
     }
 
     public void reloadExternalModels() {
-        ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
         for (ExternalModel externalModel : modelNode.getExternalModels())
             try {
-                modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler,
+                modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel,
+                        parameterLinkRegistry, externalModelFileHandler,
                         Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");

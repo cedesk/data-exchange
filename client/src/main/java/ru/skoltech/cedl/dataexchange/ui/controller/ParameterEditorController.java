@@ -145,6 +145,9 @@ public class ParameterEditorController implements Initializable, Displayable {
     private GuiService guiService;
     private ModelUpdateService modelUpdateService;
     private UnitManagementService unitManagementService;
+    private ParameterLinkRegistry parameterLinkRegistry;
+    private ExternalModelFileHandler externalModelFileHandler;
+    private ExternalModelFileWatcher externalModelFileWatcher;
 
     private ParameterModel editingParameterModel;
     private ParameterModel originalParameterModel;
@@ -174,6 +177,18 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     public void setUnitManagementService(UnitManagementService unitManagementService) {
         this.unitManagementService = unitManagementService;
+    }
+
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
+    }
+
+    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
+        this.externalModelFileWatcher = externalModelFileWatcher;
     }
 
     @Override
@@ -383,11 +398,11 @@ public class ParameterEditorController implements Initializable, Displayable {
 
         if (editingParameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
             if (valueReference != null) {
-                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
                 editingParameterModel.setValueReference(valueReference);
                 logger.debug("update parameter value from model");
                 try {
-                    modelUpdateService.applyParameterChangesFromExternalModel(project, editingParameterModel, externalModelFileHandler,
+                    modelUpdateService.applyParameterChangesFromExternalModel(project, editingParameterModel,
+                            parameterLinkRegistry, externalModelFileHandler,
                             parameterUpdate -> valueText.setText(convertToText(parameterUpdate.getValue())));
                 } catch (ExternalModelException e) {
                     Window window = propertyPane.getScene().getWindow();
@@ -400,7 +415,6 @@ public class ParameterEditorController implements Initializable, Displayable {
             editingParameterModel.setValueReference(null);
         }
         if (editingParameterModel.getValueSource() == ParameterValueSource.LINK) {
-            ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
             ParameterModel previousValueLink = editingParameterModel.getValueLink();
             if (previousValueLink != null) {
                 parameterLinkRegistry.removeLink(previousValueLink, originalParameterModel);
@@ -415,7 +429,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         }
         if (editingParameterModel.getValueSource() == ParameterValueSource.CALCULATION) {
             Calculation previousCalculation = editingParameterModel.getCalculation();
-            ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
             if (previousCalculation != null) {
                 parameterLinkRegistry.removeLinks(previousCalculation.getLinkedParameters(), originalParameterModel);
             }
@@ -455,8 +468,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         if (editingParameterModel.getIsExported()) {
             if (exportReference != null && exportReference.getExternalModel() != null) {
                 ExternalModel externalModel = exportReference.getExternalModel();
-                ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
-                ExternalModelFileWatcher externalModelFileWatcher = project.getExternalModelFileWatcher();
                 try {
                     modelUpdateService.applyParameterChangesToExternalModel(project, externalModel, externalModelFileHandler, externalModelFileWatcher);
                 } catch (ExternalModelException e) {
@@ -466,7 +477,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         }
 
         // UPDATE LINKING PARAMETERS
-        project.getParameterLinkRegistry().updateSinks(project, originalParameterModel);
+        parameterLinkRegistry.updateSinks(project, originalParameterModel);
 
         String attDiffs = attributeDifferences.stream().map(AttributeDifference::asText).collect(Collectors.joining(","));
         actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, editingParameterModel.getNodePath() + ": " + attDiffs);
@@ -515,7 +526,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         calculationText.setText(calculation != null ? calculation.asText() : "");
         exportReferenceText.setText(exportReference != null ? exportReference.toString() : "");
         if (editingParameterModel.getNature() == ParameterNature.OUTPUT) {
-            List<ParameterModel> dependentParameters = project.getParameterLinkRegistry().getDependentParameters(editingParameterModel);
+            List<ParameterModel> dependentParameters = parameterLinkRegistry.getDependentParameters(editingParameterModel);
             String dependentParamNames = "<not linked>";
             if (dependentParameters.size() > 0) {
                 dependentParamNames = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));

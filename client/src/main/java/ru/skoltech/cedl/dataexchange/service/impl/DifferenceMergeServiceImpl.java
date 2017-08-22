@@ -29,6 +29,7 @@ import ru.skoltech.cedl.dataexchange.service.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 
 import java.io.IOException;
@@ -57,7 +58,8 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
     }
 
     @Override
-    public boolean mergeOne(Project project, ModelDifference modelDifference) throws MergeException {
+    public boolean mergeOne(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                            ExternalModelFileHandler externalModelFileHandler, ModelDifference modelDifference) throws MergeException {
         logger.debug("merging " + modelDifference.getElementPath());
         modelDifference.mergeDifference();
         if (modelDifference instanceof ParameterDifference) {
@@ -65,18 +67,34 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         } else if (modelDifference instanceof ExternalModelDifference) {
             ExternalModelDifference emd = (ExternalModelDifference) modelDifference;
             ExternalModel externalModel = emd.getExternalModel1();
-            return updateCacheAndParameters(project, externalModel);
+            return updateCacheAndParameters(project, parameterLinkRegistry, externalModelFileHandler, externalModel);
         }
         return true;
     }
 
-    private boolean updateCacheAndParameters(Project project, ExternalModel externalModel) {
+    @Override
+    public boolean revertOne(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                             ExternalModelFileHandler externalModelFileHandler, ModelDifference modelDifference) throws MergeException {
+        logger.debug("reverting " + modelDifference.getElementPath());
+        modelDifference.revertDifference();
+        if (modelDifference instanceof ParameterDifference) {
+            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
+        } else if (modelDifference instanceof ExternalModelDifference) {
+            ExternalModelDifference emd = (ExternalModelDifference) modelDifference;
+            ExternalModel externalModel = emd.getExternalModel1();
+            return updateCacheAndParameters(project, parameterLinkRegistry, externalModelFileHandler, externalModel);
+        }
+        return true;
+    }
+
+    private boolean updateCacheAndParameters(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                                             ExternalModelFileHandler externalModelFileHandler, ExternalModel externalModel) {
         try {
             // update cached file
-            ExternalModelFileHandler externalModelFileHandler = project.getExternalModelFileHandler();
             externalModelFileHandler.forceCacheUpdate(project, externalModel);
             // update parameters from new file
-            modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, externalModelFileHandler, null, null);
+            modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, parameterLinkRegistry,
+                    externalModelFileHandler, null, null);
         } catch (ExternalModelException e) {
             logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
         } catch (IOException e) {
@@ -88,25 +106,12 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
     }
 
     @Override
-    public boolean revertOne(Project project, ModelDifference modelDifference) throws MergeException {
-        logger.debug("reverting " + modelDifference.getElementPath());
-        modelDifference.revertDifference();
-        if (modelDifference instanceof ParameterDifference) {
-            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
-        } else if (modelDifference instanceof ExternalModelDifference) {
-            ExternalModelDifference emd = (ExternalModelDifference) modelDifference;
-            ExternalModel externalModel = emd.getExternalModel1();
-            return updateCacheAndParameters(project, externalModel);
-        }
-        return true;
-    }
-
-    @Override
-    public List<ModelDifference> mergeChangesOntoFirst(Project project, List<ModelDifference> modelDifferences) throws MergeException {
+    public List<ModelDifference> mergeChangesOntoFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                                                       ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
             if (modelDifference.isMergeable()) {
-                boolean success = mergeOne(project, modelDifference);
+                boolean success = mergeOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
                 }
@@ -117,11 +122,12 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
     }
 
     @Override
-    public List<ModelDifference> revertChangesOnFirst(Project project, List<ModelDifference> modelDifferences) throws MergeException {
+    public List<ModelDifference> revertChangesOnFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                                                      ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
             if (modelDifference.isRevertible()) {
-                boolean success = revertOne(project, modelDifference);
+                boolean success = revertOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
                 }

@@ -30,6 +30,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.service.UserManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -73,6 +74,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
     private ApplicationSettings applicationSettings;
     private Project project;
     private UserManagementService userManagementService;
+    private ExternalModelFileHandler externalModelFileHandler;
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
     private Stage ownerStage;
@@ -87,6 +89,10 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
 
     public void setUserManagementService(UserManagementService userManagementService) {
         this.userManagementService = userManagementService;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     @Override
@@ -214,7 +220,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
     }
 
     public void cleanupProjectCache() {
-        project.getExternalModelFileHandler().cleanupCache(project);
+        externalModelFileHandler.cleanupCache(project);
     }
 
 }

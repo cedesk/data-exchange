@@ -23,6 +23,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -134,12 +135,21 @@ public interface StudyService {
     void deleteAllStudies();
 
     /**
-     * Retrieve a latest model modification timestamp of study with specified name.
+     * Retrieve a latest revision number along with revision date
+     * of study with specified id.
      *
-     * @param studyName name of the study.
-     * @return timestamp value of latest model modification time.
+     * @param studyId id of the study
+     * @return latest revision number of study
      */
-    Long findLatestModelModificationByStudyName(String studyName);
+    Pair<Integer, Date> findLatestRevision(Long studyId);
+
+    /**
+     * Retrieve a latest revision number of study with specified id.
+     *
+     * @param studyId id of the study
+     * @return latest revision number of study
+     */
+    Integer findLatestRevisionNumber(Long studyId);
 
     /**
      * TODO add javadoc

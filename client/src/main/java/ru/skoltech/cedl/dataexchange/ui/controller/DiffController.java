@@ -40,15 +40,19 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
+import ru.skoltech.cedl.dataexchange.repository.jpa.TradespaceRepository;
 import ru.skoltech.cedl.dataexchange.service.DifferenceMergeService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executor;
 
 /**
  * Created by D.Knoll on 20.07.2015.
@@ -59,22 +63,21 @@ public class DiffController implements Initializable {
 
     @FXML
     private Button revertAllButton;
-
     @FXML
     private Button acceptAllButton;
-
     @FXML
     private TableView<ModelDifference> diffTable;
-
     @FXML
     private TableColumn<ModelDifference, String> actionColumn;
-
     @FXML
     private TableColumn<ModelDifference, String> elementTypeColumn;
 
     private Project project;
     private UserRoleManagementService userRoleManagementService;
     private DifferenceMergeService differenceMergeService;
+    private ParameterLinkRegistry parameterLinkRegistry;
+    private ExternalModelFileHandler externalModelFileHandler;
+    private Executor executor;
 
     @Autowired
     private RevisionEntityRepository revisionEntityRepository;
@@ -85,12 +88,27 @@ public class DiffController implements Initializable {
         this.project = project;
     }
 
+    public void setTradespaceRepository(TradespaceRepository tradespaceRepository) {
+    }
+
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
     }
 
     public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
         this.differenceMergeService = differenceMergeService;
+    }
+
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 
     @Override
@@ -118,13 +136,16 @@ public class DiffController implements Initializable {
                 }
             }
         });
-        project.loadRepositoryStudy();
-        refreshView(null);
+        executor.execute(() -> {
+            project.loadCurrentRepositoryStudy();
+            Platform.runLater(this::refreshView);
+        });
     }
 
     public void acceptAll(ActionEvent actionEvent) {
         try {
-            List<ModelDifference> appliedDifferences = differenceMergeService.mergeChangesOntoFirst(project, modelDifferences);
+            List<ModelDifference> appliedDifferences = differenceMergeService.mergeChangesOntoFirst(project, parameterLinkRegistry,
+                    externalModelFileHandler, modelDifferences);
             if (appliedDifferences.size() > 0) {
                 project.markStudyModified();
             }
@@ -147,10 +168,10 @@ public class DiffController implements Initializable {
         modelDifferences.addAll(modelDiffs);
     }
 
-    public void refreshView(ActionEvent actionEvent) {
+    public void refreshView() {
         Study localStudy = project.getStudy();
         Study remoteStudy = project.getRepositoryStudy();
-        long latestLoadedModification = project.getLatestLoadedModification();
+        long latestLoadedModification = localStudy.getLatestModelModification();
         project.updateExternalModelsInStudy();
         List<ModelDifference> modelDiffs = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy, latestLoadedModification);
         displayDifferences(modelDiffs);
@@ -158,7 +179,8 @@ public class DiffController implements Initializable {
 
     public void revertAll(ActionEvent actionEvent) {
         try {
-            List<ModelDifference> appliedDifferences = differenceMergeService.revertChangesOnFirst(project, modelDifferences);
+            List<ModelDifference> appliedDifferences = differenceMergeService.revertChangesOnFirst(project,
+                    parameterLinkRegistry, externalModelFileHandler, modelDifferences);
             if (modelDifferences.size() == 0) {
                 close(null);
             } else if (appliedDifferences.size() > 0) {
@@ -169,7 +191,7 @@ public class DiffController implements Initializable {
                     }
                 }
                 if (modelsReverted > 0) { // reverting models may have affected parameters referencing values in them
-                    refreshView(null);
+                    refreshView();
                 }
             }
         } catch (MergeException me) {
@@ -209,9 +231,9 @@ public class DiffController implements Initializable {
         boolean success = false;
         try {
             if (modelDifference.isMergeable()) {
-                success = differenceMergeService.mergeOne(project, modelDifference);
+                success = differenceMergeService.mergeOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
             } else if (modelDifference.isRevertible()) {
-                success = differenceMergeService.revertOne(project, modelDifference);
+                success = differenceMergeService.revertOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
             }
         } catch (MergeException me) {
             StatusLogger.getInstance().log(me.getMessage(), true);
@@ -220,7 +242,7 @@ public class DiffController implements Initializable {
             modelDifferences.remove(modelDifference);
             if (modelDifference instanceof ExternalModelDifference) {
                 // reverting models may have affected parameters referencing values in them
-                Platform.runLater(() -> this.refreshView(null));
+                Platform.runLater(() -> this.refreshView());
             }
             project.markStudyModified();
         }

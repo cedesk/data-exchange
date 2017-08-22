@@ -17,7 +17,9 @@
 package ru.skoltech.cedl.dataexchange.service;
 
 import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.MergeException;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -39,7 +41,8 @@ public interface DifferenceMergeService {
      * @return
      * @throws MergeException
      */
-    boolean mergeOne(Project project, ModelDifference modelDifference) throws MergeException;
+    boolean mergeOne(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                     ExternalModelFileHandler externalModelFileHandler, ModelDifference modelDifference) throws MergeException;
 
     /**
      * TODO add javadoc
@@ -49,7 +52,8 @@ public interface DifferenceMergeService {
      * @return
      * @throws MergeException
      */
-    boolean revertOne(Project project, ModelDifference modelDifference) throws MergeException;
+    boolean revertOne(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                      ExternalModelFileHandler externalModelFileHandler, ModelDifference modelDifference) throws MergeException;
 
     /**
      * TODO add javadoc
@@ -57,7 +61,8 @@ public interface DifferenceMergeService {
      * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
      * @return the list of merged differences
      */
-    List<ModelDifference> mergeChangesOntoFirst(Project project, List<ModelDifference> modelDifferences) throws MergeException;
+    List<ModelDifference> mergeChangesOntoFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                                                ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException;
 
     /**
      * TODO add javadoc
@@ -65,7 +70,8 @@ public interface DifferenceMergeService {
      * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
      * @return the list of merged differences
      */
-    List<ModelDifference> revertChangesOnFirst(Project project, List<ModelDifference> modelDifferences) throws MergeException;
+    List<ModelDifference> revertChangesOnFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                                               ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException;
 
     /**
      * TODO add javadoc

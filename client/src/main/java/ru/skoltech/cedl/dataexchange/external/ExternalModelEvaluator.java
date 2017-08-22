@@ -25,5 +25,5 @@ import java.io.Closeable;
  */
 public interface ExternalModelEvaluator extends Closeable {
 
-    Double getValue(Project project, String target) throws ExternalModelException;
+    Double getValue(Project project, ExternalModelFileHandler externalModelFileHandler, String target) throws ExternalModelException;
 }

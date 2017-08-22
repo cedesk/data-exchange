@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange.service.impl;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.envers.RevisionType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.history.Revision;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
@@ -33,6 +34,7 @@ import ru.skoltech.cedl.dataexchange.repository.revision.StudyRepository;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -156,8 +158,14 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
-    public Long findLatestModelModificationByStudyName(String studyName) {
-        return studyRepository.findLatestModelModificationByName(studyName);
+    public Pair<Integer, Date> findLatestRevision(Long studyId) {
+        Revision<Integer, Study> revision = studyRevisionRepository.findLastChangeRevision(studyId);
+        return Pair.of(revision.getRevisionNumber(), revision.getRevisionDate().toDate());
+    }
+
+    @Override
+    public Integer findLatestRevisionNumber(Long studyId) {
+        return this.findLatestRevision(studyId).getLeft();
     }
 
     @Override

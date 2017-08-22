@@ -18,7 +18,6 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -31,12 +30,12 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.ui.control.DiagramView;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.ui.control.DiagramView;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -81,9 +80,14 @@ public class DependencyController implements Initializable {
     private DiagramView diagramView;
 
     private Project project;
+    private ParameterLinkRegistry parameterLinkRegistry;
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
     @Override
@@ -110,7 +114,6 @@ public class DependencyController implements Initializable {
         SystemModel systemModel;
         if (sourceGroup.getSelectedToggle() == sourceLocalRadio) {
             systemModel = project.getSystemModel();
-            ParameterLinkRegistry parameterLinkRegistry = project.getParameterLinkRegistry();
             dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
         } else { // if (sourceGroup.getSelectedToggle() == sourceRepositoryRadio) {
             systemModel = project.getRepositoryStudy().getSystemModel();
@@ -163,19 +166,14 @@ public class DependencyController implements Initializable {
     }
 
     private void registerListeners() {
-        RepositoryUpdateListener listener = new RepositoryUpdateListener();
-        project.latestRepositoryModificationProperty().addListener(listener);
-        diagramView.getScene().getWindow().setOnCloseRequest(event -> {
-            project.latestRepositoryModificationProperty().removeListener(listener);
-        });
-    }
-
-    private class RepositoryUpdateListener implements ChangeListener<Number> {
-        @Override
-        public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+        ChangeListener<Number> listener = (observable, oldValue, newValue) -> {
             if (sourceGroup.getSelectedToggle() == sourceRepositoryRadio) {
                 refreshView(null);
             }
-        }
+        };
+        project.latestRepositoryRevisionNumberProperty().addListener(listener);
+        diagramView.getScene().getWindow().setOnCloseRequest(event -> {
+            project.latestRepositoryRevisionNumberProperty().removeListener(listener);
+        });
     }
 }
