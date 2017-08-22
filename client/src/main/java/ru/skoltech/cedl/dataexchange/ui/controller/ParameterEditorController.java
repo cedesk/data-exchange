@@ -61,6 +61,7 @@ import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
 import java.net.URL;
+import java.text.ParseException;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -350,8 +351,10 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     private Double convertTextToDouble(String text) {
         try {
-            return Double.parseDouble(text);
+            return Utils.NUMBER_FORMAT.parse(text).doubleValue();
         } catch (NumberFormatException nfe) {
+            // ignore
+        } catch (ParseException e) {
             // ignore
         }
         return null;

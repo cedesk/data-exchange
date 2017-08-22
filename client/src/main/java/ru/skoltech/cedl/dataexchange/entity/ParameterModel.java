@@ -164,7 +164,8 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         } else if (valueSource == ParameterValueSource.CALCULATION && calculation != null && calculation.valid()) {
             return isReferenceValueOverridden ? overrideValue : calculation.evaluate();
         }
-        return isReferenceValueOverridden ? overrideValue : value; // OUTPUT CAN BE OVERRIDDEN
+        Double effectiveValue = isReferenceValueOverridden ? overrideValue : value; // OUTPUT CAN BE OVERRIDDEN;
+        return effectiveValue != null ? effectiveValue.doubleValue() : Double.NaN;
     }
 
     public String getExportField() {

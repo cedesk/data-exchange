@@ -19,12 +19,14 @@ package ru.skoltech.cedl.dataexchange.ui.control;
 import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
+import ru.skoltech.cedl.dataexchange.Utils;
 
 /**
  * Created by D.Knoll on 02.10.2015.
  */
 public class NumericTextFieldValidator implements EventHandler<KeyEvent> {
-    final Integer maxLength;
+    private final Integer maxLength;
+    private static final String SEPARATOR = String.valueOf(Utils.NUMBER_FORMAT.getDecimalFormatSymbols().getDecimalSeparator());
 
     public NumericTextFieldValidator(Integer maxLength) {
         this.maxLength = maxLength;
@@ -38,12 +40,12 @@ public class NumericTextFieldValidator implements EventHandler<KeyEvent> {
             e.consume();
         }
         String character = e.getCharacter();
-        if (character.matches("[-0-9.]")) {
-            if (text.contains(".") && character.equals(".")) {
+        if (character.matches("[-0-9" + SEPARATOR + "]")) {
+            if (text.contains(SEPARATOR) && character.equals(SEPARATOR)) {
                 e.consume();
             } else if (text.startsWith("-") && character.equals("-")) {
                 e.consume();
-            } else if (text.length() == 0 && character.equals(".")) {
+            } else if (text.length() == 0 && character.equals(SEPARATOR)) {
                 e.consume();
             }
         } else {
