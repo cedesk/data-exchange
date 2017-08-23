@@ -26,7 +26,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -40,7 +40,6 @@ import org.controlsfx.control.textfield.TextFields;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.service.*;
-import ru.skoltech.cedl.dataexchange.service.impl.ParameterDifferenceServiceImpl;
 import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
@@ -55,7 +54,6 @@ import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.net.URL;
@@ -76,7 +74,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     private static final Logger logger = Logger.getLogger(ParameterEditorController.class);
 
     @FXML
-    private AnchorPane parameterEditorPane;
+    private BorderPane parameterEditorPane;
 
     @FXML
     private GridPane propertyPane;
@@ -334,21 +332,22 @@ public class ParameterEditorController implements Initializable, Displayable {
     }
 
     public void chooseSource() {
-        displayReferenceSelectorView(valueReference, valueReferenceText);
+        valueReference = displayReferenceSelectorView(valueReference, valueReferenceText);
     }
 
     public void chooseTarget() {
-        displayReferenceSelectorView(exportReference, exportReferenceText);
+        exportReference = displayReferenceSelectorView(exportReference, exportReferenceText);
     }
 
-    private void displayReferenceSelectorView(ExternalModelReference externalModelReference, TextField externalModelReferenceTextField) {
+    private ExternalModelReference displayReferenceSelectorView(ExternalModelReference externalModelReference, TextField externalModelReferenceTextField) {
         List<ExternalModel> externalModels = editingParameterModel.getParent().getExternalModels();
-        EventHandler<Event> applyEventHandler = new ExternalModelReferenceEventHandler(exportReference, externalModelReferenceTextField);
+        ExternalModelReferenceEventHandler applyEventHandler = new ExternalModelReferenceEventHandler(externalModelReference, externalModelReferenceTextField);
 
         ViewBuilder referenceSelectorViewBuilder = guiService.createViewBuilder("Reference Selector", Views.REFERENCE_SELECTOR_VIEW);
         referenceSelectorViewBuilder.ownerWindow(ownerStage);
         referenceSelectorViewBuilder.applyEventHandler(applyEventHandler);
         referenceSelectorViewBuilder.showAndWait(externalModelReference, externalModels);
+        return applyEventHandler.externalModelReference;
     }
 
     public void editCalculation() {
