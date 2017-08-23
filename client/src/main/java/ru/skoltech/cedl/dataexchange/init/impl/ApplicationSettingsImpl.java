@@ -221,6 +221,9 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
 
     @Override
     public String getProjectUserName() {
+        if (this.projectUseOsUser || projectUserName == null || projectUserName.isEmpty()) {
+            return System.getProperty("user.name").toLowerCase();
+        }
         return projectUserName;
     }
 

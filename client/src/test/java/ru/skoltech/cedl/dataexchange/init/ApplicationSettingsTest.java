@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.init;
 
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.init.impl.ApplicationSettingsImpl;
 
 import java.io.File;
 import java.io.IOException;
@@ -119,6 +120,30 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
         newSettingsProps = ApplicationSettingsInitializer.applicationSettings(cedeskAppFile);
         testGetApplicationSettings(newSettingsProps);
         assertThat(newSettingsProps.get(REPOSITORY_HOST), is(newRepositoryHost));
+    }
+
+    @Test
+    public void testProjectUserName() {
+        String projectUserName = "projectUserName";
+        String osUserName = System.getProperty("user.name");
+
+        ApplicationSettingsImpl applicationSettings = new ApplicationSettingsImpl(this.applicationSettings.getCedeskAppDir(), this.applicationSettings.getCedeskAppFile());
+
+        applicationSettings.setProjectUseOsUser(false);
+        assertThat(applicationSettings.getProjectUserName(), is(osUserName));
+
+        applicationSettings.setProjectUserName(null);
+        assertThat(applicationSettings.getProjectUserName(), is(osUserName));
+
+        applicationSettings.setProjectUserName("");
+        assertThat(applicationSettings.getProjectUserName(), is(osUserName));
+
+        applicationSettings.setProjectUseOsUser(true);
+        applicationSettings.setProjectUserName(projectUserName);
+        assertThat(applicationSettings.getProjectUserName(), is(osUserName));
+
+        applicationSettings.setProjectUseOsUser(false);
+        assertThat(applicationSettings.getProjectUserName(), is(projectUserName));
     }
 
     private void testGetApplicationSettings(Properties appSettingsProps) {

@@ -222,9 +222,12 @@ public interface ApplicationSettings {
 
     /**
      * Retrieve current last time loaded project user name.
+     * Is property {@link ApplicationSettings#isProjectUseOsUser()} is <i>true</i>
+     * or this property is <i>null</i> or empty string, then current OS user returns.
      * It is user specific (stored in <i>application.settings</i>) property.
      *
-     * @return current last time loaded project user name
+     * @return current last time loaded project user name, in case of <i>null</i>, empty value or
+     * {@link ApplicationSettings#isProjectUseOsUser()} set as <i>true</i> current OS user returns.
      */
     String getProjectUserName();
 
