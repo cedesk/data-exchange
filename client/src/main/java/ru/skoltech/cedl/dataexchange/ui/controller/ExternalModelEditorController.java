@@ -55,7 +55,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for editing external model.
- *
+ * <p>
  * Created by D.Knoll on 03.07.2015.
  */
 public class ExternalModelEditorController implements Initializable {

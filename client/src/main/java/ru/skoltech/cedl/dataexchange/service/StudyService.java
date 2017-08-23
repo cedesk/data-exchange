@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * Operations with {@link Study}.
- *
+ * <p>
  * Created by Nikolay Groshkov on 06-Jul-17.
  */
 public interface StudyService {
@@ -36,7 +36,7 @@ public interface StudyService {
     /**
      * Create {@link Study} based on {@link SystemModel} and {@link UserManagement}.
      *
-     * @param systemModel system model to base on
+     * @param systemModel    system model to base on
      * @param userManagement user management to base on
      * @return new instance of {@link Study}
      */
@@ -69,7 +69,7 @@ public interface StudyService {
      * Saves an study and tag produced revision.
      *
      * @param study study to save
-     * @param tag for tag new revision
+     * @param tag   for tag new revision
      * @return the saved study
      */
     Study saveStudy(Study study, String tag);
@@ -95,7 +95,7 @@ public interface StudyService {
      * Tag a current revision of a study.
      *
      * @param study study which current revision to tag
-     * @param tag for tag new revision
+     * @param tag   for tag new revision
      */
     void tagStudy(Study study, String tag);
 
@@ -110,14 +110,14 @@ public interface StudyService {
      * Clean tag of revision entity of specified {@link Study} which has a specified tag.
      *
      * @param study of which tagged revision entity to search for
-     * @param tag tag to clean
+     * @param tag   tag to clean
      */
     void untagStudy(Study study, String tag);
 
     /**
      * Retrieve an instance of {@link Study} from it revision history by revision number.
      *
-     * @param study which revision to search for
+     * @param study          which revision to search for
      * @param revisionNumber revision number of searched {@link Study}
      * @return Study from revision
      */
@@ -125,6 +125,7 @@ public interface StudyService {
 
     /**
      * Remove a {@link Study} with a specified name.
+     *
      * @param studyName name of the {@link Study}
      */
     void deleteStudyByName(String studyName);

@@ -48,7 +48,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for unit management.
- *
+ * <p>
  * Created by d.knoll on 27.08.2015.
  */
 public class UnitManagementController implements Initializable, Closeable {
@@ -137,7 +137,7 @@ public class UnitManagementController implements Initializable, Closeable {
             windowEvent.consume();
         } else if (result.get() == yesButton) {
             saveUnits();
-        } else if (result.get() == noButton){
+        } else if (result.get() == noButton) {
             project.loadUnitManagement();
         }
     }

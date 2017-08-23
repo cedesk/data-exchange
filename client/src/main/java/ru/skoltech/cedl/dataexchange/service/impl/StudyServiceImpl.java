@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link StudyService}.
- *
+ * <p>
  * Created by dknoll on 25/05/15.
  */
 public class StudyServiceImpl implements StudyService {
@@ -100,7 +100,7 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public String findCurrentStudyRevisionTag(Study study) {
         long studyId = study.getId();
-        if(studyId == 0) return ""; // quick return for unstored studies
+        if (studyId == 0) return ""; // quick return for unstored studies
         CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(studyId, Study.class);
         return revisionEntity.getTag();
     }

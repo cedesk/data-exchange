@@ -539,7 +539,7 @@ public class Project {
         }
     }
 
-     private void initializeStateOfExternalModels() {
+    private void initializeStateOfExternalModels() {
         externalModelFileWatcher.clear();
         externalModelFileHandler.getChangedExternalModels().clear();
         Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), new AccessChecker());
@@ -658,6 +658,7 @@ public class Project {
         String schema = applicationSettings.getRepositorySchemaName();
         return fileStorageService.dataDir(hostname, schema, projectName);
     }
+
     @Override
     public String toString() {
         return "Project{" +

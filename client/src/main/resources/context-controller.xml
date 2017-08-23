@@ -19,26 +19,27 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <import resource="context-base.xml" />
-    <import resource="context-model.xml" />
-    <import resource="context-service.xml" />
+    <import resource="context-base.xml"/>
+    <import resource="context-model.xml"/>
+    <import resource="context-service.xml"/>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.MainController" init-method="init" destroy-method="destroy">
-        <property name="modelEditingController" ref="modelEditingController" />
-        <property name="applicationSettings" ref="applicationSettings" />
-        <property name="actionLogger" ref="actionLogger" />
-        <property name="project" ref="project" />
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.MainController" init-method="init"
+          destroy-method="destroy">
+        <property name="modelEditingController" ref="modelEditingController"/>
+        <property name="applicationSettings" ref="applicationSettings"/>
+        <property name="actionLogger" ref="actionLogger"/>
+        <property name="project" ref="project"/>
         <property name="guiService" ref="guiService"/>
         <property name="studyService" ref="studyService"/>
-        <property name="fileStorageService" ref="fileStorageService" />
-        <property name="differenceMergeService" ref="differenceMergeService" />
-        <property name="updateService" ref="updateService" />
+        <property name="fileStorageService" ref="fileStorageService"/>
+        <property name="differenceMergeService" ref="differenceMergeService"/>
+        <property name="updateService" ref="updateService"/>
         <property name="repositorySchemeService" ref="repositorySchemeService"/>
-        <property name="logEntryService" ref="logEntryService" />
-        <property name="systemBuilderFactory" ref="systemBuilderFactory" />
+        <property name="logEntryService" ref="logEntryService"/>
+        <property name="systemBuilderFactory" ref="systemBuilderFactory"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
-        <property name="executor" ref="executor" />
+        <property name="executor" ref="executor"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ChangeAnalysisController">
@@ -62,14 +63,15 @@
         <property name="project" ref="project"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="guiService" ref="guiService"/>
-        <property name="modelUpdateService" ref="modelUpdateService" />
-        <property name="unitManagementService" ref="unitManagementService" />
+        <property name="modelUpdateService" ref="modelUpdateService"/>
+        <property name="unitManagementService" ref="unitManagementService"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
     </bean>
 
-    <bean id="externalModelEditorController" class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelEditorController">
+    <bean id="externalModelEditorController"
+          class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelEditorController">
         <property name="project" ref="project"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="guiService" ref="guiService"/>

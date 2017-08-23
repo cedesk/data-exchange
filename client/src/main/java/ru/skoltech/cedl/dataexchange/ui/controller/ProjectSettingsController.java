@@ -40,7 +40,7 @@ import java.util.ResourceBundle;
 
 /**
  * Controller for adjustment of project settings.
- *
+ * <p>
  * Created by D.Knoll on 22.07.2015.
  */
 public class ProjectSettingsController implements Initializable, Displayable, Closeable {

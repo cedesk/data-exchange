@@ -70,7 +70,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for parameter editing.
- *
+ * <p>
  * Created by D.Knoll on 03.07.2015.
  */
 public class ParameterEditorController implements Initializable, Displayable {

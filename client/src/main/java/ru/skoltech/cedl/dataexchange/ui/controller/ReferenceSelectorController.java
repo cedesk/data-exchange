@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for reference selector.
- *
+ * <p>
  * Created by dknoll on 01/07/15.
  */
 public class ReferenceSelectorController implements Initializable, Displayable, Applicable {
@@ -130,7 +130,7 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
                 referenceText.textProperty().setValue(reference.toString());
                 List<String> sheetNames = getSheetNames();
                 sheetChooser.setItems(FXCollections.observableArrayList(sheetNames));
-                if(sheetNames.isEmpty()) {
+                if (sheetNames.isEmpty()) {
                     clearGrid();
                 }
             }

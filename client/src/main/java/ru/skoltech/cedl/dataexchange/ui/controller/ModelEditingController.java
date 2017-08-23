@@ -67,7 +67,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for model editing.
- *
+ * <p>
  * Created by D.Knoll on 20.03.2015.
  */
 public class ModelEditingController implements Initializable {

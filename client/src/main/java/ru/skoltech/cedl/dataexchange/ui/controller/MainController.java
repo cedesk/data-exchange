@@ -78,7 +78,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for main application window.
- *
+ * <p>
  * Created by Nikolay Groshkov on 19-Jul-17.
  */
 public class MainController implements Initializable, Displayable, Closeable {
@@ -200,7 +200,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.executor = executor;
     }
 
-    public void init(){
+    public void init() {
         project.start();
     }
 
@@ -279,7 +279,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
 
-    private void checkVersionUpdate(){
+    private void checkVersionUpdate() {
         String appVersion = applicationSettings.getApplicationVersion();
         if (ApplicationPackage.isRelease(appVersion)) {
             executor.execute(() -> {
@@ -335,7 +335,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             workSessionAnalysis.printWorkSessions();
 
             Optional<ButtonType> showResults = Dialogues.chooseYesNo("Show results", "Do you want to open the analysis results spreadsheet?");
-            if(showResults.isPresent() && showResults.get() == ButtonType.YES) {
+            if (showResults.isPresent() && showResults.get() == ButtonType.YES) {
                 Desktop desktop = Desktop.getDesktop();
                 if (sessionsCsvFile.isFile() && desktop.isSupported(Desktop.Action.EDIT)) {
                     desktop.edit(sessionsCsvFile);
@@ -713,7 +713,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void reloadProject() {
         modelEditingController.clearView();
-        String projectName =  project.getProjectName();
+        String projectName = project.getProjectName();
         try {
             boolean success = project.loadCurrentLocalStudy();
             if (success) {
@@ -749,8 +749,8 @@ public class MainController implements Initializable, Displayable, Closeable {
                 if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
                     // TODO merge remote changes
                     List<ModelDifference> modelDifferences = differenceMergeService.computeStudyDifferences(project.getStudy(),
-                                                                                                            project.getRepositoryStudy(),
-                                                                                                            project.getStudy().getLatestModelModification());
+                            project.getRepositoryStudy(),
+                            project.getStudy().getLatestModelModification());
                     List<ModelDifference> appliedChanges = differenceMergeService.mergeChangesOntoFirst(project, parameterLinkRegistry,
                             externalModelFileHandler, modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
