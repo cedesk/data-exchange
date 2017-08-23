@@ -28,12 +28,12 @@ import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
+import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,6 +50,7 @@ public class ModelXmlMappingTest extends AbstractApplicationContextTest {
 
     private SystemBuilder systemBuilder;
     private FileStorageService fileStorageService;
+    private NodeDifferenceService nodeDifferenceService;
 
     private SystemModel m1;
     private SystemModel m2;
@@ -60,6 +61,7 @@ public class ModelXmlMappingTest extends AbstractApplicationContextTest {
         Project project = context.getBean(Project.class);
         systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
         fileStorageService = context.getBean(FileStorageService.class);
+        nodeDifferenceService = context.getBean(NodeDifferenceService.class);
 
         project.init("project");
         UnitManagement unitManagement = context.getBean(UnitManagementService.class).loadDefaultUnitManagement();
@@ -125,7 +127,7 @@ public class ModelXmlMappingTest extends AbstractApplicationContextTest {
         // Re-import
         SystemModel s2 = fileStorageService.loadSystemModel(file);
 
-        List<ModelDifference> modelDifferences = NodeDifference.computeDifferences(s1, s2, -1);
+        List<ModelDifference> modelDifferences = nodeDifferenceService.computeNodeDifferences(s1, s2, -1);
         for (ModelDifference modelDifference : modelDifferences) {
             System.out.println(modelDifference);
         }

@@ -24,6 +24,8 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.service.ParameterDifferenceService;
+import ru.skoltech.cedl.dataexchange.service.impl.ParameterDifferenceServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 
@@ -34,10 +36,25 @@ import static ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference
 /**
  * Created by D.Knoll on 25.05.2017.
  */
-public class ParameterDifferenceTest {
+public class ParameterDifferenceServiceTest {
 
+    private ParameterDifferenceService parameterDifferenceService;
     private SystemModel localSystem;
     private SystemModel remoteSystem;
+
+    @Before
+    public void prepare() {
+        parameterDifferenceService = new ParameterDifferenceServiceImpl();
+
+        localSystem = new SystemModel();
+        localSystem.setName("S-1");
+        localSystem.setLastModification(System.currentTimeMillis() - 5000);
+
+        remoteSystem = new SystemModel();
+        remoteSystem.setUuid(localSystem.getUuid());
+        remoteSystem.setLastModification(localSystem.getLastModification());
+        remoteSystem.setName("S-2");
+    }
 
     @Test
     public void localParameterAdd() throws Exception {
@@ -46,8 +63,8 @@ public class ParameterDifferenceTest {
 
         Assert.assertEquals(1, localSystem.getParameters().size());
 
-        List<ParameterDifference> differences;
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ParameterDifference> differences =
+                parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
@@ -59,7 +76,7 @@ public class ParameterDifferenceTest {
 
         Assert.assertEquals(0, localSystem.getParameters().size());
 
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
 
     }
@@ -75,8 +92,8 @@ public class ParameterDifferenceTest {
 
         param2.setValue(param1.getValue() * 2);
 
-        List<ParameterDifference> differences;
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ParameterDifference> differences =
+                parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
@@ -90,8 +107,7 @@ public class ParameterDifferenceTest {
         Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
         Assert.assertTrue(localSystem.getParameters().get(0).getParent() == localSystem);
 
-
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
     }
 
@@ -119,8 +135,8 @@ public class ParameterDifferenceTest {
         paramL1.setValueLink(paramLx);
         Assert.assertNotEquals(remoteSystem.getParameters().get(0).getValueLink(), localSystem.getParameters().get(0).getValueLink());
 
-        List<ParameterDifference> differences;
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ParameterDifference> differences
+                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         System.out.println(pd);
@@ -139,7 +155,7 @@ public class ParameterDifferenceTest {
         Assert.assertEquals(paramL2, localSystem.getParameters().get(1));
         Assert.assertEquals(paramR2, localSystem.getParameters().get(0).getValueLink());
 
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
     }
 
@@ -149,8 +165,8 @@ public class ParameterDifferenceTest {
         existingRemoteParam.setLastModification(remoteSystem.getLastModification() - 100);// parameter it was part of last modification
         remoteSystem.addParameter(existingRemoteParam);
 
-        List<ParameterDifference> differences;
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ParameterDifference> differences
+                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
@@ -163,20 +179,8 @@ public class ParameterDifferenceTest {
         Assert.assertEquals(1, localSystem.getParameters().size());
         Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
 
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
-    }
-
-    @Before
-    public void prepare() {
-        localSystem = new SystemModel();
-        localSystem.setName("S-1");
-        localSystem.setLastModification(System.currentTimeMillis() - 5000);
-
-        remoteSystem = new SystemModel();
-        remoteSystem.setUuid(localSystem.getUuid());
-        remoteSystem.setLastModification(localSystem.getLastModification());
-        remoteSystem.setName("S-2");
     }
 
     @Test
@@ -187,8 +191,8 @@ public class ParameterDifferenceTest {
 
         Assert.assertTrue(localSystem.findLatestModification() < paramRemote.getLastModification());
 
-        List<ParameterDifference> differences;
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ParameterDifference> differences
+                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, pd.getChangeLocation());
@@ -200,7 +204,7 @@ public class ParameterDifferenceTest {
         Assert.assertEquals(1, localSystem.getParameters().size());
         Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
 
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
     }
 
@@ -216,8 +220,8 @@ public class ParameterDifferenceTest {
         param1.setValue(param1.getValue() * 2);
         param1.setLastModification(System.currentTimeMillis());
 
-        List<ParameterDifference> differences;
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ParameterDifference> differences
+                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, pd.getChangeLocation());
@@ -229,7 +233,7 @@ public class ParameterDifferenceTest {
         Assert.assertEquals(1, localSystem.getParameters().size());
         Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
 
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
     }
 
@@ -239,8 +243,8 @@ public class ParameterDifferenceTest {
         existingLocalParam.setLastModification(localSystem.getLastModification() - 100); // parameter was part of last modification
         localSystem.addParameter(existingLocalParam);
 
-        List<ParameterDifference> differences;
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ParameterDifference> differences
+                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, pd.getChangeLocation());
@@ -251,7 +255,7 @@ public class ParameterDifferenceTest {
 
         Assert.assertEquals(0, localSystem.getParameters().size());
 
-        differences = ParameterDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
     }
 

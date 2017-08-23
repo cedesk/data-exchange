@@ -53,7 +53,15 @@
     <bean id="differenceMergeService" class="ru.skoltech.cedl.dataexchange.service.impl.DifferenceMergeServiceImpl">
         <property name="modelUpdateService" ref="modelUpdateService"/>
         <property name="studyService" ref="studyService"/>
+        <property name="nodeDifferenceService" ref="nodeDifferenceService"/>
     </bean>
+
+    <bean id="nodeDifferenceService" class="ru.skoltech.cedl.dataexchange.service.impl.NodeDifferenceServiceImpl">
+        <property name="parameterDifferenceService" ref="parameterDifferenceService"/>
+        <property name="externalModelDifferenceService" ref="externalModelDifferenceService"/>
+    </bean>
+    <bean id="parameterDifferenceService" class="ru.skoltech.cedl.dataexchange.service.impl.ParameterDifferenceServiceImpl"/>
+    <bean id="externalModelDifferenceService" class="ru.skoltech.cedl.dataexchange.service.impl.ExternalModelDifferenceServiceImpl"/>
 
     <bean id="repositorySchemeService" class="ru.skoltech.cedl.dataexchange.service.impl.RepositorySchemeServiceImpl">
         <property name="applicationSettings" ref="applicationSettings"/>

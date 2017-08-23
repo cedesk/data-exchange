@@ -42,7 +42,6 @@ import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
-import ru.skoltech.cedl.dataexchange.repository.jpa.TradespaceRepository;
 import ru.skoltech.cedl.dataexchange.service.DifferenceMergeService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -86,9 +85,6 @@ public class DiffController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public void setTradespaceRepository(TradespaceRepository tradespaceRepository) {
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {

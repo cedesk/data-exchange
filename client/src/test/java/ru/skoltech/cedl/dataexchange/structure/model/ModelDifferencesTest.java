@@ -23,10 +23,13 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
+import ru.skoltech.cedl.dataexchange.service.impl.ExternalModelDifferenceServiceImpl;
+import ru.skoltech.cedl.dataexchange.service.impl.NodeDifferenceServiceImpl;
+import ru.skoltech.cedl.dataexchange.service.impl.ParameterDifferenceServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 
 import java.util.List;
 
@@ -37,8 +40,23 @@ import static ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference
  */
 public class ModelDifferencesTest {
 
+    private NodeDifferenceService nodeDifferenceService;
     private SystemModel s1;
     private SystemModel s2;
+
+    @Before
+    public void prepare() {
+        NodeDifferenceServiceImpl modelDifferenceServiceImpl = new NodeDifferenceServiceImpl();
+        modelDifferenceServiceImpl.setParameterDifferenceService(new ParameterDifferenceServiceImpl());
+        modelDifferenceServiceImpl.setExternalModelDifferenceService(new ExternalModelDifferenceServiceImpl());
+        nodeDifferenceService = modelDifferenceServiceImpl;
+
+        s1 = new SystemModel();
+        s1.setName("S-1");
+        s2 = new SystemModel();
+        s2.setUuid(s1.getUuid());
+        s2.setName("S-2");
+    }
 
     @Test
     public void equalNodes() {
@@ -48,19 +66,9 @@ public class ModelDifferencesTest {
         s1 = systemBuilder.build("testSystem");
         s2 = s1;
         Assert.assertTrue(s1.equals(s2));
-        List<ModelDifference> modelDifferences =
-                NodeDifference.computeDifferences(s1, s2, -1);
+        List<ModelDifference> modelDifferences = nodeDifferenceService.computeNodeDifferences(s1, s2, -1);
         System.err.println(modelDifferences);
         Assert.assertEquals(0, modelDifferences.size());
-    }
-
-    @Before
-    public void prepare() {
-        s1 = new SystemModel();
-        s1.setName("S-1");
-        s2 = new SystemModel();
-        s2.setUuid(s1.getUuid());
-        s2.setName("S-2");
     }
 
     @Test
@@ -84,7 +92,7 @@ public class ModelDifferencesTest {
         s2.addSubNode(su1);
 
         List<ModelDifference> modelDifferences =
-                NodeDifference.computeDifferences(s1, s2, loadTime);
+                nodeDifferenceService.computeNodeDifferences(s1, s2, loadTime);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(3, modelDifferences.size());
@@ -96,7 +104,7 @@ public class ModelDifferencesTest {
     @Test
     public void twoNodeDiffersOnlyInName() {
         List<ModelDifference> modelDifferences =
-                NodeDifference.computeDifferences(s1, s2, -1);
+                nodeDifferenceService.computeNodeDifferences(s1, s2, -1);
 
         Assert.assertEquals(1, modelDifferences.size());
     }
@@ -107,7 +115,7 @@ public class ModelDifferencesTest {
         p3.setLastModification(System.currentTimeMillis());
         s2.addParameter(p3);
         List<ModelDifference> modelDifferences =
-                NodeDifference.computeDifferences(s1, s2, -1);
+                nodeDifferenceService.computeNodeDifferences(s1, s2, -1);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(2, modelDifferences.size());
@@ -128,7 +136,7 @@ public class ModelDifferencesTest {
         u2.addParameter(p2);
 
         List<ModelDifference> modelDifferences =
-                NodeDifference.computeDifferences(s1, s2, -1);
+                nodeDifferenceService.computeNodeDifferences(s1, s2, -1);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(2, modelDifferences.size());
@@ -145,7 +153,7 @@ public class ModelDifferencesTest {
         u2.setUuid(u1.getUuid());
         s2.addSubNode(u2);
         List<ModelDifference> modelDifferences =
-                NodeDifference.computeDifferences(s1, s2, -1);
+                nodeDifferenceService.computeNodeDifferences(s1, s2, -1);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(2, modelDifferences.size());

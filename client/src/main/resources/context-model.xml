@@ -42,6 +42,7 @@
         <property name="userManagementService" ref="userManagementService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="unitManagementService" ref="unitManagementService"/>
+        <property name="nodeDifferenceService" ref="nodeDifferenceService"/>
     </bean>
 
     <util:map id="builderRegistry" map-class="java.util.HashMap">

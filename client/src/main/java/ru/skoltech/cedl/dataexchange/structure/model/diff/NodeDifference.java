@@ -39,7 +39,7 @@ public class NodeDifference extends ModelDifference {
 
     private ModelNode node2;
 
-    private NodeDifference(ModelNode node1, ModelNode node2, String attribute, ChangeType changeType,
+    public NodeDifference(ModelNode node1, ModelNode node2, String attribute, ChangeType changeType,
                            ChangeLocation changeLocation, String value1, String value2) {
         this.node1 = node1;
         this.node2 = node2;
@@ -50,7 +50,7 @@ public class NodeDifference extends ModelDifference {
         this.value2 = value2;
     }
 
-    private NodeDifference(ModelNode parent, ModelNode node1, String attribute, ChangeType changeType, ChangeLocation changeLocation) {
+    public NodeDifference(ModelNode parent, ModelNode node1, String attribute, ChangeType changeType, ChangeLocation changeLocation) {
         this.parent = parent;
         this.node1 = node1;
         this.attribute = attribute;
@@ -95,76 +95,6 @@ public class NodeDifference extends ModelDifference {
     @Override
     public boolean isRevertible() {
         return changeLocation == ChangeLocation.ARG1;
-    }
-
-    public static NodeDifference createNodeAttributesModified(ModelNode node1, ModelNode node2, String attribute,
-                                                              String value1, String value2) {
-        boolean n2newer = node2.isNewerThan(node1);
-        ChangeLocation changeLocation = n2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
-        return new NodeDifference(node1, node2, attribute, ChangeType.MODIFY, changeLocation, value1, value2);
-    }
-
-    public static NodeDifference createAddedNode(ModelNode parent, ModelNode node1, String name, ChangeLocation changeLocation) {
-        return new NodeDifference(parent, node1, name, ChangeType.ADD, changeLocation);
-    }
-
-    public static NodeDifference createRemovedNode(ModelNode parent, ModelNode node1, String name, ChangeLocation changeLocation) {
-        return new NodeDifference(parent, node1, name, ChangeType.REMOVE, changeLocation);
-    }
-
-    public static List<ModelDifference> differencesOnSubNodes(CompositeModelNode m1, CompositeModelNode m2, long latestStudy1Modification) {
-        LinkedList<ModelDifference> subnodesDifferences = new LinkedList<>();
-        Map<String, Object> m1SubNodesMap = (Map<String, Object>) m1.getSubNodes().stream().collect(
-                Collectors.toMap(ModelNode::getUuid, Function.<ModelNode>identity())
-        );
-        Map<String, Object> m2SubNodesMap = (Map<String, Object>) m2.getSubNodes().stream().collect(
-                Collectors.toMap(ModelNode::getUuid, Function.<ModelNode>identity())
-        );
-
-        Set<String> allSubnodes = new HashSet<>();
-        allSubnodes.addAll(m1SubNodesMap.keySet());
-        allSubnodes.addAll(m2SubNodesMap.keySet());
-
-        for (String nodeUuid : allSubnodes) {
-            ModelNode s1 = (ModelNode) m1SubNodesMap.get(nodeUuid);
-            ModelNode s2 = (ModelNode) m2SubNodesMap.get(nodeUuid);
-
-            if (s1 != null && s2 == null) {
-                if (s1.getLastModification() == null) {  // model 1 was newly added
-                    subnodesDifferences.add(createAddedNode(m1, s1, s1.getName(), ChangeLocation.ARG1));
-                } else {  // model 2 was deleted
-                    subnodesDifferences.add(createRemovedNode(m1, s1, s1.getName(), ChangeLocation.ARG2));
-                }
-            } else if (s1 == null && s2 != null) {
-                Objects.requireNonNull(s2.getLastModification(), "persisted parameters always should have the timestamp set");
-                if (s2.getLastModification() > latestStudy1Modification) { // node 2 was added
-                    subnodesDifferences.add(createAddedNode(m1, s2, s2.getName(), ChangeLocation.ARG2));
-                } else { // node 2 was deleted
-                    subnodesDifferences.add(createRemovedNode(m1, s2, s2.getName(), ChangeLocation.ARG1));
-                }
-            } else {
-                // depth search
-                subnodesDifferences.addAll(computeDifferences(s1, s2, latestStudy1Modification));
-            }
-        }
-        return subnodesDifferences;
-    }
-
-    public static List<ModelDifference> computeDifferences(ModelNode m1, ModelNode m2, long latestStudy1Modification) {
-        Objects.requireNonNull(m1);
-        Objects.requireNonNull(m2);
-        LinkedList<ModelDifference> modelDifferences = new LinkedList<>();
-        if (!m1.getName().equals(m2.getName())) {
-            String value1 = m1.getName();
-            String value2 = m2.getName();
-            modelDifferences.add(createNodeAttributesModified(m1, m2, "name", value1, value2));
-        }
-        modelDifferences.addAll(ParameterDifference.computeDifferences(m1, m2, latestStudy1Modification));
-        modelDifferences.addAll(ExternalModelDifference.computeDifferences(m1, m2, latestStudy1Modification));
-        if (m1 instanceof CompositeModelNode && m2 instanceof CompositeModelNode) {
-            modelDifferences.addAll(differencesOnSubNodes((CompositeModelNode) m1, (CompositeModelNode) m2, latestStudy1Modification));
-        }
-        return modelDifferences;
     }
 
     @Override

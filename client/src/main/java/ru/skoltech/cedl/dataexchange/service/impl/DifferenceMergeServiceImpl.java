@@ -26,19 +26,16 @@ import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.service.DifferenceMergeService;
+import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-
-import static ru.skoltech.cedl.dataexchange.Utils.TIME_AND_DATE_FOR_USER_INTERFACE;
 
 /**
  * Created by d.knoll on 24/05/2017.
@@ -49,13 +46,70 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
 
     private StudyService studyService;
     private ModelUpdateService modelUpdateService;
+    private NodeDifferenceService nodeDifferenceService;
+
+    public void setStudyService(StudyService studyService) {
+        this.studyService = studyService;
+    }
 
     public void setModelUpdateService(ModelUpdateService modelUpdateService) {
         this.modelUpdateService = modelUpdateService;
     }
 
-    public void setStudyService(StudyService studyService) {
-        this.studyService = studyService;
+    public void setNodeDifferenceService(NodeDifferenceService nodeDifferenceService) {
+        this.nodeDifferenceService = nodeDifferenceService;
+    }
+
+    @Override
+    public List<ModelDifference> computeStudyDifferences(Study s1, Study s2, long latestStudy1Modification) {
+        List<ModelDifference> modelDifferences = new LinkedList<>();
+
+        // attributes
+        List<AttributeDifference> attributeDifferences = getAttributeDifferences(s1, s2);
+        if (!attributeDifferences.isEmpty()) {
+            modelDifferences.add(createStudyAttributesModified(s1, s2, attributeDifferences));
+        }
+        // system model
+        SystemModel systemModel1 = s1.getSystemModel();
+        SystemModel sSystemModel2 = s2.getSystemModel();
+        if (systemModel1 != null && sSystemModel2 != null) {
+            modelDifferences.addAll(nodeDifferenceService.computeNodeDifferences(systemModel1, sSystemModel2, latestStudy1Modification));
+        }
+        return modelDifferences;
+    }
+
+    @Override
+    public ModelDifference createStudyAttributesModified(Study study1, Study study2, List<AttributeDifference> differences) {
+        StringBuilder sbAttributes = new StringBuilder(), sbValues1 = new StringBuilder(), sbValues2 = new StringBuilder();
+        for (AttributeDifference diff : differences) {
+            if (sbAttributes.length() > 0) {
+                sbAttributes.append('\n');
+                sbValues1.append('\n');
+                sbValues2.append('\n');
+            }
+            sbAttributes.append(diff.attributeName);
+            sbValues1.append(diff.value1);
+            sbValues2.append(diff.value2);
+        }
+        boolean p2newer = isNewer(study1, study2);
+        ModelDifference.ChangeLocation changeLocation = p2newer ? ModelDifference.ChangeLocation.ARG2 : ModelDifference.ChangeLocation.ARG1;
+        return new StudyDifference(study1, study2, ModelDifference.ChangeType.MODIFY, changeLocation, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString(), studyService);
+    }
+
+    @Override
+    public List<ModelDifference> mergeChangesOntoFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                                                       ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException {
+        List<ModelDifference> appliedDifferences = new LinkedList<>();
+        for (ModelDifference modelDifference : modelDifferences) {
+            if (modelDifference.isMergeable()) {
+                boolean success = mergeOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
+                if (success) {
+                    appliedDifferences.add(modelDifference);
+                }
+            }
+        }
+        modelDifferences.removeAll(appliedDifferences);
+        return appliedDifferences;
     }
 
     @Override
@@ -71,6 +125,22 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
             return updateCacheAndParameters(project, parameterLinkRegistry, externalModelFileHandler, externalModel);
         }
         return true;
+    }
+
+    @Override
+    public List<ModelDifference> revertChangesOnFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
+                                                      ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException {
+        List<ModelDifference> appliedDifferences = new LinkedList<>();
+        for (ModelDifference modelDifference : modelDifferences) {
+            if (modelDifference.isRevertible()) {
+                boolean success = revertOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
+                if (success) {
+                    appliedDifferences.add(modelDifference);
+                }
+            }
+        }
+        modelDifferences.removeAll(appliedDifferences);
+        return appliedDifferences;
     }
 
     @Override
@@ -106,74 +176,6 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         return true;
     }
 
-    @Override
-    public List<ModelDifference> mergeChangesOntoFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                                                       ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException {
-        List<ModelDifference> appliedDifferences = new LinkedList<>();
-        for (ModelDifference modelDifference : modelDifferences) {
-            if (modelDifference.isMergeable()) {
-                boolean success = mergeOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
-                if (success) {
-                    appliedDifferences.add(modelDifference);
-                }
-            }
-        }
-        modelDifferences.removeAll(appliedDifferences);
-        return appliedDifferences;
-    }
-
-    @Override
-    public List<ModelDifference> revertChangesOnFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                                                      ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException {
-        List<ModelDifference> appliedDifferences = new LinkedList<>();
-        for (ModelDifference modelDifference : modelDifferences) {
-            if (modelDifference.isRevertible()) {
-                boolean success = revertOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
-                if (success) {
-                    appliedDifferences.add(modelDifference);
-                }
-            }
-        }
-        modelDifferences.removeAll(appliedDifferences);
-        return appliedDifferences;
-    }
-
-    @Override
-    public List<ModelDifference> computeStudyDifferences(Study s1, Study s2, long latestStudy1Modification) {
-        List<ModelDifference> modelDifferences = new LinkedList<>();
-
-        // attributes
-        List<AttributeDifference> attributeDifferences = getAttributeDifferences(s1, s2);
-        if (!attributeDifferences.isEmpty()) {
-            modelDifferences.add(createStudyAttributesModified(s1, s2, attributeDifferences));
-        }
-        // system model
-        SystemModel systemModel1 = s1.getSystemModel();
-        SystemModel sSystemModel2 = s2.getSystemModel();
-        if (systemModel1 != null && sSystemModel2 != null) {
-            modelDifferences.addAll(NodeDifference.computeDifferences(systemModel1, sSystemModel2, latestStudy1Modification));
-        }
-        return modelDifferences;
-    }
-
-    @Override
-    public ModelDifference createStudyAttributesModified(Study study1, Study study2, List<AttributeDifference> differences) {
-        StringBuilder sbAttributes = new StringBuilder(), sbValues1 = new StringBuilder(), sbValues2 = new StringBuilder();
-        for (AttributeDifference diff : differences) {
-            if (sbAttributes.length() > 0) {
-                sbAttributes.append('\n');
-                sbValues1.append('\n');
-                sbValues2.append('\n');
-            }
-            sbAttributes.append(diff.attributeName);
-            sbValues1.append(diff.value1);
-            sbValues2.append(diff.value2);
-        }
-        boolean p2newer = isNewer(study1, study2);
-        ModelDifference.ChangeLocation changeLocation = p2newer ? ModelDifference.ChangeLocation.ARG2 : ModelDifference.ChangeLocation.ARG1;
-        return new StudyDifference(study1, study2, ModelDifference.ChangeType.MODIFY, changeLocation, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString(), studyService);
-    }
-
     /**
      * @return true if s2 is newer than s1
      */
@@ -197,25 +199,21 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         }
         if ((study1.getUserRoleManagement() == null && study2.getUserRoleManagement() != null) || (study1.getUserRoleManagement() != null && study2.getUserRoleManagement() == null)
                 || (study1.getUserRoleManagement() != null && !study1.getUserRoleManagement().equals(study2.getUserRoleManagement()))) {
-            differences.add(new AttributeDifference("userRoleManagement", toHash(study1.getUserRoleManagement()), toHash(study2.getUserRoleManagement())));
+            UserRoleManagement urm1 = study1.getUserRoleManagement();
+            UserRoleManagement urm2 = study1.getUserRoleManagement();
+            String urmHash1 = urm1 != null ? String.valueOf(urm1.hashCode()) : null;
+            String urmHash2 = urm2 != null ? String.valueOf(urm2.hashCode()) : null;
+            differences.add(new AttributeDifference("userRoleManagement", urmHash1, urmHash2));
         }
         if ((study1.getStudySettings() == null && study2.getStudySettings() != null) || (study1.getStudySettings() != null && study2.getStudySettings() == null)
                 || (study1.getStudySettings() != null && !study1.getStudySettings().equals(study2.getStudySettings()))) {
-            differences.add(new AttributeDifference("studySettings", extractSync(study1.getStudySettings()), extractSync(study2.getStudySettings())));
+            StudySettings studySettings1 = study1.getStudySettings();
+            StudySettings studySettings2 = study2.getStudySettings();
+            String sync1 = studySettings1 != null ? "isSyncEnabled=" + String.valueOf(studySettings1.getSyncEnabled()) : null;
+            String sync2 = studySettings2 != null ? "isSyncEnabled=" + String.valueOf(studySettings2.getSyncEnabled()) : null;
+            differences.add(new AttributeDifference("studySettings", sync1, sync2));
         }
         return differences;
-    }
-
-    private static String extractSync(StudySettings studySettings) {
-        return studySettings != null ? "isSyncEnabled=" + String.valueOf(studySettings.getSyncEnabled()) : null;
-    }
-
-    private static String toHash(UserRoleManagement userRoleManagement) {
-        return userRoleManagement != null ? String.valueOf(userRoleManagement.hashCode()) : null;
-    }
-
-    private static String toTime(Long timestamp) {
-        return timestamp != null ? TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timestamp)) : null;
     }
 
 }

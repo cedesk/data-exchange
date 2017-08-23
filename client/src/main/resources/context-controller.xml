@@ -68,6 +68,7 @@
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
+        <property name="parameterDifferenceService" ref="parameterDifferenceService"/>
     </bean>
 
     <bean id="externalModelEditorController"
@@ -95,7 +96,6 @@
         <property name="project" ref="project"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="differenceMergeService" ref="differenceMergeService"/>
-        <property name="tradespaceRepository" ref="tradespaceRepository"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="executor" ref="executor"/>

@@ -19,7 +19,10 @@ package ru.skoltech.cedl.dataexchange.structure;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -43,7 +46,6 @@ import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,6 +75,7 @@ public class Project {
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
+    private NodeDifferenceService nodeDifferenceService;
 
     private String projectName;
 
@@ -139,6 +142,10 @@ public class Project {
 
     public void setUnitManagementService(UnitManagementService unitManagementService) {
         this.unitManagementService = unitManagementService;
+    }
+
+    public void setNodeDifferenceService(NodeDifferenceService nodeDifferenceService) {
+        this.nodeDifferenceService = nodeDifferenceService;
     }
 
     public static void setLogger(Logger logger) {
@@ -296,7 +303,7 @@ public class Project {
                 SystemModel remoteSystemModel = this.repositoryStudy.getSystemModel();
                 long latestStudy1Modification = study.getLatestModelModification();
                 List<ModelDifference> modelDifferences =
-                        NodeDifference.computeDifferences(localSystemModel, remoteSystemModel, latestStudy1Modification);
+                        nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel, latestStudy1Modification);
                 long remoteDifferenceCounts = modelDifferences.stream()
                         .filter(md -> md.getChangeLocation() == ModelDifference.ChangeLocation.ARG2).count();
                 return remoteDifferenceCounts > 0;

@@ -23,8 +23,11 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
+import ru.skoltech.cedl.dataexchange.service.impl.ExternalModelDifferenceServiceImpl;
+import ru.skoltech.cedl.dataexchange.service.impl.NodeDifferenceServiceImpl;
+import ru.skoltech.cedl.dataexchange.service.impl.ParameterDifferenceServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,11 +40,32 @@ import static ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference
 /**
  * Created by D.Knoll on 25.05.2017.
  */
-public class ExternalModelDifferenceTest {
+public class ExternalNodeDifferenceServiceTest {
 
+    private NodeDifferenceService nodeDifferenceService;
     private SystemModel localSystem;
     private SystemModel remoteSystem;
     private ExternalModel extMod;
+
+    @Before
+    public void prepare() throws IOException, URISyntaxException {
+        NodeDifferenceServiceImpl modelDifferenceServiceImpl = new NodeDifferenceServiceImpl();
+        modelDifferenceServiceImpl.setParameterDifferenceService(new ParameterDifferenceServiceImpl());
+        modelDifferenceServiceImpl.setExternalModelDifferenceService(new ExternalModelDifferenceServiceImpl());
+        nodeDifferenceService = modelDifferenceServiceImpl;
+
+        localSystem = new SystemModel();
+        localSystem.setName("Sy1");
+        localSystem.setLastModification(System.currentTimeMillis() - 5000);
+
+        remoteSystem = new SystemModel();
+        remoteSystem.setUuid(localSystem.getUuid());
+        remoteSystem.setLastModification(localSystem.getLastModification());
+        remoteSystem.setName("Sy1");
+
+        File externalModelFile = new File(this.getClass().getResource("/attachment.xls").toURI());
+        extMod = ExternalModelFileHandler.newFromFile(externalModelFile, localSystem);
+    }
 
     @Test
     public void localNodeAdd() throws Exception {
@@ -50,8 +74,8 @@ public class ExternalModelDifferenceTest {
 
         Assert.assertEquals(1, localSystem.getExternalModels().size());
 
-        List<ModelDifference> differences;
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ModelDifference> differences
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
@@ -64,7 +88,7 @@ public class ExternalModelDifferenceTest {
 
         Assert.assertEquals(0, localSystem.getExternalModels().size());
 
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
 
     }
@@ -80,8 +104,8 @@ public class ExternalModelDifferenceTest {
 
         extModel2.setName(extModel1.getName() + "-v2");
 
-        List<ModelDifference> differences;
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ModelDifference> differences
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
@@ -95,7 +119,7 @@ public class ExternalModelDifferenceTest {
         Assert.assertTrue(localSystem.getExternalModels().get(0).equals(remoteSystem.getExternalModels().get(0)));
         Assert.assertTrue(localSystem.getExternalModels().get(0).getParent() == localSystem);
 
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
     }
 
@@ -108,8 +132,8 @@ public class ExternalModelDifferenceTest {
         Assert.assertEquals(1, remoteSystem.getExternalModels().size());
         Assert.assertEquals(0, localSystem.getExternalModels().size());
 
-        List<ModelDifference> differences;
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ModelDifference> differences
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
@@ -122,23 +146,8 @@ public class ExternalModelDifferenceTest {
         Assert.assertEquals(1, localSystem.getExternalModels().size());
         Assert.assertTrue(localSystem.getExternalModels().get(0).equals(remoteSystem.getExternalModels().get(0)));
 
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
-    }
-
-    @Before
-    public void prepare() throws IOException, URISyntaxException {
-        localSystem = new SystemModel();
-        localSystem.setName("Sy1");
-        localSystem.setLastModification(System.currentTimeMillis() - 5000);
-
-        remoteSystem = new SystemModel();
-        remoteSystem.setUuid(localSystem.getUuid());
-        remoteSystem.setLastModification(localSystem.getLastModification());
-        remoteSystem.setName("Sy1");
-
-        File externalModelFile = new File(this.getClass().getResource("/attachment.xls").toURI());
-        extMod = ExternalModelFileHandler.newFromFile(externalModelFile, localSystem);
     }
 
     @Test
@@ -149,8 +158,8 @@ public class ExternalModelDifferenceTest {
 
         Assert.assertTrue(localSystem.findLatestModification() < extModel1.getLastModification());
 
-        List<ModelDifference> differences;
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ModelDifference> differences
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
@@ -162,7 +171,7 @@ public class ExternalModelDifferenceTest {
         Assert.assertEquals(1, localSystem.getExternalModels().size());
         Assert.assertTrue(localSystem.getExternalModels().get(0).equals(remoteSystem.getExternalModels().get(0)));
 
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
     }
 
@@ -177,8 +186,8 @@ public class ExternalModelDifferenceTest {
         extModel1.setName(extModel1.getName() + "_v3");
         extModel1.setLastModification(System.currentTimeMillis());
 
-        List<ModelDifference> differences;
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ModelDifference> differences
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
@@ -191,7 +200,7 @@ public class ExternalModelDifferenceTest {
         Assert.assertTrue(localSystem.getExternalModels().get(0).equals(remoteSystem.getExternalModels().get(0)));
         Assert.assertTrue(localSystem.getExternalModels().get(0).getParent() == localSystem);
 
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
     }
 
@@ -202,8 +211,8 @@ public class ExternalModelDifferenceTest {
         existingLocalNode.setLastModification(localSystem.getLastModification() - 100); // parameter was part of last modification
         localSystem.addExternalModel(existingLocalNode);
 
-        List<ModelDifference> differences;
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        List<ModelDifference> differences
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
@@ -214,7 +223,7 @@ public class ExternalModelDifferenceTest {
 
         Assert.assertEquals(0, localSystem.getExternalModels().size());
 
-        differences = NodeDifference.computeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
         Assert.assertEquals(0, differences.size());
     }
 

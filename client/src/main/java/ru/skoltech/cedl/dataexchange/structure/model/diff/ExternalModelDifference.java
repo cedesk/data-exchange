@@ -40,7 +40,7 @@ public class ExternalModelDifference extends ModelDifference {
 
     private ExternalModel externalModel2;
 
-    private ExternalModelDifference(ModelNode parent, ExternalModel externalModel1, String name, ChangeType changeType, ChangeLocation changeLocation) {
+    public ExternalModelDifference(ModelNode parent, ExternalModel externalModel1, String name, ChangeType changeType, ChangeLocation changeLocation) {
         this.parent = parent;
         this.externalModel1 = externalModel1;
         this.attribute = name;
@@ -48,7 +48,7 @@ public class ExternalModelDifference extends ModelDifference {
         this.changeLocation = changeLocation;
     }
 
-    private ExternalModelDifference(ExternalModel externalModel1, ExternalModel externalModel2, String name,
+    public ExternalModelDifference(ExternalModel externalModel1, ExternalModel externalModel2, String name,
                                     ChangeType changeType, ChangeLocation changeLocation,
                                     String value1, String value2) {
         this.parent = externalModel1.getParent();
@@ -94,69 +94,6 @@ public class ExternalModelDifference extends ModelDifference {
     @Override
     public boolean isRevertible() {
         return changeLocation == ChangeLocation.ARG1;
-    }
-
-    public static ExternalModelDifference createRemoveExternalModel(ModelNode parent, ExternalModel externalModel1, String name, ChangeLocation changeLocation) {
-        return new ExternalModelDifference(parent, externalModel1, name, ChangeType.REMOVE, changeLocation);
-    }
-
-    public static ExternalModelDifference createAddExternalModel(ModelNode parent, ExternalModel externalModel1, String name, ChangeLocation changeLocation) {
-        return new ExternalModelDifference(parent, externalModel1, name, ChangeType.ADD, changeLocation);
-    }
-
-    public static ExternalModelDifference createExternalModelModified(ExternalModel externalModel1, ExternalModel externalModel2, String name) {
-        boolean e2newer = externalModel2.getLastModification() > externalModel1.getLastModification();
-        ChangeLocation changeLocation = e2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
-        return new ExternalModelDifference(externalModel1, externalModel2, name, ChangeType.MODIFY, changeLocation, "", "");
-    }
-
-    public static ExternalModelDifference createExternalModelModified(ExternalModel externalModel1, ExternalModel externalModel2, String name, String value1, String value2) {
-        boolean n2newer = externalModel2.isNewerThan(externalModel1);
-        ChangeLocation changeLocation = n2newer ? ChangeLocation.ARG2 : ChangeLocation.ARG1;
-        return new ExternalModelDifference(externalModel1, externalModel2, name, ChangeType.MODIFY, changeLocation, value1, value2);
-    }
-
-    public static List<ModelDifference> computeDifferences(ModelNode m1, ModelNode m2, Long latestStudy1Modification) {
-        LinkedList<ModelDifference> extModelDifferences = new LinkedList<>();
-        Map<String, ExternalModel> m1extModels = m1.getExternalModels().stream().collect(
-                Collectors.toMap(ExternalModel::getUuid, Function.identity())
-        );
-        Map<String, ExternalModel> m2extModels = m2.getExternalModels().stream().collect(
-                Collectors.toMap(ExternalModel::getUuid, Function.identity())
-        );
-        Set<String> allExtMods = new HashSet<>();
-        allExtMods.addAll(m1extModels.keySet());
-        allExtMods.addAll(m2extModels.keySet());
-
-        for (String extMod : allExtMods) {
-            ExternalModel e1 = m1extModels.get(extMod);
-            ExternalModel e2 = m2extModels.get(extMod);
-
-            if (e1 != null && e2 == null) {
-                //if (e1.getLastModification() == null) { // model 1 was newly added
-                extModelDifferences.add(createAddExternalModel(m1, e1, e1.getName(), ChangeLocation.ARG1));
-                //} else { // model 2 was deleted
-                //    extModelDifferences.add(createRemoveExternalModel(m1, e1, e1.name(), ChangeLocation.ARG2));
-                //}
-            } else if (e1 == null && e2 != null) {
-                Objects.requireNonNull(e2.getLastModification(), "persisted parameters always should have the timestamp set");
-                if (e2.getLastModification() > latestStudy1Modification) { // model 2 was added
-                    extModelDifferences.add(createAddExternalModel(m1, e2, e2.getName(), ChangeLocation.ARG2));
-                } else { // model 1 was deleted
-                    extModelDifferences.add(createRemoveExternalModel(m1, e2, e2.getName(), ChangeLocation.ARG1));
-                }
-            } else if (e1 != null && e2 != null) {
-                if (!e1.getName().equals(e2.getName())) {
-                    String value1 = e1.getName();
-                    String value2 = e2.getName();
-                    extModelDifferences.add(createExternalModelModified(e1, e2, "name", value1, value2));
-                }
-                if (!Arrays.equals(e1.getAttachment(), e2.getAttachment())) {
-                    extModelDifferences.add(createExternalModelModified(e1, e2, "attachment"));
-                }
-            }
-        }
-        return extModelDifferences;
     }
 
     @Override

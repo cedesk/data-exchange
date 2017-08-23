@@ -39,6 +39,8 @@ import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.service.*;
+import ru.skoltech.cedl.dataexchange.service.impl.ParameterDifferenceServiceImpl;
 import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
@@ -50,10 +52,6 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.service.ModelUpdateService;
-import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
-import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
@@ -148,6 +146,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
+    private ParameterDifferenceService parameterDifferenceService;
 
     private ParameterModel editingParameterModel;
     private ParameterModel originalParameterModel;
@@ -189,6 +188,10 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
         this.externalModelFileWatcher = externalModelFileWatcher;
+    }
+
+    public void setParameterDifferenceService(ParameterDifferenceService parameterDifferenceService) {
+        this.parameterDifferenceService = parameterDifferenceService;
     }
 
     @Override
@@ -460,7 +463,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         }
 
         // TODO: check whether modifications were made
-        List<AttributeDifference> attributeDifferences = ParameterDifference.parameterDifferences(originalParameterModel, editingParameterModel);
+        List<AttributeDifference> attributeDifferences = parameterDifferenceService.parameterDifferences(originalParameterModel, editingParameterModel);
 
         Utils.copyBean(editingParameterModel, originalParameterModel);
 
