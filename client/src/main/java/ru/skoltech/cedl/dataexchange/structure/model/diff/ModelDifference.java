@@ -75,15 +75,13 @@ public abstract class ModelDifference {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ModelDifference{");
-        sb.append("attribute").append(attribute);
-        sb.append(", changeType=").append(changeType);
-        sb.append(", changeLocation=").append(changeLocation);
-        sb.append(", value1='").append(value1).append('\'');
-        sb.append(", value2='").append(value2).append('\'');
-        sb.append(", author='").append(author).append('\'');
-        sb.append("}\n ");
-        return sb.toString();
+        return "ModelDifference{" + "attribute" + attribute +
+                ", changeType=" + changeType +
+                ", changeLocation=" + changeLocation +
+                ", value1='" + value1 + '\'' +
+                ", value2='" + value2 + '\'' +
+                ", author='" + author + '\'' +
+                "}\n ";
     }
 
     public enum ChangeType {

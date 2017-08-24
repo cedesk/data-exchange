@@ -17,6 +17,7 @@
 package ru.skoltech.cedl.dataexchange.service.impl;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.hibernate.envers.RevisionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.history.Revision;
@@ -88,8 +89,10 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
-    public Study saveStudy(Study study) {
-        return studyRepository.saveAndFlush(study);
+    public Triple<Study, Integer, Date> saveStudy(Study study) {
+        Study newStudy = studyRepository.saveAndFlush(study);
+        Pair<Integer, Date> revision = this.findLatestRevision(newStudy.getId());
+        return Triple.of(newStudy, revision.getLeft(), revision.getRight());
     }
 
     @Override
@@ -155,6 +158,13 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public void deleteAllStudies() {
         studyRepository.deleteAll();
+    }
+
+    @Override
+    public Triple<Study, Integer, Date> findLatestRevisionByName(String studyName) {
+        Study study = this.findStudyByName(studyName);
+        Pair<Integer, Date> revision = this.findLatestRevision(study.getId());
+        return Triple.of(study, revision.getLeft(), revision.getRight());
     }
 
     @Override

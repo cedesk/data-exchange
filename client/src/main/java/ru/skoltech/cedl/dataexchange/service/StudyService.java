@@ -17,6 +17,7 @@
 package ru.skoltech.cedl.dataexchange.service;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.hibernate.envers.RevisionType;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
@@ -63,7 +64,7 @@ public interface StudyService {
      * @param study study to save
      * @return the saved study
      */
-    Study saveStudy(Study study);
+    Triple<Study, Integer, Date> saveStudy(Study study);
 
     /**
      * Saves an study and tag produced revision.
@@ -134,6 +135,15 @@ public interface StudyService {
      * Remove all stored studies.
      */
     void deleteAllStudies();
+
+    /**
+     * Retrieve a latest revision along with entity and revision date
+     * of study with specified name.
+     *
+     * @param studyName name of the {@link Study}
+     * @return latest revision number, revision date and entity of study
+     */
+    Triple<Study, Integer, Date> findLatestRevisionByName(String studyName);
 
     /**
      * Retrieve a latest revision number along with revision date

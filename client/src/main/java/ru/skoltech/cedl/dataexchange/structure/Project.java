@@ -17,13 +17,12 @@
 package ru.skoltech.cedl.dataexchange.structure;
 
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
@@ -81,9 +80,9 @@ public class Project {
 
     private Study study;
     private Study repositoryStudy;
+
     private IntegerProperty latestLoadedRevisionNumber = new SimpleIntegerProperty();
     private IntegerProperty latestRepositoryRevisionNumber = new SimpleIntegerProperty();
-    private BooleanBinding repositoryNewer = Bindings.lessThan(latestLoadedRevisionNumber, latestRepositoryRevisionNumber);
 
     private User currentUser;
     private UserManagement userManagement;
@@ -160,8 +159,8 @@ public class Project {
         this.init(projectName);
     }
 
-    public BooleanBinding repositoryNewer() {
-        return repositoryNewer;
+    public IntegerProperty latestLoadedRevisionNumberProperty() {
+        return latestLoadedRevisionNumber;
     }
 
     public IntegerProperty latestRepositoryRevisionNumberProperty() {
@@ -297,8 +296,8 @@ public class Project {
     public boolean checkRepositoryForChanges() {
         if (this.repositoryStudy != null) { // already saved or retrieved from repository
             try {
-                loadCurrentRepositoryStudy();
-                updateExternalModelsInStudy();
+                this.loadCurrentRepositoryStudy();
+                this.updateExternalModelsInStudy();
                 SystemModel localSystemModel = this.study.getSystemModel();
                 SystemModel remoteSystemModel = this.repositoryStudy.getSystemModel();
                 long latestStudy1Modification = study.getLatestModelModification();
@@ -372,8 +371,9 @@ public class Project {
     }
 
     public boolean loadCurrentLocalStudy() {
-        Study study = studyService.findStudyByName(projectName);
-        Integer revisionNumber = studyService.findLatestRevisionNumber(study.getId());
+        Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
+        Study study = revision.getLeft();
+        Integer revisionNumber = revision.getMiddle();
         return loadLocalStudy(revisionNumber, study);
     }
 
@@ -381,8 +381,9 @@ public class Project {
         if (study == null) {
             logger.warn("Study not found!");
         } else {
-            Study repositoryStudy = studyService.findStudyByName(projectName);
-            Integer repositoryStudyRevisionNumber = studyService.findLatestRevisionNumber(repositoryStudy.getId());
+            Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
+            Study repositoryStudy = revision.getLeft();
+            Integer repositoryStudyRevisionNumber = revision.getMiddle();
 
             this.setStudy(study);
             this.setRepositoryStudy(repositoryStudy);
@@ -400,8 +401,9 @@ public class Project {
     }
 
     public boolean loadCurrentRepositoryStudy() {
-        Study repositoryStudy = studyService.findStudyByName(projectName);
-        Integer repositoryStudyRevisionNumber = studyService.findLatestRevisionNumber(repositoryStudy.getId());
+        Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
+        Study repositoryStudy = revision.getLeft();
+        Integer repositoryStudyRevisionNumber = revision.getMiddle();
 
         this.setRepositoryStudy(repositoryStudy);
         Platform.runLater(() -> this.latestRepositoryRevisionNumber.set(repositoryStudyRevisionNumber));
@@ -457,8 +459,11 @@ public class Project {
             // store URM separately before study, to prevent links to deleted subsystems have storing study fail
             storeUserRoleManagement();
         }
-        Study newStudy = studyService.saveStudy(this.study);
-        Integer newRevisionNumber = studyService.findLatestRevisionNumber(newStudy.getId());
+
+        Triple<Study, Integer, Date> revision = studyService.saveStudy(this.study);
+        Study newStudy = revision.getLeft();
+        Integer newRevisionNumber = revision.getMiddle();
+
         this.updateExternalModelStateInCache();
 
         this.setStudy(newStudy);

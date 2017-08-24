@@ -17,6 +17,7 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.hibernate.envers.RevisionType;
 import org.junit.After;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.Matchers.empty;
@@ -75,8 +77,11 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
 
         System.out.println(studyPrototype1 + ", " + studyPrototype2);
 
-        Study study1 = studyService.saveStudy(studyPrototype1);
-        Study study2 = studyService.saveStudy(studyPrototype2);
+        Triple<Study, Integer, Date> revision1 = studyService.saveStudy(studyPrototype1);
+        Triple<Study, Integer, Date> revision2 = studyService.saveStudy(studyPrototype2);
+
+        Study study1 = revision1.getLeft();
+        Study study2 = revision2.getLeft();
 
         Study studyStored1 = studyService.findStudyByName(name1);
         Study studyStored2 = studyService.findStudyByName(name2);
@@ -127,7 +132,8 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         Study studyPrototype = makeStudy(name, 2);
         System.out.println(studyPrototype);
 
-        Study study = studyService.saveStudy(studyPrototype);
+        Triple<Study, Integer, Date> studyRevision = studyService.saveStudy(studyPrototype);
+        Study study = studyRevision.getLeft();
         Study studyStored = studyService.findStudyByName(name);
         System.out.println(studyStored);
 

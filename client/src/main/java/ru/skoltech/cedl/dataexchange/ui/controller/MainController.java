@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -138,6 +139,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     private Stage ownerStage;
 
     private StringProperty tagProperty = new SimpleStringProperty(null);
+    private BooleanBinding repositoryNewer;
     private ChangeListener<Boolean> repositoryNewerListener;
 
     public void setModelEditingController(ModelEditingController modelEditingController) {
@@ -221,6 +223,9 @@ public class MainController implements Initializable, Displayable, Closeable {
         tagLabel.textProperty().bind(Bindings.when(tagProperty.isNull()).then("--").otherwise(tagProperty));
         tagMenu.textProperty().bind(Bindings.when(tagProperty.isNull()).then("_Tag current revision...").otherwise("_Untag current revision"));
 
+        repositoryNewer = Bindings.lessThan(project.latestLoadedRevisionNumberProperty(),
+                project.latestRepositoryRevisionNumberProperty());
+
         repositoryNewerListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
                 if (newValue) {
@@ -300,7 +305,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                 project.setProjectName(projectName);
                 this.reloadProject();
 
-                project.repositoryNewer().addListener(repositoryNewerListener);
+                repositoryNewer.addListener(repositoryNewerListener);
                 //diffButton.disableProperty().bind(repositoryNewer.not());
             } else {
                 Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
@@ -448,7 +453,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                                         "WARNING: This is not reversible!");
                     }
                     if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
-                        project.repositoryNewer().removeListener(repositoryNewerListener);
+                        repositoryNewer.removeListener(repositoryNewerListener);
                         project.deleteStudy(studyName);
                         StatusLogger.getInstance().log("Successfully deleted study!", false);
                         actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
