@@ -45,7 +45,7 @@ public class ParameterDifferenceServiceImpl implements ParameterDifferenceServic
             sbValues1.append(diff.value1);
             sbValues2.append(diff.value2);
         }
-        boolean p2newer = parameter2.isNewerThan(parameter1);
+        boolean p2newer = parameter2.getRevision() > parameter1.getRevision();
         ModelDifference.ChangeLocation changeLocation = p2newer ? ModelDifference.ChangeLocation.ARG2 : ModelDifference.ChangeLocation.ARG1;
         return new ParameterDifference(parameter1, parameter2, ModelDifference.ChangeType.MODIFY, changeLocation, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString());
     }
@@ -67,45 +67,53 @@ public class ParameterDifferenceServiceImpl implements ParameterDifferenceServic
     }
 
     @Override
-    public List<AttributeDifference> parameterDifferences(ParameterModel p1, ParameterModel p2) {
+    public List<AttributeDifference> parameterDifferences(ParameterModel localParameterModel, ParameterModel remoteParameterModel) {
         List<AttributeDifference> differences = new LinkedList<>();
-        if ((p1.getUuid() == null && p2.getUuid() != null) || (p1.getUuid() != null && p2.getUuid() == null)
-                || (p1.getUuid() != null && !p1.getUuid().equals(p2.getUuid()))) {
-            differences.add(new AttributeDifference("uuid", p1.getUuid(), p2.getUuid()));
+        if ((localParameterModel.getUuid() == null && remoteParameterModel.getUuid() != null)
+                || (localParameterModel.getUuid() != null && remoteParameterModel.getUuid() == null)
+                || (localParameterModel.getUuid() != null && !localParameterModel.getUuid().equals(remoteParameterModel.getUuid()))) {
+            differences.add(new AttributeDifference("uuid", localParameterModel.getUuid(), remoteParameterModel.getUuid()));
         }
-        if ((p1.getName() == null && p2.getName() != null) || (p1.getName() != null && p2.getName() == null)
-                || (p1.getName() != null && !p1.getName().equals(p2.getName()))) {
-            differences.add(new AttributeDifference("name", p1.getName(), p2.getName()));
+        if ((localParameterModel.getName() == null && remoteParameterModel.getName() != null)
+                || (localParameterModel.getName() != null && remoteParameterModel.getName() == null)
+                || (localParameterModel.getName() != null && !localParameterModel.getName().equals(remoteParameterModel.getName()))) {
+            differences.add(new AttributeDifference("name", localParameterModel.getName(), remoteParameterModel.getName()));
         }
-        if ((p1.getValue() == null && p2.getValue() != null) || (p1.getValue() != null && p2.getValue() == null)
-                || (p1.getValue() != null && !p1.getValue().equals(p2.getValue()))) {
-            differences.add(new AttributeDifference("value", p1.getValue(), p2.getValue()));
+        if ((localParameterModel.getValue() == null && remoteParameterModel.getValue() != null)
+                || (localParameterModel.getValue() != null && remoteParameterModel.getValue() == null)
+                || (localParameterModel.getValue() != null && !localParameterModel.getValue().equals(remoteParameterModel.getValue()))) {
+            differences.add(new AttributeDifference("value", localParameterModel.getValue(), remoteParameterModel.getValue()));
         }
-        if (!p1.getIsReferenceValueOverridden() == p2.getIsReferenceValueOverridden()) {
-            differences.add(new AttributeDifference("isReferenceValueOverridden", p1.getIsReferenceValueOverridden(), p2.getIsReferenceValueOverridden()));
+        if (!localParameterModel.getIsReferenceValueOverridden() == remoteParameterModel.getIsReferenceValueOverridden()) {
+            differences.add(new AttributeDifference("isReferenceValueOverridden", localParameterModel.getIsReferenceValueOverridden(), remoteParameterModel.getIsReferenceValueOverridden()));
         }
-        if ((p1.getOverrideValue() == null && p2.getOverrideValue() != null) || (p1.getOverrideValue() != null && p2.getOverrideValue() == null)
-                || (p1.getOverrideValue() != null && !p1.getOverrideValue().equals(p2.getOverrideValue()))) {
-            differences.add(new AttributeDifference("overrideValue", p1.getOverrideValue(), p2.getOverrideValue()));
+        if ((localParameterModel.getOverrideValue() == null && remoteParameterModel.getOverrideValue() != null)
+                || (localParameterModel.getOverrideValue() != null && remoteParameterModel.getOverrideValue() == null)
+                || (localParameterModel.getOverrideValue() != null && !localParameterModel.getOverrideValue().equals(remoteParameterModel.getOverrideValue()))) {
+            differences.add(new AttributeDifference("overrideValue", localParameterModel.getOverrideValue(), remoteParameterModel.getOverrideValue()));
         }
-        if ((p1.getUnit() == null && p2.getUnit() != null) || (p1.getUnit() != null && p2.getUnit() == null)
-                || (p1.getUnit() != null && !p1.getUnit().equals(p2.getUnit()))) {
-            differences.add(new AttributeDifference("unit", p1.getUnit() != null ? p1.getUnit().asText() : null, p2.getUnit() != null ? p2.getUnit().asText() : null));
+        if ((localParameterModel.getUnit() == null && remoteParameterModel.getUnit() != null)
+                || (localParameterModel.getUnit() != null && remoteParameterModel.getUnit() == null)
+                || (localParameterModel.getUnit() != null && !localParameterModel.getUnit().equals(remoteParameterModel.getUnit()))) {
+            differences.add(new AttributeDifference("unit", localParameterModel.getUnit() != null ? localParameterModel.getUnit().asText() : null, remoteParameterModel.getUnit() != null ? remoteParameterModel.getUnit().asText() : null));
         }
-        if ((p1.getNature() == null && p2.getNature() != null) || (p1.getNature() != null && p2.getNature() == null)
-                || (p1.getNature() != null && !p1.getNature().equals(p2.getNature()))) {
-            differences.add(new AttributeDifference("nature", p1.getNature(), p2.getNature()));
+        if ((localParameterModel.getNature() == null && remoteParameterModel.getNature() != null)
+                || (localParameterModel.getNature() != null && remoteParameterModel.getNature() == null)
+                || (localParameterModel.getNature() != null && !localParameterModel.getNature().equals(remoteParameterModel.getNature()))) {
+            differences.add(new AttributeDifference("nature", localParameterModel.getNature(), remoteParameterModel.getNature()));
         }
-        if ((p1.getValueSource() == null && p2.getValueSource() != null) || (p1.getValueSource() != null && p2.getValueSource() == null)
-                || (p1.getValueSource() != null && !p1.getValueSource().equals(p2.getValueSource()))) {
-            differences.add(new AttributeDifference("valueSource", p1.getValueSource(), p2.getValueSource()));
+        if ((localParameterModel.getValueSource() == null && remoteParameterModel.getValueSource() != null)
+                || (localParameterModel.getValueSource() != null && remoteParameterModel.getValueSource() == null)
+                || (localParameterModel.getValueSource() != null && !localParameterModel.getValueSource().equals(remoteParameterModel.getValueSource()))) {
+            differences.add(new AttributeDifference("valueSource", localParameterModel.getValueSource(), remoteParameterModel.getValueSource()));
         }
-        if ((p1.getValueReference() == null && p2.getValueReference() != null) || (p1.getValueReference() != null && p2.getValueReference() == null)
-                || (p1.getValueReference() != null && !p1.getValueReference().equals(p2.getValueReference()))) {
-            differences.add(new AttributeDifference("valueReference", p1.getValueReference(), p2.getValueReference()));
+        if ((localParameterModel.getValueReference() == null && remoteParameterModel.getValueReference() != null)
+                || (localParameterModel.getValueReference() != null && remoteParameterModel.getValueReference() == null)
+                || (localParameterModel.getValueReference() != null && !localParameterModel.getValueReference().equals(remoteParameterModel.getValueReference()))) {
+            differences.add(new AttributeDifference("valueReference", localParameterModel.getValueReference(), remoteParameterModel.getValueReference()));
         }
-        ParameterModel vl1 = p1.getValueLink();
-        ParameterModel vl2 = p2.getValueLink();
+        ParameterModel vl1 = localParameterModel.getValueLink();
+        ParameterModel vl2 = remoteParameterModel.getValueLink();
         if (vl1 != null && vl2 != null) {
             if (!vl1.getUuid().equals(vl2.getUuid())) { // different reference
                 differences.add(new AttributeDifference("valueLink", vl1.getNodePath(), vl2.getNodePath()));
@@ -115,54 +123,56 @@ public class ParameterDifferenceServiceImpl implements ParameterDifferenceServic
         } else if (vl1 == null && vl2 != null) {
             differences.add(new AttributeDifference("valueLink", "", vl2.getNodePath()));
         }
-        if (!p1.getIsExported() == p2.getIsExported()) {
-            differences.add(new AttributeDifference("isExported", p1.getIsExported(), p2.getIsExported()));
+        if (!localParameterModel.getIsExported() == remoteParameterModel.getIsExported()) {
+            differences.add(new AttributeDifference("isExported", localParameterModel.getIsExported(), remoteParameterModel.getIsExported()));
         }
-        if ((p1.getExportReference() == null && p2.getExportReference() != null) || (p1.getExportReference() != null && p2.getExportReference() == null)
-                || (p1.getExportReference() != null && !p1.getExportReference().equals(p2.getExportReference()))) {
-            differences.add(new AttributeDifference("exportReference", p1.getExportReference(), p2.getExportReference()));
+        if ((localParameterModel.getExportReference() == null && remoteParameterModel.getExportReference() != null)
+                || (localParameterModel.getExportReference() != null && remoteParameterModel.getExportReference() == null)
+                || (localParameterModel.getExportReference() != null && !localParameterModel.getExportReference().equals(remoteParameterModel.getExportReference()))) {
+            differences.add(new AttributeDifference("exportReference", localParameterModel.getExportReference(), remoteParameterModel.getExportReference()));
         }
-        if ((p1.getDescription() == null && p2.getDescription() != null) || (p1.getDescription() != null && p2.getDescription() == null)
-                || (p1.getDescription() != null && !p1.getDescription().equals(p2.getDescription()))) {
-            differences.add(new AttributeDifference("description", p1.getDescription(), p2.getDescription()));
+        if ((localParameterModel.getDescription() == null && remoteParameterModel.getDescription() != null)
+                || (localParameterModel.getDescription() != null && remoteParameterModel.getDescription() == null)
+                || (localParameterModel.getDescription() != null && !localParameterModel.getDescription().equals(remoteParameterModel.getDescription()))) {
+            differences.add(new AttributeDifference("description", localParameterModel.getDescription(), remoteParameterModel.getDescription()));
         }
         return differences;
     }
 
     @Override
-    public List<ParameterDifference> computeParameterDifferences(ModelNode m1, ModelNode m2, long latestStudy1Modification) {
+    public List<ParameterDifference> computeParameterDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber) {
         LinkedList<ParameterDifference> parameterDifferences = new LinkedList<>();
-        Map<String, ParameterModel> m1params = m1.getParameters().stream().collect(
+        Map<String, ParameterModel> localParameterModels = localNode.getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getUuid, Function.identity())
         );
-        Map<String, ParameterModel> m2params = m2.getParameters().stream().collect(
+        Map<String, ParameterModel> remoteParameterModels = remoteNode.getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getUuid, Function.identity())
         );
         Set<String> allParams = new HashSet<>();
-        allParams.addAll(m1params.keySet());
-        allParams.addAll(m2params.keySet());
+        allParams.addAll(localParameterModels.keySet());
+        allParams.addAll(remoteParameterModels.keySet());
 
         for (String parUuid : allParams) {
-            ParameterModel p1 = m1params.get(parUuid);
-            ParameterModel p2 = m2params.get(parUuid);
+            ParameterModel localParameterModel = localParameterModels.get(parUuid);
+            ParameterModel remoteParameterModel = remoteParameterModels.get(parUuid);
 
-            if (p1 != null && p2 == null) {
-                if (p1.getLastModification() == null) { // parameter 1 was newly added
-                    parameterDifferences.add(createAddedParameter(m1, p1, p1.getName(), ModelDifference.ChangeLocation.ARG1));
+            if (localParameterModel != null && remoteParameterModel == null) {
+                if (localParameterModel.getId() == 0) { // parameter 1 was newly added
+                    parameterDifferences.add(createAddedParameter(localNode, localParameterModel, localParameterModel.getName(), ModelDifference.ChangeLocation.ARG1));
                 } else { // parameter 2 was deleted
-                    parameterDifferences.add(createRemovedParameter(m1, p1, p1.getName(), ModelDifference.ChangeLocation.ARG2));
+                    parameterDifferences.add(createRemovedParameter(localNode, localParameterModel, localParameterModel.getName(), ModelDifference.ChangeLocation.ARG2));
                 }
-            } else if (p1 == null && p2 != null) {
-                Objects.requireNonNull(p2.getLastModification(), "persisted parameters always should have the timestamp set");
-                if (p2.getLastModification() > latestStudy1Modification) { // parameter 2 was added
-                    parameterDifferences.add(createAddedParameter(m1, p2, p2.getName(), ModelDifference.ChangeLocation.ARG2));
+            } else if (localParameterModel == null && remoteParameterModel != null) {
+                assert remoteParameterModel.getRevision() != 0; //persisted parameters always should have the ID set
+                if (remoteParameterModel.getRevision() > currentRevisionNumber) { // node 2 was added
+                    parameterDifferences.add(createAddedParameter(localNode, remoteParameterModel, remoteParameterModel.getName(), ModelDifference.ChangeLocation.ARG2));
                 } else { // parameter 1 was deleted
-                    parameterDifferences.add(createRemovedParameter(m1, p2, p2.getName(), ModelDifference.ChangeLocation.ARG1));
+                    parameterDifferences.add(createRemovedParameter(localNode, remoteParameterModel, remoteParameterModel.getName(), ModelDifference.ChangeLocation.ARG1));
                 }
-            } else if (p1 != null && p2 != null) {
-                List<AttributeDifference> differences = parameterDifferences(p1, p2);
+            } else if (localParameterModel != null && remoteParameterModel != null) {
+                List<AttributeDifference> differences = parameterDifferences(localParameterModel, remoteParameterModel);
                 if (!differences.isEmpty()) {
-                    ParameterDifference modelDifference = createParameterAttributesModified(p1, p2, differences);
+                    ParameterDifference modelDifference = createParameterAttributesModified(localParameterModel, remoteParameterModel, differences);
                     parameterDifferences.add(modelDifference);
                 }
             }

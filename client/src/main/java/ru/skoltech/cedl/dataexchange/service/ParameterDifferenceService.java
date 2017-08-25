@@ -32,7 +32,7 @@ public interface ParameterDifferenceService {
     ParameterDifference createParameterAttributesModified(ParameterModel parameter1, ParameterModel parameter2, List<AttributeDifference> differences);
     ParameterDifference createRemovedParameter(ModelNode parent, ParameterModel param, String name, ModelDifference.ChangeLocation changeLocation);
     ParameterDifference createAddedParameter(ModelNode parent, ParameterModel param, String name, ModelDifference.ChangeLocation changeLocation);
-    List<AttributeDifference> parameterDifferences(ParameterModel p1, ParameterModel p2);
-    List<ParameterDifference> computeParameterDifferences(ModelNode m1, ModelNode m2, long latestStudy1Modification);
+    List<AttributeDifference> parameterDifferences(ParameterModel localParameterModel, ParameterModel remoteParameterModel);
+    List<ParameterDifference> computeParameterDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber);
 
 }

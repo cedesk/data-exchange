@@ -17,6 +17,7 @@
 package ru.skoltech.cedl.dataexchange.entity;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 
@@ -33,10 +34,15 @@ import java.util.UUID;
 @Entity
 @Access(AccessType.PROPERTY)
 @Audited
-public class ExternalModel implements Comparable<ExternalModel>, ModificationTimestamped, PersistedEntity {
+public class ExternalModel implements Comparable<ExternalModel>, PersistedEntity {
 
     @XmlTransient
     private long id;
+
+    @Revision
+    @NotAudited
+    @XmlTransient
+    private int revision;
 
     @XmlAttribute
     private String uuid = UUID.randomUUID().toString();
@@ -81,12 +87,19 @@ public class ExternalModel implements Comparable<ExternalModel>, ModificationTim
         this.id = id;
     }
 
-    @Override
+    @NotAudited
+    public int getRevision() {
+        return revision;
+    }
+
+    public void setRevision(int revision) {
+        this.revision = revision;
+    }
+
     public Long getLastModification() {
         return lastModification;
     }
 
-    @Override
     public void setLastModification(Long lastModification) {
         this.lastModification = lastModification;
     }

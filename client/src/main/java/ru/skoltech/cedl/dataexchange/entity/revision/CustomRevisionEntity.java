@@ -65,8 +65,8 @@ public class CustomRevisionEntity extends DefaultTrackingModifiedEntitiesRevisio
 
         CustomRevisionEntity that = (CustomRevisionEntity) o;
 
-        if (!username.equals(that.username)) return false;
-        return tag != null ? tag.equals(that.tag) : that.tag == null;
+        return username.equals(that.username)
+                && (tag != null ? tag.equals(that.tag) : that.tag == null);
     }
 
     @Override

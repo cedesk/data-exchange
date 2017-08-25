@@ -162,10 +162,10 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
 
         Assert.assertEquals(systemModel1.getName(), systemModel.getName());
 
-        Long lastModification = systemModel.getLastModification();
-        System.out.println("systemModel.lastModification: " + lastModification);
-        Long lastModification1 = systemModel1.getLastModification();
-        System.out.println("systemModel1.lastModification: " + lastModification1);
-        Assert.assertTrue(lastModification <= lastModification1); // TODO: fix to strictly smaller!
+        int revision = systemModel.getRevision();
+        System.out.println("systemModel.revision: " + revision);
+        int revision1 = systemModel1.getRevision();
+        System.out.println("systemModel1.revision: " + revision);
+        Assert.assertTrue(revision <= revision1); // TODO: fix to strictly smaller!
     }
 }

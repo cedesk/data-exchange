@@ -104,7 +104,7 @@ public class StudyServiceImpl implements StudyService {
     public String findCurrentStudyRevisionTag(Study study) {
         long studyId = study.getId();
         if (studyId == 0) return ""; // quick return for unstored studies
-        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(studyId, Study.class);
+        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastRevisionEntity(studyId, Study.class);
         return revisionEntity.getTag();
     }
 
@@ -115,14 +115,14 @@ public class StudyServiceImpl implements StudyService {
 
     @Override
     public void tagStudy(Study study, String tag) {
-        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(study.getId(), Study.class);
+        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastRevisionEntity(study.getId(), Study.class);
         revisionEntity.setTag(tag);
         revisionEntityRepository.saveAndFlush(revisionEntity);
     }
 
     @Override
     public void untagStudy(Study study) {
-        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(study.getId(), Study.class);
+        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastRevisionEntity(study.getId(), Study.class);
         revisionEntity.setTag(null);
         revisionEntityRepository.saveAndFlush(revisionEntity);
     }

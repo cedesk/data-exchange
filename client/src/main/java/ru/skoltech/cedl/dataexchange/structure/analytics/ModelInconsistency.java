@@ -70,9 +70,9 @@ public class ModelInconsistency {
         SystemModel systemModel = study.getSystemModel();
         Map<String, ParameterModel> parameterDictionary = systemModel.makeParameterDictionary();
         List<ModelInconsistency> modelInconsistencies = analyzeModel(project, parameterLinkRegistry, systemModel, parameterDictionary);
-        Long systemModelLatestModification = systemModel.findLatestModification();
-        if (study.getLatestModelModification() != null && study.getLatestModelModification() < systemModelLatestModification) {
-            modelInconsistencies.add(new ModelInconsistency("Study latest modification is earlier than system model last modification", Severity.ERROR, "study", study));
+        int systemModelRevision = systemModel.getRevision();
+        if (study.getRevision() != 0 && study.getRevision() < systemModelRevision) {
+            modelInconsistencies.add(new ModelInconsistency("Study latest revision is earlier than system model last revision", Severity.ERROR, "study", study));
         }
         if (!study.getName().equals(study.getSystemModel().getName())) {
             modelInconsistencies.add(new ModelInconsistency("Study name and system model name differ", Severity.WARNING, "study", study));

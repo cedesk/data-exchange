@@ -50,49 +50,49 @@ public class ExternalModelDifferenceServiceImpl implements ExternalModelDifferen
 
     @Override
     public ExternalModelDifference createExternalModelModified(ExternalModel externalModel1, ExternalModel externalModel2, String name, String value1, String value2) {
-        boolean n2newer = externalModel2.isNewerThan(externalModel1);
+        boolean n2newer = externalModel2.getRevision() > externalModel1.getRevision();
         ModelDifference.ChangeLocation changeLocation = n2newer ? ModelDifference.ChangeLocation.ARG2 : ModelDifference.ChangeLocation.ARG1;
         return new ExternalModelDifference(externalModel1, externalModel2, name, ModelDifference.ChangeType.MODIFY, changeLocation, value1, value2);
     }
 
     @Override
-    public List<ModelDifference> computeExternalModelDifferences(ModelNode m1, ModelNode m2, Long latestStudy1Modification) {
+    public List<ModelDifference> computeExternalModelDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber) {
         LinkedList<ModelDifference> extModelDifferences = new LinkedList<>();
-        Map<String, ExternalModel> m1extModels = m1.getExternalModels().stream().collect(
+        Map<String, ExternalModel> localExternalModels = localNode.getExternalModels().stream().collect(
                 Collectors.toMap(ExternalModel::getUuid, Function.identity())
         );
-        Map<String, ExternalModel> m2extModels = m2.getExternalModels().stream().collect(
+        Map<String, ExternalModel> remoteExternalModels = remoteNode.getExternalModels().stream().collect(
                 Collectors.toMap(ExternalModel::getUuid, Function.identity())
         );
         Set<String> allExtMods = new HashSet<>();
-        allExtMods.addAll(m1extModels.keySet());
-        allExtMods.addAll(m2extModels.keySet());
+        allExtMods.addAll(localExternalModels.keySet());
+        allExtMods.addAll(remoteExternalModels.keySet());
 
         for (String extMod : allExtMods) {
-            ExternalModel e1 = m1extModels.get(extMod);
-            ExternalModel e2 = m2extModels.get(extMod);
+            ExternalModel localExternalModel = localExternalModels.get(extMod);
+            ExternalModel remoteExternalModel = remoteExternalModels.get(extMod);
 
-            if (e1 != null && e2 == null) {
-                //if (e1.getLastModification() == null) { // model 1 was newly added
-                extModelDifferences.add(createAddExternalModel(m1, e1, e1.getName(), ModelDifference.ChangeLocation.ARG1));
-                //} else { // model 2 was deleted
-                //    extModelDifferences.add(createRemoveExternalModel(m1, e1, e1.name(), ChangeLocation.ARG2));
-                //}
-            } else if (e1 == null && e2 != null) {
-                Objects.requireNonNull(e2.getLastModification(), "persisted parameters always should have the timestamp set");
-                if (e2.getLastModification() > latestStudy1Modification) { // model 2 was added
-                    extModelDifferences.add(createAddExternalModel(m1, e2, e2.getName(), ModelDifference.ChangeLocation.ARG2));
+            if (localExternalModel != null && remoteExternalModel == null) {
+                if (localExternalModel.getId() == 0) { // model 1 was newly added
+                    extModelDifferences.add(createAddExternalModel(localNode, localExternalModel, localExternalModel.getName(), ModelDifference.ChangeLocation.ARG1));
+                } else { // model 2 was deleted
+                    extModelDifferences.add(createRemoveExternalModel(localNode, localExternalModel, localExternalModel.getName(), ModelDifference.ChangeLocation.ARG2));
+                }
+            } else if (localExternalModel == null && remoteExternalModel != null) {
+                assert remoteExternalModel.getRevision() != 0; //persisted external models always should have the revision set
+                if (remoteExternalModel.getRevision() > currentRevisionNumber) { // node 2 was added
+                    extModelDifferences.add(createAddExternalModel(localNode, remoteExternalModel, remoteExternalModel.getName(), ModelDifference.ChangeLocation.ARG2));
                 } else { // model 1 was deleted
-                    extModelDifferences.add(createRemoveExternalModel(m1, e2, e2.getName(), ModelDifference.ChangeLocation.ARG1));
+                    extModelDifferences.add(createRemoveExternalModel(localNode, remoteExternalModel, remoteExternalModel.getName(), ModelDifference.ChangeLocation.ARG1));
                 }
-            } else if (e1 != null && e2 != null) {
-                if (!e1.getName().equals(e2.getName())) {
-                    String value1 = e1.getName();
-                    String value2 = e2.getName();
-                    extModelDifferences.add(createExternalModelModified(e1, e2, "name", value1, value2));
+            } else if (localExternalModel != null && remoteExternalModel != null) {
+                if (!localExternalModel.getName().equals(remoteExternalModel.getName())) {
+                    String value1 = localExternalModel.getName();
+                    String value2 = remoteExternalModel.getName();
+                    extModelDifferences.add(createExternalModelModified(localExternalModel, remoteExternalModel, "name", value1, value2));
                 }
-                if (!Arrays.equals(e1.getAttachment(), e2.getAttachment())) {
-                    extModelDifferences.add(createExternalModelModified(e1, e2, "attachment"));
+                if (!Arrays.equals(localExternalModel.getAttachment(), remoteExternalModel.getAttachment())) {
+                    extModelDifferences.add(createExternalModelModified(localExternalModel, remoteExternalModel, "attachment"));
                 }
             }
         }

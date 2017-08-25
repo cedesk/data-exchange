@@ -753,10 +753,10 @@ public class MainController implements Initializable, Displayable, Closeable {
                         "Merge changes, and review remaining differences?");
                 if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
                     // TODO merge remote changes
-                    List<ModelDifference> modelDifferences = differenceMergeService.computeStudyDifferences(project.getStudy(),
-                            project.getRepositoryStudy(),
-                            project.getStudy().getLatestModelModification());
-                    List<ModelDifference> appliedChanges = differenceMergeService.mergeChangesOntoFirst(project, parameterLinkRegistry,
+                    List<ModelDifference> modelDifferences
+                            = differenceMergeService.computeStudyDifferences(project.getStudy(), project.getRepositoryStudy());
+                    List<ModelDifference> appliedChanges
+                            = differenceMergeService.mergeChangesOntoFirst(project, parameterLinkRegistry,
                             externalModelFileHandler, modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
                         openDiffView();

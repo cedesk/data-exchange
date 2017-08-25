@@ -17,7 +17,6 @@
 package ru.skoltech.cedl.dataexchange.repository.revision;
 
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityRepository;
 
@@ -55,12 +54,4 @@ public interface StudyRepository extends JpaRevisionEntityRepository<Study, Long
      */
     Study findByName(String name);
 
-    /**
-     * Retrieve a latest model modification timestamp of study with specified name.
-     *
-     * @param name name of the study.
-     * @return timestamp value of latest model modification time.
-     */
-    @Query("SELECT latestModelModification FROM Study WHERE name = :name")
-    Long findLatestModelModificationByName(@Param("name") String name);
 }

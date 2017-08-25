@@ -16,13 +16,13 @@
 
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.repository.revision.StudyRepository;
 import ru.skoltech.cedl.dataexchange.service.DifferenceMergeService;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 
@@ -34,47 +34,44 @@ import java.util.List;
 public class StudyDifferencesTest extends AbstractApplicationContextTest {
 
     private DifferenceMergeService differenceMergeService;
+    private StudyRepository studyRepository;
 
-    private Study st1;
-    private Study st2;
+    private Study baseStudy;
+
+    @Before
+    public void prepare() {
+        differenceMergeService = context.getBean(DifferenceMergeService.class);
+        studyRepository = context.getBean(StudyRepository.class);
+
+        baseStudy = new Study();
+        baseStudy.setName("St");
+    }
 
     @Test
     public void equalStudies() throws Exception {
-        st2 = st1;
-        Assert.assertEquals(st1, st2);
+        Study localStudy = studyRepository.saveAndFlush(baseStudy);
+        Study remoteStudy = studyRepository.findOne(baseStudy.getId());
+        Assert.assertEquals(localStudy, remoteStudy);
 
-        st2 = (Study) BeanUtils.cloneBean(st1);
-        st2.setLatestModelModification(st2.getLatestModelModification() + 100);
-        Assert.assertEquals(st1, st2);
-
-        List<ModelDifference> differences;
-        differences = differenceMergeService.computeStudyDifferences(st1, st2, -1);
+        List<ModelDifference> differences = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy);
         Assert.assertEquals(0, differences.size());
 
-        st2.setVersion(2);
-        differences = differenceMergeService.computeStudyDifferences(st1, st2, -1);
+        remoteStudy = studyRepository.saveAndFlush(remoteStudy);
+
+        differences = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy);
         Assert.assertEquals(1, differences.size());
         Assert.assertEquals("version", differences.get(0).getAttribute());
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, differences.get(0).getChangeLocation());
 
-        st2.setStudySettings(new StudySettings());
-        st2.getStudySettings().setSyncEnabled(false);
-        differences = differenceMergeService.computeStudyDifferences(st1, st2, -1);
+        remoteStudy.setStudySettings(new StudySettings());
+        remoteStudy.getStudySettings().setSyncEnabled(false);
+        remoteStudy = studyRepository.saveAndFlush(remoteStudy);
+        differences = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy);
         Assert.assertEquals(1, differences.size());
         Assert.assertEquals("version\nstudySettings", differences.get(0).getAttribute());
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, differences.get(0).getChangeLocation());
 
         differences.get(0).mergeDifference();
-    }
-
-    @Before
-    public void prepare() {
-        st1 = new Study();
-        st1.setName("s1");
-        st1.setVersion(1);
-        st1.setLatestModelModification(System.currentTimeMillis());
-
-        differenceMergeService = context.getBean(DifferenceMergeService.class);
     }
 
 }

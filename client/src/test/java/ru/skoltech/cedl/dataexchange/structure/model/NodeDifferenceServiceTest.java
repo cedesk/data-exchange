@@ -19,13 +19,11 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.repository.revision.SystemModelRepository;
 import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
-import ru.skoltech.cedl.dataexchange.service.impl.ExternalModelDifferenceServiceImpl;
-import ru.skoltech.cedl.dataexchange.service.impl.NodeDifferenceServiceImpl;
-import ru.skoltech.cedl.dataexchange.service.impl.ParameterDifferenceServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 
 import java.util.List;
@@ -36,43 +34,40 @@ import static ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference
 /**
  * Created by D.Knoll on 25.05.2017.
  */
-public class NodeDifferenceServiceTest {
+public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
 
     private NodeDifferenceService nodeDifferenceService;
-    private SystemModel localSystem;
-    private SystemModel remoteSystem;
+    private SystemModelRepository systemModelRepository;
+
+    private SystemModel baseSystemModel;
 
     @Before
     public void prepare() {
-        NodeDifferenceServiceImpl modelDifferenceServiceImpl = new NodeDifferenceServiceImpl();
-        modelDifferenceServiceImpl.setParameterDifferenceService(new ParameterDifferenceServiceImpl());
-        modelDifferenceServiceImpl.setExternalModelDifferenceService(new ExternalModelDifferenceServiceImpl());
-        nodeDifferenceService = modelDifferenceServiceImpl;
+        nodeDifferenceService = context.getBean(NodeDifferenceService.class);
+        systemModelRepository = context.getBean(SystemModelRepository.class);
 
-        localSystem = new SystemModel();
-        localSystem.setName("Sy1");
-        localSystem.setLastModification(System.currentTimeMillis() - 5000);
-
-        remoteSystem = new SystemModel();
-        remoteSystem.setUuid(localSystem.getUuid());
-        remoteSystem.setLastModification(localSystem.getLastModification());
-        remoteSystem.setName("Sy1");
+        baseSystemModel = new SystemModel();
+        baseSystemModel.setName("SM");
     }
 
     @Test
     public void localNodeAdd() throws Exception {
-        SubSystemModel newLocalSub = new SubSystemModel("subsys1");
+        SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
+        SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
+        int currentRevisionNumber = localSystem.getRevision();
+
+        SubSystemModel newLocalSub = new SubSystemModel("subsys");
         localSystem.addSubNode(newLocalSub);
 
         Assert.assertEquals(1, localSystem.getSubNodes().size());
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
         Assert.assertEquals(ChangeType.ADD, md.getChangeType());
-        Assert.assertEquals(md.getElementPath(), newLocalSub.getNodePath());
+        Assert.assertEquals(newLocalSub.getNodePath(), md.getElementPath());
 
         Assert.assertTrue(md.isRevertible());
 
@@ -80,24 +75,26 @@ public class NodeDifferenceServiceTest {
 
         Assert.assertEquals(0, localSystem.getSubNodes().size());
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(0, differences.size());
-
     }
 
     @Test
     public void localNodeModify() throws Exception {
-        SubSystemModel subSystem1 = new SubSystemModel("subSystem1");
-        subSystem1.setLastModification(System.currentTimeMillis());
-        remoteSystem.addSubNode(subSystem1);
-        SubSystemModel subSystem2 = new SubSystemModel();
-        Utils.copyBean(subSystem1, subSystem2);
-        localSystem.addSubNode(subSystem2);
+        SubSystemModel subSystem = new SubSystemModel("subSystem");
 
-        subSystem2.setName(subSystem1.getName() + "-v2");
+        SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
+        localSystem.addSubNode(subSystem);
+        localSystem = systemModelRepository.saveAndFlush(localSystem);
+
+        SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
+        int currentRevisionNumber = localSystem.getRevision();
+
+        subSystem = localSystem.getSubNodes().get(0);
+        subSystem.setName(subSystem.getName() + "-v2");
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
@@ -110,18 +107,25 @@ public class NodeDifferenceServiceTest {
         Assert.assertEquals(1, localSystem.getSubNodes().size());
         Assert.assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(0, differences.size());
     }
 
     @Test
     public void localNodeRemove() throws Exception {
-        SubSystemModel existingRemoteNode = new SubSystemModel("subsystem1");
-        existingRemoteNode.setLastModification(remoteSystem.getLastModification() - 100);// parameter it was part of last modification
-        remoteSystem.addSubNode(existingRemoteNode);
+        SubSystemModel subSystem = new SubSystemModel("subSystem");
+
+        SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
+        localSystem.addSubNode(subSystem);
+        localSystem = systemModelRepository.saveAndFlush(localSystem);
+
+        SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
+        int currentRevisionNumber = localSystem.getRevision();
+
+        localSystem.getSubNodes().clear();
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
@@ -134,20 +138,25 @@ public class NodeDifferenceServiceTest {
         Assert.assertEquals(1, localSystem.getSubNodes().size());
         Assert.assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(0, differences.size());
     }
 
     @Test
     public void remoteNodeAdd() throws Exception {
-        SubSystemModel subsystem1 = new SubSystemModel("subsystem1");
-        subsystem1.setLastModification(System.currentTimeMillis());
-        remoteSystem.addSubNode(subsystem1);
+        SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
+        SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
+        int currentRevisionNumber = localSystem.getRevision();
 
-        Assert.assertTrue(localSystem.findLatestModification() < subsystem1.getLastModification());
+        SubSystemModel subSystem = new SubSystemModel("subsystem");
+        remoteSystem.addSubNode(subSystem);
+        remoteSystem = systemModelRepository.saveAndFlush(remoteSystem);
+
+        int lastRevisionNumber = remoteSystem.getRevision();
+        Assert.assertTrue(currentRevisionNumber < lastRevisionNumber);
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
@@ -159,24 +168,27 @@ public class NodeDifferenceServiceTest {
         Assert.assertEquals(1, localSystem.getSubNodes().size());
         Assert.assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(0, differences.size());
     }
 
     @Test
     public void remoteNodeModify() throws Exception {
-        SubSystemModel subsystem1 = new SubSystemModel("subsystem1");
-        subsystem1.setLastModification(System.currentTimeMillis() - 1000);
-        remoteSystem.addSubNode(subsystem1);
-        SubSystemModel subsystem2 = new SubSystemModel();
-        Utils.copyBean(subsystem1, subsystem2);
-        localSystem.addSubNode(subsystem2);
+        SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
 
-        subsystem1.setName(subsystem1.getName() + "_v3");
-        subsystem1.setLastModification(System.currentTimeMillis());
+        SubSystemModel subSystem = new SubSystemModel("subsystem");
+        localSystem.addSubNode(subSystem);
+        localSystem = systemModelRepository.saveAndFlush(localSystem);
+
+        int currentRevisionNumber = localSystem.getRevision();
+
+        SystemModel remoteSystem = systemModelRepository.saveAndFlush(localSystem);
+        subSystem = remoteSystem.getSubNodes().get(0);
+        subSystem.setName(subSystem.getName() + "_v3");
+        remoteSystem = systemModelRepository.saveAndFlush(remoteSystem);
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
@@ -188,18 +200,27 @@ public class NodeDifferenceServiceTest {
         Assert.assertEquals(1, localSystem.getSubNodes().size());
         Assert.assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(0, differences.size());
     }
 
     @Test
     public void remoteNodeRemove() throws Exception {
-        SubSystemModel existingLocalNode = new SubSystemModel("subsystem1");
-        existingLocalNode.setLastModification(localSystem.getLastModification() - 100); // parameter was part of last modification
-        localSystem.addSubNode(existingLocalNode);
+        SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
+
+        SubSystemModel subSystem = new SubSystemModel("subsystem");
+        localSystem.addSubNode(subSystem);
+        localSystem = systemModelRepository.saveAndFlush(localSystem);
+
+        int currentRevisionNumber = localSystem.getRevision();
+
+        SystemModel remoteSystem = systemModelRepository.saveAndFlush(localSystem);
+        remoteSystem.getSubNodes().clear();
+
+        remoteSystem = systemModelRepository.saveAndFlush(remoteSystem);
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         Assert.assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
@@ -210,9 +231,8 @@ public class NodeDifferenceServiceTest {
 
         Assert.assertEquals(0, localSystem.getSubNodes().size());
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, localSystem.findLatestModification());
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
         Assert.assertEquals(0, differences.size());
     }
-
 
 }

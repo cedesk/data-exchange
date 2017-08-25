@@ -300,9 +300,9 @@ public class Project {
                 this.updateExternalModelsInStudy();
                 SystemModel localSystemModel = this.study.getSystemModel();
                 SystemModel remoteSystemModel = this.repositoryStudy.getSystemModel();
-                long latestStudy1Modification = study.getLatestModelModification();
+                int revision = study.getRevision();
                 List<ModelDifference> modelDifferences =
-                        nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel, latestStudy1Modification);
+                        nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel, revision);
                 long remoteDifferenceCounts = modelDifferences.stream()
                         .filter(md -> md.getChangeLocation() == ModelDifference.ChangeLocation.ARG2).count();
                 return remoteDifferenceCounts > 0;
@@ -327,6 +327,7 @@ public class Project {
             return;
         }
         LocalTime startTime = LocalTime.now();
+
         Pair<Integer, Date> latestRevision = studyService.findLatestRevision(study.getId());
         long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
         logger.info("checked repository study (" + checkDuration + "ms), " +
@@ -468,6 +469,7 @@ public class Project {
 
         this.setStudy(newStudy);
         this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
+
         Platform.runLater(() -> {
             this.latestLoadedRevisionNumber.set(newRevisionNumber);
             this.latestRepositoryRevisionNumber.set(newRevisionNumber);

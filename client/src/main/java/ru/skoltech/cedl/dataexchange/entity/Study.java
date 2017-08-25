@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange.entity;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 
@@ -31,11 +32,16 @@ import javax.xml.bind.annotation.XmlTransient;
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(name = "uniqueStudyName", columnNames = {"name"})})
 @Audited
-public class Study implements PersistedEntity {
+public class Study implements PersistedEntity, ModificationTimestamped {
 
     @Id
     @GeneratedValue
     private long id;
+
+    @Revision
+    @NotAudited
+    @XmlTransient
+    private int revision;
 
     private String name;
 
@@ -50,7 +56,7 @@ public class Study implements PersistedEntity {
     @XmlTransient
     private StudySettings studySettings;
 
-    private Long latestModelModification;
+    private Long lastModification;
 
     @Version
     @XmlTransient
@@ -71,12 +77,17 @@ public class Study implements PersistedEntity {
         this.id = id;
     }
 
-    public Long getLatestModelModification() {
-        return latestModelModification;
+    @Override
+    public void setLastModification(Long lastModification) {
+        this.lastModification = lastModification;
     }
 
-    public void setLatestModelModification(Long latestModelModification) {
-        this.latestModelModification = latestModelModification;
+    public int getRevision() {
+        return revision;
+    }
+
+    public void setRevision(int revision) {
+        this.revision = revision;
     }
 
     public String getName() {
@@ -146,7 +157,7 @@ public class Study implements PersistedEntity {
         return "Study{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", latestModelModification=" + latestModelModification +
+                ", lastModification=" + lastModification +
                 ", version=" + version +
                 '}';
     }

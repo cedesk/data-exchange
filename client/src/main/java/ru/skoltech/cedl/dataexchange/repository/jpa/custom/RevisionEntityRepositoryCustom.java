@@ -53,7 +53,18 @@ public interface RevisionEntityRepositoryCustom {
      * @return instance of {@link CustomRevisionEntity}
      */
     @Transactional(readOnly = true)
-    CustomRevisionEntity lastCustomRevisionEntity(Long id, Class entityClass);
+    CustomRevisionEntity lastRevisionEntity(Long id, Class entityClass);
+
+    /**
+     * Retrieve an last revision number
+     * which was stored along with entity of specified class and id.
+     *
+     * @param id          id of entity, which persistence produced required revision number
+     * @param entityClass class of entity, which persistence produced required revision number
+     * @return a revision number
+     */
+    @Transactional(readOnly = true)
+    int lastRevisionNumber(Long id, Class entityClass);
 
     /**
      * Retrieve a full information about latest revision,

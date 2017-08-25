@@ -17,6 +17,7 @@
 package ru.skoltech.cedl.dataexchange.entity;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
@@ -34,7 +35,7 @@ import java.util.UUID;
 @Audited
 @XmlType(propOrder = {"name", "value", "nature", "valueSource", "unit", "isExported", "isReferenceValueOverridden", "lastModification", "uuid", "valueReference", "valueLink", "exportReference", "calculation", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ParameterModel implements Comparable<ParameterModel>, ModificationTimestamped, PersistedEntity {
+public class ParameterModel implements Comparable<ParameterModel>, PersistedEntity {
 
     public static final ParameterNature DEFAULT_NATURE = ParameterNature.INTERNAL;
     public static final ParameterValueSource DEFAULT_VALUE_SOURCE = ParameterValueSource.MANUAL;
@@ -45,6 +46,11 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
     @GeneratedValue
     @XmlTransient
     private long id;
+
+    @Revision
+    @NotAudited
+    @XmlTransient
+    private int revision;
 
     @XmlID
     @XmlAttribute
@@ -188,7 +194,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         if (exportReference != null) {
             return exportReference;
         }
-        if (exportModel == null || exportField == null) {
+        if (exportModel == null && exportField == null) {
             return null;
         }
         exportReference = new ExternalModelReference();
@@ -216,6 +222,14 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public int getRevision() {
+        return revision;
+    }
+
+    public void setRevision(int revision) {
+        this.revision = revision;
     }
 
     public String getImportField() {
@@ -250,12 +264,10 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         this.isReferenceValueOverridden = isReferenceValueOverridden;
     }
 
-    @Override
     public Long getLastModification() {
         return lastModification;
     }
 
-    @Override
     public void setLastModification(Long timestamp) {
         this.lastModification = timestamp;
     }
@@ -332,7 +344,7 @@ public class ParameterModel implements Comparable<ParameterModel>, ModificationT
         if (valueReference != null) {
             return valueReference;
         }
-        if (importModel == null || importField == null) {
+        if (importModel == null && importField == null) {
             return null;
         }
         valueReference = new ExternalModelReference();

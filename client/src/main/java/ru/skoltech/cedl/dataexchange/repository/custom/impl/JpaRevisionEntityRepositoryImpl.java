@@ -22,13 +22,13 @@ import org.hibernate.envers.Audited;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import ru.skoltech.cedl.dataexchange.entity.ModificationTimestamped;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityRepository;
 
 import javax.persistence.EntityManager;
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * Implemetation of {@link JpaRevisionEntityRepository}.
@@ -54,90 +54,95 @@ public class JpaRevisionEntityRepositoryImpl<T, ID extends Serializable> extends
     @Override
     public void delete(ID id) {
         super.delete(id);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
+        this.produceRevision();
     }
 
     @Override
     public void delete(T entity) {
         super.delete(entity);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
+        this.produceRevision();
     }
 
     @Override
     public void delete(Iterable<? extends T> entities) {
         super.delete(entities);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
+        this.produceRevision();
     }
 
     @Override
     public void deleteAll() {
         super.deleteAll();
-        this.storeUsernameOfCurrentCustomRevisionEntity();
+        this.produceRevision();
     }
 
     @Override
     public void deleteAllInBatch() {
         super.deleteAllInBatch();
-        this.storeUsernameOfCurrentCustomRevisionEntity();
+        this.produceRevision();
     }
 
     @Override
     public void deleteInBatch(Iterable<T> entities) {
         super.deleteInBatch(entities);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
+        this.produceRevision();
     }
 
     @Override
     public <S extends T> S save(S entity) {
+        this.modificationTimestamped(entity);
         S newEntity = super.save(entity);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
+        this.produceRevision();
         return newEntity;
     }
 
     @Override
     public <S extends T> S save(S entity, String tag) {
-        S newEntry = this.save(entity);
-        this.storeTagOfCurrentCustomRevisionEntity(tag);
+        this.modificationTimestamped(entity);
+        S newEntry = super.save(entity);
+        this.produceRevision(tag);
         return newEntry;
     }
 
     @Override
-    public <S extends T> List<S> save(Iterable<S> entities) {
-        List<S> newEntities = super.save(entities);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
-        return newEntities;
-    }
-
-    @Override
     public <S extends T> S saveAndFlush(S entity) {
+        this.modificationTimestamped(entity);
         S newEntity = super.saveAndFlush(entity);
-        this.storeUsernameOfCurrentCustomRevisionEntity();
+        this.produceRevision();
         return newEntity;
     }
 
     @Override
     public <S extends T> S saveAndFlush(S entity, String tag) {
-        S newEntry = this.saveAndFlush(entity);
-        this.storeTagOfCurrentCustomRevisionEntity(tag);
+        this.modificationTimestamped(entity);
+        S newEntry = super.saveAndFlush(entity);
+        this.produceRevision(tag);
         return newEntry;
     }
 
-    private void storeTagOfCurrentCustomRevisionEntity(String tag) {
-        if (!entityClass.isAnnotationPresent(Audited.class)) {
-            return;
-        }
-        final AuditReader reader = AuditReaderFactory.get(entityManager);
-        CustomRevisionEntity customRevisionEntity = reader.getCurrentRevision(CustomRevisionEntity.class, true);
-        customRevisionEntity.setTag(tag);
+    private void produceRevision() {
+        this.produceRevision(null);
     }
 
-    private void storeUsernameOfCurrentCustomRevisionEntity() {
+    private void produceRevision(String tag) {
         if (!entityClass.isAnnotationPresent(Audited.class)) {
             return;
         }
-        String username = applicationSettings.getProjectUserName();
         final AuditReader reader = AuditReaderFactory.get(entityManager);
+        String username = applicationSettings.getProjectUserName();
         CustomRevisionEntity customRevisionEntity = reader.getCurrentRevision(CustomRevisionEntity.class, true);
         customRevisionEntity.setUsername(username);
+        if (tag != null) {
+            customRevisionEntity.setTag(tag);
+        }
     }
+
+    private <S extends T> void modificationTimestamped(S entity) {
+        // Still necessary to save always study, because otherwise there is no new revision of it produced
+        // and no changes noted
+        if (entity instanceof ModificationTimestamped) {
+            ModificationTimestamped modificationTimestamped = (ModificationTimestamped) entity;
+            modificationTimestamped.setLastModification(System.currentTimeMillis());
+        }
+    }
+
 }

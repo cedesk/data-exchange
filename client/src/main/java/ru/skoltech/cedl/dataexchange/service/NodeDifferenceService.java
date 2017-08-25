@@ -31,7 +31,7 @@ public interface NodeDifferenceService {
     NodeDifference createNodeAttributesModified(ModelNode node1, ModelNode node2, String attribute, String value1, String value2);
     NodeDifference createAddedNode(ModelNode parent, ModelNode node1, String name, ModelDifference.ChangeLocation changeLocation);
     NodeDifference createRemovedNode(ModelNode parent, ModelNode node1, String name, ModelDifference.ChangeLocation changeLocation);
-    List<ModelDifference> differencesOnSubNodes(CompositeModelNode m1, CompositeModelNode m2, long latestStudy1Modification);
-    List<ModelDifference> computeNodeDifferences(ModelNode m1, ModelNode m2, long latestStudy1Modification);
+    List<ModelDifference> differencesOnSubNodes(CompositeModelNode<ModelNode> localNode, CompositeModelNode<ModelNode> remoteNode, int currentRevisionNumber);
+    List<ModelDifference> computeNodeDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber);
 
 }

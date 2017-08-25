@@ -61,19 +61,19 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
     }
 
     @Override
-    public List<ModelDifference> computeStudyDifferences(Study s1, Study s2, long latestStudy1Modification) {
+    public List<ModelDifference> computeStudyDifferences(Study localStudy, Study remoteStudy) {
         List<ModelDifference> modelDifferences = new LinkedList<>();
 
         // attributes
-        List<AttributeDifference> attributeDifferences = getAttributeDifferences(s1, s2);
+        List<AttributeDifference> attributeDifferences = getAttributeDifferences(localStudy, remoteStudy);
         if (!attributeDifferences.isEmpty()) {
-            modelDifferences.add(createStudyAttributesModified(s1, s2, attributeDifferences));
+            modelDifferences.add(createStudyAttributesModified(localStudy, remoteStudy, attributeDifferences));
         }
         // system model
-        SystemModel systemModel1 = s1.getSystemModel();
-        SystemModel sSystemModel2 = s2.getSystemModel();
-        if (systemModel1 != null && sSystemModel2 != null) {
-            modelDifferences.addAll(nodeDifferenceService.computeNodeDifferences(systemModel1, sSystemModel2, latestStudy1Modification));
+        SystemModel localSystemModel = localStudy.getSystemModel();
+        SystemModel remoteSystemModel2 = remoteStudy.getSystemModel();
+        if (localSystemModel != null && remoteSystemModel2 != null) {
+            modelDifferences.addAll(nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel2, localStudy.getRevision()));
         }
         return modelDifferences;
     }
@@ -91,8 +91,8 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
             sbValues1.append(diff.value1);
             sbValues2.append(diff.value2);
         }
-        boolean p2newer = isNewer(study1, study2);
-        ModelDifference.ChangeLocation changeLocation = p2newer ? ModelDifference.ChangeLocation.ARG2 : ModelDifference.ChangeLocation.ARG1;
+        boolean s2newer = study1.getRevision() < study2.getRevision();
+        ModelDifference.ChangeLocation changeLocation = s2newer ? ModelDifference.ChangeLocation.ARG2 : ModelDifference.ChangeLocation.ARG1;
         return new StudyDifference(study1, study2, ModelDifference.ChangeType.MODIFY, changeLocation, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString(), studyService);
     }
 
@@ -176,24 +176,8 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         return true;
     }
 
-    /**
-     * @return true if s2 is newer than s1
-     */
-    private static boolean isNewer(Study s1, Study s2) {
-        Long mod1 = s1.getLatestModelModification();
-        Long mod2 = s2.getLatestModelModification();
-        mod1 = mod1 != null ? mod1 : 0L;
-        mod2 = mod2 != null ? mod2 : 0L;
-        return mod1 < mod2;
-    }
-
     private static List<AttributeDifference> getAttributeDifferences(Study study1, Study study2) {
         List<AttributeDifference> differences = new LinkedList<>();
-  /*      if ((study1.getLatestModelModification() == null && study2.getLatestModelModification() != null) || (study1.getLatestModelModification() != null && study2.getLatestModelModification() == null)
-                || (study1.getLatestModelModification() != null && !study1.getLatestModelModification().equals(study2.getLatestModelModification()))) {
-            differences.add(new AttributeDifference("latestModelModification",
-                    toTime(study1.getLatestModelModification()), toTime(study2.getLatestModelModification())));
-        } */
         if (study1.getVersion() != study2.getVersion()) {
             differences.add(new AttributeDifference("version", study1.getVersion(), study2.getVersion()));
         }

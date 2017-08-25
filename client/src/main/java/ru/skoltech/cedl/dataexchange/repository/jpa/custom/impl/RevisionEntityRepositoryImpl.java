@@ -57,7 +57,7 @@ public class RevisionEntityRepositoryImpl implements RevisionEntityRepositoryCus
     }
 
     @Override
-    public CustomRevisionEntity lastCustomRevisionEntity(Long id, Class entityClass) {
+    public CustomRevisionEntity lastRevisionEntity(Long id, Class entityClass) {
         assert id != null;
         final AuditReader reader = AuditReaderFactory.get(entityManager);
 
@@ -69,6 +69,11 @@ public class RevisionEntityRepositoryImpl implements RevisionEntityRepositoryCus
                 .getSingleResult();
 
         return (CustomRevisionEntity) array[1];
+    }
+
+    @Override
+    public int lastRevisionNumber(Long id, Class entityClass) {
+        return this.lastRevisionEntity(id, entityClass).getId();
     }
 
     @Override

@@ -36,12 +36,11 @@ public interface DifferenceMergeService {
     /**
      * TODO add javadoc
      *
-     * @param s1
-     * @param s2
-     * @param latestStudy1Modification
+     * @param localStudy
+     * @param remoteStudy
      * @return
      */
-    List<ModelDifference> computeStudyDifferences(Study s1, Study s2, long latestStudy1Modification);
+    List<ModelDifference> computeStudyDifferences(Study localStudy, Study remoteStudy);
 
     /**
      * Compacting all attributes differences into one study modification

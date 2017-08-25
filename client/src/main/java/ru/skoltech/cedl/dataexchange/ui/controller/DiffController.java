@@ -167,9 +167,8 @@ public class DiffController implements Initializable {
     public void refreshView() {
         Study localStudy = project.getStudy();
         Study remoteStudy = project.getRepositoryStudy();
-        long latestLoadedModification = localStudy.getLatestModelModification();
         project.updateExternalModelsInStudy();
-        List<ModelDifference> modelDiffs = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy, latestLoadedModification);
+        List<ModelDifference> modelDiffs = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy);
         displayDifferences(modelDiffs);
     }
 
@@ -204,7 +203,7 @@ public class DiffController implements Initializable {
                     Class<? extends PersistedEntity> clazz = persistedEntity.getClass();
                     CustomRevisionEntity revisionEntity;
                     try {
-                        revisionEntity = revisionEntityRepository.lastCustomRevisionEntity(id, clazz);
+                        revisionEntity = revisionEntityRepository.lastRevisionEntity(id, clazz);
                     } catch (Exception e) {
                         logger.debug("Loading revision history failed: " +
                                 persistedEntity.getClass().getSimpleName() + "[" + persistedEntity.getId() + "]");

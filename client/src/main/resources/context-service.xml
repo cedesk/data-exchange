@@ -106,7 +106,7 @@
                 <entry key="hibernate.connection.isolation" value="${hibernate.connection.isolation}"/>
                 <entry key="hibernate.format_sql" value="${hibernate.format.sql}"/>
                 <entry key="org.hibernate.envers.audit_strategy" value="${hibernate.envers.audit_strategy}"/>
-                <entry key="hibernate.session_factory.interceptor" value-ref="modificationInterceptor"/>
+                <entry key="hibernate.ejb.event.flush-entity" value="ru.skoltech.cedl.dataexchange.RevisionListener" />
             </util:map>
         </property>
     </bean>
@@ -119,8 +119,5 @@
         <property name="username" value="${repository.user}"/>
         <property name="password" value="${repository.password}"/>
     </bean>
-
-    <bean id="modificationInterceptor"
-          class="ru.skoltech.cedl.dataexchange.db.ModificationInterceptor"/>
 
 </beans>

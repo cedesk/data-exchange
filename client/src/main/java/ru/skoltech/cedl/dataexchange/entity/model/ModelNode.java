@@ -20,6 +20,7 @@ import org.hibernate.annotations.DiscriminatorOptions;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.*;
 
@@ -38,12 +39,17 @@ import java.util.stream.Collectors;
 @Audited
 @XmlType(propOrder = {"name", "lastModification", "uuid", "externalModels", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public abstract class ModelNode implements Comparable<ModelNode>, ModificationTimestamped, PersistedEntity {
+public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntity {
 
     public static final String NODE_SEPARATOR = "\\";
 
     @XmlTransient
     protected long id;
+
+    @Revision
+    @NotAudited
+    @XmlTransient
+    private int revision;
 
     @XmlTransient
     protected ModelNode parent;
@@ -73,6 +79,15 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         this.name = name;
     }
 
+    @NotAudited
+    public int getRevision() {
+        return revision;
+    }
+
+    public void setRevision(int revision) {
+        this.revision = revision;
+    }
+
     @Transient
     public Map<String, ExternalModel> getExternalModelMap() {
         return this.getExternalModels().stream().collect(Collectors.toMap(ExternalModel::getName, o -> o));
@@ -100,12 +115,10 @@ public abstract class ModelNode implements Comparable<ModelNode>, ModificationTi
         this.id = id;
     }
 
-    @Override
     public Long getLastModification() {
         return lastModification;
     }
 
-    @Override
     public void setLastModification(Long timestamp) {
         this.lastModification = timestamp;
     }

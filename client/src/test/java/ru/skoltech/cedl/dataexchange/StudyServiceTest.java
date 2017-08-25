@@ -148,6 +148,9 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         assertEquals(applicationSettings.getProjectUserName(), revision.getLeft().getUsername());
         assertNull(revision.getLeft().getTag());
         assertEquals(RevisionType.ADD, revision.getRight());
+
+        studyStored = studyService.findStudyByName(name);
+        assertEquals(revision.getLeft().getId(), studyStored.getRevision());
     }
 
     @Test
