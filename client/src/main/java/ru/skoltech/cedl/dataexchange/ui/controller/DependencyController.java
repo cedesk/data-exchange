@@ -17,6 +17,8 @@
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
@@ -81,6 +83,7 @@ public class DependencyController implements Initializable {
 
     private Project project;
     private ParameterLinkRegistry parameterLinkRegistry;
+    private BooleanBinding repositoryNewer;
 
     public void setProject(Project project) {
         this.project = project;
@@ -166,14 +169,16 @@ public class DependencyController implements Initializable {
     }
 
     private void registerListeners() {
-        ChangeListener<Number> listener = (observable, oldValue, newValue) -> {
+        ChangeListener<Boolean> listener = (observable, oldValue, newValue) -> {
             if (sourceGroup.getSelectedToggle() == sourceRepositoryRadio) {
                 refreshView(null);
             }
         };
-        project.latestRepositoryRevisionNumberProperty().addListener(listener);
+        repositoryNewer = Bindings.isNotEmpty(project.getModelDifferences());
+        repositoryNewer.addListener(listener);
+
         diagramView.getScene().getWindow().setOnCloseRequest(event -> {
-            project.latestRepositoryRevisionNumberProperty().removeListener(listener);
+            repositoryNewer.removeListener(listener);
         });
     }
 }

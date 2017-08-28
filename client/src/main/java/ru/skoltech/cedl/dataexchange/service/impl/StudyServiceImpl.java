@@ -142,7 +142,8 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
-    public Study findStudyByRevision(Study study, Integer revisionNumber) {
+    public Study findStudyByNameAndRevision(String studyName, Integer revisionNumber) {
+        Study study = findStudyByName(studyName);
 //        Revision<Integer, Study> revision = studyRevisionRepository.findRevision(study.getId(), revisionNumber);
         return studyRevisionRepository.findStudyByRevision(study.getId(), revisionNumber);
     }
@@ -171,11 +172,6 @@ public class StudyServiceImpl implements StudyService {
     public Pair<Integer, Date> findLatestRevision(Long studyId) {
         Revision<Integer, Study> revision = studyRevisionRepository.findLastChangeRevision(studyId);
         return Pair.of(revision.getRevisionNumber(), revision.getRevisionDate().toDate());
-    }
-
-    @Override
-    public Integer findLatestRevisionNumber(Long studyId) {
-        return this.findLatestRevision(studyId).getLeft();
     }
 
     @Override

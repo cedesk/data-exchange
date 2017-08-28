@@ -223,8 +223,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         tagLabel.textProperty().bind(Bindings.when(tagProperty.isNull()).then("--").otherwise(tagProperty));
         tagMenu.textProperty().bind(Bindings.when(tagProperty.isNull()).then("_Tag current revision...").otherwise("_Untag current revision"));
 
-        repositoryNewer = Bindings.lessThan(project.latestLoadedRevisionNumberProperty(),
-                project.latestRepositoryRevisionNumberProperty());
+        repositoryNewer = Bindings.isNotEmpty(project.getModelDifferences());
 
         repositoryNewerListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -237,7 +236,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                     diffButton.setGraphicTextGap(8);
 
                     executor.execute(() -> {
-                        project.loadCurrentRepositoryStudy();
+                        project.loadRepositoryStudy();
                         Platform.runLater(() -> {
                             modelEditingController.updateView();
                             StatusLogger.getInstance().log("Remote model loaded for comparison.");
@@ -610,8 +609,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         studyRevisionsViewBuilder.resizable(false);
         studyRevisionsViewBuilder.applyEventHandler(event -> {
             CustomRevisionEntity customRevisionEntity = (CustomRevisionEntity) event.getSource();
-            Study studyRevision = studyService.findStudyByRevision(study, customRevisionEntity.getId());
-            project.loadLocalStudy(customRevisionEntity.getId(), studyRevision);
+            project.loadLocalStudy(customRevisionEntity.getId());
             this.updateView();
             tagProperty.setValue(customRevisionEntity.getTag());
         });
@@ -720,8 +718,8 @@ public class MainController implements Initializable, Displayable, Closeable {
         modelEditingController.clearView();
         String projectName = project.getProjectName();
         try {
-            boolean success = project.loadCurrentLocalStudy();
-            if (success) {
+            project.loadLocalStudy();
+            if (project.getStudy() != null) {
                 applicationSettings.storeProjectLastName(projectName);
                 StatusLogger.getInstance().log("Successfully loaded study: " + projectName, false);
                 actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, projectName);

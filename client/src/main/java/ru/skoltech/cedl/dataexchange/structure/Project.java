@@ -18,9 +18,9 @@ package ru.skoltech.cedl.dataexchange.structure;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -74,15 +76,17 @@ public class Project {
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
+    private DifferenceMergeService differenceMergeService;
     private NodeDifferenceService nodeDifferenceService;
+    private Executor executor;
 
     private String projectName;
 
     private Study study;
     private Study repositoryStudy;
 
-    private IntegerProperty latestLoadedRevisionNumber = new SimpleIntegerProperty();
-    private IntegerProperty latestRepositoryRevisionNumber = new SimpleIntegerProperty();
+    private AtomicInteger latestRevisionNumber = new AtomicInteger();
+    private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
     private User currentUser;
     private UserManagement userManagement;
@@ -143,8 +147,16 @@ public class Project {
         this.unitManagementService = unitManagementService;
     }
 
+    public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
+        this.differenceMergeService = differenceMergeService;
+    }
+
     public void setNodeDifferenceService(NodeDifferenceService nodeDifferenceService) {
         this.nodeDifferenceService = nodeDifferenceService;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 
     public static void setLogger(Logger logger) {
@@ -159,12 +171,8 @@ public class Project {
         this.init(projectName);
     }
 
-    public IntegerProperty latestLoadedRevisionNumberProperty() {
-        return latestLoadedRevisionNumber;
-    }
-
-    public IntegerProperty latestRepositoryRevisionNumberProperty() {
-        return latestRepositoryRevisionNumber;
+    public ObservableList<ModelDifference> getModelDifferences() {
+        return modelDifferences;
     }
 
     public Study getRepositoryStudy() {
@@ -296,7 +304,7 @@ public class Project {
     public boolean checkRepositoryForChanges() {
         if (this.repositoryStudy != null) { // already saved or retrieved from repository
             try {
-                this.loadCurrentRepositoryStudy();
+                this.loadRepositoryStudy();
                 this.updateExternalModelsInStudy();
                 SystemModel localSystemModel = this.study.getSystemModel();
                 SystemModel remoteSystemModel = this.repositoryStudy.getSystemModel();
@@ -334,8 +342,11 @@ public class Project {
                 "last revision number: " + latestRevision.getLeft() + ", " +
                 "date : " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(latestRevision.getRight()));
 
-        int latestRevisionNumber = latestRevision.getLeft() != null ? latestRevision.getLeft() : 0;
-        Platform.runLater(() -> this.latestRepositoryRevisionNumber.set(latestRevisionNumber));
+        int newLatestRevisionNumber = latestRevision.getLeft() != null ? latestRevision.getLeft() : 0;
+        if (this.latestRevisionNumber.get() >= newLatestRevisionNumber) {
+            return;
+        }
+        executor.execute(this::loadRepositoryStudy);
     }
 
     public boolean checkUser() {
@@ -371,44 +382,39 @@ public class Project {
         initializeStateOfExternalModels();
     }
 
-    public boolean loadCurrentLocalStudy() {
-        Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
-        Study study = revision.getLeft();
-        Integer revisionNumber = revision.getMiddle();
-        return loadLocalStudy(revisionNumber, study);
+    public void loadLocalStudy() {
+        Study study = studyService.findStudyByName(projectName);
+        this.setStudy(study);
+
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        initializeStateOfExternalModels();
+        registerParameterLinks();
     }
 
-    public boolean loadLocalStudy(Integer revisionNumber, Study study) {
-        if (study == null) {
-            logger.warn("Study not found!");
-        } else {
-            Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
-            Study repositoryStudy = revision.getLeft();
-            Integer repositoryStudyRevisionNumber = revision.getMiddle();
+    public void loadLocalStudy(Integer revisionNumber) {
+        Study study = studyService.findStudyByNameAndRevision(projectName, revisionNumber);
+        this.setStudy(study);
 
-            this.setStudy(study);
-            this.setRepositoryStudy(repositoryStudy);
-
-            Platform.runLater(() -> {
-                this.latestLoadedRevisionNumber.set(revisionNumber);
-                this.latestRepositoryRevisionNumber.set(repositoryStudyRevisionNumber);
-            });
-
-            repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
-            initializeStateOfExternalModels();
-            registerParameterLinks();
-        }
-        return study != null;
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        initializeStateOfExternalModels();
+        registerParameterLinks();
     }
 
-    public boolean loadCurrentRepositoryStudy() {
+    public void loadRepositoryStudy() {
         Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
         Study repositoryStudy = revision.getLeft();
         Integer repositoryStudyRevisionNumber = revision.getMiddle();
+        if (this.latestRevisionNumber.get() == repositoryStudyRevisionNumber) {
+            return;
+        }
 
         this.setRepositoryStudy(repositoryStudy);
-        Platform.runLater(() -> this.latestRepositoryRevisionNumber.set(repositoryStudyRevisionNumber));
-        return repositoryStudy != null;
+        Platform.runLater(() -> {
+            List<ModelDifference> modelDiffs = differenceMergeService.computeStudyDifferences(study, repositoryStudy);
+            modelDifferences.clear();
+            modelDifferences.addAll(modelDiffs);
+            this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
+        });
     }
 
     public boolean loadUnitManagement() {
@@ -463,17 +469,15 @@ public class Project {
 
         Triple<Study, Integer, Date> revision = studyService.saveStudy(this.study);
         Study newStudy = revision.getLeft();
-        Integer newRevisionNumber = revision.getMiddle();
+        Integer revisionNumber = revision.getMiddle();
 
         this.updateExternalModelStateInCache();
 
         this.setStudy(newStudy);
         this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
+        this.latestRevisionNumber.set(revisionNumber);
 
-        Platform.runLater(() -> {
-            this.latestLoadedRevisionNumber.set(newRevisionNumber);
-            this.latestRepositoryRevisionNumber.set(newRevisionNumber);
-        });
+        Platform.runLater(() -> this.modelDifferences.clear());
 
         this.initializeStateOfExternalModels();
         this.registerParameterLinks();
@@ -604,7 +608,7 @@ public class Project {
         this.setProjectName(systemModel.getName());
         study = studyService.createStudy(systemModel, userManagement);
         this.setRepositoryStudy(null);
-        Platform.runLater(() -> this.latestRepositoryRevisionNumber.set(0));
+        Platform.runLater(() -> this.modelDifferences.clear());
         externalModelFileWatcher.clear();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
         parameterLinkRegistry.clear();
@@ -679,8 +683,7 @@ public class Project {
                 "repositoryStateMachine=" + repositoryStateMachine +
                 ", projectName='" + projectName + '\'' +
                 ", currentUser=" + currentUser +
-                ", latestLoadedRevisionNumber=" + latestLoadedRevisionNumber +
-                ", latestRepositoryRevisionNumber=" + latestRepositoryRevisionNumber +
+                ", latestRevisionNumber=" + latestRevisionNumber +
                 '}';
     }
 

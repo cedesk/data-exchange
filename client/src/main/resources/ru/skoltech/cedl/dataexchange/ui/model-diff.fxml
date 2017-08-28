@@ -80,9 +80,9 @@
         <bottom>
             <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="200.0"
                      BorderPane.alignment="CENTER">
-                <Button cancelButton="true" mnemonicParsing="false" onAction="#close" text="Cancel"/>
-                <Button fx:id="acceptAllButton" onAction="#acceptAll" text="_Accept all remote remote changes"/>
-                <Button fx:id="revertAllButton" onAction="#revertAll" text="_Revert all local changes"/>
+                <Button onAction="#close" text="Close"/>
+                <Button onAction="#acceptAll" text="_Accept all remote remote changes"/>
+                <Button onAction="#revertAll" text="_Revert all local changes"/>
             </ToolBar>
         </bottom>
     </BorderPane>

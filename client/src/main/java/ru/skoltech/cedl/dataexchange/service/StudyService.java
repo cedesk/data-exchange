@@ -118,11 +118,11 @@ public interface StudyService {
     /**
      * Retrieve an instance of {@link Study} from it revision history by revision number.
      *
-     * @param study          which revision to search for
+     * @param studyName      name of the {@link Study} which revision to search for
      * @param revisionNumber revision number of searched {@link Study}
      * @return Study from revision
      */
-    Study findStudyByRevision(Study study, Integer revisionNumber);
+    Study findStudyByNameAndRevision(String studyName, Integer revisionNumber);
 
     /**
      * Remove a {@link Study} with a specified name.
@@ -153,14 +153,6 @@ public interface StudyService {
      * @return latest revision number of study
      */
     Pair<Integer, Date> findLatestRevision(Long studyId);
-
-    /**
-     * Retrieve a latest revision number of study with specified id.
-     *
-     * @param studyId id of the study
-     * @return latest revision number of study
-     */
-    Integer findLatestRevisionNumber(Long studyId);
 
     /**
      * TODO add javadoc

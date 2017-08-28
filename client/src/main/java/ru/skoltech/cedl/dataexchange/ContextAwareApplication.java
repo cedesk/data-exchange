@@ -92,8 +92,8 @@ public abstract class ContextAwareApplication extends Application {
             throw new RuntimeException("no study to load");
         }
         project.setProjectName(projectName);
-        success = project.loadCurrentLocalStudy();
-        if (!success) {
+        project.loadLocalStudy();
+        if (project.getStudy() == null) {
             throw new RuntimeException("loading study failed!");
         }
 

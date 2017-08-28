@@ -17,17 +17,21 @@
 package ru.skoltech.cedl.dataexchange.service.impl;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
 import ru.skoltech.cedl.dataexchange.service.DifferenceMergeService;
-import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.ModelUpdateService;
+import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
@@ -36,6 +40,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by d.knoll on 24/05/2017.
@@ -47,6 +52,12 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
     private StudyService studyService;
     private ModelUpdateService modelUpdateService;
     private NodeDifferenceService nodeDifferenceService;
+    private final RevisionEntityRepository revisionEntityRepository;
+
+    @Autowired
+    public DifferenceMergeServiceImpl(RevisionEntityRepository revisionEntityRepository) {
+        this.revisionEntityRepository = revisionEntityRepository;
+    }
 
     public void setStudyService(StudyService studyService) {
         this.studyService = studyService;
@@ -75,8 +86,33 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         if (localSystemModel != null && remoteSystemModel2 != null) {
             modelDifferences.addAll(nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel2, localStudy.getRevision()));
         }
-        return modelDifferences;
+
+        return modelDifferences.stream()
+                .peek(modelDifference -> modelDifference.setAuthor(this.retrieveAuthor(modelDifference)))
+                .collect(Collectors.toList());
     }
+
+    private String retrieveAuthor(ModelDifference modelDifference) {
+        if (modelDifference.isMergeable()) {
+            PersistedEntity persistedEntity = modelDifference.getChangedEntity();
+            long id = persistedEntity.getId();
+            Class<? extends PersistedEntity> clazz = persistedEntity.getClass();
+            CustomRevisionEntity revisionEntity;
+            try {
+                revisionEntity = revisionEntityRepository.lastRevisionEntity(id, clazz);
+            } catch (Exception e) {
+                logger.debug("Loading revision history failed: " +
+                        persistedEntity.getClass().getSimpleName() + "[" + persistedEntity.getId() + "]");
+                revisionEntity = null;
+            }
+            return revisionEntity != null ? revisionEntity.getUsername() : "<none>";
+        } else if (modelDifference.isRevertible()) {
+            return "<you>";
+        } else {
+            return null;
+        }
+    }
+
 
     @Override
     public ModelDifference createStudyAttributesModified(Study study1, Study study2, List<AttributeDifference> differences) {
