@@ -64,12 +64,7 @@ public class StatusLogger {
         } else {
             logger.info(msg);
         }
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                lastMessage.setValue(msg);
-            }
-        });
+        Platform.runLater(() -> lastMessage.setValue(msg));
     }
 
     public void log(String msg) {
