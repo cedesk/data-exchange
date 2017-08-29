@@ -73,6 +73,7 @@ public class ExternalModelEditorController implements Initializable {
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelAccessorFactory externalModelAccessorFactory;
+    private StatusLogger statusLogger;
 
     private ModelNode modelNode;
 
@@ -111,6 +112,10 @@ public class ExternalModelEditorController implements Initializable {
         this.externalModelAccessorFactory = externalModelAccessorFactory;
     }
 
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -143,7 +148,7 @@ public class ExternalModelEditorController implements Initializable {
                         modelNode.addExternalModel(externalModel);
                         this.renderExternalModelView(externalModel);
                         Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
-                        StatusLogger.getInstance().log("added external model: " + externalModel.getName());
+                        statusLogger.info("added external model: " + externalModel.getName());
                         actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ADD, externalModel.getNodePath());
                         project.markStudyModified();
                     } catch (IOException e) {
@@ -178,7 +183,7 @@ public class ExternalModelEditorController implements Initializable {
             modelNode.getExternalModels().remove(externalModel);
             externalModelViewContainer.getChildren().remove(extModRow);
             project.markStudyModified();
-            StatusLogger.getInstance().log("removed external model: " + externalModel.getName());
+            statusLogger.info("removed external model: " + externalModel.getName());
             actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_REMOVE, externalModel.getNodePath());
         }
     }
@@ -219,7 +224,7 @@ public class ExternalModelEditorController implements Initializable {
                     externalModel.setName(fileName);
                     Platform.runLater(ExternalModelEditorController.this::updateView);
                     Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
-                    StatusLogger.getInstance().log("replaced external model: " + oldFileName + " > " + fileName);
+                    statusLogger.info("replaced external model: " + oldFileName + " > " + fileName);
                     actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, oldNodePath + " > " + fileName);
                     project.markStudyModified();
                 } catch (IOException e) {

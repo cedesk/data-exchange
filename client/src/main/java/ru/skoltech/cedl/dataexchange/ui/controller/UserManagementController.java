@@ -64,6 +64,7 @@ public class UserManagementController implements Initializable {
     private Project project;
     private GuiService guiService;
     private UserRoleManagementService userRoleManagementService;
+    private StatusLogger statusLogger;
 
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
@@ -75,6 +76,10 @@ public class UserManagementController implements Initializable {
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
+    }
+
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
     }
 
     public void addUser(ActionEvent actionEvent) {
@@ -90,7 +95,7 @@ public class UserManagementController implements Initializable {
             } else {
                 User user = new User();
                 user.setUserName(userName);
-                StatusLogger.getInstance().log("added user: " + user.getUserName());
+                statusLogger.info("added user: " + user.getUserName());
                 project.getUserManagement().getUsers().add(user);
             }
         }
@@ -131,14 +136,14 @@ public class UserManagementController implements Initializable {
         boolean success = project.loadUserManagement();
         updateUsers();
         if (!success) {
-            StatusLogger.getInstance().log("Error loading user list!", true);
+            statusLogger.error("Error loading user list!");
         }
     }
 
     public void saveUsers(ActionEvent actionEvent) {
         boolean success = project.storeUserManagement();
         if (!success) {
-            StatusLogger.getInstance().log("Error saving user list!", true);
+            statusLogger.error("Error saving user list!");
         }
     }
 

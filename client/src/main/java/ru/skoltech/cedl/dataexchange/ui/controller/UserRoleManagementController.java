@@ -33,7 +33,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
@@ -107,18 +106,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
 
     private Project project;
     private UserRoleManagementService userRoleManagementService;
-
-    public Window getAppWindow() {
-        return subsystemsPane.getScene().getWindow();
-    }
-
-    public Discipline getSelectedDiscipline() {
-        return (Discipline) disciplinesTable.getSelectionModel().getSelectedItem();
-    }
-
-    public User getSelectedUser() {
-        return (User) userTable.getSelectionModel().getSelectedItem();
-    }
+    private StatusLogger statusLogger;
 
     public void setProject(Project project) {
         this.project = project;
@@ -126,6 +114,10 @@ public class UserRoleManagementController implements Initializable, Closeable {
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
+    }
+
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
     }
 
     public void addDiscipline(ActionEvent actionEvent) {
@@ -144,7 +136,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
                 Discipline discipline = new Discipline(disciplineName, project.getUserRoleManagement());
                 project.getUserRoleManagement().getDisciplines().add(discipline);
                 changed.setValue(true);
-                StatusLogger.getInstance().log("added discipline: " + discipline.getName());
+                statusLogger.info("added discipline: " + discipline.getName());
             }
         }
         updateDisciplineTable();
@@ -165,7 +157,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
         Objects.requireNonNull(user, "discipline must not be null");
         boolean duplicate = userRoleManagementService.addUserDiscipline(project.getUserRoleManagement(), user, discipline);
         if (duplicate) {
-            StatusLogger.getInstance().log("user '" + user.getUserName() + "' can not be added twice to a discipline '" + discipline.getName() + "'");
+            statusLogger.info("user '" + user.getUserName() + "' can not be added twice to a discipline '" + discipline.getName() + "'");
         }
         updateUserDisciplines(discipline);
         changed.setValue(true);
@@ -184,7 +176,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
         Objects.requireNonNull(selectedDiscipline, "no discipline in table view");
         userRoleManagementService.removeDiscipline(project.getUserRoleManagement(), selectedDiscipline);
         changed.setValue(true);
-        StatusLogger.getInstance().log("removed discipline: " + selectedDiscipline.getName());
+        statusLogger.info("removed discipline: " + selectedDiscipline.getName());
         updateDisciplineTable();
     }
 
@@ -313,6 +305,15 @@ public class UserRoleManagementController implements Initializable, Closeable {
         updateDisciplineTable();
         updateUsers();
     }
+
+    private Discipline getSelectedDiscipline() {
+        return (Discipline) disciplinesTable.getSelectionModel().getSelectedItem();
+    }
+
+    private User getSelectedUser() {
+        return (User) userTable.getSelectionModel().getSelectedItem();
+    }
+
 
     private class SubsystemsViewCellFactory implements Callback<ListView<SubSystemModel>, ListCell<SubSystemModel>> {
         @Override

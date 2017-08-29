@@ -18,7 +18,6 @@ package ru.skoltech.cedl.dataexchange.service.impl;
 
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
@@ -152,16 +151,16 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
         try {
             Double value = evaluator.getValue(project, externalModelFileHandler, valueReference.getTarget());
             if (Double.isNaN(value)) {
-                StatusLogger.getInstance().log("invalid value for parameter '" + nodePath + "' from '" + valueReferenceString + "'", true);
+                throw new ExternalModelException("invalid value for parameter '" + nodePath
+                        + "' from '" + valueReferenceString + "'");
             } else if (!Precision.equals(parameterModel.getValue(), value, 2)) {
                 parameterUpdate = new ParameterUpdate(parameterModel, value);
             } else {
                 logger.debug("no change for " + parameterModel.getName() + " from " + valueReferenceString);
             }
         } catch (ExternalModelException e) {
-            StatusLogger.getInstance().log("unable to evaluate value for parameter '" + nodePath + "' from '" + valueReferenceString + "'", true);
             actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, nodePath + "#" + valueReferenceString);
-            throw e;
+            throw new ExternalModelException("unable to evaluate value for parameter '" + nodePath + "' from '" + valueReferenceString + "'");
         }
         return parameterUpdate;
     }
@@ -182,11 +181,13 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
                     try {
                         exporter.setValue(project, externalModelFileHandler, target, parameterModel.getEffectiveValue()); // TODO: document behavior
                     } catch (ExternalModelException e) {
+                        exporter.flushModifications(project, externalModelFileWatcher);
                         logger.warn("failed to export parameter " + parameterModel.getNodePath(), e);
-                        StatusLogger.getInstance().log("failed to export parameter " + parameterModel.getNodePath());
+                        throw new ExternalModelException("failed to export parameter " + parameterModel.getNodePath());
                     }
                 } else {
-                    StatusLogger.getInstance().log("parameter " + parameterModel.getNodePath() + " has empty exportReference");
+                    exporter.flushModifications(project, externalModelFileWatcher);
+                    throw new ExternalModelException("parameter " + parameterModel.getNodePath() + " has empty exportReference");
                 }
             }
         }

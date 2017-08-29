@@ -57,7 +57,9 @@
         </aop:aspect>
     </aop:config>
 
-    <bean id="connectionExceptionAspect" class="ru.skoltech.cedl.dataexchange.structure.ConnectionExceptionAspect" />
+    <bean id="connectionExceptionAspect" class="ru.skoltech.cedl.dataexchange.structure.ConnectionExceptionAspect" >
+        <property name="statusLogger" ref="statusLogger"/>
+    </bean>
 
     <util:map id="builderRegistry" map-class="java.util.HashMap">
         <entry value-ref="simpleSystemBuilder">

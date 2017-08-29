@@ -16,8 +16,6 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -27,10 +25,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -38,9 +34,8 @@ import org.apache.log4j.Logger;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 import ru.skoltech.cedl.dataexchange.Identifiers;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.service.*;
-import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
@@ -51,10 +46,12 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
 import ru.skoltech.cedl.dataexchange.ui.Views;
+import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
 import java.net.URL;
 import java.util.EnumSet;
@@ -75,66 +72,42 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     @FXML
     private BorderPane parameterEditorPane;
-
-    @FXML
-    private GridPane propertyPane;
-
     @FXML
     private TextField nameText;
-
     @FXML
     private ChoiceBox<ParameterNature> natureChoiceBox;
-
     @FXML
     private ChoiceBox<ParameterValueSource> valueSourceChoiceBox;
-
     @FXML
     private TextField valueReferenceText;
-
     @FXML
     private TextField parameterLinkText;
-
     @FXML
     private TextField calculationText;
-
     @FXML
     private TextField valueText;
-
     @FXML
     private TextField dependentsText;
-
     @FXML
     private ComboBox<Unit> unitComboBox;
-
     @FXML
     private CheckBox isReferenceValueOverriddenCheckbox;
-
     @FXML
     private TextField valueOverrideText;
-
     @FXML
     private CheckBox isExportedCheckbox;
-
     @FXML
     private TextField exportReferenceText;
-
     @FXML
     private TextArea descriptionText;
-
     @FXML
     private HBox referenceSelectorGroup;
-
     @FXML
     private HBox linkSelectorGroup;
-
     @FXML
     private HBox calculationGroup;
-
     @FXML
     private HBox exportSelectorGroup;
-
-    @FXML
-    private HBox overrideValueGroup;
 
     private Project project;
     private ActionLogger actionLogger;
@@ -145,6 +118,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ParameterDifferenceService parameterDifferenceService;
+    private StatusLogger statusLogger;
 
     private ParameterModel editingParameterModel;
     private ParameterModel originalParameterModel;
@@ -192,30 +166,28 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.parameterDifferenceService = parameterDifferenceService;
     }
 
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         valueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
         valueOverrideText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
         natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
-        natureChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ParameterNature>() {
-            @Override
-            public void changed(ObservableValue<? extends ParameterNature> observable, ParameterNature oldValue, ParameterNature newValue) {
-                if (newValue != ParameterNature.INPUT) {
-                    valueSourceChoiceBox.getItems().remove(ParameterValueSource.LINK);
-                } else if (!valueSourceChoiceBox.getItems().contains(ParameterValueSource.LINK)) {
-                    valueSourceChoiceBox.getItems().add(ParameterValueSource.LINK);
-                }
+        natureChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != ParameterNature.INPUT) {
+                valueSourceChoiceBox.getItems().remove(ParameterValueSource.LINK);
+            } else if (!valueSourceChoiceBox.getItems().contains(ParameterValueSource.LINK)) {
+                valueSourceChoiceBox.getItems().add(ParameterValueSource.LINK);
             }
         });
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
-        valueSourceChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ParameterValueSource>() {
-            @Override
-            public void changed(ObservableValue<? extends ParameterValueSource> observable, ParameterValueSource oldValue, ParameterValueSource newValue) {
-                if (newValue == ParameterValueSource.REFERENCE) {
-                    valueLinkParameter = null;
-                } else {
-                    valueReference = null;
-                }
+        valueSourceChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == ParameterValueSource.REFERENCE) {
+                valueLinkParameter = null;
+            } else {
+                valueReference = null;
             }
         });
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
@@ -228,7 +200,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.disableProperty().or(isReferenceValueOverriddenCheckbox.selectedProperty().not()));
         exportSelectorGroup.disableProperty().bind(isExportedCheckbox.selectedProperty().not());
 
-        List<String> unitsTexts = unitComboBox.getItems().stream().map(unit -> unit.asText()).collect(Collectors.toList());
+        List<String> unitsTexts = unitComboBox.getItems().stream().map(Unit::asText).collect(Collectors.toList());
         binding = TextFields.bindAutoCompletion(unitComboBox.getEditor(), unitsTexts);
 
         unitComboBox.setConverter(new StringConverter<Unit>() {
@@ -407,8 +379,8 @@ public class ParameterEditorController implements Initializable, Displayable {
                             parameterLinkRegistry, externalModelFileHandler,
                             parameterUpdate -> valueText.setText(convertToText(parameterUpdate.getValue())));
                 } catch (ExternalModelException e) {
-                    Window window = propertyPane.getScene().getWindow();
-                    UserNotifications.showNotification(window, "Error", "Unable to update value from given target.");
+                    statusLogger.error(e.getMessage());
+                    UserNotifications.showNotification(ownerStage, "Error", "Unable to update value from given target.");
                 }
             } else {
                 Dialogues.showWarning("Empty reference", "No reference has been specified!");
@@ -473,6 +445,7 @@ public class ParameterEditorController implements Initializable, Displayable {
                 try {
                     modelUpdateService.applyParameterChangesToExternalModel(project, externalModel, externalModelFileHandler, externalModelFileWatcher);
                 } catch (ExternalModelException e) {
+                    statusLogger.error(e.getMessage());
                     Dialogues.showError("External Model Error", "Failed to export parameter value to external model. \n" + e.getMessage());
                 }
             }

@@ -16,6 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.service;
 
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
+
 import javax.transaction.Transactional;
 
 /**
@@ -29,15 +31,17 @@ public interface RepositorySchemeService {
      * Validate and store scheme version.
      *
      * @return <i>true</i> - if validate operation was performed successfully, <i>false</i> - if opposite
+     * @throws RepositoryException if actual and repository versions are incompatible
      */
     @Transactional
-    boolean checkAndStoreSchemeVersion();
+    boolean checkAndStoreSchemeVersion() throws RepositoryException;
 
     /**
      * Validate scheme version.
      *
      * @return <i>true</i> - if validate operation was performed successfully, <i>false</i> - if opposite
+     * @throws RepositoryException if actual and repository versions are incompatible
      */
-    boolean checkSchemeVersion();
+    boolean checkSchemeVersion() throws RepositoryException;
 
 }

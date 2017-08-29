@@ -124,6 +124,7 @@ public class ModelEditingController implements Initializable {
     private ModelUpdateService modelUpdateService;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileHandler externalModelFileHandler;
+    private StatusLogger statusLogger;
 
     public void setParameterEditorController(ParameterEditorController parameterEditorController) {
         this.parameterEditorController = parameterEditorController;
@@ -159,6 +160,10 @@ public class ModelEditingController implements Initializable {
 
     public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
         this.externalModelFileHandler = externalModelFileHandler;
+    }
+
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
     }
 
     @Override
@@ -277,12 +282,12 @@ public class ModelEditingController implements Initializable {
                     selectedItem.getChildren().add(structureTreeItem);
                     selectedItem.setExpanded(true);
                     project.markStudyModified();
-                    StatusLogger.getInstance().log("added node: " + newNode.getNodePath());
+                    statusLogger.info("added node: " + newNode.getNodePath());
                     actionLogger.log(ActionLogger.ActionType.NODE_ADD, newNode.getNodePath());
                 }
             }
         } else {
-            StatusLogger.getInstance().log("The selected node may not have subnodes.");
+            statusLogger.warn("The selected node may not have subnodes.");
         }
     }
 
@@ -305,7 +310,7 @@ public class ModelEditingController implements Initializable {
 
                 parameter = new ParameterModel(parameterName, 0.0);
                 selectedItem.getValue().addParameter(parameter);
-                StatusLogger.getInstance().log("added parameter: " + parameter.getName());
+                statusLogger.info("added parameter: " + parameter.getName());
                 actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, parameter.getNodePath());
                 project.markStudyModified();
             }
@@ -324,7 +329,7 @@ public class ModelEditingController implements Initializable {
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem, "no item selected in tree view");
         if (selectedItem.getParent() == null) { // is ROOT
-            StatusLogger.getInstance().log("Node can not be deleted!", true);
+            statusLogger.error("Node can not be deleted!");
         } else {
             ModelNode deleteNode = selectedItem.getValue();
             List<ParameterModel> dependentParameters = new LinkedList<>();
@@ -354,7 +359,7 @@ public class ModelEditingController implements Initializable {
                     parentNode.removeSubNode(deleteNode);
                 }
                 project.markStudyModified();
-                StatusLogger.getInstance().log("deleted node: " + deleteNode.getNodePath());
+                statusLogger.info("deleted node: " + deleteNode.getNodePath());
                 actionLogger.log(ActionLogger.ActionType.NODE_REMOVE, deleteNode.getNodePath());
             }
         }
@@ -374,7 +379,7 @@ public class ModelEditingController implements Initializable {
         if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
             selectedItem.getValue().getParameters().remove(parameterModel);
             parameterLinkRegistry.removeSink(parameterModel);
-            StatusLogger.getInstance().log("deleted parameter: " + parameterModel.getName());
+            statusLogger.info("deleted parameter: " + parameterModel.getName());
             actionLogger.log(ActionLogger.ActionType.PARAMETER_REMOVE, parameterModel.getNodePath());
             updateParameterTable(selectedItem);
             project.markStudyModified();
@@ -461,7 +466,7 @@ public class ModelEditingController implements Initializable {
                     ModelNode modelNode = refExtModel.getParent();
                     ParameterModel source = findParameter(modelNode, target);
                     if (source != null && source.getNature() == ParameterNature.OUTPUT) {
-                        StatusLogger.getInstance().log("Parameter to link to found '" + source.getNodePath() + "'", false);
+                        statusLogger.info("Parameter to link to found '" + source.getNodePath() + "'");
                         selectedParameter.setNature(ParameterNature.INPUT);
                         selectedParameter.setValueSource(ParameterValueSource.LINK);
                         selectedParameter.setValueLink(source);
@@ -587,7 +592,7 @@ public class ModelEditingController implements Initializable {
                 SpreadsheetCellValueAccessor cellValueAccessor = new SpreadsheetCellValueAccessor(inputStream, filename);
                 parameterName = cellValueAccessor.getValueAsString(nameCellCoordinates);
             } catch (IOException | ExternalModelException e) {
-                StatusLogger.getInstance().log("The external model '" + filename + "' could not be opened to extract parameter name!");
+                statusLogger.warn("The external model '" + filename + "' could not be opened to extract parameter name!");
                 logger.warn("The external model '" + filename + "' could not be opened to extract parameter name!", e);
             }
         }

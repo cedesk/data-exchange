@@ -19,7 +19,6 @@ package ru.skoltech.cedl.dataexchange.external.excel;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 
@@ -56,10 +55,11 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         try {
             formulaEvaluator.evaluateAll(); // not guaranteed to work for SXSSF (xlsx)
         } catch (Exception e) {
-            logger.error(e);
-            StatusLogger.getInstance().log("Error while recalculating " + fileName + ". Make sure it does not have external links!", true);
+            logger.error("Error while recalculating " + fileName + ". "
+                    + "Make sure it does not have external links!", e);
+        } finally {
+            formulaEvaluator.clearAllCachedResultValues();
         }
-        formulaEvaluator.clearAllCachedResultValues();
     }
 
     public boolean isModified() {
@@ -156,8 +156,8 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         try {
             formulaEvaluator.evaluateAll(); // not guaranteed to work for SXSSF (xlsx)
         } catch (Exception e) {
-            logger.error(e);
-            StatusLogger.getInstance().log("Error while recalculating " + fileName + ". Make sure it does not have external links!", true);
+            logger.error("Error while recalculating " + fileName + ". "
+                    + "Make sure it does not have external links!", e);
         }
         wb.write(outputStream);
     }

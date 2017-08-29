@@ -18,8 +18,8 @@ package ru.skoltech.cedl.dataexchange.service.impl;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.ApplicationProperty;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.jpa.ApplicationPropertyRepository;
@@ -49,7 +49,7 @@ public class RepositorySchemeServiceImpl implements RepositorySchemeService {
     }
 
     @Override
-    public boolean checkAndStoreSchemeVersion() {
+    public boolean checkAndStoreSchemeVersion() throws RepositoryException {
         String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
 
         ApplicationProperty schemeVersionProperty = applicationPropertyRepository.findOne(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
@@ -61,17 +61,16 @@ public class RepositorySchemeServiceImpl implements RepositorySchemeService {
         String actualSchemaVersion = schemeVersionProperty.getValue();
 
         if (Utils.compareVersions(actualSchemaVersion, currentSchemaVersion) > 0) {
-            StatusLogger.getInstance().log("Downgrade your CEDESK Client! "
+            throw new RepositoryException("Downgrade your CEDESK Client! "
                     + "Current Application Version (" + currentSchemaVersion + ") "
                     + "is older than current DB Schema Version " + actualSchemaVersion);
-            return false;
         }
 
         return this.saveRepositoryVersion(currentSchemaVersion);
     }
 
     @Override
-    public boolean checkSchemeVersion() {
+    public boolean checkSchemeVersion() throws RepositoryException{
         String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
 
         ApplicationProperty schemeVersionProperty = applicationPropertyRepository.findOne(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
@@ -84,16 +83,14 @@ public class RepositorySchemeServiceImpl implements RepositorySchemeService {
         int versionCompare = Utils.compareVersions(actualSchemaVersion, currentSchemaVersion);
 
         if (versionCompare < 0) {
-            StatusLogger.getInstance().log("Upgrade your CEDESK Client! "
+            throw new RepositoryException("Upgrade your CEDESK Client! "
                     + "Current Application Version requires a DB Schema Version " + currentSchemaVersion + ", "
                     + "which is incompatible with current DB Schema Version " + actualSchemaVersion);
-            return false;
         }
         if (versionCompare > 0) {
-            StatusLogger.getInstance().log("Have the administrator upgrade the DB Schema! "
+            throw new RepositoryException("Have the administrator upgrade the DB Schema! "
                     + "Current Application Version requires a DB Schema Version " + currentSchemaVersion + ", "
                     + "which is incompatible with current DB Schema Version " + actualSchemaVersion);
-            return false;
         }
         return true;
     }

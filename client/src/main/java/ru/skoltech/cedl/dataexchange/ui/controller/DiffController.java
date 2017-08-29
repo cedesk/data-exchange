@@ -61,6 +61,7 @@ public class DiffController implements Initializable, Displayable, Closeable {
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileHandler externalModelFileHandler;
     private Executor executor;
+    private StatusLogger statusLogger;
 
     private Stage ownerStage;
 
@@ -86,6 +87,10 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     public void setExecutor(Executor executor) {
         this.executor = executor;
+    }
+
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
     }
 
     @Override
@@ -142,7 +147,7 @@ public class DiffController implements Initializable, Displayable, Closeable {
                 this.close();
             }
         } catch (MergeException me) {
-            StatusLogger.getInstance().log(me.getMessage(), true);
+            statusLogger.error(me.getMessage());
         }
     }
 
@@ -164,7 +169,7 @@ public class DiffController implements Initializable, Displayable, Closeable {
                 }
             }
         } catch (MergeException me) {
-            StatusLogger.getInstance().log(me.getMessage(), true);
+            statusLogger.error(me.getMessage());
         }
     }
 
@@ -179,7 +184,7 @@ public class DiffController implements Initializable, Displayable, Closeable {
                 success = differenceMergeService.revertOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
             }
         } catch (MergeException me) {
-            StatusLogger.getInstance().log(me.getMessage(), true);
+            statusLogger.error(me.getMessage());
         }
         if (success) {
             project.getModelDifferences().remove(modelDifference);

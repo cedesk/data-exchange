@@ -24,7 +24,6 @@ import javafx.collections.ObservableList;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
@@ -303,21 +302,16 @@ public class Project {
 
     public boolean checkRepositoryForChanges() {
         if (this.repositoryStudy != null) { // already saved or retrieved from repository
-            try {
-                this.loadRepositoryStudy();
-                this.updateExternalModelsInStudy();
-                SystemModel localSystemModel = this.study.getSystemModel();
-                SystemModel remoteSystemModel = this.repositoryStudy.getSystemModel();
-                int revision = study.getRevision();
-                List<ModelDifference> modelDifferences =
-                        nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel, revision);
-                long remoteDifferenceCounts = modelDifferences.stream()
-                        .filter(md -> md.getChangeLocation() == ModelDifference.ChangeLocation.ARG2).count();
-                return remoteDifferenceCounts > 0;
-            } catch (Exception e) {
-                StatusLogger.getInstance().log("Error checking repository for changes");
-                logger.error(e);
-            }
+            this.loadRepositoryStudy();
+            this.updateExternalModelsInStudy();
+            SystemModel localSystemModel = this.study.getSystemModel();
+            SystemModel remoteSystemModel = this.repositoryStudy.getSystemModel();
+            int revision = study.getRevision();
+            List<ModelDifference> modelDifferences =
+                    nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel, revision);
+            long remoteDifferenceCounts = modelDifferences.stream()
+                    .filter(md -> md.getChangeLocation() == ModelDifference.ChangeLocation.ARG2).count();
+            return remoteDifferenceCounts > 0;
         }
         return false;
     }

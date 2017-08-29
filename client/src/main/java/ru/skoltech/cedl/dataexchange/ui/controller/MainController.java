@@ -25,6 +25,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.*;
@@ -34,10 +35,12 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
 import ru.skoltech.cedl.dataexchange.ApplicationPackage;
@@ -77,6 +80,9 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static ru.skoltech.cedl.dataexchange.StatusLogger.LogType.INFO;
+import static ru.skoltech.cedl.dataexchange.StatusLogger.LogType.WARN;
+
 /**
  * Controller for main application window.
  * <p>
@@ -87,7 +93,6 @@ public class MainController implements Initializable, Displayable, Closeable {
     private static final Logger logger = Logger.getLogger(MainController.class);
 
     private final static String FLASH_ICON_URL = "/icons/flash-orange.png";
-
     @FXML
     private MenuItem exportMenu;
     @FXML
@@ -107,7 +112,9 @@ public class MainController implements Initializable, Displayable, Closeable {
     @FXML
     private Button diffButton;
     @FXML
-    private Label statusbarLabel;
+    public AnchorPane statusBarPane;
+    @FXML
+    private Label statusBarLabel;
     @FXML
     private Label studyNameLabel;
     @FXML
@@ -135,6 +142,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileHandler externalModelFileHandler;
     private Executor executor;
+    private StatusLogger statusLogger;
 
     private Stage ownerStage;
 
@@ -202,6 +210,10 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.executor = executor;
     }
 
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
+    }
+
     public void init() {
         project.start();
     }
@@ -213,8 +225,14 @@ public class MainController implements Initializable, Displayable, Closeable {
         layoutPane.setCenter(modelEditingPane);
 
         // STATUSBAR
-        statusbarLabel.textProperty().bind(StatusLogger.getInstance().lastMessageProperty());
-        statusbarLabel.setOnMouseClicked(this::showStatusMessages);
+        statusBarLabel.textProperty().bind(statusLogger.lastMessageProperty());
+        statusBarLabel.setOnMouseClicked(this::showStatusMessages);
+        statusBarPane.backgroundProperty().bind(
+                Bindings.when(statusLogger.lastLogTypeProperty().isEqualTo(INFO))
+                .then(new Background(new BackgroundFill(Color.LIGHTGREEN, CornerRadii.EMPTY, Insets.EMPTY)))
+                .otherwise(Bindings.when(statusLogger.lastLogTypeProperty().isEqualTo(WARN))
+                        .then(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)))
+                        .otherwise(new Background(new BackgroundFill(Color.ORANGERED, CornerRadii.EMPTY, Insets.EMPTY)))));
 
         newButton.disableProperty().bind(project.canNewProperty().not());
         loadButton.disableProperty().bind(project.canLoadProperty().not());
@@ -239,7 +257,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                         project.loadRepositoryStudy();
                         Platform.runLater(() -> {
                             modelEditingController.updateView();
-                            StatusLogger.getInstance().log("Remote model loaded for comparison.");
+                            statusLogger.info("Remote model loaded for comparison.");
                             UserNotifications.showActionableNotification(ownerStage, "Updates on study",
                                     "New version of study in repository!", "View Differences",
                                     actionEvent -> this.openDiffView(), true);
@@ -275,11 +293,16 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     private boolean checkRepositoryScheme() {
-        boolean validScheme = repositorySchemeService.checkSchemeVersion();
-        if (!validScheme && applicationSettings.isRepositorySchemaCreate()) {
-            return repositorySchemeService.checkAndStoreSchemeVersion();
+        try {
+            boolean validScheme = repositorySchemeService.checkSchemeVersion();
+            if (!validScheme && applicationSettings.isRepositorySchemaCreate()) {
+                return repositorySchemeService.checkAndStoreSchemeVersion();
+            }
+            return validScheme;
+        } catch (RepositoryException e) {
+            statusLogger.error(e.getMessage());
+            return false;
         }
-        return validScheme;
     }
 
 
@@ -371,7 +394,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                     UserNotifications.showNotification(ownerStage, "Application Update",
                             "Latest version installed. No need to update.");
                 } else {
-                    StatusLogger.getInstance().log("Latest application version installed. No need to update.");
+                    statusLogger.info("Latest application version installed. No need to update.");
                 }
             }
         } else {
@@ -379,7 +402,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                 UserNotifications.showNotification(ownerStage, "Update check failed",
                         "Unable to connect to Distribution Server!");
             } else {
-                StatusLogger.getInstance().log("Update check failed. Unable to connect to Distribution Server!");
+                statusLogger.warn("Update check failed. Unable to connect to Distribution Server!");
             }
         }
     }
@@ -394,6 +417,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                     project.storeStudy();
                     return true;
                 } catch (RepositoryException | ExternalModelException e) {
+                    statusLogger.error(e.getMessage());
                     UserNotifications.showNotification(ownerStage, "Failed to save", "Failed to save");
                     return false;
                 }
@@ -421,6 +445,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                     project.storeStudy();
                     return true;
                 } catch (RepositoryException | ExternalModelException e) {
+                    statusLogger.error(e.getMessage());
                     Optional<ButtonType> closeAnyway = Dialogues.chooseYesNo("Failed to save",
                             "Shall the program close anyway?");
                     if (closeAnyway.isPresent() && closeAnyway.get() == ButtonType.YES) {
@@ -454,7 +479,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                     if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                         repositoryNewer.removeListener(repositoryNewerListener);
                         project.deleteStudy(studyName);
-                        StatusLogger.getInstance().log("Successfully deleted study!", false);
+                        statusLogger.info("Successfully deleted study!");
                         actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
                     }
                 } catch (Exception e) {
@@ -474,7 +499,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             File outputFile = new File(exportPath, outputFileName);
             try {
                 fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
-                StatusLogger.getInstance().log("Successfully exported study!", false);
+                statusLogger.info("Successfully exported study!");
                 actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
             } catch (IOException e) {
                 logger.error("error exporting model to file", e);
@@ -510,7 +535,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                 SystemModel systemModel = fileStorageService.loadSystemModel(importFile);
                 project.importSystemModel(systemModel);
                 updateView();
-                StatusLogger.getInstance().log("Successfully imported study!", false);
+                statusLogger.info("Successfully imported study!");
                 actionLogger.log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName());
             } catch (IOException e) {
                 logger.error("Error importing model from file.", e);
@@ -545,7 +570,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             builder.unitManagement(project.getUnitManagement());
             SystemModel systemModel = builder.build(projectName);
             project.newStudy(systemModel);
-            StatusLogger.getInstance().log("Successfully created new study: " + projectName, false);
+            statusLogger.info("Successfully created new study: " + projectName);
             actionLogger.log(ActionLogger.ActionType.PROJECT_NEW, projectName);
             updateView();
         }
@@ -722,14 +747,14 @@ public class MainController implements Initializable, Displayable, Closeable {
             project.loadLocalStudy();
             if (project.getStudy() != null) {
                 applicationSettings.storeProjectLastName(projectName);
-                StatusLogger.getInstance().log("Successfully loaded study: " + projectName, false);
+                statusLogger.info("Successfully loaded study: " + projectName);
                 actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, projectName);
             } else {
-                StatusLogger.getInstance().log("Loading study failed!", false);
+                statusLogger.error("Loading study failed!");
                 actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, projectName + ", loading failed");
             }
         } catch (Exception e) {
-            StatusLogger.getInstance().log("Error loading project!", true);
+            statusLogger.error("Error loading project!");
             logger.error("Error loading project", e);
             actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, projectName + ", loading failed");
         }
@@ -746,7 +771,12 @@ public class MainController implements Initializable, Displayable, Closeable {
                         "Contact the team lead for him to enable it!");
                 return;
             }
-            boolean changesInRepository = project.checkRepositoryForChanges();
+            boolean changesInRepository = false;
+            try {
+                changesInRepository = project.checkRepositoryForChanges();
+            } catch (Exception e) {
+                statusLogger.error("Error checking repository for changes");
+            }
             if (changesInRepository) {
                 Optional<ButtonType> buttonType = Dialogues.chooseOkCancel("Repository has changes",
                         "Merge changes, and review remaining differences?");
@@ -768,15 +798,17 @@ public class MainController implements Initializable, Displayable, Closeable {
             project.storeStudy();
             this.updateView();
             applicationSettings.storeProjectLastName(project.getProjectName());
-            StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
+            statusLogger.info("Successfully saved study: " + project.getProjectName());
             actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());
         } catch (RepositoryException re) {
             logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
-            StatusLogger.getInstance().log("Concurrent edit appeared on: " + re.getEntityName());
+            statusLogger.warn("Concurrent edit appeared on: " + re.getEntityName());
             actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE,
                     project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
+        } catch (ExternalModelException e) {
+            statusLogger.error(e.getMessage());
         } catch (Exception e) {
-            StatusLogger.getInstance().log("Saving study failed!", true);
+            statusLogger.error("Saving study failed!");
             logger.error("Unknown Exception", e);
             actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName() + ", saving failed");
         }
@@ -809,7 +841,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     private void showStatusMessages(MouseEvent mouseEvent) {
-        Collection<String> lastMessages = StatusLogger.getInstance().getLastMessages();
+        Collection<String> lastMessages = statusLogger.getLastMessages().stream().map(Pair::getLeft).collect(Collectors.toList());
         StringBuilder sb = new StringBuilder();
         lastMessages.forEach(o -> sb.append(o).append('\n'));
         TextArea textArea = new TextArea(sb.toString());
@@ -819,7 +851,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         textArea.setMaxHeight(Double.MAX_VALUE);
         PopOver popOver = new PopOver(textArea);
         popOver.setArrowLocation(PopOver.ArrowLocation.BOTTOM_LEFT);
-        popOver.show(statusbarLabel);
+        popOver.show(statusBarLabel);
     }
 
     private void updateView() {
@@ -881,10 +913,10 @@ public class MainController implements Initializable, Displayable, Closeable {
                     URI uri = new URI(applicationPackage.getUrl());
                     desktop.browse(uri);
                 } catch (URISyntaxException | IOException e) {
-                    StatusLogger.getInstance().log("Unable to open URL!", true);
+                    statusLogger.error("Unable to open URL!");
                 }
             } else {
-                StatusLogger.getInstance().log("Unable to open URL!", true);
+                statusLogger.error("Unable to open URL!");
             }
         }
     }

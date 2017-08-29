@@ -63,6 +63,7 @@ public class ExternalModelController implements Initializable {
     private Project project;
     private ExternalModelFileHandler externalModelFileHandler;
     private SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService;
+    private StatusLogger statusLogger;
 
     private ExternalModel externalModel;
 
@@ -83,6 +84,10 @@ public class ExternalModelController implements Initializable {
 
     public void setSpreadsheetInputOutputExtractorService(SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService) {
         this.spreadsheetInputOutputExtractorService = spreadsheetInputOutputExtractorService;
+    }
+
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
     }
 
     @Override
@@ -108,10 +113,10 @@ public class ExternalModelController implements Initializable {
             openFile(file);
         } catch (ExternalModelException | IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);
-            StatusLogger.getInstance().log("Unable to cache external model", true);
+            statusLogger.error("Unable to cache external model");
         } catch (Exception e) {
             logger.error("Error opening external model with default editor.", e);
-            StatusLogger.getInstance().log("Unable to open external model", true);
+            statusLogger.error("Unable to open external model");
         }
     }
 
@@ -193,7 +198,7 @@ public class ExternalModelController implements Initializable {
             } else if (file.isDirectory() && desktop.isSupported(Desktop.Action.BROWSE)) {
                 desktop.browse(file.toURI());
             } else {
-                StatusLogger.getInstance().log("Unable to open file!", true);
+                statusLogger.error("Unable to open file!");
             }
         }
     }

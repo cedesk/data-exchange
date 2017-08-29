@@ -36,9 +36,7 @@ import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
-import ru.skoltech.cedl.dataexchange.service.impl.UnitManagementServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
@@ -92,6 +90,7 @@ public class UnitManagementController implements Initializable, Closeable {
 
     private Project project;
     private GuiService guiService;
+    private StatusLogger statusLogger;
 
     public void setProject(Project project) {
         this.project = project;
@@ -99,6 +98,10 @@ public class UnitManagementController implements Initializable, Closeable {
 
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
+    }
+
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
     }
 
     @Override
@@ -170,7 +173,7 @@ public class UnitManagementController implements Initializable, Closeable {
     public void saveUnits() {
         boolean success = project.storeUnitManagement();
         if (!success) {
-            StatusLogger.getInstance().log("Error saving unit management!", true);
+            statusLogger.error("Error saving unit management!");
         }
         changed.setValue(false);
     }

@@ -18,7 +18,6 @@ package ru.skoltech.cedl.dataexchange.service.impl;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.Study;
@@ -195,7 +194,7 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
     }
 
     private boolean updateCacheAndParameters(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                                             ExternalModelFileHandler externalModelFileHandler, ExternalModel externalModel) {
+                                             ExternalModelFileHandler externalModelFileHandler, ExternalModel externalModel) throws MergeException {
         try {
             // update cached file
             externalModelFileHandler.forceCacheUpdate(project, externalModel);
@@ -206,8 +205,7 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
             logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
         } catch (IOException e) {
             logger.error("failed to update cached external model: " + externalModel.getNodePath(), e);
-            StatusLogger.getInstance().log("failed to updated cached external model: " + externalModel.getName(), true);
-            return false;
+            throw new MergeException("failed to updated cached external model: " + externalModel.getName());
         }
         return true;
     }

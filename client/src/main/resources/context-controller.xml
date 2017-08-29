@@ -40,6 +40,7 @@
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="executor" ref="executor"/>
+        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ChangeAnalysisController">
@@ -57,6 +58,7 @@
         <property name="externalModelEditorController" ref="externalModelEditorController"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
+        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean id="parameterEditorController" class="ru.skoltech.cedl.dataexchange.ui.controller.ParameterEditorController">
@@ -69,6 +71,7 @@
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="parameterDifferenceService" ref="parameterDifferenceService"/>
+        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean id="externalModelEditorController"
@@ -81,12 +84,14 @@
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="externalModelAccessorFactory" ref="externalModelAccessorFactory"/>
+        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelController" scope="prototype">
         <property name="project" ref="project"/>
         <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
+        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TagController" scope="prototype">
@@ -100,6 +105,7 @@
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="executor" ref="executor"/>
+        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ConsistencyController">
@@ -142,6 +148,7 @@
         <property name="project" ref="project"/>
         <property name="guiService" ref="guiService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
+        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserEditingController" scope="prototype"/>
@@ -149,11 +156,13 @@
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserRoleManagementController">
         <property name="project" ref="project"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
+        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UnitManagementController">
         <property name="project" ref="project"/>
         <property name="guiService" ref="guiService"/>
+        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.AddUnitController" scope="prototype">
@@ -193,5 +202,7 @@
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.GuideController">
         <property name="guiService" ref="guiService"/>
     </bean>
+
+    <bean id="statusLogger" class="ru.skoltech.cedl.dataexchange.StatusLogger"/>
 
 </beans>

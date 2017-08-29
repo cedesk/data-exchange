@@ -17,57 +17,103 @@
 package ru.skoltech.cedl.dataexchange;
 
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.apache.commons.collections4.BoundedCollection;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
 import java.util.Collection;
 
 /**
+ * Collect messages for display in main panel status bar.
+ *
  * Created by D.Knoll on 28.03.2015.
  */
 public class StatusLogger {
 
-    final static Logger logger = Logger.getLogger(StatusLogger.class);
+    /**
+     * Possible types of log messages.
+     */
+    public enum LogType {
+        INFO,
+        WARN,
+        ERROR
+    }
 
-    final static BoundedCollection<String> lineBuffer = new CircularFifoQueue<String>(10);
+    private final static Logger logger = Logger.getLogger(StatusLogger.class);
 
-    private static StatusLogger instance = new StatusLogger();
+    private final static BoundedCollection<Pair<String, LogType>> lineBuffer = new CircularFifoQueue<>(10);
 
     private StringProperty lastMessage = new SimpleStringProperty();
 
-    private StatusLogger() {
-    }
+    private ObjectProperty<LogType> lastLogType = new SimpleObjectProperty<>(LogType.INFO);
 
-    public static StatusLogger getInstance() {
-        return instance;
-    }
-
-    public String getLastMessage() {
-        return lastMessage.get();
-    }
-
-    public Collection<String> getLastMessages() {
+    public Collection<Pair<String, LogType>> getLastMessages() {
         return lineBuffer;
     }
 
+    /**
+     * Retrieve an observable property of last logged message.
+     *
+     * @return property of last logged message
+     */
     public StringProperty lastMessageProperty() {
         return lastMessage;
     }
 
-    public void log(String msg, boolean error) {
-        lineBuffer.add(msg);
-        if (error) {
-            logger.error(msg);
-        } else {
-            logger.info(msg);
-        }
-        Platform.runLater(() -> lastMessage.setValue(msg));
+    /**
+     * Retrieve an observable property of last logged type.
+     *
+     * @return property of last logged type
+     */
+    public ObjectProperty<LogType> lastLogTypeProperty() {
+        return lastLogType;
     }
 
-    public void log(String msg) {
-        log(msg, false);
+    /**
+     * Register an info message for logging.
+     *
+     * @param message info message to log
+     */
+    public void info(String message) {
+        log(message, LogType.INFO);
     }
+
+    /**
+     * Register a warn message for logging.
+     *
+     * @param message warn message to log
+     */
+    public void warn(String message) {
+        log(message, LogType.WARN);
+    }
+
+    /**
+     * Register a error message for logging.
+     *
+     * @param message error message to log
+     */
+    public void error(String message) {
+        log(message, LogType.ERROR);
+    }
+
+    private void log(String message, LogType logType) {
+        lineBuffer.add(Pair.of(message, logType));
+        if (logType == LogType.ERROR) {
+            logger.error(message);
+        } else if (logType == LogType.WARN){
+            logger.warn(message);
+        } else {
+            logger.info(message);
+        }
+        Platform.runLater(() -> {
+            lastMessage.setValue(message);
+            lastLogType.setValue(logType);
+        });
+    }
+
 }

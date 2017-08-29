@@ -22,15 +22,21 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import java.net.ConnectException;
 
 /**
- * Aspect for notifying through status bas of connection error occurred.
+ * Aspect for notifying through status bar for connection error.
  *
  * Created by Nikolay Groshkov on 29-Aug-17.
  */
 public class ConnectionExceptionAspect {
 
+    private StatusLogger statusLogger;
+
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
+    }
+
     public void log(CannotCreateTransactionException exception) {
         if (exception.getRootCause() instanceof ConnectException) {
-            StatusLogger.getInstance().log("Repository connection is not available!");
+            statusLogger.error("Repository connection is not available!");
         }
     }
 
