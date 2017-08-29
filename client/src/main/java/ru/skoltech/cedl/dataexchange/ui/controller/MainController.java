@@ -229,10 +229,10 @@ public class MainController implements Initializable, Displayable, Closeable {
         statusBarLabel.setOnMouseClicked(this::showStatusMessages);
         statusBarPane.backgroundProperty().bind(
                 Bindings.when(statusLogger.lastLogTypeProperty().isEqualTo(INFO))
-                .then(new Background(new BackgroundFill(Color.LIGHTGREEN, CornerRadii.EMPTY, Insets.EMPTY)))
+                .then(new Background(new BackgroundFill(Color.MINTCREAM, CornerRadii.EMPTY, Insets.EMPTY)))
                 .otherwise(Bindings.when(statusLogger.lastLogTypeProperty().isEqualTo(WARN))
-                        .then(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)))
-                        .otherwise(new Background(new BackgroundFill(Color.ORANGERED, CornerRadii.EMPTY, Insets.EMPTY)))));
+                        .then(new Background(new BackgroundFill(Color.GOLD, CornerRadii.EMPTY, Insets.EMPTY)))
+                        .otherwise(new Background(new BackgroundFill(Color.DARKORANGE, CornerRadii.EMPTY, Insets.EMPTY)))));
 
         newButton.disableProperty().bind(project.canNewProperty().not());
         loadButton.disableProperty().bind(project.canLoadProperty().not());
