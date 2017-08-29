@@ -37,46 +37,18 @@ import java.util.List;
 public class WorkSessionAnalysis {
 
     private static final Logger logger = Logger.getLogger(WorkSessionAnalysis.class);
+    private boolean excludeActionlessWorkPeriods = true;
     private List<WorkSession> workSessions;
     private WorkPeriodAnalysis workPeriodAnalysis;
 
-    public WorkSessionAnalysis(WorkPeriodAnalysis workPeriodAnalysis) {
+    public WorkSessionAnalysis(WorkPeriodAnalysis workPeriodAnalysis, boolean excludeActionlessWorkPeriods) {
         this.workPeriodAnalysis = workPeriodAnalysis;
+        this.excludeActionlessWorkPeriods = excludeActionlessWorkPeriods;
     }
 
     public List<WorkSession> getWorkSessions() {
         if (workSessions == null) {
             workSessions = extractWorkSessions();
-        }
-        return workSessions;
-    }
-
-    public List<WorkSession> extractWorkSessions() {
-        List<WorkPeriod> workPeriods = workPeriodAnalysis.getWorkPeriods();
-        workPeriods.sort(Comparator.comparingLong(Period::getStartTimestamp));
-        workSessions = new LinkedList<>();
-        if (workPeriods.isEmpty()) return workSessions;
-
-        Iterator<WorkPeriod> workPeriodIterator = workPeriods.iterator();
-        WorkPeriod firstWorkPeriod = getNextClosedWorkPeriod(workPeriodIterator);
-        if (firstWorkPeriod == null) return workSessions;
-        WorkSession workSession = WorkSession.makeSessionFromWorkPeriod(firstWorkPeriod);
-        while (workPeriodIterator.hasNext()) {
-            WorkPeriod workPeriod = workPeriodIterator.next();
-            if (workPeriod.isOpen() || workPeriod.getAllActionCount() == 0) continue;
-            if (workSession.hasOverlap(workPeriod)) {
-                workSession.enlarge(workPeriod);
-            } else {
-                workSessions.add(workSession);
-                if (workPeriod.isOpen()) {
-                    workPeriod = getNextClosedWorkPeriod(workPeriodIterator);
-                    if (workPeriod == null) break;
-                }
-                workSession = WorkSession.makeSessionFromWorkPeriod(workPeriod);
-            }
-        }
-        if (workSessions.isEmpty()) {
-            workSessions.add(workSession);
         }
         return workSessions;
     }
@@ -121,13 +93,49 @@ public class WorkSessionAnalysis {
         }
     }
 
-    private WorkPeriod getNextClosedWorkPeriod(Iterator<WorkPeriod> workPeriodIterator) {
-        WorkPeriod firstWorkPeriod = null;
-        while (workPeriodIterator.hasNext()) { // find first closed work period
-            firstWorkPeriod = workPeriodIterator.next();
-            if (!firstWorkPeriod.isOpen()) break;
+    private List<WorkSession> extractWorkSessions() {
+        List<WorkPeriod> workPeriods = workPeriodAnalysis.getWorkPeriods();
+        workPeriods.sort(Comparator.comparingLong(Period::getStartTimestamp));
+        workSessions = new LinkedList<>();
+        if (workPeriods.isEmpty()) return workSessions;
+
+        Iterator<WorkPeriod> workPeriodIterator = workPeriods.iterator();
+        WorkPeriod firstWorkPeriod = getNextClosedWorkPeriod(workPeriodIterator);
+        if (firstWorkPeriod == null) return workSessions;
+
+        WorkSession workSession = WorkSession.makeSessionFromWorkPeriod(firstWorkPeriod);
+        while (workPeriodIterator.hasNext()) {
+            WorkPeriod workPeriod = workPeriodIterator.next();
+            if (workPeriod.isOpen()) continue;
+            if (excludeActionlessWorkPeriods && workPeriod.getAllActionCount() == 0) continue;
+            if (workSession.hasOverlap(workPeriod)) {
+                workSession.enlarge(workPeriod);
+            } else {
+                workSessions.add(workSession);
+                if (workPeriod.isOpen()) {
+                    workPeriod = getNextClosedWorkPeriod(workPeriodIterator);
+                    if (workPeriod == null) break;
+                }
+                workSession = WorkSession.makeSessionFromWorkPeriod(workPeriod);
+            }
         }
-        return firstWorkPeriod;
+        if (!workSessions.contains(workSession)) {
+            workSessions.add(workSession);
+        }
+        return workSessions;
+    }
+
+    private WorkPeriod getNextClosedWorkPeriod(Iterator<WorkPeriod> workPeriodIterator) {
+        WorkPeriod workPeriod = null;
+        while (workPeriodIterator.hasNext()) { // find first closed work period
+            workPeriod = workPeriodIterator.next();
+            if (!workPeriod.isOpen()) {
+                if (excludeActionlessWorkPeriods && workPeriod.getAllActionCount() > 0) return workPeriod;
+                else if (!excludeActionlessWorkPeriods) return workPeriod;
+            }
+            logger.debug("skipping work period " + workPeriod.toString());
+        }
+        return null;
     }
 
 }

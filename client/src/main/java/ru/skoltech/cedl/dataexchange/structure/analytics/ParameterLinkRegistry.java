@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.structure.analytics;
 
+import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -28,6 +29,7 @@ import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
@@ -253,11 +255,29 @@ public class ParameterLinkRegistry {
                 if (!editable) continue;
                 if (sink.getValueSource() == ParameterValueSource.LINK) {
                     if (sink.getValueLink() == source) {
-                        logger.info("updating sink '" + sink.getNodePath() + "' from source '" + source.getNodePath() + "'");
-                        sink.setValue(source.getEffectiveValue());
-                        sink.setUnit(source.getUnit());
+                        // propagate only if actual change to value
+                        Double sinkValue = sink.getValue();
+                        double sourceEffectiveValue = source.getEffectiveValue();
+                        if (!Precision.equals(sinkValue, sourceEffectiveValue, 2)) {
+                            sink.setValue(sourceEffectiveValue);
+                            logger.info("updated sink '" + sink.getNodePath() + "' from source '" + source.getNodePath()
+                                    + "' [value: " + sinkValue + " -> " + sourceEffectiveValue + "]");
+                            actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_LINK, sink.getNodePath()
+                                    + " [value: " + sinkValue + " -> " + sourceEffectiveValue + "]");
+                        }
+                        // propagate only if actual change to unit
+                        Unit sinkUnit = sink.getUnit();
+                        Unit sourceUnit = source.getUnit();
+                        if (sinkUnit == null || !sinkUnit.equals(sourceUnit)) {
+                            sink.setUnit(sourceUnit);
+                            String sinkUnitText = sinkUnit != null ? sinkUnit.asText() : null;
+                            String sourceUnitText = sourceUnit != null ? sourceUnit.asText() : null;
+                            logger.info("updated sink '" + sink.getNodePath() + "' from source '" + source.getNodePath()
+                                    + "' [unit: " + sinkUnitText + " -> " + sourceUnitText + "]");
+                            actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_LINK, sink.getNodePath()
+                                    + " [unit: " + sinkUnitText + " -> " + sourceUnitText + "]");
+                        }
                         // TODO: notify UI ?]
-                        actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_LINK, sink.getNodePath());
                     } else {
                         logger.error("model changed, sink '" + sink.getNodePath() + "' no longer referencing '" + source.getNodePath() + "'");
                     }
