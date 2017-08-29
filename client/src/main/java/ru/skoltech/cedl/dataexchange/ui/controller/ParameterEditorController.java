@@ -451,11 +451,11 @@ public class ParameterEditorController implements Initializable, Displayable {
             }
         }
 
-        // UPDATE LINKING PARAMETERS
-        parameterLinkRegistry.updateSinks(project, originalParameterModel);
-
         String attDiffs = attributeDifferences.stream().map(AttributeDifference::asText).collect(Collectors.joining(","));
         actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, editingParameterModel.getNodePath() + ": " + attDiffs);
+
+        // UPDATE LINKING PARAMETERS
+        parameterLinkRegistry.updateSinks(project, originalParameterModel);
 
         project.markStudyModified();
         editListener.accept(editingParameterModel);

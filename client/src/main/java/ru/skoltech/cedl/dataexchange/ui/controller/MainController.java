@@ -356,7 +356,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             File periodsCsvFile = new File(projectDataDir, "work-periods_" + dateAndTime + ".csv");
             workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
 
-            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis);
+            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis, false);
             File sessionsCsvFile = new File(projectDataDir, "work-sessions_" + dateAndTime + ".csv");
             workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
             workSessionAnalysis.printWorkSessions();
