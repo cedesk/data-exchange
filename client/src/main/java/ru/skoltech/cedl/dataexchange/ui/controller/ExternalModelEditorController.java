@@ -72,6 +72,7 @@ public class ExternalModelEditorController implements Initializable {
     private ModelUpdateService modelUpdateService;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileHandler externalModelFileHandler;
+    private ExternalModelAccessorFactory externalModelAccessorFactory;
 
     private ModelNode modelNode;
 
@@ -106,6 +107,10 @@ public class ExternalModelEditorController implements Initializable {
         this.externalModelFileHandler = externalModelFileHandler;
     }
 
+    public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
+        this.externalModelAccessorFactory = externalModelAccessorFactory;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -128,7 +133,7 @@ public class ExternalModelEditorController implements Initializable {
         File externalModelFile = Dialogues.chooseExternalModelFile(fileStorageService.applicationDirectory());
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
-            if (externalModelFile.isFile() && ExternalModelAccessorFactory.hasEvaluator(fileName)) {
+            if (externalModelFile.isFile() && externalModelAccessorFactory.hasEvaluator(fileName)) {
                 boolean hasExtModWithSameName = modelNode.getExternalModelMap().containsKey(fileName);
                 if (hasExtModWithSameName) {
                     Dialogues.showWarning("Duplicate external model name", "This node already has an attachment with the same name!");
@@ -136,7 +141,7 @@ public class ExternalModelEditorController implements Initializable {
                     try {
                         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(externalModelFile, modelNode);
                         modelNode.addExternalModel(externalModel);
-                        renderExternalModelView(externalModel);
+                        this.renderExternalModelView(externalModel);
                         Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
                         StatusLogger.getInstance().log("added external model: " + externalModel.getName());
                         actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ADD, externalModel.getNodePath());
@@ -158,10 +163,12 @@ public class ExternalModelEditorController implements Initializable {
         HBox extModRow = (HBox) pair.getRight();
         StringBuilder referencingParameters = new StringBuilder();
         for (ParameterModel parameterModel : modelNode.getParameters()) {
-            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE &&
-                    parameterModel.getValueReference() != null &&
-                    parameterModel.getValueReference().getExternalModel() == externalModel) {
-                if (referencingParameters.length() > 0) referencingParameters.append(", ");
+            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE
+                    && parameterModel.getValueReference() != null
+                    && parameterModel.getValueReference().getExternalModel() == externalModel) {
+                if (referencingParameters.length() > 0) {
+                    referencingParameters.append(", ");
+                }
                 referencingParameters.append(parameterModel.getName());
             }
         }
@@ -206,7 +213,7 @@ public class ExternalModelEditorController implements Initializable {
         String oldNodePath = externalModel.getNodePath();
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
-            if (externalModelFile.isFile() && ExternalModelAccessorFactory.hasEvaluator(fileName)) {
+            if (externalModelFile.isFile() && externalModelAccessorFactory.hasEvaluator(fileName)) {
                 try {
                     ExternalModelFileHandler.readAttachmentFromFile(externalModel, externalModelFile);
                     externalModel.setName(fileName);
@@ -224,29 +231,31 @@ public class ExternalModelEditorController implements Initializable {
         }
     }
 
-    private void renderExternalModelView(ExternalModel externalModel) {
-        Node externalModelNode = guiService.createControl(Views.EXTERNAL_MODEL_VIEW, externalModel);
-        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
-        removeButton.setTooltip(new Tooltip("Remove external model"));
-        removeButton.setOnAction(ExternalModelEditorController.this::deleteExternalModel);
-        removeButton.setMinWidth(28);
-        Button exchangeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.EXCHANGE));
-        exchangeButton.setTooltip(new Tooltip("Replace external model"));
-        exchangeButton.setOnAction(ExternalModelEditorController.this::exchangeExternalModel);
-        exchangeButton.setMinWidth(28);
-        HBox extModRow = new HBox(6, externalModelNode, removeButton, exchangeButton);
-        removeButton.setUserData(Pair.of(externalModel, extModRow));
-        exchangeButton.setUserData(externalModel);
-        externalModelViewContainer.getChildren().add(extModRow);
-    }
-
     private void updateView() {
         ObservableList<Node> externalModelViewerList = externalModelViewContainer.getChildren();
         externalModelViewerList.clear();
         List<ExternalModel> externalModels = modelNode.getExternalModels();
         for (ExternalModel externalModel : externalModels) {
-            renderExternalModelView(externalModel);
+            this.renderExternalModelView(externalModel);
         }
+    }
+
+    private void renderExternalModelView(ExternalModel externalModel) {
+        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
+        removeButton.setTooltip(new Tooltip("Remove external model"));
+        removeButton.setOnAction(ExternalModelEditorController.this::deleteExternalModel);
+        removeButton.setMinWidth(28);
+
+        Button exchangeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.EXCHANGE));
+        exchangeButton.setTooltip(new Tooltip("Replace external model"));
+        exchangeButton.setOnAction(ExternalModelEditorController.this::exchangeExternalModel);
+        exchangeButton.setMinWidth(28);
+
+        Node externalModelNode = guiService.createControl(Views.EXTERNAL_MODEL_VIEW, externalModel);
+        HBox extModRow = new HBox(6, externalModelNode, removeButton, exchangeButton);
+        removeButton.setUserData(Pair.of(externalModel, extModRow));
+        exchangeButton.setUserData(externalModel);
+        externalModelViewContainer.getChildren().add(extModRow);
     }
 }
 

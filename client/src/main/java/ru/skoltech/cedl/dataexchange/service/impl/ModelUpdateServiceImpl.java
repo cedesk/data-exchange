@@ -43,9 +43,14 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
     private static final Logger logger = Logger.getLogger(ModelUpdateServiceImpl.class);
 
     private ActionLogger actionLogger;
+    private ExternalModelAccessorFactory externalModelAccessorFactory;
 
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
+    }
+
+    public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
+        this.externalModelAccessorFactory = externalModelAccessorFactory;
     }
 
     @Override
@@ -62,7 +67,7 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
         }
 
         List<ParameterUpdate> updates = new LinkedList<>();
-        ExternalModelEvaluator evaluator = ExternalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
+        ExternalModelEvaluator evaluator = externalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
         try {
             for (ParameterModel parameterModel : modelNode.getParameters()) {
                 // check whether parameter references external model
@@ -112,7 +117,7 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
             ExternalModelReference valueReference = parameterModel.getValueReference();
             if (valueReference != null && valueReference.getExternalModel() != null) {
                 ExternalModel externalModel = valueReference.getExternalModel();
-                ExternalModelEvaluator evaluator = ExternalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
+                ExternalModelEvaluator evaluator = externalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
                 try {
                     parameterUpdate = getParameterUpdate(project, externalModelFileHandler, parameterModel, valueReference, evaluator);
                 } finally {
@@ -167,7 +172,7 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
                                                      ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
-        ExternalModelExporter exporter = ExternalModelAccessorFactory.getExporter(externalModel, externalModelFileHandler);
+        ExternalModelExporter exporter = externalModelAccessorFactory.getExporter(externalModel, externalModelFileHandler);
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             // check whether parameter exports to external model
             if (parameterModel.getIsExported() &&

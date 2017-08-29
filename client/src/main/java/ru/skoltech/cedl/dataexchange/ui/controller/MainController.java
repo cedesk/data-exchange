@@ -627,6 +627,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         diffViewBuilder.ownerWindow(ownerStage);
         diffViewBuilder.modality(Modality.APPLICATION_MODAL);
         diffViewBuilder.showAndWait();
+        modelEditingController.clearView();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
@@ -763,8 +764,9 @@ public class MainController implements Initializable, Displayable, Closeable {
                     return;
                 }
             }
+            modelEditingController.clearView();
             project.storeStudy();
-            updateView();
+            this.updateView();
             applicationSettings.storeProjectLastName(project.getProjectName());
             StatusLogger.getInstance().log("Successfully saved study: " + project.getProjectName(), false);
             actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());

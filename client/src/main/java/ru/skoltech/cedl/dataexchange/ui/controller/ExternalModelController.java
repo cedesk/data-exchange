@@ -57,7 +57,6 @@ public class ExternalModelController implements Initializable {
 
     @FXML
     private TextField externalModelNameText;
-
     @FXML
     private Button openExternalButton;
 

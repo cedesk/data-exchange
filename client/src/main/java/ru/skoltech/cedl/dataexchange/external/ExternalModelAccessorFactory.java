@@ -33,28 +33,27 @@ public class ExternalModelAccessorFactory {
 
     private static final Logger logger = Logger.getLogger(ExternalModelAccessorFactory.class);
 
-    private static final Map<String, Class<? extends ExternalModelEvaluator>> evaluators = new HashMap<>();
+    private final Map<String, Class<? extends ExternalModelEvaluator>> evaluators = new HashMap<>();
+    private final Map<String, Class<? extends ExternalModelExporter>> exporters = new HashMap<>();
 
-    private static final Map<String, Class<? extends ExternalModelExporter>> exporters = new HashMap<>();
-
-    static {
-        registerEvaluator(ExcelModelEvaluator.class, ExcelModelEvaluator.getHandledExtensions());
-        registerExporter(ExcelModelExporter.class, ExcelModelExporter.getHandledExtensions());
+    public ExternalModelAccessorFactory() {
+        this.registerEvaluator(ExcelModelEvaluator.class, ExcelModelEvaluator.getHandledExtensions());
+        this.registerExporter(ExcelModelExporter.class, ExcelModelExporter.getHandledExtensions());
     }
 
-    public static void registerExporter(Class<? extends ExternalModelExporter> exporterClass, String[] extensions) {
+    public void registerExporter(Class<? extends ExternalModelExporter> exporterClass, String[] extensions) {
         for (String ext : extensions) {
             exporters.put(ext, exporterClass);
         }
     }
 
-    public static void registerEvaluator(Class<? extends ExternalModelEvaluator> evaluatorClass, String[] extensions) {
+    public void registerEvaluator(Class<? extends ExternalModelEvaluator> evaluatorClass, String[] extensions) {
         for (String ext : extensions) {
             evaluators.put(ext, evaluatorClass);
         }
     }
 
-    public static ExternalModelEvaluator getEvaluator(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
+    public ExternalModelEvaluator getEvaluator(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
         String fileName = externalModel.getName();
         String fileExtension = Utils.getExtension(fileName);
         if (evaluators.containsKey(fileExtension)) {
@@ -72,7 +71,7 @@ public class ExternalModelAccessorFactory {
         }
     }
 
-    public static ExternalModelExporter getExporter(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
+    public ExternalModelExporter getExporter(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
         String fileName = externalModel.getName();
         String fileExtension = Utils.getExtension(fileName);
         if (exporters.containsKey(fileExtension)) {
@@ -90,7 +89,7 @@ public class ExternalModelAccessorFactory {
         }
     }
 
-    public static boolean hasEvaluator(String fileName) {
+    public boolean hasEvaluator(String fileName) {
         String fileExtension = Utils.getExtension(fileName);
         return evaluators.keySet().contains(fileExtension);
     }

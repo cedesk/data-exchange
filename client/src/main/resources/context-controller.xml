@@ -80,6 +80,7 @@
         <property name="modelUpdateService" ref="modelUpdateService"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
+        <property name="externalModelAccessorFactory" ref="externalModelAccessorFactory"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelController" scope="prototype">

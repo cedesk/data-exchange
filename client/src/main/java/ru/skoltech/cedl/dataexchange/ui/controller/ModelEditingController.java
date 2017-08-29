@@ -76,52 +76,36 @@ public class ModelEditingController implements Initializable {
 
     @FXML
     private TextField ownersText;
-
     @FXML
     private SplitPane viewPane;
-
     @FXML
     private TitledPane externalModelParentPane;
-
     @FXML
     private TextField upstreamDependenciesText;
-
     @FXML
     private TextField downstreamDependenciesText;
-
     @FXML
     private TitledPane parameterEditorParentPane;
-
     @FXML
     private TableColumn<ParameterModel, String> parameterValueColumn;
-
     @FXML
     private TableColumn<ParameterModel, String> parameterUnitColumn;
-
     @FXML
     private TableColumn<ParameterModel, String> parameterInfoColumn;
-
     @FXML
     private Button addNodeButton;
-
     @FXML
     private Button renameNodeButton;
-
     @FXML
     private Button deleteNodeButton;
-
     @FXML
     private Button addParameterButton;
-
     @FXML
     private Button deleteParameterButton;
-
     @FXML
     private Button viewParameterHistoryButton;
-
     @FXML
     private TreeView<ModelNode> structureTree;
-
     @FXML
     private TableView<ParameterModel> parameterTable;
 
@@ -185,16 +169,13 @@ public class ModelEditingController implements Initializable {
         Node externalModelEditorPane = guiService.createControl(Views.EXTERNAL_MODELS_EDITOR_VIEW);
         externalModelParentPane.setContent(externalModelEditorPane);
 
-        project.addExternalModelChangeObserver(new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                ExternalModel externalModel = (ExternalModel) arg;
-                try {
-                    modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, parameterLinkRegistry, externalModelFileHandler,
-                            Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ParameterUpdateListener());
-                } catch (ExternalModelException e) {
-                    logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
-                }
+        project.addExternalModelChangeObserver((o, arg) -> {
+            ExternalModel externalModel = (ExternalModel) arg;
+            try {
+                modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, parameterLinkRegistry, externalModelFileHandler,
+                        Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ParameterUpdateListener());
+            } catch (ExternalModelException e) {
+                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
             }
         });
 

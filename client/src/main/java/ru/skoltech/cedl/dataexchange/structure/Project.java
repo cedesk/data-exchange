@@ -409,11 +409,11 @@ public class Project {
         }
 
         this.setRepositoryStudy(repositoryStudy);
+        this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
         Platform.runLater(() -> {
             List<ModelDifference> modelDiffs = differenceMergeService.computeStudyDifferences(study, repositoryStudy);
             modelDifferences.clear();
             modelDifferences.addAll(modelDiffs);
-            this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
         });
     }
 

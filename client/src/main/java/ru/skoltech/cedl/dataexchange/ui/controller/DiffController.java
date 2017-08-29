@@ -46,7 +46,7 @@ import java.util.concurrent.Executor;
 /**
  * Created by D.Knoll on 20.07.2015.
  */
-public class DiffController implements Initializable {
+public class DiffController implements Initializable, Displayable, Closeable {
 
     @FXML
     private TableView<ModelDifference> diffTable;
@@ -61,6 +61,8 @@ public class DiffController implements Initializable {
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileHandler externalModelFileHandler;
     private Executor executor;
+
+    private Stage ownerStage;
 
     public void setProject(Project project) {
         this.project = project;
@@ -111,6 +113,24 @@ public class DiffController implements Initializable {
         this.refreshView();
     }
 
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
+    @Override
+    public void close(Stage stage, WindowEvent windowEvent) {
+        this.close();
+    }
+
+    public void close() {
+        this.ownerStage.close();
+    }
+
+    public void refreshView() {
+        executor.execute(() -> project.loadRepositoryStudy());
+    }
+
     public void acceptAll() {
         try {
             List<ModelDifference> appliedDifferences = differenceMergeService.mergeChangesOntoFirst(project, parameterLinkRegistry,
@@ -124,15 +144,6 @@ public class DiffController implements Initializable {
         } catch (MergeException me) {
             StatusLogger.getInstance().log(me.getMessage(), true);
         }
-    }
-
-    public void close() {
-        Stage stage = (Stage) diffTable.getScene().getWindow();
-        stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
-    }
-
-    public void refreshView() {
-        executor.execute(() -> project.loadRepositoryStudy());
     }
 
     public void revertAll() {
@@ -183,7 +194,6 @@ public class DiffController implements Initializable {
     }
 
     private class ActionCellFactory implements Callback<TableColumn<ModelDifference, String>, TableCell<ModelDifference, String>> {
-
         @Override
         public TableCell<ModelDifference, String> call(TableColumn<ModelDifference, String> param) {
             return new TableCell<ModelDifference, String>() {
