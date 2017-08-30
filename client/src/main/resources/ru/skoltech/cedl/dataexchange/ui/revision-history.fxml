@@ -19,18 +19,18 @@
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="280.0" prefWidth="840.0" xmlns="http://javafx.com/javafx/8"
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="280.0" prefWidth="940.0" xmlns="http://javafx.com/javafx/8"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.RevisionHistoryController"
             stylesheets="@styling.css">
     <TableView fx:id="revisionHistoryTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columns>
-            <TableColumn prefWidth="40.0" text="Rev#">
+            <TableColumn prefWidth="50.0" text="Rev#">
                 <cellValueFactory>
                     <PropertyValueFactory property="revisionId"/>
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn prefWidth="120.0" text="Date">
+            <TableColumn prefWidth="140.0" text="Date">
                 <cellValueFactory>
                     <PropertyValueFactory property="revisionDateAsText"/>
                 </cellValueFactory>

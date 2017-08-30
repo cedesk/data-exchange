@@ -21,7 +21,13 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Created by d.knoll on 25.07.2017.
@@ -29,6 +35,7 @@ import java.util.List;
 public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
 
     private static final boolean TREAT_INCOMPLETE_PERIOD_AS_CLOSED = false;
+    private static final boolean EXCLUDE_ACTIONLESS_WORK_PERIODS = false;
     private static Logger logger = Logger.getLogger(WorkPeriodAnalyzerApplication.class);
 
     /**
@@ -73,10 +80,11 @@ public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
             List<LogEntry> logEntries = getLogEntries();
 
             WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries, TREAT_INCOMPLETE_PERIOD_AS_CLOSED);
+            //workPeriodAnalysis.setFilter(new DateFilter(2017, 8, 22));
             File periodsCsvFile = new File(appDir, "work-periods.csv");
             workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
 
-            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis);
+            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis, EXCLUDE_ACTIONLESS_WORK_PERIODS);
             File sessionsCsvFile = new File(appDir, "work-sessions.csv");
             workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
             workSessionAnalysis.printWorkSessions();
@@ -86,4 +94,19 @@ public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
         }
     }
 
+    private class DateFilter implements Predicate<LogEntry> {
+
+        private final LocalDate reference;
+
+        public DateFilter(int year, int month, int day) {
+            reference = LocalDate.of(year, month, day);
+        }
+
+        @Override
+        public boolean test(LogEntry logEntry) {
+            Instant instant = Instant.ofEpochMilli(logEntry.getLogTimestamp()).truncatedTo(ChronoUnit.DAYS);
+            LocalDate date = LocalDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalDate();
+            return date.compareTo(reference) != 0;
+        }
+    }
 }

@@ -18,6 +18,7 @@ import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Created by D.Knoll on 25.07.2017.
@@ -36,10 +37,14 @@ public class WorkPeriodAnalysis {
     private List<LogEntry> logEntries;
     private List<WorkPeriod> workPeriods;
     private boolean closeIncompletePeriods;
+    private Predicate<? super LogEntry> filter;
 
     public WorkPeriodAnalysis(List<LogEntry> logEntries, boolean closeIncompletePeriods) {
         this.logEntries = logEntries;
         this.closeIncompletePeriods = closeIncompletePeriods;
+    }
+
+    public WorkPeriodAnalysis() {
     }
 
     public List<WorkPeriod> getWorkPeriods() {
@@ -49,13 +54,27 @@ public class WorkPeriodAnalysis {
         return workPeriods;
     }
 
+    public void setWorkPeriods(List<WorkPeriod> workPeriods) {
+        this.workPeriods = workPeriods;
+    }
+
     public boolean isCloseIncompletePeriods() {
         return closeIncompletePeriods;
+    }
+
+    public void setFilter(Predicate<? super LogEntry> filter) {
+        this.filter = filter;
     }
 
     public List<WorkPeriod> extractWorkPeriods() {
         Map<String, WorkPeriod> lastPeriodOfUser = new HashMap<>();
         workPeriods = new LinkedList<>();
+
+        // filter only day of interest
+        if (filter != null) {
+            logEntries.removeIf(filter);
+        }
+        // sort
         logEntries.sort(Comparator.comparing(LogEntry::getUser).thenComparingLong(LogEntry::getLogTimestamp));
         for (LogEntry logEntry : logEntries) {
 
@@ -64,6 +83,7 @@ public class WorkPeriodAnalysis {
 
             if (actionType == ActionLogger.ActionType.PROJECT_LOAD) {
                 WorkPeriod workPeriod = new WorkPeriod(user, logEntry.getLogTimestamp());
+                logger.info("user " + user + " loaded at: " + workPeriod.getStartTimestampFormatted());
                 workPeriods.add(workPeriod);
                 lastPeriodOfUser.put(user, workPeriod);
             } else if (actionType == ActionLogger.ActionType.PROJECT_SAVE) {
@@ -75,7 +95,13 @@ public class WorkPeriodAnalysis {
                                 logEntry.getLogTimestampFormatted() + ": " + logEntry.getUser() + ", " +
                                 logEntry.getAction() + ", " + logEntry.getDescription());
                     } else {
+                        Long stopTimestamp = workPeriod.getStopTimestamp();
                         workPeriod.setStopTimestamp(logEntry.getLogTimestamp());
+                        if(stopTimestamp == null) {
+                            logger.info("user " + user + " first saved at: " + workPeriod.getStopTimestampFormatted());
+                        } else {
+                            logger.info("user " + user + " saved again at: " + workPeriod.getStopTimestampFormatted());
+                        }
                     }
                 } else {
                     logger.warn("save without load: " + logEntry.getId());
@@ -116,6 +142,8 @@ public class WorkPeriodAnalysis {
             printer.println();
 
             printer.print("username");
+            printer.print("load timestamp");
+            printer.print("store timestamp");
             printer.print("time of load");
             printer.print("time of store");
             printer.print("work duration");
@@ -129,6 +157,8 @@ public class WorkPeriodAnalysis {
 
             for (WorkPeriod workPeriod : getWorkPeriods()) {
                 printer.print(workPeriod.getUsernname());
+                printer.print(workPeriod.getStartTimestamp());
+                printer.print(workPeriod.getStopTimestamp());
                 printer.print(workPeriod.getStartTimestampFormatted());
                 printer.print(workPeriod.getStopTimestampFormatted());
                 printer.print(workPeriod.getDurationFormatted());
@@ -144,15 +174,5 @@ public class WorkPeriodAnalysis {
             logger.error("error writing work periods to CSV file");
         }
     }
-
-    private WorkPeriod getNextClosedWorkPeriod(Iterator<WorkPeriod> workPeriodIterator) {
-        WorkPeriod firstWorkPeriod = null;
-        while (workPeriodIterator.hasNext()) { // find first closed work period
-            firstWorkPeriod = workPeriodIterator.next();
-            if (!firstWorkPeriod.isOpen()) break;
-        }
-        return firstWorkPeriod;
-    }
-
 
 }
