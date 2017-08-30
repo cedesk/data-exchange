@@ -18,11 +18,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:util="http://www.springframework.org/schema/util"
-       xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/util   http://www.springframework.org/schema/util/spring-util.xsd
-                           http://www.springframework.org/schema/aop    http://www.springframework.org/schema/aop/spring-aop.xsd
                            http://www.springframework.org/schema/task   http://www.springframework.org/schema/task/spring-task.xsd">
 
     <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine"/>
@@ -47,18 +45,6 @@
         <property name="differenceMergeService" ref="differenceMergeService"/>
         <property name="nodeDifferenceService" ref="nodeDifferenceService"/>
         <property name="executor" ref="executor"/>
-    </bean>
-
-    <aop:config>
-        <aop:aspect ref="connectionExceptionAspect">
-            <aop:pointcut id="repositoryExceptionPointCut"
-                          expression="execution(* ru.skoltech.cedl.dataexchange.repository..*.*(..))" />
-            <aop:after-throwing method="log" throwing="exception" pointcut-ref="repositoryExceptionPointCut"/>
-        </aop:aspect>
-    </aop:config>
-
-    <bean id="connectionExceptionAspect" class="ru.skoltech.cedl.dataexchange.structure.ConnectionExceptionAspect" >
-        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <util:map id="builderRegistry" map-class="java.util.HashMap">

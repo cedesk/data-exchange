@@ -43,6 +43,7 @@ import javafx.stage.WindowEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.PopOver;
+import org.springframework.transaction.CannotCreateTransactionException;
 import ru.skoltech.cedl.dataexchange.ApplicationPackage;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -71,6 +72,7 @@ import ru.skoltech.cedl.dataexchange.ui.Views;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -837,6 +839,18 @@ public class MainController implements Initializable, Displayable, Closeable {
         try {
             project.close();
         } catch (Throwable ignore) {
+        }
+    }
+
+    /**
+     * Notifying through status bar for connection errors.
+     * Invokes by the aspects.
+     *
+     * @param exception base exception for {@link ConnectException}
+     */
+    public void logStatus(CannotCreateTransactionException exception) {
+        if (exception.getRootCause() instanceof ConnectException) {
+            statusLogger.error("Repository connection is not available!");
         }
     }
 
