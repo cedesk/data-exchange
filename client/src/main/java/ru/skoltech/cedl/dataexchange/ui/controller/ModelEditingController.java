@@ -47,6 +47,7 @@ import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
+import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItem;
@@ -121,7 +122,7 @@ public class ModelEditingController implements Initializable {
     private ActionLogger actionLogger;
     private UserRoleManagementService userRoleManagementService;
     private GuiService guiService;
-    private ModelUpdateService modelUpdateService;
+    private ModelUpdateHandler modelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileHandler externalModelFileHandler;
     private StatusLogger statusLogger;
@@ -150,8 +151,8 @@ public class ModelEditingController implements Initializable {
         this.guiService = guiService;
     }
 
-    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
-        this.modelUpdateService = modelUpdateService;
+    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
+        this.modelUpdateHandler = modelUpdateHandler;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
@@ -177,7 +178,7 @@ public class ModelEditingController implements Initializable {
         project.addExternalModelChangeObserver((o, arg) -> {
             ExternalModel externalModel = (ExternalModel) arg;
             try {
-                modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, parameterLinkRegistry, externalModelFileHandler,
+                modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel,
                         Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ParameterUpdateListener());
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");

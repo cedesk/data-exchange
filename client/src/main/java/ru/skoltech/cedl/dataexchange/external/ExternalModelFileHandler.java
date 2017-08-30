@@ -39,12 +39,17 @@ public class ExternalModelFileHandler {
 
     private static Logger logger = Logger.getLogger(ExternalModelFileHandler.class);
 
+    private Project project;
     private FileStorageService fileStorageService;
 
     private Set<ExternalModel> changedExternalModels = new HashSet<>();
 
     public Set<ExternalModel> getChangedExternalModels() {
         return changedExternalModels;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -240,7 +245,7 @@ public class ExternalModelFileHandler {
         }
     }
 
-    public File forceCacheUpdate(Project project, ExternalModel externalModel) throws IOException {
+    public File forceCacheUpdate(ExternalModel externalModel) throws IOException {
         Objects.requireNonNull(externalModel);
         File file = getFilePathInCache(project, externalModel);
         fileStorageService.createDirectory(file.getParentFile());

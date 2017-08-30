@@ -23,7 +23,7 @@ import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.revision.StudyRepository;
-import ru.skoltech.cedl.dataexchange.service.DifferenceMergeService;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceMergeHandler;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 
 import java.util.List;
@@ -33,14 +33,14 @@ import java.util.List;
  */
 public class StudyDifferencesTest extends AbstractApplicationContextTest {
 
-    private DifferenceMergeService differenceMergeService;
+    private DifferenceMergeHandler differenceMergeHandler;
     private StudyRepository studyRepository;
 
     private Study baseStudy;
 
     @Before
     public void prepare() {
-        differenceMergeService = context.getBean(DifferenceMergeService.class);
+        differenceMergeHandler = context.getBean(DifferenceMergeHandler.class);
         studyRepository = context.getBean(StudyRepository.class);
 
         baseStudy = new Study();
@@ -53,12 +53,12 @@ public class StudyDifferencesTest extends AbstractApplicationContextTest {
         Study remoteStudy = studyRepository.findOne(baseStudy.getId());
         Assert.assertEquals(localStudy, remoteStudy);
 
-        List<ModelDifference> differences = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy);
+        List<ModelDifference> differences = differenceMergeHandler.computeStudyDifferences(localStudy, remoteStudy);
         Assert.assertEquals(0, differences.size());
 
         remoteStudy = studyRepository.saveAndFlush(remoteStudy);
 
-        differences = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy);
+        differences = differenceMergeHandler.computeStudyDifferences(localStudy, remoteStudy);
         Assert.assertEquals(1, differences.size());
         Assert.assertEquals("version", differences.get(0).getAttribute());
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, differences.get(0).getChangeLocation());
@@ -66,7 +66,7 @@ public class StudyDifferencesTest extends AbstractApplicationContextTest {
         remoteStudy.setStudySettings(new StudySettings());
         remoteStudy.getStudySettings().setSyncEnabled(false);
         remoteStudy = studyRepository.saveAndFlush(remoteStudy);
-        differences = differenceMergeService.computeStudyDifferences(localStudy, remoteStudy);
+        differences = differenceMergeHandler.computeStudyDifferences(localStudy, remoteStudy);
         Assert.assertEquals(1, differences.size());
         Assert.assertEquals("version\nstudySettings", differences.get(0).getAttribute());
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, differences.get(0).getChangeLocation());

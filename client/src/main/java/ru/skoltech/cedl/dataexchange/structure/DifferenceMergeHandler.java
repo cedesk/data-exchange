@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.service.impl;
+package ru.skoltech.cedl.dataexchange.structure;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +28,8 @@ import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
-import ru.skoltech.cedl.dataexchange.service.DifferenceMergeService;
-import ru.skoltech.cedl.dataexchange.service.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 
 import java.io.IOException;
@@ -42,35 +38,48 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Created by d.knoll on 24/05/2017.
+ * Handler for merging differences of projects.
+ * <p>
+ * Created by Nikolay Groshkov on 07-Jul-17.
  */
-public class DifferenceMergeServiceImpl implements DifferenceMergeService {
+public class DifferenceMergeHandler {
 
-    private static final Logger logger = Logger.getLogger(DifferenceMergeServiceImpl.class);
+    private static final Logger logger = Logger.getLogger(DifferenceMergeHandler.class);
 
+    private ModelUpdateHandler modelUpdateHandler;
+    private ExternalModelFileHandler externalModelFileHandler;
     private StudyService studyService;
-    private ModelUpdateService modelUpdateService;
     private NodeDifferenceService nodeDifferenceService;
     private final RevisionEntityRepository revisionEntityRepository;
 
     @Autowired
-    public DifferenceMergeServiceImpl(RevisionEntityRepository revisionEntityRepository) {
+    public DifferenceMergeHandler(RevisionEntityRepository revisionEntityRepository) {
         this.revisionEntityRepository = revisionEntityRepository;
+    }
+
+    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
+        this.modelUpdateHandler = modelUpdateHandler;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setStudyService(StudyService studyService) {
         this.studyService = studyService;
     }
 
-    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
-        this.modelUpdateService = modelUpdateService;
-    }
-
     public void setNodeDifferenceService(NodeDifferenceService nodeDifferenceService) {
         this.nodeDifferenceService = nodeDifferenceService;
     }
 
-    @Override
+    /**
+     * TODO add javadoc
+     *
+     * @param localStudy
+     * @param remoteStudy
+     * @return
+     */
     public List<ModelDifference> computeStudyDifferences(Study localStudy, Study remoteStudy) {
         List<ModelDifference> modelDifferences = new LinkedList<>();
 
@@ -91,6 +100,13 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Compacting all attributes differences into one study modification
+     * TODO add javadoc
+     *
+     * @param modelDifference
+     * @return
+     */
     private String retrieveAuthor(ModelDifference modelDifference) {
         if (modelDifference.isMergeable()) {
             PersistedEntity persistedEntity = modelDifference.getChangedEntity();
@@ -112,8 +128,15 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         }
     }
 
-
-    @Override
+    /**
+     * Compacting all attributes differences into one study modification
+     * TODO add javadoc
+     *
+     * @param study1
+     * @param study2
+     * @param differences
+     * @return
+     */
     public ModelDifference createStudyAttributesModified(Study study1, Study study2, List<AttributeDifference> differences) {
         StringBuilder sbAttributes = new StringBuilder(), sbValues1 = new StringBuilder(), sbValues2 = new StringBuilder();
         for (AttributeDifference diff : differences) {
@@ -131,13 +154,17 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         return new StudyDifference(study1, study2, ModelDifference.ChangeType.MODIFY, changeLocation, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString(), studyService);
     }
 
-    @Override
-    public List<ModelDifference> mergeChangesOntoFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                                                       ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException {
+    /**
+     * TODO add javadoc
+     *
+     * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
+     * @return the list of merged differences
+     */
+    public List<ModelDifference> mergeChangesOntoFirst(List<ModelDifference> modelDifferences) throws MergeException {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
             if (modelDifference.isMergeable()) {
-                boolean success = mergeOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
+                boolean success = mergeOne(modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
                 }
@@ -147,9 +174,14 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         return appliedDifferences;
     }
 
-    @Override
-    public boolean mergeOne(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                            ExternalModelFileHandler externalModelFileHandler, ModelDifference modelDifference) throws MergeException {
+    /**
+     * TODO add javadoc
+     *
+     * @param modelDifference
+     * @return
+     * @throws MergeException
+     */
+    public boolean mergeOne(ModelDifference modelDifference) throws MergeException {
         logger.debug("merging " + modelDifference.getElementPath());
         modelDifference.mergeDifference();
         if (modelDifference instanceof ParameterDifference) {
@@ -157,18 +189,22 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         } else if (modelDifference instanceof ExternalModelDifference) {
             ExternalModelDifference emd = (ExternalModelDifference) modelDifference;
             ExternalModel externalModel = emd.getExternalModel1();
-            return updateCacheAndParameters(project, parameterLinkRegistry, externalModelFileHandler, externalModel);
+            return updateCacheAndParameters(externalModel);
         }
         return true;
     }
 
-    @Override
-    public List<ModelDifference> revertChangesOnFirst(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                                                      ExternalModelFileHandler externalModelFileHandler, List<ModelDifference> modelDifferences) throws MergeException {
+    /**
+     * TODO add javadoc
+     *
+     * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
+     * @return the list of merged differences
+     */
+    public List<ModelDifference> revertChangesOnFirst(List<ModelDifference> modelDifferences) throws MergeException {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
         for (ModelDifference modelDifference : modelDifferences) {
             if (modelDifference.isRevertible()) {
-                boolean success = revertOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
+                boolean success = revertOne(modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
                 }
@@ -178,9 +214,14 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         return appliedDifferences;
     }
 
-    @Override
-    public boolean revertOne(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                             ExternalModelFileHandler externalModelFileHandler, ModelDifference modelDifference) throws MergeException {
+    /**
+     * TODO add javadoc
+     *
+     * @param modelDifference
+     * @return
+     * @throws MergeException
+     */
+    public boolean revertOne(ModelDifference modelDifference) throws MergeException {
         logger.debug("reverting " + modelDifference.getElementPath());
         modelDifference.revertDifference();
         if (modelDifference instanceof ParameterDifference) {
@@ -188,19 +229,17 @@ public class DifferenceMergeServiceImpl implements DifferenceMergeService {
         } else if (modelDifference instanceof ExternalModelDifference) {
             ExternalModelDifference emd = (ExternalModelDifference) modelDifference;
             ExternalModel externalModel = emd.getExternalModel1();
-            return updateCacheAndParameters(project, parameterLinkRegistry, externalModelFileHandler, externalModel);
+            return updateCacheAndParameters(externalModel);
         }
         return true;
     }
 
-    private boolean updateCacheAndParameters(Project project, ParameterLinkRegistry parameterLinkRegistry,
-                                             ExternalModelFileHandler externalModelFileHandler, ExternalModel externalModel) throws MergeException {
+    private boolean updateCacheAndParameters(ExternalModel externalModel) throws MergeException {
         try {
             // update cached file
-            externalModelFileHandler.forceCacheUpdate(project, externalModel);
+            externalModelFileHandler.forceCacheUpdate(externalModel);
             // update parameters from new file
-            modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel, parameterLinkRegistry,
-                    externalModelFileHandler, null, null);
+            modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel, null, null);
         } catch (ExternalModelException e) {
             logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
         } catch (IOException e) {

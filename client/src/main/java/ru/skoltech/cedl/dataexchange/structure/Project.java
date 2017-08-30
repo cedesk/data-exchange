@@ -36,10 +36,7 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
+import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
@@ -66,16 +63,16 @@ public class Project {
 
     private ApplicationSettings applicationSettings;
     private RepositoryStateMachine repositoryStateMachine;
+    private DifferenceMergeHandler differenceMergeHandler;
+    private ModelUpdateHandler modelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ExternalModelFileHandler externalModelFileHandler;
     private FileStorageService fileStorageService;
     private StudyService studyService;
-    private ModelUpdateService modelUpdateService;
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
-    private DifferenceMergeService differenceMergeService;
     private NodeDifferenceService nodeDifferenceService;
     private Executor executor;
 
@@ -129,8 +126,8 @@ public class Project {
         this.studyService = studyService;
     }
 
-    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
-        this.modelUpdateService = modelUpdateService;
+    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
+        this.modelUpdateHandler = modelUpdateHandler;
     }
 
     public void setUserManagementService(UserManagementService userManagementService) {
@@ -145,8 +142,8 @@ public class Project {
         this.unitManagementService = unitManagementService;
     }
 
-    public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
-        this.differenceMergeService = differenceMergeService;
+    public void setDifferenceMergeHandler(DifferenceMergeHandler differenceMergeHandler) {
+        this.differenceMergeHandler = differenceMergeHandler;
     }
 
     public void setNodeDifferenceService(NodeDifferenceService nodeDifferenceService) {
@@ -402,7 +399,7 @@ public class Project {
         this.setRepositoryStudy(repositoryStudy);
         this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
         Platform.runLater(() -> {
-            List<ModelDifference> modelDiffs = differenceMergeService.computeStudyDifferences(study, repositoryStudy);
+            List<ModelDifference> modelDiffs = differenceMergeHandler.computeStudyDifferences(study, repositoryStudy);
             modelDifferences.clear();
             modelDifferences.addAll(modelDiffs);
         });
@@ -537,7 +534,7 @@ public class Project {
         while (externalModelsIterator.hasNext()) {
             ExternalModel externalModel = externalModelsIterator.next();
             try {
-                modelUpdateService.applyParameterChangesToExternalModel(this, externalModel, externalModelFileHandler, externalModelFileWatcher);
+                modelUpdateHandler.applyParameterChangesToExternalModel(externalModel);
             } catch (ExternalModelException e) {
                 exceptions.add(e);
             }
@@ -573,8 +570,7 @@ public class Project {
 
             try {
                 // silently update model from external model
-                modelUpdateService.applyParameterChangesFromExternalModel(this, externalModel, parameterLinkRegistry,
-                        externalModelFileHandler, null, null);
+                modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel, null, null);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
             }

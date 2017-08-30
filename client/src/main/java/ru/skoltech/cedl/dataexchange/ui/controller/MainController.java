@@ -58,14 +58,13 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceMergeHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
-import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
@@ -131,19 +130,17 @@ public class MainController implements Initializable, Displayable, Closeable {
     private ModelEditingController modelEditingController;
 
     private ApplicationSettings applicationSettings;
-    private ActionLogger actionLogger;
     private Project project;
+    private DifferenceMergeHandler differenceMergeHandler;
     private StudyService studyService;
     private GuiService guiService;
     private FileStorageService fileStorageService;
-    private DifferenceMergeService differenceMergeService;
     private UpdateService updateService;
     private RepositorySchemeService repositorySchemeService;
     private LogEntryService logEntryService;
     private SystemBuilderFactory systemBuilderFactory;
-    private ParameterLinkRegistry parameterLinkRegistry;
-    private ExternalModelFileHandler externalModelFileHandler;
     private Executor executor;
+    private ActionLogger actionLogger;
     private StatusLogger statusLogger;
 
     private Stage ownerStage;
@@ -158,10 +155,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
-    }
-
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
     }
 
     public void setProject(Project project) {
@@ -180,8 +173,8 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.fileStorageService = fileStorageService;
     }
 
-    public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
-        this.differenceMergeService = differenceMergeService;
+    public void setDifferenceMergeHandler(DifferenceMergeHandler differenceMergeHandler) {
+        this.differenceMergeHandler = differenceMergeHandler;
     }
 
     public void setUpdateService(UpdateService updateService) {
@@ -200,16 +193,12 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.systemBuilderFactory = systemBuilderFactory;
     }
 
-    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
-        this.parameterLinkRegistry = parameterLinkRegistry;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
-    }
-
     public void setExecutor(Executor executor) {
         this.executor = executor;
+    }
+
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     public void setStatusLogger(StatusLogger statusLogger) {
@@ -784,11 +773,12 @@ public class MainController implements Initializable, Displayable, Closeable {
                         "Merge changes, and review remaining differences?");
                 if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
                     // TODO merge remote changes
+                    Study study =  project.getStudy();
+                    Study repositoryStudy =  project.getRepositoryStudy();
                     List<ModelDifference> modelDifferences
-                            = differenceMergeService.computeStudyDifferences(project.getStudy(), project.getRepositoryStudy());
+                            = differenceMergeHandler.computeStudyDifferences(study, repositoryStudy);
                     List<ModelDifference> appliedChanges
-                            = differenceMergeService.mergeChangesOntoFirst(project, parameterLinkRegistry,
-                            externalModelFileHandler, modelDifferences);
+                            = differenceMergeHandler.mergeChangesOntoFirst(modelDifferences);
                     if (modelDifferences.size() > 0) { // not all changes were applied
                         openDiffView();
                     }

@@ -23,12 +23,11 @@ import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.service.ModelUpdateService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.io.File;
@@ -42,10 +41,8 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
 
     private static Logger logger = Logger.getLogger(ReferenceSelectorDemo.class);
 
-    private Project project;
-
     private ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
-        project = context.getBean(Project.class);
+        Project project = context.getBean(Project.class);
         project.init("TEST");
         Study study = new Study("TEST");
         Field field = Project.class.getDeclaredField("study");
@@ -82,18 +79,13 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
     @Override
     public void demo(Stage primaryStage) {
         try {
-            ModelUpdateService modelUpdateService = context.getBean(ModelUpdateService.class);
+            ModelUpdateHandler modelUpdateHandler = context.getBean(ModelUpdateHandler.class);
             GuiService guiService = context.getBean(GuiService.class);
-
-            ParameterLinkRegistry parameterLinkRegistry = context.getBean(ParameterLinkRegistry.class);
-            ExternalModelFileHandler externalModelFileHandler = context.getBean(ExternalModelFileHandler.class);
 
             ParameterModel parameterModel = getParameterModel();
 
             System.out.println(parameterModel);
-            modelUpdateService.applyParameterChangesFromExternalModel(project, parameterModel, parameterLinkRegistry,
-                    externalModelFileHandler,
-                    System.out::println);
+            modelUpdateHandler.applyParameterChangesFromExternalModel(parameterModel, System.out::println);
 
             ExternalModelReference valueReference = parameterModel.getValueReference();
             List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();

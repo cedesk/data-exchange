@@ -16,7 +16,6 @@
 
 package ru.skoltech.cedl.dataexchange;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
@@ -28,23 +27,37 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.revision.ExternalModelRepository;
 import ru.skoltech.cedl.dataexchange.repository.revision.SystemModelRepository;
+import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+
+import static org.junit.Assert.*;
 
 /**
  * Created by D.Knoll on 02.07.2015.
  */
 public class ExternalModelTest extends AbstractApplicationContextTest {
 
+    private Project project;
+    private ModelUpdateHandler modelUpdateHandler;
     private SystemModelRepository systemModelRepository;
     private ExternalModelRepository externalModelRepository;
 
     @Before
     public void prepare() {
+        project = context.getBean(Project.class);
+        modelUpdateHandler = context.getBean(ModelUpdateHandler.class);
         systemModelRepository = context.getBean(SystemModelRepository.class);
         externalModelRepository = context.getBean(ExternalModelRepository.class);
+
+        File file = new File("target/foo.test");
+        if (file.exists()) {
+            boolean deleted = file.delete();
+            assertTrue(deleted);
+        }
     }
 
     @Test()
@@ -56,15 +69,14 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
 
         ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
 
-        System.err.println("before: " + externalModel.getId());
+        assertEquals(0, externalModel.getId());
         ExternalModel externalModel1 = externalModelRepository.saveAndFlush(externalModel);
         long pk = externalModel.getId();
-        System.err.println("after: " + pk);
-        System.err.println("second: " + externalModel1.getId());
+        assertNotEquals(0, pk);
 
         ExternalModel externalModel2 = externalModelRepository.findOne(pk);
 
-        Assert.assertArrayEquals(externalModel1.getAttachment(), externalModel2.getAttachment());
+        assertArrayEquals(externalModel1.getAttachment(), externalModel2.getAttachment());
     }
 
     @Test
@@ -87,27 +99,80 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         SystemModel systemModel = systemModelRepository.saveAndFlush(testSat);
 
         ExternalModelReference valueReference = systemModel.getParameters().get(0).getValueReference();
-        Assert.assertEquals(externalModelReference, valueReference);
+        assertEquals(externalModelReference, valueReference);
 
-        ExternalModel extMo = ExternalModelFileHandler.newFromFile(file, testSat);
-        valueReference.setExternalModel(extMo);
+        ExternalModel newExternalModel = ExternalModelFileHandler.newFromFile(file, testSat);
+        valueReference.setExternalModel(newExternalModel);
 
         systemModelRepository.saveAndFlush(systemModel);
 
-        SystemModel systemModel1 = systemModelRepository.findOne(testSat.getId());
+        SystemModel savedSystemModel = systemModelRepository.findOne(testSat.getId());
 
-        ExternalModelReference reference = systemModel1.getParameters().get(0).getValueReference();
-        Assert.assertEquals(valueReference, reference);
-        ExternalModelReference exportReference = systemModel1.getParameters().get(0).getExportReference();
-        Assert.assertNotEquals(reference, exportReference);
+        ExternalModelReference savedValueReference = savedSystemModel.getParameters().get(0).getValueReference();
+        assertEquals(valueReference, savedValueReference);
+        ExternalModelReference savedExportReference = savedSystemModel.getParameters().get(0).getExportReference();
+        assertNotEquals(savedValueReference, savedExportReference);
     }
 
     @Test
+    public void testExternalModelReferencesChange() throws URISyntaxException, IOException {
+        File file = new File(this.getClass().getResource("/attachment.xls").toURI());
+
+        SystemModel testSat = new SystemModel("testSat");
+        systemModelRepository.saveAndFlush(testSat);
+
+        ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
+        ExternalModelReference externalModelReference = new ExternalModelReference();
+        externalModelReference.setExternalModel(externalModel);
+        externalModelReference.setTarget("AA11");
+
+        Double value = 592.65;
+        ParameterModel parameterModel = new ParameterModel("testPar", value);
+        parameterModel.setValueSource(ParameterValueSource.REFERENCE);
+        parameterModel.setValueReference(externalModelReference);
+
+        testSat.addParameter(parameterModel);
+        SystemModel systemModel = systemModelRepository.saveAndFlush(testSat);
+
+        assertNotNull(systemModel);
+        parameterModel = systemModel.getParameters().get(0);
+        assertNotNull(parameterModel);
+        assertEquals(ParameterValueSource.REFERENCE, parameterModel.getValueSource());
+        assertEquals(value, Double.valueOf(parameterModel.getEffectiveValue()));
+
+        ExternalModelReference valueReference = systemModel.getParameters().get(0).getValueReference();
+        assertEquals(externalModelReference, valueReference);
+
+//        project.addExternalModelChangeObserver((o, arg) -> {
+//            ExternalModel externalModel = (ExternalModel) arg;
+//            try {
+//                modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel,
+//                        Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ModelEditingController.ParameterUpdateListener());
+//            } catch (ExternalModelException e) {
+//                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
+//            }
+//        });
+
+        System.out.println(parameterModel.getEffectiveValue());
+
+//        modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel,
+//                parameterLinkRegistry, externalModelFileHandler,
+//                Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
+
+
+    }
+
+
+
+        @Test
     public void testSetLastModified() throws IOException {
         long time = 1316137362000L;
         File file = new File("target/foo.test");
-        file.createNewFile();
-        file.setLastModified(time);
-        Assert.assertEquals(time, file.lastModified());
+        boolean created = file.createNewFile();
+        boolean modified = file.setLastModified(time);
+
+        assertTrue(created);
+        assertTrue(modified);
+        assertEquals(time, file.lastModified());
     }
 }

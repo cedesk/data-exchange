@@ -17,6 +17,7 @@
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -31,11 +32,9 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.service.DifferenceMergeService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceMergeHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 
 import java.net.URL;
@@ -56,10 +55,8 @@ public class DiffController implements Initializable, Displayable, Closeable {
     private TableColumn<ModelDifference, String> elementTypeColumn;
 
     private Project project;
+    private DifferenceMergeHandler differenceMergeHandler;
     private UserRoleManagementService userRoleManagementService;
-    private DifferenceMergeService differenceMergeService;
-    private ParameterLinkRegistry parameterLinkRegistry;
-    private ExternalModelFileHandler externalModelFileHandler;
     private Executor executor;
     private StatusLogger statusLogger;
 
@@ -69,20 +66,12 @@ public class DiffController implements Initializable, Displayable, Closeable {
         this.project = project;
     }
 
+    public void setDifferenceMergeHandler(DifferenceMergeHandler differenceMergeHandler) {
+        this.differenceMergeHandler = differenceMergeHandler;
+    }
+
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
-    }
-
-    public void setDifferenceMergeService(DifferenceMergeService differenceMergeService) {
-        this.differenceMergeService = differenceMergeService;
-    }
-
-    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
-        this.parameterLinkRegistry = parameterLinkRegistry;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setExecutor(Executor executor) {
@@ -138,8 +127,8 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     public void acceptAll() {
         try {
-            List<ModelDifference> appliedDifferences = differenceMergeService.mergeChangesOntoFirst(project, parameterLinkRegistry,
-                    externalModelFileHandler, project.getModelDifferences());
+            ObservableList<ModelDifference> modelDifferences = project.getModelDifferences();
+            List<ModelDifference> appliedDifferences = differenceMergeHandler.mergeChangesOntoFirst(modelDifferences);
             if (appliedDifferences.size() > 0) {
                 project.markStudyModified();
             }
@@ -153,8 +142,8 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     public void revertAll() {
         try {
-            List<ModelDifference> appliedDifferences = differenceMergeService.revertChangesOnFirst(project,
-                    parameterLinkRegistry, externalModelFileHandler, project.getModelDifferences());
+            ObservableList<ModelDifference> modelDifferences = project.getModelDifferences();
+            List<ModelDifference> appliedDifferences = differenceMergeHandler.revertChangesOnFirst(modelDifferences);
             if (project.getModelDifferences().size() == 0) {
                 this.close();
             } else if (appliedDifferences.size() > 0) {
@@ -179,9 +168,9 @@ public class DiffController implements Initializable, Displayable, Closeable {
         boolean success = false;
         try {
             if (modelDifference.isMergeable()) {
-                success = differenceMergeService.mergeOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
+                success = differenceMergeHandler.mergeOne(modelDifference);
             } else if (modelDifference.isRevertible()) {
-                success = differenceMergeService.revertOne(project, parameterLinkRegistry, externalModelFileHandler, modelDifference);
+                success = differenceMergeHandler.revertOne(modelDifference);
             }
         } catch (MergeException me) {
             statusLogger.error(me.getMessage());

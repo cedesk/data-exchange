@@ -43,10 +43,12 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.service.*;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.ParameterDifferenceService;
+import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
@@ -110,14 +112,12 @@ public class ParameterEditorController implements Initializable, Displayable {
     private HBox exportSelectorGroup;
 
     private Project project;
-    private ActionLogger actionLogger;
-    private GuiService guiService;
-    private ModelUpdateService modelUpdateService;
-    private UnitManagementService unitManagementService;
+    private ModelUpdateHandler modelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
-    private ExternalModelFileHandler externalModelFileHandler;
-    private ExternalModelFileWatcher externalModelFileWatcher;
+    private GuiService guiService;
+    private UnitManagementService unitManagementService;
     private ParameterDifferenceService parameterDifferenceService;
+    private ActionLogger actionLogger;
     private StatusLogger statusLogger;
 
     private ParameterModel editingParameterModel;
@@ -134,36 +134,28 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.project = project;
     }
 
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
-    }
-
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
-    }
-
-    public void setModelUpdateService(ModelUpdateService modelUpdateService) {
-        this.modelUpdateService = modelUpdateService;
-    }
-
-    public void setUnitManagementService(UnitManagementService unitManagementService) {
-        this.unitManagementService = unitManagementService;
+    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
+        this.modelUpdateHandler = modelUpdateHandler;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
-    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
-        this.externalModelFileWatcher = externalModelFileWatcher;
+    public void setUnitManagementService(UnitManagementService unitManagementService) {
+        this.unitManagementService = unitManagementService;
     }
 
     public void setParameterDifferenceService(ParameterDifferenceService parameterDifferenceService) {
         this.parameterDifferenceService = parameterDifferenceService;
+    }
+
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     public void setStatusLogger(StatusLogger statusLogger) {
@@ -375,8 +367,7 @@ public class ParameterEditorController implements Initializable, Displayable {
                 editingParameterModel.setValueReference(valueReference);
                 logger.debug("update parameter value from model");
                 try {
-                    modelUpdateService.applyParameterChangesFromExternalModel(project, editingParameterModel,
-                            parameterLinkRegistry, externalModelFileHandler,
+                    modelUpdateHandler.applyParameterChangesFromExternalModel(editingParameterModel,
                             parameterUpdate -> valueText.setText(convertToText(parameterUpdate.getValue())));
                 } catch (ExternalModelException e) {
                     statusLogger.error(e.getMessage());
@@ -443,7 +434,7 @@ public class ParameterEditorController implements Initializable, Displayable {
             if (exportReference != null && exportReference.getExternalModel() != null) {
                 ExternalModel externalModel = exportReference.getExternalModel();
                 try {
-                    modelUpdateService.applyParameterChangesToExternalModel(project, externalModel, externalModelFileHandler, externalModelFileWatcher);
+                    modelUpdateHandler.applyParameterChangesToExternalModel(externalModel);
                 } catch (ExternalModelException e) {
                     statusLogger.error(e.getMessage());
                     Dialogues.showError("External Model Error", "Failed to export parameter value to external model. \n" + e.getMessage());

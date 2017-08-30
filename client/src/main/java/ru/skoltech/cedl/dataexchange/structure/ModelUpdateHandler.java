@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.service.impl;
+package ru.skoltech.cedl.dataexchange.structure;
 
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
@@ -25,8 +25,6 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.service.ModelUpdateService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 
 import java.io.IOException;
@@ -35,14 +33,34 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Created by D.Knoll on 09.07.2015.
+ * Created by Nikolay Groshkov on 30-Aug-17.
  */
-public class ModelUpdateServiceImpl implements ModelUpdateService {
+public class ModelUpdateHandler {
 
-    private static final Logger logger = Logger.getLogger(ModelUpdateServiceImpl.class);
+    private static final Logger logger = Logger.getLogger(ModelUpdateHandler.class);
 
+    private Project project;
+    private ParameterLinkRegistry parameterLinkRegistry;
+    private ExternalModelFileHandler externalModelFileHandler;
+    private ExternalModelFileWatcher externalModelFileWatcher;
     private ActionLogger actionLogger;
     private ExternalModelAccessorFactory externalModelAccessorFactory;
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
+    }
+
+    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
+        this.externalModelFileWatcher = externalModelFileWatcher;
+    }
 
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
@@ -52,10 +70,7 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
         this.externalModelAccessorFactory = externalModelAccessorFactory;
     }
 
-    @Override
-    public void applyParameterChangesFromExternalModel(Project project, ExternalModel externalModel,
-                                                       ParameterLinkRegistry parameterLinkRegistry,
-                                                       ExternalModelFileHandler externalModelFileHandler,
+    public void applyParameterChangesFromExternalModel(ExternalModel externalModel,
                                                        List<? extends Consumer<ModelUpdate>> modelUpdateListeners,
                                                        Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
@@ -74,7 +89,7 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
                     ExternalModelReference valueReference = parameterModel.getValueReference();
                     if (valueReference != null && valueReference.getExternalModel() != null) {
                         if (externalModel.getName().equals(valueReference.getExternalModel().getName())) {
-                            ParameterUpdate parameterUpdate = getParameterUpdate(project, externalModelFileHandler, parameterModel, valueReference, evaluator);
+                            ParameterUpdate parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
                             if (parameterUpdate != null) {
                                 updates.add(parameterUpdate);
                             }
@@ -104,10 +119,7 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
         }
     }
 
-    @Override
-    public void applyParameterChangesFromExternalModel(Project project, ParameterModel parameterModel,
-                                                       ParameterLinkRegistry parameterLinkRegistry,
-                                                       ExternalModelFileHandler externalModelFileHandler,
+    public void applyParameterChangesFromExternalModel(ParameterModel parameterModel,
                                                        Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
         ParameterUpdate parameterUpdate = null;
 
@@ -118,7 +130,7 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
                 ExternalModel externalModel = valueReference.getExternalModel();
                 ExternalModelEvaluator evaluator = externalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
                 try {
-                    parameterUpdate = getParameterUpdate(project, externalModelFileHandler, parameterModel, valueReference, evaluator);
+                    parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
                 } finally {
                     try {
                         evaluator.close();
@@ -140,9 +152,7 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
         }
     }
 
-    private ParameterUpdate getParameterUpdate(Project project,
-                                               ExternalModelFileHandler externalModelFileHandler,
-                                               ParameterModel parameterModel,
+    private ParameterUpdate getParameterUpdate(ParameterModel parameterModel,
                                                ExternalModelReference valueReference,
                                                ExternalModelEvaluator evaluator) throws ExternalModelException {
         ParameterUpdate parameterUpdate = null;
@@ -165,10 +175,7 @@ public class ModelUpdateServiceImpl implements ModelUpdateService {
         return parameterUpdate;
     }
 
-    @Override
-    public void applyParameterChangesToExternalModel(Project project, ExternalModel externalModel,
-                                                     ExternalModelFileHandler externalModelFileHandler,
-                                                     ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
+    public void applyParameterChangesToExternalModel(ExternalModel externalModel) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
         ExternalModelExporter exporter = externalModelAccessorFactory.getExporter(externalModel, externalModelFileHandler);
