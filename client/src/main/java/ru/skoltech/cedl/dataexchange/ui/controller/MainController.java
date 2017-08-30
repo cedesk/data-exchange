@@ -767,7 +767,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         try {
             StudySettings studySettings = project.getStudy().getStudySettings();
             boolean isSyncDisabled = studySettings == null || !studySettings.getSyncEnabled();
-            boolean isNormalUser = !project.isCurrentAdmin();
+            boolean isNormalUser = !project.checkAdminUser();
             if (isSyncDisabled && isNormalUser) {
                 Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\n" +
                         "Contact the team lead for him to enable it!");
@@ -889,7 +889,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                 userRoleLabel.setStyle("-fx-text-fill: red;");
                 exportMenu.setDisable(true);
             }
-            boolean userIsAdmin = project.isCurrentAdmin();
+            boolean userIsAdmin = project.checkAdminUser();
             deleteMenu.setDisable(!userIsAdmin);
             usersMenu.setDisable(!userIsAdmin);
             tagMenu.setDisable(!userIsAdmin);

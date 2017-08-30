@@ -49,25 +49,18 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
 
     @FXML
     private TitledPane teamSettingsPane;
-
     @FXML
     private TextField projectDirectoryTextField;
-
     @FXML
     private TextField projectNameTextField;
-
     @FXML
     private CheckBox syncEnabledCheckBox;
-
     @FXML
     private CheckBox projectUseOsUserCheckBox;
-
     @FXML
     private TextField projectUserNameText;
-
     @FXML
     private CheckBox projectLastAutoloadCheckBox;
-
     @FXML
     private Button saveButton;
 
@@ -149,7 +142,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
 
     private StudySettings studySettings() {
         if (project != null && project.getStudy() != null) {
-            if (project.isCurrentAdmin()) {
+            if (project.checkAdminUser()) {
                 return project.getStudy().getStudySettings();
             }
         }

@@ -87,7 +87,6 @@ public class Project {
     private AtomicInteger latestRevisionNumber = new AtomicInteger();
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
 
-    private User currentUser;
     private UserManagement userManagement;
     private UnitManagement unitManagement;
 
@@ -218,19 +217,33 @@ public class Project {
     }
 
     public User getUser() {
-        if (currentUser == null) { // caching
-            String userName = applicationSettings.getProjectUserName();
-            UserManagement userManagement = this.getUserManagement();
-            currentUser = userManagementService.obtainUser(userManagement, userName);
-            if (currentUser == null) {
-                boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
-                userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
-                logger.warn("User not found in user management. Assuming " + userName + "!");
-                currentUser = userManagementService.obtainUser(userManagement, userName);
-                Objects.requireNonNull(currentUser);
-            }
+        String userName = applicationSettings.getProjectUserName();
+        UserManagement userManagement = this.getUserManagement();
+        User user = userManagementService.obtainUser(userManagement, userName);
+        if (user == null) {
+            boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
+            userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
+            logger.warn("User not found in user management. Assuming " + userName + "!");
+            user = userManagementService.obtainUser(userManagement, userName);
+            Objects.requireNonNull(user);
         }
-        return currentUser;
+        return user;
+    }
+
+    public boolean checkUser() {
+        String userName = applicationSettings.getProjectUserName();
+        if (userName == null) {
+            boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
+            userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
+        }
+        UserManagement userManagement = this.getUserManagement();
+        return userManagementService.checkUserName(userManagement, userName);
+    }
+
+    public boolean checkAdminUser() {
+        User user = this.getUser();
+        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
+        return userRoleManagementService.checkUserAdmin(userRoleManagement, user);
     }
 
     public UserManagement getUserManagement() {
@@ -250,11 +263,6 @@ public class Project {
         this.study.setUserRoleManagement(userRoleManagement);
         studyService.relinkStudySubSystems(study);
         // TODO: update user information on ui
-    }
-
-    public boolean isCurrentAdmin() {
-        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
-        return userRoleManagementService.checkUserAdmin(userRoleManagement, getUser());
     }
 
     public List<Discipline> getCurrentUserDisciplines() {
@@ -341,17 +349,6 @@ public class Project {
             return;
         }
         executor.execute(this::loadRepositoryStudy);
-    }
-
-    public boolean checkUser() {
-        String userName = applicationSettings.getProjectUserName();
-        if (userName == null) {
-            boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
-            userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
-        }
-        currentUser = null; // make sure next getUser retrieves the user from settings
-        UserManagement userManagement = this.getUserManagement();
-        return userManagementService.checkUserName(userManagement, userName);
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {
@@ -658,7 +655,7 @@ public class Project {
 
         canNew.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
         canLoad.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
-        boolean isAdmin = isCurrentAdmin();
+        boolean isAdmin = checkAdminUser();
         boolean isSyncEnabled = !isAdmin && studySettings == null || studySettings.getSyncEnabled();
         boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
         canSync.setValue(isSyncEnabled && isSavePossible);
@@ -676,7 +673,6 @@ public class Project {
         return "Project{" +
                 "repositoryStateMachine=" + repositoryStateMachine +
                 ", projectName='" + projectName + '\'' +
-                ", currentUser=" + currentUser +
                 ", latestRevisionNumber=" + latestRevisionNumber +
                 '}';
     }
