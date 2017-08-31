@@ -37,8 +37,8 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
@@ -64,11 +64,12 @@ public class ExternalModelEditorController implements Initializable {
     private VBox externalModelViewContainer;
 
     private Project project;
-    private ActionLogger actionLogger;
+    private ExternalModelAccessorFactory externalModelAccessorFactory;
+    private ModelUpdateHandler modelUpdateHandler;
     private GuiService guiService;
     private FileStorageService fileStorageService;
-    private ModelUpdateHandler modelUpdateHandler;
-    private ExternalModelAccessorFactory externalModelAccessorFactory;
+    private ExternalModelFileStorageService externalModelFileStorageService;
+    private ActionLogger actionLogger;
     private StatusLogger statusLogger;
 
     private ModelNode modelNode;
@@ -80,8 +81,12 @@ public class ExternalModelEditorController implements Initializable {
         this.project = project;
     }
 
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
+    public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
+        this.externalModelAccessorFactory = externalModelAccessorFactory;
+    }
+
+    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
+        this.modelUpdateHandler = modelUpdateHandler;
     }
 
     public void setGuiService(GuiService guiService) {
@@ -92,12 +97,12 @@ public class ExternalModelEditorController implements Initializable {
         this.fileStorageService = fileStorageService;
     }
 
-    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
-        this.modelUpdateHandler = modelUpdateHandler;
+    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
+        this.externalModelFileStorageService = externalModelFileStorageService;
     }
 
-    public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
-        this.externalModelAccessorFactory = externalModelAccessorFactory;
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     public void setStatusLogger(StatusLogger statusLogger) {
@@ -132,7 +137,7 @@ public class ExternalModelEditorController implements Initializable {
                     Dialogues.showWarning("Duplicate external model name", "This node already has an attachment with the same name!");
                 } else {
                     try {
-                        ExternalModel externalModel = ExternalModelFileHandler.newFromFile(externalModelFile, modelNode);
+                        ExternalModel externalModel = externalModelFileStorageService.createExternalModelFromFile(externalModelFile, modelNode);
                         modelNode.addExternalModel(externalModel);
                         this.renderExternalModelView(externalModel);
                         Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
@@ -207,7 +212,7 @@ public class ExternalModelEditorController implements Initializable {
             String fileName = externalModelFile.getName();
             if (externalModelFile.isFile() && externalModelAccessorFactory.hasEvaluator(fileName)) {
                 try {
-                    ExternalModelFileHandler.readAttachmentFromFile(externalModel, externalModelFile);
+                    externalModelFileStorageService.readExternalModelAttachmentFromFile(externalModelFile, externalModel);
                     externalModel.setName(fileName);
                     Platform.runLater(ExternalModelEditorController.this::updateView);
                     Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");

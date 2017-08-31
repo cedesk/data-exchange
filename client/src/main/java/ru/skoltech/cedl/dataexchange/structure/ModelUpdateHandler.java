@@ -158,7 +158,7 @@ public class ModelUpdateHandler {
         String valueReferenceString = valueReference.toString();
         String nodePath = parameterModel.getNodePath();
         try {
-            Double value = evaluator.getValue(project, externalModelFileHandler, valueReference.getTarget());
+            Double value = evaluator.getValue(externalModelFileHandler, valueReference.getTarget());
             if (Double.isNaN(value)) {
                 throw new ExternalModelException("invalid value for parameter '" + nodePath
                         + "' from '" + valueReferenceString + "'");
@@ -185,7 +185,7 @@ public class ModelUpdateHandler {
                 String target = parameterModel.getExportReference().getTarget();
                 if (target != null && !target.isEmpty()) {
                     try {
-                        exporter.setValue(project, externalModelFileHandler, target, parameterModel.getEffectiveValue()); // TODO: document behavior
+                        exporter.setValue(externalModelFileHandler, target, parameterModel.getEffectiveValue()); // TODO: document behavior
                     } catch (ExternalModelException e) {
                         exporter.flushModifications(project, externalModelFileWatcher);
                         logger.warn("failed to export parameter " + parameterModel.getNodePath(), e);

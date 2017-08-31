@@ -31,8 +31,8 @@ import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 
 import javax.xml.bind.JAXBContext;
@@ -56,6 +56,9 @@ public class FileStorageServiceImpl implements FileStorageService {
             SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class,
             ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
     private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
+
+    private ExternalModelFileStorageService externalModelFileStorageService;
+
     private final File applicationDirectory;
 
     /**
@@ -81,6 +84,10 @@ public class FileStorageServiceImpl implements FileStorageService {
                 logger.error("unable to create application directory: " + this.applicationDirectory.getAbsolutePath());
             }
         }
+    }
+
+    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
+        this.externalModelFileStorageService = externalModelFileStorageService;
     }
 
     @Override
@@ -221,10 +228,10 @@ public class FileStorageServiceImpl implements FileStorageService {
         Iterator<ExternalModel> iterator = systemModel.externalModelsIterator();
         while (iterator.hasNext()) {
             ExternalModel externalModel = iterator.next();
-            String nodePath = ExternalModelFileHandler.makePath(externalModel);
+            String nodePath = externalModelFileStorageService.makeExternalModelPath(externalModel);
             File nodeDir = new File(outputFolder, nodePath);
             this.createDirectory(nodeDir);
-            ExternalModelFileHandler.toFile(externalModel, nodeDir);
+            externalModelFileStorageService.storeExternalModel(externalModel, nodeDir);
         }
     }
 
@@ -267,11 +274,11 @@ public class FileStorageServiceImpl implements FileStorageService {
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
             externalModel.setParent(modelNode);
             try {
-                String nodePath = ExternalModelFileHandler.makePath(externalModel);
+                String nodePath = externalModelFileStorageService.makeExternalModelPath(externalModel);
                 File nodeDir = new File(inputFolder, nodePath);
                 File file = new File(nodeDir, externalModel.getName());
                 if (file.exists()) {
-                    ExternalModelFileHandler.readAttachmentFromFile(externalModel, file);
+                    externalModelFileStorageService.readExternalModelAttachmentFromFile(file, externalModel);
                 } else {
                     logger.error("external model file not found!");
                 }

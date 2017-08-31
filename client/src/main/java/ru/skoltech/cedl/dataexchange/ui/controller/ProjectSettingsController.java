@@ -213,7 +213,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
     }
 
     public void cleanupProjectCache() {
-        externalModelFileHandler.cleanupCache(project);
+        externalModelFileHandler.cleanupCache();
     }
 
 }

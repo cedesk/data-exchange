@@ -45,10 +45,10 @@ public class ExcelModelAccessor {
         return WorkbookFactory.KNOWN_FILE_EXTENSIONS;
     }
 
-    protected SpreadsheetCellValueAccessor getSpreadsheetAccessor(Project project, ExternalModelFileHandler externalModelFileHandler) throws ExternalModelException {
+    protected SpreadsheetCellValueAccessor getSpreadsheetAccessor(ExternalModelFileHandler externalModelFileHandler) throws ExternalModelException {
         if (spreadsheetAccessor == null) {
             try {
-                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
+                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 String fileName = externalModel.getName();
                 spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName);
             } catch (Throwable e) {

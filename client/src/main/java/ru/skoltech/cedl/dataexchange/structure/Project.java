@@ -36,7 +36,10 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
@@ -69,6 +72,7 @@ public class Project {
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ExternalModelFileHandler externalModelFileHandler;
     private FileStorageService fileStorageService;
+    private ExternalModelFileStorageService externalModelFileStorageService;
     private StudyService studyService;
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
@@ -120,6 +124,10 @@ public class Project {
 
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
+    }
+
+    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
+        this.externalModelFileStorageService = externalModelFileStorageService;
     }
 
     public void setStudyService(StudyService studyService) {
@@ -290,7 +298,7 @@ public class Project {
     }
 
     public void addExternalModelFileWatcher(ExternalModel externalModel) {
-        externalModelFileWatcher.add(this, externalModel);
+        externalModelFileWatcher.add(externalModel);
     }
 
     public BooleanProperty canLoadProperty() {
@@ -510,11 +518,12 @@ public class Project {
      */
     public void updateExternalModelsInStudy() {
         for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
-            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(this, externalModel);
+            ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
             if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
                 logger.debug("updating " + externalModel.getNodePath() + " from file");
                 try {
-                    ExternalModelFileHandler.readAttachmentFromFile(this, externalModel);
+                    File file = externalModelFileHandler.getFilePathInCache(externalModel);
+                    externalModelFileStorageService.readExternalModelAttachmentFromFile(file, externalModel);
                 } catch (IOException e) {
                     logger.error("error updating external model from file!", e);
                 }
@@ -554,7 +563,7 @@ public class Project {
             ModelNode modelNode = externalModel.getParent();
 
             // check cache state and add file watcher if cached
-            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(this, externalModel);
+            ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
             if (cacheState != ExternalModelCacheState.NOT_CACHED) {
                 addExternalModelFileWatcher(externalModel);
             }
@@ -625,13 +634,13 @@ public class Project {
      */
     private void updateExternalModelStateInCache() {
         for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
-            ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(this, externalModel);
+            ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
             if (cacheState != ExternalModelCacheState.NOT_CACHED) {
                 logger.debug("timestamping " + externalModel.getNodePath());
-                ExternalModelFileHandler.updateCheckoutTimestamp(this, externalModel);
+                externalModelFileHandler.updateCheckoutTimestamp(externalModel);
                 if (logger.isDebugEnabled()) {
                     String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
-                    long checkoutTime = ExternalModelFileHandler.getCheckoutTime(this, externalModel);
+                    long checkoutTime = externalModelFileHandler.getCheckoutTime(externalModel);
                     String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
                     logger.debug("stored external model '" + externalModel.getName() +
                             "' (model: " + modelModification + ", file: " + fileModification + ")");

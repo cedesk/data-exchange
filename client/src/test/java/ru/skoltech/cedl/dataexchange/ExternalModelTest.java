@@ -23,12 +23,10 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.revision.ExternalModelRepository;
 import ru.skoltech.cedl.dataexchange.repository.revision.SystemModelRepository;
-import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
-import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,17 +39,15 @@ import static org.junit.Assert.*;
  */
 public class ExternalModelTest extends AbstractApplicationContextTest {
 
-    private Project project;
-    private ModelUpdateHandler modelUpdateHandler;
     private SystemModelRepository systemModelRepository;
     private ExternalModelRepository externalModelRepository;
+    private ExternalModelFileStorageService externalModelFileStorageService;
 
     @Before
     public void prepare() {
-        project = context.getBean(Project.class);
-        modelUpdateHandler = context.getBean(ModelUpdateHandler.class);
         systemModelRepository = context.getBean(SystemModelRepository.class);
         externalModelRepository = context.getBean(ExternalModelRepository.class);
+        externalModelFileStorageService = context.getBean(ExternalModelFileStorageService.class);
 
         File file = new File("target/foo.test");
         if (file.exists()) {
@@ -67,7 +63,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         SystemModel testSat = new SystemModel("testSat");
         systemModelRepository.saveAndFlush(testSat);
 
-        ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
+        ExternalModel externalModel = externalModelFileStorageService.createExternalModelFromFile(file, testSat);
 
         assertEquals(0, externalModel.getId());
         ExternalModel externalModel1 = externalModelRepository.saveAndFlush(externalModel);
@@ -86,7 +82,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         SystemModel testSat = new SystemModel("testSat");
         systemModelRepository.saveAndFlush(testSat);
 
-        ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
+        ExternalModel externalModel = externalModelFileStorageService.createExternalModelFromFile(file, testSat);
         ExternalModelReference externalModelReference = new ExternalModelReference();
         externalModelReference.setExternalModel(externalModel);
         externalModelReference.setTarget("AA11");
@@ -101,7 +97,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         ExternalModelReference valueReference = systemModel.getParameters().get(0).getValueReference();
         assertEquals(externalModelReference, valueReference);
 
-        ExternalModel newExternalModel = ExternalModelFileHandler.newFromFile(file, testSat);
+        ExternalModel newExternalModel = externalModelFileStorageService.createExternalModelFromFile(file, testSat);
         valueReference.setExternalModel(newExternalModel);
 
         systemModelRepository.saveAndFlush(systemModel);
@@ -121,7 +117,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         SystemModel testSat = new SystemModel("testSat");
         systemModelRepository.saveAndFlush(testSat);
 
-        ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
+        ExternalModel externalModel = externalModelFileStorageService.createExternalModelFromFile(file, testSat);
         ExternalModelReference externalModelReference = new ExternalModelReference();
         externalModelReference.setExternalModel(externalModel);
         externalModelReference.setTarget("AA11");

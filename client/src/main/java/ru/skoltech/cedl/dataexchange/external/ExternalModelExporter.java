@@ -25,7 +25,7 @@ import java.io.Closeable;
  */
 public interface ExternalModelExporter extends Closeable {
 
-    void setValue(Project project, ExternalModelFileHandler externalModelFileHandler, String target, Double value) throws ExternalModelException;
+    void setValue(ExternalModelFileHandler externalModelFileHandler, String target, Double value) throws ExternalModelException;
 
     void flushModifications(Project project, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException;
 }

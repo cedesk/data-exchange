@@ -79,14 +79,15 @@
         <property name="externalModelAccessorFactory" ref="externalModelAccessorFactory"/>
         <property name="guiService" ref="guiService"/>
         <property name="fileStorageService" ref="fileStorageService"/>
+        <property name="externalModelFileStorageService" ref="externalModelFileStorageService"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelController" scope="prototype">
         <property name="project" ref="project"/>
-        <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
+        <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
@@ -104,6 +105,7 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ConsistencyController">
         <property name="project" ref="project"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
     </bean>
 
@@ -175,7 +177,6 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ReferenceSelectorController" scope="prototype">
-        <property name="project" ref="project"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
     </bean>
 

@@ -592,7 +592,7 @@ public class ModelEditingController implements Initializable {
         }
         String parameterName = null;
         if (WorkbookFactory.isWorkbookFile(filename)) {
-            try (InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel)) {
+            try (InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel)) {
                 String sheetName = nameCellCoordinates.getSheetName();
                 SpreadsheetCellValueAccessor cellValueAccessor = new SpreadsheetCellValueAccessor(inputStream, filename);
                 parameterName = cellValueAccessor.getValueAsString(nameCellCoordinates);

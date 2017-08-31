@@ -22,11 +22,11 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
+import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
@@ -40,37 +40,6 @@ import java.util.List;
 public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
 
     private static Logger logger = Logger.getLogger(ReferenceSelectorDemo.class);
-
-    private ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
-        Project project = context.getBean(Project.class);
-        project.init("TEST");
-        Study study = new Study("TEST");
-        Field field = Project.class.getDeclaredField("study");
-        field.setAccessible(true);
-        field.set(project, study);
-
-        SystemModel systemModel = new SystemModel("ROOT-SYS");
-        study.setSystemModel(systemModel);
-        ParameterModel parameterModel = new ParameterModel("param", 123.45);
-        systemModel.addParameter(parameterModel);
-        parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-
-        try {
-            SystemModel testSat = new SystemModel("testSat");
-            File file = new File(ReferenceSelectorDemo.class.getResource("/simple-model.xls").toURI());
-            ExternalModel externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
-            systemModel.addExternalModel(externalModel);
-            parameterModel.setValueReference(new ExternalModelReference(externalModel, "G4"));
-
-            file = new File(ReferenceSelectorDemo.class.getResource("/attachment.xls").toURI());
-            externalModel = ExternalModelFileHandler.newFromFile(file, testSat);
-            systemModel.addExternalModel(externalModel);
-        } catch (Exception e) {
-            logger.error(e);
-            System.exit(-1);
-        }
-        return parameterModel;
-    }
 
     public static void main(String[] args) {
         launch(args);
@@ -103,5 +72,37 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
             primaryStage.fireEvent(new WindowEvent(primaryStage, WindowEvent.WINDOW_CLOSE_REQUEST));
 
         }
+    }
+
+    private ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
+        Project project = context.getBean(Project.class);
+        project.init("TEST");
+        Study study = new Study("TEST");
+        Field field = Project.class.getDeclaredField("study");
+        field.setAccessible(true);
+        field.set(project, study);
+
+        SystemModel systemModel = new SystemModel("ROOT-SYS");
+        study.setSystemModel(systemModel);
+        ParameterModel parameterModel = new ParameterModel("param", 123.45);
+        systemModel.addParameter(parameterModel);
+        parameterModel.setValueSource(ParameterValueSource.REFERENCE);
+
+        try {
+            ExternalModelFileStorageService externalModelFileStorageService = context.getBean(ExternalModelFileStorageService.class);
+            SystemModel testSat = new SystemModel("testSat");
+            File file = new File(ReferenceSelectorDemo.class.getResource("/simple-model.xls").toURI());
+            ExternalModel externalModel = externalModelFileStorageService.createExternalModelFromFile(file, testSat);
+            systemModel.addExternalModel(externalModel);
+            parameterModel.setValueReference(new ExternalModelReference(externalModel, "G4"));
+
+            file = new File(ReferenceSelectorDemo.class.getResource("/attachment.xls").toURI());
+            externalModel = externalModelFileStorageService.createExternalModelFromFile(file, testSat);
+            systemModel.addExternalModel(externalModel);
+        } catch (Exception e) {
+            logger.error(e);
+            System.exit(-1);
+        }
+        return parameterModel;
     }
 }

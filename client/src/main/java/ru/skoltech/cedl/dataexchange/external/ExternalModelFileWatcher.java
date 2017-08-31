@@ -20,7 +20,6 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.service.DirectoryWatchService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,16 +37,22 @@ public class ExternalModelFileWatcher extends Observable {
 
     private static Logger logger = Logger.getLogger(ExternalModelFileWatcher.class);
 
+    private ExternalModelFileHandler externalModelFileHandler;
     private DirectoryWatchService directoryWatchService;
     private Map<File, ExternalModel> watchedExternalModels = new ConcurrentHashMap<>();
     private Set<File> maskedFiles = new ConcurrentSkipListSet<>();
+
 
     public void setDirectoryWatchService(DirectoryWatchService directoryWatchService) {
         this.directoryWatchService = directoryWatchService;
     }
 
-    public void add(Project project, ExternalModel externalModel) {
-        File file = ExternalModelFileHandler.getFilePathInCache(project, externalModel);
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
+    }
+
+    public void add(ExternalModel externalModel) {
+        File file = externalModelFileHandler.getFilePathInCache(externalModel);
         watchedExternalModels.put(file, externalModel);
         String filePattern = file.getName();
         try {

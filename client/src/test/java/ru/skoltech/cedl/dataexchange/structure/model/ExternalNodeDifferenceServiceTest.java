@@ -21,9 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.revision.SystemModelRepository;
+import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 
@@ -51,12 +51,13 @@ public class ExternalNodeDifferenceServiceTest extends AbstractApplicationContex
     public void prepare() throws IOException, URISyntaxException {
         nodeDifferenceService = context.getBean(NodeDifferenceService.class);
         systemModelRepository = context.getBean(SystemModelRepository.class);
+        ExternalModelFileStorageService externalModelFileStorageService = context.getBean(ExternalModelFileStorageService.class);
 
         baseSystemModel = new SystemModel();
         baseSystemModel.setName("SM");
 
         File externalModelFile = new File(this.getClass().getResource("/attachment.xls").toURI());
-        extMod = ExternalModelFileHandler.newFromFile(externalModelFile, baseSystemModel);
+        extMod = externalModelFileStorageService.createExternalModelFromFile(externalModelFile, baseSystemModel);
     }
 
     @Test

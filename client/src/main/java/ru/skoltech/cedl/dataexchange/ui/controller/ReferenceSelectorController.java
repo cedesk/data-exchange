@@ -40,7 +40,6 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetGridViewFactory;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,7 +73,6 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
     @FXML
     private SpreadsheetView spreadsheetView;
 
-    private Project project;
     private ExternalModelFileHandler externalModelFileHandler;
 
     private ExternalModelReference reference;
@@ -92,10 +90,6 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
     public ReferenceSelectorController(ExternalModelReference reference, List<ExternalModel> externalModels) {
         this.reference = reference != null ? reference : new ExternalModelReference();
         this.externalModels = externalModels;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
     }
 
     public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
@@ -183,7 +177,7 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
     private List<String> getSheetNames() {
         List<String> sheetNames = new LinkedList<>();
         try {
-            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
+            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
             sheetNames = WorkbookFactory.getSheetNames(inputStream, externalModel.getName());
             Predicate<String> nameTest = SHEET_NAME_PATTERN.asPredicate();
             List<String> validSheets = new ArrayList<>(sheetNames.size());
@@ -225,7 +219,7 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
     private void refreshTable() {
         try {
             if (externalModel.getAttachment() != null) {
-                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
+                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 String fileName = externalModel.getName();
                 // TODO: generalize approach for other external model types, now only for SPREADSHEETS
                 // TODO: handle invalid sheetname

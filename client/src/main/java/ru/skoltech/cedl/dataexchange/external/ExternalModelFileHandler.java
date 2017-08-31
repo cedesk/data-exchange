@@ -20,13 +20,15 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelTreeIterator;
-import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
@@ -41,6 +43,7 @@ public class ExternalModelFileHandler {
 
     private Project project;
     private FileStorageService fileStorageService;
+    private ExternalModelFileStorageService externalModelFileStorageService;
 
     private Set<ExternalModel> changedExternalModels = new HashSet<>();
 
@@ -56,44 +59,29 @@ public class ExternalModelFileHandler {
         this.fileStorageService = fileStorageService;
     }
 
-    public static ExternalModel newFromFile(File file, ModelNode parent) throws IOException {
-        Path path = Paths.get(file.getAbsolutePath());
-        String fileName = file.getName();
-        ExternalModel externalModel = new ExternalModel();
-        externalModel.setName(fileName);
-        externalModel.setAttachment(Files.readAllBytes(path));
-        externalModel.setLastModification(file.lastModified());
-        externalModel.setParent(parent);
-        return externalModel;
+    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
+        this.externalModelFileStorageService = externalModelFileStorageService;
     }
 
-    public static ExternalModel readAttachmentFromFile(Project project, ExternalModel externalModel) throws IOException {
-        File file = getFilePathInCache(project, externalModel);
-        Path path = Paths.get(file.getAbsolutePath());
-        externalModel.setAttachment(Files.readAllBytes(path));
-        externalModel.setLastModification(file.lastModified());
-        return externalModel;
+    /**
+     * This method only forms the full path where the external model would be cached.<br/>
+     * It does not actually assure the file nor the folder exist.
+     *
+     * @param externalModel
+     * @return a file of the location where the external model would be stored.
+     */
+    public File getFilePathInCache(ExternalModel externalModel) {
+        String nodePath = externalModelFileStorageService.makeExternalModelPath(externalModel);
+        File projectDataDir = project.getProjectDataDir();
+        File nodeDir = new File(projectDataDir, nodePath);
+        String rectifiedFileName = externalModel.getId() + "_" + externalModel.getName().replace(' ', '_');
+        return new File(nodeDir, rectifiedFileName);
     }
 
-    public static ExternalModel readAttachmentFromFile(ExternalModel externalModel, File file) throws IOException {
-        Path path = Paths.get(file.getAbsolutePath());
-        externalModel.setAttachment(Files.readAllBytes(path));
-        externalModel.setLastModification(file.lastModified());
-        return externalModel;
-    }
-
-    public static File toFile(ExternalModel externalModel, File folder) throws IOException {
-        Objects.requireNonNull(externalModel);
-        Objects.requireNonNull(folder);
-        File file = new File(folder, externalModel.getName());
-        Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
-        return file;
-    }
-
-    public static ExternalModelCacheState getCacheState(Project project, ExternalModel externalModel) {
+    public ExternalModelCacheState getCacheState(ExternalModel externalModel) {
         Objects.requireNonNull(externalModel);
         ExternalModelCacheState cacheState = ExternalModelCacheState.NOT_CACHED;
-        File modelFile = getFilePathInCache(project, externalModel);
+        File modelFile = this.getFilePathInCache(externalModel);
         Long modelLastStored = externalModel.getLastModification();
         if (modelFile.exists() && modelLastStored != null) {
             long checkoutTime = getCheckoutTime(modelFile);
@@ -117,7 +105,7 @@ public class ExternalModelFileHandler {
         return cacheState;
     }
 
-    public static long getCheckoutTime(File file) {
+    private long getCheckoutTime(File file) {
         File tsFile = getTimestampFile(file);
         if (!tsFile.exists()) {
             logger.error("external model is missing checkout timestamp");
@@ -125,34 +113,12 @@ public class ExternalModelFileHandler {
         return tsFile.lastModified();
     }
 
-    private static File getTimestampFile(File file) {
+    private File getTimestampFile(File file) {
         return new File(file.getAbsolutePath() + ".tstamp");
     }
 
-    /**
-     * This method only forms the full path where the external model would be cached.<br/>
-     * It does not actually assure the file nor the folder exist.
-     *
-     * @param externalModel
-     * @return a file of the location where the external model would be stored.
-     */
-    public static File getFilePathInCache(Project project, ExternalModel externalModel) {
-        String nodePath = makePath(externalModel);
-        File projectDataDir = project.getProjectDataDir();
-        File nodeDir = new File(projectDataDir, nodePath);
-        String rectifiedFileName = externalModel.getId() + "_" + externalModel.getName().replace(' ', '_');
-        return new File(nodeDir, rectifiedFileName);
-    }
-
-    public static String makePath(ExternalModel externalModel) {
-        String path = externalModel.getParent().getNodePath();
-        path = path.replace(' ', '_');
-        path = path.replace(ModelNode.NODE_SEPARATOR, File.separator);
-        return path;
-    }
-
-    public static void updateCheckoutTimestamp(Project project, ExternalModel externalModel) {
-        File file = getFilePathInCache(project, externalModel);
+    public void updateCheckoutTimestamp(ExternalModel externalModel) {
+        File file = this.getFilePathInCache(externalModel);
         File tsFile = getTimestampFile(file);
         try {
             if (!tsFile.exists()) {
@@ -167,19 +133,20 @@ public class ExternalModelFileHandler {
         }
     }
 
-    public static long getCheckoutTime(Project project, ExternalModel externalModel) {
-        return getCheckoutTime(getFilePathInCache(project, externalModel));
+    public long getCheckoutTime(ExternalModel externalModel) {
+        File file = this.getFilePathInCache(externalModel);
+        return getCheckoutTime(file);
     }
 
     public void addChangedExternalModel(ExternalModel externalModel) {
         changedExternalModels.add(externalModel);
     }
 
-    public File cacheFile(Project project, ExternalModel externalModel) throws IOException, ExternalModelException {
+    public File cacheFile(ExternalModel externalModel) throws IOException, ExternalModelException {
         Objects.requireNonNull(externalModel);
-        File file = getFilePathInCache(project, externalModel);
+        File file = this.getFilePathInCache(externalModel);
         fileStorageService.createDirectory(file.getParentFile());
-        ExternalModelCacheState state = getCacheState(project, externalModel);
+        ExternalModelCacheState state = getCacheState(externalModel);
         switch (state) {
             case NOT_CACHED:
             case CACHED_OUTDATED: {
@@ -189,7 +156,7 @@ public class ExternalModelFileHandler {
                     if (externalModel.getAttachment() == null)
                         throw new ExternalModelException("external model has empty attachment");
                     Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
-                    updateCheckoutTimestamp(project, externalModel);
+                    updateCheckoutTimestamp(externalModel);
                     project.addExternalModelFileWatcher(externalModel);
                 } else {
                     logger.error("file in local cache (" + file.getPath() + ") is not writable!");
@@ -207,14 +174,15 @@ public class ExternalModelFileHandler {
         return file;
     }
 
-    public void cleanupCache(Project project) {
+    public void cleanupCache() {
         Set<String> toBeKept = new HashSet<>();
         SystemModel systemModel = project.getStudy().getSystemModel();
+        File projectDataDir = project.getProjectDataDir();
         ExternalModelTreeIterator emi = new ExternalModelTreeIterator(systemModel);
         while (emi.hasNext()) {
             ExternalModel em = emi.next();
-            ExternalModelCacheState cacheState = getCacheState(project, em);
-            File emf = getFilePathInCache(project, em);
+            ExternalModelCacheState cacheState = getCacheState(em);
+            File emf = this.getFilePathInCache(em);
             boolean needToKeep = false;
             //if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT ||
             //        cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
@@ -226,7 +194,6 @@ public class ExternalModelFileHandler {
             logger.info("file: '" + emf.getAbsolutePath() + "', [" + cacheState + "], needToKeep: " + needToKeep);
         }
         // go through cache directory, check if to keep, otherwise delete
-        File projectDataDir = project.getProjectDataDir();
         try {
             Files.walk(projectDataDir.toPath(), FileVisitOption.FOLLOW_LINKS).forEach(path -> {
                 File file = path.toFile();
@@ -247,30 +214,30 @@ public class ExternalModelFileHandler {
 
     public File forceCacheUpdate(ExternalModel externalModel) throws IOException {
         Objects.requireNonNull(externalModel);
-        File file = getFilePathInCache(project, externalModel);
+        File file = this.getFilePathInCache(externalModel);
         fileStorageService.createDirectory(file.getParentFile());
-        ExternalModelCacheState state = getCacheState(project, externalModel);
+        ExternalModelCacheState state = getCacheState(externalModel);
         switch (state) {
             case CACHED_MODIFIED_AFTER_CHECKOUT: // overwrite
             case CACHED_CONFLICTING_CHANGES:
                 logger.warn("overwriting cached file: " + file.getAbsolutePath());
                 Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
-                updateCheckoutTimestamp(project, externalModel);
+                updateCheckoutTimestamp(externalModel);
                 break;
             default:
         }
         return file;
     }
 
-    public InputStream getAttachmentAsStream(Project project, ExternalModel externalModel) throws IOException, ExternalModelException {
-        switch (ExternalModelFileHandler.getCacheState(project, externalModel)) {
+    public InputStream getAttachmentAsStream(ExternalModel externalModel) throws IOException, ExternalModelException {
+        switch (this.getCacheState(externalModel)) {
             case CACHED_UP_TO_DATE:
             case CACHED_MODIFIED_AFTER_CHECKOUT:
             case CACHED_CONFLICTING_CHANGES:
-                File cachedFile = getFilePathInCache(project, externalModel);
+                File cachedFile = this.getFilePathInCache(externalModel);
                 return new FileInputStream(cachedFile);
             case CACHED_OUTDATED:
-                File writtenFile = cacheFile(project, externalModel);
+                File writtenFile = cacheFile(externalModel);
                 return new FileInputStream(writtenFile);
             default:
                 if (externalModel.getAttachment() == null)

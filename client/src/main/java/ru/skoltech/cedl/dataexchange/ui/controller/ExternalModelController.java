@@ -93,7 +93,7 @@ public class ExternalModelController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         externalModelNameText.setText(externalModel.getName());
-        File filePathInCache = ExternalModelFileHandler.getFilePathInCache(project, externalModel);
+        File filePathInCache = externalModelFileHandler.getFilePathInCache(externalModel);
         File pathInCache = filePathInCache.getParentFile();
         openExternalButton.addEventFilter(MouseEvent.MOUSE_PRESSED, (MouseEvent event) -> {
             if (event.isSecondaryButtonDown())
@@ -109,7 +109,7 @@ public class ExternalModelController implements Initializable {
 
     public void openExternalModel() {
         try {
-            File file = externalModelFileHandler.cacheFile(project, externalModel);
+            File file = externalModelFileHandler.cacheFile(externalModel);
             openFile(file);
         } catch (ExternalModelException | IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);
@@ -129,7 +129,7 @@ public class ExternalModelController implements Initializable {
         String filename = externalModel.getName();
         if (WorkbookFactory.isWorkbookFile(filename)) {
             try {
-                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(project, externalModel);
+                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
                 Workbook workbook = WorkbookFactory.getWorkbook(inputStream, filename);
                 //SpreadsheetInputOutputExtractorServiceImpl.guessInputSheet(workbook);
                 List<String> sheetNames = WorkbookFactory.getSheetNames(workbook);

@@ -92,9 +92,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
 
         if (!dirPathToListenersMap.containsKey(dir)) {
             // May throw
-            WatchKey key = dir.register(
-                    watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE
-            );
+            WatchKey key = dir.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
 
             watchKeyToDirPathMap.put(key, dir);
             dirPathToListenersMap.put(dir, Collections.newSetFromMap(new ConcurrentHashMap<>()));
@@ -102,11 +100,10 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
 
         dirPathToListenersMap.get(dir).add(listener);
 
-        Set<PathMatcher> patterns = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-        for (String globPattern : globPatterns) {
-            patterns.add(matcherForGlobExpression(globPattern));
-        }
+        Set<PathMatcher> patterns = ConcurrentHashMap.newKeySet();
+        patterns.addAll(Arrays.stream(globPatterns)
+                .map(SimpleDirectoryWatchService::matcherForGlobExpression)
+                .collect(Collectors.toSet()));
 
         if (patterns.isEmpty()) {
             patterns.add(matcherForGlobExpression("*")); // Match everything if no filter is found
@@ -114,8 +111,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
 
         listenerToFilePatternsMap.put(listener, patterns);
 
-        logger.info("Watching files matching " + Arrays.toString(globPatterns)
-                + " under " + dirPath + " for changes.");
+        logger.info("Watching files matching " + Arrays.toString(globPatterns) + " under " + dirPath + " for changes.");
     }
 
     @Override
@@ -168,19 +164,11 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
         logger.info("Stopped file watcher service.");
     }
 
-    private Set<OnFileChangeListener> matchedListeners(Path dir, Path file) {
-        return dirPathToListenersMap.get(dir)
-                .stream()
-                .filter(listener -> matchesAny(file, listenerToFilePatternsMap.get(listener)))
-                .collect(Collectors.toSet());
-    }
-
     private void notifyListeners(WatchKey key) {
         for (WatchEvent<?> event : key.pollEvents()) {
             WatchEvent.Kind eventKind = event.kind();
 
-            // Overflow occurs when the watch event queue is overflown
-            // with events.
+            // Overflow occurs when the watch event queue is overflown with events.
             if (eventKind.equals(OVERFLOW)) {
                 // TODO: Notify all listeners.
                 return;
@@ -193,16 +181,20 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
             File file = new File(dirPath.toFile(), filePath.toString());
 
             if (eventKind.equals(ENTRY_CREATE)) {
-                matchedListeners(dirPath, filePath)
-                        .forEach(listener -> listener.onFileCreate(file));
+                matchedListeners(dirPath, filePath).forEach(listener -> listener.onFileCreate(file));
             } else if (eventKind.equals(ENTRY_MODIFY)) {
-                matchedListeners(dirPath, filePath)
-                        .forEach(listener -> listener.onFileModify(file));
+                matchedListeners(dirPath, filePath).forEach(listener -> listener.onFileModify(file));
             } else if (eventKind.equals(ENTRY_DELETE)) {
-                matchedListeners(dirPath, filePath)
-                        .forEach(listener -> listener.onFileDelete(file));
+                matchedListeners(dirPath, filePath).forEach(listener -> listener.onFileDelete(file));
             }
         }
+    }
+
+    private Set<OnFileChangeListener> matchedListeners(Path dir, Path file) {
+        return dirPathToListenersMap.get(dir)
+                .stream()
+                .filter(listener -> matchesAny(file, listenerToFilePatternsMap.get(listener)))
+                .collect(Collectors.toSet());
     }
 
     private static PathMatcher matcherForGlobExpression(String globPattern) {

@@ -24,7 +24,6 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -66,10 +65,10 @@ public class ModelInconsistency {
         return sourceName;
     }
 
-    public static List<ModelInconsistency> analyzeModel(Project project, ParameterLinkRegistry parameterLinkRegistry, Study study) {
+    public static List<ModelInconsistency> analyzeModel(ExternalModelFileHandler externalModelFileHandler, ParameterLinkRegistry parameterLinkRegistry, Study study) {
         SystemModel systemModel = study.getSystemModel();
         Map<String, ParameterModel> parameterDictionary = systemModel.makeParameterDictionary();
-        List<ModelInconsistency> modelInconsistencies = analyzeModel(project, parameterLinkRegistry, systemModel, parameterDictionary);
+        List<ModelInconsistency> modelInconsistencies = analyzeModel(externalModelFileHandler, parameterLinkRegistry, systemModel, parameterDictionary);
         int systemModelRevision = systemModel.getRevision();
         if (study.getRevision() != 0 && study.getRevision() < systemModelRevision) {
             modelInconsistencies.add(new ModelInconsistency("Study latest revision is earlier than system model last revision", Severity.ERROR, "study", study));
@@ -80,11 +79,11 @@ public class ModelInconsistency {
         return modelInconsistencies;
     }
 
-    public static List<ModelInconsistency> analyzeModel(Project project, ParameterLinkRegistry parameterLinkRegistry, CompositeModelNode<? extends ModelNode> compositeModelNode, Map<String, ParameterModel> parameterDictionary) {
+    public static List<ModelInconsistency> analyzeModel(ExternalModelFileHandler externalModelFileHandler, ParameterLinkRegistry parameterLinkRegistry, CompositeModelNode<? extends ModelNode> compositeModelNode, Map<String, ParameterModel> parameterDictionary) {
         LinkedList<ModelInconsistency> modelInconsistencies = new LinkedList<>();
         // external models
         for (ExternalModel em : compositeModelNode.getExternalModels()) {
-            modelInconsistencies.addAll(analyzeModel(project, parameterLinkRegistry, em));
+            modelInconsistencies.addAll(analyzeModel(externalModelFileHandler, parameterLinkRegistry, em));
         }
         // params
         for (ParameterModel parameterModel : compositeModelNode.getParameters()) {
@@ -93,18 +92,18 @@ public class ModelInconsistency {
         // subnodes
         for (ModelNode modelNode : compositeModelNode.getSubNodes()) {
             if (modelNode instanceof CompositeModelNode) {
-                modelInconsistencies.addAll(analyzeModel(project, parameterLinkRegistry, (CompositeModelNode<? extends ModelNode>) modelNode, parameterDictionary));
+                modelInconsistencies.addAll(analyzeModel(externalModelFileHandler, parameterLinkRegistry, (CompositeModelNode<? extends ModelNode>) modelNode, parameterDictionary));
             }
         }
         return modelInconsistencies;
     }
 
-    private static Collection<? extends ModelInconsistency> analyzeModel(Project project, ParameterLinkRegistry parameterLinkRegistry, ExternalModel em) {
+    private static Collection<? extends ModelInconsistency> analyzeModel(ExternalModelFileHandler externalModelFileHandler, ParameterLinkRegistry parameterLinkRegistry, ExternalModel em) {
         LinkedList<ModelInconsistency> modelInconsistencies = new LinkedList<>();
         if (em.getAttachment() == null) {
             modelInconsistencies.add(new ModelInconsistency("External model has empty attachment", Severity.CRITICAL, em.getNodePath(), em));
         }
-        ExternalModelCacheState cacheState = ExternalModelFileHandler.getCacheState(project, em);
+        ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(em);
         if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
             modelInconsistencies.add(new ModelInconsistency("External model has be updated locally and remotely", Severity.CRITICAL, em.getNodePath(), em));
         } else if (cacheState == ExternalModelCacheState.CACHED_OUTDATED) {
