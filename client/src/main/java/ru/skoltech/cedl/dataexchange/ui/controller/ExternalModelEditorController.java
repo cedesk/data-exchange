@@ -48,7 +48,6 @@ import ru.skoltech.cedl.dataexchange.ui.Views;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -181,7 +180,7 @@ public class ExternalModelEditorController implements Initializable {
         for (ExternalModel externalModel : modelNode.getExternalModels())
             try {
                 modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel,
-                        Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
+                        externalModelUpdateListener, parameterUpdateListener);
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
             }

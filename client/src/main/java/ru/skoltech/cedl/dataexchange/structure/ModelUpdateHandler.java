@@ -71,15 +71,14 @@ public class ModelUpdateHandler {
     }
 
     public void applyParameterChangesFromExternalModel(ExternalModel externalModel,
-                                                       List<? extends Consumer<ModelUpdate>> modelUpdateListeners,
+                                                       Consumer<ModelUpdate> modelUpdateListener,
                                                        Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
-        ModelNode modelNode = externalModel.getParent();
 
         ModelUpdate modelUpdate = new ModelUpdate(externalModel);
-        if (modelUpdateListeners != null) {
-            modelUpdateListeners.forEach(modelUpdateConsumer -> modelUpdateConsumer.accept(modelUpdate));
+        if (modelUpdateListener != null) {
+            modelUpdateListener.accept(modelUpdate);
         }
-
+        ModelNode modelNode = externalModel.getParent();
         List<ParameterUpdate> updates = new LinkedList<>();
         ExternalModelEvaluator evaluator = externalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
         try {

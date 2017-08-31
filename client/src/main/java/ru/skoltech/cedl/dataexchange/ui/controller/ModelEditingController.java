@@ -46,7 +46,10 @@ import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.service.*;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.SpreadsheetInputOutputExtractorService;
+import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
@@ -179,7 +182,8 @@ public class ModelEditingController implements Initializable {
             ExternalModel externalModel = (ExternalModel) arg;
             try {
                 modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel,
-                        Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ParameterUpdateListener());
+                        new ExternalModelUpdateListener(),
+                        new ParameterUpdateListener());
             } catch (ExternalModelException e) {
                 logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
             }
@@ -730,13 +734,6 @@ public class ModelEditingController implements Initializable {
         public void accept(ModelUpdate modelUpdate) {
             ExternalModel externalModel = modelUpdate.getExternalModel();
             project.addChangedExternalModel(externalModel);
-        }
-    }
-
-    public class ExternalModelLogListener implements Consumer<ModelUpdate> {
-        @Override
-        public void accept(ModelUpdate modelUpdate) {
-            ExternalModel externalModel = modelUpdate.getExternalModel();
             String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
             logger.info(message);
             UserNotifications.showNotification(getAppWindow(), "External model modified", message);

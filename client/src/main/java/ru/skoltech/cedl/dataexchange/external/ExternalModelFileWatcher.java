@@ -19,8 +19,7 @@ package ru.skoltech.cedl.dataexchange.external;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.file.DirectoryWatchService;
-import ru.skoltech.cedl.dataexchange.file.SimpleDirectoryWatchService;
+import ru.skoltech.cedl.dataexchange.service.DirectoryWatchService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
@@ -39,28 +38,32 @@ public class ExternalModelFileWatcher extends Observable {
 
     private static Logger logger = Logger.getLogger(ExternalModelFileWatcher.class);
 
+    private DirectoryWatchService directoryWatchService;
     private Map<File, ExternalModel> watchedExternalModels = new ConcurrentHashMap<>();
-
     private Set<File> maskedFiles = new ConcurrentSkipListSet<>();
+
+    public void setDirectoryWatchService(DirectoryWatchService directoryWatchService) {
+        this.directoryWatchService = directoryWatchService;
+    }
 
     public void add(Project project, ExternalModel externalModel) {
         File file = ExternalModelFileHandler.getFilePathInCache(project, externalModel);
         watchedExternalModels.put(file, externalModel);
         String filePattern = file.getName();
         try {
-            SimpleDirectoryWatchService.getInstance().register(new FileChangeListener(), file.getParent(), filePattern);
+            directoryWatchService.register(new FileChangeListener(), file.getParent(), filePattern);
         } catch (IOException e) {
             logger.error("unable to observe file " + file.getAbsolutePath() + " for modifications.");
         }
     }
 
     public void clear() {
-        SimpleDirectoryWatchService.getInstance().clear();
+        directoryWatchService.clear();
         watchedExternalModels.clear();
     }
 
     public void close() {
-        SimpleDirectoryWatchService.getInstance().stop();
+        directoryWatchService.stop();
     }
 
     public void maskChangesTo(File file) {
@@ -68,7 +71,7 @@ public class ExternalModelFileWatcher extends Observable {
     }
 
     public void start() {
-        SimpleDirectoryWatchService.getInstance().start();
+        directoryWatchService.start();
     }
 
     public void unmaskChangesTo(File file) {

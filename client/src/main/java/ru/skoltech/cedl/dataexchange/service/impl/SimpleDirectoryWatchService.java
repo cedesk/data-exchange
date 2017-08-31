@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.file;
+package ru.skoltech.cedl.dataexchange.service.impl;
 
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.service.DirectoryWatchService;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,11 +43,12 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class SimpleDirectoryWatchService implements DirectoryWatchService, Runnable {
 
     private static final Logger logger = Logger.getLogger(SimpleDirectoryWatchService.class);
+
     private final WatchService watchService;
-    private final AtomicBoolean isRunning;
-    private final ConcurrentMap<WatchKey, Path> watchKeyToDirPathMap;
-    private final ConcurrentMap<Path, Set<OnFileChangeListener>> dirPathToListenersMap;
-    private final ConcurrentMap<OnFileChangeListener, Set<PathMatcher>> listenerToFilePatternsMap;
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private final ConcurrentMap<WatchKey, Path> watchKeyToDirPathMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Path, Set<OnFileChangeListener>> dirPathToListenersMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<OnFileChangeListener, Set<PathMatcher>> listenerToFilePatternsMap = new ConcurrentHashMap<>();
     private Thread runnerThread;
 
     /**
@@ -54,54 +56,26 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
      *
      * @throws IOException If an I/O error occurs.
      */
-    private SimpleDirectoryWatchService() throws IOException {
+    public SimpleDirectoryWatchService() throws IOException {
         watchService = FileSystems.getDefault().newWatchService();
-        isRunning = new AtomicBoolean(false);
-        watchKeyToDirPathMap = newConcurrentMap();
-        dirPathToListenersMap = newConcurrentMap();
-        listenerToFilePatternsMap = newConcurrentMap();
     }
 
-    public static SimpleDirectoryWatchService getInstance() {
-        return SingletonHolder.INSTANCE;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> WatchEvent<T> cast(WatchEvent<?> event) {
-        return (WatchEvent<T>) event;
-    }
-
-    private static <K, V> ConcurrentMap<K, V> newConcurrentMap() {
-        return new ConcurrentHashMap<>();
-    }
-
-    private static <T> Set<T> newConcurrentSet() {
-        return Collections.newSetFromMap(newConcurrentMap());
-    }
-
-    public static PathMatcher matcherForGlobExpression(String globPattern) {
-        return FileSystems.getDefault().getPathMatcher("glob:" + globPattern);
-    }
-
-    public static boolean matchesAny(Path input, Set<PathMatcher> patterns) {
-        if (patterns != null) {
-            for (PathMatcher pattern : patterns) {
-                if (pattern.matches(input)) {
-                    return true;
-                }
-            }
+    @Override
+    public void start() {
+        if (isRunning.compareAndSet(false, true)) {
+            runnerThread = new Thread(this, DirectoryWatchService.class.getSimpleName());
+            runnerThread.start();
         }
-
-        return false;
     }
 
-    /**
-     * Empty the list of registered directory watchers.
-     */
-    public void clear() {
-        dirPathToListenersMap.clear();
-        watchKeyToDirPathMap.clear();
-        listenerToFilePatternsMap.clear();
+    @Override
+    public void stop() {
+        logger.info("Stopping file watcher service...");
+        isRunning.set(false);
+        try {
+            runnerThread.join();
+        } catch (InterruptedException ignore) {
+        }
     }
 
     /**
@@ -123,12 +97,12 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
             );
 
             watchKeyToDirPathMap.put(key, dir);
-            dirPathToListenersMap.put(dir, newConcurrentSet());
+            dirPathToListenersMap.put(dir, Collections.newSetFromMap(new ConcurrentHashMap<>()));
         }
 
-        getListeners(dir).add(listener);
+        dirPathToListenersMap.get(dir).add(listener);
 
-        Set<PathMatcher> patterns = newConcurrentSet();
+        Set<PathMatcher> patterns = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
         for (String globPattern : globPatterns) {
             patterns.add(matcherForGlobExpression(globPattern));
@@ -142,6 +116,13 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
 
         logger.info("Watching files matching " + Arrays.toString(globPatterns)
                 + " under " + dirPath + " for changes.");
+    }
+
+    @Override
+    public void clear() {
+        dirPathToListenersMap.clear();
+        watchKeyToDirPathMap.clear();
+        listenerToFilePatternsMap.clear();
     }
 
     /**
@@ -165,7 +146,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
                 break;
             }
 
-            if (null == getDirPath(key)) {
+            if (!watchKeyToDirPathMap.containsKey(key)) {
                 logger.error("Watch key not recognized.");
                 continue;
             }
@@ -187,44 +168,8 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
         logger.info("Stopped file watcher service.");
     }
 
-    /**
-     * Start this <code>SimpleDirectoryWatchService</code> instance by spawning a new thread.
-     *
-     * @see #stop()
-     */
-    public void start() {
-        if (isRunning.compareAndSet(false, true)) {
-            runnerThread = new Thread(this, DirectoryWatchService.class.getSimpleName());
-            runnerThread.start();
-        }
-    }
-
-    /**
-     * Stop this <code>SimpleDirectoryWatchService</code> thread.
-     * The killing happens lazily, giving the running thread an opportunity
-     * to finish the work at hand.
-     *
-     * @see #start()
-     */
-    public void stop() {
-        logger.info("Stopping file watcher service...");
-        isRunning.set(false);
-        try {
-            runnerThread.join();
-        } catch (InterruptedException ignore) {
-        }
-    }
-
-    private Path getDirPath(WatchKey key) {
-        return watchKeyToDirPathMap.get(key);
-    }
-
-    private Set<OnFileChangeListener> getListeners(Path dir) {
-        return dirPathToListenersMap.get(dir);
-    }
-
     private Set<OnFileChangeListener> matchedListeners(Path dir, Path file) {
-        return getListeners(dir)
+        return dirPathToListenersMap.get(dir)
                 .stream()
                 .filter(listener -> matchesAny(file, listenerToFilePatternsMap.get(listener)))
                 .collect(Collectors.toSet());
@@ -241,9 +186,9 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
                 return;
             }
 
-            WatchEvent<Path> pathEvent = cast(event);
+            WatchEvent<Path> pathEvent = (WatchEvent<Path>) event;
             Path filePath = pathEvent.context();
-            Path dirPath = getDirPath(key);
+            Path dirPath = watchKeyToDirPathMap.get(key);
 
             File file = new File(dirPath.toFile(), filePath.toString());
 
@@ -260,19 +205,19 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
         }
     }
 
-    private static class SingletonHolder {
-        /**
-         * The singleton instance.
-         */
-        private static final SimpleDirectoryWatchService INSTANCE;
+    private static PathMatcher matcherForGlobExpression(String globPattern) {
+        return FileSystems.getDefault().getPathMatcher("glob:" + globPattern);
+    }
 
-        static {
-            try {
-                INSTANCE = new SimpleDirectoryWatchService();
-            } catch (IOException | UnsupportedOperationException e) {
-                throw new ExceptionInInitializerError("Unable to start "
-                        + DirectoryWatchService.class.getSimpleName() + " instance.");
+    private static boolean matchesAny(Path input, Set<PathMatcher> patterns) {
+        if (patterns != null) {
+            for (PathMatcher pattern : patterns) {
+                if (pattern.matches(input)) {
+                    return true;
+                }
             }
         }
+        return false;
     }
+
 }

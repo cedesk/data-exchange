@@ -64,6 +64,8 @@
 
     <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.service.impl.JsoupServiceImpl"/>
 
+    <bean id="directoryWatchService" class="ru.skoltech.cedl.dataexchange.service.impl.SimpleDirectoryWatchService" />
+
     <bean class="ru.skoltech.cedl.dataexchange.service.impl.SpreadsheetInputOutputExtractorServiceImpl"
           id="spreadsheetInputOutputExtractorService">
         <property name="unitManagementService" ref="unitManagementService"/>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.file;
+package ru.skoltech.cedl.dataexchange.service;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +26,22 @@ import java.io.IOException;
  * to file system events coming from a specific directory.
  */
 public interface DirectoryWatchService {
+
+    /**
+     * Start this <code>SimpleDirectoryWatchService</code> instance by spawning a new thread.
+     *
+     * @see #stop()
+     */
+    void start();
+
+    /**
+     * Stop this <code>SimpleDirectoryWatchService</code> thread.
+     * The killing happens lazily, giving the running thread an opportunity
+     * to finish the work at hand.
+     *
+     * @see #start()
+     */
+    void stop();
 
     /**
      * Notifies the implementation of <em>this</em> interface that <code>dirPath</code>
@@ -40,6 +56,11 @@ public interface DirectoryWatchService {
      */
     void register(OnFileChangeListener listener, String dirPath, String... globPatterns)
             throws IOException;
+
+    /**
+     * Empty the list of registered directory watchers.
+     */
+    void clear();
 
     /**
      * Interface definition for a callback to be invoked when a file under
