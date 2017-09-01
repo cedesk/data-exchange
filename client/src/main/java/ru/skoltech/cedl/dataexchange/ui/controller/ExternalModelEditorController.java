@@ -37,6 +37,7 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ModelUpdate;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
@@ -50,6 +51,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 /**
  * Controller for editing external model.
@@ -74,7 +76,7 @@ public class ExternalModelEditorController implements Initializable {
 
     private ModelNode modelNode;
 
-    private ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener;
+    private ExternalModelUpdateListener externalModelUpdateListener = new ExternalModelUpdateListener();
     private ModelEditingController.ParameterUpdateListener parameterUpdateListener;
 
     public void setProject(Project project) {
@@ -191,9 +193,7 @@ public class ExternalModelEditorController implements Initializable {
             }
     }
 
-    public void setListeners(ModelEditingController.ExternalModelUpdateListener externalModelUpdateListener,
-                             ModelEditingController.ParameterUpdateListener parameterUpdateListener) {
-        this.externalModelUpdateListener = externalModelUpdateListener;
+    public void setParameterUpdateListener(ModelEditingController.ParameterUpdateListener parameterUpdateListener) {
         this.parameterUpdateListener = parameterUpdateListener;
     }
 
@@ -254,6 +254,15 @@ public class ExternalModelEditorController implements Initializable {
         exchangeButton.setUserData(externalModel);
         externalModelViewContainer.getChildren().add(extModRow);
     }
+
+    public class ExternalModelUpdateListener implements Consumer<ModelUpdate> {
+        @Override
+        public void accept(ModelUpdate modelUpdate) {
+            ExternalModel externalModel = modelUpdate.getExternalModel();
+            project.addChangedExternalModel(externalModel);
+        }
+    }
+
 }
 
 

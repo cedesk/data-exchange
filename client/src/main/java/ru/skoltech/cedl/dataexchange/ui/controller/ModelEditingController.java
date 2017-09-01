@@ -261,7 +261,7 @@ public class ModelEditingController implements Initializable {
         parameterTable.setContextMenu(parameterContextMenu);
         this.parameterEditorController.setVisible(false);
         this.parameterEditorController.setEditListener(parameterModel -> lightTableRefresh());
-        this.externalModelEditorController.setListeners(new ExternalModelUpdateListener(), new ParameterUpdateListener());
+        this.externalModelEditorController.setParameterUpdateListener(new ParameterUpdateListener());
     }
 
     public void addNode(ActionEvent actionEvent) {
