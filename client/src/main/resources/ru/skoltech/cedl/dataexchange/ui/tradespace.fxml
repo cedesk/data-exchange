@@ -99,7 +99,7 @@
                                 <HBox>
                                     <ChoiceBox fx:id="epochChoice" prefWidth="80.0"/>
                                     <Button mnemonicParsing="false" onAction="#addDesignPoint"
-                                            text="Add Design Point to Tradespace"/>
+                                            text="Add to Tradespace"/>
                                 </HBox>
                             </VBox>
                         </TitledPane>
