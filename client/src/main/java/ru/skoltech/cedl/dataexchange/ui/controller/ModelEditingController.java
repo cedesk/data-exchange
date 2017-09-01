@@ -413,11 +413,6 @@ public class ModelEditingController implements Initializable {
         revisionHistoryViewBuilder.show(selectedParameter);
     }
 
-    public void refreshView(ActionEvent actionEvent) {
-        clearView();
-        updateView();
-    }
-
     public void renameNode(ActionEvent actionEvent) {
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
         Objects.requireNonNull(selectedItem, "no item selected in tree view");

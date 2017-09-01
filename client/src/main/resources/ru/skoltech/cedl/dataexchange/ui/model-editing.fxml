@@ -56,14 +56,6 @@
                     <Glyph fontFamily="FontAwesome" icon="MINUS"/>
                 </graphic>
             </Button>
-            <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView">
-                <tooltip>
-                    <Tooltip text="Refresh View"/>
-                </tooltip>
-                <graphic>
-                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                </graphic>
-            </Button>
         </ToolBar>
         <TitledPane fx:id="ownerPane" collapsible="false" prefHeight="70.0"
                     text="Owners" AnchorPane.bottomAnchor="170.0" AnchorPane.leftAnchor="0.0"
