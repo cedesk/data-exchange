@@ -46,7 +46,6 @@ import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -72,7 +71,6 @@ public class Project {
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ExternalModelFileHandler externalModelFileHandler;
     private FileStorageService fileStorageService;
-    private ExternalModelFileStorageService externalModelFileStorageService;
     private StudyService studyService;
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
@@ -124,10 +122,6 @@ public class Project {
 
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
-    }
-
-    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
-        this.externalModelFileStorageService = externalModelFileStorageService;
     }
 
     public void setStudyService(StudyService studyService) {
@@ -316,7 +310,7 @@ public class Project {
     public boolean checkRepositoryForChanges() {
         if (this.repositoryStudy != null) { // already saved or retrieved from repository
             this.loadRepositoryStudy();
-            this.updateExternalModelsInStudy();
+            externalModelFileHandler.updateExternalModelsInStudy();
             SystemModel localSystemModel = this.study.getSystemModel();
             SystemModel remoteSystemModel = this.repositoryStudy.getSystemModel();
             int revision = study.getRevision();
@@ -457,7 +451,7 @@ public class Project {
     public void storeStudy() throws RepositoryException, ExternalModelException {
         this.updateParameterValuesFromLinks();
         this.exportValuesToExternalModels();
-        this.updateExternalModelsInStudy();
+        externalModelFileHandler.updateExternalModelsInStudy();
         if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
             // store URM separately before study, to prevent links to deleted subsystems have storing study fail
             storeUserRoleManagement();
@@ -467,7 +461,7 @@ public class Project {
         Study newStudy = revision.getLeft();
         Integer revisionNumber = revision.getMiddle();
 
-        this.updateExternalModelStateInCache();
+        externalModelFileHandler.updateExternalModelStateInCache();
 
         this.setStudy(newStudy);
         this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
@@ -512,30 +506,6 @@ public class Project {
         return false;
     }
 
-    /**
-     * check the locally cached external model files for modifications,
-     * and if there are modifications, update the local study model in memory.
-     */
-    public void updateExternalModelsInStudy() {
-        for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
-            ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
-            if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
-                logger.debug("updating " + externalModel.getNodePath() + " from file");
-                try {
-                    File file = externalModelFileHandler.getFilePathInCache(externalModel);
-                    externalModelFileStorageService.readExternalModelAttachmentFromFile(file, externalModel);
-                } catch (IOException e) {
-                    logger.error("error updating external model from file!", e);
-                }
-            } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
-                // TODO: WARN USER, PROVIDE WITH CHOICE TO REVERT OR FORCE CHECKIN
-                logger.warn(externalModel.getNodePath() + " has conflicting changes locally and in repository");
-            } else {
-                logger.warn(externalModel.getNodePath() + " is in state " + cacheState);
-            }
-        }
-    }
-
     private void exportValuesToExternalModels() throws ExternalModelException {
         SystemModel systemModel = getSystemModel();
         Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, new AccessChecker());
@@ -556,7 +526,7 @@ public class Project {
 
     private void initializeStateOfExternalModels() {
         externalModelFileWatcher.clear();
-        externalModelFileHandler.getChangedExternalModels().clear();
+        externalModelFileHandler.clear();
         Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), new AccessChecker());
         while (iterator.hasNext()) {
             ExternalModel externalModel = iterator.next();
@@ -627,28 +597,6 @@ public class Project {
                 reinitializeUniqueIdentifiers((ModelNode) node);
             }
         }
-    }
-
-    /**
-     * make sure external model files in cache get a new timestamp
-     */
-    private void updateExternalModelStateInCache() {
-        for (ExternalModel externalModel : externalModelFileHandler.getChangedExternalModels()) {
-            ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
-            if (cacheState != ExternalModelCacheState.NOT_CACHED) {
-                logger.debug("timestamping " + externalModel.getNodePath());
-                externalModelFileHandler.updateCheckoutTimestamp(externalModel);
-                if (logger.isDebugEnabled()) {
-                    String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
-                    long checkoutTime = externalModelFileHandler.getCheckoutTime(externalModel);
-                    String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
-                    logger.debug("stored external model '" + externalModel.getName() +
-                            "' (model: " + modelModification + ", file: " + fileModification + ")");
-                    logger.debug(externalModel.getNodePath() + " is now in state " + cacheState);
-                }
-            }
-        }
-        externalModelFileHandler.getChangedExternalModels().clear();
     }
 
     private void updateParameterValuesFromLinks() {
