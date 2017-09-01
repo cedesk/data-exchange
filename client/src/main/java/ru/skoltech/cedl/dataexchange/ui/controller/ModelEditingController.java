@@ -737,7 +737,7 @@ public class ModelEditingController implements Initializable {
             String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
             logger.info(message);
             UserNotifications.showNotification(getAppWindow(), "External model modified", message);
-            actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, externalModel.getNodePath());
+            actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
         }
     }
 
