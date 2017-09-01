@@ -95,17 +95,18 @@
             </VBox>
         </TitledPane>
     </AnchorPane>
-    <SplitPane dividerPositions="0.5" orientation="VERTICAL">
-        <TitledPane fx:id="externalModelParentPane" animated="false" text="External Model"
-                    AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        </TitledPane>
-        <TitledPane animated="false" text="Parameters" AnchorPane.topAnchor="70.0"
-                    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <SplitPane dividerPositions="0.5" orientation="VERTICAL">
-                <AnchorPane>
-                    <TableView fx:id="parameterTable" prefHeight="160"
-                               AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0"
-                               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <BorderPane>
+        <top>
+            <TitledPane fx:id="externalModelParentPane" animated="false" text="External Model"/>
+        </top>
+        <center>
+            <TitledPane animated="false" text="Parameters" >
+            <BorderPane>
+                <padding>
+                    <Insets/>
+                </padding>
+                <center>
+                    <TableView fx:id="parameterTable">
                         <columns>
                             <TableColumn fx:id="parameterNatureColumn" editable="false" prefWidth="60.0" text="Nature">
                                 <cellValueFactory>
@@ -137,6 +138,8 @@
                             </TableColumn>
                         </columns>
                     </TableView>
+                </center>
+                <bottom>
                     <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                              AnchorPane.rightAnchor="0.0">
                         <Button fx:id="addParameterButton" minWidth="28" mnemonicParsing="false"
@@ -167,9 +170,12 @@
                             </graphic>
                         </Button>
                     </ToolBar>
-                </AnchorPane>
-                <TitledPane fx:id="parameterEditorParentPane" collapsible="false" text="Parameter Details"/>
-            </SplitPane>
+                </bottom>
+            </BorderPane>
         </TitledPane>
-    </SplitPane>
+        </center>
+        <bottom>
+            <TitledPane fx:id="parameterEditorParentPane" collapsible="false" text="Parameter Details"/>
+        </bottom>
+    </BorderPane>
 </SplitPane>
