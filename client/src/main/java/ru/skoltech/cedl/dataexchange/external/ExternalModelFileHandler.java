@@ -47,10 +47,6 @@ public class ExternalModelFileHandler {
 
     private Set<ExternalModel> changedExternalModels = new HashSet<>();
 
-    public Set<ExternalModel> getChangedExternalModels() {
-        return changedExternalModels;
-    }
-
     public void setProject(Project project) {
         this.project = project;
     }
@@ -62,6 +58,57 @@ public class ExternalModelFileHandler {
     public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
         this.externalModelFileStorageService = externalModelFileStorageService;
     }
+
+    public void clear() {
+        changedExternalModels.clear();
+    }
+
+    /**
+     * check the locally cached external model files for modifications,
+     * and if there are modifications, update the local study model in memory.
+     */
+    public void updateExternalModelsInStudy() {
+        for (ExternalModel externalModel : changedExternalModels) {
+            ExternalModelCacheState cacheState = this.getCacheState(externalModel);
+            if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
+                logger.debug("updating " + externalModel.getNodePath() + " from file");
+                try {
+                    File file = this.getFilePathInCache(externalModel);
+                    externalModelFileStorageService.readExternalModelAttachmentFromFile(file, externalModel);
+                } catch (IOException e) {
+                    logger.error("error updating external model from file!", e);
+                }
+            } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
+                // TODO: WARN USER, PROVIDE WITH CHOICE TO REVERT OR FORCE CHECKIN
+                logger.warn(externalModel.getNodePath() + " has conflicting changes locally and in repository");
+            } else {
+                logger.warn(externalModel.getNodePath() + " is in state " + cacheState);
+            }
+        }
+    }
+
+    /**
+     * make sure external model files in cache get a new timestamp
+     */
+    public void updateExternalModelStateInCache() {
+        for (ExternalModel externalModel : changedExternalModels) {
+            ExternalModelCacheState cacheState = this.getCacheState(externalModel);
+            if (cacheState != ExternalModelCacheState.NOT_CACHED) {
+                logger.debug("timestamping " + externalModel.getNodePath());
+                this.updateCheckoutTimestamp(externalModel);
+                if (logger.isDebugEnabled()) {
+                    String modelModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(externalModel.getLastModification()));
+                    long checkoutTime = this.getCheckoutTime(externalModel);
+                    String fileModification = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(checkoutTime));
+                    logger.debug("stored external model '" + externalModel.getName() +
+                            "' (model: " + modelModification + ", file: " + fileModification + ")");
+                    logger.debug(externalModel.getNodePath() + " is now in state " + cacheState);
+                }
+            }
+        }
+        changedExternalModels.clear();
+    }
+
 
     /**
      * This method only forms the full path where the external model would be cached.<br/>
@@ -84,7 +131,7 @@ public class ExternalModelFileHandler {
         File modelFile = this.getFilePathInCache(externalModel);
         Long modelLastStored = externalModel.getLastModification();
         if (modelFile.exists() && modelLastStored != null) {
-            long checkoutTime = getCheckoutTime(modelFile);
+            long checkoutTime = this.getCheckoutTime(modelFile);
             long fileLastModified = modelFile.lastModified();
             boolean newerInRepository = modelLastStored > checkoutTime;
             boolean locallyModified = checkoutTime < fileLastModified;
@@ -117,7 +164,7 @@ public class ExternalModelFileHandler {
         return new File(file.getAbsolutePath() + ".tstamp");
     }
 
-    public void updateCheckoutTimestamp(ExternalModel externalModel) {
+    private void updateCheckoutTimestamp(ExternalModel externalModel) {
         File file = this.getFilePathInCache(externalModel);
         File tsFile = getTimestampFile(file);
         try {
@@ -133,7 +180,7 @@ public class ExternalModelFileHandler {
         }
     }
 
-    public long getCheckoutTime(ExternalModel externalModel) {
+    private long getCheckoutTime(ExternalModel externalModel) {
         File file = this.getFilePathInCache(externalModel);
         return getCheckoutTime(file);
     }
