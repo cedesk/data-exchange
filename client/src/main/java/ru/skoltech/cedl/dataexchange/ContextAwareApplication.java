@@ -20,8 +20,7 @@ import javafx.application.Application;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.context.ConfigurableApplicationContext;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializer;
@@ -32,7 +31,7 @@ public abstract class ContextAwareApplication extends Application {
 
     private static Logger logger = Logger.getLogger(ContextAwareApplication.class);
 
-    protected ApplicationContext context;
+    protected ConfigurableApplicationContext context;
     protected ApplicationSettings applicationSettings;
     protected Project project;
 
@@ -52,9 +51,7 @@ public abstract class ContextAwareApplication extends Application {
     public void stop() throws Exception {
         logger.info("Stopping CEDESK " + getClass().getSimpleName() + "...");
         try {
-            context.getBean(ThreadPoolTaskScheduler.class).shutdown();
-            context.getBean(ThreadPoolTaskExecutor.class).shutdown();
-            project.close();
+            context.close();
         } catch (Throwable e) {
             logger.warn("", e);
         }

@@ -122,12 +122,13 @@ public class ModelEditingController implements Initializable {
     private ExternalModelEditorController externalModelEditorController;
 
     private Project project;
-    private ActionLogger actionLogger;
-    private UserRoleManagementService userRoleManagementService;
-    private GuiService guiService;
+    private ExternalModelFileHandler externalModelFileHandler;
+    private ExternalModelFileWatcher externalModelFileWatcher;
     private ModelUpdateHandler modelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
-    private ExternalModelFileHandler externalModelFileHandler;
+    private UserRoleManagementService userRoleManagementService;
+    private GuiService guiService;
+    private ActionLogger actionLogger;
     private StatusLogger statusLogger;
 
     public void setParameterEditorController(ParameterEditorController parameterEditorController) {
@@ -142,8 +143,20 @@ public class ModelEditingController implements Initializable {
         this.project = project;
     }
 
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
+    }
+
+    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
+        this.externalModelFileWatcher = externalModelFileWatcher;
+    }
+
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
+        this.modelUpdateHandler = modelUpdateHandler;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
@@ -154,16 +167,8 @@ public class ModelEditingController implements Initializable {
         this.guiService = guiService;
     }
 
-    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
-        this.modelUpdateHandler = modelUpdateHandler;
-    }
-
-    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
-        this.parameterLinkRegistry = parameterLinkRegistry;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     public void setStatusLogger(StatusLogger statusLogger) {
@@ -178,7 +183,7 @@ public class ModelEditingController implements Initializable {
         Node externalModelEditorPane = guiService.createControl(Views.EXTERNAL_MODELS_EDITOR_VIEW);
         externalModelParentPane.setContent(externalModelEditorPane);
 
-        project.addExternalModelChangeObserver((o, arg) -> {
+        externalModelFileWatcher.addObserver((o, arg) -> {
             ExternalModel externalModel = (ExternalModel) arg;
             try {
                 modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel,

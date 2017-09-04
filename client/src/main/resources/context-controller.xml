@@ -30,6 +30,7 @@
         <property name="modelEditingController" ref="modelEditingController"/>
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="project" ref="project"/>
+        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="differenceMergeHandler" ref="differenceMergeHandler"/>
         <property name="guiService" ref="guiService"/>
         <property name="studyService" ref="studyService"/>
@@ -49,12 +50,13 @@
     </bean>
 
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.ui.controller.ModelEditingController">
-        <property name="project" ref="project"/>
-        <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
         <property name="parameterEditorController" ref="parameterEditorController"/>
         <property name="externalModelEditorController" ref="externalModelEditorController"/>
-        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
+        <property name="project" ref="project"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
+        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
+        <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
         <property name="guiService" ref="guiService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="actionLogger" ref="actionLogger"/>

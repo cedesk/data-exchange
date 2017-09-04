@@ -27,7 +27,10 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
-import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
@@ -36,7 +39,6 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
@@ -48,11 +50,13 @@ import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import java.io.File;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -66,7 +70,6 @@ public class Project {
     private ApplicationSettings applicationSettings;
     private RepositoryStateMachine repositoryStateMachine;
     private DifferenceMergeHandler differenceMergeHandler;
-    private ModelUpdateHandler modelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ExternalModelFileHandler externalModelFileHandler;
@@ -93,11 +96,15 @@ public class Project {
     private BooleanProperty canLoad = new SimpleBooleanProperty(false);
     private BooleanProperty canSync = new SimpleBooleanProperty(false);
 
+    private Predicate<ModelNode> accessChecker;
+
     public void init(String projectName) {
         this.projectName = projectName;
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
-        repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
+        this.repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
+        this.accessChecker = modelNode ->
+                userRoleManagementService.checkUserAccessToModelNode(this.getUserRoleManagement(), this.getUser(), modelNode);
     }
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
@@ -126,10 +133,6 @@ public class Project {
 
     public void setStudyService(StudyService studyService) {
         this.studyService = studyService;
-    }
-
-    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
-        this.modelUpdateHandler = modelUpdateHandler;
     }
 
     public void setUserManagementService(UserManagementService userManagementService) {
@@ -287,14 +290,6 @@ public class Project {
         markStudyModified();
     }
 
-    public void addExternalModelChangeObserver(Observer o) {
-        externalModelFileWatcher.addObserver(o);
-    }
-
-    public void addExternalModelFileWatcher(ExternalModel externalModel) {
-        externalModelFileWatcher.add(externalModel);
-    }
-
     public BooleanProperty canLoadProperty() {
         return canLoad;
     }
@@ -354,14 +349,6 @@ public class Project {
         studyService.deleteStudyByName(studyName);
     }
 
-    public void start() {
-        externalModelFileWatcher.start();
-    }
-
-    public void close() throws Throwable {
-        externalModelFileWatcher.close();
-    }
-
     public boolean hasLocalStudyModifications() {
         return repositoryStateMachine.hasModifications();
     }
@@ -369,7 +356,7 @@ public class Project {
     public void importSystemModel(SystemModel systemModel) {
         reinitializeProject(systemModel);
         reinitializeUniqueIdentifiers(systemModel);
-        initializeStateOfExternalModels();
+        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
     }
 
     public void loadLocalStudy() {
@@ -377,7 +364,7 @@ public class Project {
         this.setStudy(study);
 
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
-        initializeStateOfExternalModels();
+        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
         registerParameterLinks();
     }
 
@@ -386,7 +373,7 @@ public class Project {
         this.setStudy(study);
 
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
-        initializeStateOfExternalModels();
+        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
         registerParameterLinks();
     }
 
@@ -449,8 +436,9 @@ public class Project {
     }
 
     public void storeStudy() throws RepositoryException, ExternalModelException {
-        this.updateParameterValuesFromLinks();
-        this.exportValuesToExternalModels();
+        SystemModel systemModel = this.getSystemModel();
+        parameterLinkRegistry.updateAll(this, systemModel);
+        externalModelFileHandler.exportValuesToExternalModels(systemModel, accessChecker);
         externalModelFileHandler.updateExternalModelsInStudy();
         if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
             // store URM separately before study, to prevent links to deleted subsystems have storing study fail
@@ -469,7 +457,7 @@ public class Project {
 
         Platform.runLater(() -> this.modelDifferences.clear());
 
-        this.initializeStateOfExternalModels();
+        externalModelFileHandler.initializeStateOfExternalModels(systemModel, accessChecker);
         this.registerParameterLinks();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
     }
@@ -504,56 +492,6 @@ public class Project {
             logger.error("Error storing user role management.", e);
         }
         return false;
-    }
-
-    private void exportValuesToExternalModels() throws ExternalModelException {
-        SystemModel systemModel = getSystemModel();
-        Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, new AccessChecker());
-        List<ExternalModelException> exceptions = new LinkedList<>();
-        while (externalModelsIterator.hasNext()) {
-            ExternalModel externalModel = externalModelsIterator.next();
-            try {
-                modelUpdateHandler.applyParameterChangesToExternalModel(externalModel);
-            } catch (ExternalModelException e) {
-                exceptions.add(e);
-            }
-        }
-        if (exceptions.size() > 0) {
-            String errorMessages = exceptions.stream().map(ExternalModelException::getMessage).collect(Collectors.joining("\n"));
-            throw new ExternalModelException(errorMessages);
-        }
-    }
-
-    private void initializeStateOfExternalModels() {
-        externalModelFileWatcher.clear();
-        externalModelFileHandler.clear();
-        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(getSystemModel(), new AccessChecker());
-        while (iterator.hasNext()) {
-            ExternalModel externalModel = iterator.next();
-            ModelNode modelNode = externalModel.getParent();
-
-            // check cache state and add file watcher if cached
-            ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
-            if (cacheState != ExternalModelCacheState.NOT_CACHED) {
-                addExternalModelFileWatcher(externalModel);
-            }
-
-            // keep track of changed files
-            if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
-                addChangedExternalModel(externalModel);
-                logger.debug(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has been changed since last store to repository");
-            } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
-                // TODO: WARN USER
-                logger.warn(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
-            }
-
-            try {
-                // silently update model from external model
-                modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel, null, null);
-            } catch (ExternalModelException e) {
-                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
-            }
-        }
     }
 
     private void initializeUserManagement() {
@@ -599,10 +537,6 @@ public class Project {
         }
     }
 
-    private void updateParameterValuesFromLinks() {
-        parameterLinkRegistry.updateAll(this, getSystemModel());
-    }
-
     private void updatePossibleActions() {
         StudySettings studySettings = this.study.getStudySettings();
 
@@ -630,13 +564,4 @@ public class Project {
                 '}';
     }
 
-    private class AccessChecker implements Predicate<ModelNode> {
-
-        @Override
-        public boolean test(ModelNode modelNode) {
-            UserRoleManagement userRoleManagement = Project.this.getUserRoleManagement();
-            User user = Project.this.getUser();
-            return userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
-        }
-    }
 }

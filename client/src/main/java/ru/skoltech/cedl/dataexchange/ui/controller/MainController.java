@@ -58,6 +58,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
@@ -131,6 +132,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private ApplicationSettings applicationSettings;
     private Project project;
+    private ExternalModelFileWatcher externalModelFileWatcher;
     private DifferenceMergeHandler differenceMergeHandler;
     private StudyService studyService;
     private GuiService guiService;
@@ -159,6 +161,10 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
+        this.externalModelFileWatcher = externalModelFileWatcher;
     }
 
     public void setStudyService(StudyService studyService) {
@@ -206,7 +212,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void init() {
-        project.start();
+        externalModelFileWatcher.start();
     }
 
     @Override
@@ -827,7 +833,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         } catch (Throwable ignore) {
         }
         try {
-            project.close();
+            externalModelFileWatcher.close();
         } catch (Throwable ignore) {
         }
     }

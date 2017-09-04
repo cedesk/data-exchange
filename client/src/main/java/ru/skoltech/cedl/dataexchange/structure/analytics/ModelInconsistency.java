@@ -83,7 +83,7 @@ public class ModelInconsistency {
         LinkedList<ModelInconsistency> modelInconsistencies = new LinkedList<>();
         // external models
         for (ExternalModel em : compositeModelNode.getExternalModels()) {
-            modelInconsistencies.addAll(analyzeModel(externalModelFileHandler, parameterLinkRegistry, em));
+            modelInconsistencies.addAll(analyzeModel(externalModelFileHandler, em));
         }
         // params
         for (ParameterModel parameterModel : compositeModelNode.getParameters()) {
@@ -98,7 +98,7 @@ public class ModelInconsistency {
         return modelInconsistencies;
     }
 
-    private static Collection<? extends ModelInconsistency> analyzeModel(ExternalModelFileHandler externalModelFileHandler, ParameterLinkRegistry parameterLinkRegistry, ExternalModel em) {
+    private static Collection<? extends ModelInconsistency> analyzeModel(ExternalModelFileHandler externalModelFileHandler, ExternalModel em) {
         LinkedList<ModelInconsistency> modelInconsistencies = new LinkedList<>();
         if (em.getAttachment() == null) {
             modelInconsistencies.add(new ModelInconsistency("External model has empty attachment", Severity.CRITICAL, em.getNodePath(), em));

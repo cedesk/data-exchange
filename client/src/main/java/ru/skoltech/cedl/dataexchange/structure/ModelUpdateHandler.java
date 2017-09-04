@@ -80,7 +80,7 @@ public class ModelUpdateHandler {
         }
         ModelNode modelNode = externalModel.getParent();
         List<ParameterUpdate> updates = new LinkedList<>();
-        ExternalModelEvaluator evaluator = externalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
+        ExternalModelEvaluator evaluator = externalModelAccessorFactory.getEvaluator(externalModel);
         try {
             for (ParameterModel parameterModel : modelNode.getParameters()) {
                 // check whether parameter references external model
@@ -92,8 +92,6 @@ public class ModelUpdateHandler {
                             if (parameterUpdate != null) {
                                 updates.add(parameterUpdate);
                             }
-                        } else {
-                            //logger.error("reference concerning other external model!"); // TODO: change when more models are possible
                         }
                     } else {
                         logger.warn("parameter " + parameterModel.getNodePath() + " has empty valueReference");
@@ -127,7 +125,7 @@ public class ModelUpdateHandler {
             ExternalModelReference valueReference = parameterModel.getValueReference();
             if (valueReference != null && valueReference.getExternalModel() != null) {
                 ExternalModel externalModel = valueReference.getExternalModel();
-                ExternalModelEvaluator evaluator = externalModelAccessorFactory.getEvaluator(externalModel, externalModelFileHandler);
+                ExternalModelEvaluator evaluator = externalModelAccessorFactory.getEvaluator(externalModel);
                 try {
                     parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
                 } finally {
@@ -177,7 +175,7 @@ public class ModelUpdateHandler {
     public void applyParameterChangesToExternalModel(ExternalModel externalModel) throws ExternalModelException {
         ModelNode modelNode = externalModel.getParent();
 
-        ExternalModelExporter exporter = externalModelAccessorFactory.getExporter(externalModel, externalModelFileHandler);
+        ExternalModelExporter exporter = externalModelAccessorFactory.getExporter(externalModel);
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             // check whether parameter exports to external model
             if (parameterModel.getIsExported() &&

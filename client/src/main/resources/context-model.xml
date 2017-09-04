@@ -34,7 +34,6 @@
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="repositoryStateMachine" ref="repositoryStateMachine"/>
         <property name="differenceMergeHandler" ref="differenceMergeHandler"/>
-        <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
@@ -102,11 +101,15 @@
 
     <bean id="externalModelFileHandler" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler">
         <property name="project" ref="project"/>
+        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
+        <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
         <property name="fileStorageService" ref="fileStorageService"/>
         <property name="externalModelFileStorageService" ref="externalModelFileStorageService"/>
     </bean>
 
-    <bean id="externalModelAccessorFactory" class="ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory"/>
+    <bean id="externalModelAccessorFactory" class="ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory">
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
+    </bean>
 
     <bean id="tradespaceModelBridge" class="ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge"
           scope="prototype">

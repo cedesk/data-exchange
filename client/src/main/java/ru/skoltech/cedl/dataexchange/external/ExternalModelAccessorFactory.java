@@ -33,12 +33,18 @@ public class ExternalModelAccessorFactory {
 
     private static final Logger logger = Logger.getLogger(ExternalModelAccessorFactory.class);
 
+    private ExternalModelFileHandler externalModelFileHandler;
+
     private final Map<String, Class<? extends ExternalModelEvaluator>> evaluators = new HashMap<>();
     private final Map<String, Class<? extends ExternalModelExporter>> exporters = new HashMap<>();
 
     public ExternalModelAccessorFactory() {
         this.registerEvaluator(ExcelModelEvaluator.class, ExcelModelEvaluator.getHandledExtensions());
         this.registerExporter(ExcelModelExporter.class, ExcelModelExporter.getHandledExtensions());
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void registerExporter(Class<? extends ExternalModelExporter> exporterClass, String[] extensions) {
@@ -53,7 +59,7 @@ public class ExternalModelAccessorFactory {
         }
     }
 
-    public ExternalModelEvaluator getEvaluator(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
+    public ExternalModelEvaluator getEvaluator(ExternalModel externalModel) {
         String fileName = externalModel.getName();
         String fileExtension = Utils.getExtension(fileName);
         if (evaluators.containsKey(fileExtension)) {
@@ -71,7 +77,7 @@ public class ExternalModelAccessorFactory {
         }
     }
 
-    public ExternalModelExporter getExporter(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) {
+    public ExternalModelExporter getExporter(ExternalModel externalModel) {
         String fileName = externalModel.getName();
         String fileExtension = Utils.getExtension(fileName);
         if (exporters.containsKey(fileExtension)) {

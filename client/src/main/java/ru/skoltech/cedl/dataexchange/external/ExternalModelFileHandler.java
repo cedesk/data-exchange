@@ -20,19 +20,20 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelTreeIterator;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
+import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.*;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Created by dknoll on 02/07/15.
@@ -42,6 +43,8 @@ public class ExternalModelFileHandler {
     private static Logger logger = Logger.getLogger(ExternalModelFileHandler.class);
 
     private Project project;
+    private ExternalModelFileWatcher externalModelFileWatcher;
+    private ModelUpdateHandler modelUpdateHandler;
     private FileStorageService fileStorageService;
     private ExternalModelFileStorageService externalModelFileStorageService;
 
@@ -51,6 +54,14 @@ public class ExternalModelFileHandler {
         this.project = project;
     }
 
+    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
+        this.externalModelFileWatcher = externalModelFileWatcher;
+    }
+
+    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
+        this.modelUpdateHandler = modelUpdateHandler;
+    }
+
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
     }
@@ -58,6 +69,56 @@ public class ExternalModelFileHandler {
     public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
         this.externalModelFileStorageService = externalModelFileStorageService;
     }
+
+    public void initializeStateOfExternalModels(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
+        externalModelFileWatcher.clear();
+        this.clear();
+        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(systemModel, accessChecker);
+        while (iterator.hasNext()) {
+            ExternalModel externalModel = iterator.next();
+            ModelNode modelNode = externalModel.getParent();
+
+            // check cache state and add file watcher if cached
+            ExternalModelCacheState cacheState = this.getCacheState(externalModel);
+            if (cacheState != ExternalModelCacheState.NOT_CACHED) {
+                externalModelFileWatcher.add(externalModel);
+            }
+
+            // keep track of changed files
+            if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
+                addChangedExternalModel(externalModel);
+                logger.debug(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has been changed since last store to repository");
+            } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
+                // TODO: WARN USER
+                logger.warn(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
+            }
+
+            try {
+                // silently update model from external model
+                modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel, null, null);
+            } catch (ExternalModelException e) {
+                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
+            }
+        }
+    }
+
+    public void exportValuesToExternalModels(SystemModel systemModel, Predicate<ModelNode> accessChecker) throws ExternalModelException {
+        Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, accessChecker);
+        List<ExternalModelException> exceptions = new LinkedList<>();
+        while (externalModelsIterator.hasNext()) {
+            ExternalModel externalModel = externalModelsIterator.next();
+            try {
+                modelUpdateHandler.applyParameterChangesToExternalModel(externalModel);
+            } catch (ExternalModelException e) {
+                exceptions.add(e);
+            }
+        }
+        if (exceptions.size() > 0) {
+            String errorMessages = exceptions.stream().map(ExternalModelException::getMessage).collect(Collectors.joining("\n"));
+            throw new ExternalModelException(errorMessages);
+        }
+    }
+
 
     public void clear() {
         changedExternalModels.clear();
@@ -204,7 +265,7 @@ public class ExternalModelFileHandler {
                         throw new ExternalModelException("external model has empty attachment");
                     Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
                     updateCheckoutTimestamp(externalModel);
-                    project.addExternalModelFileWatcher(externalModel);
+                    externalModelFileWatcher.add(externalModel);
                 } else {
                     logger.error("file in local cache (" + file.getPath() + ") is not writable!");
                 }
