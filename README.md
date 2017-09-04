@@ -10,6 +10,7 @@ On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
 ## Release History and Notes
 
+* 2018-09-03 - Version 1.31.2 (fixed release)
 * 2018-09-02 - Version 1.31.1 (fixed tests)
 * 2018-09-01 - Version 1.31   (bug fixes, coloring status logger, improved action logging)
 * 2018-08-21 - Version 1.30   (versioning capability for studies, Spring Data introduction, GUI services)
