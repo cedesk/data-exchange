@@ -125,7 +125,7 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
     @Test
     public void testProjectUserName() {
         String projectUserName = "projectUserName";
-        String osUserName = System.getProperty("user.name");
+        String osUserName = System.getProperty("user.name").toLowerCase();
 
         ApplicationSettingsImpl applicationSettings = new ApplicationSettingsImpl(this.applicationSettings.getCedeskAppDir(), this.applicationSettings.getCedeskAppFile());
 
