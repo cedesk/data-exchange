@@ -37,6 +37,7 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ModelUpdate;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
@@ -66,6 +67,7 @@ public class ExternalModelEditorController implements Initializable {
     private VBox externalModelViewContainer;
 
     private Project project;
+    private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelAccessorFactory externalModelAccessorFactory;
     private ModelUpdateHandler modelUpdateHandler;
     private GuiService guiService;
@@ -81,6 +83,10 @@ public class ExternalModelEditorController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
@@ -259,7 +265,8 @@ public class ExternalModelEditorController implements Initializable {
         @Override
         public void accept(ModelUpdate modelUpdate) {
             ExternalModel externalModel = modelUpdate.getExternalModel();
-            project.addChangedExternalModel(externalModel);
+            externalModelFileHandler.addChangedExternalModel(externalModel);
+            project.markStudyModified();
         }
     }
 

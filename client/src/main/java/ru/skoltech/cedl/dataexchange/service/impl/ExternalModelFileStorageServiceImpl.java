@@ -69,4 +69,13 @@ public class ExternalModelFileStorageServiceImpl implements ExternalModelFileSto
         return path;
     }
 
+    @Override
+    public File createFilePathForExternalModel(File projectDataDir, ExternalModel externalModel) {
+        String nodePath = this.makeExternalModelPath(externalModel);
+        File nodeDir = new File(projectDataDir, nodePath);
+        String rectifiedFileName = externalModel.getId() + "_" + externalModel.getName().replace(' ', '_');
+        return new File(nodeDir, rectifiedFileName);
+    }
+
+
 }

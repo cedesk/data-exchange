@@ -35,4 +35,12 @@ public interface ExternalModelFileStorageService {
 
     String makeExternalModelPath(ExternalModel externalModel);
 
+    /**
+     * This method only forms the full path where the external model would be cached.<br/>
+     * It does not actually assure the file nor the folder exist.
+     *
+     * @param externalModel
+     * @return a file of the location where the external model would be stored.
+     */
+    File createFilePathForExternalModel(File projectDataDir, ExternalModel externalModel);
 }

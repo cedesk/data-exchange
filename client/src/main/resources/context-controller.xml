@@ -84,6 +84,7 @@
         <property name="externalModelFileStorageService" ref="externalModelFileStorageService"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="statusLogger" ref="statusLogger"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelController" scope="prototype">

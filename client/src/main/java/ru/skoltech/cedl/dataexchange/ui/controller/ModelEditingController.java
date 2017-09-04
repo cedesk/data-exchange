@@ -733,7 +733,8 @@ public class ModelEditingController implements Initializable {
         @Override
         public void accept(ModelUpdate modelUpdate) {
             ExternalModel externalModel = modelUpdate.getExternalModel();
-            project.addChangedExternalModel(externalModel);
+            externalModelFileHandler.addChangedExternalModel(externalModel);
+            project.markStudyModified();
             String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
             logger.info(message);
             UserNotifications.showNotification(getAppWindow(), "External model modified", message);

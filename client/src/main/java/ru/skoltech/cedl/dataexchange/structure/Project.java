@@ -285,11 +285,6 @@ public class Project {
         updatePossibleActions();
     }
 
-    public void addChangedExternalModel(ExternalModel externalModel) {
-        externalModelFileHandler.addChangedExternalModel(externalModel);
-        markStudyModified();
-    }
-
     public BooleanProperty canLoadProperty() {
         return canLoad;
     }
