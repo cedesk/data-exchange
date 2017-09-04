@@ -17,9 +17,8 @@
 package ru.skoltech.cedl.dataexchange.external.excel;
 
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.external.*;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.external.*;
 
 import java.io.*;
 import java.text.ParseException;
@@ -42,11 +41,11 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
     }
 
     @Override
-    public void setValue(ExternalModelFileHandler externalModelFileHandler, String target, Double value) throws ExternalModelException {
+    public void setValue(String target, Double value) throws ExternalModelException {
         try {
             SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
             if (spreadsheetAccessor == null) {
-                spreadsheetAccessor = getSpreadsheetAccessor(externalModelFileHandler);
+                spreadsheetAccessor = getSpreadsheetAccessor();
             }
             logger.debug("setting " + value + " on cell " + target + " in " + externalModel.getNodePath());
             spreadsheetAccessor.setNumericValue(coordinates, value);
@@ -55,7 +54,7 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
         }
     }
 
-    public void flushModifications(Project project, ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
+    public void flushModifications(ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
         if (spreadsheetAccessor != null) {
             try {
                 if (spreadsheetAccessor.isModified()) {

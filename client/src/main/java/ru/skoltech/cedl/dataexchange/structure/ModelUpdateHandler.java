@@ -41,7 +41,6 @@ public class ModelUpdateHandler {
 
     private Project project;
     private ParameterLinkRegistry parameterLinkRegistry;
-    private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ActionLogger actionLogger;
     private ExternalModelAccessorFactory externalModelAccessorFactory;
@@ -52,10 +51,6 @@ public class ModelUpdateHandler {
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
@@ -156,7 +151,7 @@ public class ModelUpdateHandler {
         String valueReferenceString = valueReference.toString();
         String nodePath = parameterModel.getNodePath();
         try {
-            Double value = evaluator.getValue(externalModelFileHandler, valueReference.getTarget());
+            Double value = evaluator.getValue(valueReference.getTarget());
             if (Double.isNaN(value)) {
                 throw new ExternalModelException("invalid value for parameter '" + nodePath
                         + "' from '" + valueReferenceString + "'");
@@ -183,18 +178,18 @@ public class ModelUpdateHandler {
                 String target = parameterModel.getExportReference().getTarget();
                 if (target != null && !target.isEmpty()) {
                     try {
-                        exporter.setValue(externalModelFileHandler, target, parameterModel.getEffectiveValue()); // TODO: document behavior
+                        exporter.setValue(target, parameterModel.getEffectiveValue()); // TODO: document behavior
                     } catch (ExternalModelException e) {
-                        exporter.flushModifications(project, externalModelFileWatcher);
+                        exporter.flushModifications(externalModelFileWatcher);
                         logger.warn("failed to export parameter " + parameterModel.getNodePath(), e);
                         throw new ExternalModelException("failed to export parameter " + parameterModel.getNodePath());
                     }
                 } else {
-                    exporter.flushModifications(project, externalModelFileWatcher);
+                    exporter.flushModifications(externalModelFileWatcher);
                     throw new ExternalModelException("parameter " + parameterModel.getNodePath() + " has empty exportReference");
                 }
             }
         }
-        exporter.flushModifications(project, externalModelFileWatcher);
+        exporter.flushModifications(externalModelFileWatcher);
     }
 }

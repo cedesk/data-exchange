@@ -39,12 +39,12 @@ public class ExcelModelEvaluator extends ExcelModelAccessor implements ExternalM
     }
 
     @Override
-    public Double getValue(ExternalModelFileHandler externalModelFileHandler, String target) throws ExternalModelException {
+    public Double getValue(String target) throws ExternalModelException {
         if (target == null)
             throw new ExternalModelException("target is null");
         try {
             SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
-            SpreadsheetCellValueAccessor spreadsheetAccessor = getSpreadsheetAccessor(externalModelFileHandler);
+            SpreadsheetCellValueAccessor spreadsheetAccessor = getSpreadsheetAccessor();
             return spreadsheetAccessor.getNumericValue(coordinates);
         } catch (ParseException e) {
             logger.error("error parsing coordinates: " + target);

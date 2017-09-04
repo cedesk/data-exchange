@@ -37,7 +37,7 @@ public class ExcelModelAccessor {
     protected ExternalModelFileHandler externalModelFileHandler;
 
     /*
-    * Lazy initialization only upon need.
+     * Lazy initialization only upon need.
      */
     private SpreadsheetCellValueAccessor spreadsheetAccessor;
 
@@ -45,7 +45,7 @@ public class ExcelModelAccessor {
         return WorkbookFactory.KNOWN_FILE_EXTENSIONS;
     }
 
-    protected SpreadsheetCellValueAccessor getSpreadsheetAccessor(ExternalModelFileHandler externalModelFileHandler) throws ExternalModelException {
+    protected SpreadsheetCellValueAccessor getSpreadsheetAccessor() throws ExternalModelException {
         if (spreadsheetAccessor == null) {
             try {
                 InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
