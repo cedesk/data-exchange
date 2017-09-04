@@ -20,22 +20,26 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.UUID;
 
 /**
  * Created by D.Knoll on 02.07.2015.
  */
+@Entity
+@Audited
 @XmlType(propOrder = {"name", "lastModification", "uuid"})
 @XmlAccessorType(XmlAccessType.FIELD)
-@Entity
-@Access(AccessType.PROPERTY)
-@Audited
 public class ExternalModel implements Comparable<ExternalModel>, PersistedEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
     @XmlTransient
     private long id;
 
@@ -51,34 +55,24 @@ public class ExternalModel implements Comparable<ExternalModel>, PersistedEntity
     @XmlAttribute
     private String name;
 
+    @Column(length = 100 * 1024 * 1024) // 100MB
+    @Lob
     @XmlTransient
     private byte[] attachment;
 
+    @Version
     @XmlTransient
     private long version;
 
     @XmlAttribute
     private Long lastModification;
 
+    @ManyToOne(targetEntity = ModelNode.class)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     @XmlTransient
     private ModelNode parent;
 
-    public ExternalModel() {
-    }
-
-    @Column(length = 100 * 1024 * 1024) // 100MB
-    @Lob
-    public byte[] getAttachment() {
-        return attachment;
-    }
-
-    public void setAttachment(byte[] attachment) {
-        this.attachment = attachment;
-    }
-
     @Override
-    @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
     public long getId() {
         return id;
     }
@@ -87,44 +81,12 @@ public class ExternalModel implements Comparable<ExternalModel>, PersistedEntity
         this.id = id;
     }
 
-    @NotAudited
     public int getRevision() {
         return revision;
     }
 
     public void setRevision(int revision) {
         this.revision = revision;
-    }
-
-    public Long getLastModification() {
-        return lastModification;
-    }
-
-    public void setLastModification(Long lastModification) {
-        this.lastModification = lastModification;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Transient
-    public String getNodePath() {
-        return parent.getNodePath() + "#" + name;
-    }
-
-    @ManyToOne(targetEntity = ModelNode.class)
-    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-    public ModelNode getParent() {
-        return parent;
-    }
-
-    public void setParent(ModelNode parent) {
-        this.parent = parent;
     }
 
     public String getUuid() {
@@ -135,13 +97,55 @@ public class ExternalModel implements Comparable<ExternalModel>, PersistedEntity
         this.uuid = uuid;
     }
 
-    @Version()
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public byte[] getAttachment() {
+        return attachment;
+    }
+
+    public void setAttachment(byte[] attachment) {
+        this.attachment = attachment;
+    }
+
     public long getVersion() {
         return version;
     }
 
     public void setVersion(long version) {
         this.version = version;
+    }
+
+    public Long getLastModification() {
+        return lastModification;
+    }
+
+    public void setLastModification(Long lastModification) {
+        this.lastModification = lastModification;
+    }
+
+    public ModelNode getParent() {
+        return parent;
+    }
+
+    public void setParent(ModelNode parent) {
+        this.parent = parent;
+    }
+
+    public String getNodePath() {
+        return parent.getNodePath() + "#" + name;
+    }
+
+    public InputStream getAttachmentAsStream() throws ExternalModelException {
+        if (this.getAttachment() == null) {
+            throw new ExternalModelException("external model has empty attachment");
+        }
+        return new ByteArrayInputStream(this.getAttachment());
     }
 
     /*
@@ -159,8 +163,8 @@ public class ExternalModel implements Comparable<ExternalModel>, PersistedEntity
 
         ExternalModel that = (ExternalModel) o;
 
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        return Arrays.equals(attachment, that.attachment);
+        return (name != null ? name.equals(that.name) : that.name == null)
+                && Arrays.equals(attachment, that.attachment);
     }
 
     @Override

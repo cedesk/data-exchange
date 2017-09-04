@@ -54,41 +54,9 @@ public class ExcelModelExporter extends ExcelModelAccessor implements ExternalMo
         }
     }
 
-    public void flushModifications(ExternalModelFileWatcher externalModelFileWatcher) throws ExternalModelException {
-        if (spreadsheetAccessor != null) {
-            try {
-                if (spreadsheetAccessor.isModified()) {
-                    ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
-                    if (cacheState == ExternalModelCacheState.NOT_CACHED) {
-                        logger.debug("Updating " + externalModel.getNodePath() + " with changes from parameters");
-                        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(externalModel.getAttachment().length)) {
-                            spreadsheetAccessor.saveChanges(bos);
-                            externalModel.setAttachment(bos.toByteArray());
-                        } catch (IOException e) {
-                            logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + "(in memory).");
-                            throw new ExternalModelException("error saving changes to external model" + externalModel.getNodePath());
-                        }
-                    } else {
-                        File file = externalModelFileHandler.getFilePathInCache(externalModel);
-                        externalModelFileWatcher.maskChangesTo(file);
-                        logger.debug("Updating " + file.getAbsolutePath() + " with changes from parameters");
-                        try (FileOutputStream fos = new FileOutputStream(file)) {
-                            spreadsheetAccessor.saveChanges(fos);
-                        } catch (FileNotFoundException e) {
-                            logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
-                            throw new ExternalModelException("external model " + externalModel.getNodePath() + " is opened by other application");
-                        } catch (IOException e) {
-                            logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
-                            throw new ExternalModelException("error saving changes to external model " + externalModel.getNodePath());
-                        } finally {
-                            externalModelFileWatcher.unmaskChangesTo(file);
-                        }
-                    }
-                }
-            } finally {
-                close();
-            }
-        }
+    public void flushModifications() throws ExternalModelException {
+        externalModelFileHandler.flushModifications(externalModel, spreadsheetAccessor);
+        this.close();
     }
 
 }

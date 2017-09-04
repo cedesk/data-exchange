@@ -22,6 +22,7 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelTreeIterator;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
@@ -188,7 +189,6 @@ public class ExternalModelFileHandler {
 
     public ExternalModelCacheState getCacheState(ExternalModel externalModel) {
         Objects.requireNonNull(externalModel);
-        ExternalModelCacheState cacheState = ExternalModelCacheState.NOT_CACHED;
         File modelFile = this.getFilePathInCache(externalModel);
         Long modelLastStored = externalModel.getLastModification();
         if (modelFile.exists() && modelLastStored != null) {
@@ -198,19 +198,19 @@ public class ExternalModelFileHandler {
             boolean locallyModified = checkoutTime < fileLastModified;
             if (newerInRepository) {
                 if (locallyModified) {
-                    cacheState = ExternalModelCacheState.CACHED_CONFLICTING_CHANGES;
+                    return ExternalModelCacheState.CACHED_CONFLICTING_CHANGES;
                 } else {
-                    cacheState = ExternalModelCacheState.CACHED_OUTDATED;
+                    return ExternalModelCacheState.CACHED_OUTDATED;
                 }
             } else {
                 if (locallyModified) {
-                    cacheState = ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT;
+                    return ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT;
                 } else {
-                    cacheState = ExternalModelCacheState.CACHED_UP_TO_DATE;
+                    return ExternalModelCacheState.CACHED_UP_TO_DATE;
                 }
             }
         }
-        return cacheState;
+        return ExternalModelCacheState.NOT_CACHED;
     }
 
     private long getCheckoutTime(File file) {
@@ -239,11 +239,6 @@ public class ExternalModelFileHandler {
         } catch (IOException e) {
             logger.warn("problem setting the external model checkout timestamp.");
         }
-    }
-
-    private long getCheckoutTime(ExternalModel externalModel) {
-        File file = this.getFilePathInCache(externalModel);
-        return getCheckoutTime(file);
     }
 
     public void addChangedExternalModel(ExternalModel externalModel) {
@@ -348,10 +343,46 @@ public class ExternalModelFileHandler {
                 File writtenFile = cacheFile(externalModel);
                 return new FileInputStream(writtenFile);
             default:
-                if (externalModel.getAttachment() == null)
-                    throw new ExternalModelException("external model has empty attachment");
-                return new ByteArrayInputStream(externalModel.getAttachment());
+                return externalModel.getAttachmentAsStream();
         }
+    }
+
+    public void flushModifications(ExternalModel externalModel, SpreadsheetCellValueAccessor spreadsheetAccessor) throws ExternalModelException {
+        if (spreadsheetAccessor != null) {
+            if (spreadsheetAccessor.isModified()) {
+                ExternalModelCacheState cacheState = this.getCacheState(externalModel);
+                if (cacheState == ExternalModelCacheState.NOT_CACHED) {
+                    logger.debug("Updating " + externalModel.getNodePath() + " with changes from parameters");
+                    try (ByteArrayOutputStream bos = new ByteArrayOutputStream(externalModel.getAttachment().length)) {
+                        spreadsheetAccessor.saveChanges(bos);
+                        externalModel.setAttachment(bos.toByteArray());
+                    } catch (IOException e) {
+                        logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + "(in memory).");
+                        throw new ExternalModelException("error saving changes to external model" + externalModel.getNodePath());
+                    }
+                } else {
+                    File file = this.getFilePathInCache(externalModel);
+                    externalModelFileWatcher.maskChangesTo(file);
+                    logger.debug("Updating " + file.getAbsolutePath() + " with changes from parameters");
+                    try (FileOutputStream fos = new FileOutputStream(file)) {
+                        spreadsheetAccessor.saveChanges(fos);
+                    } catch (FileNotFoundException e) {
+                        logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
+                        throw new ExternalModelException("external model " + externalModel.getNodePath() + " is opened by other application");
+                    } catch (IOException e) {
+                        logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
+                        throw new ExternalModelException("error saving changes to external model " + externalModel.getNodePath());
+                    } finally {
+                        externalModelFileWatcher.unmaskChangesTo(file);
+                    }
+                }
+            }
+        }
+    }
+
+    private long getCheckoutTime(ExternalModel externalModel) {
+        File file = this.getFilePathInCache(externalModel);
+        return getCheckoutTime(file);
     }
 
 }

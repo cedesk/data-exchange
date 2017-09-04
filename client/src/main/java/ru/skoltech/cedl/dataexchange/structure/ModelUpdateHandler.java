@@ -41,7 +41,6 @@ public class ModelUpdateHandler {
 
     private Project project;
     private ParameterLinkRegistry parameterLinkRegistry;
-    private ExternalModelFileWatcher externalModelFileWatcher;
     private ActionLogger actionLogger;
     private ExternalModelAccessorFactory externalModelAccessorFactory;
 
@@ -51,10 +50,6 @@ public class ModelUpdateHandler {
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
-    }
-
-    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
-        this.externalModelFileWatcher = externalModelFileWatcher;
     }
 
     public void setActionLogger(ActionLogger actionLogger) {
@@ -180,16 +175,16 @@ public class ModelUpdateHandler {
                     try {
                         exporter.setValue(target, parameterModel.getEffectiveValue()); // TODO: document behavior
                     } catch (ExternalModelException e) {
-                        exporter.flushModifications(externalModelFileWatcher);
+                        exporter.flushModifications();
                         logger.warn("failed to export parameter " + parameterModel.getNodePath(), e);
                         throw new ExternalModelException("failed to export parameter " + parameterModel.getNodePath());
                     }
                 } else {
-                    exporter.flushModifications(externalModelFileWatcher);
+                    exporter.flushModifications();
                     throw new ExternalModelException("parameter " + parameterModel.getNodePath() + " has empty exportReference");
                 }
             }
         }
-        exporter.flushModifications(externalModelFileWatcher);
+        exporter.flushModifications();
     }
 }
