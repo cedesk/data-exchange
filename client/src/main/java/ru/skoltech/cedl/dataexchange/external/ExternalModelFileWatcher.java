@@ -51,14 +51,13 @@ public class ExternalModelFileWatcher extends Observable {
         this.externalModelFileHandler = externalModelFileHandler;
     }
 
-    public void add(ExternalModel externalModel) {
-        File file = externalModelFileHandler.getFilePathInCache(externalModel);
-        watchedExternalModels.put(file, externalModel);
-        String filePattern = file.getName();
+    public void add(ExternalModel externalModel, File cacheFile) {
+        watchedExternalModels.put(cacheFile, externalModel);
+        String filePattern = cacheFile.getName();
         try {
-            directoryWatchService.register(new FileChangeListener(), file.getParent(), filePattern);
+            directoryWatchService.register(new FileChangeListener(), cacheFile.getParent(), filePattern);
         } catch (IOException e) {
-            logger.error("unable to observe file " + file.getAbsolutePath() + " for modifications.");
+            logger.error("unable to observe file " + cacheFile.getAbsolutePath() + " for modifications.");
         }
     }
 

@@ -82,7 +82,8 @@ public class ExternalModelFileHandler {
             // check cache state and add file watcher if cached
             ExternalModelCacheState cacheState = this.getCacheState(externalModel);
             if (cacheState != ExternalModelCacheState.NOT_CACHED) {
-                externalModelFileWatcher.add(externalModel);
+                File cacheFile = this.getFilePathInCache(externalModel);
+                externalModelFileWatcher.add(externalModel, cacheFile);
             }
 
             // keep track of changed files
@@ -179,7 +180,7 @@ public class ExternalModelFileHandler {
      * @param externalModel
      * @return a file of the location where the external model would be stored.
      */
-    public File getFilePathInCache(ExternalModel externalModel) {
+    private File getFilePathInCache(ExternalModel externalModel) {
         String nodePath = externalModelFileStorageService.makeExternalModelPath(externalModel);
         File projectDataDir = project.getProjectDataDir();
         File nodeDir = new File(projectDataDir, nodePath);
@@ -260,7 +261,8 @@ public class ExternalModelFileHandler {
                         throw new ExternalModelException("external model has empty attachment");
                     Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
                     updateCheckoutTimestamp(externalModel);
-                    externalModelFileWatcher.add(externalModel);
+                    File cacheFile = this.getFilePathInCache(externalModel);
+                    externalModelFileWatcher.add(externalModel, cacheFile);
                 } else {
                     logger.error("file in local cache (" + file.getPath() + ") is not writable!");
                 }

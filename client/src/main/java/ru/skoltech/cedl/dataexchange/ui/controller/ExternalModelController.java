@@ -93,24 +93,17 @@ public class ExternalModelController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         externalModelNameText.setText(externalModel.getName());
-        File filePathInCache = externalModelFileHandler.getFilePathInCache(externalModel);
-        File pathInCache = filePathInCache.getParentFile();
         openExternalButton.addEventFilter(MouseEvent.MOUSE_PRESSED, (MouseEvent event) -> {
-            if (event.isSecondaryButtonDown())
-                try {
-                    openFile(pathInCache);
-                } catch (IOException ioe) {
-                    logger.error("Error saving external model to spreadsheet.", ioe);
-                } catch (Exception e) {
-                    logger.error("Error opening external model with default editor.", e);
-                }
+            if (event.isSecondaryButtonDown()){
+                this.openExternalModel();
+            }
         });
     }
 
     public void openExternalModel() {
         try {
             File file = externalModelFileHandler.cacheFile(externalModel);
-            openFile(file);
+            this.openFile(file);
         } catch (ExternalModelException | IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);
             statusLogger.error("Unable to cache external model");
