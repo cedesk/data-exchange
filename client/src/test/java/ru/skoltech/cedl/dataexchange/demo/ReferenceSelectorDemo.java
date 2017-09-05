@@ -54,7 +54,8 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
             ParameterModel parameterModel = getParameterModel();
 
             System.out.println(parameterModel);
-            modelUpdateHandler.applyParameterChangesFromExternalModel(parameterModel, System.out::println);
+            ParameterModel changedParameterModel = modelUpdateHandler.applyParameterChangesFromExternalModel(parameterModel);
+            System.out.println(changedParameterModel);
 
             ExternalModelReference valueReference = parameterModel.getValueReference();
             List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
@@ -66,7 +67,7 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
                 System.out.println(externalModelReference);
             });
             referenceSelectorViewBuilder.showAndWait(valueReference, externalModels);
-        } catch (IllegalAccessException | NoSuchFieldException | ExternalModelException e) {
+        } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         } finally {
             primaryStage.fireEvent(new WindowEvent(primaryStage, WindowEvent.WINDOW_CLOSE_REQUEST));

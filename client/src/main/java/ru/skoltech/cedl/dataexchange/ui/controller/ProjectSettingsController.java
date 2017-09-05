@@ -29,7 +29,9 @@ import javafx.scene.control.TitledPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.service.UserManagementService;
@@ -213,7 +215,8 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
     }
 
     public void cleanupProjectCache() {
-        externalModelFileHandler.cleanupCache();
+        SystemModel systemModel = project.getStudy().getSystemModel();
+        externalModelFileHandler.cleanupCache(systemModel);
     }
 
 }

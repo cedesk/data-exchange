@@ -34,7 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Created by dknoll on 02/07/15.
@@ -73,7 +72,7 @@ public class ExternalModelFileHandler {
 
     public void initializeStateOfExternalModels(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
         externalModelFileWatcher.clear();
-        this.clear();
+        changedExternalModels.clear();
         Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(systemModel, accessChecker);
         while (iterator.hasNext()) {
             ExternalModel externalModel = iterator.next();
@@ -96,38 +95,21 @@ public class ExternalModelFileHandler {
                 logger.warn(modelNode.getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
             }
 
-            try {
-                // silently update model from external model
-                modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel, null, null);
-            } catch (ExternalModelException e) {
-                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
-            }
+            // silently update model from external model
+            modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel);
         }
     }
 
-    public void exportValuesToExternalModels(SystemModel systemModel, Predicate<ModelNode> accessChecker) throws ExternalModelException {
+    public void exportValuesToExternalModels(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
         Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, accessChecker);
-        List<ExternalModelException> exceptions = new LinkedList<>();
         while (externalModelsIterator.hasNext()) {
             ExternalModel externalModel = externalModelsIterator.next();
-            try {
-                modelUpdateHandler.applyParameterChangesToExternalModel(externalModel);
-            } catch (ExternalModelException e) {
-                exceptions.add(e);
-            }
-        }
-        if (exceptions.size() > 0) {
-            String errorMessages = exceptions.stream().map(ExternalModelException::getMessage).collect(Collectors.joining("\n"));
-            throw new ExternalModelException(errorMessages);
+            modelUpdateHandler.applyParameterChangesToExternalModel(externalModel);
         }
     }
 
     public void addChangedExternalModel(ExternalModel externalModel) {
         changedExternalModels.add(externalModel);
-    }
-
-    private void clear() {
-        changedExternalModels.clear();
     }
 
     /**
@@ -268,9 +250,8 @@ public class ExternalModelFileHandler {
         return file;
     }
 
-    public void cleanupCache() {
+    public void cleanupCache(SystemModel systemModel) {
         Set<String> toBeKept = new HashSet<>();
-        SystemModel systemModel = project.getStudy().getSystemModel();
         File projectDataDir = project.getProjectDataDir();
         ExternalModelTreeIterator emi = new ExternalModelTreeIterator(systemModel);
         while (emi.hasNext()) {
@@ -317,7 +298,7 @@ public class ExternalModelFileHandler {
             case CACHED_CONFLICTING_CHANGES:
                 logger.warn("overwriting cached file: " + file.getAbsolutePath());
                 Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
-                updateCheckoutTimestamp(externalModel);
+                this.updateCheckoutTimestamp(externalModel);
                 break;
             default:
         }

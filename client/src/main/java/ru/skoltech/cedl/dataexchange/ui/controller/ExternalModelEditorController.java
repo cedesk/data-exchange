@@ -36,9 +36,7 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.ModelUpdate;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
@@ -53,6 +51,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
+
+import static ru.skoltech.cedl.dataexchange.logging.ActionLogger.ActionType.*;
 
 /**
  * Controller for editing external model.
@@ -78,8 +78,7 @@ public class ExternalModelEditorController implements Initializable {
 
     private ModelNode modelNode;
 
-    private ExternalModelUpdateListener externalModelUpdateListener = new ExternalModelUpdateListener();
-    private ModelEditingController.ParameterUpdateListener parameterUpdateListener;
+    private Consumer<List<ParameterModel>> parameterModelsConsumer;
 
     public void setProject(Project project) {
         this.project = project;
@@ -133,7 +132,8 @@ public class ExternalModelEditorController implements Initializable {
 
     public void addExternalModel() {
         if (!project.isStudyInRepository()) {
-            Dialogues.showError("Save Project", "Unable to attach an external model, as long as the project has not been saved yet!");
+            Dialogues.showError("Save Project",
+                    "Unable to attach an external model, as long as the project has not been saved yet!");
             return;
         }
         File externalModelFile = Dialogues.chooseExternalModelFile(fileStorageService.applicationDirectory());
@@ -142,15 +142,20 @@ public class ExternalModelEditorController implements Initializable {
             if (externalModelFile.isFile() && externalModelAccessorFactory.hasEvaluator(fileName)) {
                 boolean hasExtModWithSameName = modelNode.getExternalModelMap().containsKey(fileName);
                 if (hasExtModWithSameName) {
-                    Dialogues.showWarning("Duplicate external model name", "This node already has an attachment with the same name!");
+                    Dialogues.showWarning("Duplicate external model name",
+                            "This node already has an attachment with the same name!");
                 } else {
                     try {
-                        ExternalModel externalModel = externalModelFileStorageService.createExternalModelFromFile(externalModelFile, modelNode);
+                        ExternalModel externalModel
+                                = externalModelFileStorageService.createExternalModelFromFile(externalModelFile, modelNode);
                         modelNode.addExternalModel(externalModel);
                         this.renderExternalModelView(externalModel);
-                        Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
+                        Dialogues.showWarning("The file is now under CEDESK version control.",
+                                "The file has been imported into the repository. "
+                                        + "Further modifications on the local copy will not be reflected "
+                                        + "in the system model!");
                         statusLogger.info("added external model: " + externalModel.getName());
-                        actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ADD, externalModel.getNodePath());
+                        actionLogger.log(EXTERNAL_MODEL_ADD, externalModel.getNodePath());
                         project.markStudyModified();
                     } catch (IOException e) {
                         logger.warn("Unable to import model file.", e);
@@ -179,33 +184,35 @@ public class ExternalModelEditorController implements Initializable {
             }
         }
         if (referencingParameters.length() > 0) {
-            Dialogues.showError("External Model is not removable.", "The given external model is referenced by parameters: " + referencingParameters.toString());
+            Dialogues.showError("External Model is not removable.",
+                    "The given external model is referenced by parameters: " + referencingParameters.toString());
         } else {
             modelNode.getExternalModels().remove(externalModel);
             externalModelViewContainer.getChildren().remove(extModRow);
             project.markStudyModified();
             statusLogger.info("removed external model: " + externalModel.getName());
-            actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_REMOVE, externalModel.getNodePath());
+            actionLogger.log(EXTERNAL_MODEL_REMOVE, externalModel.getNodePath());
         }
     }
 
     public void reloadExternalModels() {
-        for (ExternalModel externalModel : modelNode.getExternalModels())
-            try {
-                modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel,
-                        externalModelUpdateListener, parameterUpdateListener);
-            } catch (ExternalModelException e) {
-                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
-            }
+        modelNode.getExternalModels().forEach(externalModel -> {
+            externalModelFileHandler.addChangedExternalModel(externalModel);
+            project.markStudyModified();
+            List<ParameterModel> parameterModels
+                    = modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel);
+            parameterModelsConsumer.accept(parameterModels);
+        });
     }
 
-    public void setParameterUpdateListener(ModelEditingController.ParameterUpdateListener parameterUpdateListener) {
-        this.parameterUpdateListener = parameterUpdateListener;
+    public void setParameterModelsConsumer(Consumer<List<ParameterModel>> parameterModelsConsumer) {
+        this.parameterModelsConsumer = parameterModelsConsumer;
     }
 
     private void exchangeExternalModel(ActionEvent actionEvent) {
         if (!project.isStudyInRepository()) {
-            Dialogues.showError("Save Project", "Unable to attach an external model, as long as the project has not been saved yet!");
+            Dialogues.showError("Save Project", "Unable to attach an external model, "
+                    + "as long as the project has not been saved yet!");
             return;
         }
         Button exchangeButton = (Button) actionEvent.getSource();
@@ -221,9 +228,12 @@ public class ExternalModelEditorController implements Initializable {
                     externalModelFileStorageService.readExternalModelAttachmentFromFile(externalModelFile, externalModel);
                     externalModel.setName(fileName);
                     Platform.runLater(ExternalModelEditorController.this::updateView);
-                    Dialogues.showWarning("The file is now under CEDESK version control.", "The file has been imported into the repository. Further modifications on the local copy will not be reflected in the system model!");
+                    Dialogues.showWarning("The file is now under CEDESK version control.",
+                            "The file has been imported into the repository. "
+                                    + "Further modifications on the local copy will not be reflected "
+                                    + "in the system model!");
                     statusLogger.info("replaced external model: " + oldFileName + " > " + fileName);
-                    actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, oldNodePath + " > " + fileName);
+                    actionLogger.log(EXTERNAL_MODEL_MODIFY, oldNodePath + " > " + fileName);
                     project.markStudyModified();
                 } catch (IOException e) {
                     logger.warn("Unable to import model file.", e);
@@ -260,16 +270,6 @@ public class ExternalModelEditorController implements Initializable {
         exchangeButton.setUserData(externalModel);
         externalModelViewContainer.getChildren().add(extModRow);
     }
-
-    public class ExternalModelUpdateListener implements Consumer<ModelUpdate> {
-        @Override
-        public void accept(ModelUpdate modelUpdate) {
-            ExternalModel externalModel = modelUpdate.getExternalModel();
-            externalModelFileHandler.addChangedExternalModel(externalModel);
-            project.markStudyModified();
-        }
-    }
-
 }
 
 

@@ -239,9 +239,7 @@ public class DifferenceMergeHandler {
             // update cached file
             externalModelFileHandler.forceCacheUpdate(externalModel);
             // update parameters from new file
-            modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel, null, null);
-        } catch (ExternalModelException e) {
-            logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
+            modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel);
         } catch (IOException e) {
             logger.error("failed to update cached external model: " + externalModel.getNodePath(), e);
             throw new MergeException("failed to updated cached external model: " + externalModel.getName());

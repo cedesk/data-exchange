@@ -18,19 +18,25 @@ package ru.skoltech.cedl.dataexchange.structure;
 
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelEvaluator;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelExporter;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Created by Nikolay Groshkov on 30-Aug-17.
@@ -39,152 +45,171 @@ public class ModelUpdateHandler {
 
     private static final Logger logger = Logger.getLogger(ModelUpdateHandler.class);
 
-    private Project project;
-    private ParameterLinkRegistry parameterLinkRegistry;
-    private ActionLogger actionLogger;
     private ExternalModelAccessorFactory externalModelAccessorFactory;
+    private ParameterLinkRegistry parameterLinkRegistry;
+    private StatusLogger statusLogger;
+    private ActionLogger actionLogger;
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
+        this.externalModelAccessorFactory = externalModelAccessorFactory;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
+    }
+
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
     }
 
-    public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
-        this.externalModelAccessorFactory = externalModelAccessorFactory;
-    }
-
-    public void applyParameterChangesFromExternalModel(ExternalModel externalModel,
-                                                       Consumer<ModelUpdate> modelUpdateListener,
-                                                       Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
-
-        ModelUpdate modelUpdate = new ModelUpdate(externalModel);
-        if (modelUpdateListener != null) {
-            modelUpdateListener.accept(modelUpdate);
+    public List<ParameterModel> applyParameterChangesFromExternalModel(ExternalModel externalModel) {
+        if (externalModel == null || externalModel.getParent() == null
+                || externalModel.getParent().getParameters() == null) {
+            return Collections.emptyList();
         }
+
         ModelNode modelNode = externalModel.getParent();
-        List<ParameterUpdate> updates = new LinkedList<>();
-        ExternalModelEvaluator evaluator = externalModelAccessorFactory.getEvaluator(externalModel);
-        try {
-            for (ParameterModel parameterModel : modelNode.getParameters()) {
-                // check whether parameter references external model
-                if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                    ExternalModelReference valueReference = parameterModel.getValueReference();
-                    if (valueReference != null && valueReference.getExternalModel() != null) {
-                        if (externalModel.getName().equals(valueReference.getExternalModel().getName())) {
-                            ParameterUpdate parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
-                            if (parameterUpdate != null) {
-                                updates.add(parameterUpdate);
-                            }
-                        }
-                    } else {
-                        logger.warn("parameter " + parameterModel.getNodePath() + " has empty valueReference");
-                    }
-                }
-            }
-        } finally {
-            try {
-                evaluator.close();
-            } catch (IOException e) {
-                logger.warn("error closing the external model: " + externalModel.getNodePath());
-            }
-        }
 
-        // APPLY CHANGES
-        for (ParameterUpdate parameterUpdate : updates) {
-            parameterUpdate.apply();
-            if (parameterUpdateListener != null) {
-                parameterUpdateListener.accept(parameterUpdate);
-            }
-            parameterLinkRegistry.updateSinks(project, parameterUpdate.getParameterModel());
-        }
+        return modelNode.getParameters().stream()
+                .map(parameterModel -> applyParameterChangesFromExternalModel(parameterModel, externalModel))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
-    public void applyParameterChangesFromExternalModel(ParameterModel parameterModel,
-                                                       Consumer<ParameterUpdate> parameterUpdateListener) throws ExternalModelException {
-        ParameterUpdate parameterUpdate = null;
+    public ParameterModel applyParameterChangesFromExternalModel(ParameterModel parameterModel) {
+        if (parameterModel == null) {
+            return null;
+        }
 
-        // check whether parameter references external model
-        if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-            ExternalModelReference valueReference = parameterModel.getValueReference();
-            if (valueReference != null && valueReference.getExternalModel() != null) {
-                ExternalModel externalModel = valueReference.getExternalModel();
-                ExternalModelEvaluator evaluator = externalModelAccessorFactory.getEvaluator(externalModel);
-                try {
-                    parameterUpdate = getParameterUpdate(parameterModel, valueReference, evaluator);
-                } finally {
-                    try {
-                        evaluator.close();
-                    } catch (IOException e) {
-                        logger.warn("error closing the external model: " + externalModel.getNodePath());
-                    }
-                }
-            }
-        } else {
-            logger.warn("parameter " + parameterModel.getNodePath() + " has empty valueReference");
+        ExternalModelReference valueReference = parameterModel.getValueReference();
+        if (valueReference == null) {
+            return null;
         }
-        // APPLY CHANGES
-        if (parameterUpdate != null) {
-            parameterUpdate.apply();
-            if (parameterUpdateListener != null) {
-                parameterUpdateListener.accept(parameterUpdate);
-            }
-            parameterLinkRegistry.updateSinks(project, parameterModel);
+        ExternalModel valueReferenceExternalModel = valueReference.getExternalModel();
+        if (valueReferenceExternalModel == null) {
+            return null;
         }
+
+        return applyParameterChangesFromExternalModel(parameterModel, valueReferenceExternalModel);
     }
 
-    private ParameterUpdate getParameterUpdate(ParameterModel parameterModel,
-                                               ExternalModelReference valueReference,
-                                               ExternalModelEvaluator evaluator) throws ExternalModelException {
-        ParameterUpdate parameterUpdate = null;
+    private ParameterModel applyParameterChangesFromExternalModel(ParameterModel parameterModel, ExternalModel externalModel) {
+        if (parameterModel == null) {
+            return null;
+        }
+
+        if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
+            logger.warn("Parameter " + parameterModel.getNodePath() + " has empty valueReference");
+            return null;
+        }
+
+        ExternalModelReference valueReference = parameterModel.getValueReference();
+        if (valueReference == null) {
+            return null;
+        }
+        ExternalModel valueReferenceExternalModel = valueReference.getExternalModel();
+        if (valueReferenceExternalModel == null) {
+            return null;
+        }
+
+        if (!externalModel.getName().equals(valueReferenceExternalModel.getName())) {
+            return null;
+        }
+
+        Double newParameterValue = newParameterValue(parameterModel);
+
+        if (newParameterValue == null) {
+            return null;
+        }
+
+        parameterModel.setValue(newParameterValue);
+        parameterLinkRegistry.updateSinks(parameterModel);
+
+        return parameterModel;
+    }
+
+    private Double newParameterValue(ParameterModel parameterModel) {
+        ExternalModelReference valueReference = parameterModel.getValueReference();
+        ExternalModel externalModel = valueReference.getExternalModel();
         String valueReferenceString = valueReference.toString();
         String nodePath = parameterModel.getNodePath();
+
+        ExternalModelEvaluator evaluator = null;
         try {
+            evaluator = externalModelAccessorFactory.getEvaluator(externalModel);
             Double value = evaluator.getValue(valueReference.getTarget());
             if (Double.isNaN(value)) {
-                throw new ExternalModelException("invalid value for parameter '" + nodePath
+                throw new ExternalModelException("Invalid value for parameter '" + nodePath
                         + "' from '" + valueReferenceString + "'");
-            } else if (!Precision.equals(parameterModel.getValue(), value, 2)) {
-                parameterUpdate = new ParameterUpdate(parameterModel, value);
+            } else if (parameterModel.getValue() == null || !Precision.equals(parameterModel.getValue(), value, 2)) {
+                return value;
             } else {
-                logger.debug("no change for " + parameterModel.getName() + " from " + valueReferenceString);
+                logger.debug("No change for " + parameterModel.getName() + " from " + valueReferenceString);
             }
-        } catch (ExternalModelException e) {
+        } catch (Exception e) {
             actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, nodePath + "#" + valueReferenceString);
-            throw new ExternalModelException("unable to evaluate value for parameter '" + nodePath + "' from '" + valueReferenceString + "'");
+            logger.warn("Unable to evaluate value for parameter '" + nodePath + "' from '" + valueReferenceString + "'");
+        } finally {
+            try {
+                if (evaluator != null) {
+                    evaluator.close();
+                }
+            } catch (IOException e) {
+                logger.warn("Error closing the external model: " + externalModel.getNodePath());
+            }
         }
-        return parameterUpdate;
+        return null;
     }
 
-    public void applyParameterChangesToExternalModel(ExternalModel externalModel) throws ExternalModelException {
+    public List<ParameterModel> applyParameterChangesToExternalModel(ExternalModel externalModel) {
         ModelNode modelNode = externalModel.getParent();
 
+        List<ParameterModel> exportedParameterModels = modelNode.getParameters().stream()
+                .filter(parameterModel -> parameterModel.getIsExported()
+                        && parameterModel.getExportReference() != null
+                        && parameterModel.getExportReference().getExternalModel() != null)
+                .collect(Collectors.toList());
+
+        List<ParameterModel> incorrectExportedParameterModels = exportedParameterModels.stream()
+                .filter(parameterModel -> parameterModel.getExportReference().getTarget() == null
+                        || parameterModel.getExportReference().getTarget().isEmpty())
+                .collect(Collectors.toList());
+        incorrectExportedParameterModels.forEach(parameterModel -> {
+                logger.warn("Parameter " + parameterModel.getNodePath() + " has empty exportReference.");
+                statusLogger.warn("Parameter " + parameterModel.getNodePath() + " has empty exportReference.");
+        });
+
+        List<ParameterModel> correctExportedParameterModels = exportedParameterModels.stream()
+                .filter(parameterModel -> parameterModel.getExportReference().getTarget() != null
+                        && !parameterModel.getExportReference().getTarget().isEmpty())
+                .collect(Collectors.toList());
+
         ExternalModelExporter exporter = externalModelAccessorFactory.getExporter(externalModel);
-        for (ParameterModel parameterModel : modelNode.getParameters()) {
-            // check whether parameter exports to external model
-            if (parameterModel.getIsExported() &&
-                    parameterModel.getExportReference() != null && parameterModel.getExportReference().getExternalModel() != null) {
-                String target = parameterModel.getExportReference().getTarget();
-                if (target != null && !target.isEmpty()) {
-                    try {
-                        exporter.setValue(target, parameterModel.getEffectiveValue()); // TODO: document behavior
-                    } catch (ExternalModelException e) {
-                        exporter.flushModifications();
-                        logger.warn("failed to export parameter " + parameterModel.getNodePath(), e);
-                        throw new ExternalModelException("failed to export parameter " + parameterModel.getNodePath());
-                    }
-                } else {
-                    exporter.flushModifications();
-                    throw new ExternalModelException("parameter " + parameterModel.getNodePath() + " has empty exportReference");
-                }
+
+        List<ParameterModel> result = new ArrayList<>();
+        for (ParameterModel parameterModel : correctExportedParameterModels) {
+            String target = parameterModel.getExportReference().getTarget();
+            try {
+                exporter.setValue(target, parameterModel.getEffectiveValue());
+                result.add(parameterModel);
+            } catch (ExternalModelException e) {
+                logger.warn("Failed to export parameter " + parameterModel.getNodePath(), e);
+                statusLogger.warn("Failed to export parameter " + parameterModel.getNodePath());
             }
         }
-        exporter.flushModifications();
+        try {
+            exporter.flushModifications();
+            exporter.close();
+        } catch (ExternalModelException e) {
+            logger.warn("Cannot flush modifications in exporter", e);
+        } catch (IOException e) {
+            logger.warn("Cannot close exporter", e);
+        }
+
+        return result;
     }
 }

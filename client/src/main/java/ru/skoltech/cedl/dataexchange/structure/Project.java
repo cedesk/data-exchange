@@ -39,7 +39,6 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
@@ -430,9 +429,9 @@ public class Project {
         reinitializeProject(systemModel);
     }
 
-    public void storeStudy() throws RepositoryException, ExternalModelException {
+    public void storeStudy() throws RepositoryException {
         SystemModel systemModel = this.getSystemModel();
-        parameterLinkRegistry.updateAll(this, systemModel);
+        parameterLinkRegistry.updateAll(systemModel);
         externalModelFileHandler.exportValuesToExternalModels(systemModel, accessChecker);
         externalModelFileHandler.updateExternalModelsInStudy();
         if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new

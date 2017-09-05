@@ -42,7 +42,10 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
+import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
@@ -118,6 +121,8 @@ public class ModelEditingController implements Initializable {
     private BooleanProperty selectedNodeCannotHaveChildren = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(true);
 
+    private ParameterModelConsumer parameterModelConsumer = new ParameterModelConsumer();
+
     private ParameterEditorController parameterEditorController;
     private ExternalModelEditorController externalModelEditorController;
 
@@ -185,13 +190,14 @@ public class ModelEditingController implements Initializable {
 
         externalModelFileWatcher.addObserver((o, arg) -> {
             ExternalModel externalModel = (ExternalModel) arg;
-            try {
-                modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel,
-                        new ExternalModelUpdateListener(),
-                        new ParameterUpdateListener());
-            } catch (ExternalModelException e) {
-                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
-            }
+            externalModelFileHandler.addChangedExternalModel(externalModel);
+            project.markStudyModified();
+            String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
+            logger.info(message);
+            UserNotifications.showNotification(getAppWindow(), "External model modified", message);
+            actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
+            List<ParameterModel> parameterModels = modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel);
+            parameterModelConsumer.accept(parameterModels);
         });
 
         // STRUCTURE TREE VIEW
@@ -266,7 +272,7 @@ public class ModelEditingController implements Initializable {
         parameterTable.setContextMenu(parameterContextMenu);
         this.parameterEditorController.setVisible(false);
         this.parameterEditorController.setEditListener(parameterModel -> lightTableRefresh());
-        this.externalModelEditorController.setParameterUpdateListener(new ParameterUpdateListener());
+        this.externalModelEditorController.setParameterModelsConsumer(parameterModelConsumer);
     }
 
     public void addNode(ActionEvent actionEvent) {
@@ -729,38 +735,26 @@ public class ModelEditingController implements Initializable {
         }
     }
 
-    public class ExternalModelUpdateListener implements Consumer<ModelUpdate> {
+    public class ParameterModelConsumer implements Consumer<List<ParameterModel>> {
         @Override
-        public void accept(ModelUpdate modelUpdate) {
-            ExternalModel externalModel = modelUpdate.getExternalModel();
-            externalModelFileHandler.addChangedExternalModel(externalModel);
-            project.markStudyModified();
-            String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
-            logger.info(message);
-            UserNotifications.showNotification(getAppWindow(), "External model modified", message);
-            actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
-        }
-    }
+        public void accept(List<ParameterModel> parameterModels) {
+            parameterModels.forEach(parameterModel -> {
+                if (parameterTable.getSelectionModel().getSelectedItem() != null &&
+                        parameterTable.getSelectionModel().getSelectedItem().equals(parameterModel)) {
+                    parameterEditorController.displayParameterModel(parameterModel); // overwriting changes made by the user
+                }
+                TreeItem<ModelNode> selectedTreeItem = getSelectedTreeItem();
+                if (selectedTreeItem != null &&
+                        selectedTreeItem.getValue().equals(parameterModel.getParent())) {
+                    lightTableRefresh();
+                }
 
-    public class ParameterUpdateListener implements Consumer<ParameterUpdate> {
-        @Override
-        public void accept(ParameterUpdate parameterUpdate) {
-            ParameterModel parameterModel = parameterUpdate.getParameterModel();
-            if (parameterTable.getSelectionModel().getSelectedItem() != null &&
-                    parameterTable.getSelectionModel().getSelectedItem().equals(parameterModel)) {
-                parameterEditorController.displayParameterModel(parameterModel); // overwriting changes made by the user
-            }
-            TreeItem<ModelNode> selectedTreeItem = getSelectedTreeItem();
-            if (selectedTreeItem != null &&
-                    selectedTreeItem.getValue().equals(parameterModel.getParent())) {
-                lightTableRefresh();
-            }
-
-            Double value = parameterUpdate.getValue();
-            String message = parameterModel.getNodePath() + " has been updated! (" + String.valueOf(value) + ")";
-            logger.info(message);
-            UserNotifications.showNotification(getAppWindow(), "Parameter Updated", message);
-            actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
+                Double value = parameterModel.getValue();
+                String message = parameterModel.getNodePath() + " has been updated! (" + String.valueOf(value) + ")";
+                logger.info(message);
+                UserNotifications.showNotification(getAppWindow(), "Parameter Updated", message);
+                actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
+            });
         }
     }
 

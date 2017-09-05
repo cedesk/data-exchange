@@ -33,15 +33,15 @@ public class LoggingTest extends AbstractApplicationContextTest {
     private ActionLogger actionLogger;
     private LogEntryRepository logEntryRepository;
 
-    @Test
-    public void actionLoggerTest() {
-        actionLogger.log(ActionLogger.ActionType.APPLICATION_START, "whatever is going on");
-    }
-
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
         actionLogger = context.getBean(ActionLogger.class);
         logEntryRepository = context.getBean(LogEntryRepository.class);
+    }
+
+    @Test
+    public void actionLoggerTest() {
+        actionLogger.log(ActionLogger.ActionType.APPLICATION_START, "whatever is going on");
     }
 
     @Test

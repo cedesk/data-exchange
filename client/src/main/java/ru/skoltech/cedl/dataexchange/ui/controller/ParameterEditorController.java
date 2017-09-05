@@ -42,7 +42,6 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ParameterDifferenceService;
@@ -366,11 +365,11 @@ public class ParameterEditorController implements Initializable, Displayable {
             if (valueReference != null) {
                 editingParameterModel.setValueReference(valueReference);
                 logger.debug("update parameter value from model");
-                try {
-                    modelUpdateHandler.applyParameterChangesFromExternalModel(editingParameterModel,
-                            parameterUpdate -> valueText.setText(convertToText(parameterUpdate.getValue())));
-                } catch (ExternalModelException e) {
-                    statusLogger.error(e.getMessage());
+                ParameterModel parameterModel = modelUpdateHandler.applyParameterChangesFromExternalModel(editingParameterModel);
+                if (parameterModel != null) {
+                    valueText.setText(convertToText(parameterModel.getValue()));
+                } else {
+                    statusLogger.error("Unable to update value from given target.");
                     UserNotifications.showNotification(ownerStage, "Error", "Unable to update value from given target.");
                 }
             } else {
@@ -433,12 +432,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         if (editingParameterModel.getIsExported()) {
             if (exportReference != null && exportReference.getExternalModel() != null) {
                 ExternalModel externalModel = exportReference.getExternalModel();
-                try {
-                    modelUpdateHandler.applyParameterChangesToExternalModel(externalModel);
-                } catch (ExternalModelException e) {
-                    statusLogger.error(e.getMessage());
-                    Dialogues.showError("External Model Error", "Failed to export parameter value to external model. \n" + e.getMessage());
-                }
+                modelUpdateHandler.applyParameterChangesToExternalModel(externalModel);
             }
         }
 
@@ -446,7 +440,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, editingParameterModel.getNodePath() + ": " + attDiffs);
 
         // UPDATE LINKING PARAMETERS
-        parameterLinkRegistry.updateSinks(project, originalParameterModel);
+        parameterLinkRegistry.updateSinks(originalParameterModel);
 
         project.markStudyModified();
         editListener.accept(editingParameterModel);

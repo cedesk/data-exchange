@@ -81,13 +81,14 @@
     </bean>
 
     <bean id="modelUpdateHandler" class="ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler">
-        <property name="project" ref="project"/>
-        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="externalModelAccessorFactory" ref="externalModelAccessorFactory"/>
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="actionLogger" ref="actionLogger"/>
+        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry">
+        <property name="project" ref="project"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="actionLogger" ref="actionLogger"/>
     </bean>

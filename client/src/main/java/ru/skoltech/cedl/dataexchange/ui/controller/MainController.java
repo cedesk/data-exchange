@@ -57,7 +57,6 @@ import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
@@ -413,7 +412,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                 try {
                     project.storeStudy();
                     return true;
-                } catch (RepositoryException | ExternalModelException e) {
+                } catch (RepositoryException e) {
                     statusLogger.error(e.getMessage());
                     UserNotifications.showNotification(ownerStage, "Failed to save", "Failed to save");
                     return false;
@@ -441,7 +440,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                 try {
                     project.storeStudy();
                     return true;
-                } catch (RepositoryException | ExternalModelException e) {
+                } catch (RepositoryException e) {
                     statusLogger.error(e.getMessage());
                     Optional<ButtonType> closeAnyway = Dialogues.chooseYesNo("Failed to save",
                             "Shall the program close anyway?");
@@ -803,8 +802,6 @@ public class MainController implements Initializable, Displayable, Closeable {
             statusLogger.warn("Concurrent edit appeared on: " + re.getEntityName());
             actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE,
                     project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
-        } catch (ExternalModelException e) {
-            statusLogger.error(e.getMessage());
         } catch (Exception e) {
             statusLogger.error("Saving study failed!");
             logger.error("Unknown Exception", e);

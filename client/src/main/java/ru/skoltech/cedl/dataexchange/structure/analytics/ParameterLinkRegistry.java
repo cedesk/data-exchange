@@ -46,23 +46,24 @@ public class ParameterLinkRegistry {
 
     private Logger logger = Logger.getLogger(ParameterLinkRegistry.class);
 
+    private Project project;
     private UserRoleManagementService userRoleManagementService;
-
     private ActionLogger actionLogger;
 
     private Map<String, Set<String>> valueLinks = new HashMap<>();
 
     private DependencyGraph dependencyGraph = new DependencyGraph();
 
-    public ParameterLinkRegistry() {
-    }
-
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
+    }
+
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     private static List<ModelNode> getModelNodes(SystemModel systemModel) {
@@ -228,18 +229,18 @@ public class ParameterLinkRegistry {
         }
     }
 
-    public void updateAll(Project project, SystemModel systemModel) {
+    public void updateAll(SystemModel systemModel) {
         logger.debug("updating all linked values");
         ParameterTreeIterator pmi = getLinkedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
             ParameterModel source = sink.getValueLink();
-            updateSinks(project, source); // TODO each call does a lot of common work
+            updateSinks(source); // TODO each call does a lot of common work
         });
         pmi = getCalculatedParameters(systemModel);
         pmi.forEachRemaining(this::recalculate);
     }
 
-    public void updateSinks(Project project, ParameterModel source) {
+    public void updateSinks(ParameterModel source) {
         String sourceId = source.getUuid();
         if (valueLinks.containsKey(sourceId)) {
             SystemModel systemModel = source.getParent().findRoot();
