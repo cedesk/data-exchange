@@ -24,10 +24,9 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessor;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelEvaluator;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelExporter;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 
@@ -138,10 +137,10 @@ public class ModelUpdateHandler {
         String valueReferenceString = valueReference.toString();
         String nodePath = parameterModel.getNodePath();
 
-        ExternalModelEvaluator evaluator = null;
+        ExternalModelAccessor accessor = null;
         try {
-            evaluator = externalModelAccessorFactory.getEvaluator(externalModel);
-            Double value = evaluator.getValue(valueReference.getTarget());
+            accessor = externalModelAccessorFactory.createAccessor(externalModel);
+            Double value = accessor.getValue(valueReference.getTarget());
             if (Double.isNaN(value)) {
                 throw new ExternalModelException("Invalid value for parameter '" + nodePath
                         + "' from '" + valueReferenceString + "'");
@@ -155,8 +154,8 @@ public class ModelUpdateHandler {
             logger.warn("Unable to evaluate value for parameter '" + nodePath + "' from '" + valueReferenceString + "'");
         } finally {
             try {
-                if (evaluator != null) {
-                    evaluator.close();
+                if (accessor != null) {
+                    accessor.close();
                 }
             } catch (IOException e) {
                 logger.warn("Error closing the external model: " + externalModel.getNodePath());
@@ -188,13 +187,13 @@ public class ModelUpdateHandler {
                         && !parameterModel.getExportReference().getTarget().isEmpty())
                 .collect(Collectors.toList());
 
-        ExternalModelExporter exporter = externalModelAccessorFactory.getExporter(externalModel);
+        ExternalModelAccessor accessor = externalModelAccessorFactory.createAccessor(externalModel);
 
         List<ParameterModel> result = new ArrayList<>();
         for (ParameterModel parameterModel : correctExportedParameterModels) {
             String target = parameterModel.getExportReference().getTarget();
             try {
-                exporter.setValue(target, parameterModel.getEffectiveValue());
+                accessor.setValue(target, parameterModel.getEffectiveValue());
                 result.add(parameterModel);
             } catch (ExternalModelException e) {
                 logger.warn("Failed to export parameter " + parameterModel.getNodePath(), e);
@@ -202,14 +201,10 @@ public class ModelUpdateHandler {
             }
         }
         try {
-            exporter.flushModifications();
-            exporter.close();
-        } catch (ExternalModelException e) {
-            logger.warn("Cannot flush modifications in exporter", e);
+            accessor.flush();
         } catch (IOException e) {
-            logger.warn("Cannot close exporter", e);
+            logger.warn("Cannot flush modifications in accessor: " + externalModel.getNodePath(), e);
         }
-
         return result;
     }
 }

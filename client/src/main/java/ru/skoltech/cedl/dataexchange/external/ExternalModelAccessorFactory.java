@@ -19,8 +19,7 @@ package ru.skoltech.cedl.dataexchange.external;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.external.excel.ExcelModelEvaluator;
-import ru.skoltech.cedl.dataexchange.external.excel.ExcelModelExporter;
+import ru.skoltech.cedl.dataexchange.external.excel.ExcelModelAccessor;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -35,41 +34,33 @@ public class ExternalModelAccessorFactory {
 
     private ExternalModelFileHandler externalModelFileHandler;
 
-    private final Map<String, Class<? extends ExternalModelEvaluator>> evaluators = new HashMap<>();
-    private final Map<String, Class<? extends ExternalModelExporter>> exporters = new HashMap<>();
+    private final Map<String, Class<? extends ExternalModelAccessor>> accessors = new HashMap<>();
 
     public ExternalModelAccessorFactory() {
-        this.registerEvaluator(ExcelModelEvaluator.class, ExcelModelEvaluator.getHandledExtensions());
-        this.registerExporter(ExcelModelExporter.class, ExcelModelExporter.getHandledExtensions());
+        this.registerAccessor(ExcelModelAccessor.class, ExcelModelAccessor.getHandledExtensions());
     }
 
     public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
         this.externalModelFileHandler = externalModelFileHandler;
     }
 
-    public void registerExporter(Class<? extends ExternalModelExporter> exporterClass, String[] extensions) {
+    public void registerAccessor(Class<? extends ExternalModelAccessor> exporterClass, String[] extensions) {
         for (String ext : extensions) {
-            exporters.put(ext, exporterClass);
+            accessors.put(ext, exporterClass);
         }
     }
 
-    public void registerEvaluator(Class<? extends ExternalModelEvaluator> evaluatorClass, String[] extensions) {
-        for (String ext : extensions) {
-            evaluators.put(ext, evaluatorClass);
-        }
-    }
-
-    public ExternalModelEvaluator getEvaluator(ExternalModel externalModel) {
+    public ExternalModelAccessor createAccessor(ExternalModel externalModel) {
         String fileName = externalModel.getName();
         String fileExtension = Utils.getExtension(fileName);
-        if (evaluators.containsKey(fileExtension)) {
-            Class evaluatorClass = evaluators.get(fileExtension);
+        if (accessors.containsKey(fileExtension)) {
+            Class evaluatorClass = accessors.get(fileExtension);
             try {
                 Constructor evaluatorConstructor = evaluatorClass.getConstructor(ExternalModel.class, ExternalModelFileHandler.class);
-                ExternalModelEvaluator evaluator = (ExternalModelEvaluator) evaluatorConstructor.newInstance(externalModel, externalModelFileHandler);
+                ExternalModelAccessor evaluator = (ExternalModelAccessor) evaluatorConstructor.newInstance(externalModel, externalModelFileHandler);
                 return evaluator;
             } catch (Exception e) {
-                logger.error("error instantiating ExternalModelEvaluator", e);
+                logger.error("error instantiating ExternalModelAccessor", e);
                 throw new RuntimeException(e);
             }
         } else {
@@ -77,27 +68,9 @@ public class ExternalModelAccessorFactory {
         }
     }
 
-    public ExternalModelExporter getExporter(ExternalModel externalModel) {
-        String fileName = externalModel.getName();
+    public boolean hasAccessor(String fileName) {
         String fileExtension = Utils.getExtension(fileName);
-        if (exporters.containsKey(fileExtension)) {
-            Class exporterClass = exporters.get(fileExtension);
-            try {
-                Constructor exporterConstructor = exporterClass.getConstructor(ExternalModel.class, ExternalModelFileHandler.class);
-                ExternalModelExporter exporter = (ExternalModelExporter) exporterConstructor.newInstance(externalModel, externalModelFileHandler);
-                return exporter;
-            } catch (Exception e) {
-                logger.error("error instantiating ExternalModelExporter", e);
-                throw new RuntimeException(e);
-            }
-        } else {
-            throw new IllegalArgumentException("UNKNOWN TYPE OF EXTERNAL MODEL.");
-        }
-    }
-
-    public boolean hasEvaluator(String fileName) {
-        String fileExtension = Utils.getExtension(fileName);
-        return evaluators.keySet().contains(fileExtension);
+        return accessors.keySet().contains(fileExtension);
     }
 
 }

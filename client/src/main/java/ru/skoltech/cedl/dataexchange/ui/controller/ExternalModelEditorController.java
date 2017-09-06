@@ -139,7 +139,7 @@ public class ExternalModelEditorController implements Initializable {
         File externalModelFile = Dialogues.chooseExternalModelFile(fileStorageService.applicationDirectory());
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
-            if (externalModelFile.isFile() && externalModelAccessorFactory.hasEvaluator(fileName)) {
+            if (externalModelFile.isFile() && externalModelAccessorFactory.hasAccessor(fileName)) {
                 boolean hasExtModWithSameName = modelNode.getExternalModelMap().containsKey(fileName);
                 if (hasExtModWithSameName) {
                     Dialogues.showWarning("Duplicate external model name",
@@ -223,7 +223,7 @@ public class ExternalModelEditorController implements Initializable {
         String oldNodePath = externalModel.getNodePath();
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
-            if (externalModelFile.isFile() && externalModelAccessorFactory.hasEvaluator(fileName)) {
+            if (externalModelFile.isFile() && externalModelAccessorFactory.hasAccessor(fileName)) {
                 try {
                     externalModelFileStorageService.readExternalModelAttachmentFromFile(externalModelFile, externalModel);
                     externalModel.setName(fileName);

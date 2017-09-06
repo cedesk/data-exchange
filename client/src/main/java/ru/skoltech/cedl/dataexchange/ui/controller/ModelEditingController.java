@@ -740,7 +740,7 @@ public class ModelEditingController implements Initializable {
         public void accept(List<ParameterModel> parameterModels) {
             parameterModels.forEach(parameterModel -> {
                 if (parameterTable.getSelectionModel().getSelectedItem() != null &&
-                        parameterTable.getSelectionModel().getSelectedItem().equals(parameterModel)) {
+                        parameterTable.getSelectionModel().getSelectedItem().getUuid().equals(parameterModel.getUuid())) {
                     parameterEditorController.displayParameterModel(parameterModel); // overwriting changes made by the user
                 }
                 TreeItem<ModelNode> selectedTreeItem = getSelectedTreeItem();

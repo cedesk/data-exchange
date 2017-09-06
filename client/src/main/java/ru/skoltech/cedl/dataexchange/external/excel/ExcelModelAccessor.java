@@ -18,47 +18,82 @@ package ru.skoltech.cedl.dataexchange.external.excel;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessor;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
 
 /**
+ * Implementation of {@link ExternalModelAccessor} which provide an access to the Microsoft Excel files.
+ *
  * Created by D.Knoll on 13.06.2016.
  */
-public class ExcelModelAccessor {
+public class ExcelModelAccessor implements ExternalModelAccessor {
 
     private static Logger logger = Logger.getLogger(ExcelModelAccessor.class);
 
-    protected ExternalModel externalModel;
+    private ExternalModel externalModel;
+    private ExternalModelFileHandler externalModelFileHandler;
 
-    protected ExternalModelFileHandler externalModelFileHandler;
-
-    /*
-     * Lazy initialization only upon need.
-     */
     private SpreadsheetCellValueAccessor spreadsheetAccessor;
+
+    public ExcelModelAccessor(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) throws ExternalModelException {
+        this.externalModel = externalModel;
+        this.externalModelFileHandler = externalModelFileHandler;
+        try {
+            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+            String fileName = externalModel.getName();
+            spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName);
+        } catch (Throwable e) {
+            logger.error("unable to open spreadsheet");
+            throw new ExternalModelException("unable access excel spreadsheet", e);
+        }
+    }
 
     public static String[] getHandledExtensions() {
         return WorkbookFactory.KNOWN_FILE_EXTENSIONS;
     }
 
-    protected SpreadsheetCellValueAccessor getSpreadsheetAccessor() throws ExternalModelException {
-        if (spreadsheetAccessor == null) {
-            try {
-                InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
-                String fileName = externalModel.getName();
-                spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName);
-            } catch (Throwable e) {
-                logger.error("unable to open spreadsheet");
-                throw new ExternalModelException("unable access excel spreadsheet", e);
-            }
+    @Override
+    public Double getValue(String target) throws ExternalModelException {
+        if (target == null)
+            throw new ExternalModelException("target is null");
+        try {
+            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
+            return spreadsheetAccessor.getNumericValue(coordinates);
+        } catch (ParseException e) {
+            logger.error("error parsing coordinates: " + target);
+            return null;
         }
-        return spreadsheetAccessor;
     }
 
+    @Override
+    public void setValue(String target, Double value) throws ExternalModelException {
+        try {
+            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
+            logger.debug("setting " + value + " on cell " + target + " in " + externalModel.getNodePath());
+            spreadsheetAccessor.setNumericValue(coordinates, value);
+        } catch (ParseException e) {
+            logger.error("error parsing coordinates: " + target);
+        }
+    }
+
+    @Override
+    public void flush() throws IOException {
+        try {
+            externalModelFileHandler.flushModifications(externalModel, spreadsheetAccessor);
+        } catch (ExternalModelException e) {
+            throw new IOException(e);
+        } finally {
+            this.close();
+        }
+    }
+
+    @Override
     public void close() {
         if (spreadsheetAccessor != null) {
             try {
@@ -68,4 +103,5 @@ public class ExcelModelAccessor {
             }
         }
     }
+
 }

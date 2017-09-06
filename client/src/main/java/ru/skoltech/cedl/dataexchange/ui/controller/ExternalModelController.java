@@ -95,7 +95,14 @@ public class ExternalModelController implements Initializable {
         externalModelNameText.setText(externalModel.getName());
         openExternalButton.addEventFilter(MouseEvent.MOUSE_PRESSED, (MouseEvent event) -> {
             if (event.isSecondaryButtonDown()){
-                this.openExternalModel();
+                try {
+                    File file = externalModelFileHandler.cacheFile(externalModel);
+                    File path = file.getParentFile();
+                    this.openFile(path);
+                } catch (ExternalModelException | IOException e) {
+                    logger.error("Error retrieving external model to spreadsheet.", e);
+                    statusLogger.error("Unable to get cache of external model");
+                }
             }
         });
     }
