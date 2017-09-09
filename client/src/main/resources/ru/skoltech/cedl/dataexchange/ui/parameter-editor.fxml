@@ -19,7 +19,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.controlsfx.glyphfont.Glyph?>
+<?import org.controlsfx.glyphfont.*?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/null" stylesheets="@styling.css"
             fx:id="parameterEditorPane" minHeight="280.0" prefHeight="340.0"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ParameterEditorController">
@@ -27,7 +27,7 @@
         <Insets/>
     </padding>
     <center>
-        <GridPane fx:id="propertyPane" hgap="8.0" vgap="4.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="8.0"
+        <GridPane hgap="8.0" vgap="4.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="8.0"
                   AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
             <padding>
                 <Insets bottom="10" left="10" right="10" top="10"/>
@@ -71,7 +71,8 @@
             <Label text="Override Value" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
             <TextField fx:id="valueOverrideText" prefWidth="120.0" promptText="0123.45" GridPane.columnIndex="2"
                        GridPane.rowIndex="4"/>
-            <HBox fx:id="referenceSelectorGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+            <HBox fx:id="referenceSelectorGroup" prefWidth="300.0" spacing="10" alignment="CENTER_LEFT"
+                  GridPane.columnIndex="2" GridPane.rowIndex="2">
                 <TextField fx:id="valueReferenceText" editable="false" prefWidth="300.0" promptText="reference"/>
                 <Button mnemonicParsing="false" onAction="#chooseSource" minWidth="28">
                     <tooltip>
@@ -81,6 +82,7 @@
                         <Glyph fontFamily="FontAwesome" icon="EXTERNAL_LINK"/>
                     </graphic>
                 </Button>
+                <Glyph fx:id="updateIcon" fontFamily="FontAwesome"/>
             </HBox>
             <HBox fx:id="linkSelectorGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                 <TextField fx:id="parameterLinkText" editable="false" prefWidth="300.0" promptText="link"/>

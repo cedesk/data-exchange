@@ -27,6 +27,7 @@ public class Views {
 
     public static final URL MAIN_VIEW = Views.class.getResource("main.fxml");
     public static final URL MODEL_EDITING_VIEW = Views.class.getResource("model-editing.fxml");
+    public static final URL PARAMETERS_VIEW = Views.class.getResource("parameters.fxml");
     public static final URL PARAMETER_EDITOR_VIEW = Views.class.getResource("parameter-editor.fxml");
     public static final URL EXTERNAL_MODEL_VIEW = Views.class.getResource("external-model.fxml");
     public static final URL MODEL_DIFF_VIEW = Views.class.getResource("model-diff.fxml");

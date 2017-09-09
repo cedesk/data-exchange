@@ -142,7 +142,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
 //        project.addExternalModelChangeObserver((o, arg) -> {
 //            ExternalModel externalModel = (ExternalModel) arg;
 //            try {
-//                modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel,
+//                modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel,
 //                        Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ModelEditingController.ParameterUpdateListener());
 //            } catch (ExternalModelException e) {
 //                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
@@ -151,7 +151,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
 
         System.out.println(parameterModel.getEffectiveValue());
 
-//        modelUpdateService.applyParameterChangesFromExternalModel(project, externalModel,
+//        modelUpdateService.applyParameterUpdatesFromExternalModel(project, externalModel,
 //                parameterLinkRegistry, externalModelFileHandler,
 //                Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
 

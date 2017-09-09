@@ -26,13 +26,16 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
+import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
@@ -42,15 +45,18 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ParameterDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
-import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
+import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
@@ -81,6 +87,8 @@ public class ParameterEditorController implements Initializable, Displayable {
     private ChoiceBox<ParameterValueSource> valueSourceChoiceBox;
     @FXML
     private TextField valueReferenceText;
+    @FXML
+    public Glyph updateIcon;
     @FXML
     private TextField parameterLinkText;
     @FXML
@@ -253,9 +261,26 @@ public class ParameterEditorController implements Initializable, Displayable {
         parameterEditorPane.setVisible(visible);
     }
 
+    public ParameterModel currentParameterModel() {
+        return this.originalParameterModel;
+    }
+
     public void displayParameterModel(ParameterModel parameterModel) {
         this.originalParameterModel = parameterModel;
-        updateView(originalParameterModel);
+        this.updateView(originalParameterModel);
+        this.updateIcon.setIcon(null);
+        this.updateIcon.setColor(null);
+        this.updateIcon.setTooltip(null);
+    }
+
+    public void displayParameterModel(ParameterModel parameterModel, ParameterModelUpdateState update) {
+        this.originalParameterModel = parameterModel;
+        this.updateView(originalParameterModel);
+        String icon = update == ParameterModelUpdateState.SUCCESS ? "CHECK" : "WARNING";
+        Color color = update == ParameterModelUpdateState.SUCCESS ? Color.GREEN : Color.RED;
+        this.updateIcon.setIcon(icon);
+        this.updateIcon.setColor(color);
+        this.updateIcon.setTooltip(new Tooltip(update.description));
     }
 
     public void setEditListener(Consumer<ParameterModel> updateListener) {
@@ -365,10 +390,13 @@ public class ParameterEditorController implements Initializable, Displayable {
             if (valueReference != null) {
                 editingParameterModel.setValueReference(valueReference);
                 logger.debug("update parameter value from model");
-                ParameterModel parameterModel = modelUpdateHandler.applyParameterChangesFromExternalModel(editingParameterModel);
-                if (parameterModel != null) {
+                Pair<ParameterModel, ParameterModelUpdateState> update = modelUpdateHandler.applyParameterUpdateFromExternalModel(editingParameterModel);
+                ParameterModel parameterModel = update.getLeft();
+                ParameterModelUpdateState updateState = update.getRight();
+                if (updateState == ParameterModelUpdateState.SUCCESS) {
                     valueText.setText(convertToText(parameterModel.getValue()));
                 } else {
+                    // TODO: fail notifications
                     statusLogger.error("Unable to update value from given target.");
                     UserNotifications.showNotification(ownerStage, "Error", "Unable to update value from given target.");
                 }
@@ -432,7 +460,22 @@ public class ParameterEditorController implements Initializable, Displayable {
         if (editingParameterModel.getIsExported()) {
             if (exportReference != null && exportReference.getExternalModel() != null) {
                 ExternalModel externalModel = exportReference.getExternalModel();
-                modelUpdateHandler.applyParameterChangesToExternalModel(externalModel);
+                try {
+                    List<Pair<ParameterModel, ExternalModelUpdateState>> updates
+                            = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+                    updates.forEach(pair -> {
+                        ParameterModel parameterModel = pair.getLeft();
+                        ExternalModelUpdateState update = pair.getRight();
+                        if (update == ExternalModelUpdateState.FAIL_EMPTY_REFERENCE
+                                || update == ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL) {
+                            statusLogger.warn("Parameter " + parameterModel.getNodePath() + " has empty exportReference.");
+                        } else if (update == ExternalModelUpdateState.FAIL_EXPORT) {
+                            statusLogger.warn("Failed to export parameter " + parameterModel.getNodePath());
+                        }
+                    });
+                } catch (ExternalModelException e) {
+                    logger.warn("Cannot apply parameter updates to ExternalModel: " + externalModel.getNodePath(), e);
+                }
             }
         }
 

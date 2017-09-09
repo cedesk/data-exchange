@@ -37,7 +37,6 @@ public class ExternalModelFileWatcher extends Observable {
 
     private static Logger logger = Logger.getLogger(ExternalModelFileWatcher.class);
 
-    private ExternalModelFileHandler externalModelFileHandler;
     private DirectoryWatchService directoryWatchService;
     private Map<File, ExternalModel> watchedExternalModels = new ConcurrentHashMap<>();
     private Set<File> maskedFiles = new ConcurrentSkipListSet<>();
@@ -45,10 +44,6 @@ public class ExternalModelFileWatcher extends Observable {
 
     public void setDirectoryWatchService(DirectoryWatchService directoryWatchService) {
         this.directoryWatchService = directoryWatchService;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void add(ExternalModel externalModel, File cacheFile) {

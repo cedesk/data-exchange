@@ -18,16 +18,17 @@ package ru.skoltech.cedl.dataexchange.demo;
 
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
-import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
+import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.io.File;
@@ -54,8 +55,8 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
             ParameterModel parameterModel = getParameterModel();
 
             System.out.println(parameterModel);
-            ParameterModel changedParameterModel = modelUpdateHandler.applyParameterChangesFromExternalModel(parameterModel);
-            System.out.println(changedParameterModel);
+            Pair<ParameterModel, ParameterModelUpdateState> update = modelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+            System.out.println(update.getLeft());
 
             ExternalModelReference valueReference = parameterModel.getValueReference();
             List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();

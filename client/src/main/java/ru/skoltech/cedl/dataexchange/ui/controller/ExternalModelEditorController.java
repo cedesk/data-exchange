@@ -36,12 +36,10 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
@@ -67,9 +65,7 @@ public class ExternalModelEditorController implements Initializable {
     private VBox externalModelViewContainer;
 
     private Project project;
-    private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelAccessorFactory externalModelAccessorFactory;
-    private ModelUpdateHandler modelUpdateHandler;
     private GuiService guiService;
     private FileStorageService fileStorageService;
     private ExternalModelFileStorageService externalModelFileStorageService;
@@ -78,22 +74,14 @@ public class ExternalModelEditorController implements Initializable {
 
     private ModelNode modelNode;
 
-    private Consumer<List<ParameterModel>> parameterModelsConsumer;
+    private Consumer<ExternalModel> externalModelReloadConsumer;
 
     public void setProject(Project project) {
         this.project = project;
     }
 
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
-    }
-
     public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
         this.externalModelAccessorFactory = externalModelAccessorFactory;
-    }
-
-    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
-        this.modelUpdateHandler = modelUpdateHandler;
     }
 
     public void setGuiService(GuiService guiService) {
@@ -196,17 +184,15 @@ public class ExternalModelEditorController implements Initializable {
     }
 
     public void reloadExternalModels() {
-        modelNode.getExternalModels().forEach(externalModel -> {
-            externalModelFileHandler.addChangedExternalModel(externalModel);
-            project.markStudyModified();
-            List<ParameterModel> parameterModels
-                    = modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel);
-            parameterModelsConsumer.accept(parameterModels);
-        });
+        if (externalModelReloadConsumer == null) {
+            return;
+        }
+
+        modelNode.getExternalModels().forEach(externalModel -> externalModelReloadConsumer.accept(externalModel));
     }
 
-    public void setParameterModelsConsumer(Consumer<List<ParameterModel>> parameterModelsConsumer) {
-        this.parameterModelsConsumer = parameterModelsConsumer;
+    public void setExternalModelReloadConsumer(Consumer<ExternalModel> externalModelReloadConsumer) {
+        this.externalModelReloadConsumer = externalModelReloadConsumer;
     }
 
     private void exchangeExternalModel(ActionEvent actionEvent) {

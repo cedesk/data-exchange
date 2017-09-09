@@ -80,11 +80,9 @@
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
     </bean>
 
-    <bean id="modelUpdateHandler" class="ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler">
+    <bean id="modelUpdateHandler" class="ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler">
         <property name="externalModelAccessorFactory" ref="externalModelAccessorFactory"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
-        <property name="actionLogger" ref="actionLogger"/>
-        <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
     <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry">
@@ -94,7 +92,6 @@
     </bean>
 
     <bean id="externalModelFileWatcher" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher">
-        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="directoryWatchService" ref="directoryWatchService"/>
     </bean>
 

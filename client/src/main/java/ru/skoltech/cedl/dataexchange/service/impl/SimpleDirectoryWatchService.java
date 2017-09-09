@@ -174,7 +174,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
                 return;
             }
 
-            WatchEvent<Path> pathEvent = (WatchEvent<Path>) event;
+            WatchEvent<Path> pathEvent = cast(event);
             Path filePath = pathEvent.context();
             Path dirPath = watchKeyToDirPathMap.get(key);
 
@@ -195,6 +195,11 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
                 .stream()
                 .filter(listener -> matchesAny(file, listenerToFilePatternsMap.get(listener)))
                 .collect(Collectors.toSet());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> WatchEvent<T> cast(WatchEvent<?> event) {
+        return (WatchEvent<T>)event;
     }
 
     private static PathMatcher matcherForGlobExpression(String globPattern) {

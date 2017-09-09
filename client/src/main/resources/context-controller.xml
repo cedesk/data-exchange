@@ -50,6 +50,7 @@
     </bean>
 
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.ui.controller.ModelEditingController">
+        <property name="parametersController" ref="parametersController"/>
         <property name="parameterEditorController" ref="parameterEditorController"/>
         <property name="externalModelEditorController" ref="externalModelEditorController"/>
         <property name="project" ref="project"/>
@@ -63,6 +64,25 @@
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
+    <bean id="parametersController" class="ru.skoltech.cedl.dataexchange.ui.controller.ParametersController">
+        <property name="project" ref="project"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
+        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
+        <property name="guiService" ref="guiService"/>
+        <property name="actionLogger" ref="actionLogger"/>
+        <property name="statusLogger" ref="statusLogger"/>
+    </bean>
+
+    <bean id="externalModelEditorController" class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelEditorController">
+        <property name="project" ref="project"/>
+        <property name="externalModelAccessorFactory" ref="externalModelAccessorFactory"/>
+        <property name="guiService" ref="guiService"/>
+        <property name="fileStorageService" ref="fileStorageService"/>
+        <property name="externalModelFileStorageService" ref="externalModelFileStorageService"/>
+        <property name="actionLogger" ref="actionLogger"/>
+        <property name="statusLogger" ref="statusLogger"/>
+    </bean>
+
     <bean id="parameterEditorController" class="ru.skoltech.cedl.dataexchange.ui.controller.ParameterEditorController">
         <property name="project" ref="project"/>
         <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
@@ -72,19 +92,6 @@
         <property name="parameterDifferenceService" ref="parameterDifferenceService"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="statusLogger" ref="statusLogger"/>
-    </bean>
-
-    <bean id="externalModelEditorController"
-          class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelEditorController">
-        <property name="project" ref="project"/>
-        <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
-        <property name="externalModelAccessorFactory" ref="externalModelAccessorFactory"/>
-        <property name="guiService" ref="guiService"/>
-        <property name="fileStorageService" ref="fileStorageService"/>
-        <property name="externalModelFileStorageService" ref="externalModelFileStorageService"/>
-        <property name="actionLogger" ref="actionLogger"/>
-        <property name="statusLogger" ref="statusLogger"/>
-        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelController" scope="prototype">

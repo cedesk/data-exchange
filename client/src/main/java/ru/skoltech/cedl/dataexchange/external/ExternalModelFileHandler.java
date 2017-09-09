@@ -25,8 +25,8 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
-import ru.skoltech.cedl.dataexchange.structure.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
 
 import java.io.*;
 import java.nio.file.FileVisitOption;
@@ -96,7 +96,7 @@ public class ExternalModelFileHandler {
             }
 
             // silently update model from external model
-            modelUpdateHandler.applyParameterChangesFromExternalModel(externalModel);
+            modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
         }
     }
 
@@ -104,7 +104,11 @@ public class ExternalModelFileHandler {
         Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, accessChecker);
         while (externalModelsIterator.hasNext()) {
             ExternalModel externalModel = externalModelsIterator.next();
-            modelUpdateHandler.applyParameterChangesToExternalModel(externalModel);
+            try {
+                modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+            } catch (ExternalModelException e) {
+                logger.warn("Cannot apply parameter updates to ExternalModel: " + externalModel.getNodePath(), e);
+            }
         }
     }
 

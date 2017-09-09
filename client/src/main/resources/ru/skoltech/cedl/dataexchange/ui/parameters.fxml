@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2017 Skolkovo Institute of Science and Technology
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import org.controlsfx.glyphfont.Glyph?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
+            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ParametersController">
+    <padding>
+        <Insets/>
+    </padding>
+    <center>
+        <TableView fx:id="parameterTable">
+            <columns>
+                <TableColumn fx:id="parameterNatureColumn" editable="false" maxWidth="50" minWidth="50" text="Nature"/>
+                <TableColumn fx:id="parameterNameColumn" editable="false" minWidth="130" text="Name"/>
+                <TableColumn fx:id="parameterValueColumn" editable="false" maxWidth="60" minWidth="60" text="Value"/>
+                <TableColumn fx:id="parameterUnitColumn" editable="false" maxWidth="100" minWidth="100" text="Unit"/>
+                <TableColumn fx:id="parameterValueSourceColumn" minWidth="80" maxWidth="80" text="Value Source"/>
+                <TableColumn fx:id="parameterInfoColumn" editable="false" minWidth="160" text="Information"/>
+                <TableColumn fx:id="parameterDescriptionColumn" editable="false" minWidth="100" text="Description"/>
+                <TableColumn fx:id="parameterUpdateStateColumn" editable="false" maxWidth="30" minWidth="30"/>
+            </columns>
+        </TableView>
+    </center>
+    <bottom>
+        <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                 AnchorPane.rightAnchor="0.0">
+            <Button fx:id="addParameterButton" minWidth="28" mnemonicParsing="false"
+                    onAction="#addParameter">
+                <tooltip>
+                    <Tooltip text="Add Parameter"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                </graphic>
+            </Button>
+            <Button fx:id="deleteParameterButton" minWidth="28" mnemonicParsing="false"
+                    onAction="#deleteParameter">
+                <tooltip>
+                    <Tooltip text="Remove Parameter"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="MINUS"/>
+                </graphic>
+            </Button>
+            <Button fx:id="viewParameterHistoryButton" minWidth="28"
+                    mnemonicParsing="false" onAction="#openParameterHistoryDialog">
+                <tooltip>
+                    <Tooltip text="View Parameter Revision History"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="HISTORY"/>
+                </graphic>
+            </Button>
+        </ToolBar>
+    </bottom>
+</BorderPane>
