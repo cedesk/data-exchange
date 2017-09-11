@@ -308,7 +308,6 @@ public class ParametersController implements Initializable, Displayable {
     public void addParameter() {
         Objects.requireNonNull(modelNode, "There is no model node to add parameter");
 
-        ParameterModel parameter = null;
         Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
         if (parameterNameChoice.isPresent()) {
             String parameterName = parameterNameChoice.get();
@@ -318,19 +317,18 @@ public class ParametersController implements Initializable, Displayable {
             }
             if (modelNode.hasParameter(parameterName)) {
                 Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
-            } else {
-                // TODO: use factory
-
-                parameter = new ParameterModel(parameterName, 0.0);
-                modelNode.addParameter(parameter);
-                statusLogger.info("added parameter: " + parameter.getName());
-                actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, parameter.getNodePath());
-                project.markStudyModified();
+                return;
             }
+            ParameterModel parameterModel = new ParameterModel(parameterName, 0.0);
+            modelNode.addParameter(parameterModel);
+            statusLogger.info("added parameter: " + parameterModel.getName());
+            actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, parameterModel.getNodePath());
+            project.markStudyModified();
+            Pair<ParameterModel, ParameterModelUpdateState> update = MutablePair.of(parameterModel, null);
+            this.parameterModels.add(update);
+            this.parameterTable.getSelectionModel().select(update);
         }
-        Pair<ParameterModel, ParameterModelUpdateState> update = MutablePair.of(parameter, null);
-        this.parameterModels.add(update);
-        this.parameterTable.getSelectionModel().select(update);
+
     }
 
     public void deleteParameter() {
