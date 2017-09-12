@@ -25,24 +25,18 @@ import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
-import org.controlsfx.control.PopOver;
 import org.springframework.transaction.CannotCreateTransactionException;
 import ru.skoltech.cedl.dataexchange.ApplicationPackage;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -75,14 +69,13 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import static ru.skoltech.cedl.dataexchange.StatusLogger.LogType.INFO;
-import static ru.skoltech.cedl.dataexchange.StatusLogger.LogType.WARN;
 
 /**
  * Controller for main application window.
@@ -112,10 +105,6 @@ public class MainController implements Initializable, Displayable, Closeable {
     private MenuItem tagMenu;
     @FXML
     private Button diffButton;
-    @FXML
-    public AnchorPane statusBarPane;
-    @FXML
-    private Label statusBarLabel;
     @FXML
     private Label studyNameLabel;
     @FXML
@@ -220,15 +209,8 @@ public class MainController implements Initializable, Displayable, Closeable {
         Node modelEditingPane = guiService.createControl(Views.MODEL_EDITING_VIEW);
         layoutPane.setCenter(modelEditingPane);
 
-        // STATUSBAR
-        statusBarLabel.textProperty().bind(statusLogger.lastMessageProperty());
-        statusBarLabel.setOnMouseClicked(this::showStatusMessages);
-        statusBarPane.backgroundProperty().bind(
-                Bindings.when(statusLogger.lastLogTypeProperty().isEqualTo(INFO))
-                .then(new Background(new BackgroundFill(Color.MINTCREAM, CornerRadii.EMPTY, Insets.EMPTY)))
-                .otherwise(Bindings.when(statusLogger.lastLogTypeProperty().isEqualTo(WARN))
-                        .then(new Background(new BackgroundFill(Color.GOLD, CornerRadii.EMPTY, Insets.EMPTY)))
-                        .otherwise(new Background(new BackgroundFill(Color.DARKORANGE, CornerRadii.EMPTY, Insets.EMPTY)))));
+        Node statusPane = guiService.createControl(Views.STATUS_VIEW);
+        layoutPane.setBottom(statusPane);
 
         newButton.disableProperty().bind(project.canNewProperty().not());
         loadButton.disableProperty().bind(project.canLoadProperty().not());
@@ -845,20 +827,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         if (exception.getRootCause() instanceof ConnectException) {
             statusLogger.error("Repository connection is not available!");
         }
-    }
-
-    private void showStatusMessages(MouseEvent mouseEvent) {
-        Collection<String> lastMessages = statusLogger.getLastMessages().stream().map(Pair::getLeft).collect(Collectors.toList());
-        StringBuilder sb = new StringBuilder();
-        lastMessages.forEach(o -> sb.append(o).append('\n'));
-        TextArea textArea = new TextArea(sb.toString());
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-        textArea.setMaxWidth(Double.MAX_VALUE);
-        textArea.setMaxHeight(Double.MAX_VALUE);
-        PopOver popOver = new PopOver(textArea);
-        popOver.setArrowLocation(PopOver.ArrowLocation.BOTTOM_LEFT);
-        popOver.show(statusBarLabel);
     }
 
     private void updateView() {

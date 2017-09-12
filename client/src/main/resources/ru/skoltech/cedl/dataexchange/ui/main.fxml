@@ -130,19 +130,5 @@
                 </ImageView>
             </HBox>
         </top>
-        <center>
-        </center>
-        <right>
-        </right>
-        <bottom>
-            <AnchorPane fx:id="statusBarPane" prefHeight="20.0" BorderPane.alignment="CENTER">
-                <padding>
-                    <Insets left="10.0"/>
-                </padding>
-                <Label AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0"
-                       prefHeight="20.0" prefWidth="703.0"
-                       fx:id="statusBarLabel" text="StatusBar"/>
-            </AnchorPane>
-        </bottom>
     </BorderPane>
 </AnchorPane>

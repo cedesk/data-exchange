@@ -30,6 +30,7 @@ public class Views {
     public static final URL PARAMETERS_VIEW = Views.class.getResource("parameters.fxml");
     public static final URL PARAMETER_EDITOR_VIEW = Views.class.getResource("parameter-editor.fxml");
     public static final URL EXTERNAL_MODEL_VIEW = Views.class.getResource("external-model.fxml");
+    public static final URL STATUS_VIEW = Views.class.getResource("status.fxml");
     public static final URL MODEL_DIFF_VIEW = Views.class.getResource("model-diff.fxml");
     public static final URL MODEL_CONSISTENCY_VIEW = Views.class.getResource("model-consistency.fxml");
     public static final URL TAG_VIEW = Views.class.getResource("tag.fxml");

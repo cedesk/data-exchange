@@ -101,6 +101,10 @@
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
+    <bean id="statusController" class="ru.skoltech.cedl.dataexchange.ui.controller.StatusController">
+        <property name="statusLogger" ref="statusLogger"/>
+    </bean>
+
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TagController" scope="prototype">
         <property name="studyService" ref="studyService"/>
     </bean>
@@ -216,6 +220,8 @@
         </aop:aspect>
     </aop:config>
 
-    <bean id="statusLogger" class="ru.skoltech.cedl.dataexchange.StatusLogger"/>
+    <bean id="statusLogger" class="ru.skoltech.cedl.dataexchange.StatusLogger">
+        <property name="size" value="${status.logger.queue.size}"/>
+    </bean>
 
 </beans>

@@ -21,12 +21,11 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import org.apache.commons.collections4.BoundedCollection;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
-
-import java.util.Collection;
 
 /**
  * Collect messages for display in main panel status bar.
@@ -46,14 +45,21 @@ public class StatusLogger {
 
     private final static Logger logger = Logger.getLogger(StatusLogger.class);
 
-    private final static BoundedCollection<Pair<String, LogType>> lineBuffer = new CircularFifoQueue<>(10);
-
+    private ObservableList<Pair<String, LogType>> messages;
     private StringProperty lastMessage = new SimpleStringProperty();
-
     private ObjectProperty<LogType> lastLogType = new SimpleObjectProperty<>(LogType.INFO);
 
-    public Collection<Pair<String, LogType>> getLastMessages() {
-        return lineBuffer;
+    public void setSize(int size) {
+        messages = FXCollections.observableArrayList(new CircularFifoQueue<>(size));
+    }
+
+    /**
+     * Retrieve a collection of recently logged messages
+     *
+     * @return collection or recently logged messages
+     */
+    public ObservableList<Pair<String, LogType>> messages() {
+        return messages;
     }
 
     /**
@@ -102,7 +108,6 @@ public class StatusLogger {
     }
 
     private void log(String message, LogType logType) {
-        lineBuffer.add(Pair.of(message, logType));
         if (logType == LogType.ERROR) {
             logger.error(message);
         } else if (logType == LogType.WARN){
@@ -111,6 +116,7 @@ public class StatusLogger {
             logger.info(message);
         }
         Platform.runLater(() -> {
+            messages.add(Pair.of(message, logType));
             lastMessage.setValue(message);
             lastLogType.setValue(logType);
         });
