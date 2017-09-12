@@ -24,7 +24,7 @@
 <?import jfxtras.scene.control.ListView?>
 <TitledPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.StatusController"
-            fx:id="statusBarPane" animated="false">
+            fx:id="statusBarPane" expanded="false" animated="false">
     <graphic>
         <Label fx:id="statusBarLabel" text="StatusBar"/>
     </graphic>
