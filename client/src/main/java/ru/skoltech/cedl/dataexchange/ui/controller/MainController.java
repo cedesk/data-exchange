@@ -36,6 +36,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.CannotCreateTransactionException;
 import ru.skoltech.cedl.dataexchange.ApplicationPackage;
@@ -51,15 +52,16 @@ import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
-import ru.skoltech.cedl.dataexchange.structure.DifferenceMergeHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference.ChangeLocation;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.awt.*;
@@ -74,7 +76,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -120,8 +124,8 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private ApplicationSettings applicationSettings;
     private Project project;
+    private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
-    private DifferenceMergeHandler differenceMergeHandler;
     private StudyService studyService;
     private GuiService guiService;
     private FileStorageService fileStorageService;
@@ -151,6 +155,10 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.project = project;
     }
 
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
+    }
+
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
         this.externalModelFileWatcher = externalModelFileWatcher;
     }
@@ -165,10 +173,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
-    }
-
-    public void setDifferenceMergeHandler(DifferenceMergeHandler differenceMergeHandler) {
-        this.differenceMergeHandler = differenceMergeHandler;
     }
 
     public void setUpdateService(UpdateService updateService) {
@@ -219,7 +223,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         tagLabel.textProperty().bind(Bindings.when(tagProperty.isNull()).then("--").otherwise(tagProperty));
         tagMenu.textProperty().bind(Bindings.when(tagProperty.isNull()).then("_Tag current revision...").otherwise("_Untag current revision"));
 
-        repositoryNewer = Bindings.isNotEmpty(project.getModelDifferences());
+        repositoryNewer = Bindings.isNotEmpty(project.modelDifferences());
 
         repositoryNewerListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -231,16 +235,12 @@ public class MainController implements Initializable, Displayable, Closeable {
                     diffButton.setGraphic(imageView);
                     diffButton.setGraphicTextGap(8);
 
-                    executor.execute(() -> {
-                        project.loadRepositoryStudy();
-                        Platform.runLater(() -> {
-                            modelEditingController.updateView();
-                            statusLogger.info("Remote model loaded for comparison.");
-                            UserNotifications.showActionableNotification(ownerStage, "Updates on study",
-                                    "New version of study in repository!", "View Differences",
-                                    actionEvent -> this.openDiffView(), true);
-                        });
-                    });
+                    modelEditingController.updateView();
+                    statusLogger.info("Remote model loaded for comparison.");
+                    UserNotifications.showActionableNotification(ownerStage, "Updates on study",
+                            "New version of study in repository!", "View Differences",
+                            actionEvent -> this.openDiffView(), true);
+
                 } else {
                     diffButton.setGraphic(null);
                 }
@@ -741,37 +741,19 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void saveProject(ActionEvent actionEvent) {
         try {
-            StudySettings studySettings = project.getStudy().getStudySettings();
-            boolean isSyncDisabled = studySettings == null || !studySettings.getSyncEnabled();
-            boolean isNormalUser = !project.checkAdminUser();
-            if (isSyncDisabled && isNormalUser) {
+            if (!this.isSaveEnabled()) {
                 Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\n" +
                         "Contact the team lead for him to enable it!");
                 return;
             }
-            boolean changesInRepository = false;
+
             try {
-                changesInRepository = project.checkRepositoryForChanges();
-            } catch (Exception e) {
-                statusLogger.error("Error checking repository for changes");
-            }
-            if (changesInRepository) {
-                Optional<ButtonType> buttonType = Dialogues.chooseOkCancel("Repository has changes",
-                        "Merge changes, and review remaining differences?");
-                if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
-                    // TODO merge remote changes
-                    Study study =  project.getStudy();
-                    Study repositoryStudy =  project.getRepositoryStudy();
-                    List<ModelDifference> modelDifferences
-                            = differenceMergeHandler.computeStudyDifferences(study, repositoryStudy);
-                    List<ModelDifference> appliedChanges
-                            = differenceMergeHandler.mergeChangesOntoFirst(modelDifferences);
-                    if (modelDifferences.size() > 0) { // not all changes were applied
-                        openDiffView();
-                    }
-                } else {
+                if (this.hasRemoteDifferences()) {
                     return;
                 }
+            } catch (Exception e) {
+                statusLogger.error("Error checking repository for changes");
+                return;
             }
             modelEditingController.clearView();
             project.storeStudy();
@@ -789,6 +771,40 @@ public class MainController implements Initializable, Displayable, Closeable {
             logger.error("Unknown Exception", e);
             actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName() + ", saving failed");
         }
+    }
+
+    private boolean isSaveEnabled() {
+        StudySettings studySettings = project.getStudy().getStudySettings();
+        boolean isSyncDisabled = studySettings == null || !studySettings.getSyncEnabled();
+        boolean isNormalUser = !project.checkAdminUser();
+        return !isSyncDisabled || !isNormalUser;
+    }
+
+    private boolean hasRemoteDifferences() throws Exception {
+        Future<Pair<Boolean, List<ModelDifference>>> feature = project.loadRepositoryStudy();
+        externalModelFileHandler.updateExternalModelsInStudy();
+
+        List<ModelDifference> modelDifferences = feature.get().getRight();
+
+        Predicate<ModelDifference> remoteChangedPredicate = md -> md.getChangeLocation() == ChangeLocation.ARG2;
+        long remoteDifferenceCounts = modelDifferences.stream().filter(remoteChangedPredicate).count();
+
+        boolean containRemoteDifferences = remoteDifferenceCounts > 0;
+        if (!containRemoteDifferences) {
+            return false;
+        }
+        Optional<ButtonType> buttonType = Dialogues.chooseOkCancel("Repository has changes",
+                "Merge changes, and review remaining differences?");
+        if (!buttonType.isPresent() || buttonType.get() != ButtonType.OK) {
+            return true;
+        }
+        // TODO merge remote changes
+        this.openDiffView();
+
+        remoteDifferenceCounts = project.modelDifferences().stream().filter(remoteChangedPredicate).count();
+
+        containRemoteDifferences = remoteDifferenceCounts > 0;
+        return containRemoteDifferences;
     }
 
     public void tagStudy() {

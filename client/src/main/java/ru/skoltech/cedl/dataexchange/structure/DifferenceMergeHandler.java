@@ -90,9 +90,10 @@ public class DifferenceMergeHandler {
         }
         // system model
         SystemModel localSystemModel = localStudy.getSystemModel();
-        SystemModel remoteSystemModel2 = remoteStudy.getSystemModel();
-        if (localSystemModel != null && remoteSystemModel2 != null) {
-            modelDifferences.addAll(nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel2, localStudy.getRevision()));
+        SystemModel remoteSystemModel = remoteStudy.getSystemModel();
+        int revision = localStudy.getRevision();
+        if (localSystemModel != null && remoteSystemModel != null) {
+            modelDifferences.addAll(nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel, revision));
         }
 
         return modelDifferences.stream()

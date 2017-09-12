@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
+import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -40,7 +41,6 @@ import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executor;
 
 /**
  * Created by D.Knoll on 20.07.2015.
@@ -57,7 +57,6 @@ public class DiffController implements Initializable, Displayable, Closeable {
     private Project project;
     private DifferenceMergeHandler differenceMergeHandler;
     private UserRoleManagementService userRoleManagementService;
-    private Executor executor;
     private StatusLogger statusLogger;
 
     private Stage ownerStage;
@@ -74,17 +73,13 @@ public class DiffController implements Initializable, Displayable, Closeable {
         this.userRoleManagementService = userRoleManagementService;
     }
 
-    public void setExecutor(Executor executor) {
-        this.executor = executor;
-    }
-
     public void setStatusLogger(StatusLogger statusLogger) {
         this.statusLogger = statusLogger;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        diffTable.setItems(project.getModelDifferences());
+        diffTable.itemsProperty().bind(new SimpleListProperty<>(project.modelDifferences()));
         actionColumn.setCellFactory(new ActionCellFactory());
         elementTypeColumn.setCellValueFactory(valueFactory -> {
             if (valueFactory != null) {
@@ -104,7 +99,6 @@ public class DiffController implements Initializable, Displayable, Closeable {
                 return new SimpleStringProperty();
             }
         });
-        this.refreshView();
     }
 
     @Override
@@ -122,17 +116,17 @@ public class DiffController implements Initializable, Displayable, Closeable {
     }
 
     public void refreshView() {
-        executor.execute(() -> project.loadRepositoryStudy());
+        project.loadRepositoryStudy();
     }
 
     public void acceptAll() {
         try {
-            ObservableList<ModelDifference> modelDifferences = project.getModelDifferences();
+            ObservableList<ModelDifference> modelDifferences = project.modelDifferences();
             List<ModelDifference> appliedDifferences = differenceMergeHandler.mergeChangesOntoFirst(modelDifferences);
             if (appliedDifferences.size() > 0) {
                 project.markStudyModified();
             }
-            if (project.getModelDifferences().size() == 0) {
+            if (project.modelDifferences().size() == 0) {
                 this.close();
             }
         } catch (MergeException me) {
@@ -142,9 +136,9 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     public void revertAll() {
         try {
-            ObservableList<ModelDifference> modelDifferences = project.getModelDifferences();
+            ObservableList<ModelDifference> modelDifferences = project.modelDifferences();
             List<ModelDifference> appliedDifferences = differenceMergeHandler.revertChangesOnFirst(modelDifferences);
-            if (project.getModelDifferences().size() == 0) {
+            if (project.modelDifferences().size() == 0) {
                 this.close();
             } else if (appliedDifferences.size() > 0) {
                 int modelsReverted = 0;
@@ -176,7 +170,7 @@ public class DiffController implements Initializable, Displayable, Closeable {
             statusLogger.error(me.getMessage());
         }
         if (success) {
-            project.getModelDifferences().remove(modelDifference);
+            project.modelDifferences().remove(modelDifference);
             project.markStudyModified();
         }
     }

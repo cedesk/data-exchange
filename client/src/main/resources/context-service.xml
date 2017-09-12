@@ -98,7 +98,9 @@
                 <entry key="hibernate.connection.isolation" value="${hibernate.connection.isolation}"/>
                 <entry key="hibernate.format_sql" value="${hibernate.format.sql}"/>
                 <entry key="org.hibernate.envers.audit_strategy" value="${hibernate.envers.audit_strategy}"/>
-                <entry key="hibernate.ejb.event.flush-entity" value="ru.skoltech.cedl.dataexchange.RevisionListener" />
+                <entry key="hibernate.ejb.event.pre-insert" value="ru.skoltech.cedl.dataexchange.RevisionListener" />
+                <entry key="hibernate.ejb.event.pre-update" value="ru.skoltech.cedl.dataexchange.RevisionListener" />
+                <entry key="hibernate.ejb.event.pre-delete" value="ru.skoltech.cedl.dataexchange.RevisionListener" />
             </util:map>
         </property>
     </bean>

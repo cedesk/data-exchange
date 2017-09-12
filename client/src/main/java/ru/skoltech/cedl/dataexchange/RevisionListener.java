@@ -17,11 +17,11 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Session;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.DefaultRevisionEntity;
-import org.hibernate.event.spi.FlushEntityEvent;
-import org.hibernate.event.spi.FlushEntityEventListener;
+import org.hibernate.event.spi.*;
 import ru.skoltech.cedl.dataexchange.entity.Revision;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 
@@ -37,12 +37,27 @@ import java.util.stream.Collectors;
  *
  * Created by Nikolay Groshkov on 25-Aug-17.
  */
-public class RevisionListener implements FlushEntityEventListener {
+public class RevisionListener implements PreInsertEventListener, PreUpdateEventListener, PreDeleteEventListener {
 
     @Override
-    public void onFlushEntity(FlushEntityEvent event) throws HibernateException {
-        Object entity = event.getEntity();
+    public boolean onPreInsert(PreInsertEvent event) {
+        this.processEntity(event.getSession(), event.getEntity());
+        return false;
+    }
 
+    @Override
+    public boolean onPreUpdate(PreUpdateEvent event) {
+        this.processEntity(event.getSession(), event.getEntity());
+        return false;
+    }
+
+    @Override
+    public boolean onPreDelete(PreDeleteEvent event) {
+        this.processEntity(event.getSession(), event.getEntity());
+        return false;
+    }
+
+    private void processEntity(Session session, Object entity) {
         if (entity == null) {
             return;
         }
@@ -60,7 +75,7 @@ public class RevisionListener implements FlushEntityEventListener {
             throw new HibernateException("Revision field must be type of int or java.lang.Integer");
         }
 
-        final AuditReader reader = AuditReaderFactory.get(event.getSession());
+        final AuditReader reader = AuditReaderFactory.get(session);
         DefaultRevisionEntity revisionEntity = reader.getCurrentRevision(CustomRevisionEntity.class, true);
         int revision = revisionEntity.getId();
 

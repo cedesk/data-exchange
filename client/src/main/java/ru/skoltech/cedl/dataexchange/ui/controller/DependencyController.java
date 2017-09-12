@@ -174,7 +174,7 @@ public class DependencyController implements Initializable {
                 refreshView(null);
             }
         };
-        repositoryNewer = Bindings.isNotEmpty(project.getModelDifferences());
+        repositoryNewer = Bindings.isNotEmpty(project.modelDifferences());
         repositoryNewer.addListener(listener);
 
         diagramView.getScene().getWindow().setOnCloseRequest(event -> {

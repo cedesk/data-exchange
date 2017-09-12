@@ -24,6 +24,7 @@ import javafx.collections.ObservableList;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
+import org.springframework.core.task.AsyncTaskExecutor;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
@@ -49,11 +50,9 @@ import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import java.io.File;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.Executor;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
@@ -77,8 +76,7 @@ public class Project {
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
-    private NodeDifferenceService nodeDifferenceService;
-    private Executor executor;
+    private AsyncTaskExecutor executor;
 
     private String projectName;
 
@@ -87,6 +85,7 @@ public class Project {
 
     private AtomicInteger latestRevisionNumber = new AtomicInteger();
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
+    private ObservableList<ModelDifference> appliedModelDifferences = FXCollections.observableArrayList();
 
     private UserManagement userManagement;
     private UnitManagement unitManagement;
@@ -150,11 +149,7 @@ public class Project {
         this.differenceMergeHandler = differenceMergeHandler;
     }
 
-    public void setNodeDifferenceService(NodeDifferenceService nodeDifferenceService) {
-        this.nodeDifferenceService = nodeDifferenceService;
-    }
-
-    public void setExecutor(Executor executor) {
+    public void setExecutor(AsyncTaskExecutor executor) {
         this.executor = executor;
     }
 
@@ -170,7 +165,7 @@ public class Project {
         this.init(projectName);
     }
 
-    public ObservableList<ModelDifference> getModelDifferences() {
+    public ObservableList<ModelDifference> modelDifferences() {
         return modelDifferences;
     }
 
@@ -296,22 +291,6 @@ public class Project {
         return canSync;
     }
 
-    public boolean checkRepositoryForChanges() {
-        if (this.repositoryStudy != null) { // already saved or retrieved from repository
-            this.loadRepositoryStudy();
-            externalModelFileHandler.updateExternalModelsInStudy();
-            SystemModel localSystemModel = this.study.getSystemModel();
-            SystemModel remoteSystemModel = this.repositoryStudy.getSystemModel();
-            int revision = study.getRevision();
-            List<ModelDifference> modelDifferences =
-                    nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel, revision);
-            long remoteDifferenceCounts = modelDifferences.stream()
-                    .filter(md -> md.getChangeLocation() == ModelDifference.ChangeLocation.ARG2).count();
-            return remoteDifferenceCounts > 0;
-        }
-        return false;
-    }
-
     /**
      * Check current version of study in the repository.
      * Has to be performed regularly for user's ability to synchronize remote and local study.
@@ -336,7 +315,7 @@ public class Project {
         if (this.latestRevisionNumber.get() >= newLatestRevisionNumber) {
             return;
         }
-        executor.execute(this::loadRepositoryStudy);
+        this.loadRepositoryStudy();
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {
@@ -371,21 +350,35 @@ public class Project {
         registerParameterLinks();
     }
 
-    public void loadRepositoryStudy() {
-        Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
-        Study repositoryStudy = revision.getLeft();
-        Integer repositoryStudyRevisionNumber = revision.getMiddle();
-        if (this.latestRevisionNumber.get() == repositoryStudyRevisionNumber) {
-            return;
-        }
+    public Future<Pair<Boolean, List<ModelDifference>>> loadRepositoryStudy() {
+        Future<Pair<Boolean, List<ModelDifference>>> feature = executor.submit(() -> {
+            Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
+            Study repositoryStudy = revision.getLeft();
+            Integer repositoryStudyRevisionNumber = revision.getMiddle();
 
-        this.setRepositoryStudy(repositoryStudy);
-        this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
-        Platform.runLater(() -> {
-            List<ModelDifference> modelDiffs = differenceMergeHandler.computeStudyDifferences(study, repositoryStudy);
-            modelDifferences.clear();
-            modelDifferences.addAll(modelDiffs);
+            boolean update = Project.this.latestRevisionNumber.get() != repositoryStudyRevisionNumber;
+            if (update) {
+                Project.this.setRepositoryStudy(repositoryStudy);
+                Project.this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
+            }
+            List<ModelDifference> differences = differenceMergeHandler.computeStudyDifferences(study, repositoryStudy);
+
+            return Pair.of(update, differences);
         });
+        Platform.runLater(() -> {
+            try {
+                Pair<Boolean, List<ModelDifference>> pair = feature.get();
+                if (!pair.getLeft()) {
+                    return;
+                }
+                List<ModelDifference> differences = pair.getRight();
+                modelDifferences.clear();
+                modelDifferences.addAll(differences);
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("Cannot perform loading repository study: " + e.getMessage(), e);
+            }
+        });
+        return feature;
     }
 
     public boolean loadUnitManagement() {

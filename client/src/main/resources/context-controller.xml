@@ -31,7 +31,7 @@
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="project" ref="project"/>
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
-        <property name="differenceMergeHandler" ref="differenceMergeHandler"/>
+        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="guiService" ref="guiService"/>
         <property name="studyService" ref="studyService"/>
         <property name="fileStorageService" ref="fileStorageService"/>
@@ -113,7 +113,6 @@
         <property name="project" ref="project"/>
         <property name="differenceMergeHandler" ref="differenceMergeHandler"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
-        <property name="executor" ref="executor"/>
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
 

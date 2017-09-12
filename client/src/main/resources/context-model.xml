@@ -42,7 +42,6 @@
         <property name="userManagementService" ref="userManagementService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="unitManagementService" ref="unitManagementService"/>
-        <property name="nodeDifferenceService" ref="nodeDifferenceService"/>
         <property name="executor" ref="executor"/>
     </bean>
 
