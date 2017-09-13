@@ -49,7 +49,7 @@ public class ParameterModelTableRow extends TableRow<Pair<ParameterModel, Parame
         if (parameterModel == null) {
             return null;
         }
-        boolean applied = differenceHandler.checkAppliedParameterModel(parameterModel);
+        boolean applied = differenceHandler.checkChangedParameterModel(parameterModel);
         String alignmentStyle = "-fx-alignment: center;";
         String backgroundColorStyle = applied ? "-fx-background-color: #FF6A00;" : "";
         return String.join("", alignmentStyle, backgroundColorStyle);

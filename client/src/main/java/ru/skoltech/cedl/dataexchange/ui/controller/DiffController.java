@@ -36,9 +36,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 20.07.2015.
@@ -116,8 +114,8 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     public void acceptAll() {
         try {
-            differenceHandler.mergeCurrentDifferencesOntoFirst();
-            if (!differenceHandler.appliedModelDifferences().isEmpty()) {
+            boolean success = differenceHandler.mergeCurrentDifferencesOntoFirst();
+            if (success) {
                 project.markStudyModified();
             }
             if (differenceHandler.modelDifferences().isEmpty()) {
@@ -134,16 +132,6 @@ public class DiffController implements Initializable, Displayable, Closeable {
             differenceHandler.revertCurrentDifferencesOnFirst();
             if (differenceHandler.modelDifferences().isEmpty()) {
                 this.close();
-                return;
-            }
-            if (!differenceHandler.appliedModelDifferences().isEmpty()) {
-                List<ModelDifference> externalModelDifferences = differenceHandler.appliedModelDifferences()
-                        .stream()
-                        .filter(difference -> difference instanceof ExternalModelDifference)
-                        .collect(Collectors.toList());
-                if (!externalModelDifferences.isEmpty()) { // reverting models may have affected parameters referencing values in them
-                    refreshView();
-                }
             }
         } catch (MergeException e) {
             logger.error(e.getMessage(), e);

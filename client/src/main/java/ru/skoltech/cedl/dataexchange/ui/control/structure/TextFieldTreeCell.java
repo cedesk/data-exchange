@@ -91,7 +91,7 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
 
     private String style(ModelNode item) {
         boolean accessible = project.checkUserAccess(item);
-        boolean applied = differenceHandler.checkAppliedModelNode(item);
+        boolean applied = differenceHandler.checkChangedModelNode(item);
         String fontWeightStyle = accessible ? "-fx-font-weight:bold;" : "-fx-font-weight:normal;";
         String backgroundColorStyle = applied ? "-fx-background-color: #FF6A00;" : "";
 

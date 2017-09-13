@@ -53,7 +53,6 @@ public class DifferenceHandler {
     private final RevisionEntityRepository revisionEntityRepository;
 
     private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
-    private ObservableList<ModelDifference> appliedModelDifferences = FXCollections.observableArrayList();
 
     @Autowired
     public DifferenceHandler(RevisionEntityRepository revisionEntityRepository) {
@@ -80,16 +79,8 @@ public class DifferenceHandler {
         return this.modelDifferences;
     }
 
-    public ObservableList<ModelDifference> appliedModelDifferences() {
-        return this.appliedModelDifferences;
-    }
-
-    public void clearAppliedModelDifferences() {
-        this.appliedModelDifferences.clear();
-    }
-
-    public boolean checkAppliedModelNode(ModelNode modelNode) {
-        List<NodeDifference> modelNodeDifferences = this.appliedModelDifferences.stream()
+    public boolean checkChangedModelNode(ModelNode modelNode) {
+        List<NodeDifference> modelNodeDifferences = this.modelDifferences.stream()
                 .filter(modelDifference -> modelDifference instanceof NodeDifference)
                 .map(modelDifference -> (NodeDifference) modelDifference)
                 .filter(nodeDifference -> modelNode.getUuid().equals(nodeDifference.getNode1().getUuid()))
@@ -97,8 +88,8 @@ public class DifferenceHandler {
         return !modelNodeDifferences.isEmpty();
     }
 
-    public boolean checkAppliedParameterModel(ParameterModel parameterModel) {
-        List<ParameterDifference> parameterDifferences = this.appliedModelDifferences.stream()
+    public boolean checkChangedParameterModel(ParameterModel parameterModel) {
+        List<ParameterDifference> parameterDifferences = this.modelDifferences.stream()
                 .filter(modelDifference -> modelDifference instanceof ParameterDifference)
                 .map(modelDifference -> (ParameterDifference) modelDifference)
                 .filter(parameterDifference -> parameterModel.getUuid().equals(parameterDifference.getParameter1().getUuid()))
@@ -113,17 +104,14 @@ public class DifferenceHandler {
 
     public void clearModelDifferences() {
         this.modelDifferences.clear();
-        this.appliedModelDifferences.clear();
     }
 
     public void removeModelDifference(ModelDifference modelDifference) {
         this.modelDifferences.remove(modelDifference);
-        this.appliedModelDifferences.add(modelDifference);
     }
 
     public void removeModelDifferences(List<ModelDifference> modelDifferences) {
         this.modelDifferences.removeAll(modelDifferences);
-        this.appliedModelDifferences.addAll(modelDifferences);
     }
 
     /**
@@ -209,15 +197,22 @@ public class DifferenceHandler {
     }
 
     /**
-     * The list current of differences to be merged, retaining only unmerged ones
+     * The list current of differences to be merged, retaining only unmerged ones.
+     * <p>
+     * @return if at least one difference was merged
      */
-    public void mergeCurrentDifferencesOntoFirst() throws MergeException {
+    public boolean mergeCurrentDifferencesOntoFirst() throws MergeException {
         List<ModelDifference> mergeableModelDifferences = this.modelDifferences.stream()
                 .filter(ModelDifference::isMergeable)
                 .collect(Collectors.toList());
+        boolean result = false;
         for (ModelDifference modelDifference : mergeableModelDifferences) {
-            this.mergeOne(modelDifference);
+            boolean success = this.mergeOne(modelDifference);
+            if (success) {
+                result = true;
+            }
         }
+        return result;
     }
 
     /**
@@ -236,14 +231,21 @@ public class DifferenceHandler {
 
     /**
      * The list of current differences to be reverted, retaining only unmerged ones.
+     * <p>
+     * @return if at least one difference was reverted
      */
-    public void revertCurrentDifferencesOnFirst() throws MergeException {
+    public boolean revertCurrentDifferencesOnFirst() throws MergeException {
         List<ModelDifference> revertibleModelDifferences = this.modelDifferences.stream()
                 .filter(ModelDifference::isRevertible)
                 .collect(Collectors.toList());
+        boolean result = false;
         for (ModelDifference modelDifference : revertibleModelDifferences) {
-                this.revertOne(modelDifference);
+            boolean success = this.revertOne(modelDifference);
+            if (success) {
+                result = true;
+            }
         }
+        return result;
     }
 
     /**

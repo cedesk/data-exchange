@@ -443,7 +443,6 @@ public class Project {
 
         externalModelFileHandler.initializeStateOfExternalModels(systemModel, accessChecker);
         parameterLinkRegistry.registerAllParameters(getSystemModel());
-        differenceHandler.clearAppliedModelDifferences();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
     }
 
