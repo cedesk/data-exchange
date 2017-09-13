@@ -33,20 +33,27 @@ import java.util.stream.Collectors;
 public class ParameterDifference extends ModelDifference {
 
     private static final Logger logger = Logger.getLogger(ParameterDifference.class);
+
     private final ParameterModel parameter1;
     private ModelNode parent;
     private ParameterModel parameter2;
+    private List<String> attributes;
+    private List<String> values1;
+    private List<String> values2;
 
     public ParameterDifference(ParameterModel parameter1, ParameterModel parameter2, ChangeType changeType,
-                                ChangeLocation changeLocation, String attributes, String values1, String values2) {
+                                ChangeLocation changeLocation, List<String> attributes, List<String> values1, List<String> values2) {
         this.parent = parameter1.getParent();
         this.parameter1 = parameter1;
         this.parameter2 = parameter2;
         this.changeLocation = changeLocation;
         this.changeType = changeType;
-        this.attribute = attributes;
-        this.value1 = values1;
-        this.value2 = values2;
+        this.attributes = attributes;
+        this.attribute = attributes.stream().collect(Collectors.joining("\n"));
+        this.values1 = values1;
+        this.value1 = values1.stream().collect(Collectors.joining("\n"));
+        this.values2 = values2;
+        this.value2 = values2.stream().collect(Collectors.joining("\n"));
     }
 
     public ParameterDifference(ModelNode parent, ParameterModel parameter, ChangeType changeType, ChangeLocation changeLocation, String value1, String value2) {
@@ -81,6 +88,18 @@ public class ParameterDifference extends ModelDifference {
     @Override
     public ModelNode getParentNode() {
         return parameter1.getParent();
+    }
+
+    public List<String> getAttributes() {
+        return attributes;
+    }
+
+    public List<String> getValues1() {
+        return values1;
+    }
+
+    public List<String> getValues2() {
+        return values2;
     }
 
     @Override

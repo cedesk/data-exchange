@@ -27,6 +27,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference.ChangeType.MODIFY;
+
 /**
  * Created by Nikolay Groshkov on 23-Aug-17.
  */
@@ -34,20 +36,12 @@ public class ParameterDifferenceServiceImpl implements ParameterDifferenceServic
 
     @Override
     public ParameterDifference createParameterAttributesModified(ParameterModel parameter1, ParameterModel parameter2, List<AttributeDifference> differences) {
-        StringBuilder sbAttributes = new StringBuilder(), sbValues1 = new StringBuilder(), sbValues2 = new StringBuilder();
-        for (AttributeDifference diff : differences) {
-            if (sbAttributes.length() > 0) {
-                sbAttributes.append('\n');
-                sbValues1.append('\n');
-                sbValues2.append('\n');
-            }
-            sbAttributes.append(diff.attributeName);
-            sbValues1.append(diff.value1);
-            sbValues2.append(diff.value2);
-        }
         boolean p2newer = parameter2.getRevision() > parameter1.getRevision();
         ModelDifference.ChangeLocation changeLocation = p2newer ? ModelDifference.ChangeLocation.ARG2 : ModelDifference.ChangeLocation.ARG1;
-        return new ParameterDifference(parameter1, parameter2, ModelDifference.ChangeType.MODIFY, changeLocation, sbAttributes.toString(), sbValues1.toString(), sbValues2.toString());
+        List<String> attributes = differences.stream().map(diff -> diff.attributeName).collect(Collectors.toList());
+        List<String> values1 = differences.stream().map(diff -> diff.value1).collect(Collectors.toList());
+        List<String> values2 = differences.stream().map(diff -> diff.value2).collect(Collectors.toList());
+        return new ParameterDifference(parameter1, parameter2, MODIFY, changeLocation, attributes, values1, values2);
     }
 
     @Override

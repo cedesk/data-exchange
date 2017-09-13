@@ -97,6 +97,18 @@ public class DifferenceHandler {
         return !parameterDifferences.isEmpty();
     }
 
+    public ParameterDifference parameterDifference(ParameterModel parameterModel) {
+        List<ParameterDifference> parameterDifferences = this.modelDifferences.stream()
+                .filter(modelDifference -> modelDifference instanceof ParameterDifference)
+                .map(modelDifference -> (ParameterDifference) modelDifference)
+                .filter(parameterDifference -> parameterModel.getUuid().equals(parameterDifference.getParameter1().getUuid()))
+                .collect(Collectors.toList());
+        if (parameterDifferences.size() > 0 ) {
+            logger.warn("More than one ParameterDifference for one parameter model");
+        }
+        return !parameterDifferences.isEmpty() ? parameterDifferences.get(0) : null;
+    }
+
     public void updateModelDifferences(List<ModelDifference> modelDifferences) {
         this.clearModelDifferences();
         this.modelDifferences.addAll(modelDifferences);

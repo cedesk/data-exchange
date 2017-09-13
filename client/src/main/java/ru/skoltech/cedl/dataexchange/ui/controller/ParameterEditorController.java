@@ -16,8 +16,12 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -29,7 +33,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
@@ -51,9 +54,11 @@ import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ParameterDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateState;
 import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
@@ -61,10 +66,7 @@ import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
 import java.net.URL;
-import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -119,6 +121,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     private HBox exportSelectorGroup;
 
     private Project project;
+    private DifferenceHandler differenceHandler;
     private ModelUpdateHandler modelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private GuiService guiService;
@@ -137,8 +140,26 @@ public class ParameterEditorController implements Initializable, Displayable {
     private AutoCompletionBinding<String> binding;
     private Stage ownerStage;
 
+    private ListProperty<String> differencesProperty = new SimpleListProperty<>();
+    private BooleanProperty nameChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty natureChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty valueSourceChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty valueReferenceChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty parameterLinkChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty valueChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty unitChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty isReferenceValueOverriddenChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty valueOverrideChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty isExportedChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty exportReferenceChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty descriptionChangedProperty = new SimpleBooleanProperty();
+
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
+        this.differenceHandler = differenceHandler;
     }
 
     public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
@@ -171,9 +192,22 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        valueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
-        valueOverrideText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
+        nameChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("name"), differencesProperty));
+        natureChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("nature"), differencesProperty));
+        valueSourceChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("valueSource"), differencesProperty));
+        valueReferenceChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("valueReference"), differencesProperty));
+        parameterLinkChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("valueLink"), differencesProperty));
+        valueChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("value"), differencesProperty));
+        unitChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("unit"), differencesProperty));
+        isReferenceValueOverriddenChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("isReferenceValueOverridden"), differencesProperty));
+        valueOverrideChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("overrideValue"), differencesProperty));
+        isExportedChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("isExported"), differencesProperty));
+        exportReferenceChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("exportReference"), differencesProperty));
+        descriptionChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("description"), differencesProperty));
+
+        nameText.styleProperty().bind(Bindings.when(nameChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
+        natureChoiceBox.styleProperty().bind(Bindings.when(natureChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         natureChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != ParameterNature.INPUT) {
                 valueSourceChoiceBox.getItems().remove(ParameterValueSource.LINK);
@@ -181,6 +215,8 @@ public class ParameterEditorController implements Initializable, Displayable {
                 valueSourceChoiceBox.getItems().add(ParameterValueSource.LINK);
             }
         });
+        dependentsText.visibleProperty().bind(natureChoiceBox.valueProperty().isEqualTo(ParameterNature.OUTPUT));
+        valueSourceChoiceBox.styleProperty().bind(Bindings.when(valueSourceChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
         valueSourceChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == ParameterValueSource.REFERENCE) {
@@ -190,66 +226,31 @@ public class ParameterEditorController implements Initializable, Displayable {
             }
         });
         referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
+        valueReferenceText.styleProperty().bind(Bindings.when(valueReferenceChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        parameterLinkText.styleProperty().bind(Bindings.when(parameterLinkChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         linkSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
         calculationGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.CALCULATION));
+        valueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
         valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
+        valueText.styleProperty().bind(Bindings.when(valueChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         unitComboBox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
+        unitComboBox.styleProperty().bind(Bindings.when(unitChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
-        dependentsText.visibleProperty().bind(natureChoiceBox.valueProperty().isEqualTo(ParameterNature.OUTPUT));
+        isReferenceValueOverriddenCheckbox.styleProperty().bind(Bindings.when(isReferenceValueOverriddenChangedProperty).then("-fx-outer-border: #FF6A00;").otherwise((String) null));
+        valueOverrideText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
         valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.disableProperty().or(isReferenceValueOverriddenCheckbox.selectedProperty().not()));
+        valueOverrideText.styleProperty().bind(Bindings.when(valueOverrideChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         exportSelectorGroup.disableProperty().bind(isExportedCheckbox.selectedProperty().not());
+        isExportedCheckbox.styleProperty().bind(Bindings.when(isExportedChangedProperty).then("-fx-outer-border: #FF6A00;").otherwise((String) null));
+        exportReferenceText.styleProperty().bind(Bindings.when(exportReferenceChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        descriptionText.styleProperty().bind(Bindings.when(descriptionChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
 
         List<String> unitsTexts = unitComboBox.getItems().stream().map(Unit::asText).collect(Collectors.toList());
         binding = TextFields.bindAutoCompletion(unitComboBox.getEditor(), unitsTexts);
 
-        unitComboBox.setConverter(new StringConverter<Unit>() {
-            @Override
-            public Unit fromString(String unitStr) {
-                UnitManagement unitManagement = project.getUnitManagement();
-                return unitManagementService.obtainUnitByText(unitManagement, unitStr);
-            }
-
-            @Override
-            public String toString(Unit unit) {
-                if (unit == null) {
-                    return null;
-                }
-                return unit.asText();
-            }
-        });
-
-
-        ListCell unitListCell = new ListCell<Unit>() {
-            @Override
-            protected void updateItem(Unit unit, boolean empty) {
-                super.updateItem(unit, empty);
-                if (empty) {
-                    setText("");
-                } else {
-                    setText(unit.getName());
-                }
-            }
-        };
-        unitComboBox.setButtonCell(unitListCell);
-
-
-        unitComboBox.setCellFactory(new Callback<ListView<Unit>, ListCell<Unit>>() {
-            @Override
-            public ListCell<Unit> call(ListView<Unit> p) {
-                ListCell cell = new ListCell<Unit>() {
-                    @Override
-                    protected void updateItem(Unit item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setText("");
-                        } else {
-                            setText(item.getName());
-                        }
-                    }
-                };
-                return cell;
-            }
-        });
+        unitComboBox.setConverter(new UnitStringConverter());
+        unitComboBox.setButtonCell(new UnitListCell());
+        unitComboBox.setCellFactory(p -> new UnitListCell());
     }
 
     @Override
@@ -267,6 +268,10 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     public void displayParameterModel(ParameterModel parameterModel) {
         this.originalParameterModel = parameterModel;
+        ParameterDifference parameterDifference = differenceHandler.parameterDifference(parameterModel);
+        if (parameterDifference != null && parameterDifference.getAttributes() != null) {
+            differencesProperty.set(FXCollections.observableList(parameterDifference.getAttributes()));
+        }
         this.updateView(originalParameterModel);
         this.updateIcon.setIcon(null);
         this.updateIcon.setColor(null);
@@ -274,8 +279,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     }
 
     public void displayParameterModel(ParameterModel parameterModel, ParameterModelUpdateState update) {
-        this.originalParameterModel = parameterModel;
-        this.updateView(originalParameterModel);
+        this.displayParameterModel(parameterModel);
         String icon = update == ParameterModelUpdateState.SUCCESS ? "CHECK" : "WARNING";
         Color color = update == ParameterModelUpdateState.SUCCESS ? Color.GREEN : Color.RED;
         this.updateIcon.setIcon(icon);
@@ -287,7 +291,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.editListener = updateListener;
     }
 
-    public void applyChanges(ActionEvent actionEvent) {
+    public void applyChanges() {
         updateModel();
     }
 
@@ -359,7 +363,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         calculationEditorViewBuilder.showAndWait(editingParameterModel, calculation);
     }
 
-    public void revertChanges(ActionEvent actionEvent) {
+    public void revertChanges() {
         updateView(originalParameterModel);
     }
 
@@ -502,9 +506,9 @@ public class ParameterEditorController implements Initializable, Displayable {
     private void updateView(ParameterModel parameterModel) {
         // refresh unit's list, since list can be changed
         List<Unit> units = project.getUnitManagement().getUnits();
-        units.sort((o1, o2) -> o1.asText().compareTo(o2.asText()));
+        units.sort(Comparator.comparing(Unit::asText));
         unitComboBox.setItems(FXCollections.observableArrayList(units));
-        List<String> unitsTexts = unitComboBox.getItems().stream().map(unit -> unit.asText()).collect(Collectors.toList());
+        List<String> unitsTexts = unitComboBox.getItems().stream().map(Unit::asText).collect(Collectors.toList());
         binding = TextFields.bindAutoCompletion(unitComboBox.getEditor(), unitsTexts);
 
         // make local copy of the parameter model
@@ -564,6 +568,34 @@ public class ParameterEditorController implements Initializable, Displayable {
                 externalModelReferenceTextField.setText(externalModelReference.toString());
             } else {
                 externalModelReferenceTextField.setText(externalModelReference != null ? externalModelReference.toString() : null);
+            }
+        }
+    }
+
+    private class UnitStringConverter extends StringConverter<Unit> {
+        @Override
+        public Unit fromString(String unitStr) {
+            UnitManagement unitManagement = project.getUnitManagement();
+            return unitManagementService.obtainUnitByText(unitManagement, unitStr);
+        }
+
+        @Override
+        public String toString(Unit unit) {
+            if (unit == null) {
+                return null;
+            }
+            return unit.asText();
+        }
+    }
+
+    private class UnitListCell extends ListCell<Unit> {
+        @Override
+        protected void updateItem(Unit unit, boolean empty) {
+            super.updateItem(unit, empty);
+            if (empty) {
+                setText("");
+            } else {
+                setText(unit.getName());
             }
         }
     }
