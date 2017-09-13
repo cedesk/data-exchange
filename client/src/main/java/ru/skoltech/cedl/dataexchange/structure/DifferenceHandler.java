@@ -24,6 +24,7 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
@@ -80,6 +81,24 @@ public class DifferenceHandler {
 
     public ObservableList<ModelDifference> modelDifferences() {
         return this.modelDifferences;
+    }
+
+    public ObservableList<ModelDifference> appliedModelDifferences() {
+        return this.appliedModelDifferences;
+    }
+
+    public void clearAppliedModelDifferences() {
+        this.appliedModelDifferences.clear();
+    }
+
+    public boolean checkAppliedModelNode(ModelNode modelNode) {
+        List<NodeDifference> modelNodeDifferences = this.appliedModelDifferences.stream()
+                .filter(modelDifference -> modelDifference instanceof NodeDifference)
+                .map(modelDifference -> (NodeDifference) modelDifference)
+                .filter(nodeDifference -> modelNode.getUuid().equals(nodeDifference.getNode1().getUuid()))
+                .collect(Collectors.toList());
+        return !modelNodeDifferences.isEmpty();
+
     }
 
     public void updateModelDifferences(List<ModelDifference> modelDifferences) {
@@ -185,22 +204,18 @@ public class DifferenceHandler {
     }
 
     /**
-     * TODO add javadoc
-     *
-     * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
-     * @return the list of merged differences
+     * The list current of differences to be merged, retaining only unmerged ones
      */
-    public List<ModelDifference> mergeChangesOntoFirst(List<ModelDifference> modelDifferences) throws MergeException {
+    public void mergeCurrentDifferencesOntoFirst() throws MergeException {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
-        for (ModelDifference modelDifference : modelDifferences) {
+        for (ModelDifference modelDifference : this.modelDifferences) {
             if (modelDifference.isMergeable()) {
-                boolean success = mergeOne(modelDifference);
+                boolean success = this.mergeOne(modelDifference);
                 if (success) {
                     appliedDifferences.add(modelDifference);
                 }
             }
         }
-        return appliedDifferences;
     }
 
     /**
@@ -220,18 +235,16 @@ public class DifferenceHandler {
             ExternalModel externalModel = emd.getExternalModel1();
             return updateCacheAndParameters(externalModel);
         }
+        this.removeModelDifference(modelDifference);
         return true;
     }
 
     /**
-     * TODO add javadoc
-     *
-     * @param modelDifferences the list of differences to be merged, retaining only unmerged ones
-     * @return the list of merged differences
+     * The list of current differences to be reverted, retaining only unmerged ones.
      */
-    public List<ModelDifference> revertChangesOnFirst(List<ModelDifference> modelDifferences) throws MergeException {
+    public void revertCurrentDifferencesOnFirst() throws MergeException {
         List<ModelDifference> appliedDifferences = new LinkedList<>();
-        for (ModelDifference modelDifference : modelDifferences) {
+        for (ModelDifference modelDifference : this.modelDifferences) {
             if (modelDifference.isRevertible()) {
                 boolean success = revertOne(modelDifference);
                 if (success) {
@@ -239,7 +252,6 @@ public class DifferenceHandler {
                 }
             }
         }
-        return appliedDifferences;
     }
 
     /**
@@ -259,6 +271,7 @@ public class DifferenceHandler {
             ExternalModel externalModel = emd.getExternalModel1();
             return updateCacheAndParameters(externalModel);
         }
+        this.removeModelDifference(modelDifference);
         return true;
     }
 

@@ -18,7 +18,6 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -29,11 +28,9 @@ import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.entity.user.User;
-import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
@@ -41,11 +38,14 @@ import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 20.07.2015.
  */
 public class DiffController implements Initializable, Displayable, Closeable {
+
+    private static Logger logger = Logger.getLogger(DiffController.class);
 
     @FXML
     private TableView<ModelDifference> diffTable;
@@ -56,7 +56,6 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     private Project project;
     private DifferenceHandler differenceHandler;
-    private UserRoleManagementService userRoleManagementService;
     private StatusLogger statusLogger;
 
     private Stage ownerStage;
@@ -67,10 +66,6 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     public void setDifferenceHandler(DifferenceHandler differenceHandler) {
         this.differenceHandler = differenceHandler;
-    }
-
-    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
-        this.userRoleManagementService = userRoleManagementService;
     }
 
     public void setStatusLogger(StatusLogger statusLogger) {
@@ -121,40 +116,38 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     public void acceptAll() {
         try {
-            ObservableList<ModelDifference> modelDifferences = differenceHandler.modelDifferences();
-            List<ModelDifference> appliedDifferences = differenceHandler.mergeChangesOntoFirst(modelDifferences);
-            differenceHandler.removeModelDifferences(appliedDifferences);
-            if (appliedDifferences.size() > 0) {
+            differenceHandler.mergeCurrentDifferencesOntoFirst();
+            if (!differenceHandler.appliedModelDifferences().isEmpty()) {
                 project.markStudyModified();
             }
-            if (differenceHandler.modelDifferences().size() == 0) {
+            if (differenceHandler.modelDifferences().isEmpty()) {
                 this.close();
             }
-        } catch (MergeException me) {
-            statusLogger.error(me.getMessage());
+        } catch (MergeException e) {
+            logger.error(e.getMessage(), e);
+            statusLogger.error(e.getMessage());
         }
     }
 
     public void revertAll() {
         try {
-            ObservableList<ModelDifference> modelDifferences = differenceHandler.modelDifferences();
-            List<ModelDifference> appliedDifferences = differenceHandler.revertChangesOnFirst(modelDifferences);
-            differenceHandler.removeModelDifferences(appliedDifferences);
-            if (differenceHandler.modelDifferences().size() == 0) {
+            differenceHandler.revertCurrentDifferencesOnFirst();
+            if (differenceHandler.modelDifferences().isEmpty()) {
                 this.close();
-            } else if (appliedDifferences.size() > 0) {
-                int modelsReverted = 0;
-                for (ModelDifference modelDifference : appliedDifferences) {
-                    if (modelDifference instanceof ExternalModelDifference) {
-                        modelsReverted++;
-                    }
-                }
-                if (modelsReverted > 0) { // reverting models may have affected parameters referencing values in them
+                return;
+            }
+            if (!differenceHandler.appliedModelDifferences().isEmpty()) {
+                List<ModelDifference> externalModelDifferences = differenceHandler.appliedModelDifferences()
+                        .stream()
+                        .filter(difference -> difference instanceof ExternalModelDifference)
+                        .collect(Collectors.toList());
+                if (!externalModelDifferences.isEmpty()) { // reverting models may have affected parameters referencing values in them
                     refreshView();
                 }
             }
-        } catch (MergeException me) {
-            statusLogger.error(me.getMessage());
+        } catch (MergeException e) {
+            logger.error(e.getMessage(), e);
+            statusLogger.error(e.getMessage());
         }
     }
 
@@ -172,15 +165,8 @@ public class DiffController implements Initializable, Displayable, Closeable {
             statusLogger.error(me.getMessage());
         }
         if (success) {
-            differenceHandler.removeModelDifference(modelDifference);
             project.markStudyModified();
         }
-    }
-
-    private boolean isEditable(ModelNode parentNode) {
-        UserRoleManagement userRoleManagement = project.getUserRoleManagement();
-        User user = project.getUser();
-        return userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, parentNode);
     }
 
     private class ActionCellFactory implements Callback<TableColumn<ModelDifference, String>, TableCell<ModelDifference, String>> {
@@ -189,7 +175,7 @@ public class DiffController implements Initializable, Displayable, Closeable {
             return new TableCell<ModelDifference, String>() {
                 private Button createAcceptButton(ModelDifference difference) {
                     ModelNode parentNode = difference.getParentNode();
-                    boolean mustAccept = !DiffController.this.isEditable(parentNode);
+                    boolean mustAccept = !project.checkUserAccess(parentNode);
                     boolean canMerge = difference.isMergeable();
                     String buttonTitle = mustAccept || canMerge ? "accept remote" : "revert local";
                     Button applyButton = new Button(buttonTitle);

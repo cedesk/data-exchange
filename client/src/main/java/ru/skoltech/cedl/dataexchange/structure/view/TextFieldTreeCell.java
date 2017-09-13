@@ -16,17 +16,13 @@
 
 package ru.skoltech.cedl.dataexchange.structure.view;
 
-import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.entity.user.User;
-import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.controller.Dialogues;
 
@@ -36,24 +32,13 @@ import ru.skoltech.cedl.dataexchange.ui.controller.Dialogues;
 public class TextFieldTreeCell extends TreeCell<ModelNode> {
 
     private Project project;
-    private UserRoleManagementService userRoleManagementService;
+    private DifferenceHandler differenceHandler;
     private TextField textField;
 
-    public TextFieldTreeCell(Project project, UserRoleManagementService userRoleManagementService, boolean editable) {
+    public TextFieldTreeCell(Project project, DifferenceHandler differenceHandler) {
         this.project = project;
-        this.userRoleManagementService = userRoleManagementService;
-        this.setEditable(editable);
-    }
-
-    private String getString() {
-        return getItem() == null ? "" : getItem().getName();
-    }
-
-    @Override
-    public void cancelEdit() {
-        super.cancelEdit();
-        setText(getString());
-        setGraphic(getTreeItem().getGraphic());
+        this.differenceHandler = differenceHandler;
+        this.setEditable(false);
     }
 
     @Override
@@ -64,10 +49,17 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
         if (textField == null) {
             createTextField();
         }
-        textField.setText(getString());
-        setText(null);
-        setGraphic(textField);
+        textField.setText(name());
+        this.setText(null);
+        this.setGraphic(textField);
         textField.selectAll();
+    }
+
+    @Override
+    public void cancelEdit() {
+        super.cancelEdit();
+        this.setText(name());
+        this.setGraphic(getTreeItem().getGraphic());
     }
 
     @Override
@@ -75,51 +67,54 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
         super.updateItem(item, empty);
 
         if (empty) {
-            setText(null);
-            setGraphic(null);
-        } else {
-            if (isEditing()) {
-                if (textField != null) {
-                    textField.setText(getString());
-                }
-                setText(null);
-                setGraphic(textField);
-            } else {
-                setText(getString());
-                UserRoleManagement userRoleManagement = project.getUserRoleManagement();
-                User user = project.getUser();
-                boolean access = userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, item);
-                if (access) {
-                    setStyle("-fx-font-weight: bold;");
-                } else {
-                    setStyle("-fx-font-weight: normal;");
-                }
-                setGraphic(getTreeItem().getGraphic());
-            }
+            this.setText(null);
+            this.setGraphic(null);
+            this.setStyle(null);
+            return;
         }
+        if (isEditing()) {
+            if (textField != null) {
+                textField.setText(name());
+            }
+            this.setText(null);
+            this.setGraphic(textField);
+            return;
+        }
+        this.setText(name());
+        this.setStyle(style(item));
+        this.setGraphic(getTreeItem().getGraphic());
+    }
+
+    private String name() {
+        return this.getItem() == null ? "" : this.getItem().getName();
+    }
+
+    private String style(ModelNode item) {
+        boolean accessible = project.checkUserAccess(item);
+        boolean applied = differenceHandler.checkAppliedModelNode(item);
+        String fontWeightStyle = accessible ? "-fx-font-weight:bold;" : "-fx-font-weight:normal;";
+        String backgroundColorStyle = applied ? "-fx-background-color: #FF6A00;" : "";
+
+        return String.join("", fontWeightStyle, backgroundColorStyle);
     }
 
     private void createTextField() {
         textField = new TextField();
-        textField.setOnKeyReleased(new EventHandler<KeyEvent>() {
-
-            @Override
-            public void handle(KeyEvent t) {
-                if (t.getCode() == KeyCode.ENTER) {
-                    String newName = textField.getText();
-                    TreeItem<ModelNode> parent = getTreeItem().getParent();
-                    if (parent != null) {
-                        CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                        if (parentNode.getSubNodesMap().containsKey(newName)) {
-                            Dialogues.showError("Duplicate node name", "There is already a sibling node named like that!");
-                            return;
-                        }
+        textField.setOnKeyReleased(t -> {
+            if (t.getCode() == KeyCode.ENTER) {
+                String newName = textField.getText();
+                TreeItem<ModelNode> parent = getTreeItem().getParent();
+                if (parent != null) {
+                    CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
+                    if (parentNode.getSubNodesMap().containsKey(newName)) {
+                        Dialogues.showError("Duplicate node name", "There is already a sibling node named like that!");
+                        return;
                     }
-                    getItem().setName(newName);
-                    commitEdit(getItem());
-                } else if (t.getCode() == KeyCode.ESCAPE) {
-                    cancelEdit();
                 }
+                getItem().setName(newName);
+                commitEdit(getItem());
+            } else if (t.getCode() == KeyCode.ESCAPE) {
+                cancelEdit();
             }
         });
     }

@@ -30,10 +30,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.entity.user.User;
-import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.*;
@@ -47,7 +44,6 @@ public class ParameterLinkRegistry {
     private Logger logger = Logger.getLogger(ParameterLinkRegistry.class);
 
     private Project project;
-    private UserRoleManagementService userRoleManagementService;
     private ActionLogger actionLogger;
 
     private Map<String, Set<String>> valueLinks = new HashMap<>();
@@ -56,10 +52,6 @@ public class ParameterLinkRegistry {
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
-        this.userRoleManagementService = userRoleManagementService;
     }
 
     public void setActionLogger(ActionLogger actionLogger) {
@@ -127,10 +119,9 @@ public class ParameterLinkRegistry {
     public String getDownstreamDependencies(ModelNode modelNode) {
         if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.outDegreeOf(modelNode) > 0) {
             Set<ModelDependency> sinkDependencies = dependencyGraph.outgoingEdgesOf(modelNode);
-            String sinkNames = sinkDependencies.stream().map(
+            return sinkDependencies.stream().map(
                     dependency -> dependency.getTarget().getName()
             ).collect(Collectors.joining(", "));
-            return sinkNames;
         }
         return "";
     }
@@ -138,10 +129,9 @@ public class ParameterLinkRegistry {
     public String getUpstreamDependencies(ModelNode modelNode) {
         if (dependencyGraph.containsVertex(modelNode) && dependencyGraph.inDegreeOf(modelNode) > 0) {
             Set<ModelDependency> sourceDependencies = dependencyGraph.incomingEdgesOf(modelNode);
-            String sourceNames = sourceDependencies.stream().map(
+            return sourceDependencies.stream().map(
                     dependency -> dependency.getSource().getName()
             ).collect(Collectors.joining(", "));
-            return sourceNames;
         }
         return "";
     }
@@ -246,13 +236,10 @@ public class ParameterLinkRegistry {
             SystemModel systemModel = source.getParent().findRoot();
             Map<String, ParameterModel> parameterDictionary = systemModel.makeParameterDictionary();
 
-            UserRoleManagement userRoleManagement = project.getUserRoleManagement();
-            User user = project.getUser();
-
             Set<String> sinkIds = valueLinks.get(sourceId);
             for (String sinkId : sinkIds) {
                 ParameterModel sink = parameterDictionary.get(sinkId);
-                boolean editable = userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, sink.getParent());
+                boolean editable = project.checkUserAccess(sink.getParent());
                 if (!editable) continue;
                 if (sink.getValueSource() == ParameterValueSource.LINK) {
                     if (sink.getValueLink() == source) {

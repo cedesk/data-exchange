@@ -46,6 +46,7 @@ import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
@@ -102,6 +103,7 @@ public class ModelEditingController implements Initializable {
     private Project project;
     private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
+    private DifferenceHandler differenceHandler;
     private ModelUpdateHandler modelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private UserRoleManagementService userRoleManagementService;
@@ -131,6 +133,10 @@ public class ModelEditingController implements Initializable {
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
         this.externalModelFileWatcher = externalModelFileWatcher;
+    }
+
+    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
+        this.differenceHandler = differenceHandler;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
@@ -179,7 +185,7 @@ public class ModelEditingController implements Initializable {
         });
 
         // STRUCTURE TREE VIEW
-        structureTree.setCellFactory(param -> new TextFieldTreeCell(project, userRoleManagementService, false));
+        structureTree.setCellFactory(param -> new TextFieldTreeCell(project, differenceHandler));
         structureTree.setOnEditCommit(event -> project.markStudyModified());
 
         // STRUCTURE MODIFICATION BUTTONS
@@ -198,7 +204,7 @@ public class ModelEditingController implements Initializable {
         externalModelParentPane.disableProperty().bind(selectedNodeIsEditable.not());
         this.externalModelEditorController.setExternalModelReloadConsumer(this::applyParameterUpdatesFromExternalModel);
 
-        // NODE PARAMETERS
+        // PARAMETER MODEL
         this.parametersController.addParameterModelChangeListener((observable, oldValue, newValue) ->
                 this.updateParameterEditor(newValue));
         this.parameterEditorController.setVisible(false);
@@ -421,10 +427,8 @@ public class ModelEditingController implements Initializable {
     private void updateParameterEditor(Pair<ParameterModel, ParameterModelUpdateState> update) {
         if (update != null) {
             ParameterModel parameterModel = update.getLeft();
-            UserRoleManagement userRoleManagement = project.getUserRoleManagement();
-            User user = project.getUser();
             ModelNode modelNode = parameterModel.getParent();
-            boolean editable = userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
+            boolean editable = project.checkUserAccess(modelNode);
             logger.debug("selected parameter: " + parameterModel.getNodePath() + ", editable: " + editable);
             parameterEditorController.setVisible(editable); // TODO: allow read only
             if (editable) {
@@ -482,10 +486,8 @@ public class ModelEditingController implements Initializable {
         public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable,
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
             if (newValue != null) {
-                UserRoleManagement userRoleManagement = project.getUserRoleManagement();
                 ModelNode modelNode = newValue.getValue();
-                User user = project.getUser();
-                boolean editable = userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
+                boolean editable = project.checkUserAccess(modelNode);
                 logger.debug("selected node: " + modelNode.getNodePath() + ", editable: " + editable);
 
                 selectedNodeCannotHaveChildren.setValue(!(modelNode instanceof CompositeModelNode));

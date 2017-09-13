@@ -57,6 +57,7 @@
         <property name="project" ref="project"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
+        <property name="differenceHandler" ref="differenceHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
         <property name="guiService" ref="guiService"/>
@@ -113,7 +114,6 @@
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.DiffController">
         <property name="project" ref="project"/>
         <property name="differenceHandler" ref="differenceHandler"/>
-        <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
 

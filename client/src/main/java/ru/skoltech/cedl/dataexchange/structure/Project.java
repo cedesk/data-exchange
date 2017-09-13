@@ -100,8 +100,7 @@ public class Project {
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
         this.repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
-        this.accessChecker = modelNode ->
-                userRoleManagementService.checkUserAccessToModelNode(this.getUserRoleManagement(), this.getUser(), modelNode);
+        this.accessChecker = this::checkUserAccess;
     }
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
@@ -233,6 +232,12 @@ public class Project {
         return userRoleManagementService.checkUserAdmin(userRoleManagement, user);
     }
 
+    public boolean checkUserAccess(ModelNode modelNode) {
+        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
+        User user = this.getUser();
+        return userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
+    }
+
     public UserManagement getUserManagement() {
         if (userManagement == null) {
             loadUserManagement();
@@ -329,7 +334,8 @@ public class Project {
 
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
-        registerParameterLinks();
+        differenceHandler.clearModelDifferences();
+        parameterLinkRegistry.registerAllParameters(getSystemModel());
     }
 
     public void loadLocalStudy(Integer revisionNumber) {
@@ -338,7 +344,8 @@ public class Project {
 
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
-        registerParameterLinks();
+        differenceHandler.clearModelDifferences();
+        parameterLinkRegistry.registerAllParameters(getSystemModel());
     }
 
     public Future<Pair<Boolean, List<ModelDifference>>> loadRepositoryStudy() {
@@ -435,7 +442,8 @@ public class Project {
         Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
 
         externalModelFileHandler.initializeStateOfExternalModels(systemModel, accessChecker);
-        this.registerParameterLinks();
+        parameterLinkRegistry.registerAllParameters(getSystemModel());
+        differenceHandler.clearAppliedModelDifferences();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
     }
 
@@ -479,10 +487,6 @@ public class Project {
     private void initializeUnitManagement() {
         unitManagement = unitManagementService.loadDefaultUnitManagement();
         storeUnitManagement();
-    }
-
-    private void registerParameterLinks() {
-        parameterLinkRegistry.registerAllParameters(getSystemModel());
     }
 
     private void reinitializeProject(SystemModel systemModel) {
