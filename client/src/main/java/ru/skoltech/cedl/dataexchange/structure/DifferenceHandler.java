@@ -122,26 +122,26 @@ public class DifferenceHandler {
     }
 
     /**
-     * TODO add javadoc
-     *
-     * @param localStudy
-     * @param remoteStudy
-     * @return
+     * Compare two studies and create a list of their differences.
+     * <p>
+     * @param firstStudy first study to compare
+     * @param secondStudy second study to compare
+     * @return list of differences
      */
-    public List<ModelDifference> computeStudyDifferences(Study localStudy, Study remoteStudy) {
+    public List<ModelDifference> computeStudyDifferences(Study firstStudy, Study secondStudy) {
         List<ModelDifference> modelDifferences = new LinkedList<>();
 
         // attributes
-        List<AttributeDifference> attributeDifferences = getAttributeDifferences(localStudy, remoteStudy);
+        List<AttributeDifference> attributeDifferences = computeAttributeDifferences(firstStudy, secondStudy);
         if (!attributeDifferences.isEmpty()) {
-            modelDifferences.add(createStudyAttributesModified(localStudy, remoteStudy, attributeDifferences));
+            modelDifferences.add(createStudyAttributesModified(firstStudy, secondStudy, attributeDifferences));
         }
         // system model
-        SystemModel localSystemModel = localStudy.getSystemModel();
-        SystemModel remoteSystemModel = remoteStudy.getSystemModel();
-        int revision = localStudy.getRevision();
-        if (localSystemModel != null && remoteSystemModel != null) {
-            modelDifferences.addAll(nodeDifferenceService.computeNodeDifferences(localSystemModel, remoteSystemModel, revision));
+        SystemModel firstSystemModel = firstStudy.getSystemModel();
+        SystemModel secondSystemModel = secondStudy.getSystemModel();
+        int revision = firstStudy.getRevision();
+        if (firstSystemModel != null && secondSystemModel != null) {
+            modelDifferences.addAll(nodeDifferenceService.computeNodeDifferences(firstSystemModel, secondSystemModel, revision));
         }
 
         return modelDifferences.stream()
@@ -207,88 +207,77 @@ public class DifferenceHandler {
      * The list current of differences to be merged, retaining only unmerged ones
      */
     public void mergeCurrentDifferencesOntoFirst() throws MergeException {
-        List<ModelDifference> appliedDifferences = new LinkedList<>();
-        for (ModelDifference modelDifference : this.modelDifferences) {
-            if (modelDifference.isMergeable()) {
-                boolean success = this.mergeOne(modelDifference);
-                if (success) {
-                    appliedDifferences.add(modelDifference);
-                }
-            }
+        List<ModelDifference> mergeableModelDifferences = this.modelDifferences.stream()
+                .filter(ModelDifference::isMergeable)
+                .collect(Collectors.toList());
+        for (ModelDifference modelDifference : mergeableModelDifferences) {
+            this.mergeOne(modelDifference);
         }
     }
 
     /**
-     * TODO add javadoc
-     *
-     * @param modelDifference
-     * @return
-     * @throws MergeException
+     * The differences to be merged.
+     * <p>
+     * @param modelDifference to merge
+     * @return <i>true</i> if merging was performed successfully, <i>false</i> if opposite
+     * @throws MergeException in case of error
      */
     public boolean mergeOne(ModelDifference modelDifference) throws MergeException {
         logger.debug("merging " + modelDifference.getElementPath());
         modelDifference.mergeDifference();
-        if (modelDifference instanceof ParameterDifference) {
-            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
-        } else if (modelDifference instanceof ExternalModelDifference) {
-            ExternalModelDifference emd = (ExternalModelDifference) modelDifference;
-            ExternalModel externalModel = emd.getExternalModel1();
-            return updateCacheAndParameters(externalModel);
-        }
         this.removeModelDifference(modelDifference);
-        return true;
+        return this.updateCacheAndParameters(modelDifference);
     }
 
     /**
      * The list of current differences to be reverted, retaining only unmerged ones.
      */
     public void revertCurrentDifferencesOnFirst() throws MergeException {
-        List<ModelDifference> appliedDifferences = new LinkedList<>();
-        for (ModelDifference modelDifference : this.modelDifferences) {
-            if (modelDifference.isRevertible()) {
-                boolean success = revertOne(modelDifference);
-                if (success) {
-                    appliedDifferences.add(modelDifference);
-                }
-            }
+        List<ModelDifference> revertibleModelDifferences = this.modelDifferences.stream()
+                .filter(ModelDifference::isRevertible)
+                .collect(Collectors.toList());
+        for (ModelDifference modelDifference : revertibleModelDifferences) {
+                this.revertOne(modelDifference);
         }
     }
 
     /**
-     * TODO add javadoc
-     *
-     * @param modelDifference
-     * @return
-     * @throws MergeException
+     * The differences to be reverted.
+     * <p>
+     * @param modelDifference to revert
+     * @return <i>true</i> if reverting was performed successfully, <i>false</i> if opposite
+     * @throws MergeException in case of error
      */
     public boolean revertOne(ModelDifference modelDifference) throws MergeException {
         logger.debug("reverting " + modelDifference.getElementPath());
         modelDifference.revertDifference();
+        this.removeModelDifference(modelDifference);
+        return this.updateCacheAndParameters(modelDifference);
+    }
+
+    private boolean updateCacheAndParameters(ModelDifference modelDifference) throws MergeException {
         if (modelDifference instanceof ParameterDifference) {
-            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
-        } else if (modelDifference instanceof ExternalModelDifference) {
+//            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
+            return true;
+        }
+        if (modelDifference instanceof ExternalModelDifference) {
             ExternalModelDifference emd = (ExternalModelDifference) modelDifference;
             ExternalModel externalModel = emd.getExternalModel1();
-            return updateCacheAndParameters(externalModel);
-        }
-        this.removeModelDifference(modelDifference);
-        return true;
-    }
-
-    private boolean updateCacheAndParameters(ExternalModel externalModel) throws MergeException {
-        try {
-            // update cached file
-            externalModelFileHandler.forceCacheUpdate(externalModel);
-            // update parameters from new file
-            modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
-        } catch (IOException e) {
-            logger.error("failed to update cached external model: " + externalModel.getNodePath(), e);
-            throw new MergeException("failed to updated cached external model: " + externalModel.getName());
+            try {
+                // update cached file
+                externalModelFileHandler.forceCacheUpdate(externalModel);
+                // update parameters from new file
+                modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+                return true;
+            } catch (IOException e) {
+                logger.error("failed to update cached external model: " + externalModel.getNodePath(), e);
+                throw new MergeException("failed to updated cached external model: " + externalModel.getName());
+            }
         }
         return true;
     }
 
-    private static List<AttributeDifference> getAttributeDifferences(Study study1, Study study2) {
+    private List<AttributeDifference> computeAttributeDifferences(Study study1, Study study2) {
         List<AttributeDifference> differences = new LinkedList<>();
         if (study1.getVersion() != study2.getVersion()) {
             differences.add(new AttributeDifference("version", study1.getVersion(), study2.getVersion()));
