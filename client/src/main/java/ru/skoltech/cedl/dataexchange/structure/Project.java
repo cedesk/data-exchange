@@ -19,8 +19,6 @@ package ru.skoltech.cedl.dataexchange.structure;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
@@ -50,7 +48,10 @@ import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import java.io.File;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,7 +68,7 @@ public class Project {
 
     private ApplicationSettings applicationSettings;
     private RepositoryStateMachine repositoryStateMachine;
-    private DifferenceMergeHandler differenceMergeHandler;
+    private DifferenceHandler differenceHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ExternalModelFileHandler externalModelFileHandler;
@@ -84,8 +85,6 @@ public class Project {
     private Study repositoryStudy;
 
     private AtomicInteger latestRevisionNumber = new AtomicInteger();
-    private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
-    private ObservableList<ModelDifference> appliedModelDifferences = FXCollections.observableArrayList();
 
     private UserManagement userManagement;
     private UnitManagement unitManagement;
@@ -145,16 +144,12 @@ public class Project {
         this.unitManagementService = unitManagementService;
     }
 
-    public void setDifferenceMergeHandler(DifferenceMergeHandler differenceMergeHandler) {
-        this.differenceMergeHandler = differenceMergeHandler;
+    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
+        this.differenceHandler = differenceHandler;
     }
 
     public void setExecutor(AsyncTaskExecutor executor) {
         this.executor = executor;
-    }
-
-    public static void setLogger(Logger logger) {
-        Project.logger = logger;
     }
 
     public String getProjectName() {
@@ -163,10 +158,6 @@ public class Project {
 
     public void setProjectName(String projectName) {
         this.init(projectName);
-    }
-
-    public ObservableList<ModelDifference> modelDifferences() {
-        return modelDifferences;
     }
 
     public Study getRepositoryStudy() {
@@ -361,7 +352,7 @@ public class Project {
                 Project.this.setRepositoryStudy(repositoryStudy);
                 Project.this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
             }
-            List<ModelDifference> differences = differenceMergeHandler.computeStudyDifferences(study, repositoryStudy);
+            List<ModelDifference> differences = differenceHandler.computeStudyDifferences(study, repositoryStudy);
 
             return Pair.of(update, differences);
         });
@@ -372,8 +363,7 @@ public class Project {
                     return;
                 }
                 List<ModelDifference> differences = pair.getRight();
-                modelDifferences.clear();
-                modelDifferences.addAll(differences);
+                differenceHandler.updateModelDifferences(differences);
             } catch (InterruptedException | ExecutionException e) {
                 logger.error("Cannot perform loading repository study: " + e.getMessage(), e);
             }
@@ -442,7 +432,7 @@ public class Project {
         this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
         this.latestRevisionNumber.set(revisionNumber);
 
-        Platform.runLater(() -> this.modelDifferences.clear());
+        Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
 
         externalModelFileHandler.initializeStateOfExternalModels(systemModel, accessChecker);
         this.registerParameterLinks();
@@ -499,7 +489,7 @@ public class Project {
         this.setProjectName(systemModel.getName());
         study = studyService.createStudy(systemModel, userManagement);
         this.setRepositoryStudy(null);
-        Platform.runLater(() -> this.modelDifferences.clear());
+        Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
         externalModelFileWatcher.clear();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
         parameterLinkRegistry.clear();

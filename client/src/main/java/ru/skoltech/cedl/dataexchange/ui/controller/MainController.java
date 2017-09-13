@@ -57,6 +57,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
@@ -126,6 +127,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     private Project project;
     private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
+    private DifferenceHandler differenceHandler;
     private StudyService studyService;
     private GuiService guiService;
     private FileStorageService fileStorageService;
@@ -161,6 +163,10 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
         this.externalModelFileWatcher = externalModelFileWatcher;
+    }
+
+    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
+        this.differenceHandler = differenceHandler;
     }
 
     public void setStudyService(StudyService studyService) {
@@ -223,7 +229,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         tagLabel.textProperty().bind(Bindings.when(tagProperty.isNull()).then("--").otherwise(tagProperty));
         tagMenu.textProperty().bind(Bindings.when(tagProperty.isNull()).then("_Tag current revision...").otherwise("_Untag current revision"));
 
-        repositoryNewer = Bindings.isNotEmpty(project.modelDifferences());
+        repositoryNewer = Bindings.isNotEmpty(differenceHandler.modelDifferences());
 
         repositoryNewerListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -801,7 +807,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         // TODO merge remote changes
         this.openDiffView();
 
-        remoteDifferenceCounts = project.modelDifferences().stream().filter(remoteChangedPredicate).count();
+        remoteDifferenceCounts = differenceHandler.modelDifferences().stream().filter(remoteChangedPredicate).count();
 
         containRemoteDifferences = remoteDifferenceCounts > 0;
         return containRemoteDifferences;

@@ -37,7 +37,12 @@ import java.util.stream.Collectors;
  *
  * Created by Nikolay Groshkov on 25-Aug-17.
  */
-public class RevisionListener implements PreInsertEventListener, PreUpdateEventListener, PreDeleteEventListener {
+public class RevisionListener implements FlushEntityEventListener, PreInsertEventListener, PreUpdateEventListener, PreDeleteEventListener {
+
+    @Override
+    public void onFlushEntity(FlushEntityEvent event) throws HibernateException {
+        this.processEntity(event.getSession(), event.getEntity());
+    }
 
     @Override
     public boolean onPreInsert(PreInsertEvent event) {

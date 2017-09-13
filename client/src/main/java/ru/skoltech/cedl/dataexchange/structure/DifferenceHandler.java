@@ -16,6 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.structure;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
@@ -42,9 +44,9 @@ import java.util.stream.Collectors;
  * <p>
  * Created by Nikolay Groshkov on 07-Jul-17.
  */
-public class DifferenceMergeHandler {
+public class DifferenceHandler {
 
-    private static final Logger logger = Logger.getLogger(DifferenceMergeHandler.class);
+    private static final Logger logger = Logger.getLogger(DifferenceHandler.class);
 
     private ModelUpdateHandler modelUpdateHandler;
     private ExternalModelFileHandler externalModelFileHandler;
@@ -52,8 +54,11 @@ public class DifferenceMergeHandler {
     private NodeDifferenceService nodeDifferenceService;
     private final RevisionEntityRepository revisionEntityRepository;
 
+    private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
+    private ObservableList<ModelDifference> appliedModelDifferences = FXCollections.observableArrayList();
+
     @Autowired
-    public DifferenceMergeHandler(RevisionEntityRepository revisionEntityRepository) {
+    public DifferenceHandler(RevisionEntityRepository revisionEntityRepository) {
         this.revisionEntityRepository = revisionEntityRepository;
     }
 
@@ -71,6 +76,30 @@ public class DifferenceMergeHandler {
 
     public void setNodeDifferenceService(NodeDifferenceService nodeDifferenceService) {
         this.nodeDifferenceService = nodeDifferenceService;
+    }
+
+    public ObservableList<ModelDifference> modelDifferences() {
+        return this.modelDifferences;
+    }
+
+    public void updateModelDifferences(List<ModelDifference> modelDifferences) {
+        this.clearModelDifferences();
+        this.modelDifferences.addAll(modelDifferences);
+    }
+
+    public void clearModelDifferences() {
+        this.modelDifferences.clear();
+        this.appliedModelDifferences.clear();
+    }
+
+    public void removeModelDifference(ModelDifference modelDifference) {
+        this.modelDifferences.remove(modelDifference);
+        this.appliedModelDifferences.add(modelDifference);
+    }
+
+    public void removeModelDifferences(List<ModelDifference> modelDifferences) {
+        this.modelDifferences.removeAll(modelDifferences);
+        this.appliedModelDifferences.addAll(modelDifferences);
     }
 
     /**
@@ -171,7 +200,6 @@ public class DifferenceMergeHandler {
                 }
             }
         }
-        modelDifferences.removeAll(appliedDifferences);
         return appliedDifferences;
     }
 
@@ -211,7 +239,6 @@ public class DifferenceMergeHandler {
                 }
             }
         }
-        modelDifferences.removeAll(appliedDifferences);
         return appliedDifferences;
     }
 

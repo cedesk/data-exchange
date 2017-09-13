@@ -34,7 +34,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
-import ru.skoltech.cedl.dataexchange.structure.DifferenceMergeHandler;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 
@@ -55,7 +55,7 @@ public class DiffController implements Initializable, Displayable, Closeable {
     private TableColumn<ModelDifference, String> elementTypeColumn;
 
     private Project project;
-    private DifferenceMergeHandler differenceMergeHandler;
+    private DifferenceHandler differenceHandler;
     private UserRoleManagementService userRoleManagementService;
     private StatusLogger statusLogger;
 
@@ -65,8 +65,8 @@ public class DiffController implements Initializable, Displayable, Closeable {
         this.project = project;
     }
 
-    public void setDifferenceMergeHandler(DifferenceMergeHandler differenceMergeHandler) {
-        this.differenceMergeHandler = differenceMergeHandler;
+    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
+        this.differenceHandler = differenceHandler;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
@@ -79,7 +79,7 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        diffTable.itemsProperty().bind(new SimpleListProperty<>(project.modelDifferences()));
+        diffTable.itemsProperty().bind(new SimpleListProperty<>(differenceHandler.modelDifferences()));
         actionColumn.setCellFactory(new ActionCellFactory());
         elementTypeColumn.setCellValueFactory(valueFactory -> {
             if (valueFactory != null) {
@@ -121,12 +121,13 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     public void acceptAll() {
         try {
-            ObservableList<ModelDifference> modelDifferences = project.modelDifferences();
-            List<ModelDifference> appliedDifferences = differenceMergeHandler.mergeChangesOntoFirst(modelDifferences);
+            ObservableList<ModelDifference> modelDifferences = differenceHandler.modelDifferences();
+            List<ModelDifference> appliedDifferences = differenceHandler.mergeChangesOntoFirst(modelDifferences);
+            differenceHandler.removeModelDifferences(appliedDifferences);
             if (appliedDifferences.size() > 0) {
                 project.markStudyModified();
             }
-            if (project.modelDifferences().size() == 0) {
+            if (differenceHandler.modelDifferences().size() == 0) {
                 this.close();
             }
         } catch (MergeException me) {
@@ -136,9 +137,10 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     public void revertAll() {
         try {
-            ObservableList<ModelDifference> modelDifferences = project.modelDifferences();
-            List<ModelDifference> appliedDifferences = differenceMergeHandler.revertChangesOnFirst(modelDifferences);
-            if (project.modelDifferences().size() == 0) {
+            ObservableList<ModelDifference> modelDifferences = differenceHandler.modelDifferences();
+            List<ModelDifference> appliedDifferences = differenceHandler.revertChangesOnFirst(modelDifferences);
+            differenceHandler.removeModelDifferences(appliedDifferences);
+            if (differenceHandler.modelDifferences().size() == 0) {
                 this.close();
             } else if (appliedDifferences.size() > 0) {
                 int modelsReverted = 0;
@@ -162,15 +164,15 @@ public class DiffController implements Initializable, Displayable, Closeable {
         boolean success = false;
         try {
             if (modelDifference.isMergeable()) {
-                success = differenceMergeHandler.mergeOne(modelDifference);
+                success = differenceHandler.mergeOne(modelDifference);
             } else if (modelDifference.isRevertible()) {
-                success = differenceMergeHandler.revertOne(modelDifference);
+                success = differenceHandler.revertOne(modelDifference);
             }
         } catch (MergeException me) {
             statusLogger.error(me.getMessage());
         }
         if (success) {
-            project.modelDifferences().remove(modelDifference);
+            differenceHandler.removeModelDifference(modelDifference);
             project.markStudyModified();
         }
     }

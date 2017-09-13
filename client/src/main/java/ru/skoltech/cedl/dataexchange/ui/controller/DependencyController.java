@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
@@ -83,6 +84,7 @@ public class DependencyController implements Initializable {
 
     private Project project;
     private ParameterLinkRegistry parameterLinkRegistry;
+    private DifferenceHandler differenceHandler;
     private BooleanBinding repositoryNewer;
 
     public void setProject(Project project) {
@@ -91,6 +93,10 @@ public class DependencyController implements Initializable {
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
+        this.differenceHandler = differenceHandler;
     }
 
     @Override
@@ -174,7 +180,7 @@ public class DependencyController implements Initializable {
                 refreshView(null);
             }
         };
-        repositoryNewer = Bindings.isNotEmpty(project.modelDifferences());
+        repositoryNewer = Bindings.isNotEmpty(differenceHandler.modelDifferences());
         repositoryNewer.addListener(listener);
 
         diagramView.getScene().getWindow().setOnCloseRequest(event -> {
