@@ -51,9 +51,9 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
-import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItem;
-import ru.skoltech.cedl.dataexchange.structure.view.StructureTreeItemFactory;
-import ru.skoltech.cedl.dataexchange.structure.view.TextFieldTreeCell;
+import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItem;
+import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItemFactory;
+import ru.skoltech.cedl.dataexchange.ui.control.structure.TextFieldTreeCell;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.net.URL;

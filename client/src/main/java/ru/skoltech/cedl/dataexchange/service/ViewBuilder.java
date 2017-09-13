@@ -26,7 +26,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.structure.view.IconSet;
+import ru.skoltech.cedl.dataexchange.ui.control.structure.IconSet;
 import ru.skoltech.cedl.dataexchange.ui.controller.Applicable;
 import ru.skoltech.cedl.dataexchange.ui.controller.Closeable;
 import ru.skoltech.cedl.dataexchange.ui.controller.Displayable;

@@ -29,7 +29,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -38,7 +37,6 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
-import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
@@ -54,10 +52,13 @@ import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
+import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterModelTableRow;
+import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterUpdateStateTableCell;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,6 +81,7 @@ import java.util.stream.Collectors;
 public class ParametersController implements Initializable, Displayable {
 
     private static final Logger logger = Logger.getLogger(ParametersController.class);
+
     @FXML
     private TableView<Pair<ParameterModel, ParameterModelUpdateState>> parameterTable;
     @FXML
@@ -115,6 +117,7 @@ public class ParametersController implements Initializable, Displayable {
 
     private Project project;
     private ExternalModelFileHandler externalModelFileHandler;
+    private DifferenceHandler differenceHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private GuiService guiService;
     private ActionLogger actionLogger;
@@ -126,6 +129,10 @@ public class ParametersController implements Initializable, Displayable {
 
     public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
         this.externalModelFileHandler = externalModelFileHandler;
+    }
+
+    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
+        this.differenceHandler = differenceHandler;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
@@ -154,6 +161,8 @@ public class ParametersController implements Initializable, Displayable {
         // NODE PARAMETER TABLE
         parameterTable.editableProperty().bind(editableProperty);
         parameterTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        parameterTable.setRowFactory(param -> new ParameterModelTableRow(differenceHandler));
+
         parameterNatureColumn.setCellValueFactory(createBeanPropertyCellValueFactory("nature"));
         parameterNameColumn.setCellValueFactory(createBeanPropertyCellValueFactory("name"));
         parameterValueColumn.setCellValueFactory(param -> {
@@ -198,25 +207,7 @@ public class ParametersController implements Initializable, Displayable {
             ParameterModelUpdateState update = param.getValue().getRight();
             return new SimpleObjectProperty<>(update);
         });
-        parameterUpdateStateColumn.setCellFactory(param ->
-            new TableCell<Pair<ParameterModel, ParameterModelUpdateState>, ParameterModelUpdateState>() {
-                @Override
-                protected void updateItem(ParameterModelUpdateState item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (item == null) {
-                        return;
-                    }
-                    String icon = item == ParameterModelUpdateState.SUCCESS ? "CHECK" : "WARNING";
-                    Color color = item == ParameterModelUpdateState.SUCCESS ? Color.GREEN : Color.RED;
-                    Glyph glyph = new Glyph();
-                    glyph.setFontFamily("FontAwesome");
-                    glyph.setIcon(icon);
-                    glyph.setColor(color);
-                    this.setGraphic(glyph);
-                    this.setStyle("-fx-alignment: center;");
-                    this.setTooltip(new Tooltip(item.description));
-                }
-            });
+        parameterUpdateStateColumn.setCellFactory(param -> new ParameterUpdateStateTableCell());
 
         parameterTable.setItems(parameterModels);
 

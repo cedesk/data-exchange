@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.structure.view;
+package ru.skoltech.cedl.dataexchange.ui.control.structure;
 
 /**
  * Created by D.Knoll on 05.08.2015.

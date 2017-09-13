@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.structure.view;
+package ru.skoltech.cedl.dataexchange.ui.control.structure;
 
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;

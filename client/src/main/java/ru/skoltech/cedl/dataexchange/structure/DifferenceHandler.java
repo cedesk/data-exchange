@@ -20,10 +20,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
-import ru.skoltech.cedl.dataexchange.entity.Study;
-import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
@@ -98,7 +95,15 @@ public class DifferenceHandler {
                 .filter(nodeDifference -> modelNode.getUuid().equals(nodeDifference.getNode1().getUuid()))
                 .collect(Collectors.toList());
         return !modelNodeDifferences.isEmpty();
+    }
 
+    public boolean checkAppliedParameterModel(ParameterModel parameterModel) {
+        List<ParameterDifference> parameterDifferences = this.appliedModelDifferences.stream()
+                .filter(modelDifference -> modelDifference instanceof ParameterDifference)
+                .map(modelDifference -> (ParameterDifference) modelDifference)
+                .filter(parameterDifference -> parameterModel.getUuid().equals(parameterDifference.getParameter1().getUuid()))
+                .collect(Collectors.toList());
+        return !parameterDifferences.isEmpty();
     }
 
     public void updateModelDifferences(List<ModelDifference> modelDifferences) {
