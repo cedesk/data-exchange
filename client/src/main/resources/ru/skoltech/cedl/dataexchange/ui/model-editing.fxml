@@ -88,7 +88,7 @@
     </AnchorPane>
     <BorderPane>
         <top>
-            <TitledPane fx:id="externalModelParentPane" animated="false" text="External Model"/>
+            <TitledPane fx:id="externalModelParentPane" animated="false" text="External Models"/>
         </top>
         <center>
             <TitledPane fx:id="parametersParentPane" collapsible="false" text="Parameters"/>
