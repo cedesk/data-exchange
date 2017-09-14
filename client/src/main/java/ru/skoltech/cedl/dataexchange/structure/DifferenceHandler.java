@@ -97,6 +97,15 @@ public class DifferenceHandler {
         return !parameterDifferences.isEmpty();
     }
 
+    public boolean checkChangedExternalModel(ExternalModel externalModel) {
+        List<ExternalModelDifference> externalModelDifferences = this.modelDifferences.stream()
+                .filter(modelDifference -> modelDifference instanceof ExternalModelDifference)
+                .map(modelDifference -> (ExternalModelDifference) modelDifference)
+                .filter(externalModelDifference -> externalModel.getUuid().equals(externalModelDifference.getExternalModel1().getUuid()))
+                .collect(Collectors.toList());
+        return !externalModelDifferences.isEmpty();
+    }
+
     public ParameterDifference parameterDifference(ParameterModel parameterModel) {
         List<ParameterDifference> parameterDifferences = this.modelDifferences.stream()
                 .filter(modelDifference -> modelDifference instanceof ParameterDifference)

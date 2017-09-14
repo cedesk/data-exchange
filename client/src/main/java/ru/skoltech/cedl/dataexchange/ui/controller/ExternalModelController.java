@@ -16,6 +16,9 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -35,6 +38,7 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.service.SpreadsheetInputOutputExtractorService;
+import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.awt.*;
@@ -61,11 +65,13 @@ public class ExternalModelController implements Initializable {
     private Button openExternalButton;
 
     private Project project;
+    private DifferenceHandler differenceHandler;
     private ExternalModelFileHandler externalModelFileHandler;
     private SpreadsheetInputOutputExtractorService spreadsheetInputOutputExtractorService;
     private StatusLogger statusLogger;
 
     private ExternalModel externalModel;
+    private BooleanProperty externalModelChangedProperty = new SimpleBooleanProperty();
 
     private ExternalModelController() {
     }
@@ -76,6 +82,10 @@ public class ExternalModelController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
+        this.differenceHandler = differenceHandler;
     }
 
     public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
@@ -92,7 +102,13 @@ public class ExternalModelController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        this.externalModelChangedProperty.set(differenceHandler.checkChangedExternalModel(externalModel));
+
         externalModelNameText.setText(externalModel.getName());
+        externalModelNameText.styleProperty().bind(Bindings.when(externalModelChangedProperty)
+                .then("-fx-border-color: #FF6A00;")
+                .otherwise((String) null));
+
         openExternalButton.addEventFilter(MouseEvent.MOUSE_PRESSED, (MouseEvent event) -> {
             if (event.isSecondaryButtonDown()){
                 try {

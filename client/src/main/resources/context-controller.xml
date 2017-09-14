@@ -100,6 +100,7 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelController" scope="prototype">
         <property name="project" ref="project"/>
+        <property name="differenceHandler" ref="differenceHandler"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
         <property name="statusLogger" ref="statusLogger"/>
