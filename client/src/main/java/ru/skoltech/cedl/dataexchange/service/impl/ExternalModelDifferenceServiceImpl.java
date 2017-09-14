@@ -43,7 +43,7 @@ public class ExternalModelDifferenceServiceImpl implements ExternalModelDifferen
 
     @Override
     public ExternalModelDifference createExternalModelModified(ExternalModel externalModel1, ExternalModel externalModel2, String name) {
-        boolean e2newer = externalModel2.getLastModification() > externalModel1.getLastModification();
+        boolean e2newer = externalModel2.getRevision() > externalModel1.getRevision();
         ModelDifference.ChangeLocation changeLocation = e2newer ? ModelDifference.ChangeLocation.ARG2 : ModelDifference.ChangeLocation.ARG1;
         return new ExternalModelDifference(externalModel1, externalModel2, name, ModelDifference.ChangeType.MODIFY, changeLocation, "", "");
     }

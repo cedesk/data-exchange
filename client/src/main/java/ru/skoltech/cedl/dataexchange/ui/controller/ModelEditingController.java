@@ -365,6 +365,7 @@ public class ModelEditingController implements Initializable {
                 // this is necessary since setting the selection does not always result in a selection change!
                 TreeItem<ModelNode> item = structureTree.getTreeItem(selectedIndex);
                 this.updateParameters(item.getValue());
+                this.updateExternalModelEditor(item.getValue());
             }
             structureTree.refresh();
         } else {
