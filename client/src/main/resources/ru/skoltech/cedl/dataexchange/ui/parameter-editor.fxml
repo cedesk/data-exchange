@@ -20,112 +20,111 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.*?>
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121" stylesheets="@styling.css"
-            fx:id="parameterEditorPane" minHeight="280.0" prefHeight="340.0"
+<BorderPane fx:id="parameterEditorPane" minHeight="270.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ParameterEditorController">
     <padding>
-        <Insets />
+        <Insets/>
     </padding>
     <center>
         <GridPane hgap="8.0" vgap="4.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="8.0"
                   AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
             <padding>
-                <Insets bottom="10" left="10" right="10" top="10" />
+                <Insets bottom="10" left="10" right="10" top="10"/>
             </padding>
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="20.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="20.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="20.0" prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="20.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0"/>
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints vgrow="NEVER" />
-                <RowConstraints vgrow="NEVER" />
-                <RowConstraints vgrow="NEVER" />
-                <RowConstraints vgrow="NEVER" />
-                <RowConstraints vgrow="NEVER" />
-                <RowConstraints vgrow="NEVER" />
-                <RowConstraints vgrow="NEVER" />
-                <RowConstraints vgrow="NEVER" />
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
             </rowConstraints>
-            <Label text="Name" GridPane.halignment="RIGHT" />
-            <TextField fx:id="nameText" promptText="name" GridPane.columnIndex="1" GridPane.columnSpan="2" />
-            <Label text="Nature" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
-            <ChoiceBox fx:id="natureChoiceBox" prefWidth="120.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <TextField fx:id="dependentsText" editable="false" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <Label text="Value Source" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
-            <ChoiceBox fx:id="valueSourceChoiceBox" prefWidth="120.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label text="Name" GridPane.halignment="RIGHT"/>
+            <TextField fx:id="nameText" promptText="name" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+            <Label text="Nature" GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
+            <ChoiceBox fx:id="natureChoiceBox" prefWidth="120.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <TextField fx:id="dependentsText" editable="false" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+            <Label text="Value Source" GridPane.halignment="RIGHT" GridPane.rowIndex="2"/>
+            <ChoiceBox fx:id="valueSourceChoiceBox" prefWidth="120.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
             <HBox fx:id="referenceSelectorGroup" alignment="CENTER_LEFT" prefWidth="300.0" spacing="10"
                   GridPane.columnIndex="2" GridPane.rowIndex="2">
-                <TextField fx:id="valueReferenceText" editable="false" prefWidth="300.0" promptText="reference" />
+                <TextField fx:id="valueReferenceText" editable="false" prefWidth="300.0" promptText="reference"/>
                 <Button minWidth="28" mnemonicParsing="false" onAction="#chooseSource">
                     <tooltip>
-                        <Tooltip text="Choose source from external model" />
+                        <Tooltip text="Choose source from external model"/>
                     </tooltip>
                     <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="EXTERNAL_LINK" />
+                        <Glyph fontFamily="FontAwesome" icon="EXTERNAL_LINK"/>
                     </graphic>
                 </Button>
-                <Glyph fx:id="updateIcon" fontFamily="FontAwesome" />
+                <Glyph fx:id="updateIcon" fontFamily="FontAwesome"/>
             </HBox>
             <HBox fx:id="linkSelectorGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                <TextField fx:id="parameterLinkText" editable="false" prefWidth="300.0" promptText="link" />
+                <TextField fx:id="parameterLinkText" editable="false" prefWidth="300.0" promptText="link"/>
                 <Button minWidth="28" mnemonicParsing="false" onAction="#chooseParameter">
                     <tooltip>
-                        <Tooltip text="Choose parameter to link to" />
+                        <Tooltip text="Choose parameter to link to"/>
                     </tooltip>
                     <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="LINK" />
+                        <Glyph fontFamily="FontAwesome" icon="LINK"/>
                     </graphic>
                 </Button>
             </HBox>
             <HBox fx:id="calculationGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                <TextField fx:id="calculationText" editable="false" prefWidth="300.0" promptText="calculation" />
+                <TextField fx:id="calculationText" editable="false" prefWidth="300.0" promptText="calculation"/>
                 <Button minWidth="28" mnemonicParsing="false" onAction="#editCalculation">
                     <tooltip>
-                        <Tooltip text="Detach External Model" />
+                        <Tooltip text="Detach External Model"/>
                     </tooltip>
                     <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="EDIT" />
+                        <Glyph fontFamily="FontAwesome" icon="EDIT"/>
                     </graphic>
                 </Button>
             </HBox>
-            <Label text="Value" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
-            <TextField fx:id="valueText" prefWidth="80.0" promptText="0123.45"
-                       GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <HBox alignment="CENTER_LEFT" prefWidth="200.0" spacing="8"
-                  GridPane.columnIndex="2" GridPane.rowIndex="3">
-                <Label text="Unit" />
-                <ComboBox fx:id="unitComboBox" editable="true" prefWidth="200.0" />
+            <Label text="Value" GridPane.halignment="RIGHT" GridPane.rowIndex="3"/>
+            <TextField fx:id="valueText" prefWidth="80.0" promptText="0123.45" GridPane.columnIndex="1"
+                       GridPane.rowIndex="3"/>
+            <HBox alignment="CENTER_LEFT" prefWidth="200.0" spacing="8" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                <Label text="Unit"/>
+                <ComboBox fx:id="unitComboBox" editable="true" prefWidth="200.0"/>
             </HBox>
-            <Label text="Override Value" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
-            <CheckBox fx:id="isReferenceValueOverriddenCheckbox" mnemonicParsing="false"
-                      GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <TextField fx:id="valueOverrideText" prefWidth="120.0" promptText="0123.45"
-                       GridPane.columnIndex="2" GridPane.rowIndex="4" />
-            <Label text="Export" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
-            <CheckBox fx:id="isExportedCheckbox" mnemonicParsing="false"
-                      GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+            <Label text="Override Value" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
+            <CheckBox fx:id="isReferenceValueOverriddenCheckbox" mnemonicParsing="false" GridPane.columnIndex="1"
+                      GridPane.rowIndex="4"/>
+            <TextField fx:id="valueOverrideText" prefWidth="120.0" promptText="0123.45" GridPane.columnIndex="2"
+                       GridPane.rowIndex="4"/>
+            <Label text="Export" GridPane.halignment="RIGHT" GridPane.rowIndex="5"/>
+            <CheckBox fx:id="isExportedCheckbox" mnemonicParsing="false" GridPane.columnIndex="1"
+                      GridPane.rowIndex="5"/>
             <HBox fx:id="exportSelectorGroup" prefWidth="300.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
-                <TextField fx:id="exportReferenceText" editable="false" prefWidth="300.0" promptText="reference" />
+                <TextField fx:id="exportReferenceText" editable="false" prefWidth="300.0" promptText="reference"/>
                 <Button minWidth="28" mnemonicParsing="false" onAction="#chooseTarget">
                     <tooltip>
-                        <Tooltip text="Choose target in external model" />
+                        <Tooltip text="Choose target in external model"/>
                     </tooltip>
                     <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="EXTERNAL_LINK" />
+                        <Glyph fontFamily="FontAwesome" icon="EXTERNAL_LINK"/>
                     </graphic>
                 </Button>
             </HBox>
-            <Label text="Description" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
-            <TextArea fx:id="descriptionText" minHeight="50.0" prefWidth="200.0" promptText="description"
-                      GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="6" />
+            <Label text="Description" GridPane.halignment="RIGHT" GridPane.rowIndex="6"/>
+            <TextArea fx:id="descriptionText" prefHeight="44.0" prefWidth="200.0" promptText="description"
+                      GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="6"/>
         </GridPane>
     </center>
     <bottom>
         <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <Pane HBox.hgrow="ALWAYS" />
-            <Button minWidth="28" onAction="#revertChanges" text="Rever_t" />
-            <Button minWidth="28" onAction="#applyChanges" text="_Apply" />
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button minWidth="28" onAction="#revertChanges" text="Rever_t"/>
+            <Button minWidth="28" onAction="#applyChanges" text="_Apply"/>
         </ToolBar>
     </bottom>
 </BorderPane>
