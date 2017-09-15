@@ -17,7 +17,6 @@
 package ru.skoltech.cedl.dataexchange.service;
 
 import javafx.scene.Node;
-import javafx.scene.web.WebView;
 
 import java.net.URL;
 
@@ -38,19 +37,19 @@ public interface GuiService {
     /**
      * Create a new JavaFX control instance, based on some arguments.
      *
-     * @param location location of <i>*.fxml</i> file of control.
-     * @param args     arguments for control constructor.
+     * @param location location of <i>*.fxml</i> file of control
+     * @param args     arguments for control constructor
      * @param <T>      type of control
-     * @return an instance of new control.
+     * @return an instance of new control
      */
     <T extends Node> T createControl(URL location, Object... args);
 
     /**
      * Create a new JavaFX control instance.
      *
-     * @param location location of <i>*.fxml</i> file of control.
+     * @param location location of <i>*.fxml</i> file of control
      * @param <T>      type of control
-     * @return an instance of new control.
+     * @return an instance of new control
      */
     <T extends Node> T createControl(URL location);
 
@@ -59,16 +58,16 @@ public interface GuiService {
      *
      * @param title    the of the view
      * @param location location of <i>*.fxml</i> file.
-     * @return instance of {@link ViewBuilder}.
+     * @return instance of {@link ViewBuilder}
      */
     ViewBuilder createViewBuilder(String title, URL location);
 
     /**
-     * TODO: add javadoc
+     * Load content of external resource file.
      *
-     * @param guideView
-     * @param resourceClass
-     * @param filename
+     * @param resourceClass class, in relation to which required resource must be searched for
+     * @param filename a name of file
+     * @return content of resource
      */
-    void loadWebView(WebView guideView, Class resourceClass, String filename);
+    String loadResourceContent(Class resourceClass, String filename) throws Exception;
 }

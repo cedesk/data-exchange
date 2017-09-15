@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
@@ -43,6 +44,12 @@ public class GuideController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        guiService.loadWebView(guideView, getClass(), "guide.html");
+        try {
+            String content = guiService.loadResourceContent(AboutController.class, "guide.html");
+            WebEngine webEngine = guideView.getEngine();
+            webEngine.loadContent(content);
+        } catch (Exception e) {
+            logger.error("Cannot load 'guide' page: " + e.getMessage(), e);
+        }
     }
 }

@@ -16,14 +16,15 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.log4j.Logger;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.events.EventTarget;
+import org.w3c.dom.html.HTMLAnchorElement;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 
 import java.awt.*;
@@ -41,8 +42,7 @@ import java.util.ResourceBundle;
 public class AboutController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(AboutController.class);
-    @FXML
-    public AnchorPane aboutPane;
+
     @FXML
     private WebView contentView;
 
@@ -54,6 +54,32 @@ public class AboutController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        guiService.loadWebView(contentView, getClass(), "about.html");
+        try {
+            String content = guiService.loadResourceContent(AboutController.class, "about.html");
+            WebEngine webEngine = contentView.getEngine();
+            webEngine.loadContent(content);
+            webEngine.getLoadWorker().exceptionProperty().addListener((observableValue, oldThrowable, newThrowable) ->
+                    logger.error("Load exception ", newThrowable));
+            webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+                if( newValue != Worker.State.SUCCEEDED ) {
+                    return;
+                }
+                NodeList nodeList = webEngine.getDocument().getElementsByTagName("a");
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    EventTarget eventTarget = (EventTarget) nodeList.item(i);
+                    eventTarget.addEventListener("click", evt -> {
+                        try {
+                            evt.preventDefault();
+                            String href = ((HTMLAnchorElement)evt.getCurrentTarget()).getHref();
+                            Desktop.getDesktop().browse(new URI(href));
+                        } catch (URISyntaxException | IOException e) {
+                            logger.error("Cannot open external link: " + e.getMessage(), e);
+                        }
+                    }, false);
+                }
+            });
+        } catch (Exception e) {
+            logger.error("Cannot load 'about' page: " + e.getMessage(), e);
+        }
     }
 }

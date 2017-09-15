@@ -20,8 +20,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
@@ -83,20 +81,16 @@ public class GuiServiceImpl implements GuiService {
     }
 
     @Override
-    public void loadWebView(WebView guideView, Class resourceClass, String filename) {
+    public String loadResourceContent(Class resourceClass, String filename) throws Exception {
         URL fileLocation = resourceClass.getResource(filename);
         String baseLocation = fileLocation.toExternalForm().replace(filename, "");
-        String content = "";
         try (InputStream in = fileLocation.openStream()) {
-            content = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
+            String content = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
+            content = content.replace("src=\"", "src=\"" + baseLocation);
+            return content;
         } catch (IOException e) {
             logger.error("Error loading web content from resource", e);
+            throw new Exception("Error loading web content from resource", e);
         }
-        WebEngine webEngine = guideView.getEngine();
-        webEngine.getLoadWorker().exceptionProperty().addListener((observableValue, oldThrowable, newThrowable) ->
-                logger.error("Load exception ", newThrowable));
-        content = content.replace("src=\"", "src=\"" + baseLocation);
-
-        webEngine.loadContent(content);
     }
 }
