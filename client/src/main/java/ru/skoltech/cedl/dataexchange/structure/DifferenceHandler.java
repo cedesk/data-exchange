@@ -107,15 +107,19 @@ public class DifferenceHandler {
     }
 
     public ParameterDifference parameterDifference(ParameterModel parameterModel) {
-        List<ParameterDifference> parameterDifferences = this.modelDifferences.stream()
-                .filter(modelDifference -> modelDifference instanceof ParameterDifference)
-                .map(modelDifference -> (ParameterDifference) modelDifference)
-                .filter(parameterDifference -> parameterModel.getUuid().equals(parameterDifference.getParameter1().getUuid()))
-                .collect(Collectors.toList());
-        if (parameterDifferences.size() > 0 ) {
-            logger.warn("More than one ParameterDifference for one parameter model");
-        }
-        return !parameterDifferences.isEmpty() ? parameterDifferences.get(0) : null;
+        return this.modelDifferences.stream()
+            .filter(modelDifference -> modelDifference instanceof ParameterDifference)
+            .map(modelDifference -> (ParameterDifference) modelDifference)
+            .filter(parameterDifference -> parameterModel.getUuid().equals(parameterDifference.getParameter1().getUuid()))
+            .collect(Collectors.collectingAndThen(Collectors.toList(), differences -> {
+                if (differences.isEmpty()) {
+                    return null;
+                }
+                if (differences.size() > 1) {
+                    logger.warn("More than one ParameterDifference for one parameter model");
+                }
+                return differences.get(0);
+            }));
     }
 
     public void updateModelDifferences(List<ModelDifference> modelDifferences) {
