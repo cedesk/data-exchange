@@ -271,6 +271,8 @@ public class ParameterEditorController implements Initializable, Displayable {
         ParameterDifference parameterDifference = differenceHandler.parameterDifference(parameterModel);
         if (parameterDifference != null && parameterDifference.getAttributes() != null) {
             differencesProperty.set(FXCollections.observableList(parameterDifference.getAttributes()));
+        } else {
+            differencesProperty.set(FXCollections.emptyObservableList());
         }
         this.updateView(originalParameterModel);
         this.updateIcon.setIcon(null);

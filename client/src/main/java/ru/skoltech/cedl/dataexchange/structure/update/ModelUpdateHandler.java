@@ -137,7 +137,7 @@ public class ModelUpdateHandler {
             }
         } catch (Exception e) {
             logger.warn("Parameter model " + parameterModel.getNodePath()
-                    + " failed to evaluate his value with an internal error", e);
+                    + " failed to evaluate his value with an internal error: " + e.getMessage());
             return Pair.of(parameterModel, ParameterModelUpdateState.FAIL_EVALUATION);
         } finally {
             try {
