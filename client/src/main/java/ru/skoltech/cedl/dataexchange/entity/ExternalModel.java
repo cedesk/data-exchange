@@ -60,10 +60,6 @@ public class ExternalModel implements Comparable<ExternalModel>, PersistedEntity
     @XmlTransient
     private byte[] attachment;
 
-    @Version
-    @XmlTransient
-    private long version;
-
     @XmlAttribute
     private Long lastModification;
 
@@ -111,14 +107,6 @@ public class ExternalModel implements Comparable<ExternalModel>, PersistedEntity
 
     public void setAttachment(byte[] attachment) {
         this.attachment = attachment;
-    }
-
-    public long getVersion() {
-        return version;
-    }
-
-    public void setVersion(long version) {
-        this.version = version;
     }
 
     public Long getLastModification() {
@@ -180,7 +168,6 @@ public class ExternalModel implements Comparable<ExternalModel>, PersistedEntity
         sb.append("id=").append(id);
         sb.append(", name='").append(name).append('\'');
         sb.append(", attachment-length=").append(attachment != null ? attachment.length : null);
-        sb.append(", version=").append(version);
         sb.append(", lastModification=").append(lastModification);
         if (parent != null) {
             sb.append(", parent=").append(parent.getNodePath());

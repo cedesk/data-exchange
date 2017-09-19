@@ -114,10 +114,6 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
 
     private String description;
 
-    @Version()
-    @XmlTransient
-    private long version;
-
     @XmlAttribute
     private Long lastModification;
 
@@ -372,14 +368,6 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
         this.valueSource = valueSource;
     }
 
-    public long getVersion() {
-        return version;
-    }
-
-    public void setVersion(long version) {
-        this.version = version;
-    }
-
     /**
      * The comparison is done only based on the name, so it enables sorting of parameters by name and identifying changes to values of parameters.
      */
@@ -436,7 +424,6 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
         sb.append(", isExported=").append(isExported);
         sb.append(", exportReference=").append(getExportReference());
         sb.append(", description='").append(description).append('\'');
-        sb.append(", version=").append(version);
         sb.append(", lastModification='").append(lastModification).append('\'');
         sb.append(", uuid='").append(uuid).append('\'');
         sb.append('}');
