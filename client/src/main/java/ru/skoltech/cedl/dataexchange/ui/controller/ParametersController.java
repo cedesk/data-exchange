@@ -291,6 +291,10 @@ public class ParametersController implements Initializable, Displayable {
         parameterTable.refresh();
     }
 
+    public Pair<ParameterModel, ParameterModelUpdateState> currentParameter() {
+        return  parameterTable.getSelectionModel().getSelectedItem();
+    }
+
     public void addParameter() {
         Objects.requireNonNull(modelNode, "There is no model node to add parameter");
 

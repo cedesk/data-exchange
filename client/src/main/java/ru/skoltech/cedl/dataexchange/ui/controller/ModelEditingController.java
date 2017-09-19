@@ -460,7 +460,13 @@ public class ModelEditingController implements Initializable {
                 actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
                         + "#" + parameterModel.getValueReference().getTarget());
             }
+
         });
+        parametersController.refresh();
+        Pair<ParameterModel, ParameterModelUpdateState> update = parametersController.currentParameter();
+        if (update != null) {
+            parameterEditorController.displayParameterModel(update.getLeft(), update.getRight());
+        }
         if (!externalModelUpdateHandler.parameterModelUpdateStates().isEmpty()) {
             UserNotifications.showNotification(getAppWindow(), "Parameters Updated",
                     "Some reference parameters has been updated.");

@@ -509,7 +509,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         editListener.accept(editingParameterModel);
     }
 
-
     private Double convertTextToDouble(String text) {
         try {
             return Double.parseDouble(text);
