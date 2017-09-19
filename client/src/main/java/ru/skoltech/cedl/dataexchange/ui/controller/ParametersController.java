@@ -55,6 +55,7 @@ import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
+import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterModelTableRow;
@@ -118,6 +119,7 @@ public class ParametersController implements Initializable, Displayable {
     private Project project;
     private ExternalModelFileHandler externalModelFileHandler;
     private DifferenceHandler differenceHandler;
+    private ExternalModelUpdateHandler externalModelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private GuiService guiService;
     private ActionLogger actionLogger;
@@ -133,6 +135,10 @@ public class ParametersController implements Initializable, Displayable {
 
     public void setDifferenceHandler(DifferenceHandler differenceHandler) {
         this.differenceHandler = differenceHandler;
+    }
+
+    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
+        this.externalModelUpdateHandler = externalModelUpdateHandler;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
@@ -254,12 +260,12 @@ public class ParametersController implements Initializable, Displayable {
             newParameterModels = modelNode.getParameters().stream()
                     .filter(parameterModel -> parameterModel.getNature() == ParameterNature.OUTPUT)
                     .sorted(new ParameterComparatorByNatureAndName())
-                    .map(parameterModel -> MutablePair.of(parameterModel, (ParameterModelUpdateState) null))
+                    .map(parameterModel -> Pair.of(parameterModel, externalModelUpdateHandler.parameterModelUpdateState(parameterModel)))
                     .collect(Collectors.toList());
         } else {
             newParameterModels = modelNode.getParameters().stream()
                     .sorted(new ParameterComparatorByNatureAndName())
-                    .map(parameterModel -> MutablePair.of(parameterModel, (ParameterModelUpdateState) null))
+                    .map(parameterModel -> Pair.of(parameterModel, externalModelUpdateHandler.parameterModelUpdateState(parameterModel)))
                     .collect(Collectors.toList());
         }
 
@@ -275,17 +281,6 @@ public class ParametersController implements Initializable, Displayable {
         } else if (parameterTable.getItems().size() > 0) {
             parameterTable.getSelectionModel().select(0);
         }
-    }
-
-    public void updateParameterModelUpdateStates(List<Pair<ParameterModel, ParameterModelUpdateState>> updates) {
-        updates.forEach(updatePair -> {
-            ParameterModel parameterModel = updatePair.getLeft();
-            ParameterModelUpdateState update = updatePair.getRight();
-            this.parameterModels.stream()
-                    .filter(pair -> parameterModel.getUuid().equals(pair.getLeft().getUuid()))
-                    .forEach(pair -> pair.setValue(update));
-        });
-        parameterTable.refresh();
     }
 
     public void clearParameters() {

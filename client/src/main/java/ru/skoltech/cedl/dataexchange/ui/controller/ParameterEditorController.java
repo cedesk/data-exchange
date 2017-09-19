@@ -59,8 +59,8 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
+import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateState;
-import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
@@ -122,7 +122,7 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     private Project project;
     private DifferenceHandler differenceHandler;
-    private ModelUpdateHandler modelUpdateHandler;
+    private ExternalModelUpdateHandler externalModelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private GuiService guiService;
     private UnitManagementService unitManagementService;
@@ -162,8 +162,8 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.differenceHandler = differenceHandler;
     }
 
-    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
-        this.modelUpdateHandler = modelUpdateHandler;
+    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
+        this.externalModelUpdateHandler = externalModelUpdateHandler;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
@@ -396,11 +396,10 @@ public class ParameterEditorController implements Initializable, Displayable {
             if (valueReference != null) {
                 editingParameterModel.setValueReference(valueReference);
                 logger.debug("update parameter value from model");
-                Pair<ParameterModel, ParameterModelUpdateState> update = modelUpdateHandler.applyParameterUpdateFromExternalModel(editingParameterModel);
-                ParameterModel parameterModel = update.getLeft();
-                ParameterModelUpdateState updateState = update.getRight();
+                externalModelUpdateHandler.applyParameterUpdateFromExternalModel(editingParameterModel);
+                ParameterModelUpdateState updateState = externalModelUpdateHandler.parameterModelUpdateState(editingParameterModel);
                 if (updateState == ParameterModelUpdateState.SUCCESS) {
-                    valueText.setText(convertToText(parameterModel.getValue()));
+                    valueText.setText(convertToText(editingParameterModel.getValue()));
                 } else {
                     // TODO: fail notifications
                     statusLogger.error("Unable to update value from given target.");
@@ -468,7 +467,7 @@ public class ParameterEditorController implements Initializable, Displayable {
                 ExternalModel externalModel = exportReference.getExternalModel();
                 try {
                     List<Pair<ParameterModel, ExternalModelUpdateState>> updates
-                            = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+                            = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
                     updates.forEach(pair -> {
                         ParameterModel parameterModel = pair.getLeft();
                         ExternalModelUpdateState update = pair.getRight();

@@ -59,7 +59,7 @@
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
-        <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
+        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="guiService" ref="guiService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="actionLogger" ref="actionLogger"/>
@@ -70,6 +70,7 @@
         <property name="project" ref="project"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="differenceHandler" ref="differenceHandler"/>
+        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="guiService" ref="guiService"/>
         <property name="actionLogger" ref="actionLogger"/>
@@ -89,7 +90,7 @@
     <bean id="parameterEditorController" class="ru.skoltech.cedl.dataexchange.ui.controller.ParameterEditorController">
         <property name="project" ref="project"/>
         <property name="differenceHandler" ref="differenceHandler"/>
-        <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
+        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="unitManagementService" ref="unitManagementService"/>
         <property name="guiService" ref="guiService"/>

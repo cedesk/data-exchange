@@ -16,6 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.structure.update;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
@@ -30,20 +32,22 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
  * Created by Nikolay Groshkov on 30-Aug-17.
  */
-public class ModelUpdateHandler {
+public class ExternalModelUpdateHandler {
 
-    private static final Logger logger = Logger.getLogger(ModelUpdateHandler.class);
+    private static final Logger logger = Logger.getLogger(ExternalModelUpdateHandler.class);
 
     private ExternalModelAccessorFactory externalModelAccessorFactory;
     private ParameterLinkRegistry parameterLinkRegistry;
+
+    private ObservableMap<ParameterModel, ParameterModelUpdateState> parameterModelUpdateStates = FXCollections.observableHashMap();
 
     public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
         this.externalModelAccessorFactory = externalModelAccessorFactory;
@@ -53,45 +57,62 @@ public class ModelUpdateHandler {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
-    public List<Pair<ParameterModel, ParameterModelUpdateState>>
-                applyParameterUpdatesFromExternalModel(ExternalModel externalModel) {
+    public ObservableMap<ParameterModel, ParameterModelUpdateState> parameterModelUpdateStates() {
+        return parameterModelUpdateStates;
+    }
+
+    public ParameterModelUpdateState parameterModelUpdateState(ParameterModel parameterModel) {
+        return this.parameterModelUpdateStates.get(parameterModel);
+    }
+
+    public void clearParameterModelUpdateState() {
+        parameterModelUpdateStates.clear();
+    }
+
+    public void applyParameterUpdatesFromExternalModel(ExternalModel externalModel) {
         if (externalModel == null || externalModel.getParent() == null
                 || externalModel.getParent().getParameters() == null) {
-            return Collections.emptyList();
+            return;
         }
 
         ModelNode modelNode = externalModel.getParent();
 
-        return modelNode.getParameters().stream()
+        Map<ParameterModel, ParameterModelUpdateState> result = modelNode.getParameters().stream()
                 .map(parameterModel -> applyParameterUpdateFromExternalModel(parameterModel, externalModel))
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+        parameterModelUpdateStates.putAll(result);
     }
 
-    public Pair<ParameterModel, ParameterModelUpdateState> applyParameterUpdateFromExternalModel(ParameterModel parameterModel) {
+    public void applyParameterUpdateFromExternalModel(ParameterModel parameterModel) {
         if (parameterModel == null) {
-            return null;
+            return;
         }
         if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
-            return null;
+            return;
         }
 
         ExternalModelReference valueReference = parameterModel.getValueReference();
         if (valueReference == null) {
             logger.warn("Parameter model" + parameterModel.getNodePath() + " has empty valueReference");
-            return Pair.of(parameterModel, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE);
+            parameterModelUpdateStates.put(parameterModel, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE);
+            return;
         }
         ExternalModel valueReferenceExternalModel = valueReference.getExternalModel();
         if (valueReferenceExternalModel == null) {
             logger.warn("Parameter model" + parameterModel.getNodePath() + " has empty valueReference external model");
-            return Pair.of(parameterModel, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL);
+            parameterModelUpdateStates.put(parameterModel, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL);
+            return;
         }
 
-        return applyParameterUpdateFromExternalModel(parameterModel, valueReferenceExternalModel);
+        Pair<ParameterModel, ParameterModelUpdateState> result = applyParameterUpdateFromExternalModel(parameterModel, valueReferenceExternalModel);
+        if (result != null) {
+            parameterModelUpdateStates.put(result.getKey(), result.getValue());
+        }
     }
 
     private Pair<ParameterModel, ParameterModelUpdateState>
-                applyParameterUpdateFromExternalModel(ParameterModel parameterModel, ExternalModel externalModel) {
+    applyParameterUpdateFromExternalModel(ParameterModel parameterModel, ExternalModel externalModel) {
         if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
             return null;
         }

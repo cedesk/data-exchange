@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange;
 
+import javafx.collections.ObservableMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,8 +30,8 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
+import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateState;
-import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ import static org.mockito.Mockito.*;
 /**
  * Created by Nikolay Groshkov on 05-Sep-17.
  */
-public class ModelUpdateHandlerTest extends AbstractApplicationContextTest {
+public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTest {
 
     private static final String NAN_VALUE_REFERENCE_TARGET = "NaN";
     private static final String ERROR_VALUE_REFERENCE_TARGET = "Error";
@@ -57,7 +58,7 @@ public class ModelUpdateHandlerTest extends AbstractApplicationContextTest {
 
     private ExternalModelAccessor externalModelAccessor;
     private ParameterLinkRegistry parameterLinkRegistry;
-    private ModelUpdateHandler modelUpdateHandler;
+    private ExternalModelUpdateHandler externalModelUpdateHandler;
 
     private ExternalModel externalModel;
     private ExternalModel otherExternalModel;
@@ -81,23 +82,24 @@ public class ModelUpdateHandlerTest extends AbstractApplicationContextTest {
 
         parameterLinkRegistry = mock(ParameterLinkRegistry.class);
 
-        modelUpdateHandler = context.getBean(ModelUpdateHandler.class);
-        modelUpdateHandler.setExternalModelAccessorFactory(externalModelAccessorFactory);
-        modelUpdateHandler.setParameterLinkRegistry(parameterLinkRegistry);
+        externalModelUpdateHandler = context.getBean(ExternalModelUpdateHandler.class);
+        externalModelUpdateHandler.setExternalModelAccessorFactory(externalModelAccessorFactory);
+        externalModelUpdateHandler.setParameterLinkRegistry(parameterLinkRegistry);
+        externalModelUpdateHandler.clearParameterModelUpdateState();
     }
 
     @Test
     public void testApplyListParameterUpdatesFromExternalModel() throws IOException {
-        List<Pair<ParameterModel, ParameterModelUpdateState>> updates = modelUpdateHandler.applyParameterUpdatesFromExternalModel(null);
-        assertThat(updates, empty());
+        externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(null);
+        assertTrue(externalModelUpdateHandler.parameterModelUpdateStates().isEmpty());
 
-        updates = modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
-        assertThat(updates, empty());
+        externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+        assertTrue(externalModelUpdateHandler.parameterModelUpdateStates().isEmpty());
 
         ModelNode parentModelNode = mock(ModelNode.class);
         externalModel.setParent(parentModelNode);
-        updates = modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
-        assertThat(updates, empty());
+        externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+        assertTrue(externalModelUpdateHandler.parameterModelUpdateStates().isEmpty());
 
 
         ParameterModel wrongParameterModel1 = new ParameterModel();
@@ -173,78 +175,83 @@ public class ModelUpdateHandlerTest extends AbstractApplicationContextTest {
                 wrongParameterModel4, wrongParameterModel5, wrongParameterModel6, wrongParameterModel7,
                 parameterModel, correctParameterModel1, correctParameterModel2);
         when(parentModelNode.getParameters()).thenReturn(parentParameterModels);
-        updates = modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
-        assertThat(updates, hasSize(8));
-        assertThat(updates, hasItem(Pair.of(wrongParameterModel1, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE)));
-        assertThat(updates, hasItem(Pair.of(wrongParameterModel2, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL)));
-        assertThat(updates, hasItem(Pair.of(wrongParameterModel4, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET)));
-        assertThat(updates, hasItem(Pair.of(wrongParameterModel5, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET)));
-        assertThat(updates, hasItem(Pair.of(wrongParameterModel6, ParameterModelUpdateState.FAIL_INVALID_VALUE)));
-        assertThat(updates, hasItem(Pair.of(wrongParameterModel7, ParameterModelUpdateState.FAIL_EVALUATION)));
-        assertThat(updates, hasItem(Pair.of(correctParameterModel1, ParameterModelUpdateState.SUCCESS)));
-        assertThat(updates, hasItem(Pair.of(correctParameterModel2, ParameterModelUpdateState.SUCCESS)));
+        externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+        ObservableMap<ParameterModel, ParameterModelUpdateState> updates = externalModelUpdateHandler.parameterModelUpdateStates();
+        assertEquals(8, updates.size());
+        assertThat(updates, hasEntry(wrongParameterModel1, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE));
+        assertThat(updates, hasEntry(wrongParameterModel2, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL));
+        assertThat(updates, hasEntry(wrongParameterModel4, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET));
+        assertThat(updates, hasEntry(wrongParameterModel5, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET));
+        assertThat(updates, hasEntry(wrongParameterModel6, ParameterModelUpdateState.FAIL_INVALID_VALUE));
+        assertThat(updates, hasEntry(wrongParameterModel7, ParameterModelUpdateState.FAIL_EVALUATION));
+        assertThat(updates, hasEntry(correctParameterModel1, ParameterModelUpdateState.SUCCESS));
+        assertThat(updates, hasEntry(correctParameterModel2, ParameterModelUpdateState.SUCCESS));
         verify(parameterLinkRegistry, only()).updateSinks(any());
         verify(parameterLinkRegistry, only()).updateSinks(correctParameterModel2);
 
         doThrow(IOException.class).when(externalModelAccessor).close();
         when(parentModelNode.getParameters()).thenReturn(Collections.singletonList(correctParameterModel1));
-        updates = modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
-        assertThat(updates, hasSize(1));
-        assertThat(updates, hasItem(Pair.of(correctParameterModel1, ParameterModelUpdateState.SUCCESS)));
+        externalModelUpdateHandler.clearParameterModelUpdateState();
+        externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+        assertEquals(1, updates.size());
+        updates = externalModelUpdateHandler.parameterModelUpdateStates();
+        assertThat(updates, hasEntry(correctParameterModel1, ParameterModelUpdateState.SUCCESS));
     }
 
     @Test
     public void testApplyParameterUpdateFromExternalModel() {
-        assertNull(modelUpdateHandler.applyParameterUpdateFromExternalModel(null));
+        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(null);
+        assertTrue(externalModelUpdateHandler.parameterModelUpdateStates().isEmpty());
 
         ParameterModel parameterModel = new ParameterModel();
         parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-        Pair<ParameterModel, ParameterModelUpdateState> update = modelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
-        assertEquals(parameterModel, update.getLeft());
-        assertEquals(ParameterModelUpdateState.FAIL_EMPTY_REFERENCE, update.getRight());
+        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+        Object update = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
+        assertEquals(ParameterModelUpdateState.FAIL_EMPTY_REFERENCE, update);
 
         ExternalModelReference externalModelReference = new ExternalModelReference();
         parameterModel.setValueReference(externalModelReference);
-        update = modelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
-        assertEquals(parameterModel, update.getLeft());
-        assertEquals(ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL, update.getRight());
+        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+        update = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
+        assertEquals(ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL, update);
 
         externalModelReference.setExternalModel(externalModel);
         parameterModel.setValueSource(ParameterValueSource.MANUAL);
-        assertNull(modelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel));
+        externalModelUpdateHandler.clearParameterModelUpdateState();
+        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+        assertNull(externalModelUpdateHandler.parameterModelUpdateState(parameterModel));
 
         parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-        update = modelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
-        assertEquals(parameterModel, update.getLeft());
-        assertEquals(ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET, update.getRight());
+        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+        update = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
+        assertEquals(ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET, update);
 
         parameterModel.setValueSource(ParameterValueSource.REFERENCE);
         externalModelReference.setTarget(ERROR_VALUE_REFERENCE_TARGET);
-        update = modelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
-        assertEquals(parameterModel, update.getLeft());
-        assertEquals(ParameterModelUpdateState.FAIL_EVALUATION, update.getRight());
+        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+        update = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
+        assertEquals(ParameterModelUpdateState.FAIL_EVALUATION, update);
 
         externalModelReference.setTarget(NAN_VALUE_REFERENCE_TARGET);
-        update = modelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
-        assertEquals(parameterModel, update.getLeft());
-        assertEquals(ParameterModelUpdateState.FAIL_INVALID_VALUE, update.getRight());
+        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+        update = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
+        assertEquals(ParameterModelUpdateState.FAIL_INVALID_VALUE, update);
 
         externalModelReference.setExternalModel(externalModel);
         externalModelReference.setTarget(VALUE_REFERENCE_TARGET);
         parameterModel.setValue(VALUE1);
-        update = modelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
-        assertEquals(parameterModel, update.getLeft());
-        assertEquals(ParameterModelUpdateState.SUCCESS, update.getRight());
+        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+        update = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
+        assertEquals(ParameterModelUpdateState.SUCCESS, update);
         verify(parameterLinkRegistry, never()).updateSinks(parameterModel);
 
         externalModelReference.setExternalModel(externalModel);
         externalModelReference.setTarget(VALUE_REFERENCE_TARGET);
         parameterModel.setValue(VALUE2);
-        update = modelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
-        assertEquals(parameterModel, update.getLeft());
-        assertEquals(ParameterModelUpdateState.SUCCESS, update.getRight());
-        assertEquals(VALUE1, update.getLeft().getValue());
-        assertEquals(ParameterModelUpdateState.SUCCESS, update.getRight());
+        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+        update = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
+        assertEquals(ParameterModelUpdateState.SUCCESS, update);
+        assertEquals(VALUE1, parameterModel.getValue());
         verify(parameterLinkRegistry, only()).updateSinks(any());
         verify(parameterLinkRegistry, only()).updateSinks(parameterModel);
     }
@@ -260,18 +267,18 @@ public class ModelUpdateHandlerTest extends AbstractApplicationContextTest {
         externalModel.setParent(modelNode);
 
         parameterModel1.setIsExported(false);
-        List<Pair<ParameterModel, ExternalModelUpdateState>> updates = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+        List<Pair<ParameterModel, ExternalModelUpdateState>> updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, empty());
         verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
         parameterModel1.setIsExported(true);
         parameterModel1.setValueSource(ParameterValueSource.MANUAL);
-        updates = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+        updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, empty());
         verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
         parameterModel1.setValueSource(ParameterValueSource.REFERENCE);
-        updates = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+        updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE)));
         verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
@@ -279,33 +286,33 @@ public class ModelUpdateHandlerTest extends AbstractApplicationContextTest {
         ExternalModelReference externalModelReference = new ExternalModelReference();
         externalModelReference.setExternalModel(null);
         parameterModel1.setExportReference(externalModelReference);
-        updates = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+        updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL)));
         verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
         externalModelReference.setExternalModel(externalModel);
         externalModelReference.setTarget(null);
-        updates = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+        updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET)));
         verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
         externalModelReference.setTarget("");
-        updates = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+        updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET)));
         verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
         externalModelReference.setTarget(ERROR_VALUE_REFERENCE_TARGET);
-        updates = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+        updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EXPORT)));
         verify(externalModelAccessor, times(1)).setValue(any(String.class), any(Double.class));
         verify(externalModelAccessor, never()).flush();
 
         externalModelReference.setTarget(VALUE_REFERENCE_TARGET);
-        updates = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+        updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.SUCCESS)));
         verify(externalModelAccessor, times(2)).setValue(any(String.class), any(Double.class));
@@ -313,7 +320,7 @@ public class ModelUpdateHandlerTest extends AbstractApplicationContextTest {
 
         ParameterModel parameterModel2 = new ParameterModel();
         when(modelNode.getParameters()).thenReturn(Arrays.asList(parameterModel1, parameterModel2));
-        updates = modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+        updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.SUCCESS)));
         verify(externalModelAccessor, times(3)).setValue(any(String.class), any(Double.class));
@@ -338,6 +345,6 @@ public class ModelUpdateHandlerTest extends AbstractApplicationContextTest {
 
         when(modelNode.getParameters()).thenReturn(Collections.singletonList(parameterModel));
         doThrow(IOException.class).when(externalModelAccessor).flush();
-        modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+        externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
     }
 }

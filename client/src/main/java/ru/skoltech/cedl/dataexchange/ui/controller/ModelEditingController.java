@@ -49,12 +49,12 @@ import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
+import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItem;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItemFactory;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.TextFieldTreeCell;
-import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.net.URL;
 import java.util.*;
@@ -104,7 +104,7 @@ public class ModelEditingController implements Initializable {
     private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private DifferenceHandler differenceHandler;
-    private ModelUpdateHandler modelUpdateHandler;
+    private ExternalModelUpdateHandler externalModelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private UserRoleManagementService userRoleManagementService;
     private GuiService guiService;
@@ -143,8 +143,8 @@ public class ModelEditingController implements Initializable {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
-    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
-        this.modelUpdateHandler = modelUpdateHandler;
+    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
+        this.externalModelUpdateHandler = externalModelUpdateHandler;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
@@ -451,21 +451,8 @@ public class ModelEditingController implements Initializable {
     private void applyParameterUpdatesFromExternalModel(ExternalModel externalModel) {
         externalModelFileHandler.addChangedExternalModel(externalModel);
         project.markStudyModified();
-        List<Pair<ParameterModel, ParameterModelUpdateState>> updates = modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
-        parametersController.updateParameterModelUpdateStates(updates);
-        if (parameterEditorController.currentParameterModel() != null) {
-            ParameterModel currentParameterModel = parameterEditorController.currentParameterModel();
-            updates.stream()
-                    .filter(pair -> currentParameterModel.getUuid().equals(pair.getLeft().getUuid()))
-                    .forEach(pair -> {
-                        ParameterModel parameterModel = pair.getLeft();
-                        ParameterModelUpdateState update = pair.getRight();
-                        parameterEditorController.displayParameterModel(parameterModel, update);
-                    });
-        }
-        updates.forEach(pair -> {
-            ParameterModel parameterModel = pair.getLeft();
-            ParameterModelUpdateState update = pair.getRight();
+        externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+        externalModelUpdateHandler.parameterModelUpdateStates().forEach((parameterModel, update) -> {
             if (update == ParameterModelUpdateState.SUCCESS) {
                 actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
             } else if (update == ParameterModelUpdateState.FAIL_EVALUATION) {
@@ -473,10 +460,7 @@ public class ModelEditingController implements Initializable {
                         + "#" + parameterModel.getValueReference().getTarget());
             }
         });
-        long successUpdates = updates.stream()
-                .filter(pair -> pair.getRight() == ParameterModelUpdateState.SUCCESS)
-                .count();
-        if (successUpdates > 0) {
+        if (!externalModelUpdateHandler.parameterModelUpdateStates().isEmpty()) {
             UserNotifications.showNotification(getAppWindow(), "Parameters Updated",
                     "Some reference parameters has been updated.");
         }

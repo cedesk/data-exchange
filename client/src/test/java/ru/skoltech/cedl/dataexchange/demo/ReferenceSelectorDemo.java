@@ -18,7 +18,6 @@ package ru.skoltech.cedl.dataexchange.demo;
 
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
@@ -26,9 +25,8 @@ import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
-import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.io.File;
@@ -49,14 +47,14 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
     @Override
     public void demo(Stage primaryStage) {
         try {
-            ModelUpdateHandler modelUpdateHandler = context.getBean(ModelUpdateHandler.class);
+            ExternalModelUpdateHandler externalModelUpdateHandler = context.getBean(ExternalModelUpdateHandler.class);
             GuiService guiService = context.getBean(GuiService.class);
 
             ParameterModel parameterModel = getParameterModel();
 
             System.out.println(parameterModel);
-            Pair<ParameterModel, ParameterModelUpdateState> update = modelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
-            System.out.println(update.getLeft());
+            externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+            System.out.println(parameterModel);
 
             ExternalModelReference valueReference = parameterModel.getValueReference();
             List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();

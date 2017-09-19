@@ -26,7 +26,7 @@ import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
+import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 
 import java.io.*;
 import java.nio.file.FileVisitOption;
@@ -44,7 +44,7 @@ public class ExternalModelFileHandler {
 
     private Project project;
     private ExternalModelFileWatcher externalModelFileWatcher;
-    private ModelUpdateHandler modelUpdateHandler;
+    private ExternalModelUpdateHandler externalModelUpdateHandler;
     private FileStorageService fileStorageService;
     private ExternalModelFileStorageService externalModelFileStorageService;
 
@@ -58,8 +58,8 @@ public class ExternalModelFileHandler {
         this.externalModelFileWatcher = externalModelFileWatcher;
     }
 
-    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
-        this.modelUpdateHandler = modelUpdateHandler;
+    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
+        this.externalModelUpdateHandler = externalModelUpdateHandler;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -96,7 +96,7 @@ public class ExternalModelFileHandler {
             }
 
             // silently update model from external model
-            modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+            externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
         }
     }
 
@@ -105,7 +105,7 @@ public class ExternalModelFileHandler {
         while (externalModelsIterator.hasNext()) {
             ExternalModel externalModel = externalModelsIterator.next();
             try {
-                modelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+                externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
             } catch (ExternalModelException e) {
                 logger.warn("Cannot apply parameter updates to ExternalModel: " + externalModel.getNodePath(), e);
             }

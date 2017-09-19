@@ -73,13 +73,13 @@
           parent="systemBuilder"/>
 
     <bean id="differenceHandler" class="ru.skoltech.cedl.dataexchange.structure.DifferenceHandler">
-        <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
+        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="studyService" ref="studyService"/>
         <property name="nodeDifferenceService" ref="nodeDifferenceService"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
     </bean>
 
-    <bean id="modelUpdateHandler" class="ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler">
+    <bean id="externalModelUpdateHandler" class="ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler">
         <property name="externalModelAccessorFactory" ref="externalModelAccessorFactory"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
     </bean>
@@ -96,7 +96,7 @@
     <bean id="externalModelFileHandler" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler">
         <property name="project" ref="project"/>
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
-        <property name="modelUpdateHandler" ref="modelUpdateHandler"/>
+        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="fileStorageService" ref="fileStorageService"/>
         <property name="externalModelFileStorageService" ref="externalModelFileStorageService"/>
     </bean>

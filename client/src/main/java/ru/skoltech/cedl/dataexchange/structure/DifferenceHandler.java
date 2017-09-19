@@ -30,7 +30,7 @@ import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
 import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
-import ru.skoltech.cedl.dataexchange.structure.update.ModelUpdateHandler;
+import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -46,7 +46,7 @@ public class DifferenceHandler {
 
     private static final Logger logger = Logger.getLogger(DifferenceHandler.class);
 
-    private ModelUpdateHandler modelUpdateHandler;
+    private ExternalModelUpdateHandler externalModelUpdateHandler;
     private ExternalModelFileHandler externalModelFileHandler;
     private StudyService studyService;
     private NodeDifferenceService nodeDifferenceService;
@@ -59,8 +59,8 @@ public class DifferenceHandler {
         this.revisionEntityRepository = revisionEntityRepository;
     }
 
-    public void setModelUpdateHandler(ModelUpdateHandler modelUpdateHandler) {
-        this.modelUpdateHandler = modelUpdateHandler;
+    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
+        this.externalModelUpdateHandler = externalModelUpdateHandler;
     }
 
     public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
@@ -299,7 +299,7 @@ public class DifferenceHandler {
                 // update cached file
                 externalModelFileHandler.forceCacheUpdate(externalModel);
                 // update parameters from new file
-                modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+                externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
                 return true;
             } catch (IOException e) {
                 logger.error("failed to update cached external model: " + externalModel.getNodePath(), e);
