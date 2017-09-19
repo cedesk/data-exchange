@@ -40,6 +40,8 @@ import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.service.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ExternalModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 
 import java.awt.*;
 import java.io.File;
@@ -102,7 +104,14 @@ public class ExternalModelController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        this.externalModelChangedProperty.set(differenceHandler.checkChangedExternalModel(externalModel));
+        List<ExternalModelDifference> externalModelDifferences = differenceHandler.modelDifferences().stream()
+                .filter(modelDifference -> modelDifference instanceof ExternalModelDifference)
+                .filter(modelDifference -> modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG2)
+                .map(modelDifference -> (ExternalModelDifference) modelDifference)
+                .filter(externalModelDifference -> externalModel.getUuid().equals(externalModelDifference.getExternalModel1().getUuid()))
+                .collect(Collectors.toList());
+
+        this.externalModelChangedProperty.set(!externalModelDifferences.isEmpty());
 
         externalModelNameText.setText(externalModel.getName());
         externalModelNameText.styleProperty().bind(Bindings.when(externalModelChangedProperty)

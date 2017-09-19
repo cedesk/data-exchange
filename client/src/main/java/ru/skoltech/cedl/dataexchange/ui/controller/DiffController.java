@@ -30,12 +30,14 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -72,6 +74,10 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        Study study = project.getStudy();
+        Study repositoryStudy = project.getRepositoryStudy();
+        List<ModelDifference> modelDifferences = differenceHandler.computeStudyDifferences(study, repositoryStudy);
+        differenceHandler.updateModelDifferences(modelDifferences);
         diffTable.itemsProperty().bind(new SimpleListProperty<>(differenceHandler.modelDifferences()));
         actionColumn.setCellFactory(new ActionCellFactory());
         elementTypeColumn.setCellValueFactory(valueFactory -> {

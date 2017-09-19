@@ -58,6 +58,7 @@ import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateState;
@@ -268,7 +269,21 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     public void displayParameterModel(ParameterModel parameterModel) {
         this.originalParameterModel = parameterModel;
-        ParameterDifference parameterDifference = differenceHandler.parameterDifference(parameterModel);
+        ParameterDifference parameterDifference = differenceHandler.modelDifferences().stream()
+                .filter(modelDifference -> modelDifference instanceof ParameterDifference)
+                .filter(modelDifference -> modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG2)
+                .map(modelDifference -> (ParameterDifference) modelDifference)
+                .filter(pd -> parameterModel.getUuid().equals(pd.getParameter1().getUuid()))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), differences -> {
+                    if (differences.isEmpty()) {
+                        return null;
+                    }
+                    if (differences.size() > 1) {
+                        logger.warn("More than one ParameterDifference for one parameter model");
+                    }
+                    return differences.get(0);
+                }));
+
         if (parameterDifference != null && parameterDifference.getAttributes() != null) {
             differencesProperty.set(FXCollections.observableList(parameterDifference.getAttributes()));
         } else {

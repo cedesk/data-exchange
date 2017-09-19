@@ -20,7 +20,12 @@ import javafx.scene.control.TableRow;
 import org.apache.commons.lang3.tuple.Pair;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Table row to highlight recently updated row.
@@ -49,7 +54,15 @@ public class ParameterModelTableRow extends TableRow<Pair<ParameterModel, Parame
         if (parameterModel == null) {
             return null;
         }
-        boolean applied = differenceHandler.checkChangedParameterModel(parameterModel);
+
+        List<ParameterDifference> parameterDifferences = differenceHandler.modelDifferences().stream()
+                .filter(modelDifference -> modelDifference instanceof ParameterDifference)
+                .filter(modelDifference -> modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG2)
+                .map(modelDifference -> (ParameterDifference) modelDifference)
+                .filter(parameterDifference -> parameterModel.getUuid().equals(parameterDifference.getParameter1().getUuid()))
+                .collect(Collectors.toList());
+
+        boolean applied = !parameterDifferences.isEmpty();
         String alignmentStyle = "-fx-alignment: center;";
         String backgroundColorStyle = applied ? "-fx-background-color: #FF6A00;" : "";
         return String.join("", alignmentStyle, backgroundColorStyle);

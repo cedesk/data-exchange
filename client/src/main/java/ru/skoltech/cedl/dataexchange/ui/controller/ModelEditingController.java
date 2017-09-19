@@ -331,6 +331,7 @@ public class ModelEditingController implements Initializable {
             // view
             selectedItem.valueProperty().setValue(modelNode);
             project.markStudyModified();
+            this.updateView();
         }
     }
 

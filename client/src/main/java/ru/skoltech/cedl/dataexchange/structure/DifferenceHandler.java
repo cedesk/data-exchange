@@ -79,49 +79,6 @@ public class DifferenceHandler {
         return this.modelDifferences;
     }
 
-    public boolean checkChangedModelNode(ModelNode modelNode) {
-        List<NodeDifference> modelNodeDifferences = this.modelDifferences.stream()
-                .filter(modelDifference -> modelDifference instanceof NodeDifference)
-                .map(modelDifference -> (NodeDifference) modelDifference)
-                .filter(nodeDifference -> modelNode.getUuid().equals(nodeDifference.getNode1().getUuid()))
-                .collect(Collectors.toList());
-        return !modelNodeDifferences.isEmpty();
-    }
-
-    public boolean checkChangedParameterModel(ParameterModel parameterModel) {
-        List<ParameterDifference> parameterDifferences = this.modelDifferences.stream()
-                .filter(modelDifference -> modelDifference instanceof ParameterDifference)
-                .map(modelDifference -> (ParameterDifference) modelDifference)
-                .filter(parameterDifference -> parameterModel.getUuid().equals(parameterDifference.getParameter1().getUuid()))
-                .collect(Collectors.toList());
-        return !parameterDifferences.isEmpty();
-    }
-
-    public boolean checkChangedExternalModel(ExternalModel externalModel) {
-        List<ExternalModelDifference> externalModelDifferences = this.modelDifferences.stream()
-                .filter(modelDifference -> modelDifference instanceof ExternalModelDifference)
-                .map(modelDifference -> (ExternalModelDifference) modelDifference)
-                .filter(externalModelDifference -> externalModel.getUuid().equals(externalModelDifference.getExternalModel1().getUuid()))
-                .collect(Collectors.toList());
-        return !externalModelDifferences.isEmpty();
-    }
-
-    public ParameterDifference parameterDifference(ParameterModel parameterModel) {
-        return this.modelDifferences.stream()
-            .filter(modelDifference -> modelDifference instanceof ParameterDifference)
-            .map(modelDifference -> (ParameterDifference) modelDifference)
-            .filter(parameterDifference -> parameterModel.getUuid().equals(parameterDifference.getParameter1().getUuid()))
-            .collect(Collectors.collectingAndThen(Collectors.toList(), differences -> {
-                if (differences.isEmpty()) {
-                    return null;
-                }
-                if (differences.size() > 1) {
-                    logger.warn("More than one ParameterDifference for one parameter model");
-                }
-                return differences.get(0);
-            }));
-    }
-
     public void updateModelDifferences(List<ModelDifference> modelDifferences) {
         this.clearModelDifferences();
         this.modelDifferences.addAll(modelDifferences);

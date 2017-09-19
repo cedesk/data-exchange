@@ -24,7 +24,12 @@ import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 import ru.skoltech.cedl.dataexchange.ui.controller.Dialogues;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 24.04.2015.
@@ -91,7 +96,15 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
 
     private String style(ModelNode item) {
         boolean accessible = project.checkUserAccess(item);
-        boolean applied = differenceHandler.checkChangedModelNode(item);
+
+        List<NodeDifference> modelNodeDifferences = differenceHandler.modelDifferences().stream()
+                .filter(modelDifference -> modelDifference instanceof NodeDifference)
+                .filter(modelDifference -> modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG2)
+                .map(modelDifference -> (NodeDifference) modelDifference)
+                .filter(nodeDifference -> item.getUuid().equals(nodeDifference.getNode1().getUuid()))
+                .collect(Collectors.toList());
+
+        boolean applied = !modelNodeDifferences.isEmpty();
         String fontWeightStyle = accessible ? "-fx-font-weight:bold;" : "-fx-font-weight:normal;";
         String backgroundColorStyle = applied ? "-fx-background-color: #FF6A00;" : "";
 

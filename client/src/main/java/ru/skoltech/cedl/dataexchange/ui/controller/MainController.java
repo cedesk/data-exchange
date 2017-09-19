@@ -229,7 +229,9 @@ public class MainController implements Initializable, Displayable, Closeable {
         tagLabel.textProperty().bind(Bindings.when(tagProperty.isNull()).then("--").otherwise(tagProperty));
         tagMenu.textProperty().bind(Bindings.when(tagProperty.isNull()).then("_Tag current revision...").otherwise("_Untag current revision"));
 
-        repositoryNewer = Bindings.isNotEmpty(differenceHandler.modelDifferences());
+        repositoryNewer = Bindings.createBooleanBinding(() -> differenceHandler.modelDifferences().stream()
+                .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2)
+                .count() > 0, differenceHandler.modelDifferences());
 
         repositoryNewerListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -288,7 +290,6 @@ public class MainController implements Initializable, Displayable, Closeable {
             return false;
         }
     }
-
 
     private void checkVersionUpdate() {
         String appVersion = applicationSettings.getApplicationVersion();
