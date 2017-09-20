@@ -450,14 +450,15 @@ public class ModelEditingController implements Initializable {
         externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
         actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
         logger.info("External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...");
+        List<ParameterModel> successParameterModels = new LinkedList<>();
         externalModelUpdateHandler.parameterModelUpdateStates().forEach((parameterModel, updateState) -> {
             if (updateState == ParameterModelUpdateState.SUCCESS) {
+                successParameterModels.add(parameterModel);
                 actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
             } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
                 actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
                         + "#" + parameterModel.getValueReference().getTarget());
             }
-
         });
         parametersController.refresh();
         Pair<ParameterModel, ParameterModelUpdateState> update = parametersController.currentParameter();
@@ -465,17 +466,12 @@ public class ModelEditingController implements Initializable {
             parameterEditorController.displayParameterModel(update.getLeft(), update.getRight());
         }
 
-        List<ParameterModel> successParameterModel = externalModelUpdateHandler.parameterModelUpdateStates().entrySet().stream()
-                .filter(entry -> entry.getValue() == ParameterModelUpdateState.SUCCESS)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-
-        if (successParameterModel.isEmpty()) {
+        if (successParameterModels.isEmpty()) {
             UserNotifications.showNotification(getAppWindow(), "External model modified",
                     "External model file '" + externalModel.getName() + "' has been modified.\n"
                             + "There are no parameter updates.");
         } else {
-            String successParameterModelNames = successParameterModel.stream()
+            String successParameterModelNames = successParameterModels.stream()
                     .map(ParameterModel::getName)
                     .collect(Collectors.joining(","));
             String message = "External model file '" + externalModel.getName() + "' has been modified.\n"

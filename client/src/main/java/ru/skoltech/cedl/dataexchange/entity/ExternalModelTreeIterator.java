@@ -55,11 +55,11 @@ public class ExternalModelTreeIterator implements Iterator<ExternalModel> {
     private void buildList(ModelNode modelNode, Predicate<ModelNode> accessChecker) {
         if (accessChecker.test(modelNode)) {
             list.addAll(modelNode.getExternalModels());
-            if (modelNode instanceof CompositeModelNode) {
-                CompositeModelNode<ModelNode> compositeModelNode = (CompositeModelNode<ModelNode>) modelNode;
-                for (ModelNode child : compositeModelNode.getSubNodes()) {
-                    buildList(child, accessChecker);
-                }
+        }
+        if (modelNode instanceof CompositeModelNode) {
+            CompositeModelNode<ModelNode> compositeModelNode = (CompositeModelNode<ModelNode>) modelNode;
+            for (ModelNode child : compositeModelNode.getSubNodes()) {
+                buildList(child, accessChecker);
             }
         }
     }

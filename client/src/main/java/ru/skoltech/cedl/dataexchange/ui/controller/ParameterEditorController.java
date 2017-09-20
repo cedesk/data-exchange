@@ -420,7 +420,7 @@ public class ParameterEditorController implements Initializable, Displayable {
                 logger.debug("update parameter value from model");
                 externalModelUpdateHandler.applyParameterUpdateFromExternalModel(editingParameterModel);
                 ParameterModelUpdateState updateState = externalModelUpdateHandler.parameterModelUpdateState(editingParameterModel);
-                if (updateState == ParameterModelUpdateState.SUCCESS) {
+                if (updateState == ParameterModelUpdateState.SUCCESS || updateState == ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE) {
                     valueText.setText(convertToText(editingParameterModel.getValue()));
                 } else {
                     // TODO: fail notifications
