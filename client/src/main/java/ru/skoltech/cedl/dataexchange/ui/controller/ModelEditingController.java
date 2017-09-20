@@ -27,6 +27,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.stage.Window;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -478,9 +479,10 @@ public class ModelEditingController implements Initializable {
             String successParameterModelNames = successParameterModel.stream()
                     .map(ParameterModel::getName)
                     .collect(Collectors.joining(","));
-            UserNotifications.showNotification(getAppWindow(), "External model modified",
-                    "External model file '" + externalModel.getName() + "' has been modified.\n"
-                            + "Some parameters [" + successParameterModelNames +  "] have been updated.");
+            String message = "External model file '" + externalModel.getName() + "' has been modified.\n"
+                    + "Some parameters [" + successParameterModelNames +  "] have been updated.";
+            message = WordUtils.wrap(message, 100);
+            UserNotifications.showNotification(getAppWindow(), "External model modified", message);
         }
     }
 
