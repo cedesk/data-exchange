@@ -184,7 +184,7 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
         assertThat(updates, hasEntry(wrongParameterModel5, ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET));
         assertThat(updates, hasEntry(wrongParameterModel6, ParameterModelUpdateState.FAIL_INVALID_VALUE));
         assertThat(updates, hasEntry(wrongParameterModel7, ParameterModelUpdateState.FAIL_EVALUATION));
-        assertThat(updates, hasEntry(correctParameterModel1, ParameterModelUpdateState.SUCCESS));
+        assertThat(updates, hasEntry(correctParameterModel1, ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE));
         assertThat(updates, hasEntry(correctParameterModel2, ParameterModelUpdateState.SUCCESS));
         verify(parameterLinkRegistry, only()).updateSinks(any());
         verify(parameterLinkRegistry, only()).updateSinks(correctParameterModel2);
@@ -195,7 +195,7 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
         externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
         assertEquals(1, updates.size());
         updates = externalModelUpdateHandler.parameterModelUpdateStates();
-        assertThat(updates, hasEntry(correctParameterModel1, ParameterModelUpdateState.SUCCESS));
+        assertThat(updates, hasEntry(correctParameterModel1, ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE));
     }
 
     @Test
@@ -242,7 +242,7 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
         parameterModel.setValue(VALUE1);
         externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
         update = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
-        assertEquals(ParameterModelUpdateState.SUCCESS, update);
+        assertEquals(ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE, update);
         verify(parameterLinkRegistry, never()).updateSinks(parameterModel);
 
         externalModelReference.setExternalModel(externalModel);

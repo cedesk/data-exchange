@@ -177,11 +177,6 @@ public class ModelEditingController implements Initializable {
         externalModelFileWatcher.addObserver((o, arg) -> {
             ExternalModel externalModel = (ExternalModel) arg;
             this.applyParameterUpdatesFromExternalModel(externalModel);
-
-            String message = "External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...";
-            logger.info(message);
-            actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
-            UserNotifications.showNotification(getAppWindow(), "External model modified", message);
         });
 
         // STRUCTURE TREE VIEW
@@ -453,6 +448,8 @@ public class ModelEditingController implements Initializable {
         externalModelFileHandler.addChangedExternalModel(externalModel);
         project.markStudyModified();
         externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+        actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
+        logger.info("External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...");
         externalModelUpdateHandler.parameterModelUpdateStates().forEach((parameterModel, update) -> {
             if (update == ParameterModelUpdateState.SUCCESS) {
                 actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
@@ -467,9 +464,23 @@ public class ModelEditingController implements Initializable {
         if (update != null) {
             parameterEditorController.displayParameterModel(update.getLeft(), update.getRight());
         }
-        if (!externalModelUpdateHandler.parameterModelUpdateStates().isEmpty()) {
-            UserNotifications.showNotification(getAppWindow(), "Parameters Updated",
-                    "Some reference parameters has been updated.");
+
+        List<ParameterModel> successParameterModel = externalModelUpdateHandler.parameterModelUpdateStates().entrySet().stream()
+                .filter(entry -> entry.getValue() == ParameterModelUpdateState.SUCCESS)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        if (successParameterModel.isEmpty()) {
+            UserNotifications.showNotification(getAppWindow(), "External model modified",
+                    "External model file '" + externalModel.getName() + "' has been modified.\n"
+                            + "There are no parameter updates.");
+        } else {
+            String successParameterModelNames = successParameterModel.stream()
+                    .map(ParameterModel::getName)
+                    .collect(Collectors.joining(","));
+            UserNotifications.showNotification(getAppWindow(), "External model modified",
+                    "External model file '" + externalModel.getName() + "' has been modified.\n"
+                            + "Some parameters [" + successParameterModelNames +  "] have been updated.");
         }
     }
 

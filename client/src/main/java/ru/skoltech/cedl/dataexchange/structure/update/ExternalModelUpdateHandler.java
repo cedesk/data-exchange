@@ -148,7 +148,7 @@ public class ExternalModelUpdateHandler {
             } else if (parameterModel.getValue() != null && Precision.equals(parameterModel.getValue(), value, 2)) {
                 logger.debug("Parameter model " + parameterModel.getNodePath()
                         + " received no update from " + valueReference.toString());
-                return Pair.of(parameterModel, ParameterModelUpdateState.SUCCESS);
+                return Pair.of(parameterModel, ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE);
             } else {
                 parameterModel.setValue(value);
                 parameterLinkRegistry.updateSinks(parameterModel);

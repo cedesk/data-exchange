@@ -29,6 +29,11 @@ public enum ParameterModelUpdateState {
     SUCCESS("Evaluation successful"),
 
     /**
+     * State when evaluation was successful but the value stays unchanged
+     */
+    SUCCESS_WITHOUT_UPDATE("Evaluation successful with the same value"),
+
+    /**
      * State when evaluation is impossible because of empty value reference
      */
     FAIL_EMPTY_REFERENCE("Evaluation is impossible because of empty value reference"),
