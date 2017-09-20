@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -175,10 +176,8 @@ public class ModelEditingController implements Initializable {
         Node externalModelEditorPane = guiService.createControl(Views.EXTERNAL_MODELS_EDITOR_VIEW);
         externalModelParentPane.setContent(externalModelEditorPane);
 
-        externalModelFileWatcher.addObserver((o, arg) -> {
-            ExternalModel externalModel = (ExternalModel) arg;
-            this.applyParameterUpdatesFromExternalModel(externalModel);
-        });
+        externalModelFileWatcher.addObserver((o, arg) ->
+                Platform.runLater(() -> this.applyParameterUpdatesFromExternalModel((ExternalModel) arg)));
 
         // STRUCTURE TREE VIEW
         structureTree.setCellFactory(param -> new TextFieldTreeCell(project, differenceHandler));
