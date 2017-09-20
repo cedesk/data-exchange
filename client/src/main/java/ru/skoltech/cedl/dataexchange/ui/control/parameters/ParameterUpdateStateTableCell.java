@@ -34,22 +34,22 @@ public class ParameterUpdateStateTableCell
         extends TableCell<Pair<ParameterModel, ParameterModelUpdateState>, ParameterModelUpdateState> {
 
     @Override
-    protected void updateItem(ParameterModelUpdateState item, boolean empty) {
-        super.updateItem(item, empty);
-        if (item == null) {
+    protected void updateItem(ParameterModelUpdateState updateState, boolean empty) {
+        super.updateItem(updateState, empty);
+        if (updateState == null) {
             return;
         }
-        this.setGraphic(graphic(item));
+        this.setGraphic(graphic(updateState));
         this.setStyle(style());
-        this.setTooltip(tooltip(item));
+        this.setTooltip(tooltip(updateState));
     }
 
-    private Node graphic(ParameterModelUpdateState update) {
-        if (update == null) {
+    private Node graphic(ParameterModelUpdateState updateState) {
+        if (updateState == null) {
             return null;
         }
-        String icon = update == ParameterModelUpdateState.SUCCESS ? "CHECK" : "WARNING";
-        Color color = update == ParameterModelUpdateState.SUCCESS ? Color.GREEN : Color.RED;
+        String icon = updateState == ParameterModelUpdateState.SUCCESS ? "CHECK" : "WARNING";
+        Color color = updateState == ParameterModelUpdateState.SUCCESS ? Color.GREEN : Color.RED;
         Glyph glyph = new Glyph();
         glyph.setFontFamily("FontAwesome");
         glyph.setIcon(icon);

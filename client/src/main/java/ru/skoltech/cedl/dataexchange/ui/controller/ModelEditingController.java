@@ -450,10 +450,10 @@ public class ModelEditingController implements Initializable {
         externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
         actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
         logger.info("External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...");
-        externalModelUpdateHandler.parameterModelUpdateStates().forEach((parameterModel, update) -> {
-            if (update == ParameterModelUpdateState.SUCCESS) {
+        externalModelUpdateHandler.parameterModelUpdateStates().forEach((parameterModel, updateState) -> {
+            if (updateState == ParameterModelUpdateState.SUCCESS) {
                 actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
-            } else if (update == ParameterModelUpdateState.FAIL_EVALUATION) {
+            } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
                 actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
                         + "#" + parameterModel.getValueReference().getTarget());
             }
@@ -479,7 +479,7 @@ public class ModelEditingController implements Initializable {
                     .map(ParameterModel::getName)
                     .collect(Collectors.joining(","));
             String message = "External model file '" + externalModel.getName() + "' has been modified.\n"
-                    + "Some parameters [" + successParameterModelNames +  "] have been updated.";
+                    + "Parameters [" + successParameterModelNames +  "] have been updated.";
             message = WordUtils.wrap(message, 100);
             UserNotifications.showNotification(getAppWindow(), "External model modified", message);
         }
