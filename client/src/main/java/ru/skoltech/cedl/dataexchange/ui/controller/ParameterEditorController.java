@@ -297,8 +297,9 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     public void displayParameterModel(ParameterModel parameterModel, ParameterModelUpdateState update) {
         this.displayParameterModel(parameterModel);
-        String icon = update == ParameterModelUpdateState.SUCCESS ? "CHECK" : "WARNING";
-        Color color = update == ParameterModelUpdateState.SUCCESS ? Color.GREEN : Color.RED;
+        boolean success = update == ParameterModelUpdateState.SUCCESS || update == ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
+        String icon = success ? "CHECK" : "WARNING";
+        Color color = success ? Color.GREEN : Color.RED;
         this.updateIcon.setIcon(icon);
         this.updateIcon.setColor(color);
         this.updateIcon.setTooltip(new Tooltip(update.description));

@@ -48,8 +48,9 @@ public class ParameterUpdateStateTableCell
         if (update == null) {
             return null;
         }
-        String icon = update == ParameterModelUpdateState.SUCCESS ? "CHECK" : "WARNING";
-        Color color = update == ParameterModelUpdateState.SUCCESS ? Color.GREEN : Color.RED;
+        boolean success = update == ParameterModelUpdateState.SUCCESS || update == ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
+        String icon = success ? "CHECK" : "WARNING";
+        Color color = success ? Color.GREEN : Color.RED;
         Glyph glyph = new Glyph();
         glyph.setFontFamily("FontAwesome");
         glyph.setIcon(icon);
