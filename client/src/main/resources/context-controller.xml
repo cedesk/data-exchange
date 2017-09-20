@@ -116,6 +116,7 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.DiffController">
+        <property name="applicationSettings" ref="applicationSettings"/>
         <property name="project" ref="project"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="statusLogger" ref="statusLogger"/>

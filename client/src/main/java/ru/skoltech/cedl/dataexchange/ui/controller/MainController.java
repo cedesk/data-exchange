@@ -627,9 +627,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openDiffView() {
-        if (project.getSystemModel() == null
-                || project.getRepositoryStudy() == null
-                || project.getRepositoryStudy().getSystemModel() == null) {
+        if (project.getSystemModel() == null) {
             return;
         }
 

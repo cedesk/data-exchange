@@ -16,7 +16,6 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
-import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -30,14 +29,13 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -54,11 +52,16 @@ public class DiffController implements Initializable, Displayable, Closeable {
     @FXML
     private TableColumn<ModelDifference, String> elementTypeColumn;
 
+    private ApplicationSettings applicationSettings;
     private Project project;
     private DifferenceHandler differenceHandler;
     private StatusLogger statusLogger;
 
     private Stage ownerStage;
+
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
 
     public void setProject(Project project) {
         this.project = project;
@@ -74,11 +77,10 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        Study study = project.getStudy();
-        Study repositoryStudy = project.getRepositoryStudy();
-        List<ModelDifference> modelDifferences = differenceHandler.computeStudyDifferences(study, repositoryStudy);
-        differenceHandler.updateModelDifferences(modelDifferences);
-        diffTable.itemsProperty().bind(new SimpleListProperty<>(differenceHandler.modelDifferences()));
+        if (!applicationSettings.isRepositoryWatcherAutosync()) {
+            project.loadRepositoryStudy();
+        }
+        diffTable.setItems(differenceHandler.modelDifferences());
         actionColumn.setCellFactory(new ActionCellFactory());
         elementTypeColumn.setCellValueFactory(valueFactory -> {
             if (valueFactory != null) {
