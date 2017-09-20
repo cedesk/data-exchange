@@ -153,12 +153,12 @@ public class ExternalModelUpdateHandler {
                 parameterModel.setValue(value);
                 parameterLinkRegistry.updateSinks(parameterModel);
                 logger.info("Parameter model " + parameterModel.getNodePath()
-                        + " successfully evaluated his value (" + String.valueOf(value) + ")");
+                        + " successfully evaluated its value (" + String.valueOf(value) + ")");
                 return Pair.of(parameterModel, ParameterModelUpdateState.SUCCESS);
             }
         } catch (Exception e) {
             logger.warn("Parameter model " + parameterModel.getNodePath()
-                    + " failed to evaluate his value with an internal error: " + e.getMessage());
+                    + " failed to evaluate its value with an internal error: " + e.getMessage());
             return Pair.of(parameterModel, ParameterModelUpdateState.FAIL_EVALUATION);
         } finally {
             try {
@@ -205,11 +205,11 @@ public class ExternalModelUpdateHandler {
                     String target = parameterModel.getExportReference().getTarget();
                     try {
                         accessor.setValue(target, parameterModel.getEffectiveValue());
-                        logger.info("Parameter model " + parameterModel.getNodePath() + " successfully exported his value");
+                        logger.info("Parameter model " + parameterModel.getNodePath() + " successfully exported its value");
                         return Pair.of(parameterModel, ExternalModelUpdateState.SUCCESS);
                     } catch (ExternalModelException e) {
                         logger.warn("Parameter model " + parameterModel.getNodePath()
-                                + " failed to export his value", e);
+                                + " failed to export its value", e);
                         return Pair.of(parameterModel, ExternalModelUpdateState.FAIL_EXPORT);
                     }
                 }).collect(Collectors.toList());

@@ -295,14 +295,20 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.updateIcon.setTooltip(null);
     }
 
-    public void displayParameterModel(ParameterModel parameterModel, ParameterModelUpdateState update) {
+    public void displayParameterModel(ParameterModel parameterModel, ParameterModelUpdateState updateState) {
         this.displayParameterModel(parameterModel);
-        boolean success = update == ParameterModelUpdateState.SUCCESS || update == ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
-        String icon = success ? "CHECK" : "WARNING";
-        Color color = success ? Color.GREEN : Color.RED;
-        this.updateIcon.setIcon(icon);
-        this.updateIcon.setColor(color);
-        this.updateIcon.setTooltip(new Tooltip(update.description));
+        if (updateState != null) {
+            boolean success = updateState == ParameterModelUpdateState.SUCCESS || updateState == ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
+            String icon = success ? "CHECK" : "WARNING";
+            Color color = success ? Color.GREEN : Color.RED;
+            this.updateIcon.setIcon(icon);
+            this.updateIcon.setColor(color);
+            this.updateIcon.setTooltip(new Tooltip(updateState.description));
+        } else {
+            this.updateIcon.setIcon(null);
+            this.updateIcon.setColor(null);
+            this.updateIcon.setTooltip(null);
+        }
     }
 
     public void setEditListener(Consumer<ParameterModel> updateListener) {
