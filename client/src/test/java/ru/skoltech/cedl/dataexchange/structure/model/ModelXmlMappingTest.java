@@ -65,7 +65,7 @@ public class ModelXmlMappingTest extends AbstractApplicationContextTest {
         nodeDifferenceService = context.getBean(NodeDifferenceService.class);
         externalModelFileStorageService = context.getBean(ExternalModelFileStorageService.class);
 
-        project.init("project");
+        project.initProject("project");
         UnitManagement unitManagement = context.getBean(UnitManagementService.class).loadDefaultUnitManagement();
 
         Field field = Project.class.getDeclaredField("unitManagement");

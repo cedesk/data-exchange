@@ -76,7 +76,7 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
 
     private ParameterModel getParameterModel() throws IllegalAccessException, NoSuchFieldException {
         Project project = context.getBean(Project.class);
-        project.init("TEST");
+        project.initProject("TEST");
         Study study = new Study("TEST");
         Field field = Project.class.getDeclaredField("study");
         field.setAccessible(true);

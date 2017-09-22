@@ -95,7 +95,7 @@ public class Project {
 
     private Predicate<ModelNode> accessChecker;
 
-    public void init(String projectName) {
+    public void initProject(String projectName) {
         this.projectName = projectName;
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
@@ -155,10 +155,6 @@ public class Project {
         return projectName;
     }
 
-    public void setProjectName(String projectName) {
-        this.init(projectName);
-    }
-
     public Study getRepositoryStudy() {
         return repositoryStudy;
     }
@@ -185,10 +181,6 @@ public class Project {
 
     public Study getStudy() {
         return study;
-    }
-
-    private void setStudy(Study study) {
-        this.study = study;
     }
 
     public SystemModel getSystemModel() {
@@ -320,6 +312,7 @@ public class Project {
 
     public void deleteStudy(String studyName) throws RepositoryException {
         studyService.deleteStudyByName(studyName);
+        this.markStudyModified();
     }
 
     public boolean hasLocalStudyModifications() {
@@ -327,14 +320,16 @@ public class Project {
     }
 
     public void importSystemModel(SystemModel systemModel) {
-        reinitializeProject(systemModel);
-        reinitializeUniqueIdentifiers(systemModel);
+        this.createStudy(systemModel);
+        this.reinitializeUniqueIdentifiers(systemModel);
         externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
     }
 
     public void loadLocalStudy() {
-        Study study = studyService.findStudyByName(projectName);
-        this.setStudy(study);
+        this.study = studyService.findStudyByName(projectName);
+        if (this.study == null) {
+            return;
+        }
 
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
@@ -343,8 +338,10 @@ public class Project {
     }
 
     public void loadLocalStudy(Integer revisionNumber) {
-        Study study = studyService.findStudyByNameAndRevision(projectName, revisionNumber);
-        this.setStudy(study);
+        this.study = studyService.findStudyByNameAndRevision(projectName, revisionNumber);
+        if (this.study == null) {
+            return;
+        }
 
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
@@ -423,8 +420,17 @@ public class Project {
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
     }
 
-    public void newStudy(SystemModel systemModel) {
-        reinitializeProject(systemModel);
+    public void createStudy(SystemModel systemModel) {
+        this.study = studyService.createStudy(systemModel, userManagement);
+        this.initProject(systemModel.getName());
+        this.setRepositoryStudy(null);
+        Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
+        externalModelFileWatcher.clear();
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+        parameterLinkRegistry.clear();
+
+        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
+        userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
     }
 
     public void storeStudy() throws RepositoryException {
@@ -443,7 +449,7 @@ public class Project {
 
         externalModelFileHandler.updateExternalModelStateInCache();
 
-        this.setStudy(newStudy);
+        this.study = newStudy;
         this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
         this.latestRevisionNumber.set(revisionNumber);
 
@@ -494,19 +500,6 @@ public class Project {
     private void initializeUnitManagement() {
         unitManagement = unitManagementService.loadDefaultUnitManagement();
         storeUnitManagement();
-    }
-
-    private void reinitializeProject(SystemModel systemModel) {
-        this.setProjectName(systemModel.getName());
-        study = studyService.createStudy(systemModel, userManagement);
-        this.setRepositoryStudy(null);
-        Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
-        externalModelFileWatcher.clear();
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
-        parameterLinkRegistry.clear();
-
-        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
-        userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
     }
 
     private void reinitializeUniqueIdentifiers(ModelNode modelNode) {

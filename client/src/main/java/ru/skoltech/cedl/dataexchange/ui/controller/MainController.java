@@ -309,7 +309,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         } else if (applicationSettings.isProjectLastAutoload()) {
             String projectName = applicationSettings.getProjectLastName();
             if (projectName != null) {
-                project.setProjectName(projectName);
+                project.initProject(projectName);
                 this.reloadProject();
 
                 repositoryNewer.addListener(repositoryNewerListener);
@@ -554,7 +554,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             }
             builder.unitManagement(project.getUnitManagement());
             SystemModel systemModel = builder.build(projectName);
-            project.newStudy(systemModel);
+            project.createStudy(systemModel);
             statusLogger.info("Successfully created new study: " + projectName);
             actionLogger.log(ActionLogger.ActionType.PROJECT_NEW, projectName);
             updateView();
@@ -661,7 +661,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
             if (studyChoice.isPresent()) {
                 String studyName = studyChoice.get();
-                project.setProjectName(studyName);
+                project.initProject(studyName);
                 this.reloadProject();
                 if (!project.checkUser()) {
                     this.displayInvalidUserDialog();
