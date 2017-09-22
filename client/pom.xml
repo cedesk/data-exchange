@@ -28,7 +28,7 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm'GMT'</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <db.schema.version>1.31</db.schema.version>
+        <db.schema.version>1.32</db.schema.version>
     </properties>
     <dependencies>
         <dependency>

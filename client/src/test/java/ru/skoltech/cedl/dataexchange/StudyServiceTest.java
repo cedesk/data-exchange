@@ -53,11 +53,6 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
     private SystemBuilder systemBuilder;
     private RevisionEntityRepository revisionEntityRepository;
 
-    @After
-    public void cleanup() {
-        studyService.deleteAllStudies();
-    }
-
     @Before
     public void prepare() {
         applicationSettings = context.getBean(ApplicationSettings.class);
@@ -67,43 +62,64 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         revisionEntityRepository = context.getBean(RevisionEntityRepository.class);
     }
 
-    @Test
-    public void testDeleteStudy() {
-        String name1 = "testStudyToDelete1";
-        Study studyPrototype1 = makeStudy(name1, 2);
-
-        String name2 = "testStudyToDelete2";
-        Study studyPrototype2 = makeStudy(name2, 2);
-
-        System.out.println(studyPrototype1 + ", " + studyPrototype2);
-
-        Triple<Study, Integer, Date> revision1 = studyService.saveStudy(studyPrototype1);
-        Triple<Study, Integer, Date> revision2 = studyService.saveStudy(studyPrototype2);
-
-        Study study1 = revision1.getLeft();
-        Study study2 = revision2.getLeft();
-
-        Study studyStored1 = studyService.findStudyByName(name1);
-        Study studyStored2 = studyService.findStudyByName(name2);
-
-        assertEquals(studyPrototype1.getName(), studyStored1.getName());
-        assertEquals(studyPrototype2.getName(), studyStored2.getName());
-
-        studyService.deleteStudyByName(name1);
-        studyStored1 = studyService.findStudyByName(name1);
-        assertNull(studyStored1);
-        assertThat(studyService.findStudyNames(), not(empty()));
-
-        Pair<CustomRevisionEntity, RevisionType> deleteRevision1 = revisionEntityRepository.lastRevision(study1.getId(), Study.class);
-        assertEquals(applicationSettings.getProjectUserName(), deleteRevision1.getLeft().getUsername());
-        assertEquals(RevisionType.DEL, deleteRevision1.getRight());
-
+    @After
+    public void cleanup() {
         studyService.deleteAllStudies();
-        assertThat(studyService.findStudyNames(), empty());
+    }
 
-        Pair<CustomRevisionEntity, RevisionType> deleteRevision2 = revisionEntityRepository.lastRevision(study2.getId(), Study.class);
-        assertEquals(applicationSettings.getProjectUserName(), deleteRevision2.getLeft().getUsername());
-        assertEquals(RevisionType.DEL, deleteRevision2.getRight());
+    @Test
+    public void testCreateStudy() {
+        String systemModelName = "createdSystemModelName";
+        SystemModel systemModel = systemBuilder.build(systemModelName);
+
+        Study study = studyService.createStudy(systemModel, null);
+        assertEquals(systemModelName, study.getName());
+        assertEquals(0, study.getId());
+        assertNotNull(study.getStudySettings());
+        assertNotNull(study.getUserRoleManagement());
+
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testFindLatestRevisionException() {
+        studyService.findLatestRevision(null);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testFindLatestRevisionByNameException() {
+        studyService.findLatestRevisionByName(null);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void findStudyByNameAndRevisionException1() {
+        studyService.findStudyByNameAndRevision(null, 1);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void findStudyByNameAndRevisionException2() {
+        studyService.findStudyByNameAndRevision("studyName", null);
+    }
+
+    @Test
+    public void testFindLatestRevision() {
+        String systemModelName = "systemModelName";
+        SystemModel systemModel = systemBuilder.build(systemModelName);
+        Study study = studyService.createStudy(systemModel, null);
+
+        Pair<Integer, Date> revisionPair = studyService.findLatestRevision(study.getId());
+        assertNull(revisionPair);
+        Triple<Study, Integer, Date> revisionTriple = studyService.findLatestRevisionByName(study.getName());
+        assertNull(revisionTriple);
+
+        Triple<Study, Integer, Date> studyAndRevision = studyService.saveStudy(study);
+        Study savedStudy = studyAndRevision.getLeft();
+        revisionPair = studyService.findLatestRevision(savedStudy.getId());
+        assertNotNull(revisionPair);
+        revisionTriple = studyService.findLatestRevisionByName(savedStudy.getName());
+        assertNotNull(revisionTriple);
+
+        Study revisionStudy = studyService.findStudyByNameAndRevision(systemModelName, studyAndRevision.getMiddle());
+        assertEquals(systemModel.getName(), revisionStudy.getName());
     }
 
     @Test
@@ -167,6 +183,45 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         assertEquals(applicationSettings.getProjectUserName(), revision.getLeft().getUsername());
         assertEquals(tag, revision.getLeft().getTag());
         assertEquals(RevisionType.ADD, revision.getRight());
+    }
+
+    @Test
+    public void testDeleteStudy() {
+        String name1 = "testStudyToDelete1";
+        Study studyPrototype1 = makeStudy(name1, 2);
+
+        String name2 = "testStudyToDelete2";
+        Study studyPrototype2 = makeStudy(name2, 2);
+
+        System.out.println(studyPrototype1 + ", " + studyPrototype2);
+
+        Triple<Study, Integer, Date> revision1 = studyService.saveStudy(studyPrototype1);
+        Triple<Study, Integer, Date> revision2 = studyService.saveStudy(studyPrototype2);
+
+        Study study1 = revision1.getLeft();
+        Study study2 = revision2.getLeft();
+
+        Study studyStored1 = studyService.findStudyByName(name1);
+        Study studyStored2 = studyService.findStudyByName(name2);
+
+        assertEquals(studyPrototype1.getName(), studyStored1.getName());
+        assertEquals(studyPrototype2.getName(), studyStored2.getName());
+
+        studyService.deleteStudyByName(name1);
+        studyStored1 = studyService.findStudyByName(name1);
+        assertNull(studyStored1);
+        assertThat(studyService.findStudyNames(), not(empty()));
+
+        Pair<CustomRevisionEntity, RevisionType> deleteRevision1 = revisionEntityRepository.lastRevision(study1.getId(), Study.class);
+        assertEquals(applicationSettings.getProjectUserName(), deleteRevision1.getLeft().getUsername());
+        assertEquals(RevisionType.DEL, deleteRevision1.getRight());
+
+        studyService.deleteAllStudies();
+        assertThat(studyService.findStudyNames(), empty());
+
+        Pair<CustomRevisionEntity, RevisionType> deleteRevision2 = revisionEntityRepository.lastRevision(study2.getId(), Study.class);
+        assertEquals(applicationSettings.getProjectUserName(), deleteRevision2.getLeft().getUsername());
+        assertEquals(RevisionType.DEL, deleteRevision2.getRight());
     }
 
     private Study makeStudy(String projectName, int modelDepth) {

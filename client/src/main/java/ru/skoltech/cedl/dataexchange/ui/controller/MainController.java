@@ -729,7 +729,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         try {
             project.loadLocalStudy();
             if (project.getStudy() != null) {
-                applicationSettings.storeProjectLastName(projectName);
                 statusLogger.info("Successfully loaded study: " + projectName);
                 actionLogger.log(ActionLogger.ActionType.PROJECT_LOAD, projectName);
             } else {
@@ -763,7 +762,6 @@ public class MainController implements Initializable, Displayable, Closeable {
             modelEditingController.clearView();
             project.storeStudy();
             this.updateView();
-            applicationSettings.storeProjectLastName(project.getProjectName());
             statusLogger.info("Successfully saved study: " + project.getProjectName());
             actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());
         } catch (RepositoryException re) {
@@ -789,7 +787,11 @@ public class MainController implements Initializable, Displayable, Closeable {
         Future<Pair<Boolean, List<ModelDifference>>> feature = project.loadRepositoryStudy();
         externalModelFileHandler.updateExternalModelsInStudy();
 
-        List<ModelDifference> modelDifferences = feature.get().getRight();
+        Pair<Boolean, List<ModelDifference>> result = feature.get();
+        if (!result.getLeft()) {
+            return false;
+        }
+        List<ModelDifference> modelDifferences = result.getRight();
 
         Predicate<ModelDifference> remoteChangedPredicate = md -> md.getChangeLocation() == ChangeLocation.ARG2;
         long remoteDifferenceCounts = modelDifferences.stream().filter(remoteChangedPredicate).count();
@@ -824,10 +826,14 @@ public class MainController implements Initializable, Displayable, Closeable {
             studyService.untagStudy(study);
         }
         String tag = studyService.findCurrentStudyRevisionTag(study);
-        tagProperty.setValue(tag);
+        tagProperty.setValue(tag != null ? tag : "");
     }
 
     public void destroy() {
+        if (applicationSettings.isProjectLastAutoload()) {
+            applicationSettings.storeProjectLastName(project.getProjectName());
+            applicationSettings.save();
+        }
         try {
             actionLogger.log(ActionLogger.ActionType.APPLICATION_STOP, "");
         } catch (Throwable ignore) {
@@ -857,7 +863,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             String username = project.getUser().name();
             List<Discipline> disciplinesOfUser = project.getCurrentUserDisciplines();
 
-            tagProperty.setValue(tag);
+            tagProperty.setValue(tag != null ? tag : "");
             studyNameLabel.setText(study.getName());
             userNameLabel.setText(username);
             if (!disciplinesOfUser.isEmpty()) {

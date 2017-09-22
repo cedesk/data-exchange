@@ -59,7 +59,9 @@ public class StatusController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         statusBarLabel.minWidthProperty().bind(statusBarPane.widthProperty().subtract(30));
-        statusBarLabel.textProperty().bind(Bindings.concat("  ", statusLogger.lastMessageProperty()));
+        statusBarLabel.textProperty().bind(
+                Bindings.concat("  ", Bindings.when(statusLogger.lastMessageProperty().isNotNull())
+                        .then(statusLogger.lastMessageProperty()).otherwise("")));
         statusBarLabel.backgroundProperty().bind(
                 Bindings.when(statusLogger.lastLogTypeProperty().isEqualTo(INFO))
                         .then(new Background(new BackgroundFill(Color.MINTCREAM, CornerRadii.EMPTY, Insets.EMPTY)))

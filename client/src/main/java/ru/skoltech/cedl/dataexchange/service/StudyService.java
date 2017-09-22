@@ -116,15 +116,6 @@ public interface StudyService {
     void untagStudy(Study study, String tag);
 
     /**
-     * Retrieve an instance of {@link Study} from it revision history by revision number.
-     *
-     * @param studyName      name of the {@link Study} which revision to search for
-     * @param revisionNumber revision number of searched {@link Study}
-     * @return Study from revision
-     */
-    Study findStudyByNameAndRevision(String studyName, Integer revisionNumber);
-
-    /**
      * Remove a {@link Study} with a specified name.
      *
      * @param studyName name of the {@link Study}
@@ -135,6 +126,15 @@ public interface StudyService {
      * Remove all stored studies.
      */
     void deleteAllStudies();
+
+    /**
+     * Retrieve an instance of {@link Study} from it revision history by revision number.
+     *
+     * @param studyName      name of the {@link Study} which revision to search for
+     * @param revisionNumber revision number of searched {@link Study}
+     * @return Study from revision
+     */
+    Study findStudyByNameAndRevision(String studyName, Integer revisionNumber);
 
     /**
      * Retrieve a latest revision along with entity and revision date

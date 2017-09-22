@@ -303,7 +303,11 @@ public class Project {
 
         Pair<Integer, Date> latestRevision = studyService.findLatestRevision(study.getId());
         long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
-        logger.info("checked repository study (" + checkDuration + "ms), " +
+        if (latestRevision == null) {
+            logger.info("Checked repository study (" + checkDuration + "ms), study is not saved.");
+            return;
+        }
+        logger.info("Checked repository study (" + checkDuration + "ms), " +
                 "last revision number: " + latestRevision.getLeft() + ", " +
                 "date : " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(latestRevision.getRight()));
 
@@ -351,17 +355,21 @@ public class Project {
     public Future<Pair<Boolean, List<ModelDifference>>> loadRepositoryStudy() {
         Future<Pair<Boolean, List<ModelDifference>>> feature = executor.submit(() -> {
             Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
+            if(revision == null) {
+                return Pair.of(false, null);
+            }
             Study repositoryStudy = revision.getLeft();
             Integer repositoryStudyRevisionNumber = revision.getMiddle();
 
             boolean update = Project.this.latestRevisionNumber.get() != repositoryStudyRevisionNumber;
-            if (update) {
-                Project.this.setRepositoryStudy(repositoryStudy);
-                Project.this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
+            if (!update) {
+                return Pair.of(false, null);
             }
-            List<ModelDifference> differences = differenceHandler.computeStudyDifferences(study, repositoryStudy);
 
-            return Pair.of(update, differences);
+            Project.this.setRepositoryStudy(repositoryStudy);
+            Project.this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
+            List<ModelDifference> differences = differenceHandler.computeStudyDifferences(study, repositoryStudy);
+            return Pair.of(true, differences);
         });
         Platform.runLater(() -> {
             try {

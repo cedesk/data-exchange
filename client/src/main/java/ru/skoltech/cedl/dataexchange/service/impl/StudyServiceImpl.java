@@ -38,6 +38,7 @@ import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -103,7 +104,9 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public String findCurrentStudyRevisionTag(Study study) {
         long studyId = study.getId();
-        if (studyId == 0) return ""; // quick return for unstored studies
+        if (studyId == 0) {
+            return null;
+        }
         CustomRevisionEntity revisionEntity = revisionEntityRepository.lastRevisionEntity(studyId, Study.class);
         return revisionEntity.getTag();
     }
@@ -142,18 +145,9 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
-    public Study findStudyByNameAndRevision(String studyName, Integer revisionNumber) {
-        Study study = findStudyByName(studyName);
-//        Revision<Integer, Study> revision = studyRevisionRepository.findRevision(study.getId(), revisionNumber);
-        return studyRevisionRepository.findStudyByRevision(study.getId(), revisionNumber);
-    }
-
-    @Override
     public void deleteStudyByName(String studyName) {
         Study study = studyRepository.findByName(studyName);
         studyRepository.delete(study);
-//        TODO: pass directly to custom and use
-//        studyRepository.deleteByName(studyName);
     }
 
     @Override
@@ -162,15 +156,34 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
+    public Study findStudyByNameAndRevision(String studyName, Integer revisionNumber) {
+        assert Objects.nonNull(studyName);
+        assert Objects.nonNull(revisionNumber);
+
+        Study study = findStudyByName(studyName);
+        return studyRevisionRepository.findStudyByRevision(study.getId(), revisionNumber);
+    }
+
+    @Override
     public Triple<Study, Integer, Date> findLatestRevisionByName(String studyName) {
+        assert Objects.nonNull(studyName);
+
         Study study = this.findStudyByName(studyName);
+        if (study == null) {
+            return null;
+        }
         Pair<Integer, Date> revision = this.findLatestRevision(study.getId());
         return Triple.of(study, revision.getLeft(), revision.getRight());
     }
 
     @Override
     public Pair<Integer, Date> findLatestRevision(Long studyId) {
+        assert Objects.nonNull(studyId);
+
         Revision<Integer, Study> revision = studyRevisionRepository.findLastChangeRevision(studyId);
+        if (revision == null) {
+            return null;
+        }
         return Pair.of(revision.getRevisionNumber(), revision.getRevisionDate().toDate());
     }
 
