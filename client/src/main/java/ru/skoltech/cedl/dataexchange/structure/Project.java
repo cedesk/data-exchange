@@ -349,32 +349,29 @@ public class Project {
         parameterLinkRegistry.registerAllParameters(getSystemModel());
     }
 
-    public Future<Pair<Boolean, List<ModelDifference>>> loadRepositoryStudy() {
-        Future<Pair<Boolean, List<ModelDifference>>> feature = executor.submit(() -> {
+    public Future<List<ModelDifference>> loadRepositoryStudy() {
+        Future<List<ModelDifference>> feature = executor.submit(() -> {
             Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
             if(revision == null) {
-                return Pair.of(false, null);
+                return null;
             }
             Study repositoryStudy = revision.getLeft();
             Integer repositoryStudyRevisionNumber = revision.getMiddle();
 
             boolean update = Project.this.latestRevisionNumber.get() != repositoryStudyRevisionNumber;
-            if (!update) {
-                return Pair.of(false, null);
+            if (update) {
+                Project.this.setRepositoryStudy(repositoryStudy);
+                Project.this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
             }
 
-            Project.this.setRepositoryStudy(repositoryStudy);
-            Project.this.latestRevisionNumber.set(repositoryStudyRevisionNumber);
-            List<ModelDifference> differences = differenceHandler.computeStudyDifferences(study, repositoryStudy);
-            return Pair.of(true, differences);
+            return differenceHandler.computeStudyDifferences(study, repositoryStudy);
         });
         Platform.runLater(() -> {
             try {
-                Pair<Boolean, List<ModelDifference>> pair = feature.get();
-                if (!pair.getLeft()) {
+                List<ModelDifference> differences = feature.get();
+                if (differences == null) {
                     return;
                 }
-                List<ModelDifference> differences = pair.getRight();
                 differenceHandler.updateModelDifferences(differences);
             } catch (InterruptedException | ExecutionException e) {
                 logger.error("Cannot perform loading repository study: " + e.getMessage(), e);

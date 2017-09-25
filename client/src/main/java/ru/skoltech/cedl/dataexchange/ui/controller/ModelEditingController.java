@@ -61,6 +61,7 @@ import ru.skoltech.cedl.dataexchange.ui.control.structure.TextFieldTreeCell;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Controller for model editing.
@@ -454,6 +455,12 @@ public class ModelEditingController implements Initializable {
         externalModelUpdateHandler.parameterModelUpdateStates().forEach((parameterModel, updateState) -> {
             if (updateState == ParameterModelUpdateState.SUCCESS) {
                 successParameterModels.add(parameterModel);
+
+                Iterable<ParameterModel> parametersTreeIterable = () -> project.getSystemModel().parametersTreeIterator();
+                StreamSupport.stream(parametersTreeIterable.spliterator(), false)
+                        .filter(pm -> pm.getUuid().equals(parameterModel.getUuid()))
+                        .forEach(pm -> pm.setValue(parameterModel.getValue()));
+
                 actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
             } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
                 actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()

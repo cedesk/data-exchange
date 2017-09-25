@@ -17,10 +17,8 @@
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleListProperty;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -51,13 +49,11 @@ import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.service.ParameterDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
@@ -68,8 +64,13 @@ import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static ru.skoltech.cedl.dataexchange.entity.ParameterValueSource.*;
+import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS;
+import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
 
 /**
  * Controller for parameter editing.
@@ -127,12 +128,10 @@ public class ParameterEditorController implements Initializable, Displayable {
     private ParameterLinkRegistry parameterLinkRegistry;
     private GuiService guiService;
     private UnitManagementService unitManagementService;
-    private ParameterDifferenceService parameterDifferenceService;
     private ActionLogger actionLogger;
     private StatusLogger statusLogger;
 
-    private ParameterModel editingParameterModel;
-    private ParameterModel originalParameterModel;
+    private ParameterModel parameterModel;
     private ExternalModelReference valueReference;
     private ExternalModelReference exportReference;
     private ParameterModel valueLinkParameter;
@@ -141,6 +140,8 @@ public class ParameterEditorController implements Initializable, Displayable {
     private AutoCompletionBinding<String> binding;
     private Stage ownerStage;
 
+    private ObjectProperty<ParameterModel> parameterModelProperty = new SimpleObjectProperty<>();
+    private ObjectProperty<ParameterModelUpdateState> parameterModelUpdateStateProperty = new SimpleObjectProperty<>();
     private ListProperty<String> differencesProperty = new SimpleListProperty<>();
     private BooleanProperty nameChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty natureChangedProperty = new SimpleBooleanProperty();
@@ -179,10 +180,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.unitManagementService = unitManagementService;
     }
 
-    public void setParameterDifferenceService(ParameterDifferenceService parameterDifferenceService) {
-        this.parameterDifferenceService = parameterDifferenceService;
-    }
-
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
     }
@@ -193,50 +190,52 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        nameChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("name"), differencesProperty));
-        natureChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("nature"), differencesProperty));
-        valueSourceChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("valueSource"), differencesProperty));
-        valueReferenceChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("valueReference"), differencesProperty));
-        parameterLinkChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("valueLink"), differencesProperty));
-        valueChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("value"), differencesProperty));
-        unitChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("unit"), differencesProperty));
-        isReferenceValueOverriddenChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("isReferenceValueOverridden"), differencesProperty));
-        valueOverrideChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("overrideValue"), differencesProperty));
-        isExportedChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("isExported"), differencesProperty));
-        exportReferenceChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("exportReference"), differencesProperty));
-        descriptionChangedProperty.bind(Bindings.createBooleanBinding(() -> differencesProperty.contains("description"), differencesProperty));
+        parameterModelProperty.addListener((observable, oldValue, newValue) -> this.updateView());
+
+        nameChangedProperty.bind(this.createDifferencesPropertyBinding("name"));
+        natureChangedProperty.bind(this.createDifferencesPropertyBinding("nature"));
+        valueSourceChangedProperty.bind(this.createDifferencesPropertyBinding("valueSource"));
+        valueReferenceChangedProperty.bind(this.createDifferencesPropertyBinding("valueReference"));
+        parameterLinkChangedProperty.bind(this.createDifferencesPropertyBinding("valueLink"));
+        valueChangedProperty.bind(this.createDifferencesPropertyBinding("value"));
+        unitChangedProperty.bind(this.createDifferencesPropertyBinding("unit"));
+        isReferenceValueOverriddenChangedProperty.bind(this.createDifferencesPropertyBinding("isReferenceValueOverridden"));
+        valueOverrideChangedProperty.bind(this.createDifferencesPropertyBinding("overrideValue"));
+        isExportedChangedProperty.bind(this.createDifferencesPropertyBinding("isExported"));
+        exportReferenceChangedProperty.bind(this.createDifferencesPropertyBinding("exportReference"));
+        descriptionChangedProperty.bind(this.createDifferencesPropertyBinding("description"));
 
         nameText.styleProperty().bind(Bindings.when(nameChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
         natureChoiceBox.styleProperty().bind(Bindings.when(natureChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         natureChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != ParameterNature.INPUT) {
-                valueSourceChoiceBox.getItems().remove(ParameterValueSource.LINK);
-            } else if (!valueSourceChoiceBox.getItems().contains(ParameterValueSource.LINK)) {
-                valueSourceChoiceBox.getItems().add(ParameterValueSource.LINK);
+                valueSourceChoiceBox.getItems().remove(LINK);
+            } else if (!valueSourceChoiceBox.getItems().contains(LINK)) {
+                valueSourceChoiceBox.getItems().add(LINK);
             }
         });
         dependentsText.visibleProperty().bind(natureChoiceBox.valueProperty().isEqualTo(ParameterNature.OUTPUT));
         valueSourceChoiceBox.styleProperty().bind(Bindings.when(valueSourceChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
         valueSourceChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue == ParameterValueSource.REFERENCE) {
+            if (newValue == REFERENCE) {
                 valueLinkParameter = null;
             } else {
                 valueReference = null;
             }
         });
-        referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.REFERENCE));
+        referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(REFERENCE));
         valueReferenceText.styleProperty().bind(Bindings.when(valueReferenceChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         parameterLinkText.styleProperty().bind(Bindings.when(parameterLinkChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        linkSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
-        calculationGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.CALCULATION));
+        linkSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(LINK));
+        calculationGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(CALCULATION));
         valueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
-        valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
+        valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(MANUAL));
         valueText.styleProperty().bind(Bindings.when(valueChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        unitComboBox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.LINK));
+        unitComboBox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(LINK));
         unitComboBox.styleProperty().bind(Bindings.when(unitChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(ParameterValueSource.MANUAL));
+        isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(MANUAL));
         isReferenceValueOverriddenCheckbox.styleProperty().bind(Bindings.when(isReferenceValueOverriddenChangedProperty).then("-fx-outer-border: #FF6A00;").otherwise((String) null));
         valueOverrideText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
         valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.disableProperty().or(isReferenceValueOverriddenCheckbox.selectedProperty().not()));
@@ -252,6 +251,25 @@ public class ParameterEditorController implements Initializable, Displayable {
         unitComboBox.setConverter(new UnitStringConverter());
         unitComboBox.setButtonCell(new UnitListCell());
         unitComboBox.setCellFactory(p -> new UnitListCell());
+
+//        TODO: bind updateIcon
+//        this.updateIcon.iconProperty().bind(Bindings.when(parameterModelUpdateStateProperty.isNotNull())
+//                .then(Bindings.when(parameterModelUpdateStateProperty.isEqualTo(SUCCESS)
+//                        .or(parameterModelUpdateStateProperty.isEqualTo(SUCCESS_WITHOUT_UPDATE)))
+//                        .then("CHECK")
+//                        .otherwise("WARNING")).otherwise((String) null));
+//        this.updateIcon.styleProperty().bind(Bindings.when(parameterModelUpdateStateProperty.isNotNull())
+//                .then(Bindings.when(parameterModelUpdateStateProperty.isEqualTo(SUCCESS)
+//                        .or(parameterModelUpdateStateProperty.isEqualTo(SUCCESS_WITHOUT_UPDATE)))
+//                        .then("-fx-fill: green;")
+//                        .otherwise("-fx-fill: red;")).otherwise((String) null));
+//        this.updateIcon.tooltipProperty().bind(Bindings.when(parameterModelUpdateStateProperty.isNotNull())
+//                .then(new Tooltip(parameterModelUpdateStateProperty.get().description)).otherwise((Tooltip) null));
+
+    }
+
+    private BooleanBinding createDifferencesPropertyBinding(String field) {
+        return Bindings.createBooleanBinding(() -> differencesProperty.contains(field), differencesProperty);
     }
 
     @Override
@@ -260,15 +278,15 @@ public class ParameterEditorController implements Initializable, Displayable {
     }
 
     public void setVisible(boolean visible) {
+        if (!visible) {
+            this.parameterModelProperty.set(null);
+        }
         parameterEditorPane.setVisible(visible);
     }
 
-    public ParameterModel currentParameterModel() {
-        return this.originalParameterModel;
-    }
-
     public void displayParameterModel(ParameterModel parameterModel) {
-        this.originalParameterModel = parameterModel;
+        this.parameterModel = parameterModel;
+        this.parameterModelProperty.set(parameterModel);
         ParameterDifference parameterDifference = differenceHandler.modelDifferences().stream()
                 .filter(modelDifference -> modelDifference instanceof ParameterDifference)
                 .filter(modelDifference -> modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG2)
@@ -289,7 +307,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         } else {
             differencesProperty.set(FXCollections.emptyObservableList());
         }
-        this.updateView(originalParameterModel);
         this.updateIcon.setIcon(null);
         this.updateIcon.setColor(null);
         this.updateIcon.setTooltip(null);
@@ -297,17 +314,14 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     public void displayParameterModel(ParameterModel parameterModel, ParameterModelUpdateState updateState) {
         this.displayParameterModel(parameterModel);
+        this.parameterModelUpdateStateProperty.setValue(updateState);
         if (updateState != null) {
-            boolean success = updateState == ParameterModelUpdateState.SUCCESS || updateState == ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
+            boolean success = updateState == SUCCESS || updateState == SUCCESS_WITHOUT_UPDATE;
             String icon = success ? "CHECK" : "WARNING";
             Color color = success ? Color.GREEN : Color.RED;
             this.updateIcon.setIcon(icon);
             this.updateIcon.setColor(color);
             this.updateIcon.setTooltip(new Tooltip(updateState.description));
-        } else {
-            this.updateIcon.setIcon(null);
-            this.updateIcon.setColor(null);
-            this.updateIcon.setTooltip(null);
         }
     }
 
@@ -316,11 +330,144 @@ public class ParameterEditorController implements Initializable, Displayable {
     }
 
     public void applyChanges() {
-        updateModel();
+        logger.debug("updating parameter: " + parameterModel.getNodePath());
+        this.applyParameterUpdateFromExternalModel();
+        this.replaceLinksInParameterLinkRegistry();
+        this.validateFields();
+
+        ParameterValueSource valueSource = valueSourceChoiceBox.getValue();
+        ExternalModelReference valueReference = valueSource == REFERENCE ? this.valueReference : null;
+        ParameterModel valueLinkParameter = valueSource == LINK ? this.valueLinkParameter : null;
+        Calculation calculation = valueSource == CALCULATION ? this.calculation : null;
+        Double value = valueSource == MANUAL ? Double.valueOf(valueText.getText()) :
+                valueSource == LINK ? this.valueLinkParameter.getEffectiveValue() : parameterModel.getValue();
+        boolean isReferenceValueOverridden = valueSource != MANUAL && isReferenceValueOverriddenCheckbox.isSelected();
+        Double overrideValue = isReferenceValueOverridden ? Double.valueOf(valueOverrideText.getText()) : null;
+        Boolean isExported = isExportedCheckbox.isSelected()
+                && (this.exportReference == null || !this.exportReference.equals(this.valueReference));
+        ExternalModelReference exportReference = isExportedCheckbox.isSelected() ? this.exportReference : null;
+
+
+        parameterModel.setName(nameText.getText());
+        parameterModel.setNature(natureChoiceBox.getValue());
+        parameterModel.setValueSource(valueSource);
+        parameterModel.setValueReference(valueReference);
+        parameterModel.setValueLink(valueLinkParameter);
+        parameterModel.setCalculation(calculation);
+        parameterModel.setValue(value);
+        parameterModel.setUnit(unitComboBox.getValue());
+        parameterModel.setIsReferenceValueOverridden(isReferenceValueOverridden);
+        parameterModel.setOverrideValue(overrideValue);
+        parameterModel.setIsExported(isExported);
+        parameterModel.setExportReference(exportReference);
+        parameterModel.setDescription(descriptionText.getText());
+
+        this.applyParameterUpdatesToExternalModel();
+        parameterLinkRegistry.updateSinks(parameterModel);
+        this.computeDifferences();
+        project.markStudyModified();
+        editListener.accept(parameterModel);
+    }
+
+    private void applyParameterUpdateFromExternalModel(){
+        logger.debug("update parameter value from model");
+        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+        ParameterModelUpdateState updateState = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
+        if (updateState == null) {
+            return;
+        }
+        if (updateState == SUCCESS || updateState == SUCCESS_WITHOUT_UPDATE) {
+            this.valueText.setText(this.convertToText(parameterModel.getValue()));
+        } else {
+            String errorMessage = "Unable to update value: " + updateState.description;
+            statusLogger.error(errorMessage);
+            UserNotifications.showNotification(ownerStage, "Error", errorMessage);
+        }
+    }
+
+    private void applyParameterUpdatesToExternalModel() {
+        if (parameterModel.getIsExported()) {
+            if (this.exportReference != null && this.exportReference.getExternalModel() != null) {
+                ExternalModel externalModel = this.exportReference.getExternalModel();
+                try {
+                    List<Pair<ParameterModel, ExternalModelUpdateState>> updates
+                            = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
+                    updates.forEach(pair -> {
+                        ParameterModel parameterModel = pair.getLeft();
+                        ExternalModelUpdateState update = pair.getRight();
+                        if (update == ExternalModelUpdateState.FAIL_EMPTY_REFERENCE
+                                || update == ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL) {
+                            statusLogger.warn("Parameter " + parameterModel.getNodePath() + " has empty exportReference.");
+                        } else if (update == ExternalModelUpdateState.FAIL_EXPORT) {
+                            statusLogger.warn("Failed to export parameter " + parameterModel.getNodePath());
+                        }
+                    });
+                } catch (ExternalModelException e) {
+                    logger.warn("Cannot apply parameter updates to ExternalModel: " + externalModel.getNodePath(), e);
+                }
+            }
+        }
+    }
+
+    private void replaceLinksInParameterLinkRegistry() {
+        if (valueSourceChoiceBox.getValue() == LINK) {
+            ParameterModel previousValueLink = parameterModel.getValueLink();
+            parameterLinkRegistry.replaceLink(previousValueLink, valueLinkParameter, parameterModel);
+        } else if (valueSourceChoiceBox.getValue() == CALCULATION) {
+            Calculation previousCalculation = parameterModel.getCalculation();
+            List<ParameterModel> oldLinks = previousCalculation != null ? previousCalculation.getLinkedParameters() : null;
+            List<ParameterModel> newLinks = calculation != null ? calculation.getLinkedParameters() : null;
+            parameterLinkRegistry.replaceLinks(oldLinks, newLinks, parameterModel);
+        }
+    }
+
+    private void validateFields() {
+        if (!Identifiers.validateParameterName(nameText.getText())) {
+            Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
+            return;
+        }
+        if (!nameText.getText().equals(parameterModel.getName()) &&
+                parameterModel.getParent().getParameterMap().containsKey(nameText.getText())) {
+            Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
+            return;
+        }
+        if (valueSourceChoiceBox.getValue() == REFERENCE && valueReference != null) {
+            Dialogues.showWarning("Empty reference", "No reference has been specified!");
+        }
+        if (isExportedCheckbox.isSelected()) {
+            if (exportReference != null && exportReference.equals(valueReference)) {
+                Dialogues.showWarning("inconsistency", "value source and export reference must not be equal. ignoring export reference.");
+                exportReference = null;
+            }
+        }
+    }
+
+    private void computeDifferences(){
+        try {
+            Future<List<ModelDifference>> feature = project.loadRepositoryStudy();
+            List<ModelDifference> modelDifferences = feature.get();
+            if (modelDifferences == null) {
+                return;
+            }
+            modelDifferences.stream()
+                    .filter(md -> md.getChangeLocation() == ModelDifference.ChangeLocation.ARG1)
+                    .filter(md -> md instanceof ParameterDifference)
+                    .map(md -> (ParameterDifference) md)
+                    .filter(pd -> pd.getParameter1().getUuid().equals(parameterModel.getUuid()))
+                    .findFirst()
+                    .ifPresent(pd -> {
+                        String attDiffs = pd.getAttributes().stream().collect(Collectors.joining(","));
+                        String message = parameterModel.getNodePath() + ": " + attDiffs;
+                        actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, message);
+                    });
+
+        } catch (Exception e) {
+            statusLogger.error("Error checking repository for changes");
+        }
     }
 
     public void chooseParameter() {
-        ModelNode parameterOwningNode = originalParameterModel.getParent();
+        ModelNode parameterOwningNode = parameterModel.getParent();
         SystemModel systemModel = parameterOwningNode.findRoot();
 
         // filter list of parameters
@@ -356,7 +503,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     }
 
     private ExternalModelReference displayReferenceSelectorView(ExternalModelReference externalModelReference, TextField externalModelReferenceTextField) {
-        List<ExternalModel> externalModels = editingParameterModel.getParent().getExternalModels();
+        List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
         ExternalModelReferenceEventHandler applyEventHandler = new ExternalModelReferenceEventHandler(externalModelReference, externalModelReferenceTextField);
 
         ViewBuilder referenceSelectorViewBuilder = guiService.createViewBuilder("Reference Selector", Views.REFERENCE_SELECTOR_VIEW);
@@ -376,7 +523,7 @@ public class ParameterEditorController implements Initializable, Displayable {
                 if (calculation.valid()) {
                     calculationText.setText(calculation.asText());
                     valueText.setText(convertToText(calculation.evaluate()));
-                    logger.debug(originalParameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
+                    logger.debug(parameterModel.getNodePath() + ", calculation composed: " + calculation.asText());
                 } else {
                     Dialogues.showError("Invalid calculation", "The composed calculation is invalid and therefor will be ignored.");
                 }
@@ -384,148 +531,15 @@ public class ParameterEditorController implements Initializable, Displayable {
                 calculationText.setText(this.calculation != null ? this.calculation.asText() : null);
             }
         });
-        calculationEditorViewBuilder.showAndWait(editingParameterModel, calculation);
+        calculationEditorViewBuilder.showAndWait(parameterModel, calculation);
     }
 
     public void revertChanges() {
-        updateView(originalParameterModel);
+        this.parameterModelProperty.set(null);
+        this.parameterModelProperty.set(parameterModel);
     }
 
-    private void updateModel() {
-        editingParameterModel.setName(nameText.getText());
-        editingParameterModel.setIsReferenceValueOverridden(isReferenceValueOverriddenCheckbox.isSelected());
-        editingParameterModel.setOverrideValue(convertTextToDouble(valueOverrideText.getText()));
-        editingParameterModel.setIsExported(isExportedCheckbox.isSelected());
-        editingParameterModel.setDescription(descriptionText.getText());
-
-        logger.debug("updating parameter: " + editingParameterModel.getNodePath());
-        String parameterName = nameText.getText();
-        if (!Identifiers.validateParameterName(parameterName)) {
-            Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
-            return;
-        }
-        if (!parameterName.equals(originalParameterModel.getName()) &&
-                editingParameterModel.getParent().getParameterMap().containsKey(parameterName)) {
-            Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
-            return;
-        }
-
-        editingParameterModel.setNature(natureChoiceBox.getValue());
-        editingParameterModel.setValueSource(valueSourceChoiceBox.getValue());
-        editingParameterModel.setUnit(unitComboBox.getValue());
-
-        if (editingParameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-            if (valueReference != null) {
-                editingParameterModel.setValueReference(valueReference);
-                logger.debug("update parameter value from model");
-                externalModelUpdateHandler.applyParameterUpdateFromExternalModel(editingParameterModel);
-                ParameterModelUpdateState updateState = externalModelUpdateHandler.parameterModelUpdateState(editingParameterModel);
-                if (updateState == ParameterModelUpdateState.SUCCESS || updateState == ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE) {
-                    valueText.setText(convertToText(editingParameterModel.getValue()));
-                } else {
-                    // TODO: fail notifications
-                    statusLogger.error("Unable to update value from given target.");
-                    UserNotifications.showNotification(ownerStage, "Error", "Unable to update value from given target.");
-                }
-            } else {
-                Dialogues.showWarning("Empty reference", "No reference has been specified!");
-            }
-        } else {
-            editingParameterModel.setValueReference(null);
-        }
-        if (editingParameterModel.getValueSource() == ParameterValueSource.LINK) {
-            ParameterModel previousValueLink = editingParameterModel.getValueLink();
-            if (previousValueLink != null) {
-                parameterLinkRegistry.removeLink(previousValueLink, originalParameterModel);
-            }
-            if (valueLinkParameter != null) {
-                parameterLinkRegistry.addLink(valueLinkParameter, originalParameterModel);
-            }
-            editingParameterModel.setValueLink(valueLinkParameter);
-            editingParameterModel.setValue(valueLinkParameter.getEffectiveValue());
-        } else {
-            editingParameterModel.setValueLink(null);
-        }
-        if (editingParameterModel.getValueSource() == ParameterValueSource.CALCULATION) {
-            Calculation previousCalculation = editingParameterModel.getCalculation();
-            if (previousCalculation != null) {
-                parameterLinkRegistry.removeLinks(previousCalculation.getLinkedParameters(), originalParameterModel);
-            }
-            if (calculation != null) {
-                parameterLinkRegistry.addLinks(calculation.getLinkedParameters(), originalParameterModel);
-            }
-            editingParameterModel.setCalculation(calculation);
-        } else {
-            editingParameterModel.setCalculation(null);
-        }
-        if (editingParameterModel.getIsExported()) {
-            if (exportReference != null && exportReference.equals(valueReference)) {
-                Dialogues.showWarning("inconsistency", "value source and export reference must not be equal. ignoring export reference.");
-                exportReference = null;
-                editingParameterModel.setIsExported(false);
-                editingParameterModel.setExportReference(null);
-            } else {
-                editingParameterModel.setExportReference(exportReference);
-            }
-        } else {
-            editingParameterModel.setExportReference(null);
-        }
-        if (editingParameterModel.getValueSource() == ParameterValueSource.MANUAL) {
-            editingParameterModel.setValue(convertTextToDouble(valueText.getText()));
-            editingParameterModel.setIsReferenceValueOverridden(false);
-        }
-        if (!editingParameterModel.getIsReferenceValueOverridden()) {
-            editingParameterModel.setOverrideValue(null);
-        }
-
-        // TODO: check whether modifications were made
-        List<AttributeDifference> attributeDifferences = parameterDifferenceService.parameterDifferences(originalParameterModel, editingParameterModel);
-
-        Utils.copyBean(editingParameterModel, originalParameterModel);
-
-        // UPDATE EXTERNAL MODEL
-        if (editingParameterModel.getIsExported()) {
-            if (exportReference != null && exportReference.getExternalModel() != null) {
-                ExternalModel externalModel = exportReference.getExternalModel();
-                try {
-                    List<Pair<ParameterModel, ExternalModelUpdateState>> updates
-                            = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
-                    updates.forEach(pair -> {
-                        ParameterModel parameterModel = pair.getLeft();
-                        ExternalModelUpdateState update = pair.getRight();
-                        if (update == ExternalModelUpdateState.FAIL_EMPTY_REFERENCE
-                                || update == ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL) {
-                            statusLogger.warn("Parameter " + parameterModel.getNodePath() + " has empty exportReference.");
-                        } else if (update == ExternalModelUpdateState.FAIL_EXPORT) {
-                            statusLogger.warn("Failed to export parameter " + parameterModel.getNodePath());
-                        }
-                    });
-                } catch (ExternalModelException e) {
-                    logger.warn("Cannot apply parameter updates to ExternalModel: " + externalModel.getNodePath(), e);
-                }
-            }
-        }
-
-        String attDiffs = attributeDifferences.stream().map(AttributeDifference::asText).collect(Collectors.joining(","));
-        actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, editingParameterModel.getNodePath() + ": " + attDiffs);
-
-        // UPDATE LINKING PARAMETERS
-        parameterLinkRegistry.updateSinks(originalParameterModel);
-
-        project.markStudyModified();
-        editListener.accept(editingParameterModel);
-    }
-
-    private Double convertTextToDouble(String text) {
-        try {
-            return Double.parseDouble(text);
-        } catch (NumberFormatException nfe) {
-            // ignore
-        }
-        return null;
-    }
-
-    private void updateView(ParameterModel parameterModel) {
+    private void updateView() {
         // refresh unit's list, since list can be changed
         List<Unit> units = project.getUnitManagement().getUnits();
         units.sort(Comparator.comparing(Unit::asText));
@@ -533,29 +547,26 @@ public class ParameterEditorController implements Initializable, Displayable {
         List<String> unitsTexts = unitComboBox.getItems().stream().map(Unit::asText).collect(Collectors.toList());
         binding = TextFields.bindAutoCompletion(unitComboBox.getEditor(), unitsTexts);
 
-        // make local copy of the parameter model
-        editingParameterModel = Utils.copyBean(parameterModel, new ParameterModel());
+        nameText.setText(parameterModel.getName());
+        valueText.setText(convertToText(parameterModel.getValue()));
+        isReferenceValueOverriddenCheckbox.setSelected(parameterModel.getIsReferenceValueOverridden());
+        valueOverrideText.setText(convertToText(parameterModel.getOverrideValue()));
+        isExportedCheckbox.setSelected(parameterModel.getIsExported());
+        descriptionText.setText(parameterModel.getDescription());
 
-        nameText.setText(editingParameterModel.getName());
-        valueText.setText(convertToText(editingParameterModel.getValue()));
-        isReferenceValueOverriddenCheckbox.setSelected(editingParameterModel.getIsReferenceValueOverridden());
-        valueOverrideText.setText(convertToText(editingParameterModel.getOverrideValue()));
-        isExportedCheckbox.setSelected(editingParameterModel.getIsExported());
-        descriptionText.setText(editingParameterModel.getDescription());
-
-        valueReference = editingParameterModel.getValueReference();
-        exportReference = editingParameterModel.getExportReference();
-        valueLinkParameter = editingParameterModel.getValueLink();
-        calculation = editingParameterModel.getCalculation();
-        natureChoiceBox.valueProperty().setValue(editingParameterModel.getNature());
-        valueSourceChoiceBox.valueProperty().setValue(editingParameterModel.getValueSource());
-        unitComboBox.valueProperty().setValue(editingParameterModel.getUnit());
-        valueReferenceText.setText(editingParameterModel.getValueReference() != null ? editingParameterModel.getValueReference().toString() : "");
+        valueReference = parameterModel.getValueReference();
+        exportReference = parameterModel.getExportReference();
+        valueLinkParameter = parameterModel.getValueLink();
+        calculation = parameterModel.getCalculation();
+        natureChoiceBox.valueProperty().setValue(parameterModel.getNature());
+        valueSourceChoiceBox.valueProperty().setValue(parameterModel.getValueSource());
+        unitComboBox.valueProperty().setValue(parameterModel.getUnit());
+        valueReferenceText.setText(parameterModel.getValueReference() != null ? parameterModel.getValueReference().toString() : "");
         parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : "");
         calculationText.setText(calculation != null ? calculation.asText() : "");
         exportReferenceText.setText(exportReference != null ? exportReference.toString() : "");
-        if (editingParameterModel.getNature() == ParameterNature.OUTPUT) {
-            List<ParameterModel> dependentParameters = parameterLinkRegistry.getDependentParameters(editingParameterModel);
+        if (parameterModel.getNature() == ParameterNature.OUTPUT) {
+            List<ParameterModel> dependentParameters = parameterLinkRegistry.getDependentParameters(parameterModel);
             String dependentParamNames = "<not linked>";
             if (dependentParameters.size() > 0) {
                 dependentParamNames = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
@@ -568,8 +579,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     }
 
     private String convertToText(Double value) {
-        if (value == null) return "";
-        return Utils.NUMBER_FORMAT.format(value);
+        return value != null ? Utils.NUMBER_FORMAT.format(value) : "";
     }
 
     private class ExternalModelReferenceEventHandler implements EventHandler<Event> {

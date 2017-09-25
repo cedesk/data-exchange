@@ -89,9 +89,27 @@ public class ParameterLinkRegistry {
         }
     }
 
+    public void replaceLink(ParameterModel oldSource, ParameterModel newSource, ParameterModel sink) {
+        if (oldSource != null) {
+            this.removeLink(oldSource, sink);
+        }
+        if (newSource != null) {
+            this.addLink(newSource, sink);
+        }
+    }
+
     public void addLinks(List<ParameterModel> sources, ParameterModel sink) {
         for (ParameterModel source : sources) {
             addLink(source, sink);
+        }
+    }
+
+    public void replaceLinks(List<ParameterModel> oldSources, List<ParameterModel> newSources, ParameterModel sink) {
+        if (oldSources != null) {
+            this.removeLinks(oldSources, sink);
+        }
+        if (newSources != null) {
+            this.addLinks(newSources, sink);
         }
     }
 

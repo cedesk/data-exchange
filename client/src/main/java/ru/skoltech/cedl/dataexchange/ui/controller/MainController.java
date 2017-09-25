@@ -36,7 +36,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.CannotCreateTransactionException;
 import ru.skoltech.cedl.dataexchange.ApplicationPackage;
@@ -784,14 +783,13 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     private boolean hasRemoteDifferences() throws Exception {
-        Future<Pair<Boolean, List<ModelDifference>>> feature = project.loadRepositoryStudy();
+        Future<List<ModelDifference>> feature = project.loadRepositoryStudy();
         externalModelFileHandler.updateExternalModelsInStudy();
 
-        Pair<Boolean, List<ModelDifference>> result = feature.get();
-        if (!result.getLeft()) {
+        List<ModelDifference> modelDifferences = feature.get();
+        if (modelDifferences == null) {
             return false;
         }
-        List<ModelDifference> modelDifferences = result.getRight();
 
         Predicate<ModelDifference> remoteChangedPredicate = md -> md.getChangeLocation() == ChangeLocation.ARG2;
         long remoteDifferenceCounts = modelDifferences.stream().filter(remoteChangedPredicate).count();
