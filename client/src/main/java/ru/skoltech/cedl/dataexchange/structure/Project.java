@@ -312,7 +312,6 @@ public class Project {
 
     public void deleteStudy(String studyName) throws RepositoryException {
         studyService.deleteStudyByName(studyName);
-        this.markStudyModified();
     }
 
     public boolean hasLocalStudyModifications() {

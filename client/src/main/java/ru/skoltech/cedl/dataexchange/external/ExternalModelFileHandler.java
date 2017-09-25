@@ -27,6 +27,7 @@ import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
 import java.io.*;
 import java.nio.file.FileVisitOption;
@@ -97,6 +98,10 @@ public class ExternalModelFileHandler {
 
             // silently update model from external model
             externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+            if (externalModelUpdateHandler.parameterModelUpdateStates().values().contains(ParameterModelUpdateState.SUCCESS)) {
+                this.updateExternalModelInStudy(externalModel);
+                project.markStudyModified();
+            }
         }
     }
 
@@ -121,23 +126,24 @@ public class ExternalModelFileHandler {
      * and if there are modifications, update the local study model in memory.
      */
     public void updateExternalModelsInStudy() {
-        for (ExternalModel externalModel : changedExternalModels) {
-            ExternalModelCacheState cacheState = this.getCacheState(externalModel);
-            if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
-                logger.debug("updating " + externalModel.getNodePath() + " from file");
-                try {
-                    File projectDataDir = project.getProjectDataDir();
-                    File file = externalModelFileStorageService.createFilePathForExternalModel(projectDataDir, externalModel);
-                    externalModelFileStorageService.readExternalModelAttachmentFromFile(file, externalModel);
-                } catch (IOException e) {
-                    logger.error("error updating external model from file!", e);
-                }
-            } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
-                // TODO: WARN USER, PROVIDE WITH CHOICE TO REVERT OR FORCE CHECKIN
-                logger.warn(externalModel.getNodePath() + " has conflicting changes locally and in repository");
-            } else {
-                logger.warn(externalModel.getNodePath() + " is in state " + cacheState);
+        changedExternalModels.forEach(this::updateExternalModelInStudy);
+    }
+
+    public void updateExternalModelInStudy(ExternalModel externalModel) {
+        ExternalModelCacheState cacheState = this.getCacheState(externalModel);
+        if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
+            try {
+                File projectDataDir = project.getProjectDataDir();
+                File file = externalModelFileStorageService.createFilePathForExternalModel(projectDataDir, externalModel);
+                externalModelFileStorageService.readExternalModelAttachmentFromFile(file, externalModel);
+            } catch (IOException e) {
+                logger.error("error updating external model from file!", e);
             }
+        } else if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
+            // TODO: WARN USER, PROVIDE WITH CHOICE TO REVERT OR FORCE CHECKIN
+            logger.warn(externalModel.getNodePath() + " has conflicting changes locally and in repository");
+        } else {
+            logger.warn(externalModel.getNodePath() + " is in state " + cacheState);
         }
     }
 

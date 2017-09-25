@@ -111,8 +111,7 @@ public class ExternalModelUpdateHandler {
         }
     }
 
-    private Pair<ParameterModel, ParameterModelUpdateState>
-    applyParameterUpdateFromExternalModel(ParameterModel parameterModel, ExternalModel externalModel) {
+    private Pair<ParameterModel, ParameterModelUpdateState> applyParameterUpdateFromExternalModel(ParameterModel parameterModel, ExternalModel externalModel) {
         if (parameterModel.getValueSource() != ParameterValueSource.REFERENCE) {
             return null;
         }

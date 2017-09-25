@@ -77,7 +77,7 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        if (!applicationSettings.isRepositoryWatcherAutosync()) {
+        if (applicationSettings.isRepositoryWatcherAutosync()) {
             this.refreshView();
         }
         diffTable.setItems(differenceHandler.modelDifferences());

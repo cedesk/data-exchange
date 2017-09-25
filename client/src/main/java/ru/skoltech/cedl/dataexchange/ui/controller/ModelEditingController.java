@@ -63,6 +63,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.*;
+
 /**
  * Controller for model editing.
  * <p>
@@ -447,13 +449,17 @@ public class ModelEditingController implements Initializable {
 
     private void applyParameterUpdatesFromExternalModel(ExternalModel externalModel) {
         externalModelFileHandler.addChangedExternalModel(externalModel);
-        project.markStudyModified();
         externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+        if (externalModelUpdateHandler.parameterModelUpdateStates().values().contains(SUCCESS)) {
+            externalModelFileHandler.updateExternalModelInStudy(externalModel);
+            project.markStudyModified();
+        }
+
         actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
         logger.info("External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...");
         List<ParameterModel> successParameterModels = new LinkedList<>();
         externalModelUpdateHandler.parameterModelUpdateStates().forEach((parameterModel, updateState) -> {
-            if (updateState == ParameterModelUpdateState.SUCCESS) {
+            if (updateState == SUCCESS) {
                 successParameterModels.add(parameterModel);
 
                 Iterable<ParameterModel> parametersTreeIterable = () -> project.getSystemModel().parametersTreeIterator();
@@ -462,7 +468,7 @@ public class ModelEditingController implements Initializable {
                         .forEach(pm -> pm.setValue(parameterModel.getValue()));
 
                 actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
-            } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
+            } else if (updateState == FAIL_EVALUATION) {
                 actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
                         + "#" + parameterModel.getValueReference().getTarget());
             }
