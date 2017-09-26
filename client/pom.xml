@@ -155,7 +155,6 @@
             <artifactId>jsoup</artifactId>
             <version>1.10.2</version>
         </dependency>
-
     </dependencies>
     <build>
         <finalName>${jar.final.name}</finalName>
@@ -186,110 +185,35 @@
             <plugin>
                 <groupId>com.zenjava</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <version>8.6.0</version>
+                <version>8.8.3</version>
                 <configuration>
                     <mainClass>${main.class}</mainClass>
                     <verbose>true</verbose>
                     <vendor>${app.vendor}</vendor>
                     <nativeReleaseVersion>${project.version}</nativeReleaseVersion>
-                    <appName>cedesk</appName>
+                    <skipNativeVersionNumberSanitizing>true</skipNativeVersionNumberSanitizing>
+                    <appName>CEDESK</appName>
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>integration-test</phase>
+                        <id>create-jfxjar</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>native</goal>
+                            <goal>build-jar</goal>
                         </goals>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
-                <executions>
                     <execution>
-                        <id>copy-native-installer-file</id>
-                        <phase>post-integration-test</phase>
+                        <id>create-native</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>run</goal>
+                            <goal>build-native</goal>
                         </goals>
-                        <configuration>
-                            <target name="copy native installer to external output directory">
-                                <tstamp>
-                                    <format property="build_timestamp" pattern="yyyy-MM-dd_HH-mm"/>
-                                </tstamp>
-                                <copy file="${project.build.directory}/jfx/native/cedesk-${project.version}.${package.output.extension}"
-                                      tofile="${package.output.dir}/cedesk-${project.version}_${build_timestamp}.${package.output.extension}"/>
-                            </target>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
     <profiles>
-        <profile>
-            <id>development-environment</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <package.output.dir>${user.home}/development/cedesk-builds</package.output.dir>
-            </properties>
-        </profile>
-        <profile>
-            <id>linux-os</id>
-            <activation>
-                <os>
-                    <family>Linux</family>
-                </os>
-            </activation>
-            <properties>
-                <package.output.extension>deb</package.output.extension>
-            </properties>
-        </profile>
-        <profile>
-            <id>mac-os</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <name>mac os x</name>
-                </os>
-            </activation>
-            <properties>
-                <package.output.extension>dmg</package.output.extension>
-            </properties>
-        </profile>
-        <profile>
-            <id>windows-os</id>
-            <activation>
-                <os>
-                    <family>Windows</family>
-                </os>
-            </activation>
-            <properties>
-                <package.output.extension>exe</package.output.extension>
-            </properties>
-        </profile>
-        <profile>
-            <id>build-server</id>
-            <activation>
-                <property>
-                    <name>env</name>
-                    <value>buildserver</value>
-                </property>
-            </activation>
-            <properties>
-                <package.output.dir>c:/data/cedesk-builds</package.output.dir>
-            </properties>
-        </profile>
     </profiles>
     <repositories>
         <repository>
