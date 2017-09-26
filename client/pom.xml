@@ -186,25 +186,43 @@
             <plugin>
                 <groupId>com.zenjava</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <version>8.6.0</version>
+                <version>8.8.3</version>
                 <configuration>
                     <mainClass>${main.class}</mainClass>
                     <verbose>true</verbose>
                     <vendor>${app.vendor}</vendor>
                     <nativeReleaseVersion>${project.version}</nativeReleaseVersion>
-                    <appName>cedesk</appName>
+                    <skipNativeVersionNumberSanitizing>true</skipNativeVersionNumberSanitizing>
+                    <appName>CEDESK</appName>
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>integration-test</phase>
+                        <!-- required before build-native -->
+                        <id>create-jfxjar</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>native</goal>
+                            <goal>build-jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>create-native</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-native</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -216,7 +234,7 @@
                 <executions>
                     <execution>
                         <id>copy-native-installer-file</id>
-                        <phase>post-integration-test</phase>
+                        <phase>deploy</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
@@ -235,15 +253,6 @@
         </plugins>
     </build>
     <profiles>
-        <profile>
-            <id>development-environment</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <package.output.dir>${user.home}/development/cedesk-builds</package.output.dir>
-            </properties>
-        </profile>
         <profile>
             <id>linux-os</id>
             <activation>
@@ -276,6 +285,17 @@
             </activation>
             <properties>
                 <package.output.extension>exe</package.output.extension>
+            </properties>
+        </profile>
+        <profile>
+            <id>development-environment</id>
+            <activation>
+                <property>
+                    <name>!env</name>
+                </property>
+            </activation>
+            <properties>
+                <package.output.dir>${user.home}/development/cedesk-builds</package.output.dir>
             </properties>
         </profile>
         <profile>
