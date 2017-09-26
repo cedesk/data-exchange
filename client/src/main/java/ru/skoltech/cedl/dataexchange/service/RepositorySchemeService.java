@@ -28,20 +28,20 @@ import javax.transaction.Transactional;
 public interface RepositorySchemeService {
 
     /**
-     * Validate and store scheme version.
+     * Validate scheme version in repository in relation to passed version.
      *
-     * @return <i>true</i> - if validate operation was performed successfully, <i>false</i> - if opposite
+     * @param version scheme version to check
      * @throws RepositoryException if actual and repository versions are incompatible
      */
-    @Transactional
-    boolean checkAndStoreSchemeVersion() throws RepositoryException;
+    void checkSchemeVersion(String version) throws RepositoryException;
 
     /**
-     * Validate scheme version.
+     * Store scheme version in repository.
      *
-     * @return <i>true</i> - if validate operation was performed successfully, <i>false</i> - if opposite
-     * @throws RepositoryException if actual and repository versions are incompatible
+     * @param version scheme version to store
+     * @throws RepositoryException if version was not stored for some reason
      */
-    boolean checkSchemeVersion() throws RepositoryException;
+    @Transactional
+    void storeSchemeVersion(String version)  throws RepositoryException;
 
 }

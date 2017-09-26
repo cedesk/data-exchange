@@ -32,6 +32,10 @@ import java.io.StringWriter;
 public class ErrorAlert extends Alert {
 
     public ErrorAlert(Throwable e) {
+        this("Ask for administrators support.", e);
+    }
+
+    public ErrorAlert(String message, Throwable e) {
         super(Alert.AlertType.ERROR);
 
         StringWriter stringWriter = new StringWriter();
@@ -40,7 +44,7 @@ public class ErrorAlert extends Alert {
         String stackTrace = stringWriter.toString();
 
         Text messageText1Text = new Text("Error occurs during the application startup.\n");
-        Text messageText2Text = new Text("Ask for administrators support.\n\n");
+        Text messageText2Text = new Text(message + "\n\n");
         TextArea stackTraceTextArea = new TextArea(stackTrace);
         stackTraceTextArea.setEditable(false);
         stackTraceTextArea.setWrapText(true);

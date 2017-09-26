@@ -53,9 +53,7 @@
     <bean id="parameterDifferenceService" class="ru.skoltech.cedl.dataexchange.service.impl.ParameterDifferenceServiceImpl"/>
     <bean id="externalModelDifferenceService" class="ru.skoltech.cedl.dataexchange.service.impl.ExternalModelDifferenceServiceImpl"/>
 
-    <bean id="repositorySchemeService" class="ru.skoltech.cedl.dataexchange.service.impl.RepositorySchemeServiceImpl">
-        <property name="applicationSettings" ref="applicationSettings"/>
-    </bean>
+    <bean id="repositorySchemeService" class="ru.skoltech.cedl.dataexchange.service.impl.RepositorySchemeServiceImpl"/>
 
     <bean id="updateService" class="ru.skoltech.cedl.dataexchange.service.impl.UpdateServiceImpl">
         <property name="applicationSettings" ref="applicationSettings"/>

@@ -131,7 +131,6 @@ public class MainController implements Initializable, Displayable, Closeable {
     private GuiService guiService;
     private FileStorageService fileStorageService;
     private UpdateService updateService;
-    private RepositorySchemeService repositorySchemeService;
     private LogEntryService logEntryService;
     private SystemBuilderFactory systemBuilderFactory;
     private Executor executor;
@@ -182,10 +181,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setUpdateService(UpdateService updateService) {
         this.updateService = updateService;
-    }
-
-    public void setRepositorySchemeService(RepositorySchemeService repositorySchemeService) {
-        this.repositorySchemeService = repositorySchemeService;
     }
 
     public void setLogEntryService(LogEntryService logEntryService) {
@@ -265,29 +260,11 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private void checkRepository() {
         executor.execute(() -> {
-            boolean validRepositoryScheme = this.checkRepositoryScheme();
-            if (!validRepositoryScheme) {
-                Platform.runLater(MainController.this::openRepositorySettingsDialog);
-                return;
-            }
             if (!project.checkUser()) {
                 Platform.runLater(this::displayInvalidUserDialog);
             }
             Platform.runLater(this::loadLastProject);
         });
-    }
-
-    private boolean checkRepositoryScheme() {
-        try {
-            boolean validScheme = repositorySchemeService.checkSchemeVersion();
-            if (!validScheme && applicationSettings.isRepositorySchemaCreate()) {
-                return repositorySchemeService.checkAndStoreSchemeVersion();
-            }
-            return validScheme;
-        } catch (RepositoryException e) {
-            statusLogger.error(e.getMessage());
-            return false;
-        }
     }
 
     private void checkVersionUpdate() {
@@ -832,7 +809,8 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void destroy() {
         if (applicationSettings.isProjectLastAutoload()) {
-            applicationSettings.storeProjectLastName(project.getProjectName());
+            String projectName = project.getProjectName() != null ? project.getProjectName() : applicationSettings.getDefaultProjectLastName();
+            applicationSettings.storeProjectLastName(projectName);
             applicationSettings.save();
         }
         try {

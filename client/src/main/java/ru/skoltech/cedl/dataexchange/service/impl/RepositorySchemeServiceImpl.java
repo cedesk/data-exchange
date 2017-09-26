@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.ApplicationProperty;
-import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.jpa.ApplicationPropertyRepository;
 import ru.skoltech.cedl.dataexchange.service.RepositorySchemeService;
 
@@ -37,76 +36,52 @@ public class RepositorySchemeServiceImpl implements RepositorySchemeService {
 
     private static final Logger logger = Logger.getLogger(RepositorySchemeServiceImpl.class);
     private final ApplicationPropertyRepository applicationPropertyRepository;
-    private ApplicationSettings applicationSettings;
 
     @Autowired
     public RepositorySchemeServiceImpl(ApplicationPropertyRepository applicationPropertyRepository) {
         this.applicationPropertyRepository = applicationPropertyRepository;
     }
 
-    public void setApplicationSettings(ApplicationSettings applicationSettings) {
-        this.applicationSettings = applicationSettings;
-    }
-
     @Override
-    public boolean checkAndStoreSchemeVersion() throws RepositoryException {
-        String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
-
+    public void checkSchemeVersion(String version) throws RepositoryException {
         ApplicationProperty schemeVersionProperty = applicationPropertyRepository.findOne(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
         if (schemeVersionProperty == null) {
-            logger.warn("No DB Schema Version!");
-            return this.saveRepositoryVersion(currentSchemaVersion);
+            throw new RepositoryException("No DB Schema Version!\nHave the administrator setup version of the DB Schema!");
         }
 
         String actualSchemaVersion = schemeVersionProperty.getValue();
 
-        if (Utils.compareVersions(actualSchemaVersion, currentSchemaVersion) > 0) {
-            throw new RepositoryException("Downgrade your CEDESK Client! "
-                    + "Current Application Version (" + currentSchemaVersion + ") "
-                    + "is older than current DB Schema Version " + actualSchemaVersion);
+        int versionCompare;
+        try {
+            versionCompare = Utils.compareVersions(actualSchemaVersion, version);
+        } catch (Exception e) {
+            throw new RepositoryException("DB Schema Version is not valid: " + actualSchemaVersion
+                    + "\nHave the administrator setup correct version the DB Schema!");
         }
-
-        return this.saveRepositoryVersion(currentSchemaVersion);
-    }
-
-    @Override
-    public boolean checkSchemeVersion() throws RepositoryException{
-        String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
-
-        ApplicationProperty schemeVersionProperty = applicationPropertyRepository.findOne(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
-        if (schemeVersionProperty == null) {
-            logger.warn("No DB Schema Version!");
-            return false;
-        }
-
-        String actualSchemaVersion = schemeVersionProperty.getValue();
-        int versionCompare = Utils.compareVersions(actualSchemaVersion, currentSchemaVersion);
 
         if (versionCompare < 0) {
-            throw new RepositoryException("Upgrade your CEDESK Client! "
-                    + "Current Application Version requires a DB Schema Version " + currentSchemaVersion + ", "
-                    + "which is incompatible with current DB Schema Version " + actualSchemaVersion);
+            throw new RepositoryException("Have the administrator upgrade the DB Schema!\n"
+                    + "Current Application Version requires a DB Schema Version " + version + ", "
+                    + "which is incompatible with current DB Schema Version: " + actualSchemaVersion);
         }
         if (versionCompare > 0) {
-            throw new RepositoryException("Have the administrator upgrade the DB Schema! "
-                    + "Current Application Version requires a DB Schema Version " + currentSchemaVersion + ", "
-                    + "which is incompatible with current DB Schema Version " + actualSchemaVersion);
+            throw new RepositoryException("Upgrade your CEDESK Client!\n"
+                    + "Current Application Version requires a DB Schema Version " + version + ", "
+                    + "which is incompatible with current DB Schema Version: " + actualSchemaVersion);
         }
-        return true;
     }
 
-    private boolean saveRepositoryVersion(String schemaVersion) {
+    @Override
+    public void storeSchemeVersion(String version) throws RepositoryException {
         try {
             ApplicationProperty applicationProperty = new ApplicationProperty();
             applicationProperty.setId(SCHEME_VERSION_APPLICATION_PROPERTY_ID);
             applicationProperty.setName(SCHEME_VERSION_APPLICATION_PROPERTY_NAME);
-            applicationProperty.setValue(schemaVersion);
+            applicationProperty.setValue(version);
 
             applicationPropertyRepository.saveAndFlush(applicationProperty);
-            return true;
         } catch (Exception e) {
-            logger.debug("error storing the applications version property", e);
-            return false;
+            throw new RepositoryException("Cannot upgrade repository schema version to the version: " + version, e);
         }
     }
 }

@@ -23,13 +23,11 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializer;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
-import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
-import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
+import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.ErrorAlert;
 
@@ -72,7 +70,8 @@ public class ClientApplication extends Application {
             this.startMainController(primaryStage);
         } catch (Throwable e) {
             e.printStackTrace(System.err);
-            this.displayErrorDialog(e);
+            Alert errorAlert = new ErrorAlert(e);
+            errorAlert.showAndWait();
         }
     }
 
@@ -87,13 +86,29 @@ public class ClientApplication extends Application {
         logger.info("CEDESK stopped.");
     }
 
-    private void displayErrorDialog(Throwable e) throws IOException {
-        Alert errorAlert = new ErrorAlert(e);
-        errorAlert.showAndWait();
-    }
-
     private void startMainController(Stage primaryStage) throws IOException {
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
+        RepositorySchemeService repositorySchemeService = context.getBean(RepositorySchemeService.class);
+
+        String currentSchemaVersion = applicationSettings.getRepositorySchemaVersion();
+        try {
+            repositorySchemeService.checkSchemeVersion(currentSchemaVersion);
+        } catch (RepositoryException e) {
+            try {
+                if (applicationSettings.isRepositorySchemaCreate()) {
+                    repositorySchemeService.storeSchemeVersion(currentSchemaVersion);
+                    logger.info("Repository schema was successfully upgraded to the version: " + currentSchemaVersion);
+                } else {
+                    throw e;
+                }
+            } catch (RepositoryException re) {
+                Alert errorAlert = new ErrorAlert(re.getMessage(), re);
+                errorAlert.showAndWait();
+                this.startRepositorySettingsController(primaryStage);
+                return;
+            }
+        }
+
         FileStorageService fileStorageService = context.getBean(FileStorageService.class);
         GuiService guiService = context.getBean(GuiService.class);
 

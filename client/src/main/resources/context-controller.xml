@@ -37,7 +37,6 @@
         <property name="studyService" ref="studyService"/>
         <property name="fileStorageService" ref="fileStorageService"/>
         <property name="updateService" ref="updateService"/>
-        <property name="repositorySchemeService" ref="repositorySchemeService"/>
         <property name="logEntryService" ref="logEntryService"/>
         <property name="systemBuilderFactory" ref="systemBuilderFactory"/>
         <property name="executor" ref="executor"/>
