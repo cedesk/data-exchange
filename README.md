@@ -10,6 +10,7 @@ On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
 ## Release History and Notes
 
+* 2018-09-27 - Version 1.32   (UI enhancements: highlight of remote changes, status of external model parameters, status bar logger, bug fixes)
 * 2018-09-03 - Version 1.31.2 (fixed release)
 * 2018-09-02 - Version 1.31.1 (fixed tests)
 * 2018-09-01 - Version 1.31   (bug fixes, coloring status logger, improved action logging)
