@@ -36,6 +36,7 @@ import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.jpa.TradespaceRepository;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.TradespaceView;
@@ -197,6 +198,11 @@ public class TradespaceController implements Initializable {
             newTradespace(null);
         }
         updateView();
+    }
+
+    public void loadTradespaceFromCsv(ActionEvent actionEvent) {
+        ViewBuilder viewBuilder = guiService.createViewBuilder("Import CSV into the Tradespace", Views.IMPORT_TRADESPACE_FROM_CSV_VIEW);
+        viewBuilder.showAndWait();
     }
 
     public void loadSampleTradespace(ActionEvent actionEvent) {

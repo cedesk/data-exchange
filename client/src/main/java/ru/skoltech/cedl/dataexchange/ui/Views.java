@@ -40,6 +40,7 @@ public class Views {
     public static final URL TRADESPACE_VIEW = Views.class.getResource("tradespace.fxml");
     public static final URL FIGURES_OF_MERIT_EDITOR_VIEW = Views.class.getResource("figures-of-merit-editor.fxml");
     public static final URL FIGURE_OF_MERIT_VIEW = Views.class.getResource("figure-of-merit.fxml");
+    public static final URL IMPORT_TRADESPACE_FROM_CSV_VIEW = Views.class.getResource("import-tradespace-from-csv.fxml");
     public static final URL STUDY_REVISIONS_VIEW = Views.class.getResource("study-revisions.fxml");
     public static final URL USER_MANAGEMENT_VIEW = Views.class.getResource("user-management.fxml");
     public static final URL USER_EDITING_VIEW = Views.class.getResource("user-editing.fxml");

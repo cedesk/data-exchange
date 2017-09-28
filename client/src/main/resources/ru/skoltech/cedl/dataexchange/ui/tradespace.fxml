@@ -124,7 +124,7 @@
                 <Button mnemonicParsing="false" onAction="#loadTradespace" text="Load"/>
                 <Button mnemonicParsing="false" onAction="#saveTradespace" text="Save"/>
                 <Separator orientation="VERTICAL"/>
-                <Button mnemonicParsing="false" onAction="#loadSampleTradespace" text="Show Sample"/>
+                <Button mnemonicParsing="false" onAction="#loadTradespaceFromCsv" text="Show Sample"/>
             </ToolBar>
         </top>
     </BorderPane>
