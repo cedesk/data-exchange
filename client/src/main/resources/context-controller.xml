@@ -145,7 +145,9 @@
         <property name="guiService" ref="guiService"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ImportTradespaceFromCsvController" scope="prototype"/>
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ImportTradespaceFromCsvController" scope="prototype">
+        <property name="fileStorageService" ref="fileStorageService"/>
+    </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController" scope="prototype">
         <property name="guiService" ref="guiService"/>
