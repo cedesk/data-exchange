@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.demo;
 
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
@@ -31,6 +32,8 @@ public class ImportTradespaceFromCsvDemo extends AbstractApplicationContextDemo 
     public void demo(Stage primaryStage) {
         GuiService guiService = context.getBean(GuiService.class);
         ViewBuilder viewBuilder = guiService.createViewBuilder("Import CSV into the Tradespace", Views.IMPORT_TRADESPACE_FROM_CSV_VIEW);
+        viewBuilder.resizable(false);
+        viewBuilder.modality(Modality.APPLICATION_MODAL);
         viewBuilder.showAndWait();
     }
 }

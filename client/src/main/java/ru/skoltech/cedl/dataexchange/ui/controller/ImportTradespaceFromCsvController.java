@@ -20,7 +20,8 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -30,25 +31,26 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.collectingAndThen;
 
 /**
+ * Controller to import Tradespace from <i>*.csv<i/> files.
+ *
  * Created by Nikolay Groshkov on 28-Sep-17.
  */
-public class ImportTradespaceFromCsvController implements Initializable, Displayable {
+public class ImportTradespaceFromCsvController implements Initializable, Applicable, Displayable {
 
     private static final Logger logger = Logger.getLogger(ImportTradespaceFromCsvController.class);
 
@@ -61,7 +63,7 @@ public class ImportTradespaceFromCsvController implements Initializable, Display
     @FXML
     public TextArea fileLinesTextArea;
     @FXML
-    public TextField delimiterTextField;
+    public ComboBox<String> delimiterComboBox;
     @FXML
     public TextField qualifierTextField;
     @FXML
@@ -76,13 +78,14 @@ public class ImportTradespaceFromCsvController implements Initializable, Display
     private FileStorageService fileStorageService;
 
     private Stage ownerStage;
+    private EventHandler<Event> applyEventHandler;
+    private Map<String,Character> delimiters = new HashMap<>();
 
     private SimpleObjectProperty<File> fileProperty = new SimpleObjectProperty<>();
     private BooleanProperty fileReadProperty = new SimpleBooleanProperty();
     private ListProperty<String> fileLinesProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
     private ListProperty<String> fileLinesFilteredProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
     private ListProperty<String> columnsProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
-//    private ObjectProperty<ObservableList<String>> columnsProperty1 = new SimpleObjectProperty<>(FXCollections.emptyObservableList());
 
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
@@ -90,6 +93,12 @@ public class ImportTradespaceFromCsvController implements Initializable, Display
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        delimiters.put(",", ',');
+        delimiters.put(".", '.');
+        delimiters.put(":", ':');
+        delimiters.put("Tab", '\t');
+        delimiters.put("Space", ' ');
+
         firstRowSpinner.disableProperty().bind(fileProperty.isNull().or(fileReadProperty.not()));
 
         fileLinesFilteredProperty
@@ -103,9 +112,9 @@ public class ImportTradespaceFromCsvController implements Initializable, Display
                 fileLinesFilteredProperty));
 
         BooleanBinding validFileLinesBinding = Bindings.createBooleanBinding(() -> fileLinesTextArea.getText().trim().isEmpty(),
-                fileLinesTextArea.textProperty()).and(fileReadProperty);
+                fileLinesTextArea.textProperty()).and(fileReadProperty.not());
 
-        delimiterTextField.disableProperty().bind(validFileLinesBinding);
+        delimiterComboBox.disableProperty().bind(validFileLinesBinding);
         qualifierTextField.disableProperty().bind(validFileLinesBinding);
         figuresOfMeritListView.disableProperty().bind(validFileLinesBinding);
         epochsListView.disableProperty().bind(validFileLinesBinding);
@@ -116,16 +125,12 @@ public class ImportTradespaceFromCsvController implements Initializable, Display
                 return FXCollections.emptyObservableList();
             }
             String columnLine = fileLinesFilteredProperty.get(0);
-            String delimiterText = delimiterTextField.getText();
-            String qualifierText = qualifierTextField.getText();
-            char delimiter = delimiterText != null && !delimiterText.isEmpty() ? delimiterText.charAt(0) : ',';
-            char qualifier = qualifierText != null && !qualifierText.isEmpty() ? qualifierText.charAt(0) : '"';
-            CSVFormat format = CSVFormat.DEFAULT.withDelimiter(delimiter).withQuote(qualifier).withIgnoreHeaderCase(false);
+            CSVFormat format = createCSVFormat();
             CSVParser parser = CSVParser.parse(columnLine, format);
             List<String> headers = new ArrayList<>();
             parser.getRecords().get(0).iterator().forEachRemaining(headers::add);
             return FXCollections.observableList(headers);
-        }, fileLinesFilteredProperty, delimiterTextField.textProperty(), qualifierTextField.textProperty()));
+        }, fileLinesFilteredProperty, delimiterComboBox.getSelectionModel().selectedItemProperty(), qualifierTextField.textProperty()));
 
         figuresOfMeritListView.itemsProperty().bind(columnsProperty);
         figuresOfMeritListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -137,9 +142,27 @@ public class ImportTradespaceFromCsvController implements Initializable, Display
                 .or(descriptionListView.getSelectionModel().selectedItemProperty().isNull()));
     }
 
+    private CSVFormat createCSVFormat(){
+        String delimiterItem = delimiterComboBox.getSelectionModel().getSelectedItem();
+        Character delimiterChar = delimiters.get(delimiterItem);
+        char delimiter = delimiterChar != null ? delimiterChar : ',';
+        String qualifierText = qualifierTextField.getText();
+        char qualifier = qualifierText != null && !qualifierText.isEmpty() ? qualifierText.charAt(0) : '"';
+        return CSVFormat.DEFAULT.withDelimiter(delimiter).withQuote(qualifier);
+    }
+
     @Override
     public void display(Stage stage, WindowEvent windowEvent) {
         this.ownerStage = stage;
+    }
+
+    @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
+    public void cancel() {
+        ownerStage.close();
     }
 
     public void chooseCsvFile() {
@@ -159,8 +182,6 @@ public class ImportTradespaceFromCsvController implements Initializable, Display
         filePathTextField.textProperty().set(file.getAbsolutePath());
         fileProperty.set(file);
         this.readStringLines(file);
-
-
     }
 
     private void readStringLines(File file) {
@@ -179,11 +200,60 @@ public class ImportTradespaceFromCsvController implements Initializable, Display
         }
     }
 
-    public void importTradespace(ActionEvent actionEvent) {
-    }
+    public void importTradespace() {
+        try {
+            String[] figuresOfMeritColumns = figuresOfMeritListView.getSelectionModel().getSelectedItems().toArray(new String[0]);
+            String epochColumn = epochsListView.getSelectionModel().getSelectedItem();
+            String descriptionColumn = descriptionListView.getSelectionModel().getSelectedItem();
 
-    public void cancel() {
-        ownerStage.close();
+            List<FigureOfMeritDefinition> definitions = FigureOfMeritDefinition
+                    .buildFigureOfMeritDefinitions(figuresOfMeritColumns);
+
+            String[] headers = columnsProperty.get().toArray(new String[0]);
+            CSVFormat format = createCSVFormat().withSkipHeaderRecord(true).withHeader(headers);
+
+            String text = fileLinesFilteredProperty.stream().collect(Collectors.joining( "\n"));
+
+            CSVParser parser = CSVParser.parse(text, format);
+            List<CSVRecord> records = parser.getRecords();
+
+            Map<Integer, Epoch> epochMap = records.stream()
+                    .map(record -> Double.valueOf(record.get(epochColumn)).intValue())
+                    .distinct()
+                    .map(Epoch::new)
+                    .collect(Collectors.toMap(Epoch::getYear, epoch -> epoch));
+
+            List<Epoch> epochs = epochMap.values().stream()
+                    .sorted(Comparator.naturalOrder())
+                    .collect(Collectors.toList());
+
+            List<DesignPoint> designPoints = records.stream()
+                    .map(record -> {
+                        List<FigureOfMeritValue> values = definitions.stream()
+                                .map(figuresOfMerit -> {
+                                    String figuresOfMeritName = figuresOfMerit.getName();
+                                    Double value = Double.valueOf(record.get(figuresOfMeritName));
+                                    return new FigureOfMeritValue(figuresOfMerit, value);})
+                                .collect(Collectors.toList());
+                        String description = record.get(descriptionColumn);
+                        Integer year = Double.valueOf(record.get(epochColumn)).intValue();
+                        Epoch epoch =  epochMap.get(year);
+                        return new DesignPoint(description, epoch, values);})
+                    .collect(Collectors.toList());
+
+            MultitemporalTradespace multitemporalTradespace = new MultitemporalTradespace();
+            multitemporalTradespace.setDefinitions(definitions);
+            multitemporalTradespace.setEpochs(epochs);
+            multitemporalTradespace.setDesignPoints(designPoints);
+
+            if (applyEventHandler != null) {
+                Event event = new Event(multitemporalTradespace, null, null);
+                applyEventHandler.handle(event);
+            }
+            ownerStage.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

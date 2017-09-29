@@ -26,6 +26,7 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
@@ -200,8 +201,14 @@ public class TradespaceController implements Initializable {
         updateView();
     }
 
-    public void loadTradespaceFromCsv(ActionEvent actionEvent) {
+    public void loadTradespaceFromCsv() {
         ViewBuilder viewBuilder = guiService.createViewBuilder("Import CSV into the Tradespace", Views.IMPORT_TRADESPACE_FROM_CSV_VIEW);
+        viewBuilder.resizable(false);
+        viewBuilder.modality(Modality.APPLICATION_MODAL);
+        viewBuilder.applyEventHandler(event -> {
+            MultitemporalTradespace multitemporalTradespace = (MultitemporalTradespace) event.getSource();
+            this.setMultitemporalTradespace(multitemporalTradespace);
+        });
         viewBuilder.showAndWait();
     }
 

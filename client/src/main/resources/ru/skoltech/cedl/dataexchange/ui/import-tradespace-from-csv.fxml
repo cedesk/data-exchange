@@ -16,10 +16,12 @@
   ~ limitations under the License.
   -->
 
+<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane prefHeight="450.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ImportTradespaceFromCsvController">
+<?import java.lang.*?>
+<BorderPane prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ImportTradespaceFromCsvController">
     <center>
         <VBox spacing="10.0">
             <padding>
@@ -51,13 +53,12 @@
                     <TextField fx:id="filePathTextField" editable="false" prefWidth="330.0" />
                     <Button mnemonicParsing="false" onAction="#chooseCsvFile" text="Choose" />
                 </HBox>
-                <Spinner fx:id="firstRowSpinner" editable="true" prefWidth="80.0"
-                         GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <Spinner fx:id="firstRowSpinner" editable="true" prefWidth="80.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets left="5.0" />
                     </GridPane.margin>
                     <valueFactory>
-                        <SpinnerValueFactory.IntegerSpinnerValueFactory fx:id="firstRowSpinnerValueFactory" min="1" max="1"/>
+                        <SpinnerValueFactory.IntegerSpinnerValueFactory fx:id="firstRowSpinnerValueFactory" max="1" min="1" />
                     </valueFactory>
                 </Spinner>
             </GridPane>
@@ -81,10 +82,23 @@
                 </rowConstraints>
                 <Label prefHeight="17.0" prefWidth="65.0" text="Delimiter:" />
                 <Label text="Text qualifier:" GridPane.columnIndex="2" />
-                <TextField fx:id="delimiterTextField" alignment="CENTER_RIGHT" prefWidth="20.0" text="," GridPane.columnIndex="1" />
+                <ComboBox fx:id="delimiterComboBox" prefWidth="75.0" GridPane.columnIndex="1">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value=","/>
+                            <String fx:value="."/>
+                            <String fx:value=":" />
+                            <String fx:value="Tab" />
+                            <String fx:value="Space" />
+                        </FXCollections>
+                    </items>
+                    <value>
+                        <String fx:value="," />
+                    </value>
+                </ComboBox>
                 <TextField fx:id="qualifierTextField" alignment="CENTER_RIGHT" prefWidth="20.0" text="&quot;" GridPane.columnIndex="3" />
             </GridPane>
-            <GridPane hgap="10.0" prefHeight="140.0">
+            <GridPane hgap="10.0" prefHeight="180.0" prefWidth="680.0">
                 <columnConstraints>
                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -95,27 +109,27 @@
                 </rowConstraints>
                 <BorderPane prefHeight="200.0" prefWidth="200.0">
                     <top>
+                        <Label text="Choose Description (single choice):" BorderPane.alignment="TOP_LEFT" />
+                    </top>
+                    <center>
+                        <ListView fx:id="descriptionListView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                    </center>
+                </BorderPane>
+                <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+                    <top>
                         <Label text="Choose Figures of Merit (multi choice):" BorderPane.alignment="CENTER_LEFT" />
                     </top>
                     <center>
                         <ListView fx:id="figuresOfMeritListView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
                     </center>
                 </BorderPane>
-                <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+                <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
                     <top>
                         <Label text="Choose Epoch (single choice):" BorderPane.alignment="CENTER_LEFT" />
                     </top>
                     <center>
                         <ListView fx:id="epochsListView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
                     </center>
-                </BorderPane>
-                <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
-                    <top>
-                        <Label text="Choose Description (single choice):" BorderPane.alignment="TOP_LEFT" />
-                    </top>
-                    <center>
-                        <ListView fx:id="descriptionListView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
-                   </center>
                 </BorderPane>
             </GridPane>
         </VBox>
