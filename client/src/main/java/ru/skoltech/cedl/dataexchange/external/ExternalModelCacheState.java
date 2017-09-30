@@ -20,7 +20,7 @@ package ru.skoltech.cedl.dataexchange.external;
  * Enum specifies the state of the external model cache which is
  * defined by the interrelation of the data, stored in the repository
  * and in the file system.
- *
+ * <p>
  * Created by D.Knoll on 08.07.2015.
  */
 public enum ExternalModelCacheState {

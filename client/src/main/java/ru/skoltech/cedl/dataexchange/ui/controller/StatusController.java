@@ -72,12 +72,12 @@ public class StatusController implements Initializable {
         statusBarTextArea.textProperty().bind(
                 Bindings.createStringBinding(() -> statusLogger.messages().stream()
                         .map(pair -> "[" + pair.getRight().name() + "]: \t" + pair.getLeft())
-                        .collect(Collectors.joining( "\n")), statusLogger.lastMessageProperty()));
+                        .collect(Collectors.joining("\n")), statusLogger.lastMessageProperty()));
 
 //        statusBarTextArea.textProperty()
 //                .addListener((observable, oldValue, newValue) -> {
-                    // TODO: scroll to the end
-                    // statusBarTextArea.setScrollTop(Double.MAX_VALUE);
+        // TODO: scroll to the end
+        // statusBarTextArea.setScrollTop(Double.MAX_VALUE);
 //                });
     }
 }

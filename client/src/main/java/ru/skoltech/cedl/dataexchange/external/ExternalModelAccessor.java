@@ -26,7 +26,7 @@ import java.io.Flushable;
  * Changes takes place only after {@link Flushable#flush()} invocation.
  * Clients can explicitly close an accessor after use, implementations must release any acquired
  * resources in this case.
- *
+ * <p>
  * Created by D.Knoll on 23.07.2015.
  */
 public interface ExternalModelAccessor extends Flushable, Closeable {
@@ -46,7 +46,7 @@ public interface ExternalModelAccessor extends Flushable, Closeable {
      * inside the particular implementation.
      *
      * @param target defines an exact location to place a value inside particular implementation of accessor
-     * @param value a value
+     * @param value  a value
      * @throws ExternalModelException if access in impossible
      */
     void setValue(String target, Double value) throws ExternalModelException;

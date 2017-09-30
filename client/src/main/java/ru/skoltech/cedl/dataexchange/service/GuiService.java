@@ -66,7 +66,7 @@ public interface GuiService {
      * Load content of external resource file.
      *
      * @param resourceClass class, in relation to which required resource must be searched for
-     * @param filename a name of file
+     * @param filename      a name of file
      * @return content of resource
      */
     String loadResourceContent(Class resourceClass, String filename) throws Exception;

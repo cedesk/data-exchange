@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * Special hibernate event listener, which populate {@link Revision} fields
  * of flushed entities with {@link Revision} annotation with current revision number.
- *
+ * <p>
  * Created by Nikolay Groshkov on 25-Aug-17.
  */
 public class RevisionListener implements FlushEntityEventListener, PreInsertEventListener, PreUpdateEventListener, PreDeleteEventListener {

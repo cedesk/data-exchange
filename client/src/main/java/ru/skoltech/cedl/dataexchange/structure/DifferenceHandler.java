@@ -20,8 +20,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.skoltech.cedl.dataexchange.entity.*;
-import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
+import ru.skoltech.cedl.dataexchange.entity.Study;
+import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
@@ -99,7 +101,8 @@ public class DifferenceHandler {
     /**
      * Compare two studies and create a list of their differences.
      * <p>
-     * @param firstStudy first study to compare
+     *
+     * @param firstStudy  first study to compare
      * @param secondStudy second study to compare
      * @return list of differences
      */
@@ -181,6 +184,7 @@ public class DifferenceHandler {
     /**
      * The list current of differences to be merged, retaining only unmerged ones.
      * <p>
+     *
      * @return if at least one difference was merged
      */
     public boolean mergeCurrentDifferencesOntoFirst() throws MergeException {
@@ -200,6 +204,7 @@ public class DifferenceHandler {
     /**
      * The differences to be merged.
      * <p>
+     *
      * @param modelDifference to merge
      * @return <i>true</i> if merging was performed successfully, <i>false</i> if opposite
      * @throws MergeException in case of error
@@ -214,6 +219,7 @@ public class DifferenceHandler {
     /**
      * The list of current differences to be reverted, retaining only unmerged ones.
      * <p>
+     *
      * @return if at least one difference was reverted
      */
     public boolean revertCurrentDifferencesOnFirst() throws MergeException {
@@ -233,6 +239,7 @@ public class DifferenceHandler {
     /**
      * The differences to be reverted.
      * <p>
+     *
      * @param modelDifference to revert
      * @return <i>true</i> if reverting was performed successfully, <i>false</i> if opposite
      * @throws MergeException in case of error

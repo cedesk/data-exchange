@@ -22,9 +22,9 @@ import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by D.Knoll on 17.09.2015.
@@ -40,7 +40,7 @@ public class NodeDifference extends ModelDifference {
     private ModelNode node2;
 
     public NodeDifference(ModelNode node1, ModelNode node2, String attribute, ChangeType changeType,
-                           ChangeLocation changeLocation, String value1, String value2) {
+                          ChangeLocation changeLocation, String value1, String value2) {
         this.node1 = node1;
         this.node2 = node2;
         this.attribute = attribute;

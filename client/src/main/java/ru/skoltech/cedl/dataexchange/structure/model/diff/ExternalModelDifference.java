@@ -49,8 +49,8 @@ public class ExternalModelDifference extends ModelDifference {
     }
 
     public ExternalModelDifference(ExternalModel externalModel1, ExternalModel externalModel2, String name,
-                                    ChangeType changeType, ChangeLocation changeLocation,
-                                    String value1, String value2) {
+                                   ChangeType changeType, ChangeLocation changeLocation,
+                                   String value1, String value2) {
         this.parent = externalModel1.getParent();
         this.externalModel1 = externalModel1;
         this.externalModel2 = externalModel2;

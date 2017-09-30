@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 
 /**
  * Collect messages for display in main panel status bar.
- *
+ * <p>
  * Created by D.Knoll on 28.03.2015.
  */
 public class StatusLogger {
@@ -110,7 +110,7 @@ public class StatusLogger {
     private void log(String message, LogType logType) {
         if (logType == LogType.ERROR) {
             logger.error(message);
-        } else if (logType == LogType.WARN){
+        } else if (logType == LogType.WARN) {
             logger.warn(message);
         } else {
             logger.info(message);

@@ -53,6 +53,7 @@ public class ConsistencyController implements Initializable {
     public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
         this.externalModelFileHandler = externalModelFileHandler;
     }
+
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }

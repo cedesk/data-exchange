@@ -369,7 +369,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         editListener.accept(parameterModel);
     }
 
-    private void applyParameterUpdateFromExternalModel(){
+    private void applyParameterUpdateFromExternalModel() {
         logger.debug("update parameter value from model");
         externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
         ParameterModelUpdateState updateState = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
@@ -442,7 +442,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         }
     }
 
-    private void computeDifferences(){
+    private void computeDifferences() {
         try {
             Future<List<ModelDifference>> feature = project.loadRepositoryStudy();
             List<ModelDifference> modelDifferences = feature.get();

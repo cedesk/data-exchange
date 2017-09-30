@@ -23,7 +23,10 @@ import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,7 +45,7 @@ public class ParameterDifference extends ModelDifference {
     private List<String> values2;
 
     public ParameterDifference(ParameterModel parameter1, ParameterModel parameter2, ChangeType changeType,
-                                ChangeLocation changeLocation, List<String> attributes, List<String> values1, List<String> values2) {
+                               ChangeLocation changeLocation, List<String> attributes, List<String> values1, List<String> values2) {
         this.parent = parameter1.getParent();
         this.parameter1 = parameter1;
         this.parameter2 = parameter2;

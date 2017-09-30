@@ -61,7 +61,7 @@ public class AboutController implements Initializable {
             webEngine.getLoadWorker().exceptionProperty().addListener((observableValue, oldThrowable, newThrowable) ->
                     logger.error("Load exception ", newThrowable));
             webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
-                if( newValue != Worker.State.SUCCEEDED ) {
+                if (newValue != Worker.State.SUCCEEDED) {
                     return;
                 }
                 NodeList nodeList = webEngine.getDocument().getElementsByTagName("a");
@@ -70,7 +70,7 @@ public class AboutController implements Initializable {
                     eventTarget.addEventListener("click", evt -> {
                         try {
                             evt.preventDefault();
-                            String href = ((HTMLAnchorElement)evt.getCurrentTarget()).getHref();
+                            String href = ((HTMLAnchorElement) evt.getCurrentTarget()).getHref();
                             Desktop.getDesktop().browse(new URI(href));
                         } catch (URISyntaxException | IOException e) {
                             logger.error("Cannot open external link: " + e.getMessage(), e);

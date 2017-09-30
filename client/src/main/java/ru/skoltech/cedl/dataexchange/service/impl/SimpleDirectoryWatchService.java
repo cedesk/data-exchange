@@ -199,7 +199,7 @@ public class SimpleDirectoryWatchService implements DirectoryWatchService, Runna
 
     @SuppressWarnings("unchecked")
     private static <T> WatchEvent<T> cast(WatchEvent<?> event) {
-        return (WatchEvent<T>)event;
+        return (WatchEvent<T>) event;
     }
 
     private static PathMatcher matcherForGlobExpression(String globPattern) {
