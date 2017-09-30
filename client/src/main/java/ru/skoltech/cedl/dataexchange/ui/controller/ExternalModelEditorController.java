@@ -26,6 +26,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -49,6 +50,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.logging.ActionLogger.ActionType.*;
 
@@ -76,46 +78,45 @@ public class ExternalModelEditorController implements Initializable {
 
     private Consumer<ExternalModel> externalModelReloadConsumer;
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
         this.externalModelAccessorFactory = externalModelAccessorFactory;
     }
 
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
+    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
+        this.externalModelFileStorageService = externalModelFileStorageService;
+    }
+
+    public void setExternalModelReloadConsumer(Consumer<ExternalModel> externalModelReloadConsumer) {
+        this.externalModelReloadConsumer = externalModelReloadConsumer;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
     }
 
-    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
-        this.externalModelFileStorageService = externalModelFileStorageService;
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
+    public void setModelNode(ModelNode modelNode) {
+        this.modelNode = modelNode;
+        updateView();
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public void setStatusLogger(StatusLogger statusLogger) {
         this.statusLogger = statusLogger;
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-
-    }
-
     public void setVisible(boolean visible) {
         externalModelViewContainer.setVisible(visible);
-    }
-
-    public void setModelNode(ModelNode modelNode) {
-        this.modelNode = modelNode;
-        updateView();
     }
 
     public void addExternalModel() {
@@ -124,7 +125,7 @@ public class ExternalModelEditorController implements Initializable {
                     "Unable to attach an external model, as long as the project has not been saved yet!");
             return;
         }
-        File externalModelFile = Dialogues.chooseExternalModelFile(fileStorageService.applicationDirectory());
+        File externalModelFile = chooseExternalModelFile(fileStorageService.applicationDirectory());
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
             if (externalModelFile.isFile() && externalModelAccessorFactory.hasAccessor(fileName)) {
@@ -155,6 +156,31 @@ public class ExternalModelEditorController implements Initializable {
         }
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+    }
+
+    public void reloadExternalModels() {
+        if (externalModelReloadConsumer == null) {
+            return;
+        }
+
+        modelNode.getExternalModels().forEach(externalModel -> externalModelReloadConsumer.accept(externalModel));
+    }
+
+    private File chooseExternalModelFile(File applicationDirectory) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select model file.");
+        fileChooser.setInitialDirectory(applicationDirectory);
+        fileChooser.getExtensionFilters().addAll(
+                externalModelAccessorFactory.getFileDescriptionsAndExtensions()
+                        .stream().map(descriptionAndExtension
+                        -> new FileChooser.ExtensionFilter(descriptionAndExtension.getLeft(), descriptionAndExtension.getRight()))
+                        .collect(Collectors.toList()));
+        return fileChooser.showOpenDialog(null);
+    }
+
     private void deleteExternalModel(ActionEvent actionEvent) {
         Button deleteButton = (Button) actionEvent.getSource();
         Pair pair = (Pair) deleteButton.getUserData();
@@ -183,18 +209,6 @@ public class ExternalModelEditorController implements Initializable {
         }
     }
 
-    public void reloadExternalModels() {
-        if (externalModelReloadConsumer == null) {
-            return;
-        }
-
-        modelNode.getExternalModels().forEach(externalModel -> externalModelReloadConsumer.accept(externalModel));
-    }
-
-    public void setExternalModelReloadConsumer(Consumer<ExternalModel> externalModelReloadConsumer) {
-        this.externalModelReloadConsumer = externalModelReloadConsumer;
-    }
-
     private void exchangeExternalModel(ActionEvent actionEvent) {
         if (!project.isStudyInRepository()) {
             Dialogues.showError("Save Project", "Unable to attach an external model, "
@@ -204,7 +218,7 @@ public class ExternalModelEditorController implements Initializable {
         Button exchangeButton = (Button) actionEvent.getSource();
         ExternalModel externalModel = (ExternalModel) exchangeButton.getUserData();
 
-        File externalModelFile = Dialogues.chooseExternalModelFile(fileStorageService.applicationDirectory());
+        File externalModelFile = chooseExternalModelFile(fileStorageService.applicationDirectory());
         String oldFileName = externalModel.getName();
         String oldNodePath = externalModel.getNodePath();
         if (externalModelFile != null) {
@@ -230,15 +244,6 @@ public class ExternalModelEditorController implements Initializable {
         }
     }
 
-    private void updateView() {
-        ObservableList<Node> externalModelViewerList = externalModelViewContainer.getChildren();
-        externalModelViewerList.clear();
-        List<ExternalModel> externalModels = modelNode.getExternalModels();
-        for (ExternalModel externalModel : externalModels) {
-            this.renderExternalModelView(externalModel);
-        }
-    }
-
     private void renderExternalModelView(ExternalModel externalModel) {
         Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
         removeButton.setTooltip(new Tooltip("Remove external model"));
@@ -255,6 +260,15 @@ public class ExternalModelEditorController implements Initializable {
         removeButton.setUserData(Pair.of(externalModel, extModRow));
         exchangeButton.setUserData(externalModel);
         externalModelViewContainer.getChildren().add(extModRow);
+    }
+
+    private void updateView() {
+        ObservableList<Node> externalModelViewerList = externalModelViewContainer.getChildren();
+        externalModelViewerList.clear();
+        List<ExternalModel> externalModels = modelNode.getExternalModels();
+        for (ExternalModel externalModel : externalModels) {
+            this.renderExternalModelView(externalModel);
+        }
     }
 }
 

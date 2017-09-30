@@ -50,13 +50,6 @@ public class Dialogues {
         return fileChooser.showOpenDialog(null);
     }
 
-    public static File chooseExternalModelFile(File applicationDirectory) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(applicationDirectory);
-        fileChooser.setTitle("Select model file.");
-        return fileChooser.showOpenDialog(null);
-    }
-
     public static Optional<String> inputModelNodeName(String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
         dialog.setTitle("Node Name");
@@ -105,8 +98,8 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
-    public static Optional<String> inputEpochs() {
-        TextInputDialog dialog = new TextInputDialog();
+    public static Optional<String> inputEpochs(String epochs) {
+        TextInputDialog dialog = new TextInputDialog(epochs);
         dialog.setTitle("Epochs");
         dialog.setHeaderText("Please insert the years of all Epochs.");
         dialog.setContentText("Years separated by comma");
