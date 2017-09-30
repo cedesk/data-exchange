@@ -29,9 +29,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.StringConverter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.skoltech.cedl.dataexchange.TradespaceExplorerApplication;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
@@ -46,10 +46,7 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -131,22 +128,42 @@ public class TradespaceController implements Initializable {
         dp.setValues(fomValues);
         dp.setDescription("from study model"); // TODO: add revision ... tradespaceRepository.getCurrentRevisionNumber()
         multitemporalTradespace.getDesignPoints().add(dp);
+        tradespaceView.updateView();
     }
 
     public void editEpochs(ActionEvent actionEvent) {
-        Optional<String> epochStringOptional = Dialogues.inputEpochs();
+        Optional<String> epochStringOptional = Dialogues.inputEpochs(multitemporalTradespace.getEpochsFormatted());
         if (epochStringOptional.isPresent()) {
+            List<Epoch> epochList = multitemporalTradespace.getEpochs();
+            List<Epoch> newEpochList = new ArrayList<>();
             String epochString = epochStringOptional.get();
-            // TODO: add validation
-            String[] epochs = epochString.split(",");
-            Integer[] years = new Integer[epochs.length];
-            for (int i = 0; i < epochs.length; i++) {
-                years[i] = Integer.valueOf(epochs[i]);
+            // TODO: add input validation
+            String[] yearStrings = epochString.split(",");
+            for (String yearString : yearStrings) {
+                int year = Integer.valueOf(yearString.trim());
+                Epoch epoch = new Epoch(year);
+                if (epochList.contains(epoch)) { // such an epoch already exists
+                    epoch = epochList.get(epochList.indexOf(epoch)); // reuse same object
+                }
+                newEpochList.add(epoch);
             }
-            // TODO: not replace existing epochs, but keep existing and add and remove accordingly
-            multitemporalTradespace.setEpochs(Epoch.buildEpochs(years));
-            epochText.setText(multitemporalTradespace.getEpochs().stream().map(Epoch::asText).collect(Collectors.joining(", ")));
+            if (!CollectionUtils.isEqualCollection(epochList, newEpochList)) {
+                Dialogues.showWarning("Changing Epochs", "Removing epochs harms data consistency!");
+                multitemporalTradespace.setEpochs(newEpochList);
+            }
+            epochText.setText(multitemporalTradespace.getEpochsFormatted());
         }
+    }
+
+    public void importTadespaceFromCSV() {
+        ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from CSV File", Views.IMPORT_TRADESPACE_FROM_CSV_VIEW);
+        viewBuilder.resizable(false);
+        viewBuilder.modality(Modality.APPLICATION_MODAL);
+        viewBuilder.applyEventHandler(event -> {
+            MultitemporalTradespace multitemporalTradespace = (MultitemporalTradespace) event.getSource();
+            this.setMultitemporalTradespace(multitemporalTradespace);
+        });
+        viewBuilder.showAndWait();
     }
 
     @Override
@@ -201,24 +218,14 @@ public class TradespaceController implements Initializable {
         updateView();
     }
 
-    public void loadTradespaceFromCsv() {
-        ViewBuilder viewBuilder = guiService.createViewBuilder("Import CSV into the Tradespace", Views.IMPORT_TRADESPACE_FROM_CSV_VIEW);
-        viewBuilder.resizable(false);
-        viewBuilder.modality(Modality.APPLICATION_MODAL);
-        viewBuilder.applyEventHandler(event -> {
-            MultitemporalTradespace multitemporalTradespace = (MultitemporalTradespace) event.getSource();
-            this.setMultitemporalTradespace(multitemporalTradespace);
-        });
-        viewBuilder.showAndWait();
-    }
-
+    /*
     public void loadSampleTradespace(ActionEvent actionEvent) {
         URL url = TradespaceExplorerApplication.class.getResource("/GPUdataset_2013-2016.csv");
         File file = new File(url.getFile());
         MultitemporalTradespace multitemporalTradespace = TradespaceFactory.readValuesForEpochFromCSV(file);
         logger.info("tradespace loaded successfully");
         setMultitemporalTradespace(multitemporalTradespace);
-    }
+    }*/
 
     public void loadTradespace(ActionEvent actionEvent) {
         MultitemporalTradespace newTradespace = tradespaceRepository.findOne(studyId);

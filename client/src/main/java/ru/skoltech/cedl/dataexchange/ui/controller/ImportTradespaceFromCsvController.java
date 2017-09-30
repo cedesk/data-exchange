@@ -41,13 +41,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.collectingAndThen;
 
 /**
  * Controller to import Tradespace from <i>*.csv<i/> files.
- *
+ * <p>
  * Created by Nikolay Groshkov on 28-Sep-17.
  */
 public class ImportTradespaceFromCsvController implements Initializable, Applicable, Displayable {
@@ -79,7 +80,7 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
 
     private Stage ownerStage;
     private EventHandler<Event> applyEventHandler;
-    private Map<String,Character> delimiters = new HashMap<>();
+    private Map<String, Character> delimiters = new HashMap<>();
 
     private SimpleObjectProperty<File> fileProperty = new SimpleObjectProperty<>();
     private BooleanProperty fileReadProperty = new SimpleBooleanProperty();
@@ -92,10 +93,100 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
     }
 
     @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
+    public void cancel() {
+        ownerStage.close();
+    }
+
+    public void chooseCsvFile() {
+        File applicationDirectory = fileStorageService.applicationDirectory();
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(applicationDirectory);
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Comma Separated Value Files (*.csv)", "*.csv"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+        fileChooser.setTitle("Select model file.");
+        File file = fileChooser.showOpenDialog(ownerStage);
+        if (file == null) {
+            return;
+        }
+        filePathTextField.textProperty().set(file.getAbsolutePath());
+        fileProperty.set(file);
+        this.readStringLines(file);
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
+    public void importTradespace() {
+        try {
+            String[] figuresOfMeritColumns = figuresOfMeritListView.getSelectionModel().getSelectedItems().toArray(new String[0]);
+            String epochColumn = epochsListView.getSelectionModel().getSelectedItem();
+            String descriptionColumn = descriptionListView.getSelectionModel().getSelectedItem();
+
+            List<FigureOfMeritDefinition> definitions = FigureOfMeritDefinition
+                    .buildFigureOfMeritDefinitions(figuresOfMeritColumns);
+
+            String[] headers = columnsProperty.get().toArray(new String[0]);
+            CSVFormat format = createCSVFormat().withSkipHeaderRecord(true).withHeader(headers);
+
+            String text = fileLinesFilteredProperty.stream().collect(Collectors.joining("\n"));
+
+            CSVParser parser = CSVParser.parse(text, format);
+            List<CSVRecord> records = parser.getRecords();
+
+            Map<Integer, Epoch> epochMap = records.stream()
+                    .map(record -> Integer.valueOf(record.get(epochColumn)))
+                    .distinct()
+                    .map(Epoch::new)
+                    .collect(Collectors.toMap(Epoch::getYear, Function.identity()));
+
+            List<Epoch> epochs = epochMap.values().stream()
+                    .sorted(Comparator.naturalOrder())
+                    .collect(Collectors.toList());
+
+            List<DesignPoint> designPoints = records.stream()
+                    .map(record -> {
+                        List<FigureOfMeritValue> values = definitions.stream()
+                                .map(figuresOfMerit -> {
+                                    String figuresOfMeritName = figuresOfMerit.getName();
+                                    Double value = Double.valueOf(record.get(figuresOfMeritName));
+                                    return new FigureOfMeritValue(figuresOfMerit, value);
+                                })
+                                .collect(Collectors.toList());
+                        String description = record.get(descriptionColumn);
+                        Integer year = Double.valueOf(record.get(epochColumn)).intValue();
+                        Epoch epoch = epochMap.get(year);
+                        return new DesignPoint(description, epoch, values);
+                    })
+                    .collect(Collectors.toList());
+
+            MultitemporalTradespace multitemporalTradespace = new MultitemporalTradespace();
+            multitemporalTradespace.setDefinitions(definitions);
+            multitemporalTradespace.setEpochs(epochs);
+            multitemporalTradespace.setDesignPoints(designPoints);
+
+            if (applyEventHandler != null) {
+                Event event = new Event(multitemporalTradespace, null, null);
+                applyEventHandler.handle(event);
+            }
+            ownerStage.close();
+        } catch (IOException e) {
+            logger.error("Error parsing CSV file", e);
+        }
+    }
+
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
-        delimiters.put(",", ',');
-        delimiters.put(".", '.');
-        delimiters.put(":", ':');
+        delimiters.put("Comma", ',');
+        delimiters.put("Semicolon", ';');
         delimiters.put("Tab", '\t');
         delimiters.put("Space", ' ');
 
@@ -105,11 +196,11 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
                 .bind(Bindings.createObjectBinding(() -> fileLinesProperty.get().stream()
                                 .skip(firstRowSpinner.getValue() - 1)
                                 .collect(collectingAndThen(Collectors.toList(), FXCollections::observableArrayList)),
-                fileLinesProperty, firstRowSpinner.valueProperty()));
+                        fileLinesProperty, firstRowSpinner.valueProperty()));
         fileLinesTextArea.textProperty()
                 .bind(Bindings.createStringBinding(() -> fileLinesFilteredProperty.get().stream()
-                                .collect(Collectors.joining( "\n")),
-                fileLinesFilteredProperty));
+                                .collect(Collectors.joining("\n")),
+                        fileLinesFilteredProperty));
 
         BooleanBinding validFileLinesBinding = Bindings.createBooleanBinding(() -> fileLinesTextArea.getText().trim().isEmpty(),
                 fileLinesTextArea.textProperty()).and(fileReadProperty.not());
@@ -142,46 +233,13 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
                 .or(descriptionListView.getSelectionModel().selectedItemProperty().isNull()));
     }
 
-    private CSVFormat createCSVFormat(){
+    private CSVFormat createCSVFormat() {
         String delimiterItem = delimiterComboBox.getSelectionModel().getSelectedItem();
         Character delimiterChar = delimiters.get(delimiterItem);
         char delimiter = delimiterChar != null ? delimiterChar : ',';
         String qualifierText = qualifierTextField.getText();
         char qualifier = qualifierText != null && !qualifierText.isEmpty() ? qualifierText.charAt(0) : '"';
         return CSVFormat.DEFAULT.withDelimiter(delimiter).withQuote(qualifier);
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    @Override
-    public void setOnApply(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
-    }
-
-    public void cancel() {
-        ownerStage.close();
-    }
-
-    public void chooseCsvFile() {
-        File applicationDirectory = fileStorageService.applicationDirectory();
-
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(applicationDirectory);
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("CSV", "*.csv"),
-                new FileChooser.ExtensionFilter("All Files", "*.*")
-        );
-        fileChooser.setTitle("Select model file.");
-        File file = fileChooser.showOpenDialog(ownerStage);
-        if (file == null) {
-            return;
-        }
-        filePathTextField.textProperty().set(file.getAbsolutePath());
-        fileProperty.set(file);
-        this.readStringLines(file);
     }
 
     private void readStringLines(File file) {
@@ -194,65 +252,9 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
             logger.error(e.getMessage(), e);
             fileReadProperty.set(false);
             List<String> lines = new LinkedList<>();
-            lines.add("Cannot read a file: " + file.getAbsolutePath());
+            lines.add("Cannot read the file: " + file.getAbsolutePath());
             lines.add(e.getMessage());
             fileLinesProperty.setValue(FXCollections.observableList(lines));
-        }
-    }
-
-    public void importTradespace() {
-        try {
-            String[] figuresOfMeritColumns = figuresOfMeritListView.getSelectionModel().getSelectedItems().toArray(new String[0]);
-            String epochColumn = epochsListView.getSelectionModel().getSelectedItem();
-            String descriptionColumn = descriptionListView.getSelectionModel().getSelectedItem();
-
-            List<FigureOfMeritDefinition> definitions = FigureOfMeritDefinition
-                    .buildFigureOfMeritDefinitions(figuresOfMeritColumns);
-
-            String[] headers = columnsProperty.get().toArray(new String[0]);
-            CSVFormat format = createCSVFormat().withSkipHeaderRecord(true).withHeader(headers);
-
-            String text = fileLinesFilteredProperty.stream().collect(Collectors.joining( "\n"));
-
-            CSVParser parser = CSVParser.parse(text, format);
-            List<CSVRecord> records = parser.getRecords();
-
-            Map<Integer, Epoch> epochMap = records.stream()
-                    .map(record -> Double.valueOf(record.get(epochColumn)).intValue())
-                    .distinct()
-                    .map(Epoch::new)
-                    .collect(Collectors.toMap(Epoch::getYear, epoch -> epoch));
-
-            List<Epoch> epochs = epochMap.values().stream()
-                    .sorted(Comparator.naturalOrder())
-                    .collect(Collectors.toList());
-
-            List<DesignPoint> designPoints = records.stream()
-                    .map(record -> {
-                        List<FigureOfMeritValue> values = definitions.stream()
-                                .map(figuresOfMerit -> {
-                                    String figuresOfMeritName = figuresOfMerit.getName();
-                                    Double value = Double.valueOf(record.get(figuresOfMeritName));
-                                    return new FigureOfMeritValue(figuresOfMerit, value);})
-                                .collect(Collectors.toList());
-                        String description = record.get(descriptionColumn);
-                        Integer year = Double.valueOf(record.get(epochColumn)).intValue();
-                        Epoch epoch =  epochMap.get(year);
-                        return new DesignPoint(description, epoch, values);})
-                    .collect(Collectors.toList());
-
-            MultitemporalTradespace multitemporalTradespace = new MultitemporalTradespace();
-            multitemporalTradespace.setDefinitions(definitions);
-            multitemporalTradespace.setEpochs(epochs);
-            multitemporalTradespace.setDesignPoints(designPoints);
-
-            if (applyEventHandler != null) {
-                Event event = new Event(multitemporalTradespace, null, null);
-                applyEventHandler.handle(event);
-            }
-            ownerStage.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

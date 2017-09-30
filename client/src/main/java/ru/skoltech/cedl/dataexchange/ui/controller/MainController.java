@@ -572,13 +572,13 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openChangeHistoryAnalysis() {
-        ViewBuilder changeHistoryAnalysisViewBuilder = guiService.createViewBuilder("Change History Analyis [BETA]", Views.CHANGE_HISTORY_ANALYSIS_VIEW);
+        ViewBuilder changeHistoryAnalysisViewBuilder = guiService.createViewBuilder("Change History Analyis", Views.CHANGE_HISTORY_ANALYSIS_VIEW);
         changeHistoryAnalysisViewBuilder.ownerWindow(ownerStage);
         changeHistoryAnalysisViewBuilder.show();
     }
 
     public void openTradespaceExplorer() {
-        ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder("Tradespace Explorer [BETA]", Views.TRADESPACE_VIEW);
+        ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder("Tradespace Explorer", Views.TRADESPACE_VIEW);
         tradespaceViewBuilder.ownerWindow(ownerStage);
         tradespaceViewBuilder.show();
     }
