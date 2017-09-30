@@ -26,7 +26,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -120,7 +119,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
         this.statusLogger = statusLogger;
     }
 
-    public void addDiscipline(ActionEvent actionEvent) {
+    public void addDiscipline() {
         Optional<String> disciplineNameChoice = Dialogues.inputDisciplineName("new-discipline");
         if (disciplineNameChoice.isPresent()) {
             String disciplineName = disciplineNameChoice.get();
@@ -142,7 +141,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
         updateDisciplineTable();
     }
 
-    public void addDisciplineSubsystem(ActionEvent actionEvent) {
+    public void addDisciplineSubsystem() {
         SubSystemModel subsystem = (SubSystemModel) subsystemsAvailableList.getSelectionModel().getSelectedItem();
         Discipline discipline = getSelectedDiscipline();
         userRoleManagementService.addDisciplineSubsystem(project.getUserRoleManagement(), discipline, subsystem);
@@ -150,7 +149,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
         changed.setValue(true);
     }
 
-    public void addUserRole(ActionEvent actionEvent) {
+    public void addUserRole() {
         User user = getSelectedUser();
         Discipline discipline = getSelectedDiscipline();
         Objects.requireNonNull(user, "user must not be null");
@@ -171,7 +170,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
         project.markStudyModified();
     }
 
-    public void deleteDiscipline(ActionEvent actionEvent) {
+    public void deleteDiscipline() {
         Discipline selectedDiscipline = getSelectedDiscipline();
         Objects.requireNonNull(selectedDiscipline, "no discipline in table view");
         userRoleManagementService.removeDiscipline(project.getUserRoleManagement(), selectedDiscipline);
@@ -180,14 +179,14 @@ public class UserRoleManagementController implements Initializable, Closeable {
         updateDisciplineTable();
     }
 
-    public void deleteDisciplineSubsystem(ActionEvent actionEvent) {
+    public void deleteDisciplineSubsystem() {
         DisciplineSubSystem disciplineSubsystem = (DisciplineSubSystem) subsystemsAssignedList.getSelectionModel().getSelectedItem();
         project.getUserRoleManagement().getDisciplineSubSystems().remove(disciplineSubsystem);
         updateSubsystems(getSelectedDiscipline());
         changed.setValue(true);
     }
 
-    public void deleteUserRole(ActionEvent actionEvent) {
+    public void deleteUserRole() {
         UserDiscipline selectedUserDiscipline = (UserDiscipline) userRolesAssignedList.getSelectionModel().getSelectedItem();
         project.getUserRoleManagement().getUserDisciplines().remove(selectedUserDiscipline);
         updateUserDisciplines(getSelectedDiscipline());

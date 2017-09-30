@@ -18,7 +18,6 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.SnapshotParameters;
@@ -64,11 +63,11 @@ public class ChangeAnalysisController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Platform.runLater(() -> {
-            refreshView(null);
+            refreshView();
         });
     }
 
-    public void refreshView(ActionEvent actionEvent) {
+    public void refreshView() {
         try {
             long systemId = project.getSystemModel().getId();
             List<ParameterChange> changes = parameterModelRepository.findAllParameterChangesOfSystem(systemId);
@@ -80,7 +79,7 @@ public class ChangeAnalysisController implements Initializable {
         }
     }
 
-    public void saveDiagram(ActionEvent actionEvent) {
+    public void saveDiagram() {
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
         fc.setInitialFileName(project.getProjectName() + "_ChangeHistory_" + Utils.getFormattedDateAndTime());

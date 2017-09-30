@@ -18,7 +18,6 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.collections.FXCollections;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -116,7 +115,7 @@ public class TradespaceController implements Initializable {
         this.tradespaceToStudyBridge = tradespaceModelBridge;
     }
 
-    public void addDesignPoint(ActionEvent actionEvent) {
+    public void addDesignPoint() {
         DesignPoint dp = new DesignPoint();
         // TODO validate epoch not null
         dp.setEpoch(epochChoice.getValue());
@@ -131,7 +130,7 @@ public class TradespaceController implements Initializable {
         tradespaceView.updateView();
     }
 
-    public void editEpochs(ActionEvent actionEvent) {
+    public void editEpochs() {
         Optional<String> epochStringOptional = Dialogues.inputEpochs(multitemporalTradespace.getEpochsFormatted());
         if (epochStringOptional.isPresent()) {
             List<Epoch> epochList = multitemporalTradespace.getEpochs();
@@ -211,15 +210,15 @@ public class TradespaceController implements Initializable {
         figuresOfMeritEditorPane.setContent(figuresOfMeritEditorNode);
 
         if (applicationSettings.isProjectLastAutoload()) {
-            loadTradespace(null);
+            loadTradespace();
         } else {
-            newTradespace(null);
+            newTradespace();
         }
         updateView();
     }
 
     /*
-    public void loadSampleTradespace(ActionEvent actionEvent) {
+    public void loadSampleTradespace() {
         URL url = TradespaceExplorerApplication.class.getResource("/GPUdataset_2013-2016.csv");
         File file = new File(url.getFile());
         MultitemporalTradespace multitemporalTradespace = TradespaceFactory.readValuesForEpochFromCSV(file);
@@ -227,28 +226,28 @@ public class TradespaceController implements Initializable {
         setMultitemporalTradespace(multitemporalTradespace);
     }*/
 
-    public void loadTradespace(ActionEvent actionEvent) {
+    public void loadTradespace() {
         MultitemporalTradespace newTradespace = tradespaceRepository.findOne(studyId);
         if (newTradespace != null) {
             logger.info("tradespace loaded successfully");
             setMultitemporalTradespace(newTradespace);
         } else {
-            newTradespace(null);
+            newTradespace();
         }
     }
 
-    public void newTradespace(ActionEvent actionEvent) {
+    public void newTradespace() {
         MultitemporalTradespace newTradespace = new MultitemporalTradespace();
         newTradespace.setId(studyId);
         logger.info("new tradespace initialized");
         setMultitemporalTradespace(newTradespace);
     }
 
-    public void refreshChartView(ActionEvent actionEvent) {
+    public void refreshChartView() {
         updateTradespaceView();
     }
 
-    public void saveDiagram(ActionEvent actionEvent) {
+    public void saveDiagram() {
         String xAxisName = tradespaceView.getChartDefinition().getAxis1().getName();
         String yAxisName = tradespaceView.getChartDefinition().getAxis2().getName();
 
@@ -269,12 +268,12 @@ public class TradespaceController implements Initializable {
         }
     }
 
-    public void saveTradespace(ActionEvent actionEvent) {
+    public void saveTradespace() {
         tradespaceRepository.saveAndFlush(multitemporalTradespace);
         logger.info("tradespace saved successfully");
     }
 
-    public void updateFigureOfMeritValues(ActionEvent actionEvent) {
+    public void updateFigureOfMeritValues() {
         List<String> fomTexts = new LinkedList<>();
         for (FigureOfMeritDefinition figureOfMeritDefinition : multitemporalTradespace.getDefinitions()) {
             Double parameterValue = tradespaceToStudyBridge.getParameterValue(figureOfMeritDefinition.getParameterModelLink());
@@ -312,6 +311,6 @@ public class TradespaceController implements Initializable {
                 epochChoice.setValue(multitemporalTradespace.getEpochs().get(0));
             }
         }
-        updateFigureOfMeritValues(null);
+        updateFigureOfMeritValues();
     }
 }

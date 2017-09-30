@@ -21,7 +21,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.SnapshotParameters;
@@ -103,22 +102,22 @@ public class DependencyController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         sortOrderGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                refreshView(null);
+                refreshView();
             }
         });
         sourceGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                refreshView(null);
+                refreshView();
             }
         });
         Platform.runLater(() -> {
-            refreshView(null);
+            refreshView();
             registerListeners();
         });
 
     }
 
-    public void refreshView(ActionEvent actionEvent) {
+    public void refreshView() {
         DependencyModel dependencyModel;
         SystemModel systemModel;
         if (sourceGroup.getSelectedToggle() == sourceLocalRadio) {
@@ -155,7 +154,7 @@ public class DependencyController implements Initializable {
 
     }
 
-    public void saveDiagram(ActionEvent actionEvent) {
+    public void saveDiagram() {
         FileChooser fc = new FileChooser();
         //fc.setInitialDirectory(new File("res/maps"));
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
@@ -177,7 +176,7 @@ public class DependencyController implements Initializable {
     private void registerListeners() {
         ChangeListener<Boolean> listener = (observable, oldValue, newValue) -> {
             if (sourceGroup.getSelectedToggle() == sourceRepositoryRadio) {
-                refreshView(null);
+                refreshView();
             }
         };
         repositoryNewer = Bindings.isNotEmpty(differenceHandler.modelDifferences());
