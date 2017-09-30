@@ -69,9 +69,7 @@ public class ParameterChange implements Serializable {
         if (!revisionId.equals(that.revisionId)) return false;
         if (!parameterId.equals(that.parameterId)) return false;
         if (!valueLinkId.equals(that.valueLinkId)) return false;
-        if (!nodeId.equals(that.nodeId)) return false;
-
-        return true;
+        return nodeId.equals(that.nodeId);
     }
 
     @Override

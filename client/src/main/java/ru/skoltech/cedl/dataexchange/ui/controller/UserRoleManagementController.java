@@ -252,7 +252,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
         if (project.getUserRoleManagement() != null) {
             List<Discipline> disciplines = project.getUserRoleManagement().getDisciplines();
             ObservableList<Discipline> disciplineList = FXCollections.observableList(disciplines);
-            disciplineList.sort(Comparator.<Discipline>naturalOrder());
+            disciplineList.sort(Comparator.naturalOrder());
             disciplinesTable.setItems(disciplineList);
         }
     }
@@ -275,7 +275,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
                 // retain only un-assigned subsystems
                 subsystemsList.removeAll(assignedSubsystems);
                 ObservableList<SubSystemModel> nodesList = FXCollections.observableList(subsystemsList);
-                nodesList.sort(Comparator.<SubSystemModel>naturalOrder());
+                nodesList.sort(Comparator.naturalOrder());
                 subsystemsAvailableList.setItems(nodesList);
             }
         }
@@ -296,7 +296,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
             // all Users
             List<User> allUsers = project.getUserManagement().getUsers();
             ObservableList<User> allUserList = FXCollections.observableList(allUsers);
-            allUserList.sort(Comparator.<User>naturalOrder());
+            allUserList.sort(Comparator.naturalOrder());
             userTable.setItems(allUserList);
         }
     }

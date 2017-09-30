@@ -37,7 +37,7 @@ public class OperationRegistry {
 
     public static Collection<Operation> getAll() {
         List<Operation> operationList = new ArrayList<>(registry.values());
-        operationList.sort(Comparator.<Operation>naturalOrder());
+        operationList.sort(Comparator.naturalOrder());
         return operationList;
     }
 
