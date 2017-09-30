@@ -63,7 +63,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.*;
+import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.FAIL_EVALUATION;
+import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS;
 
 /**
  * Controller for model editing.
@@ -488,7 +489,7 @@ public class ModelEditingController implements Initializable {
                     .map(ParameterModel::getName)
                     .collect(Collectors.joining(","));
             String message = "External model file '" + externalModel.getName() + "' has been modified.\n"
-                    + "Parameters [" + successParameterModelNames +  "] have been updated.";
+                    + "Parameters [" + successParameterModelNames + "] have been updated.";
             message = WordUtils.wrap(message, 100);
             UserNotifications.showNotification(getAppWindow(), "External model modified", message);
         }

@@ -21,20 +21,32 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <?import ru.skoltech.cedl.dataexchange.ui.control.TradespaceView?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="1100.0" stylesheets="@styling.css"
-            xmlns="http://javafx.com/javafx/8.0.121"
+<AnchorPane prefHeight="600.0" prefWidth="1100.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.121"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.TradespaceController">
     <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                 AnchorPane.topAnchor="0.0">
+        <top>
+            <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                <Button mnemonicParsing="false" onAction="#loadTradespace" text="Load"/>
+                <Button mnemonicParsing="false" onAction="#saveTradespace" text="Save"/>
+                <Separator orientation="VERTICAL"/>
+                <Button mnemonicParsing="false" onAction="#importTadespaceFromCSV" text="Import"/>
+                <Separator orientation="VERTICAL"/>
+                <Label styleClass="projectDetailsLabels" text="Study:">
+                    <HBox.margin>
+                        <Insets right="4.0"/>
+                    </HBox.margin>
+                </Label>
+                <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--"/>
+            </ToolBar>
+        </top>
         <center>
             <SplitPane dividerPositions="0.55" prefHeight="600.0" prefWidth="900.0">
                 <AnchorPane SplitPane.resizableWithParent="true">
                     <TitledPane collapsible="false" text="Tradespace Chart" AnchorPane.bottomAnchor="0.0"
                                 AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                         <BorderPane>
-                            <center>
-                                <TradespaceView fx:id="tradespaceView"/>
-                            </center>
                             <top>
                                 <ToolBar BorderPane.alignment="CENTER">
                                     <Label text="X-Axis"/>
@@ -60,6 +72,9 @@
                                     </Button>
                                 </ToolBar>
                             </top>
+                            <center>
+                                <TradespaceView fx:id="tradespaceView"/>
+                            </center>
                         </BorderPane>
                     </TitledPane>
                 </AnchorPane>
@@ -84,10 +99,8 @@
                         <TitledPane collapsible="false" text="Current Design Point">
                             <VBox>
                                 <HBox>
-                                    <TextArea fx:id="figureOfMeritValuesText" editable="false"
-                                              prefHeight="60.0"/>
-                                    <Button minWidth="28" mnemonicParsing="false"
-                                            onAction="#updateFigureOfMeritValues">
+                                    <TextArea fx:id="figureOfMeritValuesText" editable="false" prefHeight="60.0"/>
+                                    <Button minWidth="28" mnemonicParsing="false" onAction="#updateFigureOfMeritValues">
                                         <tooltip>
                                             <Tooltip text="Reload Values"/>
                                         </tooltip>
@@ -107,25 +120,5 @@
                 </AnchorPane>
             </SplitPane>
         </center>
-        <top>
-            <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-                <Label styleClass="projectDetailsLabels" text="Study:">
-                    <HBox.margin>
-                        <Insets right="4.0"/>
-                    </HBox.margin>
-                </Label>
-                <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--"/>
-                <Separator orientation="VERTICAL"/>
-                <Label styleClass="projectDetailsLabels" text="Tradespace">
-                    <HBox.margin>
-                        <Insets left="4.0" right="4.0"/>
-                    </HBox.margin>
-                </Label>
-                <Button mnemonicParsing="false" onAction="#loadTradespace" text="Load"/>
-                <Button mnemonicParsing="false" onAction="#saveTradespace" text="Save"/>
-                <Separator orientation="VERTICAL"/>
-                <Button mnemonicParsing="false" onAction="#loadTradespaceFromCsv" text="Show Sample"/>
-            </ToolBar>
-        </top>
     </BorderPane>
 </AnchorPane>

@@ -22,7 +22,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -154,20 +153,10 @@ public class UnitManagementController implements Initializable, Closeable {
         quantityTableView.setItems(quantityKindsList);
     }
 
-    public void openAddUnitDialog(ActionEvent actionEvent) {
-        ViewBuilder addUnitViewBuilder = guiService.createViewBuilder("Add new unit of measure", Views.UNIT_ADD_VIEW);
-        addUnitViewBuilder.ownerWindow(unitManagementPane.getScene().getWindow());
-        addUnitViewBuilder.modality(Modality.APPLICATION_MODAL);
-        addUnitViewBuilder.applyEventHandler(event -> {
-            Unit unit = (Unit) event.getSource();
-            project.getUnitManagement().getUnits().add(unit);
-            changed.setValue(true);
-            updateView();
-        });
-        addUnitViewBuilder.show();
+    public void addQuantityKind() {
     }
 
-    public void deleteUnit(ActionEvent actionEvent) {
+    public void deleteQuantityKind() {
     }
 
     public void saveUnits() {
@@ -178,9 +167,19 @@ public class UnitManagementController implements Initializable, Closeable {
         changed.setValue(false);
     }
 
-    public void addQuantityKind(ActionEvent actionEvent) {
+    public void deleteUnit() {
     }
 
-    public void deleteQuantityKind(ActionEvent actionEvent) {
+    public void openAddUnitDialog() {
+        ViewBuilder addUnitViewBuilder = guiService.createViewBuilder("Add new unit of measure", Views.UNIT_ADD_VIEW);
+        addUnitViewBuilder.ownerWindow(unitManagementPane.getScene().getWindow());
+        addUnitViewBuilder.modality(Modality.APPLICATION_MODAL);
+        addUnitViewBuilder.applyEventHandler(event -> {
+            Unit unit = (Unit) event.getSource();
+            project.getUnitManagement().getUnits().add(unit);
+            changed.setValue(true);
+            updateView();
+        });
+        addUnitViewBuilder.show();
     }
 }

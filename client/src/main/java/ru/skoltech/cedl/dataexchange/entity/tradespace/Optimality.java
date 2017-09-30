@@ -26,5 +26,5 @@ public enum Optimality {
         public String toString() {
             return "maximal";
         }
-    };
+    }
 }

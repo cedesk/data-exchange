@@ -29,9 +29,13 @@ import java.util.List;
 public interface NodeDifferenceService {
 
     NodeDifference createNodeAttributesModified(ModelNode node1, ModelNode node2, String attribute, String value1, String value2);
+
     NodeDifference createAddedNode(ModelNode parent, ModelNode node1, String name, ModelDifference.ChangeLocation changeLocation);
+
     NodeDifference createRemovedNode(ModelNode parent, ModelNode node1, String name, ModelDifference.ChangeLocation changeLocation);
+
     List<ModelDifference> differencesOnSubNodes(CompositeModelNode<ModelNode> localNode, CompositeModelNode<ModelNode> remoteNode, int currentRevisionNumber);
+
     List<ModelDifference> computeNodeDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber);
 
 }

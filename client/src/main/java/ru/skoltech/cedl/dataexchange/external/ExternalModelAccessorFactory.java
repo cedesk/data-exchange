@@ -16,14 +16,16 @@
 
 package ru.skoltech.cedl.dataexchange.external;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.external.excel.ExcelModelAccessor;
 
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 08.07.2015.
@@ -31,23 +33,20 @@ import java.util.Map;
 public class ExternalModelAccessorFactory {
 
     private static final Logger logger = Logger.getLogger(ExternalModelAccessorFactory.class);
-
+    private final Map<String, Class<? extends ExternalModelAccessor>> accessors = new HashMap<>();
+    private final List<Pair<String, String[]>> fileDescriptionsAndExtensions = new LinkedList<>();
     private ExternalModelFileHandler externalModelFileHandler;
 
-    private final Map<String, Class<? extends ExternalModelAccessor>> accessors = new HashMap<>();
-
     public ExternalModelAccessorFactory() {
-        this.registerAccessor(ExcelModelAccessor.class, ExcelModelAccessor.getHandledExtensions());
+        this.registerAccessor(ExcelModelAccessor.class, ExcelModelAccessor.getFileDescription(), ExcelModelAccessor.getHandledExtensions());
+    }
+
+    public List<Pair<String, String[]>> getFileDescriptionsAndExtensions() {
+        return fileDescriptionsAndExtensions;
     }
 
     public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
         this.externalModelFileHandler = externalModelFileHandler;
-    }
-
-    public void registerAccessor(Class<? extends ExternalModelAccessor> exporterClass, String[] extensions) {
-        for (String ext : extensions) {
-            accessors.put(ext, exporterClass);
-        }
     }
 
     public ExternalModelAccessor createAccessor(ExternalModel externalModel) {
@@ -71,6 +70,15 @@ public class ExternalModelAccessorFactory {
     public boolean hasAccessor(String fileName) {
         String fileExtension = Utils.getExtension(fileName);
         return accessors.keySet().contains(fileExtension);
+    }
+
+    public void registerAccessor(Class<? extends ExternalModelAccessor> exporterClass, String fileDescription, String[] extensions) {
+        String[] extensionWildcards = Arrays.stream(extensions).map(ext -> "*" + ext).toArray(String[]::new);
+        String extStr = Arrays.stream(extensionWildcards).collect(Collectors.joining(","));
+        fileDescriptionsAndExtensions.add(new ImmutablePair<>(fileDescription + " (" + extStr + ")", extensionWildcards));
+
+        Arrays.stream(extensions).forEach(ext -> accessors.put(ext, exporterClass));
+
     }
 
 }

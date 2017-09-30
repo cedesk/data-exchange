@@ -351,7 +351,7 @@ public class Project {
     public Future<List<ModelDifference>> loadRepositoryStudy() {
         Future<List<ModelDifference>> feature = executor.submit(() -> {
             Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
-            if(revision == null) {
+            if (revision == null) {
                 return null;
             }
             Study repositoryStudy = revision.getLeft();

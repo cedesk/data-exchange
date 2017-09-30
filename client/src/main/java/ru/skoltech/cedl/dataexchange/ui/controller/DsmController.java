@@ -19,7 +19,6 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
@@ -71,7 +70,7 @@ public class DsmController implements Initializable {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
-    public void generateCode(ActionEvent actionEvent) {
+    public void generateCode() {
         final SystemModel systemModel = project.getSystemModel();
 
         NumericalDSM dsm = parameterLinkRegistry.makeNumericalDSM(systemModel);
@@ -84,10 +83,10 @@ public class DsmController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         spreadsheetView.setRowHeaderWidth(60);
-        Platform.runLater(() -> refreshView(null));
+        Platform.runLater(() -> refreshView());
     }
 
-    public void refreshView(ActionEvent actionEvent) {
+    public void refreshView() {
         SystemModel systemModel = project.getSystemModel();
         DependencyModel dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
 

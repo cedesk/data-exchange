@@ -277,27 +277,39 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    private void loadLastProject() {
-        actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
-        String projectImportName = applicationSettings.getProjectImportName();
-        if (projectImportName != null && !projectImportName.isEmpty()) {
-            this.importProject(null);
-        } else if (applicationSettings.isProjectLastAutoload()) {
-            String projectName = applicationSettings.getProjectLastName();
-            if (projectName != null) {
-                project.initProject(projectName);
-                this.reloadProject();
-
-                repositoryNewer.addListener(repositoryNewerListener);
-                //diffButton.disableProperty().bind(repositoryNewer.not());
-            } else {
-                Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
-                if (choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {
-                    this.openProject(null);
-                } else if (choice.isPresent() && choice.get() == Dialogues.NEW_STUDY_BUTTON) {
-                    this.newProject(null);
+    public void deleteProject() {
+        List<String> studyNames = studyService.findStudyNames();
+        if (studyNames.size() > 0) {
+            Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
+            if (studyChoice.isPresent()) {
+                String studyName = studyChoice.get();
+                try {
+                    Optional<ButtonType> chooseYesNo;
+                    if (studyName.equals(project.getProjectName())) {
+                        chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
+                                "You are deleting the currently loaded project. Unexpected behavior can appear!\n" +
+                                        "WARNING: This is not reversible!");
+                    } else {
+                        chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
+                                "Are you really sure to delete project '" + studyName + "' from the repository?\n" +
+                                        "WARNING: This is not reversible!");
+                    }
+                    if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
+                        repositoryNewer.removeListener(repositoryNewerListener);
+                        project.deleteStudy(studyName);
+                        if (project.getStudy().getName().equals(studyName)) {
+                            project.markStudyModified();
+                        }
+                        statusLogger.info("Successfully deleted study!");
+                        actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to delete the study!", e);
                 }
             }
+        } else {
+            logger.warn("list of studies is empty!");
+            Dialogues.showWarning("Repository empty", "There are no studies available in the repository!");
         }
     }
 
@@ -306,32 +318,20 @@ public class MainController implements Initializable, Displayable, Closeable {
         validateLatestUpdate(latestVersionAvailable, actionEvent);
     }
 
-    public void runWorkSessionAnalysis(ActionEvent actionEvent) {
-        File projectDataDir = project.getProjectDataDir();
-        String dateAndTime = Utils.getFormattedDateAndTime();
-        try {
-            long studyId = project.getStudy().getId();
-            List<LogEntry> logEntries = logEntryService.getLogEntries(studyId);
-
-            WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries, false);
-            File periodsCsvFile = new File(projectDataDir, "work-periods_" + dateAndTime + ".csv");
-            workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
-
-            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis, false);
-            File sessionsCsvFile = new File(projectDataDir, "work-sessions_" + dateAndTime + ".csv");
-            workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
-            workSessionAnalysis.printWorkSessions();
-
-            Optional<ButtonType> showResults = Dialogues.chooseYesNo("Show results", "Do you want to open the analysis results spreadsheet?");
-            if (showResults.isPresent() && showResults.get() == ButtonType.YES) {
-                Desktop desktop = Desktop.getDesktop();
-                if (sessionsCsvFile.isFile() && desktop.isSupported(Desktop.Action.EDIT)) {
-                    desktop.edit(sessionsCsvFile);
-                }
+    public void exportProject() {
+        File exportPath = Dialogues.chooseExportPath(fileStorageService.applicationDirectory());
+        if (exportPath != null) {
+            String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
+            File outputFile = new File(exportPath, outputFileName);
+            try {
+                fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
+                statusLogger.info("Successfully exported study!");
+                actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
+            } catch (IOException e) {
+                logger.error("error exporting model to file", e);
             }
-
-        } catch (Exception e) {
-            logger.error("analysis failed", e);
+        } else {
+            logger.info("user aborted export path selection.");
         }
     }
 
@@ -420,56 +420,52 @@ public class MainController implements Initializable, Displayable, Closeable {
         return false;
     }
 
-    public void deleteProject(ActionEvent actionEvent) {
+    public void newProject() {
+        Optional<String> choice = Dialogues.inputStudyName(Project.DEFAULT_PROJECT_NAME);
+        if (choice.isPresent()) {
+            String projectName = choice.get();
+            if (!Identifiers.validateProjectName(projectName)) {
+                Dialogues.showError("Invalid name", Identifiers.getProjectNameValidationDescription());
+                return;
+            }
+            List<String> studyNames = studyService.findStudyNames();
+            if (studyNames != null && studyNames.contains(projectName)) {
+                Dialogues.showError("Invalid name", "A study with this name already exists in the repository!");
+                return;
+            }
+
+            Optional<String> builderName = Dialogues.chooseStudyBuilder(systemBuilderFactory.getBuilderNames());
+            if (!builderName.isPresent()) {
+                return;
+            }
+            SystemBuilder builder = systemBuilderFactory.getBuilder(builderName.get());
+            if (builder.adjustsSubsystems()) {
+                builder.subsystemNames(requestSubsystemNames());
+            }
+            builder.unitManagement(project.getUnitManagement());
+            SystemModel systemModel = builder.build(projectName);
+            project.createStudy(systemModel);
+            statusLogger.info("Successfully created new study: " + projectName);
+            actionLogger.log(ActionLogger.ActionType.PROJECT_NEW, projectName);
+            updateView();
+        }
+    }
+
+    public void openProject() {
         List<String> studyNames = studyService.findStudyNames();
         if (studyNames.size() > 0) {
             Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
             if (studyChoice.isPresent()) {
                 String studyName = studyChoice.get();
-                try {
-                    Optional<ButtonType> chooseYesNo;
-                    if (studyName.equals(project.getProjectName())) {
-                        chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
-                                "You are deleting the currently loaded project. Unexpected behavior can appear!\n" +
-                                        "WARNING: This is not reversible!");
-                    } else {
-                        chooseYesNo = Dialogues.chooseYesNo("Deleting a study",
-                                "Are you really sure to delete project '" + studyName + "' from the repository?\n" +
-                                        "WARNING: This is not reversible!");
-                    }
-                    if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
-                        repositoryNewer.removeListener(repositoryNewerListener);
-                        project.deleteStudy(studyName);
-                        if (project.getStudy().getName().equals(studyName)) {
-                            project.markStudyModified();
-                        }
-                        statusLogger.info("Successfully deleted study!");
-                        actionLogger.log(ActionLogger.ActionType.PROJECT_DELETE, studyName);
-                    }
-                } catch (Exception e) {
-                    logger.error("Failed to delete the study!", e);
+                project.initProject(studyName);
+                this.reloadProject();
+                if (!project.checkUser()) {
+                    this.displayInvalidUserDialog();
                 }
             }
         } else {
             logger.warn("list of studies is empty!");
             Dialogues.showWarning("Repository empty", "There are no studies available in the repository!");
-        }
-    }
-
-    public void exportProject(ActionEvent actionEvent) {
-        File exportPath = Dialogues.chooseExportPath(fileStorageService.applicationDirectory());
-        if (exportPath != null) {
-            String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
-            File outputFile = new File(exportPath, outputFileName);
-            try {
-                fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
-                statusLogger.info("Successfully exported study!");
-                actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
-            } catch (IOException e) {
-                logger.error("error exporting model to file", e);
-            }
-        } else {
-            logger.info("user aborted export path selection.");
         }
     }
 
@@ -509,34 +505,32 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    public void newProject(ActionEvent actionEvent) {
-        Optional<String> choice = Dialogues.inputStudyName(Project.DEFAULT_PROJECT_NAME);
-        if (choice.isPresent()) {
-            String projectName = choice.get();
-            if (!Identifiers.validateProjectName(projectName)) {
-                Dialogues.showError("Invalid name", Identifiers.getProjectNameValidationDescription());
-                return;
-            }
-            List<String> studyNames = studyService.findStudyNames();
-            if (studyNames != null && studyNames.contains(projectName)) {
-                Dialogues.showError("Invalid name", "A study with this name already exists in the repository!");
-                return;
+    public void runWorkSessionAnalysis() {
+        File projectDataDir = project.getProjectDataDir();
+        String dateAndTime = Utils.getFormattedDateAndTime();
+        try {
+            long studyId = project.getStudy().getId();
+            List<LogEntry> logEntries = logEntryService.getLogEntries(studyId);
+
+            WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries, false);
+            File periodsCsvFile = new File(projectDataDir, "work-periods_" + dateAndTime + ".csv");
+            workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
+
+            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis, false);
+            File sessionsCsvFile = new File(projectDataDir, "work-sessions_" + dateAndTime + ".csv");
+            workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
+            workSessionAnalysis.printWorkSessions();
+
+            Optional<ButtonType> showResults = Dialogues.chooseYesNo("Show results", "Do you want to open the analysis results spreadsheet?");
+            if (showResults.isPresent() && showResults.get() == ButtonType.YES) {
+                Desktop desktop = Desktop.getDesktop();
+                if (sessionsCsvFile.isFile() && desktop.isSupported(Desktop.Action.EDIT)) {
+                    desktop.edit(sessionsCsvFile);
+                }
             }
 
-            Optional<String> builderName = Dialogues.chooseStudyBuilder(systemBuilderFactory.getBuilderNames());
-            if (!builderName.isPresent()) {
-                return;
-            }
-            SystemBuilder builder = systemBuilderFactory.getBuilder(builderName.get());
-            if (builder.adjustsSubsystems()) {
-                builder.subsystemNames(requestSubsystemNames());
-            }
-            builder.unitManagement(project.getUnitManagement());
-            SystemModel systemModel = builder.build(projectName);
-            project.createStudy(systemModel);
-            statusLogger.info("Successfully created new study: " + projectName);
-            actionLogger.log(ActionLogger.ActionType.PROJECT_NEW, projectName);
-            updateView();
+        } catch (Exception e) {
+            logger.error("analysis failed", e);
         }
     }
 
@@ -572,13 +566,13 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openChangeHistoryAnalysis() {
-        ViewBuilder changeHistoryAnalysisViewBuilder = guiService.createViewBuilder("Change History Analyis [BETA]", Views.CHANGE_HISTORY_ANALYSIS_VIEW);
+        ViewBuilder changeHistoryAnalysisViewBuilder = guiService.createViewBuilder("Change History Analyis", Views.CHANGE_HISTORY_ANALYSIS_VIEW);
         changeHistoryAnalysisViewBuilder.ownerWindow(ownerStage);
         changeHistoryAnalysisViewBuilder.show();
     }
 
     public void openTradespaceExplorer() {
-        ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder("Tradespace Explorer [BETA]", Views.TRADESPACE_VIEW);
+        ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder("Tradespace Explorer", Views.TRADESPACE_VIEW);
         tradespaceViewBuilder.ownerWindow(ownerStage);
         tradespaceViewBuilder.show();
     }
@@ -634,21 +628,36 @@ public class MainController implements Initializable, Displayable, Closeable {
         guideViewBuilder.show();
     }
 
-    public void openProject(ActionEvent actionEvent) {
-        List<String> studyNames = studyService.findStudyNames();
-        if (studyNames.size() > 0) {
-            Optional<String> studyChoice = Dialogues.chooseStudy(studyNames);
-            if (studyChoice.isPresent()) {
-                String studyName = studyChoice.get();
-                project.initProject(studyName);
-                this.reloadProject();
-                if (!project.checkUser()) {
-                    this.displayInvalidUserDialog();
-                }
+    public void saveProject() {
+        try {
+            if (!this.isSaveEnabled()) {
+                Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\n" +
+                        "Contact the team lead for him to enable it!");
+                return;
             }
-        } else {
-            logger.warn("list of studies is empty!");
-            Dialogues.showWarning("Repository empty", "There are no studies available in the repository!");
+
+            try {
+                if (this.hasRemoteDifferences()) {
+                    return;
+                }
+            } catch (Exception e) {
+                statusLogger.error("Error checking repository for changes");
+                return;
+            }
+            modelEditingController.clearView();
+            project.storeStudy();
+            this.updateView();
+            statusLogger.info("Successfully saved study: " + project.getProjectName());
+            actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());
+        } catch (RepositoryException re) {
+            logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
+            statusLogger.warn("Concurrent edit appeared on: " + re.getEntityName());
+            actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE,
+                    project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
+        } catch (Exception e) {
+            statusLogger.error("Saving study failed!");
+            logger.error("Unknown Exception", e);
+            actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName() + ", saving failed");
         }
     }
 
@@ -722,36 +731,27 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.updateView();
     }
 
-    public void saveProject(ActionEvent actionEvent) {
-        try {
-            if (!this.isSaveEnabled()) {
-                Dialogues.showWarning("Sync disabled", "Currently synchronizing the study is disabled.\n" +
-                        "Contact the team lead for him to enable it!");
-                return;
-            }
+    private void loadLastProject() {
+        actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
+        String projectImportName = applicationSettings.getProjectImportName();
+        if (projectImportName != null && !projectImportName.isEmpty()) {
+            this.importProject(null);
+        } else if (applicationSettings.isProjectLastAutoload()) {
+            String projectName = applicationSettings.getProjectLastName();
+            if (projectName != null) {
+                project.initProject(projectName);
+                this.reloadProject();
 
-            try {
-                if (this.hasRemoteDifferences()) {
-                    return;
+                repositoryNewer.addListener(repositoryNewerListener);
+                //diffButton.disableProperty().bind(repositoryNewer.not());
+            } else {
+                Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
+                if (choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {
+                    this.openProject();
+                } else if (choice.isPresent() && choice.get() == Dialogues.NEW_STUDY_BUTTON) {
+                    this.newProject();
                 }
-            } catch (Exception e) {
-                statusLogger.error("Error checking repository for changes");
-                return;
             }
-            modelEditingController.clearView();
-            project.storeStudy();
-            this.updateView();
-            statusLogger.info("Successfully saved study: " + project.getProjectName());
-            actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName());
-        } catch (RepositoryException re) {
-            logger.error("Entity was modified concurrently: " + re.getEntityClassName() + '#' + re.getEntityIdentifier(), re);
-            statusLogger.warn("Concurrent edit appeared on: " + re.getEntityName());
-            actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE,
-                    project.getProjectName() + ", concurrent edit on: " + re.getEntityName());
-        } catch (Exception e) {
-            statusLogger.error("Saving study failed!");
-            logger.error("Unknown Exception", e);
-            actionLogger.log(ActionLogger.ActionType.PROJECT_SAVE, project.getProjectName() + ", saving failed");
         }
     }
 

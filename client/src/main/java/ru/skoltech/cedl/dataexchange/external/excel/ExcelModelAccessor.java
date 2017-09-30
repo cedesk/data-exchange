@@ -29,7 +29,7 @@ import java.text.ParseException;
 
 /**
  * Implementation of {@link ExternalModelAccessor} which provide an access to the Microsoft Excel files.
- *
+ * <p>
  * Created by D.Knoll on 13.06.2016.
  */
 public class ExcelModelAccessor implements ExternalModelAccessor {
@@ -54,8 +54,34 @@ public class ExcelModelAccessor implements ExternalModelAccessor {
         }
     }
 
+    public static String getFileDescription() {
+        return "Excel Spreadsheets";
+    }
+
     public static String[] getHandledExtensions() {
         return WorkbookFactory.KNOWN_FILE_EXTENSIONS;
+    }
+
+    @Override
+    public void close() {
+        if (spreadsheetAccessor != null) {
+            try {
+                spreadsheetAccessor.close();
+            } catch (IOException e) {
+                logger.error("error closing excel model.");
+            }
+        }
+    }
+
+    @Override
+    public void flush() throws IOException {
+        try {
+            externalModelFileHandler.flushModifications(externalModel, spreadsheetAccessor);
+        } catch (ExternalModelException e) {
+            throw new IOException(e);
+        } finally {
+            this.close();
+        }
     }
 
     @Override
@@ -79,28 +105,6 @@ public class ExcelModelAccessor implements ExternalModelAccessor {
             spreadsheetAccessor.setNumericValue(coordinates, value);
         } catch (ParseException e) {
             logger.error("error parsing coordinates: " + target);
-        }
-    }
-
-    @Override
-    public void flush() throws IOException {
-        try {
-            externalModelFileHandler.flushModifications(externalModel, spreadsheetAccessor);
-        } catch (ExternalModelException e) {
-            throw new IOException(e);
-        } finally {
-            this.close();
-        }
-    }
-
-    @Override
-    public void close() {
-        if (spreadsheetAccessor != null) {
-            try {
-                spreadsheetAccessor.close();
-            } catch (IOException e) {
-                logger.error("error closing excel model.");
-            }
         }
     }
 

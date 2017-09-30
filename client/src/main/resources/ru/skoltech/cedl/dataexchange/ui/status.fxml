@@ -21,7 +21,6 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import jfxtras.scene.control.ListView?>
 <TitledPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.StatusController"
             fx:id="statusBarPane" expanded="false" animated="false">

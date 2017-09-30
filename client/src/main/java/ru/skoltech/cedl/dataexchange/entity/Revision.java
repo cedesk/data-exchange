@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * The entity itself must be annotated as {@link Audited}, but
  * this field additionally must have {@link NotAudited} annotation
  * (to avoid unnecessary copy in audit table).
- *
+ * <p>
  * Created by Nikolay Groshkov on 25-Aug-17.
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -42,6 +42,6 @@ public interface RepositorySchemeService {
      * @throws RepositoryException if version was not stored for some reason
      */
     @Transactional
-    void storeSchemeVersion(String version)  throws RepositoryException;
+    void storeSchemeVersion(String version) throws RepositoryException;
 
 }

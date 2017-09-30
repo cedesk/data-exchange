@@ -97,7 +97,7 @@ public class WorkPeriodAnalysis {
                     } else {
                         Long stopTimestamp = workPeriod.getStopTimestamp();
                         workPeriod.setStopTimestamp(logEntry.getLogTimestamp());
-                        if(stopTimestamp == null) {
+                        if (stopTimestamp == null) {
                             logger.info("user " + user + " first saved at: " + workPeriod.getStopTimestampFormatted());
                         } else {
                             logger.info("user " + user + " saved again at: " + workPeriod.getStopTimestampFormatted());

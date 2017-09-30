@@ -29,9 +29,13 @@ import java.util.List;
 public interface ExternalModelDifferenceService {
 
     ExternalModelDifference createRemoveExternalModel(ModelNode parent, ExternalModel externalModel1, String name, ModelDifference.ChangeLocation changeLocation);
+
     ExternalModelDifference createAddExternalModel(ModelNode parent, ExternalModel externalModel1, String name, ModelDifference.ChangeLocation changeLocation);
+
     ExternalModelDifference createExternalModelModified(ExternalModel externalModel1, ExternalModel externalModel2, String name);
+
     ExternalModelDifference createExternalModelModified(ExternalModel externalModel1, ExternalModel externalModel2, String name, String value1, String value2);
+
     List<ModelDifference> computeExternalModelDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber);
 
 }

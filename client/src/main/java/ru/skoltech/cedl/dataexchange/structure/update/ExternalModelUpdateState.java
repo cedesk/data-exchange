@@ -18,7 +18,7 @@ package ru.skoltech.cedl.dataexchange.structure.update;
 
 /**
  * Defines states of external model export update.
- *
+ * <p>
  * Created by Nikolay Groshkov on 07-Sep-17.
  */
 public enum ExternalModelUpdateState {

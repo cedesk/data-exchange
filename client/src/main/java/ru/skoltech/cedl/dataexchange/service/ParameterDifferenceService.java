@@ -30,9 +30,13 @@ import java.util.List;
 public interface ParameterDifferenceService {
 
     ParameterDifference createParameterAttributesModified(ParameterModel parameter1, ParameterModel parameter2, List<AttributeDifference> differences);
+
     ParameterDifference createRemovedParameter(ModelNode parent, ParameterModel param, String name, ModelDifference.ChangeLocation changeLocation);
+
     ParameterDifference createAddedParameter(ModelNode parent, ParameterModel param, String name, ModelDifference.ChangeLocation changeLocation);
+
     List<AttributeDifference> parameterDifferences(ParameterModel localParameterModel, ParameterModel remoteParameterModel);
+
     List<ParameterDifference> computeParameterDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber);
 
 }

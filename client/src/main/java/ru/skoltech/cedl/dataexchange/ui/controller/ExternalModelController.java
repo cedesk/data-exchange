@@ -119,7 +119,7 @@ public class ExternalModelController implements Initializable {
                 .otherwise((String) null));
 
         openExternalButton.addEventFilter(MouseEvent.MOUSE_PRESSED, (MouseEvent event) -> {
-            if (event.isSecondaryButtonDown()){
+            if (event.isSecondaryButtonDown()) {
                 try {
                     File file = externalModelFileHandler.cacheFile(externalModel);
                     File path = file.getParentFile();

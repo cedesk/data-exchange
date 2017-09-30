@@ -17,7 +17,6 @@
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.beans.binding.BooleanBinding;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -82,7 +81,7 @@ public class UserManagementController implements Initializable {
         this.statusLogger = statusLogger;
     }
 
-    public void addUser(ActionEvent actionEvent) {
+    public void addUser() {
         Optional<String> userNameChoice = Dialogues.inputUserName();
         if (userNameChoice.isPresent()) {
             String userName = userNameChoice.get();
@@ -102,7 +101,7 @@ public class UserManagementController implements Initializable {
         updateUsers();
     }
 
-    public void deleteUser(ActionEvent actionEvent) {
+    public void deleteUser() {
         User selectedUser = userTable.getSelectionModel().getSelectedItem();
         project.getUserManagement().getUsers().remove(selectedUser);
         updateUsers();
@@ -116,13 +115,13 @@ public class UserManagementController implements Initializable {
         deleteUserButton.disableProperty().bind(noSelectionOnUserTable);
         userTable.setOnMousePressed(event -> {
             if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
-                UserManagementController.this.openUserEditingView(null);
+                UserManagementController.this.openUserEditingView();
             }
         });
         updateView();
     }
 
-    public void openUserEditingView(ActionEvent actionEvent) {
+    public void openUserEditingView() {
         User selectedUser = userTable.getSelectionModel().getSelectedItem();
         Window ownerWindow = userTable.getScene().getWindow();
         ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder("User details", Views.USER_EDITING_VIEW);
@@ -132,7 +131,7 @@ public class UserManagementController implements Initializable {
         updateUsers();
     }
 
-    public void reloadUsers(ActionEvent actionEvent) {
+    public void reloadUsers() {
         boolean success = project.loadUserManagement();
         updateUsers();
         if (!success) {
@@ -140,7 +139,7 @@ public class UserManagementController implements Initializable {
         }
     }
 
-    public void saveUsers(ActionEvent actionEvent) {
+    public void saveUsers() {
         boolean success = project.storeUserManagement();
         if (!success) {
             statusLogger.error("Error saving user list!");

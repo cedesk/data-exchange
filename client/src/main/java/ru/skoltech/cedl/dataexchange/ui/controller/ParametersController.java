@@ -76,7 +76,7 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for parameters display.
- *
+ * <p>
  * Created by Nikolay Groshkov on 08-Sep-17.
  */
 public class ParametersController implements Initializable, Displayable {
@@ -292,7 +292,7 @@ public class ParametersController implements Initializable, Displayable {
     }
 
     public Pair<ParameterModel, ParameterModelUpdateState> currentParameter() {
-        return  parameterTable.getSelectionModel().getSelectedItem();
+        return parameterTable.getSelectionModel().getSelectedItem();
     }
 
     public void addParameter() {
@@ -456,7 +456,7 @@ public class ParametersController implements Initializable, Displayable {
         return new BeanPropertyCellValueFactory(property);
     }
 
-    private static class BeanPropertyCellValueFactory implements Callback<TableColumn.CellDataFeatures<Pair<ParameterModel, ParameterModelUpdateState>,String>, ObservableValue<String>> {
+    private static class BeanPropertyCellValueFactory implements Callback<TableColumn.CellDataFeatures<Pair<ParameterModel, ParameterModelUpdateState>, String>, ObservableValue<String>> {
 
         private String property;
 
