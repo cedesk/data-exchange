@@ -32,9 +32,11 @@ import javafx.stage.WindowEvent;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
+import ru.skoltech.cedl.dataexchange.ui.control.ErrorAlert;
 
 import java.io.File;
 import java.io.IOException;
@@ -215,7 +217,11 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
             String text = fileLinesFilteredProperty.stream().collect(Collectors.joining( "\n"));
 
             CSVParser parser = CSVParser.parse(text, format);
-            List<CSVRecord> records = parser.getRecords();
+            List<CSVRecord> records = parser.getRecords().stream()
+                    .filter(record -> definitions.stream()
+                                    .allMatch(figuresOfMerit -> NumberUtils.isCreatable(record.get(figuresOfMerit.getName())))
+                            && NumberUtils.isCreatable(record.get(epochColumn)))
+                    .collect(Collectors.toList());
 
             Map<Integer, Epoch> epochMap = records.stream()
                     .map(record -> Double.valueOf(record.get(epochColumn)).intValue())
@@ -252,7 +258,10 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
             }
             ownerStage.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            String message = "Cannot parse *.csv file: " + fileProperty.get().getAbsolutePath();
+            logger.error(message, e);
+            Alert errorAlert = new ErrorAlert(message, e);
+            errorAlert.showAndWait();
         }
     }
 
