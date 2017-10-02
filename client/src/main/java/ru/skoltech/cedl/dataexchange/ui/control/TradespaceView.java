@@ -98,8 +98,9 @@ public class TradespaceView extends AnchorPane {
 
                 for (XYChart.Series<Number, Number> s : chart.getData()) {
                     for (XYChart.Data<Number, Number> d : s.getData()) {
-                        DesignPoint designPoint = (DesignPoint)d.getExtraValue();
-                        Tooltip tooltip = new Tooltip(designPoint.getDescription());
+                        DesignPoint designPoint = (DesignPoint) d.getExtraValue();
+                        String description = designPoint.getFullDescription(xFom, yFom);
+                        Tooltip tooltip = new Tooltip(description);
                         Tooltip.install(d.getNode(), tooltip);
                         d.getNode().setOnMouseEntered(event -> d.getNode().getStyleClass().add("onHover"));
                         d.getNode().setOnMouseExited(event -> d.getNode().getStyleClass().remove("onHover"));

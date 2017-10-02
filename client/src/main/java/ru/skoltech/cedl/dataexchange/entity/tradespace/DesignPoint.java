@@ -16,8 +16,13 @@
 
 package ru.skoltech.cedl.dataexchange.entity.tradespace;
 
+import org.apache.commons.lang3.ArrayUtils;
+import ru.skoltech.cedl.dataexchange.Utils;
+
 import javax.persistence.*;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by d.knoll on 6/23/2017.
@@ -107,6 +112,21 @@ public class DesignPoint {
         if (modelStateLink != null ? !modelStateLink.equals(that.modelStateLink) : that.modelStateLink != null)
             return false;
         return values.equals(that.values);
+    }
+
+    public String getFullDescription(FigureOfMeritDefinition... fomDefinitions) {
+        List<String> fomTexts = new LinkedList<>();
+        for (FigureOfMeritValue fomValue : values) {
+            FigureOfMeritDefinition fomDefinition = fomValue.getDefinition();
+            if (ArrayUtils.contains(fomDefinitions, fomDefinition)) {
+                String formattedValue = Utils.NUMBER_FORMAT.format(fomValue.getValue());
+                fomTexts.add(String.format("%s: %s (%s)", fomDefinition.getName(), formattedValue, fomDefinition.getUnitOfMeasure()));
+            }
+        }
+        if (description != null && !description.trim().isEmpty()) {
+            fomTexts.add(description);
+        }
+        return fomTexts.stream().collect(Collectors.joining(",\n"));
     }
 
     @Override
