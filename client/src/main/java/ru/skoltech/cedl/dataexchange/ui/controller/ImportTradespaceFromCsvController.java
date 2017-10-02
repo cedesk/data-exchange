@@ -129,9 +129,9 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
 
     public void importTradespace() {
         try {
+            String descriptionColumn = descriptionListView.getSelectionModel().getSelectedItem();
             String[] figuresOfMeritColumns = figuresOfMeritListView.getSelectionModel().getSelectedItems().toArray(new String[0]);
             String epochColumn = epochsListView.getSelectionModel().getSelectedItem();
-            String descriptionColumn = descriptionListView.getSelectionModel().getSelectedItem();
 
             List<FigureOfMeritDefinition> definitions = FigureOfMeritDefinition
                     .buildFigureOfMeritDefinitions(figuresOfMeritColumns);
@@ -150,7 +150,7 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
                     .collect(Collectors.toList());
 
             Map<Integer, Epoch> epochMap = records.stream()
-                    .map(record -> Integer.valueOf(record.get(epochColumn)))
+                    .map(record -> Double.valueOf(record.get(epochColumn)).intValue())
                     .distinct()
                     .map(Epoch::new)
                     .collect(Collectors.toMap(Epoch::getYear, Function.identity()));

@@ -25,6 +25,7 @@ import javafx.scene.chart.Axis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
@@ -85,6 +86,15 @@ public class TradespaceView extends AnchorPane {
                     chart.getData().add(series1);
                 }
 
+                for (XYChart.Series<Number, Number> s : chart.getData()) {
+                    for (XYChart.Data<Number, Number> d : s.getData()) {
+                        Tooltip tooltip = new Tooltip(d.getExtraValue().toString());
+                        Tooltip.install(d.getNode(), tooltip);
+                        d.getNode().setOnMouseEntered(event -> d.getNode().getStyleClass().add("onHover"));
+                        d.getNode().setOnMouseExited(event -> d.getNode().getStyleClass().remove("onHover"));
+                    }
+                }
+
                 getChildren().setAll(chart);
                 return;
             }
@@ -136,7 +146,8 @@ public class TradespaceView extends AnchorPane {
                     }
                 }
                 if (x != null && y != null) {
-                    points.add(new XYChart.Data<>(x, y));
+                    String description = designPoint.getDescription();
+                    points.add(new XYChart.Data<>(x, y, description));
                 }
             }
         }
