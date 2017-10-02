@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
  */
 public class TradespaceView extends AnchorPane {
 
-//    private ScatterChart<Number, Number> chart;
     private LineChart<Number, Number> chart;
     private MultitemporalTradespace tradespace;
     private FigureOfMeritChartDefinition chartDefinition;
@@ -90,7 +89,6 @@ public class TradespaceView extends AnchorPane {
                 Axis<Number> xAxis = new NumberAxis(xFom.getName(), bounds.getMinX(), bounds.getMaxX(), bounds.getMinZ());
                 Axis<Number> yAxis = new NumberAxis(yFom.getName(), bounds.getMinY(), bounds.getMaxY(), bounds.getDepth());
                 chart = new LineChart<>(xAxis, yAxis);
-//                chart = new ScatterChart<>(xAxis, yAxis);
                 chart.setTitle("Tradespace");
 
                 List<XYChart.Series<Number, Number>> seriesList = new LinkedList<>();
@@ -111,21 +109,18 @@ public class TradespaceView extends AnchorPane {
 
                 for (XYChart.Series<Number, Number> s : chart.getData()) {
                     if (!s.getName().equals(paretoSeries.getName())) {
-//                        Node line = s.getNode().lookup(".chart-series-line");
                         Node line = s.getNode();
                         line.setStyle("-fx-stroke: transparent;");
-//                    } else {
-//                        Node legendSymbol = s.getNode().lookup(".chart-legend-item-symbol");
-//                        System.out.println(">>>> " + legendSymbol);
                     }
                     for (XYChart.Data<Number, Number> d : s.getData()) {
                         if (s.getName().equals(paretoSeries.getName())) {
-//                            Node symbol = d.getNode().lookup(".chart-line-symbol");
                             Node symbol = d.getNode();
                             symbol.setStyle("-fx-background-color: transparent, transparent;");
                         }
-                        DesignPoint designPoint = (DesignPoint)d.getExtraValue();
-                        Tooltip tooltip = new Tooltip(designPoint.getDescription());
+
+                        DesignPoint designPoint = (DesignPoint) d.getExtraValue();
+                        String description = designPoint.getFullDescription(xFom, yFom);
+                        Tooltip tooltip = new Tooltip(description);
                         Tooltip.install(d.getNode(), tooltip);
                         d.getNode().setOnMouseEntered(event -> d.getNode().getStyleClass().add("onHover"));
                         d.getNode().setOnMouseExited(event -> d.getNode().getStyleClass().remove("onHover"));
@@ -185,15 +180,15 @@ public class TradespaceView extends AnchorPane {
                                  FigureOfMeritDefinition fomX, FigureOfMeritDefinition fomY) {
         double xMin = Double.MAX_VALUE, xMax = Double.MIN_VALUE, yMin = Double.MAX_VALUE, yMax = Double.MIN_VALUE;
         for (DesignPoint designPoint : tradespace.getDesignPoints()) {
-            for (FigureOfMeritValue fomValue : designPoint.getValues()) {
-                if (fomValue.getDefinition().equals(fomX)) {
-                    if (fomValue.getValue() < xMin) xMin = fomValue.getValue();
-                    if (fomValue.getValue() > xMax) xMax = fomValue.getValue();
-                }
-                if (fomValue.getDefinition().equals(fomY)) {
-                    if (fomValue.getValue() < yMin) yMin = fomValue.getValue();
-                    if (fomValue.getValue() > yMax) yMax = fomValue.getValue();
-                }
+            FigureOfMeritValue fomXVal = designPoint.getValue(fomX);
+            if (fomXVal != null) {
+                if (fomXVal.getValue() < xMin) xMin = fomXVal.getValue();
+                if (fomXVal.getValue() > xMax) xMax = fomXVal.getValue();
+            }
+            FigureOfMeritValue fomYVal = designPoint.getValue(fomY);
+            if (fomYVal != null) {
+                if (fomYVal.getValue() < yMin) yMin = fomYVal.getValue();
+                if (fomYVal.getValue() > yMax) yMax = fomYVal.getValue();
             }
         }
         double width = xMax - xMin;
@@ -215,13 +210,13 @@ public class TradespaceView extends AnchorPane {
         for (DesignPoint designPoint : tradespace.getDesignPoints()) {
             Double x = null, y = null;
             if (designPoint.getEpoch().equals(epoch)) {
-                for (FigureOfMeritValue fomValue : designPoint.getValues()) {
-                    if (fomValue.getDefinition().equals(fomX)) {
-                        x = fomValue.getValue();
-                    }
-                    if (fomValue.getDefinition().equals(fomY)) {
-                        y = fomValue.getValue();
-                    }
+                FigureOfMeritValue fomXVal = designPoint.getValue(fomX);
+                if (fomXVal != null) {
+                    x = fomXVal.getValue();
+                }
+                FigureOfMeritValue fomYVal = designPoint.getValue(fomY);
+                if (fomYVal != null) {
+                    y = fomYVal.getValue();
                 }
                 if (x != null && y != null) {
                     points.add(new XYChart.Data<>(x, y, designPoint));
