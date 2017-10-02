@@ -137,15 +137,15 @@ public class TradespaceView extends AnchorPane {
                                  FigureOfMeritDefinition fomX, FigureOfMeritDefinition fomY) {
         double xMin = Double.MAX_VALUE, xMax = Double.MIN_VALUE, yMin = Double.MAX_VALUE, yMax = Double.MIN_VALUE;
         for (DesignPoint designPoint : tradespace.getDesignPoints()) {
-            for (FigureOfMeritValue fomValue : designPoint.getValues()) {
-                if (fomValue.getDefinition().equals(fomX)) {
-                    if (fomValue.getValue() < xMin) xMin = fomValue.getValue();
-                    if (fomValue.getValue() > xMax) xMax = fomValue.getValue();
-                }
-                if (fomValue.getDefinition().equals(fomY)) {
-                    if (fomValue.getValue() < yMin) yMin = fomValue.getValue();
-                    if (fomValue.getValue() > yMax) yMax = fomValue.getValue();
-                }
+            FigureOfMeritValue fomXVal = designPoint.getValue(fomX);
+            if (fomXVal != null) {
+                if (fomXVal.getValue() < xMin) xMin = fomXVal.getValue();
+                if (fomXVal.getValue() > xMax) xMax = fomXVal.getValue();
+            }
+            FigureOfMeritValue fomYVal = designPoint.getValue(fomY);
+            if (fomYVal != null) {
+                if (fomYVal.getValue() < yMin) yMin = fomYVal.getValue();
+                if (fomYVal.getValue() > yMax) yMax = fomYVal.getValue();
             }
         }
         double width = xMax - xMin;
@@ -168,13 +168,13 @@ public class TradespaceView extends AnchorPane {
         for (DesignPoint designPoint : tradespace.getDesignPoints()) {
             Double x = null, y = null;
             if (designPoint.getEpoch().equals(epoch)) {
-                for (FigureOfMeritValue fomValue : designPoint.getValues()) {
-                    if (fomValue.getDefinition().equals(fomX)) {
-                        x = fomValue.getValue();
-                    }
-                    if (fomValue.getDefinition().equals(fomY)) {
-                        y = fomValue.getValue();
-                    }
+                FigureOfMeritValue fomXVal = designPoint.getValue(fomX);
+                if (fomXVal != null) {
+                    x = fomXVal.getValue();
+                }
+                FigureOfMeritValue fomYVal = designPoint.getValue(fomY);
+                if (fomYVal != null) {
+                    y = fomYVal.getValue();
                 }
                 if (x != null && y != null) {
                     points.add(new XYChart.Data<>(x, y, designPoint));

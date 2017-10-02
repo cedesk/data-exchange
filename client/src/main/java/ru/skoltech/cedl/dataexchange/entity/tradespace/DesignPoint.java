@@ -22,6 +22,8 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import javax.persistence.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +47,9 @@ public class DesignPoint {
 
     @OneToMany(targetEntity = FigureOfMeritValue.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<FigureOfMeritValue> values;
+
+    @Transient
+    private Map<FigureOfMeritDefinition, FigureOfMeritValue> valueMap;
 
     public DesignPoint(Epoch epoch, List<FigureOfMeritValue> values) {
         this.epoch = epoch;
@@ -92,6 +97,13 @@ public class DesignPoint {
         this.modelStateLink = modelStateLink;
     }
 
+    private Map<FigureOfMeritDefinition, FigureOfMeritValue> getValueMap() {
+        if (valueMap == null) {
+            this.valueMap = values.stream().collect(Collectors.toMap(FigureOfMeritValue::getDefinition, Function.identity()));
+        }
+        return valueMap;
+    }
+
     public List<FigureOfMeritValue> getValues() {
         return values;
     }
@@ -127,6 +139,10 @@ public class DesignPoint {
             fomTexts.add(description);
         }
         return fomTexts.stream().collect(Collectors.joining(",\n"));
+    }
+
+    public FigureOfMeritValue getValue(FigureOfMeritDefinition figureOfMeritDefinition) {
+        return getValueMap().get(figureOfMeritDefinition);
     }
 
     @Override
