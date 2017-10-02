@@ -25,13 +25,17 @@ import javafx.scene.chart.Axis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 
 /**
  * Created by d.knoll on 23/06/2017.
@@ -42,7 +46,13 @@ public class TradespaceView extends AnchorPane {
     private MultitemporalTradespace tradespace;
     private FigureOfMeritChartDefinition chartDefinition;
 
+    private Consumer<Integer> loadRevisionListener;
+
     public TradespaceView() {
+    }
+
+    public void setLoadRevisionListener(Consumer<Integer> loadRevisionListener) {
+        this.loadRevisionListener = loadRevisionListener;
     }
 
     public FigureOfMeritChartDefinition getChartDefinition() {
@@ -88,10 +98,30 @@ public class TradespaceView extends AnchorPane {
 
                 for (XYChart.Series<Number, Number> s : chart.getData()) {
                     for (XYChart.Data<Number, Number> d : s.getData()) {
-                        Tooltip tooltip = new Tooltip(d.getExtraValue().toString());
+                        DesignPoint designPoint = (DesignPoint)d.getExtraValue();
+                        Tooltip tooltip = new Tooltip(designPoint.getDescription());
                         Tooltip.install(d.getNode(), tooltip);
                         d.getNode().setOnMouseEntered(event -> d.getNode().getStyleClass().add("onHover"));
                         d.getNode().setOnMouseExited(event -> d.getNode().getStyleClass().remove("onHover"));
+                        d.getNode().setOnMouseClicked(event -> {
+                            MouseButton button = event.getButton();
+                            if (button == MouseButton.SECONDARY){
+                                ModelStateLink modelStateLink = designPoint.getModelStateLink();
+                                if (designPoint.getModelStateLink() == null) {
+                                    return;
+                                }
+                                int studyRevisionId = modelStateLink.getStudyRevisionId();
+                                MenuItem menuItem = new MenuItem("Load study revision " + studyRevisionId);
+                                menuItem.setOnAction(event1 -> {
+                                            if (this.loadRevisionListener != null) {
+                                                this.loadRevisionListener.accept(studyRevisionId);
+                                            }
+                                        });
+                                ContextMenu contextMenu = new ContextMenu();
+                                contextMenu.getItems().addAll(menuItem);
+                                contextMenu.show(d.getNode(), event.getScreenX(), event.getScreenY());
+                            }
+                        });
                     }
                 }
 
@@ -146,8 +176,7 @@ public class TradespaceView extends AnchorPane {
                     }
                 }
                 if (x != null && y != null) {
-                    String description = designPoint.getDescription();
-                    points.add(new XYChart.Data<>(x, y, description));
+                    points.add(new XYChart.Data<>(x, y, designPoint));
                 }
             }
         }

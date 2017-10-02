@@ -73,6 +73,7 @@ public class TradespaceController implements Initializable {
     private ComboBox<FigureOfMeritDefinition> yAxisCombo;
     @FXML
     private TradespaceView tradespaceView;
+
     private Project project;
     private ApplicationSettings applicationSettings;
     private GuiService guiService;
@@ -168,6 +169,7 @@ public class TradespaceController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         studyId = project.getStudy().getId();
+        tradespaceView.setLoadRevisionListener(revision -> project.loadLocalStudy(revision));
         StringConverter<FigureOfMeritDefinition> stringConverter = new StringConverter<FigureOfMeritDefinition>() {
             @Override
             public FigureOfMeritDefinition fromString(String unitStr) {
