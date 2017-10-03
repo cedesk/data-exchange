@@ -161,6 +161,7 @@ public class TradespaceController implements Initializable {
         viewBuilder.modality(Modality.APPLICATION_MODAL);
         viewBuilder.applyEventHandler(event -> {
             MultitemporalTradespace multitemporalTradespace = (MultitemporalTradespace) event.getSource();
+            multitemporalTradespace.setId(studyId);
             this.setMultitemporalTradespace(multitemporalTradespace);
         });
         viewBuilder.showAndWait();
