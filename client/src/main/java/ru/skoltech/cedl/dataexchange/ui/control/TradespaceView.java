@@ -111,6 +111,9 @@ public class TradespaceView extends AnchorPane {
                     if (!s.getName().equals(paretoSeries.getName())) {
                         Node line = s.getNode();
                         line.setStyle("-fx-stroke: transparent;");
+                    } else {
+                        Node line = s.getNode();
+                        line.setStyle("-fx-stroke: grey;");
                     }
                     for (XYChart.Data<Number, Number> d : s.getData()) {
                         if (s.getName().equals(paretoSeries.getName())) {
@@ -122,8 +125,6 @@ public class TradespaceView extends AnchorPane {
                         String description = designPoint.getFullDescription(xFom, yFom);
                         Tooltip tooltip = new Tooltip(description);
                         Tooltip.install(d.getNode(), tooltip);
-                        d.getNode().setOnMouseEntered(event -> d.getNode().getStyleClass().add("onHover"));
-                        d.getNode().setOnMouseExited(event -> d.getNode().getStyleClass().remove("onHover"));
                         d.getNode().setOnMouseClicked(event -> {
                             MouseButton button = event.getButton();
                             if (button == MouseButton.SECONDARY){
@@ -171,7 +172,7 @@ public class TradespaceView extends AnchorPane {
                 .collect(Collectors.collectingAndThen(Collectors.toList(), FXCollections::observableArrayList));
 
         XYChart.Series<Number, Number> series = new XYChart.Series<>();
-        series.setName("Pareto Front");
+        series.setName("PF");
         series.setData(seriesData);
         return series;
     }

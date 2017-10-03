@@ -43,3 +43,20 @@
     -fx-border-width: 1px;
     -fx-border-color: grey;
 }
+
+.chart-series-line {
+    -fx-stroke-width: 1px;
+    -fx-effect: null;
+    -fx-background-radius: 0;
+}
+
+.chart-line-symbol {
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 4px;
+    -fx-padding: 4px;
+}
+
+.chart-line-symbol:hover {
+    -fx-background-color: black, white;
+    -fx-background-radius: 0;
+}
