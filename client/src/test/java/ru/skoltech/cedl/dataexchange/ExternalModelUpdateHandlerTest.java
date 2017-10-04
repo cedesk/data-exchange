@@ -25,9 +25,7 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessor;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.*;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
@@ -78,12 +76,16 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
         doThrow(ExternalModelException.class).when(externalModelAccessor).setValue(eq(ERROR_VALUE_REFERENCE_TARGET), any(Double.class));
 
         ExternalModelAccessorFactory externalModelAccessorFactory = mock(ExternalModelAccessorFactory.class);
-        when(externalModelAccessorFactory.createAccessor(any())).thenReturn(externalModelAccessor);
+        when(externalModelAccessorFactory.createAccessor(any(), any())).thenReturn(externalModelAccessor);
+
+        ExternalModelFileHandler externalModelFileHandler = mock(ExternalModelFileHandler.class);
+        doReturn(ExternalModelCacheState.NOT_CACHED).when(externalModelFileHandler).getCacheState(any());
 
         parameterLinkRegistry = mock(ParameterLinkRegistry.class);
 
         externalModelUpdateHandler = context.getBean(ExternalModelUpdateHandler.class);
         externalModelUpdateHandler.setExternalModelAccessorFactory(externalModelAccessorFactory);
+        externalModelUpdateHandler.setExternalModelFileHandler(externalModelFileHandler);
         externalModelUpdateHandler.setParameterLinkRegistry(parameterLinkRegistry);
         externalModelUpdateHandler.clearParameterModelUpdateState();
     }
@@ -265,6 +267,7 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
 
         ExternalModel externalModel = new ExternalModel();
         externalModel.setParent(modelNode);
+        externalModel.setAttachment(new byte[0]);
 
         parameterModel1.setIsExported(false);
         List<Pair<ParameterModel, ExternalModelUpdateState>> updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
@@ -309,14 +312,14 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EXPORT)));
         verify(externalModelAccessor, times(1)).setValue(any(String.class), any(Double.class));
-        verify(externalModelAccessor, never()).flush();
+        verify(externalModelAccessor, never()).flush(any());
 
         externalModelReference.setTarget(VALUE_REFERENCE_TARGET);
         updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.SUCCESS)));
         verify(externalModelAccessor, times(2)).setValue(any(String.class), any(Double.class));
-        verify(externalModelAccessor, times(1)).flush();
+        verify(externalModelAccessor, times(1)).flush(any());
 
         ParameterModel parameterModel2 = new ParameterModel();
         when(modelNode.getParameters()).thenReturn(Arrays.asList(parameterModel1, parameterModel2));
@@ -324,7 +327,7 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.SUCCESS)));
         verify(externalModelAccessor, times(3)).setValue(any(String.class), any(Double.class));
-        verify(externalModelAccessor, times(2)).flush();
+        verify(externalModelAccessor, times(2)).flush(any());
     }
 
     @Test(expected = ExternalModelException.class)
@@ -333,6 +336,7 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
 
         ExternalModel externalModel = new ExternalModel();
         externalModel.setParent(modelNode);
+        externalModel.setAttachment(new byte[0]);
 
         ExternalModelReference externalModelReference = new ExternalModelReference();
         externalModelReference.setExternalModel(externalModel);
@@ -344,7 +348,7 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
         parameterModel.setExportReference(externalModelReference);
 
         when(modelNode.getParameters()).thenReturn(Collections.singletonList(parameterModel));
-        doThrow(IOException.class).when(externalModelAccessor).flush();
+        doThrow(IOException.class).when(externalModelAccessor).flush(any());
         externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
     }
 }

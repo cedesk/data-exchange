@@ -20,11 +20,11 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessor;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.ParseException;
 
 /**
@@ -37,18 +37,15 @@ public class ExcelModelAccessor implements ExternalModelAccessor {
     private static Logger logger = Logger.getLogger(ExcelModelAccessor.class);
 
     private ExternalModel externalModel;
-    private ExternalModelFileHandler externalModelFileHandler;
 
     private SpreadsheetCellValueAccessor spreadsheetAccessor;
 
-    public ExcelModelAccessor(ExternalModel externalModel, ExternalModelFileHandler externalModelFileHandler) throws ExternalModelException {
-        this.externalModel = externalModel;
-        this.externalModelFileHandler = externalModelFileHandler;
+    public ExcelModelAccessor(ExternalModel externalModel, InputStream attachmentStream) throws ExternalModelException {
         try {
-            InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+            this.externalModel = externalModel;
             String fileName = externalModel.getName();
-            spreadsheetAccessor = new SpreadsheetCellValueAccessor(inputStream, fileName);
-        } catch (Throwable e) {
+            spreadsheetAccessor = new SpreadsheetCellValueAccessor(attachmentStream, fileName);
+        } catch (IOException e) {
             logger.error("unable to open spreadsheet");
             throw new ExternalModelException("unable access excel spreadsheet", e);
         }
@@ -74,11 +71,15 @@ public class ExcelModelAccessor implements ExternalModelAccessor {
     }
 
     @Override
-    public void flush() throws IOException {
+    public void flush(OutputStream outputStream) throws ExternalModelException {
         try {
-            externalModelFileHandler.flushModifications(externalModel, spreadsheetAccessor);
-        } catch (ExternalModelException e) {
-            throw new IOException(e);
+            if (spreadsheetAccessor != null) {
+                if (spreadsheetAccessor.isModified()) {
+                    spreadsheetAccessor.saveChanges(outputStream);
+                }
+            }
+        } catch (IOException e) {
+            throw new ExternalModelException(e.getMessage(), e);
         } finally {
             this.close();
         }

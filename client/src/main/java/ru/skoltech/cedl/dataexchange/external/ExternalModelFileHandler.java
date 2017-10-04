@@ -22,14 +22,16 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelTreeIterator;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -315,53 +317,23 @@ public class ExternalModelFileHandler {
         return file;
     }
 
-    public InputStream getAttachmentAsStream(ExternalModel externalModel) throws IOException, ExternalModelException {
-        switch (this.getCacheState(externalModel)) {
-            case CACHED_UP_TO_DATE:
-            case CACHED_MODIFIED_AFTER_CHECKOUT:
-            case CACHED_CONFLICTING_CHANGES:
-                File projectDataDir = project.getProjectDataDir();
-                File cachedFile = externalModelFileStorageService.createFilePathForExternalModel(projectDataDir, externalModel);
-                return new FileInputStream(cachedFile);
-            case CACHED_OUTDATED:
-                File writtenFile = cacheFile(externalModel);
-                return new FileInputStream(writtenFile);
-            default:
-                return externalModel.getAttachmentAsStream();
-        }
-    }
-
-    public void flushModifications(ExternalModel externalModel, SpreadsheetCellValueAccessor spreadsheetAccessor) throws ExternalModelException {
-        if (spreadsheetAccessor != null) {
-            if (spreadsheetAccessor.isModified()) {
-                ExternalModelCacheState cacheState = this.getCacheState(externalModel);
-                if (cacheState == ExternalModelCacheState.NOT_CACHED) {
-                    logger.debug("Updating " + externalModel.getNodePath() + " with changes from parameters");
-                    try (ByteArrayOutputStream bos = new ByteArrayOutputStream(externalModel.getAttachment().length)) {
-                        spreadsheetAccessor.saveChanges(bos);
-                        externalModel.setAttachment(bos.toByteArray());
-                    } catch (IOException e) {
-                        logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + "(in memory).");
-                        throw new ExternalModelException("error saving changes to external model" + externalModel.getNodePath());
-                    }
-                } else {
+    public InputStream getAttachmentAsStream(ExternalModel externalModel) throws ExternalModelException {
+        try {
+            switch (this.getCacheState(externalModel)) {
+                case CACHED_UP_TO_DATE:
+                case CACHED_MODIFIED_AFTER_CHECKOUT:
+                case CACHED_CONFLICTING_CHANGES:
                     File projectDataDir = project.getProjectDataDir();
-                    File file = externalModelFileStorageService.createFilePathForExternalModel(projectDataDir, externalModel);
-                    externalModelFileWatcher.maskChangesTo(file);
-                    logger.debug("Updating " + file.getAbsolutePath() + " with changes from parameters");
-                    try (FileOutputStream fos = new FileOutputStream(file)) {
-                        spreadsheetAccessor.saveChanges(fos);
-                    } catch (FileNotFoundException e) {
-                        logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
-                        throw new ExternalModelException("external model " + externalModel.getNodePath() + " is opened by other application");
-                    } catch (IOException e) {
-                        logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
-                        throw new ExternalModelException("error saving changes to external model " + externalModel.getNodePath());
-                    } finally {
-                        externalModelFileWatcher.unmaskChangesTo(file);
-                    }
-                }
+                    File cachedFile = externalModelFileStorageService.createFilePathForExternalModel(projectDataDir, externalModel);
+                    return new FileInputStream(cachedFile);
+                case CACHED_OUTDATED:
+                    File writtenFile = cacheFile(externalModel);
+                    return new FileInputStream(writtenFile);
+                default:
+                    return externalModel.getAttachmentAsStream();
             }
+        } catch (IOException e) {
+            throw new ExternalModelException(e.getMessage(), e);
         }
     }
 

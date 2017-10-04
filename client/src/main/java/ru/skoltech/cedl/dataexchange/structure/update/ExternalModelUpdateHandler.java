@@ -26,12 +26,12 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessor;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
+import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,17 +44,37 @@ public class ExternalModelUpdateHandler {
 
     private static final Logger logger = Logger.getLogger(ExternalModelUpdateHandler.class);
 
+    private Project project;
     private ExternalModelAccessorFactory externalModelAccessorFactory;
+    private ExternalModelFileHandler externalModelFileHandler;
+    private ExternalModelFileWatcher externalModelFileWatcher;
     private ParameterLinkRegistry parameterLinkRegistry;
+    private ExternalModelFileStorageService externalModelFileStorageService;
 
     private ObservableMap<ParameterModel, ParameterModelUpdateState> parameterModelUpdateStates = FXCollections.observableHashMap();
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
 
     public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
         this.externalModelAccessorFactory = externalModelAccessorFactory;
     }
 
+    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
+        this.externalModelFileHandler = externalModelFileHandler;
+    }
+
+    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
+        this.externalModelFileWatcher = externalModelFileWatcher;
+    }
+
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
+        this.externalModelFileStorageService = externalModelFileStorageService;
     }
 
     public ObservableMap<ParameterModel, ParameterModelUpdateState> parameterModelUpdateStates() {
@@ -139,7 +159,8 @@ public class ExternalModelUpdateHandler {
         Double value;
         ExternalModelAccessor accessor = null;
         try {
-            accessor = externalModelAccessorFactory.createAccessor(externalModel);
+            InputStream attachmentStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+            accessor = externalModelAccessorFactory.createAccessor(externalModel, attachmentStream);
             value = accessor.getValue(valueReference.getTarget());
             if (Double.isNaN(value)) {
                 logger.warn("Parameter model " + parameterModel.getNodePath() + " evaluated invalid value");
@@ -180,7 +201,8 @@ public class ExternalModelUpdateHandler {
                         && parameterModel.getValueSource() == ParameterValueSource.REFERENCE)
                 .collect(Collectors.toList());
 
-        ExternalModelAccessor accessor = externalModelAccessorFactory.createAccessor(externalModel);
+        InputStream attachmentStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
+        ExternalModelAccessor accessor = externalModelAccessorFactory.createAccessor(externalModel, attachmentStream);
 
         List<Pair<ParameterModel, ExternalModelUpdateState>> result = exportParameterModels.stream()
                 .map(parameterModel -> {
@@ -222,10 +244,41 @@ public class ExternalModelUpdateHandler {
         }
 
         try {
-            accessor.flush();
+            this.flushModifications(externalModel, accessor);
             return result;
-        } catch (IOException e) {
+        } catch (ExternalModelException e) {
             throw new ExternalModelException("Cannot flush modifications in accessor: " + externalModel.getNodePath(), e);
         }
     }
+
+    private void flushModifications(ExternalModel externalModel, ExternalModelAccessor externalModelAccessor) throws ExternalModelException {
+        ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
+        if (cacheState == ExternalModelCacheState.NOT_CACHED) {
+            logger.debug("Updating " + externalModel.getNodePath() + " with changes from parameters");
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream(externalModel.getAttachment().length)) {
+                externalModelAccessor.flush(bos);
+                externalModel.setAttachment(bos.toByteArray());
+            } catch (IOException e) {
+                logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + "(in memory).");
+                throw new ExternalModelException("error saving changes to external model" + externalModel.getNodePath());
+            }
+        } else {
+            File projectDataDir = project.getProjectDataDir();
+            File file = externalModelFileStorageService.createFilePathForExternalModel(projectDataDir, externalModel);
+            externalModelFileWatcher.maskChangesTo(file);
+            logger.debug("Updating " + file.getAbsolutePath() + " with changes from parameters");
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                externalModelAccessor.flush(fos);
+            } catch (FileNotFoundException e) {
+                logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
+                throw new ExternalModelException("external model " + externalModel.getNodePath() + " is opened by other application");
+            } catch (IOException e) {
+                logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
+                throw new ExternalModelException("error saving changes to external model " + externalModel.getNodePath());
+            } finally {
+                externalModelFileWatcher.unmaskChangesTo(file);
+            }
+        }
+    }
+
 }

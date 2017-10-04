@@ -23,6 +23,7 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.external.excel.ExcelModelAccessor;
 
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,7 +36,6 @@ public class ExternalModelAccessorFactory {
     private static final Logger logger = Logger.getLogger(ExternalModelAccessorFactory.class);
     private final Map<String, Class<? extends ExternalModelAccessor>> accessors = new HashMap<>();
     private final List<Pair<String, String[]>> fileDescriptionsAndExtensions = new LinkedList<>();
-    private ExternalModelFileHandler externalModelFileHandler;
 
     public ExternalModelAccessorFactory() {
         this.registerAccessor(ExcelModelAccessor.class, ExcelModelAccessor.getFileDescription(), ExcelModelAccessor.getHandledExtensions());
@@ -45,18 +45,14 @@ public class ExternalModelAccessorFactory {
         return fileDescriptionsAndExtensions;
     }
 
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
-    }
-
-    public ExternalModelAccessor createAccessor(ExternalModel externalModel) {
+    public ExternalModelAccessor createAccessor(ExternalModel externalModel, InputStream attachmentStream) {
         String fileName = externalModel.getName();
         String fileExtension = Utils.getExtension(fileName);
         if (accessors.containsKey(fileExtension)) {
             Class evaluatorClass = accessors.get(fileExtension);
             try {
-                Constructor evaluatorConstructor = evaluatorClass.getConstructor(ExternalModel.class, ExternalModelFileHandler.class);
-                ExternalModelAccessor evaluator = (ExternalModelAccessor) evaluatorConstructor.newInstance(externalModel, externalModelFileHandler);
+                Constructor evaluatorConstructor = evaluatorClass.getConstructor(ExternalModel.class, InputStream.class);
+                ExternalModelAccessor evaluator = (ExternalModelAccessor) evaluatorConstructor.newInstance(externalModel, attachmentStream);
                 return evaluator;
             } catch (Exception e) {
                 logger.error("error instantiating ExternalModelAccessor", e);

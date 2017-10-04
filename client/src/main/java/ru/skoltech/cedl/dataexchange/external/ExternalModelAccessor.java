@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.external;
 
 import java.io.Closeable;
 import java.io.Flushable;
+import java.io.OutputStream;
 
 /**
  * By use of this interface access to the the external model can be established.
@@ -29,7 +30,7 @@ import java.io.Flushable;
  * <p>
  * Created by D.Knoll on 23.07.2015.
  */
-public interface ExternalModelAccessor extends Flushable, Closeable {
+public interface ExternalModelAccessor extends Closeable {
 
     /**
      * Retrieve a value from external model. Provided target value defines location of the value to be retrieved
@@ -51,4 +52,5 @@ public interface ExternalModelAccessor extends Flushable, Closeable {
      */
     void setValue(String target, Double value) throws ExternalModelException;
 
+    void flush(OutputStream outputStream) throws ExternalModelException;
 }
