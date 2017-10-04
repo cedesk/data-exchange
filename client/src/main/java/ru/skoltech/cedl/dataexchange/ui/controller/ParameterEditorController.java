@@ -287,6 +287,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     public void displayParameterModel(ParameterModel parameterModel) {
         this.parameterModel = parameterModel;
         this.parameterModelProperty.set(parameterModel);
+        this.updateView();
         ParameterDifference parameterDifference = differenceHandler.modelDifferences().stream()
                 .filter(modelDifference -> modelDifference instanceof ParameterDifference)
                 .filter(modelDifference -> modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG2)
@@ -431,7 +432,7 @@ public class ParameterEditorController implements Initializable, Displayable {
             Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
             return;
         }
-        if (valueSourceChoiceBox.getValue() == REFERENCE && valueReference != null) {
+        if (valueSourceChoiceBox.getValue() == REFERENCE && valueReference == null) {
             Dialogues.showWarning("Empty reference", "No reference has been specified!");
         }
         if (isExportedCheckbox.isSelected()) {
