@@ -23,6 +23,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
+import org.springframework.integration.file.FileReadingMessageSource;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
@@ -77,6 +79,7 @@ public class Project {
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
+    private SourcePollingChannelAdapter inboundFilesChannel;
     private AsyncTaskExecutor executor;
 
     private String projectName;
@@ -100,6 +103,11 @@ public class Project {
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
         this.repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
+        if (this.inboundFilesChannel.isRunning()) {
+            this.inboundFilesChannel.stop();
+        }
+        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectDataDir());
+        this.inboundFilesChannel.start();
         this.accessChecker = this::checkUserAccess;
     }
 
@@ -141,6 +149,10 @@ public class Project {
 
     public void setUnitManagementService(UnitManagementService unitManagementService) {
         this.unitManagementService = unitManagementService;
+    }
+
+    public void setInboundFilesChannel(SourcePollingChannelAdapter inboundFilesChannel) {
+        this.inboundFilesChannel = inboundFilesChannel;
     }
 
     public void setDifferenceHandler(DifferenceHandler differenceHandler) {

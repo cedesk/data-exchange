@@ -125,7 +125,6 @@ public class MainController implements Initializable, Displayable, Closeable {
     private ApplicationSettings applicationSettings;
     private Project project;
     private ExternalModelFileHandler externalModelFileHandler;
-    private ExternalModelFileWatcher externalModelFileWatcher;
     private DifferenceHandler differenceHandler;
     private StudyService studyService;
     private GuiService guiService;
@@ -157,10 +156,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
         this.externalModelFileHandler = externalModelFileHandler;
-    }
-
-    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
-        this.externalModelFileWatcher = externalModelFileWatcher;
     }
 
     public void setDifferenceHandler(DifferenceHandler differenceHandler) {
@@ -201,10 +196,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setStatusLogger(StatusLogger statusLogger) {
         this.statusLogger = statusLogger;
-    }
-
-    public void init() {
-        externalModelFileWatcher.start();
     }
 
     @Override
@@ -815,10 +806,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
         try {
             actionLogger.log(ActionLogger.ActionType.APPLICATION_STOP, "");
-        } catch (Throwable ignore) {
-        }
-        try {
-            externalModelFileWatcher.close();
         } catch (Throwable ignore) {
         }
     }

@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/client.iml" filepath="$PROJECT_DIR$/client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/dataexchange-client.iml" filepath="$PROJECT_DIR$/dataexchange-client.iml" />
     </modules>
   </component>
 </project>

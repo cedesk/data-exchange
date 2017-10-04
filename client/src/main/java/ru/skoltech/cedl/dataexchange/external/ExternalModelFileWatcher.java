@@ -19,10 +19,8 @@ package ru.skoltech.cedl.dataexchange.external;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.service.DirectoryWatchService;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 import java.util.Observable;
@@ -37,68 +35,45 @@ public class ExternalModelFileWatcher extends Observable {
 
     private static Logger logger = Logger.getLogger(ExternalModelFileWatcher.class);
 
-    private DirectoryWatchService directoryWatchService;
     private Map<File, ExternalModel> watchedExternalModels = new ConcurrentHashMap<>();
     private Set<File> maskedFiles = new ConcurrentSkipListSet<>();
-
-
-    public void setDirectoryWatchService(DirectoryWatchService directoryWatchService) {
-        this.directoryWatchService = directoryWatchService;
-    }
 
     public void add(ExternalModel externalModel, File cacheFile) {
         watchedExternalModels.put(cacheFile, externalModel);
         String filePattern = cacheFile.getName();
-        try {
-            directoryWatchService.register(new FileChangeListener(), cacheFile.getParent(), filePattern);
-        } catch (IOException e) {
-            logger.error("unable to observe file " + cacheFile.getAbsolutePath() + " for modifications.");
-        }
     }
 
     public void clear() {
-        directoryWatchService.clear();
         watchedExternalModels.clear();
-    }
-
-    public void close() {
-        directoryWatchService.stop();
     }
 
     public void maskChangesTo(File file) {
         this.maskedFiles.add(file);
     }
 
-    public void start() {
-        directoryWatchService.start();
-    }
-
     public void unmaskChangesTo(File file) {
         this.maskedFiles.remove(file);
     }
 
-    private class FileChangeListener implements DirectoryWatchService.OnFileChangeListener {
-        @Override
-        public void onFileModify(File changedFile) {
-            if (maskedFiles.contains(changedFile)) {
-                return;
+    public void onFileModify(File changedFile) {
+        if (maskedFiles.contains(changedFile)) {
+            return;
+        }
+        String changedFilePath = changedFile.getAbsolutePath();
+        if (watchedExternalModels.containsKey(changedFile)) {
+            ExternalModel externalModel = watchedExternalModels.get(changedFile);
+            long lastModified = changedFile.lastModified();
+            String dateAndTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(lastModified));
+            logger.debug("file " + changedFilePath + " has been modified (" + dateAndTime + ")");
+            // TODO: iif necessary
+            try {
+                ExternalModelFileWatcher.this.setChanged();
+                ExternalModelFileWatcher.this.notifyObservers(externalModel);
+            } catch (Exception ex) {
+                logger.error("error in notifying file change listeners", ex);
             }
-            String changedFilePath = changedFile.getAbsolutePath();
-            if (watchedExternalModels.containsKey(changedFile)) {
-                ExternalModel externalModel = watchedExternalModels.get(changedFile);
-                long lastModified = changedFile.lastModified();
-                String dateAndTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(lastModified));
-                logger.debug("file " + changedFilePath + " has been modified (" + dateAndTime + ")");
-                // TODO: iif necessary
-                try {
-                    ExternalModelFileWatcher.this.setChanged();
-                    ExternalModelFileWatcher.this.notifyObservers(externalModel);
-                } catch (Exception ex) {
-                    logger.error("error in notifying file change listeners", ex);
-                }
-            } else {
-                logger.debug("ignoring change on file: " + changedFilePath);
-            }
+        } else {
+            logger.debug("ignoring change on file: " + changedFilePath);
         }
     }
 }
