@@ -26,10 +26,11 @@
     <import resource="context-service.xml"/>
 
     <bean id="mainController" class="ru.skoltech.cedl.dataexchange.ui.controller.MainController"
-          destroy-method="destroy">
+          init-method="init" destroy-method="destroy">
         <property name="modelEditingController" ref="modelEditingController"/>
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="project" ref="project"/>
+        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="guiService" ref="guiService"/>
@@ -113,7 +114,6 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.DiffController" scope="prototype">
-        <property name="applicationSettings" ref="applicationSettings"/>
         <property name="project" ref="project"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="statusLogger" ref="statusLogger"/>

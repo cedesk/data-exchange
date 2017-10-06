@@ -103,11 +103,11 @@ public class Project {
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
         this.repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
-        if (this.inboundFilesChannel.isRunning()) {
-            this.inboundFilesChannel.stop();
-        }
-        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectDataDir());
-        this.inboundFilesChannel.start();
+//        if (this.inboundFilesChannel.isRunning()) {
+//            this.inboundFilesChannel.stop();
+//        }
+//        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectDataDir());
+//        this.inboundFilesChannel.start();
         this.accessChecker = this::checkUserAccess;
     }
 
@@ -343,9 +343,9 @@ public class Project {
         }
 
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        parameterLinkRegistry.registerAllParameters(getSystemModel());
         externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
         differenceHandler.clearModelDifferences();
-        parameterLinkRegistry.registerAllParameters(getSystemModel());
     }
 
     public void loadLocalStudy(Integer revisionNumber) {
@@ -355,9 +355,9 @@ public class Project {
         }
 
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        parameterLinkRegistry.registerAllParameters(getSystemModel());
         externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
         differenceHandler.clearModelDifferences();
-        parameterLinkRegistry.registerAllParameters(getSystemModel());
     }
 
     public Future<List<ModelDifference>> loadRepositoryStudy() {

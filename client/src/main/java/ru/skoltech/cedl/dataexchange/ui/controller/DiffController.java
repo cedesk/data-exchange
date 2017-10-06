@@ -52,16 +52,11 @@ public class DiffController implements Initializable, Displayable, Closeable {
     @FXML
     private TableColumn<ModelDifference, String> elementTypeColumn;
 
-    private ApplicationSettings applicationSettings;
     private Project project;
     private DifferenceHandler differenceHandler;
     private StatusLogger statusLogger;
 
     private Stage ownerStage;
-
-    public void setApplicationSettings(ApplicationSettings applicationSettings) {
-        this.applicationSettings = applicationSettings;
-    }
 
     public void setProject(Project project) {
         this.project = project;
@@ -77,9 +72,7 @@ public class DiffController implements Initializable, Displayable, Closeable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        if (applicationSettings.isRepositoryWatcherAutosync()) {
-            this.refreshView();
-        }
+        this.refreshView();
         diffTable.setItems(differenceHandler.modelDifferences());
         actionColumn.setCellFactory(new ActionCellFactory());
         elementTypeColumn.setCellValueFactory(valueFactory -> {

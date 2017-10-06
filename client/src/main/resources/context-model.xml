@@ -97,7 +97,9 @@
         <property name="actionLogger" ref="actionLogger"/>
     </bean>
 
-    <bean id="externalModelFileWatcher" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher"/>
+    <bean id="externalModelFileWatcher" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher">
+        <property name="directoryWatchService" ref="directoryWatchService"/>
+    </bean>
 
     <bean id="externalModelFileHandler" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler">
         <property name="project" ref="project"/>
