@@ -22,7 +22,10 @@ import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.chart.*;
+import javafx.scene.chart.Axis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -32,11 +35,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -52,10 +51,6 @@ public class TradespaceView extends AnchorPane {
     private Consumer<Integer> loadRevisionListener;
 
     public TradespaceView() {
-    }
-
-    public void setLoadRevisionListener(Consumer<Integer> loadRevisionListener) {
-        this.loadRevisionListener = loadRevisionListener;
     }
 
     public FigureOfMeritChartDefinition getChartDefinition() {
@@ -74,6 +69,10 @@ public class TradespaceView extends AnchorPane {
         this.tradespace = tradespace;
     }
 
+    public void setLoadRevisionListener(Consumer<Integer> loadRevisionListener) {
+        this.loadRevisionListener = loadRevisionListener;
+    }
+
     @Override
     public WritableImage snapshot(SnapshotParameters params, WritableImage image) {
         return chart.snapshot(params, image);
@@ -86,8 +85,10 @@ public class TradespaceView extends AnchorPane {
             if (xFom != null && yFom != null) {
                 Bounds bounds = extractBounds(tradespace, xFom, yFom);
 
-                Axis<Number> xAxis = new NumberAxis(xFom.getName(), bounds.getMinX(), bounds.getMaxX(), bounds.getMinZ());
-                Axis<Number> yAxis = new NumberAxis(yFom.getName(), bounds.getMinY(), bounds.getMaxY(), bounds.getDepth());
+                String fomXdescription = formatFomDescription(xFom);
+                Axis<Number> xAxis = new NumberAxis(fomXdescription, bounds.getMinX(), bounds.getMaxX(), bounds.getMinZ());
+                String fomYDescription = formatFomDescription(yFom);
+                Axis<Number> yAxis = new NumberAxis(fomYDescription, bounds.getMinY(), bounds.getMaxY(), bounds.getDepth());
                 chart = new LineChart<>(xAxis, yAxis);
                 chart.setTitle("Tradespace");
 
@@ -102,7 +103,7 @@ public class TradespaceView extends AnchorPane {
                     seriesList.add(series);
                 }
 
-                XYChart.Series<Number, Number> paretoSeries = paretoSeries(data);
+                XYChart.Series<Number, Number> paretoSeries = paretoSeries(data, xFom, yFom);
 
                 chart.getData().add(paretoSeries);
                 seriesList.forEach(series -> chart.getData().add(series));
@@ -127,7 +128,7 @@ public class TradespaceView extends AnchorPane {
                         Tooltip.install(d.getNode(), tooltip);
                         d.getNode().setOnMouseClicked(event -> {
                             MouseButton button = event.getButton();
-                            if (button == MouseButton.SECONDARY){
+                            if (button == MouseButton.SECONDARY) {
                                 ModelStateLink modelStateLink = designPoint.getModelStateLink();
                                 if (designPoint.getModelStateLink() == null) {
                                     return;
@@ -135,10 +136,10 @@ public class TradespaceView extends AnchorPane {
                                 int studyRevisionId = modelStateLink.getStudyRevisionId();
                                 MenuItem menuItem = new MenuItem("Load study revision " + studyRevisionId);
                                 menuItem.setOnAction(event1 -> {
-                                            if (this.loadRevisionListener != null) {
-                                                this.loadRevisionListener.accept(studyRevisionId);
-                                            }
-                                        });
+                                    if (this.loadRevisionListener != null) {
+                                        this.loadRevisionListener.accept(studyRevisionId);
+                                    }
+                                });
                                 ContextMenu contextMenu = new ContextMenu();
                                 contextMenu.getItems().addAll(menuItem);
                                 contextMenu.show(d.getNode(), event.getScreenX(), event.getScreenY());
@@ -158,23 +159,6 @@ public class TradespaceView extends AnchorPane {
             }
         }
         getChildren().clear();
-    }
-
-    private XYChart.Series<Number,Number> paretoSeries(ObservableList<XYChart.Data<Number, Number>> data) {
-        ParetoComparator<XYChart.Data<Number, Number>> comparator = new ParetoComparator<>();
-        comparator.add((o1, o2) -> -Double.compare(o1.getXValue().doubleValue(), o2.getXValue().doubleValue()));
-        comparator.add(Comparator.comparingDouble(o -> o.getYValue().doubleValue()));
-
-        Collection<XYChart.Data<Number, Number>> points = ParetoHelper.getMaximalFrontierOf(data, comparator);
-
-        ObservableList<XYChart.Data<Number, Number>> seriesData = points.stream()
-                .map(point -> new XYChart.Data<>(point.getXValue(), point.getYValue(), point.getExtraValue()))
-                .collect(Collectors.collectingAndThen(Collectors.toList(), FXCollections::observableArrayList));
-
-        XYChart.Series<Number, Number> series = new XYChart.Series<>();
-        series.setName("PF");
-        series.setData(seriesData);
-        return series;
     }
 
     private Bounds extractBounds(MultitemporalTradespace tradespace,
@@ -225,6 +209,40 @@ public class TradespaceView extends AnchorPane {
             }
         }
         return FXCollections.observableArrayList(points);
+    }
+
+    private String formatFomDescription(FigureOfMeritDefinition figureOfMeritDefinition) {
+        if (figureOfMeritDefinition.getUnitOfMeasure() == null) {
+            return figureOfMeritDefinition.getName();
+        } else {
+            return String.format("%s (%s)", figureOfMeritDefinition.getName(), figureOfMeritDefinition.getUnitOfMeasure());
+        }
+    }
+
+    private XYChart.Series<Number, Number> paretoSeries(ObservableList<XYChart.Data<Number, Number>> data,
+                                                        FigureOfMeritDefinition xFom, FigureOfMeritDefinition yFom) {
+        ParetoComparator<XYChart.Data<Number, Number>> comparator = new ParetoComparator<>();
+        Comparator<XYChart.Data<Number, Number>> xCompare = Comparator.comparingDouble(o -> o.getXValue().doubleValue());
+        if(xFom.getOptimality() == Optimality.MINIMAL) {
+            xCompare = xCompare.reversed();
+        }
+        comparator.add(xCompare);
+        Comparator<XYChart.Data<Number, Number>> yCompare = Comparator.comparingDouble(o -> o.getYValue().doubleValue());
+        if(yFom.getOptimality() == Optimality.MINIMAL) {
+            yCompare = yCompare.reversed();
+        }
+        comparator.add(yCompare);
+
+        Collection<XYChart.Data<Number, Number>> points = ParetoHelper.getMaximalFrontierOf(data, comparator);
+
+        ObservableList<XYChart.Data<Number, Number>> seriesData = points.stream()
+                .map(point -> new XYChart.Data<>(point.getXValue(), point.getYValue(), point.getExtraValue()))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), FXCollections::observableArrayList));
+
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
+        series.setName("PF");
+        series.setData(seriesData);
+        return series;
     }
 
 }
