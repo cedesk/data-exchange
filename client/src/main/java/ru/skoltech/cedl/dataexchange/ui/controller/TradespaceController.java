@@ -246,15 +246,12 @@ public class TradespaceController implements Initializable {
         setMultitemporalTradespace(newTradespace);
     }
 
-    public void refreshChartView() {
-        updateTradespaceView();
-    }
-
     public void saveDiagram() {
         String xAxisName = tradespaceView.getChartDefinition().getAxis1().getName();
         String yAxisName = tradespaceView.getChartDefinition().getAxis2().getName();
 
         FileChooser fc = new FileChooser();
+        fc.setInitialDirectory(project.getProjectDataDir());
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
         fc.setInitialFileName("FigureOfMeritChart_" + xAxisName + "--" + yAxisName + "_" + Utils.getFormattedDateAndTime());
         fc.setTitle("Save Chart");
@@ -296,7 +293,7 @@ public class TradespaceController implements Initializable {
             yAxisCombo.getSelectionModel().select(figureOfMeritDefinitions.get(1));
     }
 
-    private void updateTradespaceView() {
+    public void updateTradespaceView() {
         FigureOfMeritDefinition axis1 = xAxisCombo.getValue();
         FigureOfMeritDefinition axis2 = yAxisCombo.getValue();
         FigureOfMeritChartDefinition chartDef = new FigureOfMeritChartDefinition(axis1, axis2);

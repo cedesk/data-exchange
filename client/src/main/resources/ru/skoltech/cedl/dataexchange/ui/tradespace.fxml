@@ -56,7 +56,7 @@
                                     <ComboBox prefWidth="150.0" fx:id="xAxisCombo"/>
                                     <Label text="Y-Axis"/>
                                     <ComboBox fx:id="yAxisCombo" prefWidth="150.0"/>
-                                    <Button minWidth="28" mnemonicParsing="false" onAction="#refreshChartView">
+                                    <Button minWidth="28" mnemonicParsing="false" onAction="#updateTradespaceView">
                                         <tooltip>
                                             <Tooltip text="Refresh"/>
                                         </tooltip>
