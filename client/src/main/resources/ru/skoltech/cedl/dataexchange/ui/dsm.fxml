@@ -37,16 +37,26 @@
                 </Button>
                 <Label text="IC/FBD convention: inputs shown in columns, outputs in rows; feedback marks appear below the diagonal."/>
                 <Pane HBox.hgrow="ALWAYS"/>
-                <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode">
+                <Button minWidth="28" mnemonicParsing="false" onAction="#runDsmSequencing">
                     <tooltip>
-                        <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
+                        <Tooltip text="Run Sequencing"/>
                     </tooltip>
                     <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="CODEPEN"/>
+                        <Glyph fontFamily="FontAwesome" icon="QRCODE"/>
                     </graphic>
                 </Button>
-                <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                          text="Generate weighted DSM" GridPane.columnIndex="1"/>
+                <!--
+                                <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode">
+                                    <tooltip>
+                                        <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
+                                    </tooltip>
+                                    <graphic>
+                                        <Glyph fontFamily="FontAwesome" icon="CODEPEN"/>
+                                    </graphic>
+                                </Button>
+                                <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                                          text="Generate weighted DSM" GridPane.columnIndex="1"/>
+                -->
             </ToolBar>
         </top>
         <center>
