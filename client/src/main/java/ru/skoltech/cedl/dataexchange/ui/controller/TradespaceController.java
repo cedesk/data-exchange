@@ -160,9 +160,16 @@ public class TradespaceController implements Initializable {
         viewBuilder.resizable(false);
         viewBuilder.modality(Modality.APPLICATION_MODAL);
         viewBuilder.applyEventHandler(event -> {
-            MultitemporalTradespace multitemporalTradespace = (MultitemporalTradespace) event.getSource();
-            multitemporalTradespace.setId(studyId);
-            this.setMultitemporalTradespace(multitemporalTradespace);
+            if (!this.multitemporalTradespace.getDefinitions().isEmpty() || !this.multitemporalTradespace.getEpochs().isEmpty()) {
+                Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a tradespace",
+                        "Are you sure to delete the current tradespace?\n" +
+                                "WARNING: This is not reversible!");
+                if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
+                    MultitemporalTradespace multitemporalTradespace = (MultitemporalTradespace) event.getSource();
+                    multitemporalTradespace.setId(studyId);
+                    this.setMultitemporalTradespace(multitemporalTradespace);
+                }
+            }
         });
         viewBuilder.showAndWait();
     }
