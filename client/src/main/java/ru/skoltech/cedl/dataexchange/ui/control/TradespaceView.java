@@ -85,48 +85,53 @@ public class TradespaceView extends AnchorPane {
             if (xFom != null && yFom != null) {
                 Bounds bounds = extractBounds(tradespace, xFom, yFom);
 
-                String fomXdescription = formatFomDescription(xFom);
-                Axis<Number> xAxis = new NumberAxis(fomXdescription, bounds.getMinX(), bounds.getMaxX(), bounds.getMinZ());
+                String fomXDescription = formatFomDescription(xFom);
+                Axis<Number> xAxis = new NumberAxis(fomXDescription, bounds.getMinX(), bounds.getMaxX(), bounds.getMinZ());
                 String fomYDescription = formatFomDescription(yFom);
                 Axis<Number> yAxis = new NumberAxis(fomYDescription, bounds.getMinY(), bounds.getMaxY(), bounds.getDepth());
                 chart = new LineChart<>(xAxis, yAxis);
-                chart.setTitle("Tradespace");
+                chart.setTitle("Tradespace  " + xFom.getName() + "  vs.  " + yFom.getName());
 
                 List<XYChart.Series<Number, Number>> seriesList = new LinkedList<>();
-                ObservableList<XYChart.Data<Number, Number>> data = FXCollections.observableArrayList();
+                ObservableList<XYChart.Data<Number, Number>> allPoints = FXCollections.observableArrayList();
                 for (Epoch epoch : tradespace.getEpochs()) {
                     ObservableList<XYChart.Data<Number, Number>> points = extractPoints(tradespace, epoch, xFom, yFom);
-                    data.addAll(points);
+                    allPoints.addAll(points);
                     XYChart.Series<Number, Number> series = new XYChart.Series<>();
                     series.setName(epoch.asText());
                     series.setData(points);
                     seriesList.add(series);
                 }
 
-                XYChart.Series<Number, Number> paretoSeries = paretoSeries(data, xFom, yFom);
+                XYChart.Series<Number, Number> paretoSeries = paretoSeries(allPoints, xFom, yFom);
 
                 chart.getData().add(paretoSeries);
                 seriesList.forEach(series -> chart.getData().add(series));
 
-                for (XYChart.Series<Number, Number> s : chart.getData()) {
-                    if (!s.getName().equals(paretoSeries.getName())) {
-                        Node line = s.getNode();
+                // tweak chart look and feel
+                for (XYChart.Series<Number, Number> series : chart.getData()) {
+                    // format data series
+                    if (!series.getName().equals(paretoSeries.getName())) { // hide lines for non-pareto series
+                        Node line = series.getNode();
                         line.setStyle("-fx-stroke: transparent;");
                     } else {
-                        Node line = s.getNode();
+                        Node line = series.getNode();
                         line.setStyle("-fx-stroke: grey;");
                     }
-                    for (XYChart.Data<Number, Number> d : s.getData()) {
-                        if (s.getName().equals(paretoSeries.getName())) {
-                            Node symbol = d.getNode();
+                    for (XYChart.Data<Number, Number> numberData : series.getData()) {
+                        if (series.getName().equals(paretoSeries.getName())) { // hide pareto-front points
+                            Node symbol = numberData.getNode();
                             symbol.setStyle("-fx-background-color: transparent, transparent;");
+                            continue;
                         }
 
-                        DesignPoint designPoint = (DesignPoint) d.getExtraValue();
+                        // add tooltip to points
+                        DesignPoint designPoint = (DesignPoint) numberData.getExtraValue();
                         String description = designPoint.getFullDescription(xFom, yFom);
                         Tooltip tooltip = new Tooltip(description);
-                        Tooltip.install(d.getNode(), tooltip);
-                        d.getNode().setOnMouseClicked(event -> {
+                        Tooltip.install(numberData.getNode(), tooltip);
+                        // add context menu to points
+                        numberData.getNode().setOnMouseClicked(event -> {
                             MouseButton button = event.getButton();
                             if (button == MouseButton.SECONDARY) {
                                 ModelStateLink modelStateLink = designPoint.getModelStateLink();
@@ -142,12 +147,12 @@ public class TradespaceView extends AnchorPane {
                                 });
                                 ContextMenu contextMenu = new ContextMenu();
                                 contextMenu.getItems().addAll(menuItem);
-                                contextMenu.show(d.getNode(), event.getScreenX(), event.getScreenY());
+                                contextMenu.show(numberData.getNode(), event.getScreenX(), event.getScreenY());
                             }
                         });
                     }
                 }
-                // Hide pareto legend item
+                // hide legend of pareto front
                 Set<Node> legendNodes = chart.lookupAll(".chart-legend-item");
                 legendNodes.stream()
                         .filter(Label.class::isInstance)
@@ -223,22 +228,20 @@ public class TradespaceView extends AnchorPane {
                                                         FigureOfMeritDefinition xFom, FigureOfMeritDefinition yFom) {
         ParetoComparator<XYChart.Data<Number, Number>> comparator = new ParetoComparator<>();
         Comparator<XYChart.Data<Number, Number>> xCompare = Comparator.comparingDouble(o -> o.getXValue().doubleValue());
-        if(xFom.getOptimality() == Optimality.MINIMAL) {
+        if (xFom.getOptimality() == Optimality.MINIMAL) {
             xCompare = xCompare.reversed();
         }
         comparator.add(xCompare);
         Comparator<XYChart.Data<Number, Number>> yCompare = Comparator.comparingDouble(o -> o.getYValue().doubleValue());
-        if(yFom.getOptimality() == Optimality.MINIMAL) {
+        if (yFom.getOptimality() == Optimality.MINIMAL) {
             yCompare = yCompare.reversed();
         }
         comparator.add(yCompare);
-
         Collection<XYChart.Data<Number, Number>> points = ParetoHelper.getMaximalFrontierOf(data, comparator);
 
         ObservableList<XYChart.Data<Number, Number>> seriesData = points.stream()
                 .map(point -> new XYChart.Data<>(point.getXValue(), point.getYValue(), point.getExtraValue()))
                 .collect(Collectors.collectingAndThen(Collectors.toList(), FXCollections::observableArrayList));
-
         XYChart.Series<Number, Number> series = new XYChart.Series<>();
         series.setName("PF");
         series.setData(seriesData);
