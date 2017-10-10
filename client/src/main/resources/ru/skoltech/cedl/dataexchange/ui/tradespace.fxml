@@ -47,6 +47,9 @@
                     <TitledPane collapsible="false" text="Tradespace Chart" AnchorPane.bottomAnchor="0.0"
                                 AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                         <BorderPane>
+                            <padding>
+                                <Insets/>
+                            </padding>
                             <top>
                                 <ToolBar BorderPane.alignment="CENTER">
                                     <Label text="X-Axis"/>

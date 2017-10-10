@@ -32,7 +32,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
 
 import java.util.*;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 /**
  * Created by d.knoll on 23/06/2017.
  */
-public class TradespaceView extends AnchorPane {
+public class TradespaceView extends BorderPane {
 
     private LineChart<Number, Number> chart;
     private MultitemporalTradespace tradespace;
@@ -159,7 +159,7 @@ public class TradespaceView extends AnchorPane {
                         .map(Label.class::cast)
                         .filter(label -> paretoSeries.getName().equals(label.getText()))
                         .forEach(label -> label.setVisible(false));
-                getChildren().setAll(chart);
+                this.setCenter(chart);
                 return;
             }
         }
