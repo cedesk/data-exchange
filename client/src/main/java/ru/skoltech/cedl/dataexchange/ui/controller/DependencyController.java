@@ -31,6 +31,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
@@ -47,6 +48,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Controller for dependency checks.
@@ -86,16 +89,16 @@ public class DependencyController implements Initializable {
     private DifferenceHandler differenceHandler;
     private BooleanBinding repositoryNewer;
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
+        this.differenceHandler = differenceHandler;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
-    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
-        this.differenceHandler = differenceHandler;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     @Override
@@ -151,12 +154,16 @@ public class DependencyController implements Initializable {
                     .forEach(element -> element.setPosition(position[0]++));
         }
         diagramView.setModel(dependencyModel);
-
+        Iterable<ModelNode> nodeIterable = () -> systemModel.treeIterator();
+        List<String> ownerElements = StreamSupport.stream(nodeIterable.spliterator(), false)
+                .filter(node -> project.checkUserAccess(node))
+                .map(ModelNode::getName).collect(Collectors.toList());
+        diagramView.setHighlightedElements(ownerElements);
     }
 
     public void saveDiagram() {
         FileChooser fc = new FileChooser();
-        //fc.setInitialDirectory(new File("res/maps"));
+        fc.setInitialDirectory(project.getProjectDataDir());
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
         fc.setInitialFileName(project.getProjectName() + "_NSquare_" + Utils.getFormattedDateAndTime());
         fc.setTitle("Save Diagram");

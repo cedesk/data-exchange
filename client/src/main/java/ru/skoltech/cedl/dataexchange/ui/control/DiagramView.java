@@ -44,6 +44,7 @@ public class DiagramView extends AnchorPane implements Initializable {
     private static final Color ELEMENT_FILL_COLOR = Color.LIGHTGREY;
     private static final Color DEFAULT_CONNECTION_COLOR = Color.DARKGREY;
     private static final Color HIGHLIGHT_CONNECTION_COLOR = Color.BLUE;
+    private static final Color HIGHLIGHTED_ELEMENT_COLOR = Color.BLACK;
     private static final Double[] DASHED_STROKE = new Double[]{10d, 7d};
     private static double CAPTION_SCALE = .75;
     private static int ELEMENT_PADDING = 15;
@@ -59,6 +60,14 @@ public class DiagramView extends AnchorPane implements Initializable {
     public DiagramView() {
     }
 
+    public void setHighlightedElements(List<String> elementNames) {
+        elementNames.forEach(elmentName -> {
+            DiagramElement diagramElement = elements.get(elmentName);
+            if (diagramElement != null)
+                diagramElement.setHighlighted(true);
+        });
+    }
+
     public void setModel(DependencyModel dependencyModel) {
         reset();
         dependencyModel.elementStream()
@@ -71,8 +80,7 @@ public class DiagramView extends AnchorPane implements Initializable {
             String statefulDescription = conn.getLinkingParameters().stream()
                     .map(pm -> {
                         String stateAbbr = getParameterLinkState(pm).getAbbreviation();
-                        if (stateAbbr.equals("")) return pm.getName();
-                        else return "[" + stateAbbr + "] " + pm.getName();
+                        return stateAbbr.equals("") ? pm.getName() : "[" + stateAbbr + "] " + pm.getName();
                     })
                     .collect(Collectors.joining(",\n"));
             addConnection(conn.getFromName(), conn.getToName(), statefulDescription, conn.getStrength(), states);
@@ -275,6 +283,7 @@ public class DiagramView extends AnchorPane implements Initializable {
 
     private static class DiagramElement extends Group {
 
+        private boolean isHighlighted = false;
         private boolean isSelected = false;
         private Rectangle rect;
         private String name;
@@ -311,6 +320,15 @@ public class DiagramView extends AnchorPane implements Initializable {
 
         public int getPosition() {
             return position;
+        }
+
+        public boolean isHighlighted() {
+            return isHighlighted;
+        }
+
+        public void setHighlighted(boolean highlighted) {
+            isHighlighted = highlighted;
+            rect.setStroke(HIGHLIGHTED_ELEMENT_COLOR);
         }
 
         public boolean isSelected() {
