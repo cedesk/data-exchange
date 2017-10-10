@@ -91,8 +91,9 @@ public class ApplicationPackage implements Comparable<ApplicationPackage> {
     }
 
     public static ApplicationPackage fromFileName(String baseUrl, String fileName) {
+        fileName = fileName.toLowerCase();
         ApplicationPackage applicationPackage = new ApplicationPackage(baseUrl + fileName, fileName);
-        Pattern pattern = Pattern.compile(DIST_PACKAGE_FILE_NAME_START + "([^_]*)_.*");
+        Pattern pattern = Pattern.compile(DIST_PACKAGE_FILE_NAME_START + "(((\\d+\\.)*)(\\d+))(_(\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}))?(\\.(exe|deb|dmg))$");
         Matcher matcher = pattern.matcher(fileName);
         if (matcher.matches()) {
             String versionName = matcher.group(1);
@@ -105,7 +106,7 @@ public class ApplicationPackage implements Comparable<ApplicationPackage> {
     }
 
     public static boolean isRelease(String versionName) {
-        return !versionName.endsWith("snapshot") || versionName.endsWith("Snapshot") || versionName.endsWith("SNAPSHOT");
+        return !versionName.toLowerCase().endsWith("snapshot");
     }
 
     @Override
