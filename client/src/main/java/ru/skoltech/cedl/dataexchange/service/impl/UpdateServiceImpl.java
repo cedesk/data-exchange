@@ -31,6 +31,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -82,14 +83,11 @@ public class UpdateServiceImpl implements UpdateService {
 
     @Override
     public ApplicationPackage getLatest(List<String> fileNames) {
-        ApplicationPackage latestAppPkg = null;
-        for (String filename : fileNames) {
-            ApplicationPackage applicationPackage = ApplicationPackage.fromFileName("", filename);
-            if ((latestAppPkg == null) || (latestAppPkg.compareTo(applicationPackage) < 0)) {
-                latestAppPkg = applicationPackage;
-            }
-        }
-        return latestAppPkg;
+        return fileNames.stream()
+                .map(fileName -> ApplicationPackage.fromFileName("", fileName))
+                .filter(Objects::nonNull)
+                .max(ApplicationPackage::compareTo)
+                .orElse(null);
     }
 
     private List<String> extractFileNames(Document doc) {

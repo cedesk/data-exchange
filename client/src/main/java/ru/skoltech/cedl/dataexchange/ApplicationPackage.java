@@ -100,7 +100,7 @@ public class ApplicationPackage implements Comparable<ApplicationPackage> {
             applicationPackage.version = versionName;
             applicationPackage.isRelease = isRelease(versionName);
         } else {
-            throw new IllegalArgumentException(fileName + " is not a parseable application package");
+            return null;
         }
         return applicationPackage;
     }
