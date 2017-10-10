@@ -221,6 +221,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntit
     }
     //-------------
 
+    @Deprecated
     public Long findLatestModificationCurrentNode() {
         Long latest = Utils.INVALID_TIME;
 

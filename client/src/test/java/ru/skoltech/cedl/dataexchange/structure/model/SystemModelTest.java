@@ -32,6 +32,7 @@ import java.util.Date;
 /**
  * Created by Nikolay Groshkov on 14-Jun-17.
  */
+@Deprecated
 public class SystemModelTest {
 
     private SystemModel systemModel;

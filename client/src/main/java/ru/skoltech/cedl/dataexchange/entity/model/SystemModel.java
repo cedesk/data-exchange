@@ -75,6 +75,7 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
     /**
      * @return the most recent modification time of any of the sub-nodes, external models or any of their parameters.
      */
+    @Deprecated
     public Long findLatestModification() {
         Long latest = Utils.INVALID_TIME;
         Iterator<ModelNode> iterator = treeIterator();
