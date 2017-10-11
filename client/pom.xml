@@ -203,6 +203,8 @@
                     <nativeReleaseVersion>${project.version}</nativeReleaseVersion>
                     <skipNativeVersionNumberSanitizing>true</skipNativeVersionNumberSanitizing>
                     <appName>CEDESK</appName>
+                    <title>CEDESK</title>
+                    <description>Concurrent Engineering Data Exchange</description>
                 </configuration>
                 <executions>
                     <execution>
