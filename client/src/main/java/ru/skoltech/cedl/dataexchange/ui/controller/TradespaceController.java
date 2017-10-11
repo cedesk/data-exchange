@@ -164,12 +164,13 @@ public class TradespaceController implements Initializable {
                 Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("Deleting a tradespace",
                         "Are you sure to delete the current tradespace?\n" +
                                 "WARNING: This is not reversible!");
-                if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
-                    MultitemporalTradespace multitemporalTradespace = (MultitemporalTradespace) event.getSource();
-                    multitemporalTradespace.setId(studyId);
-                    this.setMultitemporalTradespace(multitemporalTradespace);
+                if (!chooseYesNo.isPresent() || chooseYesNo.get() == ButtonType.NO) {
+                    return;
                 }
             }
+            MultitemporalTradespace multitemporalTradespace = (MultitemporalTradespace) event.getSource();
+            multitemporalTradespace.setId(studyId);
+            this.setMultitemporalTradespace(multitemporalTradespace);
         });
         viewBuilder.showAndWait();
     }
