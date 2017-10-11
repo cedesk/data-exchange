@@ -38,7 +38,7 @@ import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.ui.control.DiagramView;
+import ru.skoltech.cedl.dataexchange.ui.control.DependencyDiagramView;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -82,7 +82,7 @@ public class DependencyController implements Initializable {
     private ToggleGroup sourceGroup;
 
     @FXML
-    private DiagramView diagramView;
+    private DependencyDiagramView dependencyDiagramView;
 
     private Project project;
     private ParameterLinkRegistry parameterLinkRegistry;
@@ -153,12 +153,12 @@ public class DependencyController implements Initializable {
                     .sorted(Comparator.comparing(DependencyModel.Element::getName))
                     .forEach(element -> element.setPosition(position[0]++));
         }
-        diagramView.setModel(dependencyModel);
+        dependencyDiagramView.setModel(dependencyModel);
         Iterable<ModelNode> nodeIterable = () -> systemModel.treeIterator();
         List<String> ownerElements = StreamSupport.stream(nodeIterable.spliterator(), false)
                 .filter(node -> project.checkUserAccess(node))
                 .map(ModelNode::getName).collect(Collectors.toList());
-        diagramView.setHighlightedElements(ownerElements);
+        dependencyDiagramView.setHighlightedElements(ownerElements);
     }
 
     public void saveDiagram() {
@@ -167,11 +167,11 @@ public class DependencyController implements Initializable {
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
         fc.setInitialFileName(project.getProjectName() + "_NSquare_" + Utils.getFormattedDateAndTime());
         fc.setTitle("Save Diagram");
-        Window window = diagramView.getScene().getWindow();
+        Window window = dependencyDiagramView.getScene().getWindow();
         File file = fc.showSaveDialog(window);
         if (file != null) {
             SnapshotParameters snapshotParameters = new SnapshotParameters();
-            WritableImage snapshot = diagramView.snapshot(snapshotParameters, null);
+            WritableImage snapshot = dependencyDiagramView.snapshot(snapshotParameters, null);
             try {
                 ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null), "png", file);
             } catch (IOException e) {
@@ -189,7 +189,7 @@ public class DependencyController implements Initializable {
         repositoryNewer = Bindings.isNotEmpty(differenceHandler.modelDifferences());
         repositoryNewer.addListener(listener);
 
-        diagramView.getScene().getWindow().setOnCloseRequest(event -> {
+        dependencyDiagramView.getScene().getWindow().setOnCloseRequest(event -> {
             repositoryNewer.removeListener(listener);
         });
     }

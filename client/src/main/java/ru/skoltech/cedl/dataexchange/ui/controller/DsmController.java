@@ -23,30 +23,27 @@ import edu.carleton.tim.jdsm.dependency.analysis.ClusteredCost;
 import edu.carleton.tim.jdsm.dependency.analysis.PropagationCost;
 import edu.carleton.tim.jdsm.dependency.analysis.SVGOutput;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.SelectionMode;
 import org.apache.log4j.Logger;
-import org.controlsfx.control.spreadsheet.*;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.NumericalDSM;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
+import ru.skoltech.cedl.dataexchange.ui.control.DsmView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Controller for display Dependency Structure Matrix.
@@ -58,7 +55,7 @@ public class DsmController implements Initializable {
     private static final Logger logger = Logger.getLogger(DsmController.class);
 
     @FXML
-    private SpreadsheetView spreadsheetView;
+    private DsmView dsmView;
 
     @FXML
     private CheckBox weightedDsmCheckbox;
@@ -90,8 +87,6 @@ public class DsmController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        spreadsheetView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        spreadsheetView.setRowHeaderWidth(60);
         Platform.runLater(this::refreshView);
     }
 
@@ -99,10 +94,12 @@ public class DsmController implements Initializable {
         SystemModel systemModel = project.getSystemModel();
         DependencyModel dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
 
-        spreadsheetView.setShowRowHeader(true);
-        spreadsheetView.setShowColumnHeader(true);
-        spreadsheetView.setGrid(getDSMGrid(dependencyModel));
-        spreadsheetView.setContextMenu(null);
+        dsmView.setModel(dependencyModel);
+        Iterable<ModelNode> nodeIterable = () -> systemModel.treeIterator();
+        List<String> ownerElements = StreamSupport.stream(nodeIterable.spliterator(), false)
+                .filter(node -> project.checkUserAccess(node))
+                .map(ModelNode::getName).collect(Collectors.toList());
+        dsmView.setHighlightedElements(ownerElements);
     }
 
     public void runDsmSequencing() {
@@ -127,38 +124,6 @@ public class DsmController implements Initializable {
         } catch (FileNotFoundException e) {
             logger.error("unable to write DSM to SVG file", e);
         }
-    }
-
-    private Grid getDSMGrid(DependencyModel dependencyModel) {
-        List<DependencyModel.Element> vertices = dependencyModel.elementStream().sorted().collect(Collectors.toList());
-        final int matrixSize = vertices.size();
-        Collection<String> vertexNames = vertices.stream().map(DependencyModel.Element::getName).collect(Collectors.toList());
-        final GridBase grid = new GridBase(matrixSize, matrixSize);
-        grid.getRowHeaders().addAll(vertexNames);
-        grid.getColumnHeaders().addAll(vertexNames);
-
-        ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(matrixSize);
-        // DSM in IC/FBD format
-        for (DependencyModel.Element toVertex : vertices) {
-            final ObservableList<SpreadsheetCell> viewRow = FXCollections.observableArrayList();
-            for (DependencyModel.Element fromVertex : vertices) {
-                String value = "";
-                DependencyModel.Connection connection = dependencyModel.getConnection(fromVertex, toVertex);
-                if (fromVertex == toVertex) {
-                    value = "--";
-                } else if (connection != null) {
-                    value = connection.getDescription();
-                }
-                int rowIndex = toVertex.getPosition();
-                int columnIndex = fromVertex.getPosition();
-                SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(rowIndex, columnIndex, 1, 1, value);
-                viewRow.add(viewCell);
-            }
-            viewRows.add(viewRow);
-        }
-        grid.setRows(viewRows);
-
-        return grid;
     }
 
 }

@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 14.11.2016.
  */
-public class DiagramView extends AnchorPane implements Initializable {
+public class DependencyDiagramView extends AnchorPane implements Initializable {
 
     public static final Color LEGEND_BACKGROUND = Color.WHITE;
     private static final Color ELEMENT_FILL_COLOR = Color.LIGHTGREY;
@@ -57,7 +57,7 @@ public class DiagramView extends AnchorPane implements Initializable {
     private MultiValuedMap<String, DiagramConnection> fromConnections = new ArrayListValuedHashMap<>();
     private MultiValuedMap<String, DiagramConnection> toConnections = new ArrayListValuedHashMap<>();
 
-    public DiagramView() {
+    public DependencyDiagramView() {
     }
 
     public void setHighlightedElements(List<String> elementNames) {

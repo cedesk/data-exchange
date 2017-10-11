@@ -83,7 +83,16 @@ public class TradespaceView extends BorderPane {
             FigureOfMeritDefinition xFom = chartDefinition.getAxis1();
             FigureOfMeritDefinition yFom = chartDefinition.getAxis2();
             if (xFom != null && yFom != null) {
-                Bounds bounds = extractBounds(tradespace, xFom, yFom);
+                double xMax = tradespace.getDesignPoints().stream().map(designPoint -> designPoint.getValue(xFom).getValue())
+                        .max(Double::compareTo).orElse(Double.MIN_VALUE);
+                double xMin = tradespace.getDesignPoints().stream().map(designPoint -> designPoint.getValue(xFom).getValue())
+                        .min(Double::compareTo).orElse(Double.MAX_VALUE);
+                double yMax = tradespace.getDesignPoints().stream().map(designPoint -> designPoint.getValue(yFom).getValue())
+                        .max(Double::compareTo).orElse(Double.MIN_VALUE);
+                double yMin = tradespace.getDesignPoints().stream().map(designPoint -> designPoint.getValue(yFom).getValue())
+                        .min(Double::compareTo).orElse(Double.MAX_VALUE);
+
+                Bounds bounds = createBounds(xMin, xMax, yMin, yMax);
 
                 String fomXDescription = formatFomDescription(xFom);
                 Axis<Number> xAxis = new NumberAxis(fomXDescription, bounds.getMinX(), bounds.getMaxX(), bounds.getMinZ());
@@ -104,8 +113,11 @@ public class TradespaceView extends BorderPane {
                 }
 
                 XYChart.Series<Number, Number> paretoSeries = paretoSeries(allPoints, xFom, yFom);
-
+                XYChart.Series<Number, Number> utopiaSeries = utopiaSeries(xMin, xMax, yMin, yMax, xFom, yFom);
                 chart.getData().add(paretoSeries);
+                if (utopiaSeries != null) {
+                    chart.getData().add(utopiaSeries);
+                }
                 seriesList.forEach(series -> chart.getData().add(series));
 
                 // tweak chart look and feel
@@ -119,9 +131,13 @@ public class TradespaceView extends BorderPane {
                         line.setStyle("-fx-stroke: grey;");
                     }
                     for (XYChart.Data<Number, Number> numberData : series.getData()) {
+                        Node node = numberData.getNode();
                         if (series.getName().equals(paretoSeries.getName())) { // hide pareto-front points
-                            Node symbol = numberData.getNode();
-                            symbol.setStyle("-fx-background-color: transparent, transparent;");
+                            node.setStyle("-fx-background-color: transparent, transparent;");
+                            continue;
+                        } else if (utopiaSeries != null && series.getName().equals(utopiaSeries.getName())) {
+                            node.setStyle("-fx-background-color: red, transparent;" +
+                                    "-fx-shape: 'M2,0 L5,4 L8,0 L10,0 L10,2 L6,5 L10,8 L10,10 L8,10 L5,6 L2, 10 L0,10 L0,8 L4,5 L0,2 L0,0 Z'");
                             continue;
                         }
 
@@ -129,9 +145,9 @@ public class TradespaceView extends BorderPane {
                         DesignPoint designPoint = (DesignPoint) numberData.getExtraValue();
                         String description = designPoint.getFullDescription(xFom, yFom);
                         Tooltip tooltip = new Tooltip(description);
-                        Tooltip.install(numberData.getNode(), tooltip);
+                        Tooltip.install(node, tooltip);
                         // add context menu to points
-                        numberData.getNode().setOnMouseClicked(event -> {
+                        node.setOnMouseClicked(event -> {
                             MouseButton button = event.getButton();
                             if (button == MouseButton.SECONDARY) {
                                 ModelStateLink modelStateLink = designPoint.getModelStateLink();
@@ -157,7 +173,8 @@ public class TradespaceView extends BorderPane {
                 legendNodes.stream()
                         .filter(Label.class::isInstance)
                         .map(Label.class::cast)
-                        .filter(label -> paretoSeries.getName().equals(label.getText()))
+                        .filter(label -> paretoSeries.getName().equals(label.getText()) ||
+                                (utopiaSeries != null && utopiaSeries.getName().equals(label.getText())))
                         .forEach(label -> label.setVisible(false));
                 this.setCenter(chart);
                 return;
@@ -166,21 +183,7 @@ public class TradespaceView extends BorderPane {
         getChildren().clear();
     }
 
-    private Bounds extractBounds(MultitemporalTradespace tradespace,
-                                 FigureOfMeritDefinition fomX, FigureOfMeritDefinition fomY) {
-        double xMin = Double.MAX_VALUE, xMax = Double.MIN_VALUE, yMin = Double.MAX_VALUE, yMax = Double.MIN_VALUE;
-        for (DesignPoint designPoint : tradespace.getDesignPoints()) {
-            FigureOfMeritValue fomXVal = designPoint.getValue(fomX);
-            if (fomXVal != null) {
-                if (fomXVal.getValue() < xMin) xMin = fomXVal.getValue();
-                if (fomXVal.getValue() > xMax) xMax = fomXVal.getValue();
-            }
-            FigureOfMeritValue fomYVal = designPoint.getValue(fomY);
-            if (fomYVal != null) {
-                if (fomYVal.getValue() < yMin) yMin = fomYVal.getValue();
-                if (fomYVal.getValue() > yMax) yMax = fomYVal.getValue();
-            }
-        }
+    private Bounds createBounds(double xMin, double xMax, double yMin, double yMax) {
         double width = xMax - xMin;
         double xMargin = width * 0.1;
         xMin = xMin - xMargin;
@@ -245,6 +248,26 @@ public class TradespaceView extends BorderPane {
         XYChart.Series<Number, Number> series = new XYChart.Series<>();
         series.setName("PF");
         series.setData(seriesData);
+        return series;
+    }
+
+    private XYChart.Series<Number, Number> utopiaSeries(double xMin, double xMax, double yMin, double yMax,
+                                                        FigureOfMeritDefinition xFom, FigureOfMeritDefinition yFom) {
+        XYChart.Data<Number, Number> data;
+        if (xFom.getOptimality() == Optimality.MAXIMAL && yFom.getOptimality() == Optimality.MAXIMAL) {
+            data = new XYChart.Data<>(xMax, yMax);
+        } else if (xFom.getOptimality() == Optimality.MAXIMAL && yFom.getOptimality() == Optimality.MINIMAL) {
+            data = new XYChart.Data<>(xMax, yMin);
+        } else if (xFom.getOptimality() == Optimality.MINIMAL && yFom.getOptimality() == Optimality.MINIMAL) {
+            data = new XYChart.Data<>(xMin, yMin);
+        } else if (xFom.getOptimality() == Optimality.MINIMAL && yFom.getOptimality() == Optimality.MAXIMAL) {
+            data = new XYChart.Data<>(xMin, yMax);
+        } else {
+            return null;
+        }
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
+        series.setName("Utopia Point");
+        series.setData(FXCollections.singletonObservableList(data));
         return series;
     }
 

@@ -20,7 +20,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<?import ru.skoltech.cedl.dataexchange.ui.control.DiagramView?>
+<?import ru.skoltech.cedl.dataexchange.ui.control.DependencyDiagramView?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="900.0" stylesheets="@styling.css"
             xmlns="http://javafx.com/javafx/8.0.112"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.DependencyController">
@@ -73,7 +73,8 @@
             </ToolBar>
         </top>
         <center>
-            <DiagramView fx:id="diagramView" prefHeight="400" prefWidth="500.0" BorderPane.alignment="TOP_RIGHT"/>
+            <DependencyDiagramView fx:id="dependencyDiagramView" prefHeight="400" prefWidth="500.0"
+                                   BorderPane.alignment="TOP_RIGHT"/>
         </center>
     </BorderPane>
 </AnchorPane>

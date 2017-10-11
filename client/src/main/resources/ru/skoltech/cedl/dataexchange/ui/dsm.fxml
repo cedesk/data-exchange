@@ -18,9 +18,9 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="900.0" stylesheets="@styling.css"
+<?import ru.skoltech.cedl.dataexchange.ui.control.DsmView?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="700.0" stylesheets="@styling.css"
             xmlns="http://javafx.com/javafx/8.0.112"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.DsmController">
     <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
@@ -35,7 +35,12 @@
                         <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
                     </graphic>
                 </Button>
-                <Label text="IC/FBD convention: inputs shown in columns, outputs in rows; feedback marks appear below the diagonal."/>
+                <Label maxWidth="300" text="IC/FBD convention">
+                    <tooltip>
+                        <Tooltip
+                                text="inputs shown in columns, outputs in rows; feedback marks appear below the diagonal"/>
+                    </tooltip>
+                </Label>
                 <Pane HBox.hgrow="ALWAYS"/>
                 <Button minWidth="28" mnemonicParsing="false" onAction="#runDsmSequencing">
                     <tooltip>
@@ -60,8 +65,8 @@
             </ToolBar>
         </top>
         <center>
-            <SpreadsheetView fx:id="spreadsheetView" editable="false" prefHeight="400" prefWidth="500.0"
-                             BorderPane.alignment="CENTER"/>
+            <DsmView fx:id="dsmView" prefHeight="400" prefWidth="500.0"
+                     BorderPane.alignment="CENTER"/>
         </center>
     </BorderPane>
 </AnchorPane>

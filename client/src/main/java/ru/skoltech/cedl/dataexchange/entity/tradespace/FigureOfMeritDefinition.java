@@ -16,6 +16,9 @@
 
 package ru.skoltech.cedl.dataexchange.entity.tradespace;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -99,6 +102,19 @@ public class FigureOfMeritDefinition {
         return definitions;
     }
 
+    public static Pair<String, String> extractUnitOfMeasure(String name) {
+        if (name.contains("(") && name.contains(")")) {
+            String fomName = name.substring(0, name.indexOf("(")).trim();
+            String uom = name.substring(name.indexOf("(") + 1, name.indexOf(")")).trim();
+            return new ImmutablePair<>(fomName, uom);
+        } else if (name.contains("[") && name.contains("]")) {
+            String fomName = name.substring(0, name.indexOf("[")).trim();
+            String uom = name.substring(name.indexOf("[") + 1, name.indexOf("]")).trim();
+            return new ImmutablePair<>(fomName, uom);
+        }
+        return new ImmutablePair<>(name, "");
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -109,6 +125,12 @@ public class FigureOfMeritDefinition {
         if (!name.equals(that.name)) return false;
         if (!unitOfMeasure.equals(that.unitOfMeasure)) return false;
         return optimality == that.optimality;
+    }
+
+    public void extractUnitOfMeasure() {
+        Pair<String, String> nameAndUnitOfMeasure = extractUnitOfMeasure(name);
+        setName(nameAndUnitOfMeasure.getLeft());
+        setUnitOfMeasure(nameAndUnitOfMeasure.getRight());
     }
 
     @Override
