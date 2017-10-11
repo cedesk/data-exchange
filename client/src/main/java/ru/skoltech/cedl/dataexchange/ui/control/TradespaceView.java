@@ -252,12 +252,16 @@ public class TradespaceView extends BorderPane {
     }
 
     private XYChart.Series<Number, Number> utopiaSeries(double xMin, double xMax, double yMin, double yMax,
-            FigureOfMeritDefinition xFom, FigureOfMeritDefinition yFom) {
+                                                        FigureOfMeritDefinition xFom, FigureOfMeritDefinition yFom) {
         XYChart.Data<Number, Number> data;
         if (xFom.getOptimality() == Optimality.MAXIMAL && yFom.getOptimality() == Optimality.MAXIMAL) {
             data = new XYChart.Data<>(xMax, yMax);
+        } else if (xFom.getOptimality() == Optimality.MAXIMAL && yFom.getOptimality() == Optimality.MINIMAL) {
+            data = new XYChart.Data<>(xMax, yMin);
         } else if (xFom.getOptimality() == Optimality.MINIMAL && yFom.getOptimality() == Optimality.MINIMAL) {
             data = new XYChart.Data<>(xMin, yMin);
+        } else if (xFom.getOptimality() == Optimality.MINIMAL && yFom.getOptimality() == Optimality.MAXIMAL) {
+            data = new XYChart.Data<>(xMin, yMax);
         } else {
             return null;
         }
@@ -265,7 +269,6 @@ public class TradespaceView extends BorderPane {
         series.setName("Utopia Point");
         series.setData(FXCollections.singletonObservableList(data));
         return series;
-
     }
 
 }
