@@ -23,7 +23,7 @@ package ru.skoltech.cedl.dataexchange.demo;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import ru.skoltech.cedl.dataexchange.ui.control.DiagramView;
+import ru.skoltech.cedl.dataexchange.ui.control.DependencyDiagramView;
 
 public class DiagramGraphicsDemo extends Application {
 
@@ -34,27 +34,27 @@ public class DiagramGraphicsDemo extends Application {
     @Override
     public void start(Stage stage) {
 
-        DiagramView diagramView = new DiagramView();
-        diagramView.setMinWidth(600);
-        diagramView.setMinHeight(400);
+        DependencyDiagramView dependencyDiagramView = new DependencyDiagramView();
+        dependencyDiagramView.setMinWidth(600);
+        dependencyDiagramView.setMinHeight(400);
 
-        Scene scene = new Scene(diagramView);
+        Scene scene = new Scene(dependencyDiagramView);
         stage.setScene(scene);
         stage.setTitle("Diagram Viewer Test");
         stage.show();
 
-        diagramView.initialize(null, null);
-        diagramView.addElement("Element 1");
-        diagramView.addElement("Element 2");
-        diagramView.addConnection("Element 1", "Element 2", "param. A,\nparam. Z", 2);
+        dependencyDiagramView.initialize(null, null);
+        dependencyDiagramView.addElement("Element 1");
+        dependencyDiagramView.addElement("Element 2");
+        dependencyDiagramView.addConnection("Element 1", "Element 2", "param. A,\nparam. Z", 2);
 
-        diagramView.addElement("Element 3");
-        diagramView.addConnection("Element 1", "Element 3", "parameter B", 1);
-        diagramView.addConnection("Element 3", "Element 2", "parameter C", 1);
+        dependencyDiagramView.addElement("Element 3");
+        dependencyDiagramView.addConnection("Element 1", "Element 3", "parameter B", 1);
+        dependencyDiagramView.addConnection("Element 3", "Element 2", "parameter C", 1);
 
-        diagramView.addElement("Element 4");
-        diagramView.addConnection("Element 3", "Element 4", "param. Y", 1);
-        diagramView.addConnection("Element 4", "Element 2", "param. X", 1);
+        dependencyDiagramView.addElement("Element 4");
+        dependencyDiagramView.addConnection("Element 3", "Element 4", "param. Y", 1);
+        dependencyDiagramView.addConnection("Element 4", "Element 2", "param. X", 1);
 
     }
 
