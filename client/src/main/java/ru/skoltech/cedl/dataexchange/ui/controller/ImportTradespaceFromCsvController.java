@@ -163,8 +163,7 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
                     .map(record -> {
                         List<FigureOfMeritValue> values = definitions.stream()
                                 .map(figuresOfMerit -> {
-                                    String figuresOfMeritName = figuresOfMerit.getName();
-                                    Double value = Double.valueOf(record.get(figuresOfMeritName));
+                                    Double value = Double.valueOf(record.get(figuresOfMerit.getName()));
                                     return new FigureOfMeritValue(figuresOfMerit, value);
                                 })
                                 .collect(Collectors.toList());
@@ -174,6 +173,8 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
                         return new DesignPoint(description, epoch, values);
                     })
                     .collect(Collectors.toList());
+
+            definitions.forEach(FigureOfMeritDefinition::extractUnitOfMeasure);
 
             MultitemporalTradespace multitemporalTradespace = new MultitemporalTradespace();
             multitemporalTradespace.setDefinitions(definitions);
