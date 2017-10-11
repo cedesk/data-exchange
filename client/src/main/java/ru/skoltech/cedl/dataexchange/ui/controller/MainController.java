@@ -139,7 +139,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private Stage ownerStage;
 
-    private StringProperty tagProperty = new SimpleStringProperty(null);
+    private StringProperty tagProperty = new SimpleStringProperty("");
     private BooleanBinding repositoryNewer;
     private ChangeListener<Boolean> repositoryNewerListener;
 
@@ -220,8 +220,8 @@ public class MainController implements Initializable, Displayable, Closeable {
         loadButton.disableProperty().bind(project.canLoadProperty().not());
         saveButton.disableProperty().bind(project.canSyncProperty().not());
 
-        tagLabel.textProperty().bind(Bindings.when(tagProperty.isNull()).then("--").otherwise(tagProperty));
-        tagMenu.textProperty().bind(Bindings.when(tagProperty.isNull()).then("_Tag current revision...").otherwise("_Untag current revision"));
+        tagLabel.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("--").otherwise(tagProperty));
+        tagMenu.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("_Tag current revision...").otherwise("_Untag current revision"));
 
         repositoryNewer = Bindings.createBooleanBinding(() -> differenceHandler.modelDifferences().stream()
                 .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2)
@@ -794,7 +794,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void tagStudy() {
         Study study = project.getStudy();
-        if (tagProperty.getValue() == null) {
+        if (tagProperty.getValue().isEmpty()) {
             ViewBuilder tagDialogViewBuilder = guiService.createViewBuilder("Tag current study revision", Views.TAG_VIEW);
             tagDialogViewBuilder.modality(Modality.APPLICATION_MODAL);
             tagDialogViewBuilder.ownerWindow(ownerStage);
