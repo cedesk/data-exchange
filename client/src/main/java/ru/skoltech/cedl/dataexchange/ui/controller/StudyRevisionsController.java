@@ -95,7 +95,6 @@ public class StudyRevisionsController implements Initializable, Applicable, Disp
         loadButton.disableProperty().bind(Bindings.isEmpty(tagTableView.getSelectionModel().getSelectedItems()));
 
         List<Pair<CustomRevisionEntity, RevisionType>> items = studyService.findAllStudyRevisionEntityWithTags(study);
-        tagTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tagTableView.setItems(FXCollections.observableArrayList(items));
         dateColumn.setCellValueFactory(param -> {
             Date date = param.getValue().getLeft().getRevisionDate();
