@@ -168,6 +168,7 @@
         <dependency>
             <groupId>jdsm</groupId>
             <artifactId>jdsm</artifactId>
+            <version>1.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/jDSM-1.0.jar</systemPath>
         </dependency>

@@ -98,7 +98,7 @@
     <orderEntry type="library" name="Maven: org.jgrapht:jgrapht-core:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: org.jsoup:jsoup:1.10.2" level="project" />
     <orderEntry type="module-library">
-      <library name="Maven: jdsm:jdsm:unknown">
+      <library name="Maven: jdsm:jdsm:1.0">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/jDSM-1.0.jar!/" />
         </CLASSES>
