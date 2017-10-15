@@ -50,18 +50,16 @@
                         <Glyph fontFamily="FontAwesome" icon="QRCODE"/>
                     </graphic>
                 </Button>
-                <!--
-                                <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode">
-                                    <tooltip>
-                                        <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
-                                    </tooltip>
-                                    <graphic>
-                                        <Glyph fontFamily="FontAwesome" icon="CODEPEN"/>
-                                    </graphic>
-                                </Button>
-                                <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                                          text="Generate weighted DSM" GridPane.columnIndex="1"/>
-                -->
+                <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode">
+                    <tooltip>
+                        <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="CODEPEN"/>
+                    </graphic>
+                </Button>
+                <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
+                          text="Generate weighted DSM" GridPane.columnIndex="1"/>
             </ToolBar>
         </top>
         <center>
