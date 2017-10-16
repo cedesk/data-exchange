@@ -42,14 +42,6 @@
                     </tooltip>
                 </Label>
                 <Pane HBox.hgrow="ALWAYS"/>
-                <Button minWidth="28" mnemonicParsing="false" onAction="#runDsmSequencing">
-                    <tooltip>
-                        <Tooltip text="Run Sequencing"/>
-                    </tooltip>
-                    <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="QRCODE"/>
-                    </graphic>
-                </Button>
                 <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode">
                     <tooltip>
                         <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>

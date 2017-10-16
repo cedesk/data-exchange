@@ -97,15 +97,6 @@
     <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.2" level="project" />
     <orderEntry type="library" name="Maven: org.jgrapht:jgrapht-core:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: org.jsoup:jsoup:1.10.2" level="project" />
-    <orderEntry type="module-library">
-      <library name="Maven: jdsm:jdsm:1.0">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jDSM-1.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="Maven: org.jscience:jscience:4.3.1" level="project" />
     <orderEntry type="library" name="Maven: org.javolution:javolution:5.2.3" level="project" />
   </component>
