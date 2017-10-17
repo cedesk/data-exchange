@@ -16,6 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,11 +67,30 @@ public class UpdateServiceImplTest extends AbstractApplicationContextTest {
 
     @Test
     public void testLocal() throws URISyntaxException, IOException {
-        List<String> links = updateService.extractFileNames(file);
-
-        System.out.println(links.stream().collect(Collectors.joining("\n")));
+        List<Pair<String, String>> pairs = updateService.extractFileNamesAndLinks(file);
+        List<String> links = pairs.stream().map(Pair::getLeft).collect(Collectors.toList());
+        System.out.println(links);
 
         Assert.assertArrayEquals(FILE_NAMES.toArray(), links.toArray());
+    }
+
+    @Test
+    public void testNewRemote() throws IOException, URISyntaxException {
+        file = new File(this.getClass().getResource("/new-dir-list.html").toURI());
+
+        JsoupService jsoupServiceMock = context.getBean(JsoupService.class);
+        JsoupService jsoupServiceReal = new JsoupServiceImpl();
+        when(jsoupServiceMock.jsoupParse(any(URL.class))).thenReturn(jsoupServiceReal.jsoupParse(file));
+        when(jsoupServiceMock.jsoupParse(any(File.class))).thenReturn(jsoupServiceReal.jsoupParse(file));
+
+        updateService = context.getBean(UpdateService.class);
+
+        Optional<ApplicationPackage> versionAvailable = updateService.getLatestVersionAvailable();
+        Assert.assertTrue(versionAvailable.isPresent());
+
+        String version = versionAvailable.get().getVersion();
+        String url = versionAvailable.get().getUrl();
+        System.out.println("Latest version on server: " + version + ", " + url);
     }
 
     @Test
@@ -84,18 +105,26 @@ public class UpdateServiceImplTest extends AbstractApplicationContextTest {
 
     @Test
     public void testVersionComparison() {
-        ApplicationPackage latest = updateService.getLatest(FILE_NAMES);
+        List<Pair<String, String>> pairs = FILE_NAMES.stream()
+                .map(fileName -> new ImmutablePair<String, String>(fileName, "")).collect(Collectors.toList());
+        ApplicationPackage latest = updateService.getLatest(pairs);
 
         Assert.assertEquals("cedesk-1.15_2015-11-25_11-23." + EXT, latest.getFilename());
 
-        latest = updateService.getLatest(Arrays.asList(
+        List<String> strings1 = Arrays.asList(
                 "cedesk-1.13_2015-11-16_05-57." + EXT, "cedesk-1.14_2015-11-23_03-24." + EXT,
-                "cedesk-1.15_2015-11-25_11-23." + EXT, "cedesk-1.15-snapshot_2015-11-27_16-34." + EXT));
+                "cedesk-1.15_2015-11-25_11-23." + EXT, "cedesk-1.15-snapshot_2015-11-27_16-34." + EXT);
+        List<Pair<String, String>> pairs1 = strings1.stream()
+                .map(fileName -> new ImmutablePair<String, String>(fileName, "")).collect(Collectors.toList());
+        latest = updateService.getLatest(pairs1);
         Assert.assertEquals("cedesk-1.15_2015-11-25_11-23." + EXT, latest.getFilename());
 
-        latest = updateService.getLatest(Arrays.asList(
+        List<String> strings2 = Arrays.asList(
                 "cedesk-1.13_2015-11-16_05-57." + EXT, "cedesk-1.14_2015-11-23_03-24." + EXT,
-                "cedesk-1.15_2015-11-25_11-23." + EXT, "cedesk-1.16_2015-11-28_16-34." + EXT));
+                "cedesk-1.15_2015-11-25_11-23." + EXT, "cedesk-1.16_2015-11-28_16-34." + EXT);
+        List<Pair<String, String>> pairs2 = strings2.stream()
+                .map(fileName -> new ImmutablePair<String, String>(fileName, "")).collect(Collectors.toList());
+        latest = updateService.getLatest(pairs2);
         Assert.assertEquals("cedesk-1.16_2015-11-28_16-34." + EXT, latest.getFilename());
     }
 }

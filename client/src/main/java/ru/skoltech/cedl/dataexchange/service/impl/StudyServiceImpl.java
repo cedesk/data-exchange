@@ -72,6 +72,7 @@ public class StudyServiceImpl implements StudyService {
         study.setStudySettings(new StudySettings());
         study.setSystemModel(systemModel);
         study.setName(systemModel.getName());
+        study.setVersion(0);
         UserRoleManagement userRoleManagement =
                 userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, userManagement);
         study.setUserRoleManagement(userRoleManagement);

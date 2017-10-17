@@ -28,8 +28,10 @@ import java.util.regex.Pattern;
  */
 public class ApplicationPackage implements Comparable<ApplicationPackage> {
 
+    public static final String WIN_EXE = "exe";
+    public static final String MAC_DMG = "dmg";
+    public static final String LINUX_DEB = "deb";
     private static final String DIST_PACKAGE_FILE_NAME_START = "cedesk-";
-
     private String url;
 
     private String filename;
@@ -45,11 +47,11 @@ public class ApplicationPackage implements Comparable<ApplicationPackage> {
 
     public static String getExtension() {
         if (SystemUtils.IS_OS_WINDOWS) {
-            return "exe";
+            return WIN_EXE;
         } else if (SystemUtils.IS_OS_MAC) {
-            return "dmg";
+            return MAC_DMG;
         } else if (SystemUtils.IS_OS_LINUX) {
-            return "deb";
+            return LINUX_DEB;
         }
         return "NONE";
     }
@@ -86,14 +88,10 @@ public class ApplicationPackage implements Comparable<ApplicationPackage> {
         isRelease = release;
     }
 
-    public void setBaseUrl(String baseUrl) {
-        this.url = baseUrl + filename;
-    }
-
-    public static ApplicationPackage fromFileName(String baseUrl, String fileName) {
+    public static ApplicationPackage fromFileName(String url, String fileName) {
         fileName = fileName.toLowerCase();
-        ApplicationPackage applicationPackage = new ApplicationPackage(baseUrl + fileName, fileName);
-        Pattern pattern = Pattern.compile(DIST_PACKAGE_FILE_NAME_START + "(((\\d+\\.)*)(\\d+))(_(\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}))?(\\.(exe|deb|dmg))$");
+        ApplicationPackage applicationPackage = new ApplicationPackage(url, fileName);
+        Pattern pattern = Pattern.compile(DIST_PACKAGE_FILE_NAME_START + "(((\\d+\\.)*)(\\d+))(_(\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}))?(\\.(" + WIN_EXE + "|" + MAC_DMG + "|" + LINUX_DEB + "))$");
         Matcher matcher = pattern.matcher(fileName);
         if (matcher.matches()) {
             String versionName = matcher.group(1);

@@ -16,6 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.service.impl;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -52,17 +54,16 @@ public class UpdateServiceImpl implements UpdateService {
         try {
             URL serverUrl = new URL(serverString);
             Document doc = jsoupService.jsoupParse(serverUrl);
-            List<String> fileNames = this.extractFileNames(doc);
+            List<Pair<String, String>> pairs = this.extractFileNames(doc);
 
-            ApplicationPackage applicationPackage = this.getLatest(fileNames);
-            applicationPackage.setBaseUrl(serverString);
+            ApplicationPackage applicationPackage = this.getLatest(pairs);
             return Optional.of(applicationPackage);
         } catch (MalformedURLException e) {
             logger.error("error with application distribution server url: " + e.getMessage());
         } catch (IOException e) {
             logger.error("problem accessing application distribution server: " + e.getMessage());
         } catch (Exception e) {
-            logger.error("unknown problem while checking available software on distribution server", e);
+            logger.error("unknown problem while checking available software on distribution server: " + serverString, e);
         }
         return Optional.empty();
     }
@@ -76,26 +77,31 @@ public class UpdateServiceImpl implements UpdateService {
     }
 
     @Override
-    public List<String> extractFileNames(File file) throws IOException {
+    public List<Pair<String, String>> extractFileNamesAndLinks(File file) throws IOException {
         Document doc = jsoupService.jsoupParse(file);
         return extractFileNames(doc);
     }
 
     @Override
-    public ApplicationPackage getLatest(List<String> fileNames) {
-        return fileNames.stream()
-                .map(fileName -> ApplicationPackage.fromFileName("", fileName))
+    public ApplicationPackage getLatest(List<Pair<String, String>> pairs) {
+        return pairs.stream()
+                .map(pair -> ApplicationPackage.fromFileName(pair.getRight(), pair.getLeft()))
                 .filter(Objects::nonNull)
                 .max(ApplicationPackage::compareTo)
                 .orElse(null);
     }
 
-    private List<String> extractFileNames(Document doc) {
+    private List<Pair<String, String>> extractFileNames(Document doc) {
         String fileExtension = ApplicationPackage.getExtension();
-        List<String> fileList = new LinkedList<>();
-        Elements links = doc.select("a[href$=." + fileExtension + "]");
+        List<Pair<String, String>> fileList = new LinkedList<>();
+        if (doc == null) {
+            return fileList;
+        }
+        Elements links = doc.select("a");
         for (Element link : links) {
-            fileList.add(link.text());
+            if (link.text().endsWith(fileExtension)) {
+                fileList.add(new ImmutablePair<>(link.text(), link.attr("href")));
+            }
         }
         return fileList;
     }
