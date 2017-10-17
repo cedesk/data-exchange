@@ -10,6 +10,7 @@ On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
 ## Release History and Notes
 
+* 2018-10-17 - Version 1.33.3 (changed distribution server and default repository server)
 * 2018-10-16 - Version 1.33.2 (fixed icons)
 * 2018-10-16 - Version 1.33.1 (removed erroneous library)
 * 2018-10-16 - Version 1.33   (improved tradespace explorer, added import of tradespace data)

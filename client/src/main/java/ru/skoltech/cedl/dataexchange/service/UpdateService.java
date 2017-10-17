@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.service;
 
+import org.apache.commons.lang3.tuple.Pair;
 import ru.skoltech.cedl.dataexchange.ApplicationPackage;
 
 import java.io.File;
@@ -32,7 +33,7 @@ public interface UpdateService {
 
     Optional<ApplicationPackage> getLatestVersionAvailable();
 
-    List<String> extractFileNames(File file) throws IOException;
+    List<Pair<String, String>> extractFileNamesAndLinks(File file) throws IOException;
 
-    ApplicationPackage getLatest(List<String> fileNames);
+    ApplicationPackage getLatest(List<Pair<String, String>> pairs);
 }
