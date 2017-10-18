@@ -98,8 +98,8 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelController" scope="prototype">
         <property name="differenceHandler" ref="differenceHandler"/>
-        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="statusLogger" ref="statusLogger"/>
+        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
     </bean>
 
     <bean id="statusController" class="ru.skoltech.cedl.dataexchange.ui.controller.StatusController">
@@ -118,7 +118,6 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ConsistencyController">
         <property name="project" ref="project"/>
-        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
     </bean>
 
@@ -190,7 +189,6 @@
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ProjectSettingsController">
         <property name="project" ref="project"/>
         <property name="applicationSettings" ref="applicationSettings"/>
-        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="userManagementService" ref="userManagementService"/>
     </bean>
 

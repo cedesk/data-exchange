@@ -27,8 +27,7 @@ import javafx.scene.input.MouseEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ExternalModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -56,7 +55,7 @@ public class ExternalModelController implements Initializable {
     private Button openExternalButton;
 
     private DifferenceHandler differenceHandler;
-    private ExternalModelFileHandler externalModelFileHandler;
+    private ExternalModelFileWatcher externalModelFileWatcher;
     private StatusLogger statusLogger;
 
     private ExternalModel externalModel;
@@ -73,8 +72,8 @@ public class ExternalModelController implements Initializable {
         this.differenceHandler = differenceHandler;
     }
 
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
+    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
+        this.externalModelFileWatcher = externalModelFileWatcher;
     }
 
     public void setStatusLogger(StatusLogger statusLogger) {
@@ -100,10 +99,11 @@ public class ExternalModelController implements Initializable {
         openExternalButton.addEventFilter(MouseEvent.MOUSE_PRESSED, (MouseEvent event) -> {
             if (event.isSecondaryButtonDown()) {
                 try {
-                    File file = externalModelFileHandler.cacheFile(externalModel);
+                    File file = externalModel.getCacheFile();
+                    externalModelFileWatcher.add(externalModel);
                     File path = file.getParentFile();
                     this.openFile(path);
-                } catch (IOException | ExternalModelException e) {
+                } catch (IOException e) {
                     logger.error("Error retrieving external model to spreadsheet.", e);
                     statusLogger.error("Unable to get cache of external model");
                 }
@@ -113,9 +113,10 @@ public class ExternalModelController implements Initializable {
 
     public void openExternalModel() {
         try {
-            File file = externalModelFileHandler.cacheFile(externalModel);
+            File file = externalModel.getCacheFile();
+            externalModelFileWatcher.add(externalModel);
             this.openFile(file);
-        } catch (ExternalModelException | IOException ioe) {
+        } catch (IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);
             statusLogger.error("Unable to cache external model");
         } catch (Exception e) {

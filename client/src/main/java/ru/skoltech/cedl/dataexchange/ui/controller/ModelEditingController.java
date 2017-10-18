@@ -58,6 +58,7 @@ import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItem;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItemFactory;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.TextFieldTreeCell;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -452,8 +453,12 @@ public class ModelEditingController implements Initializable {
         externalModelFileHandler.addChangedExternalModel(externalModel);
         externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
         if (externalModelUpdateHandler.parameterModelUpdateStates().values().contains(SUCCESS)) {
-            externalModelFileHandler.updateExternalModelInStudy(externalModel);
-            project.markStudyModified();
+            try {
+                externalModel.updateAttachment();
+                project.markStudyModified();
+            } catch (IOException e) {
+                logger.error("Cannot update external model attachment: " + e.getMessage(), e);
+            }
         }
 
         actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());

@@ -21,16 +21,15 @@ import javafx.collections.ObservableMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
-import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -78,6 +77,15 @@ public class ExternalModelUpdateHandler {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
         parameterModelUpdateStates.putAll(result);
+    }
+
+    public void applyParameterUpdatesFromSystemModel(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
+        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(systemModel, accessChecker);
+        while (iterator.hasNext()) {
+            ExternalModel externalModel = iterator.next();
+            // silently update model from external model
+            this.applyParameterUpdatesFromExternalModel(externalModel);
+        }
     }
 
     public void applyParameterUpdateFromExternalModel(ParameterModel parameterModel) {
@@ -153,6 +161,18 @@ public class ExternalModelUpdateHandler {
             logger.warn("Parameter model " + parameterModel.getNodePath()
                     + " failed to evaluate its value with an internal error: " + e.getMessage());
             return Pair.of(parameterModel, ParameterModelUpdateState.FAIL_EVALUATION);
+        }
+    }
+
+    public void applyParameterUpdatesToSystemModel(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
+        Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, accessChecker);
+        while (externalModelsIterator.hasNext()) {
+            ExternalModel externalModel = externalModelsIterator.next();
+            try {
+                this.applyParameterUpdatesToExternalModel(externalModel);
+            } catch (ExternalModelException e) {
+                logger.warn("Cannot apply parameter updates to ExternalModel: " + externalModel.getNodePath(), e);
+            }
         }
     }
 

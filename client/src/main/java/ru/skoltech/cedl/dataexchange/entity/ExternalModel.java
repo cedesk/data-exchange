@@ -33,8 +33,10 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.text.DateFormat;
 import java.util.*;
 
 import static ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState.*;
@@ -194,7 +196,7 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         return cacheFile;
     }
 
-    File getTimestampFile() {
+    public File getTimestampFile() {
         return timestampFile;
     }
 
@@ -281,6 +283,19 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         }
     }
 
+    public void updateAttachment() throws IOException {
+        switch (this.cacheState()) {
+            case CACHED_MODIFIED_AFTER_CHECKOUT: {
+                Path path = Paths.get(cacheFile.getAbsolutePath());
+                this.setAttachment(Files.readAllBytes(path));
+                this.setLastModification(cacheFile.lastModified());
+            }
+            case CACHED_CONFLICTING_CHANGES: {
+                logger.warn(this.getNodePath() + " has conflicting changes locally and in repository");
+            }
+        }
+    }
+
     public void updateCache() throws IOException {
         switch (this.cacheState()) {
             case NOT_CACHED:
@@ -294,6 +309,26 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
             }
         }
     }
+
+    public void updateTimestamp() throws IOException {
+        ExternalModelCacheState cacheState = this.cacheState();
+        switch (cacheState) {
+            case CACHED_UP_TO_DATE:
+            case CACHED_MODIFIED_AFTER_CHECKOUT:
+            case CACHED_OUTDATED:
+            case CACHED_CONFLICTING_CHANGES: {
+                this.updateTimestampFile();
+                if (logger.isDebugEnabled()) {
+                    DateFormat formatter = Utils.TIME_AND_DATE_FOR_USER_INTERFACE;
+                    String modelModification = formatter.format(new Date(this.getLastModification()));
+                    String fileModification = formatter.format(new Date(timestampFile.lastModified()));
+                    logger.debug("Stored external model '" + name + "' (model: " + modelModification + ", file: " + fileModification + ")");
+                    logger.debug(this.getNodePath() + " is now in state " + cacheState);
+                }
+            }
+        }
+    }
+
 
     private void createDirectory() {
         File path = cacheFile.getParentFile();
@@ -309,7 +344,7 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         }
     }
 
-    private void updateTimestamp() throws IOException {
+    private void updateTimestampFile() throws IOException {
         try {
             if (!timestampFile.exists()) {
                 // create file marking the checkout time of the ExternalModel file

@@ -19,16 +19,17 @@ package ru.skoltech.cedl.dataexchange.external;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModelTreeIterator;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.service.DirectoryWatchService;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.function.Predicate;
 
 /**
  * Created by D.Knoll on 09.07.2015.
@@ -46,7 +47,21 @@ public class ExternalModelFileWatcher extends Observable {
         this.directoryWatchService = directoryWatchService;
     }
 
-    public void add(ExternalModel externalModel) throws ExternalModelException {
+    public void add(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
+        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(systemModel, accessChecker);
+        while (iterator.hasNext()) {
+            ExternalModel externalModel = iterator.next();
+            this.add(externalModel);
+        }
+    }
+
+    public void add(ExternalModel externalModel) {
+        ExternalModelCacheState cacheState = externalModel.cacheState();
+        if (cacheState == ExternalModelCacheState.EMPTY || cacheState == ExternalModelCacheState.INCORRECT
+                || cacheState == ExternalModelCacheState.UNINITIALIZED || cacheState == ExternalModelCacheState.NOT_CACHED) {
+            logger.warn("Cannot add to directory watch service because of wrong state: " + cacheState);
+            return;
+        }
         File cacheFile = externalModel.getCacheFile();
         watchedExternalModels.put(cacheFile, externalModel);
         String filePattern = cacheFile.getName();
@@ -57,21 +72,21 @@ public class ExternalModelFileWatcher extends Observable {
         }
     }
 
-    public void clear() {
-        directoryWatchService.clear();
-        watchedExternalModels.clear();
+    public void start() {
+        directoryWatchService.start();
     }
 
     public void close() {
         directoryWatchService.stop();
     }
 
-    public void maskChangesTo(File file) {
-        this.maskedFiles.add(file);
+    public void clear() {
+        directoryWatchService.clear();
+        watchedExternalModels.clear();
     }
 
-    public void start() {
-        directoryWatchService.start();
+    public void maskChangesTo(File file) {
+        this.maskedFiles.add(file);
     }
 
     public void unmaskChangesTo(File file) {

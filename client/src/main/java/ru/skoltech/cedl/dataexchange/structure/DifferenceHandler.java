@@ -49,7 +49,6 @@ public class DifferenceHandler {
     private static final Logger logger = Logger.getLogger(DifferenceHandler.class);
 
     private ExternalModelUpdateHandler externalModelUpdateHandler;
-    private ExternalModelFileHandler externalModelFileHandler;
     private StudyService studyService;
     private NodeDifferenceService nodeDifferenceService;
     private final RevisionEntityRepository revisionEntityRepository;
@@ -63,10 +62,6 @@ public class DifferenceHandler {
 
     public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
         this.externalModelUpdateHandler = externalModelUpdateHandler;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setStudyService(StudyService studyService) {
