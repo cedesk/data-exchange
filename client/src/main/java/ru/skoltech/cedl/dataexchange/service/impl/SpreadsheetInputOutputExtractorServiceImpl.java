@@ -259,7 +259,7 @@ public class SpreadsheetInputOutputExtractorServiceImpl implements SpreadsheetIn
         try {
             Double numericValue = SpreadsheetCellValueAccessor.getNumericValue(numberCell);
             parameter.setValue(numericValue);
-        } catch (ExternalModelException e) {
+        } catch (Exception e) {
             logger.warn("error reading value for parameter '" + parameterName + "' from " + exportReference.toString());
             parameter.setValue(Double.NaN);
         }

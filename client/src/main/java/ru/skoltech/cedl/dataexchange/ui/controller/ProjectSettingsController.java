@@ -99,7 +99,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         String projectUserName = applicationSettings.getProjectUserName();
         boolean projectLastAutoload = applicationSettings.isProjectLastAutoload();
 
-        String projectDataDir = project.getProjectDataDir().getAbsolutePath();
+        String projectDataDir = project.getProjectHome().getAbsolutePath();
 
         ChangeListener<Object> changeListener = (observable, oldValue, newValue) ->
                 changed.setValue(parametersChanged(syncEnabled, projectUseOsUser,

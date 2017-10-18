@@ -16,13 +16,16 @@
 
 package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -106,8 +109,13 @@ public class ExternalModelDifference extends ModelDifference {
                 Objects.requireNonNull(parent);
                 final List<ExternalModel> externalModels = parent.getExternalModels();
                 // TODO: block changes that make the model inconsistent (name duplicates, ...)
-                ExternalModel newExternalModel = new ExternalModel();
-                Utils.copyBean(externalModel1, newExternalModel);
+                ExternalModel newExternalModel = null;
+                try {
+                    newExternalModel = (ExternalModel) BeanUtils.cloneBean(externalModel1);
+                } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+                    logger.error("Cannot clone external model: " + externalModel1.getNodePath(), e);
+                    throw new IllegalStateException("Cannot clone external model: " + externalModel1.getNodePath(), e);
+                }
                 parent.addExternalModel(newExternalModel);
                 break;
             }

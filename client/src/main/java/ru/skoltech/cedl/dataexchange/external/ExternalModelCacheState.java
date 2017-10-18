@@ -24,6 +24,22 @@ package ru.skoltech.cedl.dataexchange.external;
  * Created by D.Knoll on 08.07.2015.
  */
 public enum ExternalModelCacheState {
+
+    /**
+     * External model dos not contain any data.
+     */
+    EMPTY,
+
+    /**
+     * State of external model is incorrect.
+     */
+    INCORRECT,
+
+    /**
+     * External model attachment is empty or null.
+     */
+    UNINITIALIZED,
+
     /**
      * There is no cache file.
      */

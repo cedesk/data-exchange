@@ -24,7 +24,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
-import org.springframework.integration.file.FileReadingMessageSource;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
@@ -68,6 +67,8 @@ public class Project {
 
     private static Logger logger = Logger.getLogger(Project.class);
 
+    public static final String PROJECT_HOME_PROPERTY = "project.home";
+
     private ApplicationSettings applicationSettings;
     private RepositoryStateMachine repositoryStateMachine;
     private DifferenceHandler differenceHandler;
@@ -100,13 +101,14 @@ public class Project {
 
     public void initProject(String projectName) {
         this.projectName = projectName;
+        System.setProperty(PROJECT_HOME_PROPERTY, this.getProjectHome().getAbsolutePath());
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
         this.repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
 //        if (this.inboundFilesChannel.isRunning()) {
 //            this.inboundFilesChannel.stop();
 //        }
-//        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectDataDir());
+//        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectHome());
 //        this.inboundFilesChannel.start();
         this.accessChecker = this::checkUserAccess;
     }
@@ -537,8 +539,7 @@ public class Project {
         canSync.setValue(isSyncEnabled && isSavePossible);
     }
 
-    public File getProjectDataDir() {
-        String projectName = this.getProjectName();
+    public File getProjectHome() {
         String hostname = applicationSettings.getRepositoryHost();
         String schema = applicationSettings.getRepositorySchemaName();
         return fileStorageService.dataDir(hostname, schema, projectName);

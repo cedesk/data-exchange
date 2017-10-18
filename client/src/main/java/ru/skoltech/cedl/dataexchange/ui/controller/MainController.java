@@ -506,7 +506,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void runWorkSessionAnalysis() {
-        File projectDataDir = project.getProjectDataDir();
+        File projectDataDir = project.getProjectHome();
         String dateAndTime = Utils.getFormattedDateAndTime();
         try {
             long studyId = project.getStudy().getId();

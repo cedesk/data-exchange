@@ -40,17 +40,14 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.ParameterComparatorByNatureAndName;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
-import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
-import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.service.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -61,17 +58,12 @@ import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterModelTableRow;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterUpdateStateTableCell;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -117,7 +109,6 @@ public class ParametersController implements Initializable, Displayable {
     private BooleanProperty editableProperty = new SimpleBooleanProperty();
 
     private Project project;
-    private ExternalModelFileHandler externalModelFileHandler;
     private DifferenceHandler differenceHandler;
     private ExternalModelUpdateHandler externalModelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
@@ -127,10 +118,6 @@ public class ParametersController implements Initializable, Displayable {
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setDifferenceHandler(DifferenceHandler differenceHandler) {
@@ -349,107 +336,6 @@ public class ParametersController implements Initializable, Displayable {
         revisionHistoryViewBuilder.ownerWindow(ownerStage);
         revisionHistoryViewBuilder.modality(Modality.APPLICATION_MODAL);
         revisionHistoryViewBuilder.show(selectedParameter);
-    }
-
-    public void startParameterWizard() {
-        ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem().getLeft();
-        Objects.requireNonNull(selectedParameter, "no parameter selected");
-        Pattern pattern = Pattern.compile("\\[(.*)\\](.*)"); // e.g. [Structure.xls]Sheet1!A1
-
-        String description = selectedParameter.getDescription();
-        if (description.startsWith(SpreadsheetInputOutputExtractorService.EXT_SRC)) {
-            String formula = description.replace(SpreadsheetInputOutputExtractorService.EXT_SRC, "");
-            Matcher matcher = pattern.matcher(formula);
-            if (matcher.find()) {
-                String filename = matcher.group(1);
-                String target = matcher.group(2);
-
-                ExternalModel refExtModel = findExternalModel(filename);
-                if (refExtModel != null) {
-                    ModelNode modelNode = refExtModel.getParent();
-                    ParameterModel source = findParameter(modelNode, target);
-                    if (source != null && source.getNature() == ParameterNature.OUTPUT) {
-                        statusLogger.info("Parameter to link to found '" + source.getNodePath() + "'");
-                        selectedParameter.setNature(ParameterNature.INPUT);
-                        selectedParameter.setValueSource(ParameterValueSource.LINK);
-                        selectedParameter.setValueLink(source);
-                        selectedParameter.setValue(source.getEffectiveValue());
-                        selectedParameter.setUnit(source.getUnit());
-                        // TODO: register link, ProjectContext.getInstance().getProject().getParameterLinkRegistry();
-                        // TODO: update view
-                    } else if (source != null && source.getNature() != ParameterNature.INPUT) {
-                        Dialogues.showWarning("Parameter found.", "The parameter '" + source.getNodePath() + "' can not be referenced because it's not an output!");
-                    } else {
-                        String sourceParameterName = findParameterName(refExtModel, target);
-                        if (sourceParameterName != null) {
-                            selectedParameter.setDescription(description + "\n" + refExtModel.getNodePath() + ">" + sourceParameterName);
-                            Dialogues.showWarning("Parameter found.", "The parameter '" + target + "' can not be referenced," +
-                                    " but it should be called '" + sourceParameterName + "' in node '" + modelNode.getName() + "'");
-                        } else {
-                            Dialogues.showWarning("Parameter not found.", "No parameter referencing '" + target + "' found!");
-                        }
-                    }
-
-                } else {
-                    Dialogues.showWarning("External model not found.", "No external model  named '" + filename + "' found!");
-                }
-            }
-        }
-    }
-
-    private ExternalModel findExternalModel(String filename) {
-        SystemModel systemModel = project.getStudy().getSystemModel();
-        ExternalModelTreeIterator emti = new ExternalModelTreeIterator(systemModel);
-        ExternalModel refExtModel = null;
-        while (emti.hasNext()) {
-            ExternalModel externalModel = emti.next();
-            if (externalModel.getName().equalsIgnoreCase(filename)) {
-                refExtModel = externalModel;
-                break;
-            }
-        }
-        return refExtModel;
-    }
-
-    private ParameterModel findParameter(ModelNode modelNode, String target) {
-        List<ParameterModel> parameters = modelNode.getParameters();
-        ParameterModel source = null;
-        for (ParameterModel parameter : parameters) {
-            if (parameter.getNature() == ParameterNature.OUTPUT && parameter.getValueReference() != null
-                    && target.equalsIgnoreCase(parameter.getValueReference().getTarget())) {
-                source = parameter;
-                break;
-            }
-            if (parameter.getNature() == ParameterNature.INPUT && parameter.getExportReference() != null
-                    && target.equalsIgnoreCase(parameter.getExportReference().getTarget())) {
-                source = parameter;
-                break;
-            }
-        }
-        return source;
-    }
-
-    private String findParameterName(ExternalModel externalModel, String target) {
-        String filename = externalModel.getName();
-        SpreadsheetCoordinates nameCellCoordinates;
-        try {
-            SpreadsheetCoordinates targetCoordinates = SpreadsheetCoordinates.valueOf(target);
-            nameCellCoordinates = targetCoordinates.getNeighbour(SpreadsheetCoordinates.Neighbour.LEFT);
-        } catch (ParseException e) {
-            return null;
-        }
-        String parameterName = null;
-        if (WorkbookFactory.isWorkbookFile(filename)) {
-            try (InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel)) {
-                String sheetName = nameCellCoordinates.getSheetName();
-                SpreadsheetCellValueAccessor cellValueAccessor = new SpreadsheetCellValueAccessor(inputStream, filename);
-                parameterName = cellValueAccessor.getValueAsString(nameCellCoordinates);
-            } catch (IOException | ExternalModelException e) {
-                statusLogger.warn("The external model '" + filename + "' could not be opened to extract parameter name!");
-                logger.warn("The external model '" + filename + "' could not be opened to extract parameter name!", e);
-            }
-        }
-        return parameterName;
     }
 
     private static BeanPropertyCellValueFactory createBeanPropertyCellValueFactory(String property) {

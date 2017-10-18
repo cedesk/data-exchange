@@ -261,7 +261,7 @@ public class DifferenceHandler {
             ExternalModel externalModel = emd.getExternalModel1();
             try {
                 // update cached file
-                externalModelFileHandler.forceCacheUpdate(externalModel);
+                externalModel.updateCache();
                 // update parameters from new file
                 externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
                 return true;

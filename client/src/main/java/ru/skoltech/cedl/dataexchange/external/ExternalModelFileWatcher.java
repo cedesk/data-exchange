@@ -46,7 +46,8 @@ public class ExternalModelFileWatcher extends Observable {
         this.directoryWatchService = directoryWatchService;
     }
 
-    public void add(ExternalModel externalModel, File cacheFile) {
+    public void add(ExternalModel externalModel) throws ExternalModelException {
+        File cacheFile = externalModel.getCacheFile();
         watchedExternalModels.put(cacheFile, externalModel);
         String filePattern = cacheFile.getName();
         try {

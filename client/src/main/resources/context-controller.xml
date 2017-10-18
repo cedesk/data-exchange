@@ -67,7 +67,6 @@
 
     <bean id="parametersController" class="ru.skoltech.cedl.dataexchange.ui.controller.ParametersController">
         <property name="project" ref="project"/>
-        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
@@ -98,10 +97,8 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelController" scope="prototype">
-        <property name="project" ref="project"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
-        <property name="spreadsheetInputOutputExtractorService" ref="spreadsheetInputOutputExtractorService"/>
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
@@ -197,9 +194,7 @@
         <property name="userManagementService" ref="userManagementService"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ReferenceSelectorController" scope="prototype">
-        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
-    </bean>
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ReferenceSelectorController" scope="prototype"/>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ParameterSelectorController" scope="prototype"/>
 

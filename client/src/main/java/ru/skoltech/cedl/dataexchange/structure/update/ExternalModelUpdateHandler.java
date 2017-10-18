@@ -26,15 +26,11 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.external.*;
-import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 
-import java.io.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -44,26 +40,10 @@ public class ExternalModelUpdateHandler {
 
     private static final Logger logger = Logger.getLogger(ExternalModelUpdateHandler.class);
 
-    private Project project;
-    private ExternalModelAccessorFactory externalModelAccessorFactory;
-    private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ParameterLinkRegistry parameterLinkRegistry;
-    private ExternalModelFileStorageService externalModelFileStorageService;
 
     private ObservableMap<ParameterModel, ParameterModelUpdateState> parameterModelUpdateStates = FXCollections.observableHashMap();
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public void setExternalModelAccessorFactory(ExternalModelAccessorFactory externalModelAccessorFactory) {
-        this.externalModelAccessorFactory = externalModelAccessorFactory;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
-    }
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
         this.externalModelFileWatcher = externalModelFileWatcher;
@@ -71,10 +51,6 @@ public class ExternalModelUpdateHandler {
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
-    }
-
-    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
-        this.externalModelFileStorageService = externalModelFileStorageService;
     }
 
     public ObservableMap<ParameterModel, ParameterModelUpdateState> parameterModelUpdateStates() {
@@ -157,11 +133,8 @@ public class ExternalModelUpdateHandler {
         }
 
         Double value;
-        ExternalModelAccessor accessor = null;
         try {
-            InputStream attachmentStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
-            accessor = externalModelAccessorFactory.createAccessor(externalModel, attachmentStream);
-            value = accessor.getValue(valueReference.getTarget());
+            value = externalModel.getValue(valueReference.getTarget());
             if (Double.isNaN(value)) {
                 logger.warn("Parameter model " + parameterModel.getNodePath() + " evaluated invalid value");
                 return Pair.of(parameterModel, ParameterModelUpdateState.FAIL_INVALID_VALUE);
@@ -180,14 +153,6 @@ public class ExternalModelUpdateHandler {
             logger.warn("Parameter model " + parameterModel.getNodePath()
                     + " failed to evaluate its value with an internal error: " + e.getMessage());
             return Pair.of(parameterModel, ParameterModelUpdateState.FAIL_EVALUATION);
-        } finally {
-            try {
-                if (accessor != null) {
-                    accessor.close();
-                }
-            } catch (IOException e) {
-                logger.warn("Error closing the external model accessor: " + e.getMessage(), e);
-            }
         }
     }
 
@@ -201,84 +166,48 @@ public class ExternalModelUpdateHandler {
                         && parameterModel.getValueSource() == ParameterValueSource.REFERENCE)
                 .collect(Collectors.toList());
 
-        InputStream attachmentStream = externalModelFileHandler.getAttachmentAsStream(externalModel);
-        ExternalModelAccessor accessor = externalModelAccessorFactory.createAccessor(externalModel, attachmentStream);
+        if (exportParameterModels.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        List<Pair<ParameterModel, ExternalModelUpdateState>> result = exportParameterModels.stream()
-                .map(parameterModel -> {
-                    ExternalModelReference exportReference = parameterModel.getExportReference();
-                    if (exportReference == null) {
-                        logger.warn("Parameter model " + parameterModel.getNodePath() + " has empty valueReference");
-                        return Pair.of(parameterModel, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE);
-                    }
-                    ExternalModel exportReferenceExternalModel = exportReference.getExternalModel();
-                    if (exportReferenceExternalModel == null) {
-                        logger.warn("Parameter model " + parameterModel.getNodePath()
-                                + " has empty exportReference external model");
-                        return Pair.of(parameterModel, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL);
-                    }
+        List<Pair<ParameterModel, ExternalModelUpdateState>> result = new LinkedList<>();
+        List<ParameterModel> correctParameters = new LinkedList<>();
+        for (ParameterModel parameterModel : exportParameterModels) {
+            ExternalModelReference exportReference = parameterModel.getExportReference();
+            if (exportReference == null) {
+                logger.warn("Parameter model " + parameterModel.getNodePath() + " has empty valueReference");
+                result.add(Pair.of(parameterModel, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE));
+                continue;
+            }
+            if (exportReference.getExternalModel() == null) {
+                logger.warn("Parameter model " + parameterModel.getNodePath()
+                        + " has empty exportReference external model");
+                result.add(Pair.of(parameterModel, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL));
+                continue;
+            }
 
-                    if (exportReference.getTarget() == null || exportReference.getTarget().isEmpty()) {
-                        logger.warn("Parameter model " + parameterModel.getNodePath() + " has empty exportReference target");
-                        return Pair.of(parameterModel, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET);
-                    }
-
-                    String target = parameterModel.getExportReference().getTarget();
-                    try {
-                        accessor.setValue(target, parameterModel.getEffectiveValue());
-                        logger.info("Parameter model " + parameterModel.getNodePath() + " successfully exported its value");
-                        return Pair.of(parameterModel, ExternalModelUpdateState.SUCCESS);
-                    } catch (ExternalModelException e) {
-                        logger.warn("Parameter model " + parameterModel.getNodePath()
-                                + " failed to export its value", e);
-                        return Pair.of(parameterModel, ExternalModelUpdateState.FAIL_EXPORT);
-                    }
-                }).collect(Collectors.toList());
-
-        long successResults = result.stream()
-                .filter(pair -> pair.getRight() == ExternalModelUpdateState.SUCCESS)
-                .count();
-
-        if (successResults == 0) {
-            return result;
+            if (exportReference.getTarget() == null || exportReference.getTarget().isEmpty()) {
+                logger.warn("Parameter model " + parameterModel.getNodePath() + " has empty exportReference target");
+                result.add(Pair.of(parameterModel, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET));
+                continue;
+            }
+            correctParameters.add(parameterModel);
         }
 
         try {
-            this.flushModifications(externalModel, accessor);
-            return result;
+            List<Pair<String, Double>> values = correctParameters.stream()
+                    .map(pm -> Pair.of(pm.getExportReference().getTarget(), pm.getEffectiveValue()))
+                    .collect(Collectors.toList());
+            externalModelFileWatcher.maskChangesTo(externalModel.getCacheFile());
+            externalModel.setValues(values);
+            correctParameters.forEach(pm -> logger.info("Parameter model " + pm.getNodePath() + " successfully exported its value"));
+            result.addAll(correctParameters.stream().map(pm -> Pair.of(pm, ExternalModelUpdateState.SUCCESS)).collect(Collectors.toList()));
         } catch (ExternalModelException e) {
-            throw new ExternalModelException("Cannot flush modifications in accessor: " + externalModel.getNodePath(), e);
+            correctParameters.forEach(pm -> logger.warn("Parameter model " + pm.getNodePath() + " failed to export its value", e));
+            result.addAll(correctParameters.stream().map(pm -> Pair.of(pm, ExternalModelUpdateState.FAIL_EXPORT)).collect(Collectors.toList()));
+        } finally {
+            externalModelFileWatcher.unmaskChangesTo(externalModel.getCacheFile());
         }
+        return result;
     }
-
-    private void flushModifications(ExternalModel externalModel, ExternalModelAccessor externalModelAccessor) throws ExternalModelException {
-        ExternalModelCacheState cacheState = externalModelFileHandler.getCacheState(externalModel);
-        if (cacheState == ExternalModelCacheState.NOT_CACHED) {
-            logger.debug("Updating " + externalModel.getNodePath() + " with changes from parameters");
-            try (ByteArrayOutputStream bos = new ByteArrayOutputStream(externalModel.getAttachment().length)) {
-                externalModelAccessor.flush(bos);
-                externalModel.setAttachment(bos.toByteArray());
-            } catch (IOException e) {
-                logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + "(in memory).");
-                throw new ExternalModelException("error saving changes to external model" + externalModel.getNodePath());
-            }
-        } else {
-            File projectDataDir = project.getProjectDataDir();
-            File file = externalModelFileStorageService.createFilePathForExternalModel(projectDataDir, externalModel);
-            externalModelFileWatcher.maskChangesTo(file);
-            logger.debug("Updating " + file.getAbsolutePath() + " with changes from parameters");
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                externalModelAccessor.flush(fos);
-            } catch (FileNotFoundException e) {
-                logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
-                throw new ExternalModelException("external model " + externalModel.getNodePath() + " is opened by other application");
-            } catch (IOException e) {
-                logger.error("Error saving changes on spreadsheet to external model " + externalModel.getNodePath() + " (on cache file).");
-                throw new ExternalModelException("error saving changes to external model " + externalModel.getNodePath());
-            } finally {
-                externalModelFileWatcher.unmaskChangesTo(file);
-            }
-        }
-    }
-
 }

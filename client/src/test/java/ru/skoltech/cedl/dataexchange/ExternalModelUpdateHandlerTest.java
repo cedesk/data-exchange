@@ -25,22 +25,27 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.external.*;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateState;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+
 
 /**
  * Created by Nikolay Groshkov on 05-Sep-17.
@@ -54,7 +59,6 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
     private static final Double VALUE1 = 10d;
     private static final Double VALUE2 = 20d;
 
-    private ExternalModelAccessor externalModelAccessor;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelUpdateHandler externalModelUpdateHandler;
 
@@ -63,29 +67,21 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
 
     @Before
     public void prepare() throws ExternalModelException {
-        externalModel = new ExternalModel();
-        externalModel.setName("externalModel");
+        externalModel = mock(ExternalModel.class);
+        when(externalModel.getName()).thenReturn("externalModel");
+        doReturn(Double.NaN).when(externalModel).getValue(NAN_VALUE_REFERENCE_TARGET);
+        doReturn(VALUE1).when(externalModel).getValue(VALUE_REFERENCE_TARGET);
+        doThrow(ExternalModelException.class).when(externalModel).getValue(eq(ERROR_VALUE_REFERENCE_TARGET));
 
-        otherExternalModel = new ExternalModel();
-        otherExternalModel.setName("otherExternalModel");
-
-        externalModelAccessor = mock(ExternalModelAccessor.class);
-        doReturn(Double.NaN).when(externalModelAccessor).getValue(NAN_VALUE_REFERENCE_TARGET);
-        doReturn(VALUE1).when(externalModelAccessor).getValue(VALUE_REFERENCE_TARGET);
-        doThrow(ExternalModelException.class).when(externalModelAccessor).getValue(eq(ERROR_VALUE_REFERENCE_TARGET));
-        doThrow(ExternalModelException.class).when(externalModelAccessor).setValue(eq(ERROR_VALUE_REFERENCE_TARGET), any(Double.class));
-
-        ExternalModelAccessorFactory externalModelAccessorFactory = mock(ExternalModelAccessorFactory.class);
-        when(externalModelAccessorFactory.createAccessor(any(), any())).thenReturn(externalModelAccessor);
-
-        ExternalModelFileHandler externalModelFileHandler = mock(ExternalModelFileHandler.class);
-        doReturn(ExternalModelCacheState.NOT_CACHED).when(externalModelFileHandler).getCacheState(any());
+        otherExternalModel = mock(ExternalModel.class);
+        when(otherExternalModel.getName()).thenReturn("otherExternalModel");
+        doReturn(Double.NaN).when(otherExternalModel).getValue(NAN_VALUE_REFERENCE_TARGET);
+        doReturn(VALUE1).when(otherExternalModel).getValue(VALUE_REFERENCE_TARGET);
+        doThrow(ExternalModelException.class).when(otherExternalModel).getValue(eq(ERROR_VALUE_REFERENCE_TARGET));
 
         parameterLinkRegistry = mock(ParameterLinkRegistry.class);
 
         externalModelUpdateHandler = context.getBean(ExternalModelUpdateHandler.class);
-        externalModelUpdateHandler.setExternalModelAccessorFactory(externalModelAccessorFactory);
-        externalModelUpdateHandler.setExternalModelFileHandler(externalModelFileHandler);
         externalModelUpdateHandler.setParameterLinkRegistry(parameterLinkRegistry);
         externalModelUpdateHandler.clearParameterModelUpdateState();
     }
@@ -99,7 +95,7 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
         assertTrue(externalModelUpdateHandler.parameterModelUpdateStates().isEmpty());
 
         ModelNode parentModelNode = mock(ModelNode.class);
-        externalModel.setParent(parentModelNode);
+        when(externalModel.getParent()).thenReturn(parentModelNode);
         externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
         assertTrue(externalModelUpdateHandler.parameterModelUpdateStates().isEmpty());
 
@@ -190,14 +186,6 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
         assertThat(updates, hasEntry(correctParameterModel2, ParameterModelUpdateState.SUCCESS));
         verify(parameterLinkRegistry, only()).updateSinks(any());
         verify(parameterLinkRegistry, only()).updateSinks(correctParameterModel2);
-
-        doThrow(IOException.class).when(externalModelAccessor).close();
-        when(parentModelNode.getParameters()).thenReturn(Collections.singletonList(correctParameterModel1));
-        externalModelUpdateHandler.clearParameterModelUpdateState();
-        externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
-        assertEquals(1, updates.size());
-        updates = externalModelUpdateHandler.parameterModelUpdateStates();
-        assertThat(updates, hasEntry(correctParameterModel1, ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE));
     }
 
     @Test
@@ -260,95 +248,72 @@ public class ExternalModelUpdateHandlerTest extends AbstractApplicationContextTe
 
     @Test
     public void testApplyParameterUpdatesToExternalModel() throws ExternalModelException, IOException {
-        ParameterModel parameterModel1 = new ParameterModel();
+        Double effectiveValue = 0d;
+        ParameterModel parameterModel1 = mock(ParameterModel.class);
+        doReturn(effectiveValue).when(parameterModel1).getEffectiveValue();
 
         ModelNode modelNode = mock(ModelNode.class);
         when(modelNode.getParameters()).thenReturn(Collections.singletonList(parameterModel1));
 
-        ExternalModel externalModel = new ExternalModel();
-        externalModel.setParent(modelNode);
-        externalModel.setAttachment(new byte[0]);
+        ExternalModel externalModel = mock(ExternalModel.class);
+        when(externalModel.getParent()).thenReturn(modelNode);
+        when(externalModel.getAttachment()).thenReturn(new byte[0]);
+        when(externalModel.getCacheFile()).thenReturn(mock(File.class));
+        doReturn(Double.NaN).when(externalModel).getValue(NAN_VALUE_REFERENCE_TARGET);
+        doReturn(VALUE1).when(externalModel).getValue(VALUE_REFERENCE_TARGET);
+        doThrow(ExternalModelException.class).when(externalModel).getValue(eq(ERROR_VALUE_REFERENCE_TARGET));
+        doThrow(ExternalModelException.class).when(externalModel).setValue(eq(ERROR_VALUE_REFERENCE_TARGET), any(Double.class));
 
-        parameterModel1.setIsExported(false);
+        Pair<String, Double> pair = Pair.of(ERROR_VALUE_REFERENCE_TARGET, effectiveValue);
+        doThrow(ExternalModelException.class).when(externalModel).setValues(argThat(argument -> argument.contains(pair)));
+
+        when(parameterModel1.getIsExported()).thenReturn(false);
         List<Pair<ParameterModel, ExternalModelUpdateState>> updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, empty());
-        verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
-        parameterModel1.setIsExported(true);
-        parameterModel1.setValueSource(ParameterValueSource.MANUAL);
+        when(parameterModel1.getIsExported()).thenReturn(true);
+        doReturn(ParameterValueSource.MANUAL).when(parameterModel1).getValueSource();
         updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, empty());
-        verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
-        parameterModel1.setValueSource(ParameterValueSource.REFERENCE);
+        doReturn(ParameterValueSource.REFERENCE).when(parameterModel1).getValueSource();
         updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE)));
-        verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
         ExternalModelReference externalModelReference = new ExternalModelReference();
         externalModelReference.setExternalModel(null);
-        parameterModel1.setExportReference(externalModelReference);
+        doReturn(externalModelReference).when(parameterModel1).getExportReference();
         updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL)));
-        verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
         externalModelReference.setExternalModel(externalModel);
         externalModelReference.setTarget(null);
         updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET)));
-        verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
         externalModelReference.setTarget("");
         updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET)));
-        verify(externalModelAccessor, never()).setValue(any(String.class), any(Double.class));
 
         externalModelReference.setTarget(ERROR_VALUE_REFERENCE_TARGET);
         updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.FAIL_EXPORT)));
-        verify(externalModelAccessor, times(1)).setValue(any(String.class), any(Double.class));
-        verify(externalModelAccessor, never()).flush(any());
 
         externalModelReference.setTarget(VALUE_REFERENCE_TARGET);
         updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.SUCCESS)));
-        verify(externalModelAccessor, times(2)).setValue(any(String.class), any(Double.class));
-        verify(externalModelAccessor, times(1)).flush(any());
 
         ParameterModel parameterModel2 = new ParameterModel();
         when(modelNode.getParameters()).thenReturn(Arrays.asList(parameterModel1, parameterModel2));
         updates = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
         assertThat(updates, hasSize(1));
         assertThat(updates, hasItem(Pair.of(parameterModel1, ExternalModelUpdateState.SUCCESS)));
-        verify(externalModelAccessor, times(3)).setValue(any(String.class), any(Double.class));
-        verify(externalModelAccessor, times(2)).flush(any());
     }
 
-    @Test(expected = ExternalModelException.class)
-    public void testErrorApplyParameterUpdatesToExternalModel() throws ExternalModelException, IOException {
-        ModelNode modelNode = mock(ModelNode.class);
-
-        ExternalModel externalModel = new ExternalModel();
-        externalModel.setParent(modelNode);
-        externalModel.setAttachment(new byte[0]);
-
-        ExternalModelReference externalModelReference = new ExternalModelReference();
-        externalModelReference.setExternalModel(externalModel);
-        externalModelReference.setTarget(VALUE_REFERENCE_TARGET);
-
-        ParameterModel parameterModel = new ParameterModel();
-        parameterModel.setIsExported(true);
-        parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-        parameterModel.setExportReference(externalModelReference);
-
-        when(modelNode.getParameters()).thenReturn(Collections.singletonList(parameterModel));
-        doThrow(IOException.class).when(externalModelAccessor).flush(any());
-        externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
-    }
 }

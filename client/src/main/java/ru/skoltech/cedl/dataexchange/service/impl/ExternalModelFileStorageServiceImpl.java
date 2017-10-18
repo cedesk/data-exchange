@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.service.impl;
 
+import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
@@ -37,7 +38,7 @@ public class ExternalModelFileStorageServiceImpl implements ExternalModelFileSto
     public ExternalModel createExternalModelFromFile(File file, ModelNode parent) throws IOException {
         Path path = Paths.get(file.getAbsolutePath());
         String fileName = file.getName();
-        ExternalModel externalModel = new ExternalModel();
+        ExternalModel externalModel = new ExcelExternalModel();
         externalModel.setName(fileName);
         externalModel.setAttachment(Files.readAllBytes(path));
         externalModel.setLastModification(file.lastModified());

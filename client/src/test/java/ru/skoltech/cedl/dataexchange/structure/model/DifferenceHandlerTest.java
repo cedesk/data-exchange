@@ -18,10 +18,8 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.entity.Study;
-import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.revision.StudyRepository;
@@ -127,7 +125,7 @@ public class DifferenceHandlerTest extends AbstractApplicationContextTest {
         assertThat(differenceHandler.modelDifferences(), hasSize(1));
         assertThat(differenceHandler.modelDifferences(), hasItem(newModelDifference));
 
-        localStudy.getSystemModel().addExternalModel(new ExternalModel());
+        localStudy.getSystemModel().addExternalModel(new ExcelExternalModel());
         localStudy.getSystemModel().addParameter(new ParameterModel());
         differences = differenceHandler.computeStudyDifferences(localStudy, remoteStudy);
         differenceHandler.updateModelDifferences(differences);
