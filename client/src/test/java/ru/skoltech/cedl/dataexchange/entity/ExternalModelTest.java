@@ -237,8 +237,6 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
             assertNotNull(externalModel.getAttachmentAsInputStream());
             assertTrue(externalModel.getAttachmentAsInputStream() instanceof FileInputStream);
         }
-
-        externalModel.getCacheFile().deleteOnExit();
     }
 
 
