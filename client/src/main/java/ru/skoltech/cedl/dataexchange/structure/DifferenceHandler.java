@@ -27,6 +27,7 @@ import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
 import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
@@ -256,13 +257,13 @@ public class DifferenceHandler {
             ExternalModel externalModel = emd.getExternalModel1();
             try {
                 // update cached file
-                externalModel.updateCache();
+                externalModel.updateCacheFromAttachment();
                 // update parameters from new file
                 externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
                 return true;
-            } catch (IOException e) {
-                logger.error("failed to update cached external model: " + externalModel.getNodePath(), e);
-                throw new MergeException("failed to updated cached external model: " + externalModel.getName());
+            } catch (ExternalModelException e) {
+                logger.error("Failed to update cached external model: " + externalModel.getNodePath(), e);
+                throw new MergeException("Failed to updated cached external model: " + externalModel.getName());
             }
         }
         return true;

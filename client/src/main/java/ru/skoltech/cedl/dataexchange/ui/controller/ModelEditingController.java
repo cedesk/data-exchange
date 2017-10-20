@@ -42,6 +42,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
@@ -450,13 +451,13 @@ public class ModelEditingController implements Initializable {
     }
 
     private void applyParameterUpdatesFromExternalModel(ExternalModel externalModel) {
-        externalModelFileHandler.addChangedExternalModel(externalModel);
+//        externalModelFileHandler.addChangedExternalModel(externalModel);
         externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
         if (externalModelUpdateHandler.parameterModelUpdateStates().values().contains(SUCCESS)) {
             try {
-                externalModel.updateAttachment();
+                externalModel.updateAttachmentFromCache();
                 project.markStudyModified();
-            } catch (IOException e) {
+            } catch (ExternalModelException e) {
                 logger.error("Cannot update external model attachment: " + e.getMessage(), e);
             }
         }

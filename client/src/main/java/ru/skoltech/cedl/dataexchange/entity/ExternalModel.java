@@ -24,7 +24,7 @@ import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.ExternalModelAdapter;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
@@ -36,10 +36,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.text.DateFormat;
 import java.util.*;
 
-import static ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState.*;
+import static ru.skoltech.cedl.dataexchange.external.ExternalModelState.*;
 
 /**
  * Created by D.Knoll on 02.07.2015.
@@ -151,9 +150,9 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
     }
 
     /**
-     * Initialize external model cache file from current fields.
+     * Initialize external model cache initFile from current fields.
      * Must be performed after creation of a new external model instance, so
-     * it will be ready to handle the cache file.
+     * it will be ready to handle the cache initFile.
      */
     @PostPersist
     @PostLoad
@@ -167,42 +166,45 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         String userHome = System.getProperty("user.home");
         String base = projectHome != null ? projectHome : userHome;
         String path = this.getParent().getNodePath();
-        this.cacheFile = createCacheFile(base, path, this.id, this.name);
+        this.cacheFile = initCacheFile(base, path, this.id, this.name);
         this.timestampFile = new File(cacheFile.getAbsolutePath() + ".tstamp");
     }
 
     /**
-     * Initialize External Model fields by parameters taken from the cache file.
+     * Initialize External Model fields by parameters taken from the cache initFile.
      *
-     * @param cacheFile a file to take parameters for external model
-     * @throws IOException is access to the file is impossible for some reason
+     * @param initFile a initFile to take parameters for external model
+     * @throws ExternalModelException is access to the initFile is impossible for some reason
      */
-    public void initByCacheFile(File cacheFile) throws IOException {
-        Objects.requireNonNull(cacheFile);
-        this.setName(cacheFile.getName());
-        this.setLastModification(cacheFile.lastModified());
-        this.setAttachment(Files.readAllBytes(Paths.get(cacheFile.getAbsolutePath())));
-        this.init();
+    public void initByFile(File initFile) throws ExternalModelException {
+        try {
+            Objects.requireNonNull(initFile);
+            this.setName(initFile.getName());
+            this.setLastModification(initFile.lastModified());
+            this.setAttachment(Files.readAllBytes(Paths.get(initFile.getAbsolutePath())));
+            this.init();
+        } catch (IOException e) {
+            throw new ExternalModelException("Cannot initialize external model by file" + initFile.getAbsolutePath(), e);
+        }
     }
 
-    private static File createCacheFile(String projectHome, String path, long id, String name) {
-        String nodePath = path.replace(' ', '_').replace(ModelNode.NODE_SEPARATOR, File.separator);;
+    private static File initCacheFile(String projectHome, String path, long id, String name) {
+        String nodePath = path.replace(' ', '_').replace(ModelNode.NODE_SEPARATOR, File.separator);
         File nodeHome = new File(projectHome, nodePath);
         String rectifiedFileName = id + "_" + name.replace(' ', '_');
         return new File(nodeHome, rectifiedFileName);
+    }
+
+    public String getNodePath() {
+        return parent.getNodePath() + "#" + name;
     }
 
     public File getCacheFile() {
         return cacheFile;
     }
 
-    public File getTimestampFile() {
+    File getTimestampFile() {
         return timestampFile;
-    }
-
-
-    public String getNodePath() {
-        return parent.getNodePath() + "#" + name;
     }
 
     /**
@@ -210,7 +212,7 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
      *
      * @return actual state of external model
      */
-    public ExternalModelCacheState cacheState() {
+    public ExternalModelState state() {
         if (this.name == null && this.lastModification == null && this.attachment == null && this.getParent() == null) {
             return EMPTY;
         } else if (this.name == null || this.lastModification == null || this.attachment == null
@@ -218,146 +220,170 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
             return INCORRECT;
         } else if (this.cacheFile == null || this.timestampFile == null) {
             return UNINITIALIZED;
-        } else if (this.cacheFile.exists()) {
-            if (!this.timestampFile.exists()) {
-                //TODO than?
-                logger.error("External model is missing checkout timestamp");
-            }
+        } else if (this.cacheFile.exists() && this.timestampFile.exists()) {
             long checkoutTime = this.timestampFile.lastModified();
             long fileLastModified = this.cacheFile.lastModified();
             boolean newerInRepository = this.getLastModification() > checkoutTime;
             boolean locallyModified = checkoutTime < fileLastModified;
             if (newerInRepository) {
                 if (locallyModified) {
-                    return CACHED_CONFLICTING_CHANGES;
+                    return CACHE_CONFLICT;
                 } else {
-                    return CACHED_OUTDATED;
+                    return CACHE_OUTDATED;
                 }
             } else {
                 if (locallyModified) {
-                    return CACHED_MODIFIED_AFTER_CHECKOUT;
+                    return CACHE_MODIFIED;
                 } else {
-                    return CACHED_UP_TO_DATE;
+                    return CACHE;
                 }
             }
         }
-        return ExternalModelCacheState.NOT_CACHED;
+        return ExternalModelState.NO_CACHE;
     }
 
     /**
-     * Retrieve an external model attachment as stream.
+     * Retrieve an external model attachment as input stream.
      *
      * @return In case of non-empty and correct cache state (both not INCORRECT and not UNINITIALIZED)
-     * it returns {@link FileInputStream} of cache file if it is in some CACHED_* state
-     * and {@link ByteArrayOutputStream} of attachment if it is not cached.
-     * In case of EMPTY cache state returns null.
+     * it returns {@link FileInputStream} of cache file if it is in some CACHE* state
+     * and {@link ByteArrayInputStream} of attachment if there is no cache.
+     * In case of EMPTY cache state returns <i>null</i>.
      * @throws IOException in case of incorrect cache state (INCORRECT or UNINITIALIZED)
      */
     protected InputStream getAttachmentAsInputStream() throws IOException {
-        switch (this.cacheState()) {
+        switch (this.state()) {
             case EMPTY:
                 return null;
             case INCORRECT:
                 throw new IOException("External model must be in correct state");
             case UNINITIALIZED:
                 throw new IOException("External model must be initialized");
-            case NOT_CACHED:
+            case NO_CACHE:
                 return new ByteArrayInputStream(this.getAttachment());
             default:
                 return new FileInputStream(this.getCacheFile());
         }
     }
 
+    /**
+     * Retrieve an external model attachment as output stream.
+     *
+     * @return In case of non-empty and correct cache state (both not INCORRECT and not UNINITIALIZED)
+     * it returns {@link FileOutputStream} of cache initFile if it is in some CACHE* state
+     * and {@link ByteArrayOutputStream} of attachment if there is no cache.
+     * In case of EMPTY cache state returns <i>null</i>.
+     * @throws IOException in case of incorrect cache state (INCORRECT or UNINITIALIZED)
+     */
     protected OutputStream getAttachmentAsOutputStream() throws IOException {
-        switch (this.cacheState()) {
+        switch (this.state()) {
             case EMPTY:
                 return null;
             case INCORRECT:
                 throw new IOException("External model must be in correct state");
             case UNINITIALIZED:
                 throw new IOException("External model must be initialized");
-            case NOT_CACHED:
+            case NO_CACHE:
                 return new ByteArrayOutputStream(this.attachment.length);
             default:
                 return new FileOutputStream(this.cacheFile);
         }
     }
 
-    public void updateAttachment() throws IOException {
-        switch (this.cacheState()) {
-            case CACHED_MODIFIED_AFTER_CHECKOUT: {
-                Path path = Paths.get(cacheFile.getAbsolutePath());
-                this.setAttachment(Files.readAllBytes(path));
-                this.setLastModification(cacheFile.lastModified());
+    /**
+     * Update external model attachment with content of current cache file.
+     * Last modification field and timestamp file are updated as well.
+     *
+     * @throws ExternalModelException if external model is not initialized or there is no cache ot timestamp file.
+     */
+    public void updateAttachmentFromCache() throws ExternalModelException {
+        if (this.cacheFile == null || this.timestampFile == null) {
+            throw new ExternalModelException("External model is empty or uninitialized");
+        }
+        if (!this.cacheFile.exists() || !this.timestampFile.exists()) {
+            throw new ExternalModelException("External model is not cached");
+        }
+        try {
+            Path path = Paths.get(cacheFile.getAbsolutePath());
+            this.setAttachment(Files.readAllBytes(path));
+            this.setLastModification(cacheFile.lastModified());
+            boolean updated = timestampFile.setLastModified(cacheFile.lastModified());
+            if (!updated) {
+                throw new ExternalModelException("Cannot update timestamp file: " + timestampFile.getAbsolutePath());
             }
-            case CACHED_CONFLICTING_CHANGES: {
-                logger.warn(this.getNodePath() + " has conflicting changes locally and in repository");
-            }
+        } catch (IOException e) {
+            throw new ExternalModelException("Cannot update the cache: " + e.getMessage(), e);
         }
     }
 
-    public void updateCache() throws IOException {
-        switch (this.cacheState()) {
-            case NOT_CACHED:
-            case CACHED_OUTDATED:
-            case CACHED_MODIFIED_AFTER_CHECKOUT:
-            case CACHED_CONFLICTING_CHANGES: {
-                this.createDirectory();
-                Files.write(cacheFile.toPath(), this.getAttachment(), StandardOpenOption.CREATE);
-                this.updateTimestamp();
-                break;
-            }
+    /**
+     * Update external model cache with content of current attachment field.
+     * If any cache or timestamp file is not exist it immediately creates.
+     *
+     * @throws ExternalModelException if external model is empty, incorrect or not initialized.
+     */
+    public void updateCacheFromAttachment() throws ExternalModelException {
+        if (this.name == null || this.lastModification == null || this.attachment == null
+                || this.getParent() == null || this.getParent().getNodePath() == null) {
+            throw new ExternalModelException("External model is empty or incorrect");
         }
+        if (this.cacheFile == null || this.timestampFile == null) {
+            throw new ExternalModelException("External model is not initialized");
+        }
+        this.updateDirectory();
+        this.updateCacheFile();
+        this.updateTimestampFile();
     }
 
-    public void updateTimestamp() throws IOException {
-        ExternalModelCacheState cacheState = this.cacheState();
-        switch (cacheState) {
-            case CACHED_UP_TO_DATE:
-            case CACHED_MODIFIED_AFTER_CHECKOUT:
-            case CACHED_OUTDATED:
-            case CACHED_CONFLICTING_CHANGES: {
-                this.updateTimestampFile();
-                if (logger.isDebugEnabled()) {
-                    DateFormat formatter = Utils.TIME_AND_DATE_FOR_USER_INTERFACE;
-                    String modelModification = formatter.format(new Date(this.getLastModification()));
-                    String fileModification = formatter.format(new Date(timestampFile.lastModified()));
-                    logger.debug("Stored external model '" + name + "' (model: " + modelModification + ", file: " + fileModification + ")");
-                    logger.debug(this.getNodePath() + " is now in state " + cacheState);
-                }
-            }
-        }
-    }
-
-
-    private void createDirectory() {
+    private void updateDirectory() throws ExternalModelException {
         File path = cacheFile.getParentFile();
         if (!path.exists()) {
             logger.info("Creating directory: " + cacheFile.getParentFile().toString());
             boolean created = path.mkdirs();
             if (!created) {
-                logger.error("unable to create directory: " + path.getAbsolutePath());
+                throw new ExternalModelException("Unable to create directory: " + path.getAbsolutePath());
             }
         }
         if (!path.canRead() || !path.canWrite()) {
-            logger.error("Warning: Directory is not usable: " + path.toString());
+            throw new ExternalModelException("Unable to use directory: " + path.toString());
         }
     }
 
-    private void updateTimestampFile() throws IOException {
+    private void updateCacheFile() throws ExternalModelException {
+        if (this.cacheFile == null) {
+            throw new ExternalModelException("External model is empty, incorrect or not initialized.");
+        }
         try {
-            if (!timestampFile.exists()) {
-                // create file marking the checkout time of the ExternalModel file
-                boolean created = timestampFile.createNewFile();
+            if (!this.cacheFile.exists()) {
+                boolean created = this.cacheFile.createNewFile();
                 if (!created) {
-                    throw new IOException("Cannot create timestamp file.");
+                    throw new ExternalModelException("Cannot create cache file.");
                 }
             }
-            boolean modified = timestampFile.setLastModified(System.currentTimeMillis());
-            String lastModified = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(timestampFile.lastModified()));
-            logger.debug(timestampFile.getAbsolutePath() + " (" + lastModified + ") " + modified);
+            Files.write(this.cacheFile.toPath(), this.getAttachment(), StandardOpenOption.CREATE);
+            logger.debug(this.cacheFile.getAbsolutePath() + " updated");
         } catch (IOException e) {
-            throw new IOException("Cannot create timestamp file: " + e.getMessage(), e);
+            throw new ExternalModelException("Cannot create cache file: " + e.getMessage(), e);
+        }
+    }
+
+    private void updateTimestampFile() throws ExternalModelException {
+        if (this.timestampFile == null) {
+            throw new ExternalModelException("External model is empty, incorrect or not initialized.");
+        }
+        try {
+            if (!this.timestampFile.exists()) {
+                boolean created = this.timestampFile.createNewFile();
+                if (!created) {
+                    throw new ExternalModelException("Cannot create timestamp file.");
+                }
+            }
+            long currentTimeMillis = System.currentTimeMillis();
+            boolean modified = this.timestampFile.setLastModified(currentTimeMillis);
+            String lastModified = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(this.timestampFile.lastModified()));
+            logger.debug(this.timestampFile.getAbsolutePath() + " (" + lastModified + ") " + modified);
+        } catch (IOException e) {
+            throw new ExternalModelException("Cannot create timestamp file: " + e.getMessage(), e);
         }
     }
 

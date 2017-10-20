@@ -22,7 +22,7 @@ import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -103,12 +103,12 @@ public class ModelInconsistency {
             modelInconsistencies.add(new ModelInconsistency("External model has empty attachment", Severity.CRITICAL, em.getNodePath(), em));
         }
 
-        ExternalModelCacheState cacheState = em.cacheState();
-        if (cacheState == ExternalModelCacheState.CACHED_CONFLICTING_CHANGES) {
+        ExternalModelState cacheState = em.state();
+        if (cacheState == ExternalModelState.CACHE_CONFLICT) {
             modelInconsistencies.add(new ModelInconsistency("External model has be updated locally and remotely", Severity.CRITICAL, em.getNodePath(), em));
-        } else if (cacheState == ExternalModelCacheState.CACHED_OUTDATED) {
+        } else if (cacheState == ExternalModelState.CACHE_OUTDATED) {
             modelInconsistencies.add(new ModelInconsistency("External model is outdated", Severity.WARNING, em.getNodePath(), em));
-        } else if (cacheState == ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT) {
+        } else if (cacheState == ExternalModelState.CACHE_MODIFIED) {
             modelInconsistencies.add(new ModelInconsistency("External model has changes that need to be stored to the repository", Severity.WARNING, em.getNodePath(), em));
         }
         return modelInconsistencies;

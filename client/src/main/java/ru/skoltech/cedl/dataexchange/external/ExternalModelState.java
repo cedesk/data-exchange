@@ -23,7 +23,7 @@ package ru.skoltech.cedl.dataexchange.external;
  * <p>
  * Created by D.Knoll on 08.07.2015.
  */
-public enum ExternalModelCacheState {
+public enum ExternalModelState {
 
     /**
      * External model dos not contain any data.
@@ -43,25 +43,26 @@ public enum ExternalModelCacheState {
     /**
      * There is no cache file.
      */
-    NOT_CACHED,
-
-    /**
-     * Both modified in repository and in local file system.
-     */
-    CACHED_CONFLICTING_CHANGES,
-
-    /**
-     * Cache file was modified only in local file system.
-     */
-    CACHED_MODIFIED_AFTER_CHECKOUT,
-
-    /**
-     * External model was modified only in repository.
-     */
-    CACHED_OUTDATED,
+    NO_CACHE,
 
     /**
      * Both file system cache and repository are in the same state.
      */
-    CACHED_UP_TO_DATE
+    CACHE,
+
+    /**
+     * Both modified in repository and in local file system.
+     */
+    CACHE_CONFLICT,
+
+    /**
+     * Cache file was modified only in local file system.
+     */
+    CACHE_MODIFIED,
+
+    /**
+     * External model was modified only in repository.
+     */
+    CACHE_OUTDATED
+
 }

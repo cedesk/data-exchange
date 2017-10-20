@@ -22,7 +22,6 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModelTreeIterator;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -44,48 +43,48 @@ public class ExternalModelFileHandler {
             ExternalModel externalModel = iterator.next();
 
             // keep track of changed files
-            switch (externalModel.cacheState()) {
-                case CACHED_MODIFIED_AFTER_CHECKOUT:
+            switch (externalModel.state()) {
+                case CACHE_MODIFIED:
                     changedExternalModels.add(externalModel);
                     logger.debug(externalModel.getParent().getNodePath() + " external model '" + externalModel.getName() + "' has been changed since last store to repository");
                     break;
-                case CACHED_CONFLICTING_CHANGES:
+                case CACHE_CONFLICT:
                     logger.warn(externalModel.getParent().getNodePath() + " external model '" + externalModel.getName() + "' has conflicting changes locally and in repository");
             }
         }
     }
 
-    public void addChangedExternalModel(ExternalModel externalModel) {
-        changedExternalModels.add(externalModel);
-    }
+//    public void addChangedExternalModel(ExternalModel externalModel) {
+//        changedExternalModels.add(externalModel);
+//    }
+//
+//    /**
+//     * check the locally cached external model files for modifications,
+//     * and if there are modifications, update the local study model in memory.
+//     */
+//    public void updateExternalModelsAttachment() {
+//        try {
+//            for (ExternalModel externalModel : changedExternalModels) {
+//                externalModel.updateAttachment();
+//            }
+//            changedExternalModels.clear();
+//        } catch (IOException e) {
+//            logger.error("Cannot update external model attachment: " + e.getMessage(), e);
+//        }
+//    }
 
-    /**
-     * check the locally cached external model files for modifications,
-     * and if there are modifications, update the local study model in memory.
-     */
-    public void updateExternalModelsAttachment() {
-        try {
-            for (ExternalModel externalModel : changedExternalModels) {
-                externalModel.updateAttachment();
-            }
-            changedExternalModels.clear();
-        } catch (IOException e) {
-            logger.error("Cannot update external model attachment: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * make sure external model files in cache get a new timestamp
-     */
-    public void updateExternalModelTimestamp() {
-        try {
-            for (ExternalModel externalModel : changedExternalModels) {
-                externalModel.updateTimestamp();
-            }
-            changedExternalModels.clear();
-        } catch (IOException e) {
-            logger.error("Cannot update external model timestamp: " + e.getMessage(), e);
-        }
-    }
+//    /**
+//     * make sure external model files in cache get a new timestamp
+//     */
+//    public void updateExternalModelTimestamp() {
+//        try {
+//            for (ExternalModel externalModel : changedExternalModels) {
+////                externalModel.updateTimestamp();
+//            }
+//            changedExternalModels.clear();
+//        } catch (IOException e) {
+//            logger.error("Cannot update external model timestamp: " + e.getMessage(), e);
+//        }
+//    }
 
 }

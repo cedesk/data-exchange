@@ -20,7 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.Grid;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
@@ -186,8 +186,8 @@ public class ExcelExternalModel extends ExternalModel {
 //            this.flushSpreadsheetCellValueAccessor(spreadsheetAccessor, outputStream);
 //            this.setAttachment(outputStream.toByteArray());
 //        }
-        ExternalModelCacheState cacheState = this.cacheState();
-        if (cacheState == ExternalModelCacheState.NOT_CACHED) {
+        ExternalModelState cacheState = this.state();
+        if (cacheState == ExternalModelState.NO_CACHE) {
             logger.debug("Updating " + this.getNodePath() + " with changes from parameters");
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream(this.getAttachment().length)) {
                 this.flushSpreadsheetCellValueAccessor(spreadsheetAccessor, bos);

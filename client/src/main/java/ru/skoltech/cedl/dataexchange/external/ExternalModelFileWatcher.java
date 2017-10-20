@@ -56,9 +56,9 @@ public class ExternalModelFileWatcher extends Observable {
     }
 
     public void add(ExternalModel externalModel) {
-        ExternalModelCacheState cacheState = externalModel.cacheState();
-        if (cacheState == ExternalModelCacheState.EMPTY || cacheState == ExternalModelCacheState.INCORRECT
-                || cacheState == ExternalModelCacheState.UNINITIALIZED || cacheState == ExternalModelCacheState.NOT_CACHED) {
+        ExternalModelState cacheState = externalModel.state();
+        if (cacheState == ExternalModelState.EMPTY || cacheState == ExternalModelState.INCORRECT
+                || cacheState == ExternalModelState.UNINITIALIZED || cacheState == ExternalModelState.NO_CACHE) {
             logger.warn("Cannot add to directory watch service because of wrong state: " + cacheState);
             return;
         }
@@ -72,17 +72,17 @@ public class ExternalModelFileWatcher extends Observable {
         }
     }
 
+    public void clear() {
+        directoryWatchService.clear();
+        watchedExternalModels.clear();
+    }
+
     public void start() {
         directoryWatchService.start();
     }
 
     public void close() {
         directoryWatchService.stop();
-    }
-
-    public void clear() {
-        directoryWatchService.clear();
-        watchedExternalModels.clear();
     }
 
     public void maskChangesTo(File file) {
@@ -99,12 +99,14 @@ public class ExternalModelFileWatcher extends Observable {
         }
         String changedFilePath = changedFile.getAbsolutePath();
         if (watchedExternalModels.containsKey(changedFile)) {
-            ExternalModel externalModel = watchedExternalModels.get(changedFile);
-            long lastModified = changedFile.lastModified();
-            String dateAndTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(lastModified));
-            logger.debug("file " + changedFilePath + " has been modified (" + dateAndTime + ")");
-            // TODO: iif necessary
             try {
+                ExternalModel externalModel = watchedExternalModels.get(changedFile);
+                externalModel.updateAttachmentFromCache();
+//                externalModel.updateTimestamp();
+                long lastModified = changedFile.lastModified();
+                String dateAndTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(lastModified));
+                logger.debug("file " + changedFilePath + " has been modified (" + dateAndTime + ")");
+
                 ExternalModelFileWatcher.this.setChanged();
                 ExternalModelFileWatcher.this.notifyObservers(externalModel);
             } catch (Exception ex) {

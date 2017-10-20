@@ -36,6 +36,7 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
@@ -339,7 +340,7 @@ public class Project {
         this.reinitializeUniqueIdentifiers(systemModel);
         externalModelFileWatcher.clear();
         externalModelFileWatcher.add(systemModel, accessChecker);
-        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
+//        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
         externalModelUpdateHandler.applyParameterUpdatesFromSystemModel(this.getSystemModel(), accessChecker);
         this.validateExternalModelUpdate();
     }
@@ -366,7 +367,7 @@ public class Project {
         parameterLinkRegistry.registerAllParameters(getSystemModel());
         externalModelFileWatcher.clear();
         externalModelFileWatcher.add(this.getSystemModel(), accessChecker);
-        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
+//        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
         externalModelUpdateHandler.applyParameterUpdatesFromSystemModel(this.getSystemModel(), accessChecker);
         this.validateExternalModelUpdate();
         differenceHandler.clearModelDifferences();
@@ -378,9 +379,9 @@ public class Project {
             ExternalModel externalModel = iterator.next();
             if (externalModelUpdateHandler.parameterModelUpdateStates().values().contains(ParameterModelUpdateState.SUCCESS)) {
                 try {
-                    externalModel.updateAttachment();
+                    externalModel.updateAttachmentFromCache();
                     this.markStudyModified();
-                } catch (IOException e) {
+                } catch (ExternalModelException e) {
                     logger.warn("Cannot update attachment of external model.", e);
                 }
             }
@@ -472,7 +473,7 @@ public class Project {
         SystemModel systemModel = this.getSystemModel();
         parameterLinkRegistry.updateAll(systemModel);
         externalModelUpdateHandler.applyParameterUpdatesToSystemModel(systemModel, accessChecker);
-        externalModelFileHandler.updateExternalModelsAttachment();
+//        externalModelFileHandler.updateExternalModelsAttachment();
         if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
             // store URM separately before study, to prevent links to deleted subsystems have storing study fail
             storeUserRoleManagement();
@@ -482,7 +483,7 @@ public class Project {
         Study newStudy = revision.getLeft();
         Integer revisionNumber = revision.getMiddle();
 
-        externalModelFileHandler.updateExternalModelTimestamp();
+//        externalModelFileHandler.updateExternalModelTimestamp();
 
         this.study = newStudy;
         this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
@@ -492,7 +493,7 @@ public class Project {
 
         externalModelFileWatcher.clear();
         externalModelFileWatcher.add(systemModel, accessChecker);
-        externalModelFileHandler.initializeStateOfExternalModels(systemModel, accessChecker);
+//        externalModelFileHandler.initializeStateOfExternalModels(systemModel, accessChecker);
         externalModelUpdateHandler.applyParameterUpdatesFromSystemModel(this.getSystemModel(), accessChecker);
         this.validateExternalModelUpdate();
         parameterLinkRegistry.registerAllParameters(getSystemModel());

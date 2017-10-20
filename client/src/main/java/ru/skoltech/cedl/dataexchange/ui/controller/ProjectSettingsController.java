@@ -219,14 +219,15 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         File projectDataDir = project.getProjectHome();
         systemModel.externalModelsIterator().forEachRemaining(externalModel -> {
             actualCacheFiles.add(externalModel.getCacheFile().getAbsolutePath());
-            actualCacheFiles.add(externalModel.getTimestampFile().getAbsolutePath());
-            logger.info("File: '" + externalModel.getCacheFile().getAbsolutePath() + "', [" + externalModel.cacheState() + "], need to keep");
+            logger.info("File: '" + externalModel.getCacheFile().getAbsolutePath() + "', [" + externalModel.state() + "], need to keep");
         });
         // go through cache directory, check if to keep, otherwise delete
         try {
             Files.walk(projectDataDir.toPath(), FileVisitOption.FOLLOW_LINKS).forEach(path -> {
                 File file = path.toFile();
-                if (file.isFile() && !actualCacheFiles.contains(file.getAbsolutePath())) { // files not to be kept
+
+                if (file.isFile() && actualCacheFiles.stream().noneMatch(s -> file.getAbsolutePath().startsWith(s))) {
+                    // files not to be kept
                     logger.info("Deleting: '" + file.getAbsolutePath() + "' file");
                     boolean deleted = file.delete();
                     if (!deleted) {

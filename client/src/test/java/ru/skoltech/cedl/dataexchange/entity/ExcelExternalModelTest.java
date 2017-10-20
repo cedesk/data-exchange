@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelCacheState;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
@@ -59,7 +59,7 @@ public class ExcelExternalModelTest {
 //    public Grid getGrid(String sheetName) throws ExternalModelException;
 
     @Before
-    public void prepare() throws URISyntaxException, IOException {
+    public void prepare() throws URISyntaxException, IOException, ExternalModelException {
         String projectDir = new File("target/project").getAbsolutePath();
         System.setProperty(Project.PROJECT_HOME_PROPERTY, projectDir);
 
@@ -72,7 +72,7 @@ public class ExcelExternalModelTest {
         externalModel.setAttachment(Files.readAllBytes(Paths.get(attachmentFile.getAbsolutePath())));
         externalModel.setParent(testModel);
         externalModel.init();
-        externalModel.updateCache();
+        externalModel.updateCacheFromAttachment();
     }
 
     @After
@@ -143,7 +143,7 @@ public class ExcelExternalModelTest {
         Row row = sheet.getRow(cellReference.getRow());
         Cell cell = row.getCell(cellReference.getCol());
 
-        assertEquals(ExternalModelCacheState.CACHED_MODIFIED_AFTER_CHECKOUT, externalModel.cacheState());
+        assertEquals(ExternalModelState.CACHE_MODIFIED, externalModel.state());
         assertEquals(CellType.NUMERIC, cell.getCellTypeEnum());
         assertEquals(value, cell.getNumericCellValue(), 0);
 
@@ -170,7 +170,7 @@ public class ExcelExternalModelTest {
         Row row = sheet.getRow(cellReference.getRow());
         Cell cell = row.getCell(cellReference.getCol());
 
-        assertEquals(ExternalModelCacheState.NOT_CACHED, externalModel.cacheState());
+        assertEquals(ExternalModelState.NO_CACHE, externalModel.state());
         assertEquals(CellType.NUMERIC, cell.getCellTypeEnum());
         assertEquals(value, cell.getNumericCellValue(), 0);
 

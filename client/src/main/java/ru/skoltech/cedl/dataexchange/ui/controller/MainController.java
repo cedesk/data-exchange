@@ -764,7 +764,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private boolean hasRemoteDifferences() throws Exception {
         Future<List<ModelDifference>> feature = project.loadRepositoryStudy();
-        externalModelFileHandler.updateExternalModelsAttachment();
+//        externalModelFileHandler.updateExternalModelsAttachment();
 
         List<ModelDifference> modelDifferences = feature.get();
         if (modelDifferences == null) {
