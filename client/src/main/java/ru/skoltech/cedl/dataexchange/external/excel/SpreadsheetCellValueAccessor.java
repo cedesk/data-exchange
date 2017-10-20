@@ -19,7 +19,6 @@ package ru.skoltech.cedl.dataexchange.external.excel;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 
 import java.io.Closeable;
 import java.io.IOException;

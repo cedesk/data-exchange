@@ -28,14 +28,12 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
 import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -20,9 +20,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.spreadsheet.Grid;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetGridViewFactory;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
@@ -39,6 +39,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
+ * Implementation of {@link ExternalModel} which provide an access to the Microsoft Excel files.
+ *
  * Created by Nikolay Groshkov on 04-Oct-17.
  */
 @Entity

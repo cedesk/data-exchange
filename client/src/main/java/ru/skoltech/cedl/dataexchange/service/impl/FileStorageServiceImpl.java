@@ -32,7 +32,7 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
+import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 
 import javax.xml.bind.JAXBContext;
@@ -40,10 +40,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementation of service which handles operations with file system.
@@ -57,7 +54,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
     private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
 
-    private ExternalModelFileStorageService externalModelFileStorageService;
+    private ExternalModelService externalModelService;
 
     private final File applicationDirectory;
 
@@ -86,8 +83,8 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
     }
 
-    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
-        this.externalModelFileStorageService = externalModelFileStorageService;
+    public void setExternalModelService(ExternalModelService externalModelService) {
+        this.externalModelService = externalModelService;
     }
 
     @Override
@@ -228,10 +225,10 @@ public class FileStorageServiceImpl implements FileStorageService {
         Iterator<ExternalModel> iterator = systemModel.externalModelsIterator();
         while (iterator.hasNext()) {
             ExternalModel externalModel = iterator.next();
-            String nodePath = externalModelFileStorageService.makeExternalModelPath(externalModel);
+            String nodePath = externalModelService.makeExternalModelPath(externalModel);
             File nodeDir = new File(outputFolder, nodePath);
             this.createDirectory(nodeDir);
-            externalModelFileStorageService.storeExternalModel(externalModel, nodeDir);
+            externalModelService.storeExternalModel(externalModel, nodeDir);
         }
     }
 
@@ -274,11 +271,11 @@ public class FileStorageServiceImpl implements FileStorageService {
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
             externalModel.setParent(modelNode);
             try {
-                String nodePath = externalModelFileStorageService.makeExternalModelPath(externalModel);
+                String nodePath = externalModelService.makeExternalModelPath(externalModel);
                 File nodeDir = new File(inputFolder, nodePath);
                 File file = new File(nodeDir, externalModel.getName());
                 if (file.exists()) {
-                    externalModelFileStorageService.readExternalModelAttachmentFromFile(file, externalModel);
+                    externalModelService.updateExternalModelFromFile(file, externalModel);
                 } else {
                     logger.error("external model file not found!");
                 }

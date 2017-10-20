@@ -37,7 +37,6 @@ import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.service.*;
@@ -47,7 +46,6 @@ import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -73,7 +71,6 @@ public class Project {
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ExternalModelUpdateHandler externalModelUpdateHandler;
-    private ExternalModelFileHandler externalModelFileHandler;
     private FileStorageService fileStorageService;
     private StudyService studyService;
     private UserManagementService userManagementService;
@@ -126,10 +123,6 @@ public class Project {
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
         this.externalModelFileWatcher = externalModelFileWatcher;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {

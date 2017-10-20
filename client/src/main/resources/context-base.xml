@@ -83,10 +83,10 @@
 
     <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.service.impl.FileStorageServiceImpl">
         <constructor-arg type="ru.skoltech.cedl.dataexchange.init.ApplicationSettings" ref="applicationSettings"/>
-        <property name="externalModelFileStorageService" ref="externalModelFileStorageService"/>
+        <property name="externalModelService" ref="externalModelService"/>
     </bean>
 
-    <bean id="externalModelFileStorageService" class="ru.skoltech.cedl.dataexchange.service.impl.ExternalModelFileStorageServiceImpl"/>
+    <bean id="externalModelService" class="ru.skoltech.cedl.dataexchange.service.impl.ExternalModelServiceImpl"/>
 
     <bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
         <property name="corePoolSize" value="3"/>

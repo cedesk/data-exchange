@@ -43,7 +43,6 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
@@ -59,7 +58,6 @@ import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItem;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItemFactory;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.TextFieldTreeCell;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -109,7 +107,6 @@ public class ModelEditingController implements Initializable {
     private ExternalModelEditorController externalModelEditorController;
 
     private Project project;
-    private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private DifferenceHandler differenceHandler;
     private ExternalModelUpdateHandler externalModelUpdateHandler;
@@ -133,10 +130,6 @@ public class ModelEditingController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {

@@ -188,6 +188,15 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         }
     }
 
+    /**
+     * This method only forms the full path where the external model would be cached.<br/>
+     * It does not actually assure the file nor the folder exist.
+     *
+     * @param projectHome project home directory
+     * @param path path to the cache file
+     * @param name name of cache file
+     * @return a file of the location where the external model would be stored.
+     */
     private static File initCacheFile(String projectHome, String path, long id, String name) {
         String nodePath = path.replace(' ', '_').replace(ModelNode.NODE_SEPARATOR, File.separator);
         File nodeHome = new File(projectHome, nodePath);

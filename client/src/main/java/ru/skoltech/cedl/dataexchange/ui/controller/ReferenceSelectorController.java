@@ -37,7 +37,7 @@ import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCoordinates;
 
 import java.net.URL;
 import java.text.ParseException;

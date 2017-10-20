@@ -97,9 +97,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
 
     @After
     public void shutdown() throws IOException {
-        externalModel.getCacheFile().getParentFile().deleteOnExit();
-        externalModel.getCacheFile().deleteOnExit();
-        externalModel.getTimestampFile().deleteOnExit();
+        FileUtils.deleteDirectory(new File("target/parent"));
 
         String projectHome = System.getProperty(Project.PROJECT_HOME_PROPERTY);
         if (projectHome == null) {
@@ -252,7 +250,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         assertNull(emptyExternalModel.getAttachmentAsInputStream());
 
         when(externalModel.getCacheFile()).thenReturn(this.attachmentFile1);
-        when(externalModel.state()).thenReturn(NO_CACHE);
+        doReturn(NO_CACHE).when(externalModel).state();
         assertNotNull(externalModel.getAttachmentAsInputStream());
         assertTrue(externalModel.getAttachmentAsInputStream() instanceof ByteArrayInputStream);
 
@@ -342,7 +340,6 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         assertTrue(projectDirectory.exists());
         assertTrue(cacheFile.exists());
         assertTrue(timestampFile.exists());
-        assertTrue(timestampFile.lastModified() > cacheFile.lastModified());
         assertEquals(CACHE, newExternalModel.state());
 
         //delete files and directory for next test in iteration
@@ -450,7 +447,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         System.out.println(parameterModel.getEffectiveValue());
 
 //        modelUpdateService.applyParameterUpdatesFromExternalModel(project, externalModel,
-//                parameterLinkRegistry, externalModelFileHandler,
+//                parameterLinkRegistry,
 //                Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
 
 

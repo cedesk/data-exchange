@@ -51,7 +51,6 @@ import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
@@ -124,7 +123,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private ApplicationSettings applicationSettings;
     private Project project;
-    private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private DifferenceHandler differenceHandler;
     private StudyService studyService;
@@ -153,10 +151,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
