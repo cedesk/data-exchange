@@ -34,7 +34,7 @@
         <property name="project" ref="project"/>
     </bean>
 
-    <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project">
+    <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" init-method="init">
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="repositoryStateMachine" ref="repositoryStateMachine"/>
         <property name="differenceHandler" ref="differenceHandler"/>
@@ -48,6 +48,7 @@
         <property name="unitManagementService" ref="unitManagementService"/>
         <property name="inboundFilesChannel" ref="inboundFilesChannel"/>
         <property name="executor" ref="executor"/>
+        <property name="actionLogger" ref="actionLogger"/>
     </bean>
 
     <util:map id="builderRegistry" map-class="java.util.HashMap">

@@ -16,13 +16,13 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -33,7 +33,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ModelNodeFactory;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
@@ -42,8 +41,6 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
@@ -61,9 +58,7 @@ import ru.skoltech.cedl.dataexchange.ui.control.structure.TextFieldTreeCell;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
-import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.FAIL_EVALUATION;
 import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS;
 
 /**
@@ -107,7 +102,6 @@ public class ModelEditingController implements Initializable {
     private ExternalModelEditorController externalModelEditorController;
 
     private Project project;
-    private ExternalModelFileWatcher externalModelFileWatcher;
     private DifferenceHandler differenceHandler;
     private ExternalModelUpdateHandler externalModelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
@@ -130,10 +124,6 @@ public class ModelEditingController implements Initializable {
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
-        this.externalModelFileWatcher = externalModelFileWatcher;
     }
 
     public void setDifferenceHandler(DifferenceHandler differenceHandler) {
@@ -175,8 +165,39 @@ public class ModelEditingController implements Initializable {
         Node externalModelEditorPane = guiService.createControl(Views.EXTERNAL_MODELS_EDITOR_VIEW);
         externalModelParentPane.setContent(externalModelEditorPane);
 
-        externalModelFileWatcher.addObserver((o, arg) ->
-                Platform.runLater(() -> this.applyParameterUpdatesFromExternalModel((ExternalModel) arg)));
+        externalModelUpdateHandler.parameterModelUpdateStates()
+                .addListener((MapChangeListener<ParameterModel, ParameterModelUpdateState>) change -> {
+                    List<ParameterModel> successParameterModels = externalModelUpdateHandler
+                            .parameterModelUpdateStates().entrySet().stream()
+                            .filter(entry -> entry.getValue() == SUCCESS)
+                            .map(Map.Entry::getKey)
+                            .collect(Collectors.toList());
+
+                    parametersController.refresh();
+                    Pair<ParameterModel, ParameterModelUpdateState> update = parametersController.currentParameter();
+                    if (update != null) {
+                        parameterEditorController.displayParameterModel(update.getLeft(), update.getRight());
+                    }
+
+                    if (successParameterModels.isEmpty()) {
+                        UserNotifications.showNotification(getAppWindow(), "External model modified",
+                                "External model file '"
+//                                        + externalModel.getName()
+                                        + "' has been modified.\n"
+                                        + "There are no parameter updates.");
+                    } else {
+                        String successParameterModelNames = successParameterModels.stream()
+                                .map(ParameterModel::getName)
+                                .collect(Collectors.joining(","));
+                        String message = "External model file '"
+//                                + externalModel.getName()
+                                + "' has been modified.\n"
+                                + "Parameters [" + successParameterModelNames + "] have been updated.";
+                        message = WordUtils.wrap(message, 100);
+                        UserNotifications.showNotification(getAppWindow(), "External model modified", message);
+                    }
+
+        });
 
         // STRUCTURE TREE VIEW
         structureTree.setCellFactory(param -> new TextFieldTreeCell(project, differenceHandler));
@@ -196,7 +217,6 @@ public class ModelEditingController implements Initializable {
 
         // EXTERNAL MODEL ATTACHMENT
         externalModelParentPane.disableProperty().bind(selectedNodeIsEditable.not());
-        this.externalModelEditorController.setExternalModelReloadConsumer(this::applyParameterUpdatesFromExternalModel);
 
         // PARAMETER MODEL
         this.parametersController.addParameterModelChangeListener((observable, oldValue, newValue) ->
@@ -441,57 +461,6 @@ public class ModelEditingController implements Initializable {
 
     private void updateParameters(ModelNode modelNode) {
         parametersController.updateParameters(modelNode, selectedNodeIsEditable.get());
-    }
-
-    private void applyParameterUpdatesFromExternalModel(ExternalModel externalModel) {
-//        externalModelFileHandler.addChangedExternalModel(externalModel);
-        externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
-        if (externalModelUpdateHandler.parameterModelUpdateStates().values().contains(SUCCESS)) {
-            try {
-                externalModel.updateAttachmentFromCache();
-                project.markStudyModified();
-            } catch (ExternalModelException e) {
-                logger.error("Cannot update external model attachment: " + e.getMessage(), e);
-            }
-        }
-
-        actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
-        logger.info("External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...");
-        List<ParameterModel> successParameterModels = new LinkedList<>();
-        externalModelUpdateHandler.parameterModelUpdateStates().forEach((parameterModel, updateState) -> {
-            if (updateState == SUCCESS) {
-                successParameterModels.add(parameterModel);
-
-                Iterable<ParameterModel> parametersTreeIterable = () -> project.getSystemModel().parametersTreeIterator();
-                StreamSupport.stream(parametersTreeIterable.spliterator(), false)
-                        .filter(pm -> pm.getUuid().equals(parameterModel.getUuid()))
-                        .forEach(pm -> pm.setValue(parameterModel.getValue()));
-
-                actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
-            } else if (updateState == FAIL_EVALUATION) {
-                actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
-                        + "#" + parameterModel.getValueReference().getTarget());
-            }
-        });
-        parametersController.refresh();
-        Pair<ParameterModel, ParameterModelUpdateState> update = parametersController.currentParameter();
-        if (update != null) {
-            parameterEditorController.displayParameterModel(update.getLeft(), update.getRight());
-        }
-
-        if (successParameterModels.isEmpty()) {
-            UserNotifications.showNotification(getAppWindow(), "External model modified",
-                    "External model file '" + externalModel.getName() + "' has been modified.\n"
-                            + "There are no parameter updates.");
-        } else {
-            String successParameterModelNames = successParameterModels.stream()
-                    .map(ParameterModel::getName)
-                    .collect(Collectors.joining(","));
-            String message = "External model file '" + externalModel.getName() + "' has been modified.\n"
-                    + "Parameters [" + successParameterModelNames + "] have been updated.";
-            message = WordUtils.wrap(message, 100);
-            UserNotifications.showNotification(getAppWindow(), "External model modified", message);
-        }
     }
 
     private class TreeItemSelectionListener implements ChangeListener<TreeItem<ModelNode>> {

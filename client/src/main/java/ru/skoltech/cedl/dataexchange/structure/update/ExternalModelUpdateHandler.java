@@ -79,15 +79,6 @@ public class ExternalModelUpdateHandler {
         parameterModelUpdateStates.putAll(result);
     }
 
-    public void applyParameterUpdatesFromSystemModel(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
-        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(systemModel, accessChecker);
-        while (iterator.hasNext()) {
-            ExternalModel externalModel = iterator.next();
-            // silently update model from external model
-            this.applyParameterUpdatesFromExternalModel(externalModel);
-        }
-    }
-
     public void applyParameterUpdateFromExternalModel(ParameterModel parameterModel) {
         if (parameterModel == null) {
             return;

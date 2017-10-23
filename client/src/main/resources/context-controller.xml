@@ -53,7 +53,6 @@
         <property name="parameterEditorController" ref="parameterEditorController"/>
         <property name="externalModelEditorController" ref="externalModelEditorController"/>
         <property name="project" ref="project"/>
-        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>

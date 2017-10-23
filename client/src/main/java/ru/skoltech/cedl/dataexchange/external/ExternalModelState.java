@@ -63,6 +63,15 @@ public enum ExternalModelState {
     /**
      * External model was modified only in repository.
      */
-    CACHE_OUTDATED
+    CACHE_OUTDATED;
+
+    /**
+     * Determine the existence of cache file.
+     *
+     * @return <i>true</i> if cache file is exist and <i>true</i> if opposite.
+     */
+    public boolean isCached(){
+        return this == EMPTY || this == INCORRECT || this == UNINITIALIZED || this == NO_CACHE;
+    }
 
 }

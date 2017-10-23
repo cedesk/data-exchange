@@ -256,8 +256,6 @@ public class DifferenceHandler {
             try {
                 // update cached file
                 externalModel.updateCacheFromAttachment();
-                // update parameters from new file
-                externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
                 return true;
             } catch (ExternalModelException e) {
                 logger.error("Failed to update cached external model: " + externalModel.getNodePath(), e);
