@@ -141,7 +141,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     private Stage ownerStage;
 
     private ObjectProperty<ParameterModel> parameterModelProperty = new SimpleObjectProperty<>();
-    private ObjectProperty<ParameterModelUpdateState> parameterModelUpdateStateProperty = new SimpleObjectProperty<>();
+//    private ObjectProperty<ParameterModelUpdateState> parameterModelUpdateStateProperty = new SimpleObjectProperty<>();
     private ListProperty<String> differencesProperty = new SimpleListProperty<>();
     private BooleanProperty nameChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty natureChangedProperty = new SimpleBooleanProperty();
@@ -311,11 +311,9 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.updateIcon.setIcon(null);
         this.updateIcon.setColor(null);
         this.updateIcon.setTooltip(null);
-    }
 
-    public void displayParameterModel(ParameterModel parameterModel, ParameterModelUpdateState updateState) {
-        this.displayParameterModel(parameterModel);
-        this.parameterModelUpdateStateProperty.setValue(updateState);
+        ParameterModelUpdateState updateState = parameterModel.getLastUpdateState();
+//        this.parameterModelUpdateStateProperty.setValue(updateState);
         if (updateState != null) {
             boolean success = updateState == SUCCESS || updateState == SUCCESS_WITHOUT_UPDATE;
             String icon = success ? "CHECK" : "WARNING";
@@ -332,7 +330,7 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     public void applyChanges() {
         logger.debug("updating parameter: " + parameterModel.getNodePath());
-        this.applyParameterUpdateFromExternalModel();
+        this.evaluateParameterModel();
         this.replaceLinksInParameterLinkRegistry();
         this.validateFields();
 
@@ -370,10 +368,10 @@ public class ParameterEditorController implements Initializable, Displayable {
         editListener.accept(parameterModel);
     }
 
-    private void applyParameterUpdateFromExternalModel() {
-        logger.debug("update parameter value from model");
-        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
-        ParameterModelUpdateState updateState = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
+    private void evaluateParameterModel() {
+        logger.debug("Update parameter value from model");
+        parameterModel.evaluate();
+        ParameterModelUpdateState updateState = parameterModel.getLastUpdateState();
         if (updateState == null) {
             return;
         }

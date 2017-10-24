@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange.structure;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
@@ -47,22 +48,18 @@ import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+import ru.skoltech.cedl.dataexchange.ui.controller.UserNotifications;
 
 import java.io.File;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.stream.StreamSupport;
-
-import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.FAIL_EVALUATION;
-import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -111,9 +108,38 @@ public class Project {
         this.externalModelFileWatcher.addObserver((o, arg) -> {
             try {
                 ExternalModel externalModel = (ExternalModel) arg;
+                actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
+                logger.info("External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...");
                 externalModel.updateAttachmentFromCache();
+                List<ParameterModel> updatedParameterModels = new LinkedList<>();
+                externalModel.getReferencedParameterModels().forEach(parameterModel -> {
+                    boolean evaluated = parameterModel.evaluate();
+                    if (evaluated) {
+                        parameterLinkRegistry.updateSinks(parameterModel);
+                    }
+                    ParameterModelUpdateState updateState = parameterModel.getLastUpdateState();
+                    if (updateState == ParameterModelUpdateState.SUCCESS) {
+                        actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
+                        updatedParameterModels.add(parameterModel);
+                    } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
+                        actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
+                                + "#" + parameterModel.getValueReference().getTarget());
+                    }
+                });
                 this.markStudyModified();
-                this.applyParameterUpdatesFromExternalModel(externalModel);
+
+                Platform.runLater(() -> {
+                    String successParameterModelNames = updatedParameterModels.stream()
+                                .map(ParameterModel::getName)
+                                .collect(Collectors.joining(","));
+                    String message = !updatedParameterModels.isEmpty() ?
+                            "Parameters [" + successParameterModelNames + "] have been updated." : "There are no parameter updates.";
+                    message = WordUtils.wrap(message, 100);
+                    UserNotifications.showNotification(null, "External model modified",
+                            "External model file '" + externalModel.getName() + "' has been modified.\n"
+                            + message);
+                });
+
             } catch (ExternalModelException e) {
                 logger.error("Cannot update attachment from cache file of external model: " + e.getMessage(), e);
             }
@@ -562,26 +588,6 @@ public class Project {
         boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
         canSync.setValue(isSyncEnabled && isSavePossible);
     }
-
-    private void applyParameterUpdatesFromExternalModel(ExternalModel externalModel) {
-        externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
-        actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
-        logger.info("External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...");
-        externalModelUpdateHandler.parameterModelUpdateStates().forEach((parameterModel, updateState) -> {
-            if (updateState == SUCCESS) {
-                Iterable<ParameterModel> parametersTreeIterable = () -> this.getSystemModel().parametersTreeIterator();
-                StreamSupport.stream(parametersTreeIterable.spliterator(), false)
-                        .filter(pm -> pm.getUuid().equals(parameterModel.getUuid()))
-                        .forEach(pm -> pm.setValue(parameterModel.getValue()));
-
-                actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
-            } else if (updateState == FAIL_EVALUATION) {
-                actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
-                        + "#" + parameterModel.getValueReference().getTarget());
-            }
-        });
-    }
-
 
     public File getProjectHome() {
         String hostname = applicationSettings.getRepositoryHost();

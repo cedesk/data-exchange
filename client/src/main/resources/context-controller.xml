@@ -55,7 +55,6 @@
         <property name="project" ref="project"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
-        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="guiService" ref="guiService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="actionLogger" ref="actionLogger"/>
@@ -65,7 +64,6 @@
     <bean id="parametersController" class="ru.skoltech.cedl.dataexchange.ui.controller.ParametersController">
         <property name="project" ref="project"/>
         <property name="differenceHandler" ref="differenceHandler"/>
-        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="guiService" ref="guiService"/>
         <property name="actionLogger" ref="actionLogger"/>

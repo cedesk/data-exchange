@@ -22,14 +22,11 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.stage.Window;
-import org.apache.commons.lang3.text.WordUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -48,8 +45,6 @@ import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
-import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItem;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItemFactory;
@@ -58,8 +53,6 @@ import ru.skoltech.cedl.dataexchange.ui.control.structure.TextFieldTreeCell;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS;
 
 /**
  * Controller for model editing.
@@ -103,7 +96,6 @@ public class ModelEditingController implements Initializable {
 
     private Project project;
     private DifferenceHandler differenceHandler;
-    private ExternalModelUpdateHandler externalModelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private UserRoleManagementService userRoleManagementService;
     private GuiService guiService;
@@ -134,10 +126,6 @@ public class ModelEditingController implements Initializable {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
-    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
-        this.externalModelUpdateHandler = externalModelUpdateHandler;
-    }
-
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
     }
@@ -164,40 +152,6 @@ public class ModelEditingController implements Initializable {
 
         Node externalModelEditorPane = guiService.createControl(Views.EXTERNAL_MODELS_EDITOR_VIEW);
         externalModelParentPane.setContent(externalModelEditorPane);
-
-        externalModelUpdateHandler.parameterModelUpdateStates()
-                .addListener((MapChangeListener<ParameterModel, ParameterModelUpdateState>) change -> {
-                    List<ParameterModel> successParameterModels = externalModelUpdateHandler
-                            .parameterModelUpdateStates().entrySet().stream()
-                            .filter(entry -> entry.getValue() == SUCCESS)
-                            .map(Map.Entry::getKey)
-                            .collect(Collectors.toList());
-
-                    parametersController.refresh();
-                    Pair<ParameterModel, ParameterModelUpdateState> update = parametersController.currentParameter();
-                    if (update != null) {
-                        parameterEditorController.displayParameterModel(update.getLeft(), update.getRight());
-                    }
-
-                    if (successParameterModels.isEmpty()) {
-                        UserNotifications.showNotification(getAppWindow(), "External model modified",
-                                "External model file '"
-//                                        + externalModel.getName()
-                                        + "' has been modified.\n"
-                                        + "There are no parameter updates.");
-                    } else {
-                        String successParameterModelNames = successParameterModels.stream()
-                                .map(ParameterModel::getName)
-                                .collect(Collectors.joining(","));
-                        String message = "External model file '"
-//                                + externalModel.getName()
-                                + "' has been modified.\n"
-                                + "Parameters [" + successParameterModelNames + "] have been updated.";
-                        message = WordUtils.wrap(message, 100);
-                        UserNotifications.showNotification(getAppWindow(), "External model modified", message);
-                    }
-
-        });
 
         // STRUCTURE TREE VIEW
         structureTree.setCellFactory(param -> new TextFieldTreeCell(project, differenceHandler));
@@ -440,19 +394,14 @@ public class ModelEditingController implements Initializable {
         ownersText.setText(userNames);
     }
 
-    private void updateParameterEditor(Pair<ParameterModel, ParameterModelUpdateState> update) {
-        if (update != null) {
-            ParameterModel parameterModel = update.getLeft();
+    private void updateParameterEditor(ParameterModel parameterModel) {
+        if (parameterModel != null) {
             ModelNode modelNode = parameterModel.getParent();
             boolean editable = project.checkUserAccess(modelNode);
             logger.debug("selected parameter: " + parameterModel.getNodePath() + ", editable: " + editable);
             parameterEditorController.setVisible(editable); // TODO: allow read only
             if (editable) {
-                if (update.getRight() != null) {
-                    parameterEditorController.displayParameterModel(parameterModel, update.getRight());
-                } else {
-                    parameterEditorController.displayParameterModel(parameterModel);
-                }
+                parameterEditorController.displayParameterModel(parameterModel);
             }
         } else {
             parameterEditorController.setVisible(false);

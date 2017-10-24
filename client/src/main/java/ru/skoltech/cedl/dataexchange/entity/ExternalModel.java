@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.external.ExternalModelState.*;
 
@@ -206,6 +207,15 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
 
     public String getNodePath() {
         return parent.getNodePath() + "#" + name;
+    }
+
+    public List<ParameterModel> getReferencedParameterModels() {
+        return this.getParent().getParameters().stream()
+                .filter(parameterModel -> parameterModel.getValueSource() == ParameterValueSource.REFERENCE &&
+                        parameterModel.getValueReference() != null &&
+                        parameterModel.getValueReference().getExternalModel() != null &&
+                        parameterModel.getValueReference().getExternalModel().getName().equals(name))
+                .collect(Collectors.toList());
     }
 
     public File getCacheFile() {

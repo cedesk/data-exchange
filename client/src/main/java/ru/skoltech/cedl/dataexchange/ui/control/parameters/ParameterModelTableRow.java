@@ -17,12 +17,10 @@
 package ru.skoltech.cedl.dataexchange.ui.control.parameters;
 
 import javafx.scene.control.TableRow;
-import org.apache.commons.lang3.tuple.Pair;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
-import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +30,7 @@ import java.util.stream.Collectors;
  * <p>
  * Created by Nikolay Groshkov on 13-Sep-17.
  */
-public class ParameterModelTableRow extends TableRow<Pair<ParameterModel, ParameterModelUpdateState>> {
+public class ParameterModelTableRow extends TableRow<ParameterModel> {
 
     private DifferenceHandler differenceHandler;
 
@@ -41,13 +39,12 @@ public class ParameterModelTableRow extends TableRow<Pair<ParameterModel, Parame
     }
 
     @Override
-    protected void updateItem(Pair<ParameterModel, ParameterModelUpdateState> item, boolean empty) {
+    protected void updateItem(ParameterModel item, boolean empty) {
         super.updateItem(item, empty);
         if (item == null) {
             return;
         }
-        ParameterModel parameterModel = item.getLeft();
-        this.setStyle(style(parameterModel));
+        this.setStyle(style(item));
     }
 
     private String style(ParameterModel parameterModel) {

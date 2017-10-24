@@ -16,12 +16,15 @@
 
 package ru.skoltech.cedl.dataexchange.entity;
 
+import org.apache.commons.math3.util.Precision;
+import org.apache.log4j.Logger;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -37,10 +40,12 @@ import java.util.UUID;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ParameterModel implements Comparable<ParameterModel>, PersistedEntity {
 
-    public static final ParameterNature DEFAULT_NATURE = ParameterNature.INTERNAL;
-    public static final ParameterValueSource DEFAULT_VALUE_SOURCE = ParameterValueSource.MANUAL;
-    public static final boolean DEFAULT_EXPORTED = false;
-    public static final boolean DEFAULT_OVERRIDDEN = false;
+    private static Logger logger = Logger.getLogger(ParameterModel.class);
+
+    private static final ParameterNature DEFAULT_NATURE = ParameterNature.INTERNAL;
+    private static final ParameterValueSource DEFAULT_VALUE_SOURCE = ParameterValueSource.MANUAL;
+    private static final boolean DEFAULT_EXPORTED = false;
+    private static final boolean DEFAULT_OVERRIDDEN = false;
 
     @Id
     @GeneratedValue
@@ -86,7 +91,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Calculation calculation;
 
-    @ManyToOne(targetEntity = ExternalModel.class, optional = true, cascade = CascadeType.ALL)
+    @ManyToOne(targetEntity = ExternalModel.class, cascade = CascadeType.ALL)
     @XmlTransient
     private ExternalModel importModel;
 
@@ -105,7 +110,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     @Transient
     private ExternalModelReference exportReference;
 
-    @ManyToOne(targetEntity = ExternalModel.class, optional = true, cascade = CascadeType.ALL)
+    @ManyToOne(targetEntity = ExternalModel.class, cascade = CascadeType.ALL)
     @XmlTransient
     private ExternalModel exportModel;
 
@@ -120,6 +125,10 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     @ManyToOne(targetEntity = ModelNode.class, fetch = FetchType.EAGER)
     @XmlTransient
     private ModelNode parent;
+
+    @Transient
+    @XmlTransient
+    private ParameterModelUpdateState lastUpdateState;
 
     public ParameterModel() {
     }
@@ -167,7 +176,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
             return isReferenceValueOverridden ? overrideValue : calculation.evaluate();
         }
         Double effectiveValue = isReferenceValueOverridden ? overrideValue : value; // OUTPUT CAN BE OVERRIDDEN;
-        return effectiveValue != null ? effectiveValue.doubleValue() : Double.NaN;
+        return effectiveValue != null ? effectiveValue : Double.NaN;
     }
 
     public String getExportField() {
@@ -187,16 +196,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     }
 
     public ExternalModelReference getExportReference() {
-        if (exportReference != null) {
-            return exportReference;
-        }
-        if (exportModel == null && exportField == null) {
-            return null;
-        }
-        exportReference = new ExternalModelReference();
-        exportReference.setExternalModel(exportModel);
-        exportReference.setTarget(exportField);
-        return exportReference;
+        return this.getReference(this.exportReference, this.exportModel, this.exportField);
     }
 
     public void setExportReference(ExternalModelReference exportReference) {
@@ -337,16 +337,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     }
 
     public ExternalModelReference getValueReference() {
-        if (valueReference != null) {
-            return valueReference;
-        }
-        if (importModel == null && importField == null) {
-            return null;
-        }
-        valueReference = new ExternalModelReference();
-        valueReference.setExternalModel(importModel);
-        valueReference.setTarget(importField);
-        return valueReference;
+        return this.getReference(this.valueReference, this.importModel, this.importField);
     }
 
     public void setValueReference(ExternalModelReference valueReference) {
@@ -367,6 +358,77 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     public void setValueSource(ParameterValueSource valueSource) {
         this.valueSource = valueSource;
     }
+
+    public ParameterModelUpdateState getLastUpdateState() {
+        if (this.getValueSource() != ParameterValueSource.REFERENCE) {
+            return null;
+        }
+
+        ExternalModelReference valueReference = this.getValueReference();
+        if (valueReference == null) {
+            logger.warn("Parameter model" + this.getNodePath() + " has empty valueReference");
+            return ParameterModelUpdateState.FAIL_EMPTY_REFERENCE;
+        }
+        ExternalModel valueReferenceExternalModel = valueReference.getExternalModel();
+        if (valueReferenceExternalModel == null) {
+            logger.warn("Parameter model" + this.getNodePath() + " has empty valueReference external model");
+            return ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL;
+        }
+
+        if (valueReference.getTarget() == null || valueReference.getTarget().isEmpty()) {
+            logger.warn("Parameter model " + this.getNodePath() + " has empty valueReference target");
+            return ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET;
+        }
+        return lastUpdateState;
+    }
+
+    public boolean evaluate() {
+        ExternalModelReference valueReference = this.getValueReference();
+        if (valueReference == null || valueReference.getExternalModel() == null
+                || valueReference.getTarget() == null || valueReference.getTarget().isEmpty()) {
+            return false;
+        }
+        ExternalModel valueReferenceExternalModel = valueReference.getExternalModel();
+
+        try {
+            Double value = valueReferenceExternalModel.getValue(valueReference.getTarget());
+            if (Double.isNaN(value)) {
+                logger.warn("Parameter model " + this.getNodePath() + " evaluated invalid value");
+                lastUpdateState = ParameterModelUpdateState.FAIL_INVALID_VALUE;
+                return false;
+            } else if (this.getValue() != null && Precision.equals(this.getValue(), value, 2)) {
+                logger.debug("Parameter model " + this.getNodePath()
+                        + " received no update from " + valueReference.toString());
+                lastUpdateState = ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
+                return false;
+            } else {
+                this.setValue(value);
+                logger.info("Parameter model " + this.getNodePath()
+                        + " successfully evaluated its value (" + String.valueOf(value) + ")");
+                lastUpdateState = ParameterModelUpdateState.SUCCESS;
+                return true;
+            }
+        } catch (Exception e) {
+            logger.warn("Parameter model " + this.getNodePath()
+                    + " failed to evaluate its value with an internal error: " + e.getMessage());
+            lastUpdateState = ParameterModelUpdateState.FAIL_EVALUATION;
+            return false;
+        }
+    }
+
+    private ExternalModelReference getReference(ExternalModelReference reference, ExternalModel externalModel, String target){
+        if (reference != null) {
+            return reference;
+        }
+        if (externalModel == null && target == null) {
+            return null;
+        }
+        reference = new ExternalModelReference();
+        reference.setExternalModel(externalModel);
+        reference.setTarget(target);
+        return reference;
+    }
+
 
     /**
      * The comparison is done only based on the name, so it enables sorting of parameters by name and identifying changes to values of parameters.
@@ -405,28 +467,25 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
 
     @Override
     public int hashCode() {
-        int result = uuid != null ? uuid.hashCode() : 0;
-        return result;
+        return uuid != null ? uuid.hashCode() : 0;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ParameterModel{");
-        sb.append("name='").append(name).append('\'');
-        sb.append(", value=").append(value);
-        sb.append(", isReferenceValueOverridden=").append(isReferenceValueOverridden);
-        sb.append(", overrideValue=").append(overrideValue);
-        sb.append(", unit=").append(unit);
-        sb.append(", nature=").append(nature);
-        sb.append(", valueSource=").append(valueSource);
-        sb.append(", valueReference=").append(getValueReference());
-        sb.append(", valueLink=").append(valueLink != null ? valueLink.getNodePath() : null);
-        sb.append(", isExported=").append(isExported);
-        sb.append(", exportReference=").append(getExportReference());
-        sb.append(", description='").append(description).append('\'');
-        sb.append(", lastModification='").append(lastModification).append('\'');
-        sb.append(", uuid='").append(uuid).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return "ParameterModel{" + "name='" + name + '\'' +
+                ", value=" + value +
+                ", isReferenceValueOverridden=" + isReferenceValueOverridden +
+                ", overrideValue=" + overrideValue +
+                ", unit=" + unit +
+                ", nature=" + nature +
+                ", valueSource=" + valueSource +
+                ", valueReference=" + getValueReference() +
+                ", valueLink=" + (valueLink != null ? valueLink.getNodePath() : null) +
+                ", isExported=" + isExported +
+                ", exportReference=" + getExportReference() +
+                ", description='" + description + '\'' +
+                ", lastModification='" + lastModification + '\'' +
+                ", uuid='" + uuid + '\'' +
+                '}';
     }
 }
