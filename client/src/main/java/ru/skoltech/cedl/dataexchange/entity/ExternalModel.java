@@ -24,8 +24,8 @@ import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.ExternalModelAdapter;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import javax.persistence.*;
@@ -216,6 +216,30 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
                         parameterModel.getValueReference().getExternalModel() != null &&
                         parameterModel.getValueReference().getExternalModel().getName().equals(name))
                 .collect(Collectors.toList());
+    }
+
+    public List<ParameterModel> getExportedParameterModels() {
+        return this.getParent().getParameters().stream()
+                .filter(parameterModel -> parameterModel != null &&
+                        parameterModel.getValueSource() == ParameterValueSource.REFERENCE &&
+                        parameterModel.getIsExported() &&
+                        parameterModel.getExportReference() != null &&
+                        parameterModel.getExportReference().getExternalModel() != null &&
+                        parameterModel.getExportReference().getExternalModel().getName().equals(name))
+                .collect(Collectors.toList());
+    }
+
+    public boolean updateExportReferences() {
+        try {
+            List<ParameterModel> exportedParameterModels = this.getExportedParameterModels();
+            List<Pair<String, Double>> values = exportedParameterModels.stream()
+                    .map(pm -> Pair.of(pm.getExportReference().getTarget(), pm.getEffectiveValue()))
+                    .collect(Collectors.toList());
+            this.setValues(values);
+            return true;
+        } catch (ExternalModelException e) {
+            return false;
+        }
     }
 
     public File getCacheFile() {

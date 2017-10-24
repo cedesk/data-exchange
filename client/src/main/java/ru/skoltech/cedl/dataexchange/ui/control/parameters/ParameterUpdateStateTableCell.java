@@ -22,7 +22,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ValueReferenceUpdateState;
 
 /**
  * Table cell to display parameter model update state.
@@ -30,10 +30,10 @@ import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
  * Created by Nikolay Groshkov on 13-Sep-17.
  */
 public class ParameterUpdateStateTableCell
-        extends TableCell<ParameterModel, ParameterModelUpdateState> {
+        extends TableCell<ParameterModel, ValueReferenceUpdateState> {
 
     @Override
-    protected void updateItem(ParameterModelUpdateState updateState, boolean empty) {
+    protected void updateItem(ValueReferenceUpdateState updateState, boolean empty) {
         super.updateItem(updateState, empty);
         if (updateState == null) {
             return;
@@ -43,11 +43,11 @@ public class ParameterUpdateStateTableCell
         this.setTooltip(tooltip(updateState));
     }
 
-    private Node graphic(ParameterModelUpdateState updateState) {
+    private Node graphic(ValueReferenceUpdateState updateState) {
         if (updateState == null) {
             return null;
         }
-        boolean success = updateState == ParameterModelUpdateState.SUCCESS || updateState == ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
+        boolean success = updateState == ValueReferenceUpdateState.SUCCESS || updateState == ValueReferenceUpdateState.SUCCESS_WITHOUT_UPDATE;
         String icon = success ? "CHECK" : "WARNING";
         Color color = success ? Color.GREEN : Color.RED;
         Glyph glyph = new Glyph();
@@ -61,7 +61,7 @@ public class ParameterUpdateStateTableCell
         return "-fx-alignment: center;";
     }
 
-    private Tooltip tooltip(ParameterModelUpdateState update) {
+    private Tooltip tooltip(ValueReferenceUpdateState update) {
         if (update == null) {
             return null;
         }

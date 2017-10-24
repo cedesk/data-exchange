@@ -21,7 +21,7 @@ package ru.skoltech.cedl.dataexchange.structure.update;
  * <p>
  * Created by Nikolay Groshkov on 07-Sep-17.
  */
-public enum ParameterModelUpdateState {
+public enum ValueReferenceUpdateState {
 
     /**
      * State when evaluation was successful
@@ -60,7 +60,7 @@ public enum ParameterModelUpdateState {
 
     public final String description;
 
-    ParameterModelUpdateState(String description) {
+    ValueReferenceUpdateState(String description) {
         this.description = description;
     }
 }

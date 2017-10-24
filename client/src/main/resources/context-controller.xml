@@ -82,7 +82,7 @@
     <bean id="parameterEditorController" class="ru.skoltech.cedl.dataexchange.ui.controller.ParameterEditorController">
         <property name="project" ref="project"/>
         <property name="differenceHandler" ref="differenceHandler"/>
-        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
+        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="unitManagementService" ref="unitManagementService"/>
         <property name="guiService" ref="guiService"/>

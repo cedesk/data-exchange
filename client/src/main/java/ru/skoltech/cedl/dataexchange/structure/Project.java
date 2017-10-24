@@ -28,10 +28,7 @@ import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.entity.Study;
-import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
@@ -47,8 +44,7 @@ import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
-import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ValueReferenceUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.controller.UserNotifications;
 
 import java.io.File;
@@ -77,7 +73,6 @@ public class Project {
     private DifferenceHandler differenceHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileWatcher externalModelFileWatcher;
-    private ExternalModelUpdateHandler externalModelUpdateHandler;
     private FileStorageService fileStorageService;
     private StudyService studyService;
     private UserManagementService userManagementService;
@@ -113,15 +108,15 @@ public class Project {
                 externalModel.updateAttachmentFromCache();
                 List<ParameterModel> updatedParameterModels = new LinkedList<>();
                 externalModel.getReferencedParameterModels().forEach(parameterModel -> {
-                    boolean evaluated = parameterModel.evaluate();
+                    boolean evaluated = parameterModel.updateValueReference();
                     if (evaluated) {
                         parameterLinkRegistry.updateSinks(parameterModel);
                     }
-                    ParameterModelUpdateState updateState = parameterModel.getLastUpdateState();
-                    if (updateState == ParameterModelUpdateState.SUCCESS) {
+                    ValueReferenceUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
+                    if (updateState == ValueReferenceUpdateState.SUCCESS) {
                         actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
                         updatedParameterModels.add(parameterModel);
-                    } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
+                    } else if (updateState == ValueReferenceUpdateState.FAIL_EVALUATION) {
                         actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
                                 + "#" + parameterModel.getValueReference().getTarget());
                     }
@@ -173,10 +168,6 @@ public class Project {
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
         this.externalModelFileWatcher = externalModelFileWatcher;
-    }
-
-    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
-        this.externalModelUpdateHandler = externalModelUpdateHandler;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -498,7 +489,7 @@ public class Project {
     public void storeStudy() throws RepositoryException {
         SystemModel systemModel = this.getSystemModel();
         parameterLinkRegistry.updateAll(systemModel);
-        externalModelUpdateHandler.applyParameterUpdatesToSystemModel(systemModel, accessChecker);
+        this.updateExportReferences(systemModel, accessChecker);
         if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
             // store URM separately before study, to prevent links to deleted subsystems have storing study fail
             storeUserRoleManagement();
@@ -518,6 +509,16 @@ public class Project {
         externalModelFileWatcher.add(systemModel, accessChecker);
         parameterLinkRegistry.registerAllParameters(getSystemModel());
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+    }
+
+    private void updateExportReferences(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
+        Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, accessChecker);
+        while (externalModelsIterator.hasNext()) {
+            ExternalModel externalModel = externalModelsIterator.next();
+            externalModelFileWatcher.maskChangesTo(externalModel.getCacheFile());
+            externalModel.updateExportReferences();
+            externalModelFileWatcher.unmaskChangesTo(externalModel.getCacheFile());
+        }
     }
 
     public boolean storeUnitManagement() {

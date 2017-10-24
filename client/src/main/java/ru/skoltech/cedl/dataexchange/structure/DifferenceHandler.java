@@ -32,7 +32,6 @@ import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
 import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
-import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -47,7 +46,6 @@ public class DifferenceHandler {
 
     private static final Logger logger = Logger.getLogger(DifferenceHandler.class);
 
-    private ExternalModelUpdateHandler externalModelUpdateHandler;
     private StudyService studyService;
     private NodeDifferenceService nodeDifferenceService;
     private final RevisionEntityRepository revisionEntityRepository;
@@ -57,10 +55,6 @@ public class DifferenceHandler {
     @Autowired
     public DifferenceHandler(RevisionEntityRepository revisionEntityRepository) {
         this.revisionEntityRepository = revisionEntityRepository;
-    }
-
-    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
-        this.externalModelUpdateHandler = externalModelUpdateHandler;
     }
 
     public void setStudyService(StudyService studyService) {

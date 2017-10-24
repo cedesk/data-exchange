@@ -24,7 +24,8 @@ import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterExportReferenceValidity;
+import ru.skoltech.cedl.dataexchange.structure.update.ValueReferenceUpdateState;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -128,7 +129,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
 
     @Transient
     @XmlTransient
-    private ParameterModelUpdateState lastUpdateState;
+    private ValueReferenceUpdateState valueReferenceLastUpdateState;
 
     public ParameterModel() {
     }
@@ -359,30 +360,52 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
         this.valueSource = valueSource;
     }
 
-    public ParameterModelUpdateState getLastUpdateState() {
+    public ValueReferenceUpdateState getLastValueReferenceUpdateState() {
         if (this.getValueSource() != ParameterValueSource.REFERENCE) {
             return null;
         }
-
         ExternalModelReference valueReference = this.getValueReference();
         if (valueReference == null) {
-            logger.warn("Parameter model" + this.getNodePath() + " has empty valueReference");
-            return ParameterModelUpdateState.FAIL_EMPTY_REFERENCE;
+            logger.warn("Parameter model" + this.getNodePath() + " has empty value reference");
+            return ValueReferenceUpdateState.FAIL_EMPTY_REFERENCE;
         }
         ExternalModel valueReferenceExternalModel = valueReference.getExternalModel();
         if (valueReferenceExternalModel == null) {
-            logger.warn("Parameter model" + this.getNodePath() + " has empty valueReference external model");
-            return ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL;
+            logger.warn("Parameter model" + this.getNodePath() + " has empty value reference external model");
+            return ValueReferenceUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL;
         }
-
         if (valueReference.getTarget() == null || valueReference.getTarget().isEmpty()) {
-            logger.warn("Parameter model " + this.getNodePath() + " has empty valueReference target");
-            return ParameterModelUpdateState.FAIL_EMPTY_REFERENCE_TARGET;
+            logger.warn("Parameter model " + this.getNodePath() + " has empty value reference target");
+            return ValueReferenceUpdateState.FAIL_EMPTY_REFERENCE_TARGET;
         }
-        return lastUpdateState;
+        return valueReferenceLastUpdateState;
     }
 
-    public boolean evaluate() {
+    public ParameterExportReferenceValidity validateExportReference() {
+        if (!this.isExported) {
+            return null;
+        }
+        ExternalModelReference exportReference = this.getExportReference();
+        if (exportReference == null) {
+            logger.warn("Parameter model " + this.getNodePath() + " has empty export reference");
+            return ParameterExportReferenceValidity.INVALID_EMPTY_REFERENCE;
+        }
+        if (exportReference.getExternalModel() == null) {
+            logger.warn("Parameter model " + this.getNodePath() + " has empty export reference external model");
+            return ParameterExportReferenceValidity.INVALID_EMPTY_REFERENCE_EXTERNAL_MODEL;
+        }
+        if (exportReference.getTarget() == null || exportReference.getTarget().isEmpty()) {
+            logger.warn("Parameter model " + this.getNodePath() + " has empty export reference target");
+            return ParameterExportReferenceValidity.INVALID_EMPTY_REFERENCE_TARGET;
+        }
+        return ParameterExportReferenceValidity.VALID;
+    }
+
+    public boolean isValidExportReference() {
+        return this.validateExportReference() != null && this.validateExportReference().isValid();
+    }
+
+    public boolean updateValueReference() {
         ExternalModelReference valueReference = this.getValueReference();
         if (valueReference == null || valueReference.getExternalModel() == null
                 || valueReference.getTarget() == null || valueReference.getTarget().isEmpty()) {
@@ -394,24 +417,24 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
             Double value = valueReferenceExternalModel.getValue(valueReference.getTarget());
             if (Double.isNaN(value)) {
                 logger.warn("Parameter model " + this.getNodePath() + " evaluated invalid value");
-                lastUpdateState = ParameterModelUpdateState.FAIL_INVALID_VALUE;
+                valueReferenceLastUpdateState = ValueReferenceUpdateState.FAIL_INVALID_VALUE;
                 return false;
             } else if (this.getValue() != null && Precision.equals(this.getValue(), value, 2)) {
                 logger.debug("Parameter model " + this.getNodePath()
                         + " received no update from " + valueReference.toString());
-                lastUpdateState = ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
+                valueReferenceLastUpdateState = ValueReferenceUpdateState.SUCCESS_WITHOUT_UPDATE;
                 return false;
             } else {
                 this.setValue(value);
                 logger.info("Parameter model " + this.getNodePath()
                         + " successfully evaluated its value (" + String.valueOf(value) + ")");
-                lastUpdateState = ParameterModelUpdateState.SUCCESS;
+                valueReferenceLastUpdateState = ValueReferenceUpdateState.SUCCESS;
                 return true;
             }
         } catch (Exception e) {
             logger.warn("Parameter model " + this.getNodePath()
-                    + " failed to evaluate its value with an internal error: " + e.getMessage());
-            lastUpdateState = ParameterModelUpdateState.FAIL_EVALUATION;
+                    + " failed to update its value with an internal error: " + e.getMessage());
+            valueReferenceLastUpdateState = ValueReferenceUpdateState.FAIL_EVALUATION;
             return false;
         }
     }

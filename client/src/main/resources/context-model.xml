@@ -40,7 +40,6 @@
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
-        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="fileStorageService" ref="fileStorageService"/>
         <property name="studyService" ref="studyService"/>
         <property name="userManagementService" ref="userManagementService"/>
@@ -79,14 +78,8 @@
           parent="systemBuilder"/>
 
     <bean id="differenceHandler" class="ru.skoltech.cedl.dataexchange.structure.DifferenceHandler">
-        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="studyService" ref="studyService"/>
         <property name="nodeDifferenceService" ref="nodeDifferenceService"/>
-    </bean>
-
-    <bean id="externalModelUpdateHandler" class="ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler">
-        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
-        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
     </bean>
 
     <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry">

@@ -26,7 +26,6 @@ import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.io.File;
@@ -47,13 +46,12 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
     @Override
     public void demo(Stage primaryStage) {
         try {
-            ExternalModelUpdateHandler externalModelUpdateHandler = context.getBean(ExternalModelUpdateHandler.class);
             GuiService guiService = context.getBean(GuiService.class);
 
             ParameterModel parameterModel = getParameterModel();
 
             System.out.println(parameterModel);
-            externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+            parameterModel.updateValueReference();
             System.out.println(parameterModel);
 
             ExternalModelReference valueReference = parameterModel.getValueReference();
