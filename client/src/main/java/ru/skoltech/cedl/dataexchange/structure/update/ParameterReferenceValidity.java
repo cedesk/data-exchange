@@ -17,36 +17,46 @@
 package ru.skoltech.cedl.dataexchange.structure.update;
 
 /**
+ * Defines a validity state of parameter model reference (either value or export).
+ * <p>
  * Created by Nikolay Groshkov on 24-Oct-17.
  */
-public enum ParameterExportReferenceValidity {
+public enum ParameterReferenceValidity {
 
     /**
-     * Empty export reference is empty
+     * Reference is empty
      */
-    INVALID_EMPTY_REFERENCE("Empty export reference"),
+    INVALID_EMPTY_REFERENCE("Empty reference"),
 
     /**
-     * Empty external model of export reference
+     * Empty external model of reference
      */
-    INVALID_EMPTY_REFERENCE_EXTERNAL_MODEL("Empty external model of export reference"),
+    INVALID_EMPTY_REFERENCE_EXTERNAL_MODEL("Empty external model of reference"),
 
     /**
-     * Empty target of export reference
+     * Empty target of reference
      */
-    INVALID_EMPTY_REFERENCE_TARGET("Empty target of export reference"),
+    INVALID_EMPTY_REFERENCE_TARGET("Empty target of reference"),
 
     /**
      * Correct state
      */
     VALID("Valid");
 
+    /**
+     * Validity state description
+     */
     public final String description;
 
-    ParameterExportReferenceValidity(String description) {
+    ParameterReferenceValidity(String description) {
         this.description = description;
     }
 
+    /**
+     * Return <i>true<i/> if parameter model reference is valid ({@link ParameterReferenceValidity#VALID} state)
+     * <p/>
+     * @return <i>true<i/> if parameter model reference is valid, <i>false<i/> if opposite
+     */
     public boolean isValid(){
         return this == VALID;
     }

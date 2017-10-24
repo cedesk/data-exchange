@@ -49,7 +49,7 @@ import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.update.ValueReferenceUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterModelTableRow;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterUpdateStateTableCell;
@@ -88,7 +88,7 @@ public class ParametersController implements Initializable, Displayable {
     @FXML
     private TableColumn<ParameterModel, String> parameterDescriptionColumn;
     @FXML
-    public TableColumn<ParameterModel, ValueReferenceUpdateState> parameterUpdateStateColumn;
+    public TableColumn<ParameterModel, ParameterModelUpdateState> parameterUpdateStateColumn;
     @FXML
     private Button addParameterButton;
     @FXML
@@ -188,7 +188,7 @@ public class ParametersController implements Initializable, Displayable {
             if (param == null || param.getValue() == null) {
                 return new SimpleObjectProperty<>();
             }
-            ValueReferenceUpdateState update = param.getValue().getLastValueReferenceUpdateState();
+            ParameterModelUpdateState update = param.getValue().getLastValueReferenceUpdateState();
             return new SimpleObjectProperty<>(update);
         });
         parameterUpdateStateColumn.setCellFactory(param -> new ParameterUpdateStateTableCell());

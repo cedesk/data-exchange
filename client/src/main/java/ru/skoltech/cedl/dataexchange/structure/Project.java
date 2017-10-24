@@ -44,7 +44,7 @@ import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
-import ru.skoltech.cedl.dataexchange.structure.update.ValueReferenceUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.controller.UserNotifications;
 
 import java.io.File;
@@ -112,11 +112,11 @@ public class Project {
                     if (evaluated) {
                         parameterLinkRegistry.updateSinks(parameterModel);
                     }
-                    ValueReferenceUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
-                    if (updateState == ValueReferenceUpdateState.SUCCESS) {
+                    ParameterModelUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
+                    if (updateState == ParameterModelUpdateState.SUCCESS) {
                         actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
                         updatedParameterModels.add(parameterModel);
-                    } else if (updateState == ValueReferenceUpdateState.FAIL_EVALUATION) {
+                    } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
                         actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
                                 + "#" + parameterModel.getValueReference().getTarget());
                     }

@@ -209,26 +209,39 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         return parent.getNodePath() + "#" + name;
     }
 
+    /**
+     * Retrieve a list of parameter model with value reference to this external model.
+     * All parameter models have a same parent {@link ModelNode} as this external model.
+     * <p/>
+     * @return list of parameter model with value reference to this external model
+     */
     public List<ParameterModel> getReferencedParameterModels() {
         return this.getParent().getParameters().stream()
-                .filter(parameterModel -> parameterModel.getValueSource() == ParameterValueSource.REFERENCE &&
-                        parameterModel.getValueReference() != null &&
-                        parameterModel.getValueReference().getExternalModel() != null &&
+                .filter(parameterModel -> parameterModel.isValidValueReference() &&
                         parameterModel.getValueReference().getExternalModel().getName().equals(name))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieve a list of parameter model with export reference to this external model.
+     * All parameter models have a same parent {@link ModelNode} as this external model.
+     * <p/>
+     * @return list of parameter model with export reference to this external model
+     */
     public List<ParameterModel> getExportedParameterModels() {
         return this.getParent().getParameters().stream()
-                .filter(parameterModel -> parameterModel != null &&
-                        parameterModel.getValueSource() == ParameterValueSource.REFERENCE &&
-                        parameterModel.getIsExported() &&
-                        parameterModel.getExportReference() != null &&
-                        parameterModel.getExportReference().getExternalModel() != null &&
+                .filter(parameterModel -> parameterModel.isValidExportReference() &&
                         parameterModel.getExportReference().getExternalModel().getName().equals(name))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Update external model data taken from export reference external model.
+     * Status of this update is saved and can be retrieved by calling {@link ParameterModel#getLastValueReferenceUpdateState()} method.
+     * <p/>
+     * @return <i>true</i> if parameter model has received a new correct value
+     * from the data of value reference external model, <i>false<i/> if opposite
+     */
     public boolean updateExportReferences() {
         try {
             List<ParameterModel> exportedParameterModels = this.getExportedParameterModels();
@@ -242,6 +255,11 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         }
     }
 
+    /**
+     * Retrieve a file where a data of current external model can be stored (cache file).
+     * <p/>
+     * @return cache file
+     */
     public File getCacheFile() {
         return cacheFile;
     }

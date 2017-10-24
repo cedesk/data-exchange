@@ -55,7 +55,8 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
-import ru.skoltech.cedl.dataexchange.structure.update.ValueReferenceUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterReferenceValidity;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
@@ -66,8 +67,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.entity.ParameterValueSource.*;
-import static ru.skoltech.cedl.dataexchange.structure.update.ValueReferenceUpdateState.SUCCESS;
-import static ru.skoltech.cedl.dataexchange.structure.update.ValueReferenceUpdateState.SUCCESS_WITHOUT_UPDATE;
+import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS;
+import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
 
 /**
  * Controller for parameter editing.
@@ -138,7 +139,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     private Stage ownerStage;
 
     private ObjectProperty<ParameterModel> parameterModelProperty = new SimpleObjectProperty<>();
-//    private ObjectProperty<ValueReferenceUpdateState> parameterModelUpdateStateProperty = new SimpleObjectProperty<>();
+//    private ObjectProperty<ParameterModelUpdateState> parameterModelUpdateStateProperty = new SimpleObjectProperty<>();
     private ListProperty<String> differencesProperty = new SimpleListProperty<>();
     private BooleanProperty nameChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty natureChangedProperty = new SimpleBooleanProperty();
@@ -309,7 +310,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.updateIcon.setColor(null);
         this.updateIcon.setTooltip(null);
 
-        ValueReferenceUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
+        ParameterModelUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
 //        this.parameterModelUpdateStateProperty.setValue(updateState);
         if (updateState != null) {
             boolean success = updateState == SUCCESS || updateState == SUCCESS_WITHOUT_UPDATE;
@@ -367,15 +368,20 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     private void updateValueReference() {
         logger.debug("Update parameter value from model");
-        parameterModel.updateValueReference();
-        ValueReferenceUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
-        if (updateState == null) {
-            return;
-        }
-        if (updateState == SUCCESS || updateState == SUCCESS_WITHOUT_UPDATE) {
-            this.valueText.setText(this.convertToText(parameterModel.getValue()));
+
+        if (parameterModel.isValidValueReference()) {
+            parameterModel.updateValueReference();
+            ParameterModelUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
+            if (updateState == SUCCESS || updateState == SUCCESS_WITHOUT_UPDATE) {
+                this.valueText.setText(this.convertToText(parameterModel.getValue()));
+            } else {
+                String errorMessage = "Unable to update value: " + updateState.description;
+                statusLogger.error(errorMessage);
+                UserNotifications.showNotification(ownerStage, "Error", errorMessage);
+            }
         } else {
-            String errorMessage = "Unable to update value: " + updateState.description;
+            ParameterReferenceValidity valueReferenceValidity = parameterModel.validateValueReference();
+            String errorMessage = "Unable to update value: " + valueReferenceValidity.description;
             statusLogger.error(errorMessage);
             UserNotifications.showNotification(ownerStage, "Error", errorMessage);
         }
