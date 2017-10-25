@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.external;
+package ru.skoltech.cedl.dataexchange.external.excel;
 
 import javafx.scene.control.TablePosition;
 

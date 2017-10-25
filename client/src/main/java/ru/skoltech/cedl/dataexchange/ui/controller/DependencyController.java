@@ -163,7 +163,7 @@ public class DependencyController implements Initializable {
 
     public void saveDiagram() {
         FileChooser fc = new FileChooser();
-        fc.setInitialDirectory(project.getProjectDataDir());
+        fc.setInitialDirectory(project.getProjectHome());
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
         fc.setInitialFileName(project.getProjectName() + "_NSquare_" + Utils.getFormattedDateAndTime());
         fc.setTitle("Save Diagram");

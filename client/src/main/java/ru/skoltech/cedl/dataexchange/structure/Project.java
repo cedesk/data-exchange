@@ -19,19 +19,16 @@ package ru.skoltech.cedl.dataexchange.structure;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
-import org.springframework.integration.file.FileReadingMessageSource;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.entity.Study;
-import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
@@ -40,24 +37,25 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+import ru.skoltech.cedl.dataexchange.ui.controller.UserNotifications;
 
 import java.io.File;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -68,18 +66,20 @@ public class Project {
 
     private static Logger logger = Logger.getLogger(Project.class);
 
+    public static final String PROJECT_HOME_PROPERTY = "project.home";
+
     private ApplicationSettings applicationSettings;
     private RepositoryStateMachine repositoryStateMachine;
     private DifferenceHandler differenceHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileWatcher externalModelFileWatcher;
-    private ExternalModelFileHandler externalModelFileHandler;
     private FileStorageService fileStorageService;
     private StudyService studyService;
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
     private SourcePollingChannelAdapter inboundFilesChannel;
+    private ActionLogger actionLogger;
     private AsyncTaskExecutor executor;
 
     private String projectName;
@@ -98,15 +98,58 @@ public class Project {
 
     private Predicate<ModelNode> accessChecker;
 
+    public void init() {
+        this.repositoryStateMachine.addObserver((o, arg) -> this.updatePossibleActions());
+        this.externalModelFileWatcher.addObserver((o, arg) -> {
+            try {
+                ExternalModel externalModel = (ExternalModel) arg;
+                actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
+                logger.info("External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...");
+                externalModel.updateAttachmentFromCache();
+                List<ParameterModel> updatedParameterModels = new LinkedList<>();
+                externalModel.getReferencedParameterModels().forEach(parameterModel -> {
+                    boolean evaluated = parameterModel.updateValueReference();
+                    if (evaluated) {
+                        parameterLinkRegistry.updateSinks(parameterModel);
+                    }
+                    ParameterModelUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
+                    if (updateState == ParameterModelUpdateState.SUCCESS) {
+                        actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
+                        updatedParameterModels.add(parameterModel);
+                    } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
+                        actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
+                                + "#" + parameterModel.getValueReference().getTarget());
+                    }
+                });
+                this.markStudyModified();
+
+                Platform.runLater(() -> {
+                    String successParameterModelNames = updatedParameterModels.stream()
+                                .map(ParameterModel::getName)
+                                .collect(Collectors.joining(","));
+                    String message = !updatedParameterModels.isEmpty() ?
+                            "Parameters [" + successParameterModelNames + "] have been updated." : "There are no parameter updates.";
+                    message = WordUtils.wrap(message, 100);
+                    UserNotifications.showNotification(null, "External model modified",
+                            "External model file '" + externalModel.getName() + "' has been modified.\n"
+                            + message);
+                });
+
+            } catch (ExternalModelException e) {
+                logger.error("Cannot update attachment from cache file of external model: " + e.getMessage(), e);
+            }
+        });
+    }
+
     public void initProject(String projectName) {
         this.projectName = projectName;
+        System.setProperty(PROJECT_HOME_PROPERTY, this.getProjectHome().getAbsolutePath());
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
-        this.repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
 //        if (this.inboundFilesChannel.isRunning()) {
 //            this.inboundFilesChannel.stop();
 //        }
-//        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectDataDir());
+//        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectHome());
 //        this.inboundFilesChannel.start();
         this.accessChecker = this::checkUserAccess;
     }
@@ -127,10 +170,6 @@ public class Project {
         this.externalModelFileWatcher = externalModelFileWatcher;
     }
 
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
-    }
-
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
     }
@@ -149,6 +188,10 @@ public class Project {
 
     public void setUnitManagementService(UnitManagementService unitManagementService) {
         this.unitManagementService = unitManagementService;
+    }
+
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     public void setInboundFilesChannel(SourcePollingChannelAdapter inboundFilesChannel) {
@@ -333,7 +376,8 @@ public class Project {
     public void importSystemModel(SystemModel systemModel) {
         this.createStudy(systemModel);
         this.reinitializeUniqueIdentifiers(systemModel);
-        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
+        externalModelFileWatcher.clear();
+        externalModelFileWatcher.add(systemModel, accessChecker);
     }
 
     public void loadLocalStudy() {
@@ -342,10 +386,7 @@ public class Project {
             return;
         }
 
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
-        parameterLinkRegistry.registerAllParameters(getSystemModel());
-        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
-        differenceHandler.clearModelDifferences();
+        this.initializeHandlers();
     }
 
     public void loadLocalStudy(Integer revisionNumber) {
@@ -353,10 +394,14 @@ public class Project {
         if (this.study == null) {
             return;
         }
+        this.initializeHandlers();
+    }
 
+    private void initializeHandlers(){
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         parameterLinkRegistry.registerAllParameters(getSystemModel());
-        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
+        externalModelFileWatcher.clear();
+        externalModelFileWatcher.add(this.getSystemModel(), accessChecker);
         differenceHandler.clearModelDifferences();
     }
 
@@ -444,8 +489,7 @@ public class Project {
     public void storeStudy() throws RepositoryException {
         SystemModel systemModel = this.getSystemModel();
         parameterLinkRegistry.updateAll(systemModel);
-        externalModelFileHandler.exportValuesToExternalModels(systemModel, accessChecker);
-        externalModelFileHandler.updateExternalModelsInStudy();
+        this.updateExportReferences(systemModel, accessChecker);
         if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
             // store URM separately before study, to prevent links to deleted subsystems have storing study fail
             storeUserRoleManagement();
@@ -455,17 +499,26 @@ public class Project {
         Study newStudy = revision.getLeft();
         Integer revisionNumber = revision.getMiddle();
 
-        externalModelFileHandler.updateExternalModelStateInCache();
-
         this.study = newStudy;
         this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
         this.latestRevisionNumber.set(revisionNumber);
 
         Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
 
-        externalModelFileHandler.initializeStateOfExternalModels(systemModel, accessChecker);
+        externalModelFileWatcher.clear();
+        externalModelFileWatcher.add(systemModel, accessChecker);
         parameterLinkRegistry.registerAllParameters(getSystemModel());
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+    }
+
+    private void updateExportReferences(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
+        Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, accessChecker);
+        while (externalModelsIterator.hasNext()) {
+            ExternalModel externalModel = externalModelsIterator.next();
+            externalModelFileWatcher.maskChangesTo(externalModel.getCacheFile());
+            externalModel.updateExportReferences();
+            externalModelFileWatcher.unmaskChangesTo(externalModel.getCacheFile());
+        }
     }
 
     public boolean storeUnitManagement() {
@@ -537,8 +590,7 @@ public class Project {
         canSync.setValue(isSyncEnabled && isSavePossible);
     }
 
-    public File getProjectDataDir() {
-        String projectName = this.getProjectName();
+    public File getProjectHome() {
         String hostname = applicationSettings.getRepositoryHost();
         String schema = applicationSettings.getRepositorySchemaName();
         return fileStorageService.dataDir(hostname, schema, projectName);

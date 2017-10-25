@@ -27,14 +27,12 @@ import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
 import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
-import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,8 +46,6 @@ public class DifferenceHandler {
 
     private static final Logger logger = Logger.getLogger(DifferenceHandler.class);
 
-    private ExternalModelUpdateHandler externalModelUpdateHandler;
-    private ExternalModelFileHandler externalModelFileHandler;
     private StudyService studyService;
     private NodeDifferenceService nodeDifferenceService;
     private final RevisionEntityRepository revisionEntityRepository;
@@ -59,14 +55,6 @@ public class DifferenceHandler {
     @Autowired
     public DifferenceHandler(RevisionEntityRepository revisionEntityRepository) {
         this.revisionEntityRepository = revisionEntityRepository;
-    }
-
-    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
-        this.externalModelUpdateHandler = externalModelUpdateHandler;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setStudyService(StudyService studyService) {
@@ -261,13 +249,11 @@ public class DifferenceHandler {
             ExternalModel externalModel = emd.getExternalModel1();
             try {
                 // update cached file
-                externalModelFileHandler.forceCacheUpdate(externalModel);
-                // update parameters from new file
-                externalModelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel);
+                externalModel.updateCacheFromAttachment();
                 return true;
-            } catch (IOException e) {
-                logger.error("failed to update cached external model: " + externalModel.getNodePath(), e);
-                throw new MergeException("failed to updated cached external model: " + externalModel.getName());
+            } catch (ExternalModelException e) {
+                logger.error("Failed to update cached external model: " + externalModel.getNodePath(), e);
+                throw new MergeException("Failed to updated cached external model: " + externalModel.getName());
             }
         }
         return true;

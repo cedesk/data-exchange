@@ -22,11 +22,10 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
-import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
+import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.io.File;
@@ -47,13 +46,12 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
     @Override
     public void demo(Stage primaryStage) {
         try {
-            ExternalModelUpdateHandler externalModelUpdateHandler = context.getBean(ExternalModelUpdateHandler.class);
             GuiService guiService = context.getBean(GuiService.class);
 
             ParameterModel parameterModel = getParameterModel();
 
             System.out.println(parameterModel);
-            externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
+            parameterModel.updateValueReference();
             System.out.println(parameterModel);
 
             ExternalModelReference valueReference = parameterModel.getValueReference();
@@ -89,15 +87,15 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
         parameterModel.setValueSource(ParameterValueSource.REFERENCE);
 
         try {
-            ExternalModelFileStorageService externalModelFileStorageService = context.getBean(ExternalModelFileStorageService.class);
+            ExternalModelService externalModelService = context.getBean(ExternalModelService.class);
             SystemModel testSat = new SystemModel("testSat");
             File file = new File(ReferenceSelectorDemo.class.getResource("/simple-model.xls").toURI());
-            ExternalModel externalModel = externalModelFileStorageService.createExternalModelFromFile(file, testSat);
+            ExternalModel externalModel = externalModelService.createExternalModelFromFile(file, testSat);
             systemModel.addExternalModel(externalModel);
             parameterModel.setValueReference(new ExternalModelReference(externalModel, "G4"));
 
             file = new File(ReferenceSelectorDemo.class.getResource("/attachment.xls").toURI());
-            externalModel = externalModelFileStorageService.createExternalModelFromFile(file, testSat);
+            externalModel = externalModelService.createExternalModelFromFile(file, testSat);
             systemModel.addExternalModel(externalModel);
         } catch (Exception e) {
             logger.error(e);

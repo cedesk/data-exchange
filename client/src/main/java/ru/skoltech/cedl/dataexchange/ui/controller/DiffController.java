@@ -30,7 +30,6 @@ import javafx.util.Callback;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.*;

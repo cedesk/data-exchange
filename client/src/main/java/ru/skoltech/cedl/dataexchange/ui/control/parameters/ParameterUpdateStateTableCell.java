@@ -20,7 +20,6 @@ import javafx.scene.Node;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
-import org.apache.commons.lang3.tuple.Pair;
 import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
@@ -31,7 +30,7 @@ import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
  * Created by Nikolay Groshkov on 13-Sep-17.
  */
 public class ParameterUpdateStateTableCell
-        extends TableCell<Pair<ParameterModel, ParameterModelUpdateState>, ParameterModelUpdateState> {
+        extends TableCell<ParameterModel, ParameterModelUpdateState> {
 
     @Override
     protected void updateItem(ParameterModelUpdateState updateState, boolean empty) {
@@ -48,9 +47,8 @@ public class ParameterUpdateStateTableCell
         if (updateState == null) {
             return null;
         }
-        boolean success = updateState == ParameterModelUpdateState.SUCCESS || updateState == ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
-        String icon = success ? "CHECK" : "WARNING";
-        Color color = success ? Color.GREEN : Color.RED;
+        String icon = updateState.isSuccessful() ? "CHECK" : "WARNING";
+        Color color = updateState.isSuccessful() ? Color.GREEN : Color.RED;
         Glyph glyph = new Glyph();
         glyph.setFontFamily("FontAwesome");
         glyph.setIcon(icon);

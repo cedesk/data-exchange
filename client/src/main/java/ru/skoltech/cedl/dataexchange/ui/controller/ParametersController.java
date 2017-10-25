@@ -34,44 +34,32 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.ParameterComparatorByNatureAndName;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
-import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
-import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.service.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
-import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterModelTableRow;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterUpdateStateTableCell;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -84,23 +72,23 @@ public class ParametersController implements Initializable, Displayable {
     private static final Logger logger = Logger.getLogger(ParametersController.class);
 
     @FXML
-    private TableView<Pair<ParameterModel, ParameterModelUpdateState>> parameterTable;
+    private TableView<ParameterModel> parameterTable;
     @FXML
-    private TableColumn<Pair<ParameterModel, ParameterModelUpdateState>, String> parameterNatureColumn;
+    private TableColumn<ParameterModel, String> parameterNatureColumn;
     @FXML
-    private TableColumn<Pair<ParameterModel, ParameterModelUpdateState>, String> parameterNameColumn;
+    private TableColumn<ParameterModel, String> parameterNameColumn;
     @FXML
-    private TableColumn<Pair<ParameterModel, ParameterModelUpdateState>, String> parameterValueColumn;
+    private TableColumn<ParameterModel, String> parameterValueColumn;
     @FXML
-    private TableColumn<Pair<ParameterModel, ParameterModelUpdateState>, String> parameterUnitColumn;
+    private TableColumn<ParameterModel, String> parameterUnitColumn;
     @FXML
-    private TableColumn<Pair<ParameterModel, ParameterModelUpdateState>, String> parameterValueSourceColumn;
+    private TableColumn<ParameterModel, String> parameterValueSourceColumn;
     @FXML
-    private TableColumn<Pair<ParameterModel, ParameterModelUpdateState>, String> parameterInfoColumn;
+    private TableColumn<ParameterModel, String> parameterInfoColumn;
     @FXML
-    private TableColumn<Pair<ParameterModel, ParameterModelUpdateState>, String> parameterDescriptionColumn;
+    private TableColumn<ParameterModel, String> parameterDescriptionColumn;
     @FXML
-    public TableColumn<Pair<ParameterModel, ParameterModelUpdateState>, ParameterModelUpdateState> parameterUpdateStateColumn;
+    public TableColumn<ParameterModel, ParameterModelUpdateState> parameterUpdateStateColumn;
     @FXML
     private Button addParameterButton;
     @FXML
@@ -111,15 +99,13 @@ public class ParametersController implements Initializable, Displayable {
     private Stage ownerStage;
 
     private ModelNode modelNode;
-    private ObservableList<Pair<ParameterModel, ParameterModelUpdateState>> parameterModels = FXCollections.observableArrayList();
+    private ObservableList<ParameterModel> parameterModels = FXCollections.observableArrayList();
 
     private BooleanProperty emptyProperty = new SimpleBooleanProperty();
     private BooleanProperty editableProperty = new SimpleBooleanProperty();
 
     private Project project;
-    private ExternalModelFileHandler externalModelFileHandler;
     private DifferenceHandler differenceHandler;
-    private ExternalModelUpdateHandler externalModelUpdateHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private GuiService guiService;
     private ActionLogger actionLogger;
@@ -129,16 +115,8 @@ public class ParametersController implements Initializable, Displayable {
         this.project = project;
     }
 
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
-    }
-
     public void setDifferenceHandler(DifferenceHandler differenceHandler) {
         this.differenceHandler = differenceHandler;
-    }
-
-    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
-        this.externalModelUpdateHandler = externalModelUpdateHandler;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
@@ -172,19 +150,19 @@ public class ParametersController implements Initializable, Displayable {
         parameterNatureColumn.setCellValueFactory(createBeanPropertyCellValueFactory("nature"));
         parameterNameColumn.setCellValueFactory(createBeanPropertyCellValueFactory("name"));
         parameterValueColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null || param.getValue().getLeft() == null) {
+            if (param == null || param.getValue() == null) {
                 return new SimpleStringProperty();
             }
-            ParameterModel parameterModel = param.getValue().getLeft();
+            ParameterModel parameterModel = param.getValue();
             double valueToDisplay = parameterModel.getEffectiveValue();
             String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
             return new SimpleStringProperty(formattedValue);
         });
         parameterUnitColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null || param.getValue().getLeft() == null) {
+            if (param == null || param.getValue() == null) {
                 return new SimpleStringProperty();
             }
-            ParameterModel parameterModel = param.getValue().getLeft();
+            ParameterModel parameterModel = param.getValue();
             if (parameterModel.getUnit() == null) {
                 return new SimpleStringProperty();
             }
@@ -192,10 +170,10 @@ public class ParametersController implements Initializable, Displayable {
         });
         parameterValueSourceColumn.setCellValueFactory(createBeanPropertyCellValueFactory("valueSource"));
         parameterInfoColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null || param.getValue().getLeft() == null) {
+            if (param == null || param.getValue() == null) {
                 return new SimpleStringProperty();
             }
-            ParameterModel parameterModel = param.getValue().getLeft();
+            ParameterModel parameterModel = param.getValue();
 
             if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
                 return new SimpleStringProperty(parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "--");
@@ -207,10 +185,10 @@ public class ParametersController implements Initializable, Displayable {
         });
         parameterDescriptionColumn.setCellValueFactory(createBeanPropertyCellValueFactory("description"));
         parameterUpdateStateColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null || param.getValue().getRight() == null) {
+            if (param == null || param.getValue() == null) {
                 return new SimpleObjectProperty<>();
             }
-            ParameterModelUpdateState update = param.getValue().getRight();
+            ParameterModelUpdateState update = param.getValue().getLastValueReferenceUpdateState();
             return new SimpleObjectProperty<>(update);
         });
         parameterUpdateStateColumn.setCellFactory(param -> new ParameterUpdateStateTableCell());
@@ -230,11 +208,11 @@ public class ParametersController implements Initializable, Displayable {
         parameterTable.setContextMenu(parameterContextMenu);
     }
 
-    public void addParameterModelChangeListener(ChangeListener<Pair<ParameterModel, ParameterModelUpdateState>> listener) {
+    public void addParameterModelChangeListener(ChangeListener<ParameterModel> listener) {
         parameterTable.getSelectionModel().selectedItemProperty().addListener(listener);
     }
 
-    public void removeParameterModelChangeListener(ChangeListener<Pair<ParameterModel, ParameterModelUpdateState>> listener) {
+    public void removeParameterModelChangeListener(ChangeListener<ParameterModel> listener) {
         parameterTable.getSelectionModel().selectedItemProperty().removeListener(listener);
     }
 
@@ -255,17 +233,15 @@ public class ParametersController implements Initializable, Displayable {
 
         int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
 
-        List<Pair<ParameterModel, ParameterModelUpdateState>> newParameterModels;
+        List<ParameterModel> newParameterModels;
         if (!editableProperty.get()) {
             newParameterModels = modelNode.getParameters().stream()
                     .filter(parameterModel -> parameterModel.getNature() == ParameterNature.OUTPUT)
                     .sorted(new ParameterComparatorByNatureAndName())
-                    .map(parameterModel -> Pair.of(parameterModel, externalModelUpdateHandler.parameterModelUpdateState(parameterModel)))
                     .collect(Collectors.toList());
         } else {
             newParameterModels = modelNode.getParameters().stream()
                     .sorted(new ParameterComparatorByNatureAndName())
-                    .map(parameterModel -> Pair.of(parameterModel, externalModelUpdateHandler.parameterModelUpdateState(parameterModel)))
                     .collect(Collectors.toList());
         }
 
@@ -291,7 +267,7 @@ public class ParametersController implements Initializable, Displayable {
         parameterTable.refresh();
     }
 
-    public Pair<ParameterModel, ParameterModelUpdateState> currentParameter() {
+    public ParameterModel currentParameter() {
         return parameterTable.getSelectionModel().getSelectedItem();
     }
 
@@ -314,15 +290,14 @@ public class ParametersController implements Initializable, Displayable {
             statusLogger.info("added parameter: " + parameterModel.getName());
             actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, parameterModel.getNodePath());
             project.markStudyModified();
-            Pair<ParameterModel, ParameterModelUpdateState> update = MutablePair.of(parameterModel, null);
-            this.parameterModels.add(update);
-            this.parameterTable.getSelectionModel().select(update);
+            this.parameterModels.add(parameterModel);
+            this.parameterTable.getSelectionModel().select(parameterModel);
         }
 
     }
 
     public void deleteParameter() {
-        ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem().getLeft();
+        ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem();
         List<ParameterModel> dependentParameters = parameterLinkRegistry.getDependentParameters(parameterModel);
         if (dependentParameters.size() > 0) {
             String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
@@ -342,7 +317,7 @@ public class ParametersController implements Initializable, Displayable {
     }
 
     public void openParameterHistoryDialog() {
-        ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem().getLeft();
+        ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem();
         Objects.requireNonNull(selectedParameter, "no parameter selected");
 
         ViewBuilder revisionHistoryViewBuilder = guiService.createViewBuilder("Revision History", Views.REVISION_HISTORY_VIEW);
@@ -351,112 +326,11 @@ public class ParametersController implements Initializable, Displayable {
         revisionHistoryViewBuilder.show(selectedParameter);
     }
 
-    public void startParameterWizard() {
-        ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem().getLeft();
-        Objects.requireNonNull(selectedParameter, "no parameter selected");
-        Pattern pattern = Pattern.compile("\\[(.*)\\](.*)"); // e.g. [Structure.xls]Sheet1!A1
-
-        String description = selectedParameter.getDescription();
-        if (description.startsWith(SpreadsheetInputOutputExtractorService.EXT_SRC)) {
-            String formula = description.replace(SpreadsheetInputOutputExtractorService.EXT_SRC, "");
-            Matcher matcher = pattern.matcher(formula);
-            if (matcher.find()) {
-                String filename = matcher.group(1);
-                String target = matcher.group(2);
-
-                ExternalModel refExtModel = findExternalModel(filename);
-                if (refExtModel != null) {
-                    ModelNode modelNode = refExtModel.getParent();
-                    ParameterModel source = findParameter(modelNode, target);
-                    if (source != null && source.getNature() == ParameterNature.OUTPUT) {
-                        statusLogger.info("Parameter to link to found '" + source.getNodePath() + "'");
-                        selectedParameter.setNature(ParameterNature.INPUT);
-                        selectedParameter.setValueSource(ParameterValueSource.LINK);
-                        selectedParameter.setValueLink(source);
-                        selectedParameter.setValue(source.getEffectiveValue());
-                        selectedParameter.setUnit(source.getUnit());
-                        // TODO: register link, ProjectContext.getInstance().getProject().getParameterLinkRegistry();
-                        // TODO: update view
-                    } else if (source != null && source.getNature() != ParameterNature.INPUT) {
-                        Dialogues.showWarning("Parameter found.", "The parameter '" + source.getNodePath() + "' can not be referenced because it's not an output!");
-                    } else {
-                        String sourceParameterName = findParameterName(refExtModel, target);
-                        if (sourceParameterName != null) {
-                            selectedParameter.setDescription(description + "\n" + refExtModel.getNodePath() + ">" + sourceParameterName);
-                            Dialogues.showWarning("Parameter found.", "The parameter '" + target + "' can not be referenced," +
-                                    " but it should be called '" + sourceParameterName + "' in node '" + modelNode.getName() + "'");
-                        } else {
-                            Dialogues.showWarning("Parameter not found.", "No parameter referencing '" + target + "' found!");
-                        }
-                    }
-
-                } else {
-                    Dialogues.showWarning("External model not found.", "No external model  named '" + filename + "' found!");
-                }
-            }
-        }
-    }
-
-    private ExternalModel findExternalModel(String filename) {
-        SystemModel systemModel = project.getStudy().getSystemModel();
-        ExternalModelTreeIterator emti = new ExternalModelTreeIterator(systemModel);
-        ExternalModel refExtModel = null;
-        while (emti.hasNext()) {
-            ExternalModel externalModel = emti.next();
-            if (externalModel.getName().equalsIgnoreCase(filename)) {
-                refExtModel = externalModel;
-                break;
-            }
-        }
-        return refExtModel;
-    }
-
-    private ParameterModel findParameter(ModelNode modelNode, String target) {
-        List<ParameterModel> parameters = modelNode.getParameters();
-        ParameterModel source = null;
-        for (ParameterModel parameter : parameters) {
-            if (parameter.getNature() == ParameterNature.OUTPUT && parameter.getValueReference() != null
-                    && target.equalsIgnoreCase(parameter.getValueReference().getTarget())) {
-                source = parameter;
-                break;
-            }
-            if (parameter.getNature() == ParameterNature.INPUT && parameter.getExportReference() != null
-                    && target.equalsIgnoreCase(parameter.getExportReference().getTarget())) {
-                source = parameter;
-                break;
-            }
-        }
-        return source;
-    }
-
-    private String findParameterName(ExternalModel externalModel, String target) {
-        String filename = externalModel.getName();
-        SpreadsheetCoordinates nameCellCoordinates;
-        try {
-            SpreadsheetCoordinates targetCoordinates = SpreadsheetCoordinates.valueOf(target);
-            nameCellCoordinates = targetCoordinates.getNeighbour(SpreadsheetCoordinates.Neighbour.LEFT);
-        } catch (ParseException e) {
-            return null;
-        }
-        String parameterName = null;
-        if (WorkbookFactory.isWorkbookFile(filename)) {
-            try (InputStream inputStream = externalModelFileHandler.getAttachmentAsStream(externalModel)) {
-                String sheetName = nameCellCoordinates.getSheetName();
-                SpreadsheetCellValueAccessor cellValueAccessor = new SpreadsheetCellValueAccessor(inputStream, filename);
-                parameterName = cellValueAccessor.getValueAsString(nameCellCoordinates);
-            } catch (IOException | ExternalModelException e) {
-                statusLogger.warn("The external model '" + filename + "' could not be opened to extract parameter name!");
-                logger.warn("The external model '" + filename + "' could not be opened to extract parameter name!", e);
-            }
-        }
-        return parameterName;
-    }
-
     private static BeanPropertyCellValueFactory createBeanPropertyCellValueFactory(String property) {
         return new BeanPropertyCellValueFactory(property);
     }
 
-    private static class BeanPropertyCellValueFactory implements Callback<TableColumn.CellDataFeatures<Pair<ParameterModel, ParameterModelUpdateState>, String>, ObservableValue<String>> {
+    private static class BeanPropertyCellValueFactory implements Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>> {
 
         private String property;
 
@@ -465,10 +339,10 @@ public class ParametersController implements Initializable, Displayable {
         }
 
         @Override
-        public ObservableValue<String> call(TableColumn.CellDataFeatures<Pair<ParameterModel, ParameterModelUpdateState>, String> param) {
+        public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
             try {
-                Pair<ParameterModel, ParameterModelUpdateState> pair = param.getValue();
-                String value = BeanUtils.getProperty(pair.getLeft(), property);
+                ParameterModel parameterModel = param.getValue();
+                String value = BeanUtils.getProperty(parameterModel, property);
                 return new SimpleStringProperty(value);
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 return new SimpleStringProperty();

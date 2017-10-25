@@ -21,7 +21,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TableView;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.Study;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ModelInconsistency;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
@@ -43,15 +42,10 @@ public class ConsistencyController implements Initializable {
     private TableView<ModelInconsistency> inconsistenciesTable;
 
     private Project project;
-    private ExternalModelFileHandler externalModelFileHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
@@ -66,7 +60,7 @@ public class ConsistencyController implements Initializable {
     public void refreshView() {
         Study localStudy = project.getStudy();
         inconsistenciesTable.getItems().clear();
-        List<ModelInconsistency> modelInconsistencies = ModelInconsistency.analyzeModel(externalModelFileHandler, parameterLinkRegistry, localStudy);
+        List<ModelInconsistency> modelInconsistencies = ModelInconsistency.analyzeModel(parameterLinkRegistry, localStudy);
         inconsistenciesTable.getItems().addAll(modelInconsistencies);
     }
 
