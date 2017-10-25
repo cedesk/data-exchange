@@ -1,26 +1,3 @@
-DROP SCHEMA IF EXISTS `cedesk_repo`;
-CREATE SCHEMA `cedesk_repo`
-  DEFAULT CHARACTER SET utf8;
-CREATE USER 'cedesk'@'%'
-  IDENTIFIED BY 'cedesk';
-GRANT ALL PRIVILEGES ON `cedesk_repo`.* TO 'cedesk'@'%';
-
-## --------------------------------------------------------
-
-SELECT
-  concat("RENAME TABLE ", LOWER(tr.table_name), " TO ", tr.table_name, "1, ", tr.table_name, "1 TO ", td.table_name,
-         ";")
-FROM
-  information_schema.tables td
-  JOIN
-  information_schema.tables tr
-    ON td.table_name LIKE tr.table_name
-WHERE
-  td.table_schema = 'cedesk_dev'
-  AND td.table_type = 'BASE TABLE'
-  AND tr.table_schema = 'cedesk_repo'
-  AND tr.table_type = 'BASE TABLE';
-
 ## --------------------------------------------------------
 
 CREATE OR REPLACE VIEW `modelnode` AS
