@@ -24,6 +24,7 @@ import org.hibernate.envers.RelationTargetAuditMode;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterReferenceValidity;
 
@@ -129,7 +130,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
 
     @Transient
     @XmlTransient
-    private ParameterModelUpdateState parameterModelUpdateState;
+    private ParameterModelUpdateState lastParameterModelUpdateState;
 
     public ParameterModel() {
     }
@@ -370,7 +371,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
         if (!isValidValueReference()) {
             return null;
         }
-        return parameterModelUpdateState;
+        return lastParameterModelUpdateState;
     }
 
     /**
@@ -463,24 +464,24 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
             Double value = valueReferenceExternalModel.getValue(valueReference.getTarget());
             if (Double.isNaN(value)) {
                 logger.warn("Parameter model " + this.getNodePath() + " evaluated invalid value");
-                parameterModelUpdateState = ParameterModelUpdateState.FAIL_INVALID_VALUE;
+                lastParameterModelUpdateState = ParameterModelUpdateState.FAIL_INVALID_VALUE;
                 return false;
             } else if (this.getValue() != null && Precision.equals(this.getValue(), value, 2)) {
                 logger.debug("Parameter model " + this.getNodePath()
                         + " received no update from " + valueReference.toString());
-                parameterModelUpdateState = ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
+                lastParameterModelUpdateState = ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
                 return false;
             } else {
                 this.setValue(value);
                 logger.info("Parameter model " + this.getNodePath()
                         + " successfully evaluated its value (" + String.valueOf(value) + ")");
-                parameterModelUpdateState = ParameterModelUpdateState.SUCCESS;
+                lastParameterModelUpdateState = ParameterModelUpdateState.SUCCESS;
                 return true;
             }
-        } catch (Exception e) {
+        } catch (ExternalModelException e) {
             logger.warn("Parameter model " + this.getNodePath()
                     + " failed to update its value with an internal error: " + e.getMessage());
-            parameterModelUpdateState = ParameterModelUpdateState.FAIL_EVALUATION;
+            lastParameterModelUpdateState = ParameterModelUpdateState.FAIL_EVALUATION;
             return false;
         }
     }
@@ -497,7 +498,6 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
         reference.setTarget(target);
         return reference;
     }
-
 
     /**
      * The comparison is done only based on the name, so it enables sorting of parameters by name and identifying changes to values of parameters.

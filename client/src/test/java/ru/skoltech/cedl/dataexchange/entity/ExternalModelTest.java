@@ -240,7 +240,6 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         verify(externalModel, times(1)).setValues(Collections.singletonList(Pair.of(target, value)));
     }
 
-
     @Test
     public void testState() throws URISyntaxException, IOException {
         String projectDir = new File("target/project").getAbsolutePath();
