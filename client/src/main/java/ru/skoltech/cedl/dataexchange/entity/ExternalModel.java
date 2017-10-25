@@ -212,26 +212,34 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
     /**
      * Retrieve a list of parameter model with value reference to this external model.
      * All parameter models have a same parent {@link ModelNode} as this external model.
+     * If external model does not have parent model node then {@link UnsupportedOperationException} will be thrown.
      * <p/>
      * @return list of parameter model with value reference to this external model
      */
     public List<ParameterModel> getReferencedParameterModels() {
-        return this.getParent().getParameters().stream()
+        if (this.parent == null) {
+            throw new UnsupportedOperationException("External model is not belonged to any model node");
+        }
+        return this.parent.getParameters().stream()
                 .filter(parameterModel -> parameterModel.isValidValueReference() &&
-                        parameterModel.getValueReference().getExternalModel().getName().equals(name))
+                        parameterModel.getValueReference().getExternalModel().getUuid().equals(uuid))
                 .collect(Collectors.toList());
     }
 
     /**
      * Retrieve a list of parameter model with export reference to this external model.
      * All parameter models have a same parent {@link ModelNode} as this external model.
+     * If external model does not have parent model node then {@link UnsupportedOperationException} will be thrown.
      * <p/>
      * @return list of parameter model with export reference to this external model
      */
     public List<ParameterModel> getExportedParameterModels() {
+        if (this.parent == null) {
+            throw new UnsupportedOperationException("External model is not belonged to any model node");
+        }
         return this.getParent().getParameters().stream()
                 .filter(parameterModel -> parameterModel.isValidExportReference() &&
-                        parameterModel.getExportReference().getExternalModel().getName().equals(name))
+                        parameterModel.getExportReference().getExternalModel().getUuid().equals(uuid))
                 .collect(Collectors.toList());
     }
 

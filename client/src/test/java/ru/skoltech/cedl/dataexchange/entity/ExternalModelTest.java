@@ -17,6 +17,7 @@
 package ru.skoltech.cedl.dataexchange.entity;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.ss.usermodel.Cell;
@@ -41,7 +42,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static ru.skoltech.cedl.dataexchange.external.ExternalModelState.*;
@@ -55,6 +59,9 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     private ModelNode parent;
     private SystemModel testModel;
     private ExternalModel externalModel, testExternalModel;
+    private ParameterModel correctValueReferenceParameterModel;
+    private String target = "target";
+    private Double value = 10.1;
 
     private ExternalModelRepository externalModelRepository;
     private SystemModelRepository systemModelRepository;
@@ -73,6 +80,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         this.testModel = systemModelRepository.saveAndFlush(testModel);
 
         externalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
+        externalModel.setUuid("1111");
         externalModel.setName(attachmentFile1.getName());
         externalModel.setLastModification(attachmentFile1.lastModified());
         externalModel.setAttachment(Files.readAllBytes(Paths.get(attachmentFile1.getAbsolutePath())));
@@ -80,11 +88,35 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         externalModel.init();
 
         testExternalModel = new TestExternalModel();
+        testExternalModel.setUuid("2222");
         testExternalModel.setName(attachmentFile1.getName());
         testExternalModel.setAttachment(Files.readAllBytes(Paths.get(attachmentFile1.getAbsolutePath())));
         testExternalModel.setLastModification(attachmentFile1.lastModified());
         testExternalModel.setParent(testModel);
         testExternalModel.init();
+
+        ExternalModelReference externalModelReference = new ExternalModelReference();
+        externalModelReference.setTarget(target);
+        externalModelReference.setExternalModel(externalModel);
+        ExternalModelReference testExternalModelReference = new ExternalModelReference();
+        testExternalModelReference.setExternalModel(testExternalModel);
+        testExternalModelReference.setTarget(target);
+
+        ParameterModel notValidValueReferenceParameterModel = new ParameterModel();
+        ParameterModel notCorrectValueReferenceParameterModel = new ParameterModel();
+        notCorrectValueReferenceParameterModel.setValueSource(ParameterValueSource.REFERENCE);
+        notCorrectValueReferenceParameterModel.setIsExported(true);
+        notCorrectValueReferenceParameterModel.setValueReference(testExternalModelReference);
+        notCorrectValueReferenceParameterModel.setExportReference(testExternalModelReference);
+        correctValueReferenceParameterModel = new ParameterModel();
+        correctValueReferenceParameterModel.setValueSource(ParameterValueSource.REFERENCE);
+        correctValueReferenceParameterModel.setIsExported(true);
+        correctValueReferenceParameterModel.setValueReference(externalModelReference);
+        correctValueReferenceParameterModel.setExportReference(externalModelReference);
+        correctValueReferenceParameterModel.setValue(value);
+
+        when(parent.getParameters()).thenReturn(Arrays.asList(notValidValueReferenceParameterModel,
+                notCorrectValueReferenceParameterModel, correctValueReferenceParameterModel));
 
         externalModelRepository = context.getBean(ExternalModelRepository.class);
 
@@ -162,8 +194,52 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         assertEquals(attachmentFile1.lastModified(), externalModel.getLastModification().longValue());
         assertNotNull(externalModel.getAttachment());
         verify(externalModel, times(1)).init();
-
     }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testReferencedParameterModelsFail() {
+        ExternalModel externalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
+        externalModel.getReferencedParameterModels();
+    }
+
+    @Test
+    public void testReferencedParameterModels() {
+        assertThat(externalModel.getReferencedParameterModels(), hasSize(1));
+        assertEquals(externalModel.getReferencedParameterModels().get(0), correctValueReferenceParameterModel);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExportedParameterModelsFail() {
+        ExternalModel externalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
+        externalModel.getExportedParameterModels();
+    }
+
+    @Test
+    public void testExportedParameterModels() {
+        assertThat(externalModel.getExportedParameterModels(), hasSize(1));
+        assertEquals(externalModel.getExportedParameterModels().get(0), correctValueReferenceParameterModel);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testUpdateExportReferencesFail() {
+        ExternalModel externalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
+        externalModel.updateExportReferences();
+    }
+
+    @Test
+    public void testUpdateExportReferences1() throws ExternalModelException {
+        doThrow(ExternalModelException.class).when(externalModel).setValues(any());
+        boolean updated = externalModel.updateExportReferences();
+        assertFalse(updated);
+    }
+
+    @Test
+    public void testUpdateExportReferences2() throws ExternalModelException {
+        boolean updated = externalModel.updateExportReferences();
+        assertTrue(updated);
+        verify(externalModel, times(1)).setValues(Collections.singletonList(Pair.of(target, value)));
+    }
+
 
     @Test
     public void testState() throws URISyntaxException, IOException {
@@ -230,36 +306,85 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
 
 
     @Test(expected = IOException.class)
-    public void testAttachmentFail1() throws IOException {
+    public void testAttachmentAsInputStreamFail1() throws IOException {
         ExternalModel externalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
         when(externalModel.state()).thenReturn(INCORRECT);
         externalModel.getAttachmentAsInputStream();
     }
 
     @Test(expected = IOException.class)
-    public void testAttachmentFail2() throws IOException {
+    public void testAttachmentAsInputStreamFail2() throws IOException {
         ExternalModel externalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
         when(externalModel.state()).thenReturn(UNINITIALIZED);
         externalModel.getAttachmentAsInputStream();
     }
 
     @Test
-    public void testAttachment() throws IOException {
+    public void testAttachmentAsInputStream() throws IOException {
         ExternalModel emptyExternalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
         assertEquals(EMPTY, emptyExternalModel.state());
         assertNull(emptyExternalModel.getAttachmentAsInputStream());
 
         when(externalModel.getCacheFile()).thenReturn(this.attachmentFile1);
         doReturn(NO_CACHE).when(externalModel).state();
-        assertNotNull(externalModel.getAttachmentAsInputStream());
-        assertTrue(externalModel.getAttachmentAsInputStream() instanceof ByteArrayInputStream);
+        InputStream inputStream = externalModel.getAttachmentAsInputStream();
+        assertNotNull(inputStream);
+        assertTrue(inputStream instanceof ByteArrayInputStream);
+        inputStream.close();
 
         for (ExternalModelState state : Arrays.asList(CACHE, CACHE_OUTDATED,
                 CACHE_CONFLICT, CACHE_MODIFIED)) {
             when(externalModel.state()).thenReturn(state);
-            assertNotNull(externalModel.getAttachmentAsInputStream());
-            assertTrue(externalModel.getAttachmentAsInputStream() instanceof FileInputStream);
+            inputStream = externalModel.getAttachmentAsInputStream();
+            assertNotNull(inputStream);
+            assertTrue(inputStream instanceof FileInputStream);
+            inputStream.close();
         }
+    }
+
+    @Test(expected = IOException.class)
+    public void testAttachmentAsOutputStreamFail1() throws IOException {
+        ExternalModel externalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
+        when(externalModel.state()).thenReturn(INCORRECT);
+        externalModel.getAttachmentAsOutputStream();
+    }
+
+    @Test(expected = IOException.class)
+    public void testAttachmentAsOutputStreamFail2() throws IOException {
+        ExternalModel externalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
+        when(externalModel.state()).thenReturn(UNINITIALIZED);
+        externalModel.getAttachmentAsOutputStream();
+    }
+
+    @Test
+    public void testAttachmentAsOutputStream() throws IOException, ExternalModelException {
+        ExternalModel emptyExternalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
+        assertEquals(EMPTY, emptyExternalModel.state());
+        assertNull(emptyExternalModel.getAttachmentAsOutputStream());
+
+        externalModel.init();
+//        when(externalModel.getCacheFile()).thenReturn(this.attachmentFile1);
+        assertEquals(NO_CACHE, externalModel.state());
+        OutputStream outputStream = externalModel.getAttachmentAsOutputStream();
+        assertNotNull(outputStream);
+        assertTrue(outputStream instanceof ByteArrayOutputStream);
+        outputStream.close();
+
+        externalModel.updateCacheFromAttachment();
+        for (ExternalModelState state : Arrays.asList(CACHE, CACHE_OUTDATED,
+                CACHE_CONFLICT, CACHE_MODIFIED)) {
+            when(externalModel.state()).thenReturn(state);
+            outputStream = externalModel.getAttachmentAsOutputStream();
+            assertNotNull(outputStream);
+            assertTrue(outputStream instanceof FileOutputStream);
+            outputStream.close();
+        }
+        boolean cacheDeleted = externalModel.getCacheFile().delete();
+        boolean timestampDeleted = externalModel.getTimestampFile().delete();
+        if (!cacheDeleted || !timestampDeleted) {
+            fail("Cannot delete cache and timestamp");
+        }
+
     }
 
     @Test(expected = ExternalModelException.class)
@@ -433,24 +558,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
 
         ExternalModelReference valueReference = systemModel.getParameters().get(0).getValueReference();
         assertEquals(externalModelReference, valueReference);
-
-//        project.addExternalModelChangeObserver((o, arg) -> {
-//            ExternalModel externalModel = (ExternalModel) arg;
-//            try {
-//                modelUpdateHandler.applyParameterUpdatesFromExternalModel(externalModel,
-//                        Arrays.asList(new ExternalModelUpdateListener(), new ExternalModelLogListener()), new ModelEditingController.ParameterUpdateListener());
-//            } catch (ExternalModelException e) {
-//                logger.error("error updating parameters from external model '" + externalModel.getNodePath() + "'");
-//            }
-//        });
-
         System.out.println(parameterModel.getEffectiveValue());
-
-//        modelUpdateService.applyParameterUpdatesFromExternalModel(project, externalModel,
-//                parameterLinkRegistry,
-//                Collections.singletonList(externalModelUpdateListener), parameterUpdateListener);
-
-
     }
 
     @Test
