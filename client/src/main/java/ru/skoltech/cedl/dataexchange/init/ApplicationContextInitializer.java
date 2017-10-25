@@ -28,6 +28,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ApplicationContextInitializer {
 
     public static final String BASE_CONTEXT_LOCATION = "/context-base.xml";
+    public static final String SERVICE_CONTEXT_LOCATION = "/context-service.xml";
     public static final String CONTEXT_LOCATION = "/context-controller.xml";
     private static Logger logger = Logger.getLogger(ApplicationContextInitializer.class);
     private static String location;
