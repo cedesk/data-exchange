@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange.service.impl;
 import org.apache.commons.lang3.tuple.Pair;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ext.CsvExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
@@ -39,8 +40,8 @@ public class ExternalModelServiceImpl implements ExternalModelService {
 
 
     private enum ExternalModelType {
-        EXCEL("Excel Spreadsheets", XLS, XLSX, XLSM);
-//        COMMA_SEPARATED_VALUES("Comma Separated Values Files", CSV);
+        EXCEL("Excel Spreadsheets", XLS, XLSX, XLSM),
+        COMMA_SEPARATED_VALUES("Comma Separated Values Files", CSV);
 
         final String description;
         final List<String> extensions;
@@ -89,9 +90,9 @@ public class ExternalModelServiceImpl implements ExternalModelService {
             case EXCEL:
                 externalModel = new ExcelExternalModel();
                 break;
-//            case COMMA_SEPARATED_VALUES:
-//                externalModel = new CSVExternalModel();
-//                break;
+            case COMMA_SEPARATED_VALUES:
+                externalModel = new CsvExternalModel();
+                break;
             default:
                 throw new AssertionError("Never must be thrown");
         }
