@@ -27,7 +27,9 @@ import javafx.scene.input.MouseEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ExternalModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
@@ -113,13 +115,22 @@ public class ExternalModelController implements Initializable {
 
     public void openExternalModel() {
         try {
+            ExternalModelState state = externalModel.state();
+            if (!state.isCached()) {
+                if (state != ExternalModelState.NO_CACHE) {
+                    logger.error("External model in a wrong state: " + state);
+                    statusLogger.error("External model in a wrong state: " + state);
+                    return;
+                }
+                externalModel.updateCacheFromAttachment();
+            }
             File file = externalModel.getCacheFile();
             externalModelFileWatcher.add(externalModel);
             this.openFile(file);
         } catch (IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);
             statusLogger.error("Unable to cache external model");
-        } catch (Exception e) {
+        } catch (ExternalModelException e) {
             logger.error("Error opening external model with default editor.", e);
             statusLogger.error("Unable to open external model");
         }

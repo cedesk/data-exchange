@@ -175,12 +175,12 @@ public class ExcelExternalModel extends ExternalModel {
         }
     }
 
-    private Double getSpreadsheetAccessorValue(SpreadsheetCellValueAccessor spreadsheetAccessor, String target) throws ParseException {
+    private Double getSpreadsheetAccessorValue(SpreadsheetCellValueAccessor spreadsheetAccessor, String target) throws ParseException, IOException {
         SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
         return spreadsheetAccessor.getNumericValue(coordinates);
     }
 
-    private void setSpreadsheetAccessorValue(SpreadsheetCellValueAccessor spreadsheetAccessor, String target, Double value) throws ParseException {
+    private void setSpreadsheetAccessorValue(SpreadsheetCellValueAccessor spreadsheetAccessor, String target, Double value) throws ParseException, IOException {
         SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
         logger.debug("setting " + value + " on cell " + target + " in " + this.getNodePath());
         spreadsheetAccessor.setNumericValue(coordinates, value);

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementation operations with external model.
@@ -59,7 +60,8 @@ public class ExternalModelServiceImpl implements ExternalModelService {
         Arrays.stream(ExternalModelType.values())
                 .forEach(type -> {
                     type.extensions.forEach(extension -> extension2type.put(extension, type));
-                    fileDescriptionsAndExtensions.add(Pair.of(type.description, type.extensions));
+                    List<String> adapted = type.extensions.stream().map(extension -> "*" + extension).collect(Collectors.toList());
+                    fileDescriptionsAndExtensions.add(Pair.of(type.description, adapted));
                 });
 
         fileDescriptionsAndExtensions = Collections.unmodifiableList(fileDescriptionsAndExtensions);
@@ -70,8 +72,9 @@ public class ExternalModelServiceImpl implements ExternalModelService {
     }
 
     public Pair<String, List<String>> fileDescriptionAndExtensions(String filterExtension) {
+        String extension = "*" + filterExtension;
         return fileDescriptionsAndExtensions.stream()
-                .filter(pair -> pair.getRight().contains(filterExtension))
+                .filter(pair -> pair.getRight().contains(extension))
                 .findAny().orElse(null);
     }
 

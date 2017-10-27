@@ -256,7 +256,9 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
             List<Pair<String, Double>> values = exportedParameterModels.stream()
                     .map(pm -> Pair.of(pm.getExportReference().getTarget(), pm.getEffectiveValue()))
                     .collect(Collectors.toList());
-            this.setValues(values);
+            if (!values.isEmpty()) {
+                this.setValues(values);
+            }
             return true;
         } catch (ExternalModelException e) {
             return false;

@@ -45,9 +45,9 @@ import static org.junit.Assert.*;
  */
 public class ExternalModelServiceTest {
 
-    private static final Matcher<Iterable<? super String>> excelExtensionsMatcher = allOf(hasItem(ExternalModelService.XLS),
-            hasItem(ExternalModelService.XLSX), hasItem(ExternalModelService.XLSM));
-    private static final Matcher<Iterable<? super String>> csvExtensionsMatcher = hasItem(ExternalModelService.CSV);
+    private static final Matcher<Iterable<? super String>> excelExtensionsMatcher = allOf(hasItem("*" + ExternalModelService.XLS),
+            hasItem("*" + ExternalModelService.XLSX), hasItem("*" + ExternalModelService.XLSM));
+    private static final Matcher<Iterable<? super String>> csvExtensionsMatcher = hasItem("*" + ExternalModelService.CSV);
 
     private ExternalModelService externalModelService;
     private File excelAttachmentFile;
