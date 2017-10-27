@@ -23,7 +23,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
@@ -95,46 +94,26 @@ public class ExternalModelController implements Initializable {
         externalModelNameText.styleProperty().bind(Bindings.when(externalModelChangedProperty)
                 .then("-fx-border-color: #FF6A00;")
                 .otherwise((String) null));
-
-        openExternalButton.addEventFilter(MouseEvent.MOUSE_PRESSED, (MouseEvent event) -> {
-            if (event.isSecondaryButtonDown()) {
-                try {
-                    File file = externalModel.getCacheFile();
-                    externalModelFileWatcher.add(externalModel);
-                    File path = file.getParentFile();
-                    this.openFile(path);
-                } catch (IOException e) {
-                    logger.error("Error retrieving external model to spreadsheet.", e);
-                    statusLogger.error("Unable to get cache of external model");
-                }
-            }
-        });
     }
 
     public void openExternalModel() {
         try {
             File file = externalModel.getCacheFile();
             externalModelFileWatcher.add(externalModel);
-            this.openFile(file);
+            if (file != null) {
+                Desktop desktop = Desktop.getDesktop();
+                if (file.isFile() && desktop.isSupported(Desktop.Action.EDIT)) {
+                    desktop.edit(file);
+                } else {
+                    statusLogger.error("Unable to open file!");
+                }
+            }
         } catch (IOException ioe) {
             logger.error("Error saving external model to spreadsheet.", ioe);
             statusLogger.error("Unable to cache external model");
         } catch (Exception e) {
             logger.error("Error opening external model with default editor.", e);
             statusLogger.error("Unable to open external model");
-        }
-    }
-
-    private void openFile(File file) throws IOException {
-        if (file != null) {
-            Desktop desktop = Desktop.getDesktop();
-            if (file.isFile() && desktop.isSupported(Desktop.Action.EDIT)) {
-                desktop.edit(file);
-            } else if (file.isDirectory() && desktop.isSupported(Desktop.Action.BROWSE)) {
-                desktop.browse(file.toURI());
-            } else {
-                statusLogger.error("Unable to open file!");
-            }
         }
     }
 
