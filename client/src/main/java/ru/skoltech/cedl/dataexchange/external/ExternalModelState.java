@@ -68,10 +68,10 @@ public enum ExternalModelState {
     /**
      * Determine the existence of cache file.
      *
-     * @return <i>true</i> if cache file is exist and <i>true</i> if opposite.
+     * @return <i>true</i> if cache file is exist and <i>false</i> if opposite.
      */
     public boolean isCached(){
-        return this == EMPTY || this == INCORRECT || this == UNINITIALIZED || this == NO_CACHE;
+        return this == CACHE || this == CACHE_CONFLICT || this == CACHE_MODIFIED || this == CACHE_OUTDATED;
     }
 
 }

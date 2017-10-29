@@ -87,7 +87,7 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
 
     @Transient
     @XmlTransient
-    protected File cacheFile;
+    private File cacheFile;
 
     @Transient
     @XmlTransient
@@ -256,7 +256,9 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
             List<Pair<String, Double>> values = exportedParameterModels.stream()
                     .map(pm -> Pair.of(pm.getExportReference().getTarget(), pm.getEffectiveValue()))
                     .collect(Collectors.toList());
-            this.setValues(values);
+            if (!values.isEmpty()) {
+                this.setValues(values);
+            }
             return true;
         } catch (ExternalModelException e) {
             return false;
@@ -353,9 +355,9 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
             case UNINITIALIZED:
                 throw new IOException("External model must be initialized");
             case NO_CACHE:
-                return new ByteArrayOutputStream(this.attachment.length);
+                return new AttachmentByteArrayOutputStream();
             default:
-                return new FileOutputStream(this.cacheFile);
+                return new CacheFileOutputStream();
         }
     }
 
@@ -519,4 +521,33 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         sb.append('}');
         return sb.toString();
     }
+
+    private class CacheFileOutputStream extends FileOutputStream {
+        CacheFileOutputStream() throws FileNotFoundException {
+            super(ExternalModel.this.cacheFile);
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            try {
+                ExternalModel.this.updateAttachmentFromCache();
+            } catch (ExternalModelException e) {
+                logger.warn("Cannot update attachment from cache of external model: " + getNodePath());
+            }
+        }
+    }
+
+
+    private class AttachmentByteArrayOutputStream extends ByteArrayOutputStream {
+        AttachmentByteArrayOutputStream() {
+            super(ExternalModel.this.attachment.length);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            ExternalModel.this.setAttachment(this.toByteArray());
+        }
+    }
+
 }

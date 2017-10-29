@@ -57,7 +57,7 @@ public class ExternalModelFileWatcher extends Observable {
 
     public void add(ExternalModel externalModel) {
         ExternalModelState cacheState = externalModel.state();
-        if (cacheState.isCached()) {
+        if (!cacheState.isCached()) {
             logger.warn("Cannot add to directory watch service external model " + externalModel.getNodePath()
                     + " because of wrong state: " + cacheState);
             return;

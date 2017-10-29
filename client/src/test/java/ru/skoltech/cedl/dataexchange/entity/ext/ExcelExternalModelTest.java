@@ -14,77 +14,37 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.entity;
+package ru.skoltech.cedl.dataexchange.entity.ext;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.CellReference;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.controlsfx.control.spreadsheet.Grid;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
-import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModelImplTest;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Created by Nikolay Groshkov on 09-Oct-17.
  */
-public class ExcelExternalModelTest {
-
-
-    private ExcelExternalModel externalModel;
-
-//    public Double getValue(String target) throws ExternalModelException;
-//    public List<Double> getValues(List<String> targets) throws ExternalModelException;
-//    public void setValue(String target, Double value) throws ExternalModelException;
-//    public void setValues(List<Pair<String, Double>> values) throws ExternalModelException;
-//    public List<String> getSheetNames() throws ExternalModelException;
-//    public Grid getGrid(String sheetName) throws ExternalModelException;
+public class ExcelExternalModelTest extends ExternalModelImplTest {
 
     @Before
     public void prepare() throws URISyntaxException, IOException, ExternalModelException {
-        String projectDir = new File("target/project").getAbsolutePath();
-        System.setProperty(Project.PROJECT_HOME_PROPERTY, projectDir);
-
-        SystemModel testModel = new SystemModel("testSat");
-        File attachmentFile = new File(this.getClass().getResource("/attachment.xls").toURI());
-
+        super.prepare();
+        attachmentFile = new File(this.getClass().getResource("/attachment.xls").toURI());
         externalModel = new ExcelExternalModel();
-        externalModel.setName(attachmentFile.getName());
-        externalModel.setLastModification(attachmentFile.lastModified());
-        externalModel.setAttachment(Files.readAllBytes(Paths.get(attachmentFile.getAbsolutePath())));
-        externalModel.setParent(testModel);
-        externalModel.init();
-        externalModel.updateCacheFromAttachment();
-    }
-
-    @After
-    public void shutdown() throws IOException {
-        externalModel.getCacheFile().deleteOnExit();
-        externalModel.getCacheFile().deleteOnExit();
-
-        String projectHome = System.getProperty(Project.PROJECT_HOME_PROPERTY);
-        File projectDir = new File(projectHome);
-        FileUtils.deleteDirectory(projectDir);
-
-        System.clearProperty(Project.PROJECT_HOME_PROPERTY);
+        super.initExternalModel();
     }
 
     @Test(expected = ExternalModelException.class)
@@ -131,7 +91,7 @@ public class ExcelExternalModelTest {
     }
 
     @Test
-    public void testCachedSetValue() throws ExternalModelException, IOException, InvalidFormatException {
+    public void testCachedSetValue() throws ExternalModelException, IOException {
         String target = "B3";
         double value = 5.5;
         externalModel.setValue(target, value);
@@ -143,21 +103,16 @@ public class ExcelExternalModelTest {
         Row row = sheet.getRow(cellReference.getRow());
         Cell cell = row.getCell(cellReference.getCol());
 
-        assertEquals(ExternalModelState.CACHE_MODIFIED, externalModel.state());
         assertEquals(CellType.NUMERIC, cell.getCellTypeEnum());
         assertEquals(value, cell.getNumericCellValue(), 0);
+        assertEquals(ExternalModelState.CACHE, externalModel.state());
 
         cacheInputStream.close();
     }
 
     @Test
     public void testNotCachedSetValue() throws ExternalModelException, IOException {
-        boolean cacheFileDeleted = externalModel.getCacheFile().delete();
-        boolean timestampFileDeleted = ((ExternalModel)externalModel).getTimestampFile().delete();
-
-        if (!cacheFileDeleted || !timestampFileDeleted) {
-            fail("Cannot delete cache files");
-        }
+        super.deleteCache();
 
         String target = "B3";
         double value = 5.5;
@@ -170,9 +125,9 @@ public class ExcelExternalModelTest {
         Row row = sheet.getRow(cellReference.getRow());
         Cell cell = row.getCell(cellReference.getCol());
 
-        assertEquals(ExternalModelState.NO_CACHE, externalModel.state());
         assertEquals(CellType.NUMERIC, cell.getCellTypeEnum());
         assertEquals(value, cell.getNumericCellValue(), 0);
+        assertEquals(ExternalModelState.NO_CACHE, externalModel.state());
 
         cacheInputStream.close();
 
@@ -211,7 +166,7 @@ public class ExcelExternalModelTest {
     }
 
     @Test
-    public void testSetValues() throws ExternalModelException, IOException, InvalidFormatException {
+    public void testSetValues() throws ExternalModelException, IOException {
         String target1 = "B3";
         String target2 = "D4";
         double value1 = 6.6;
@@ -232,42 +187,43 @@ public class ExcelExternalModelTest {
         assertEquals(CellType.NUMERIC, cell2.getCellTypeEnum());
         assertEquals(value1, cell1.getNumericCellValue(), 0);
         assertEquals(value2, cell2.getNumericCellValue(), 0);
-
+        assertEquals(ExternalModelState.CACHE, externalModel.state());
         cacheInputStream.close();
     }
 
     @Test(expected = ExternalModelException.class)
     public void testGetSheetNamesFail() throws ExternalModelException {
-        externalModel.setAttachment(null);
-        externalModel.getSheetNames();
+        ExcelExternalModel excelExternalModel = (ExcelExternalModel) externalModel;
+        excelExternalModel.setAttachment(null);
+        excelExternalModel.getSheetNames();
     }
 
     @Test
     public void testGetSheetNames() throws ExternalModelException {
-        List<String> sheetNames = externalModel.getSheetNames();
+        ExcelExternalModel excelExternalModel = (ExcelExternalModel) externalModel;
+        List<String> sheetNames = excelExternalModel.getSheetNames();
         assertEquals(1, sheetNames.size());
         assertEquals("Sheet1", sheetNames.get(0));
     }
 
     @Test(expected = ExternalModelException.class)
     public void testGetGridFail() throws ExternalModelException {
-        externalModel.setAttachment(null);
-        externalModel.getGrid("gridName");
+        ExcelExternalModel excelExternalModel = (ExcelExternalModel) externalModel;
+        excelExternalModel.setAttachment(null);
+        excelExternalModel.getGrid("gridName");
     }
 
     @Test
     public void testGetGrid() throws ExternalModelException {
-        Grid grid = externalModel.getGrid(null);
+        ExcelExternalModel excelExternalModel = (ExcelExternalModel) externalModel;
+        Grid grid = excelExternalModel.getGrid(null);
         assertNotNull(grid);
         assertEquals("9.6", grid.getRows().get(3).get(3).getText());
-        grid = externalModel.getGrid("name");
+        grid = excelExternalModel.getGrid("name");
         assertNotNull(grid);
         assertEquals(0, grid.getRows().size());
-        grid = externalModel.getGrid("Sheet1");
+        grid = excelExternalModel.getGrid("Sheet1");
         assertNotNull(grid);
         assertEquals("9.6", grid.getRows().get(3).get(3).getText());
-
     }
-
-
 }

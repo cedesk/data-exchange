@@ -20,16 +20,23 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ext.CsvExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.impl.ExternalModelServiceImpl;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
@@ -38,16 +45,22 @@ import static org.junit.Assert.*;
  */
 public class ExternalModelServiceTest {
 
-    private static final Matcher<Iterable<? super String>> excelExtensionsMatcher = allOf(hasItem(ExternalModelService.XLS),
-            hasItem(ExternalModelService.XLSX), hasItem(ExternalModelService.XLSM));
+    private static final Matcher<Iterable<? super String>> excelExtensionsMatcher = allOf(hasItem("*" + ExternalModelService.XLS),
+            hasItem("*" + ExternalModelService.XLSX), hasItem("*" + ExternalModelService.XLSM));
+    private static final Matcher<Iterable<? super String>> csvExtensionsMatcher = hasItem("*" + ExternalModelService.CSV);
 
     private ExternalModelService externalModelService;
-
+    private File excelAttachmentFile;
+    private File csvAttachmentFile;
+    private SystemModel testModel;
 
     @Before
     public void prepare() throws URISyntaxException, IOException {
         externalModelService = new ExternalModelServiceImpl();
+        excelAttachmentFile = new File(this.getClass().getResource("/attachment.xls").toURI());
+        csvAttachmentFile = new File(this.getClass().getResource("/attachment.csv").toURI());
 
+        testModel = new SystemModel("testSat");
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -58,8 +71,43 @@ public class ExternalModelServiceTest {
     @Test
     public void testFileDescriptionsAndExtensions() {
         List<Pair<String, List<String>>> fileDescriptionsAndExtensions = externalModelService.fileDescriptionsAndExtensions();
-        assertEquals(1, fileDescriptionsAndExtensions.size());
-        assertThat(fileDescriptionsAndExtensions.get(0).getRight(), excelExtensionsMatcher);
+        assertEquals(2, fileDescriptionsAndExtensions.size());
+        List<List<String>> extensions = fileDescriptionsAndExtensions.stream().map(Pair::getRight).collect(Collectors.toList());
+        assertThat(extensions, hasItem(excelExtensionsMatcher));
+        assertThat(extensions, hasItem(csvExtensionsMatcher));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCreateExternalModelFromFileFail1() throws ExternalModelException {
+        externalModelService.createExternalModelFromFile(null, testModel);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCreateExternalModelFromFileFail2() throws ExternalModelException {
+        externalModelService.createExternalModelFromFile(excelAttachmentFile, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateExternalModelFromFileFail3() throws URISyntaxException, ExternalModelException {
+        File notSupportedAttachmentFile = new File(this.getClass().getResource("/application.settings").toURI());
+        externalModelService.createExternalModelFromFile(notSupportedAttachmentFile, testModel);
+    }
+
+    @Test
+    public void testCreateExternalModelFromFile() throws ExternalModelException {
+        ExternalModel excelExternalModel = externalModelService.createExternalModelFromFile(excelAttachmentFile, testModel);
+        assertNotNull(excelExternalModel);
+        assertThat(excelExternalModel, instanceOf(ExcelExternalModel.class));
+        assertEquals(excelAttachmentFile.getName(), excelExternalModel.getName());
+        assertEquals(testModel, excelExternalModel.getParent());
+        assertNotEquals(ExternalModelState.UNINITIALIZED, excelExternalModel.state());
+
+        ExternalModel csvExternalModel = externalModelService.createExternalModelFromFile(csvAttachmentFile, testModel);
+        assertNotNull(csvExternalModel);
+        assertThat(csvExternalModel, instanceOf(CsvExternalModel.class));
+        assertEquals(csvAttachmentFile.getName(), csvExternalModel.getName());
+        assertEquals(testModel, csvExternalModel.getParent());
+        assertNotEquals(ExternalModelState.UNINITIALIZED, csvExternalModel.state());
     }
 
     @Test

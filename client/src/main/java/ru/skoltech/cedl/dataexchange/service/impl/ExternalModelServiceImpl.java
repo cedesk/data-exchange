@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange.service.impl;
 import org.apache.commons.lang3.tuple.Pair;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ext.CsvExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementation operations with external model.
@@ -39,8 +41,8 @@ public class ExternalModelServiceImpl implements ExternalModelService {
 
 
     private enum ExternalModelType {
-        EXCEL("Excel Spreadsheets", XLS, XLSX, XLSM);
-//        COMMA_SEPARATED_VALUES("Comma Separated Values Files", CSV);
+        EXCEL("Excel Spreadsheets", XLS, XLSX, XLSM),
+        COMMA_SEPARATED_VALUES("Comma Separated Values Files", CSV);
 
         final String description;
         final List<String> extensions;
@@ -58,7 +60,8 @@ public class ExternalModelServiceImpl implements ExternalModelService {
         Arrays.stream(ExternalModelType.values())
                 .forEach(type -> {
                     type.extensions.forEach(extension -> extension2type.put(extension, type));
-                    fileDescriptionsAndExtensions.add(Pair.of(type.description, type.extensions));
+                    List<String> adapted = type.extensions.stream().map(extension -> "*" + extension).collect(Collectors.toList());
+                    fileDescriptionsAndExtensions.add(Pair.of(type.description, adapted));
                 });
 
         fileDescriptionsAndExtensions = Collections.unmodifiableList(fileDescriptionsAndExtensions);
@@ -69,8 +72,9 @@ public class ExternalModelServiceImpl implements ExternalModelService {
     }
 
     public Pair<String, List<String>> fileDescriptionAndExtensions(String filterExtension) {
+        String extension = "*" + filterExtension;
         return fileDescriptionsAndExtensions.stream()
-                .filter(pair -> pair.getRight().contains(filterExtension))
+                .filter(pair -> pair.getRight().contains(extension))
                 .findAny().orElse(null);
     }
 
@@ -89,9 +93,9 @@ public class ExternalModelServiceImpl implements ExternalModelService {
             case EXCEL:
                 externalModel = new ExcelExternalModel();
                 break;
-//            case COMMA_SEPARATED_VALUES:
-//                externalModel = new CSVExternalModel();
-//                break;
+            case COMMA_SEPARATED_VALUES:
+                externalModel = new CsvExternalModel();
+                break;
             default:
                 throw new AssertionError("Never must be thrown");
         }
