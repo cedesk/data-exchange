@@ -34,6 +34,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -50,6 +51,7 @@ import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterReferenceValidity;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterModelTableRow;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterUpdateStateTableCell;
@@ -88,7 +90,7 @@ public class ParametersController implements Initializable, Displayable {
     @FXML
     private TableColumn<ParameterModel, String> parameterDescriptionColumn;
     @FXML
-    public TableColumn<ParameterModel, ParameterModelUpdateState> parameterUpdateStateColumn;
+    public TableColumn<ParameterModel, Pair<Boolean, String>> parameterUpdateStateColumn;
     @FXML
     private Button addParameterButton;
     @FXML
@@ -188,8 +190,19 @@ public class ParametersController implements Initializable, Displayable {
             if (param == null || param.getValue() == null) {
                 return new SimpleObjectProperty<>();
             }
-            ParameterModelUpdateState update = param.getValue().getLastValueReferenceUpdateState();
-            return new SimpleObjectProperty<>(update);
+            ParameterModel parameterModel = param.getValue();
+            ParameterReferenceValidity validity = parameterModel.validateValueReference();
+            if (validity == null) {
+                return new SimpleObjectProperty<>();
+            }
+            if (!validity.isValid()) {
+                return new SimpleObjectProperty<>(Pair.of(false, validity.description));
+            }
+            ParameterModelUpdateState update = parameterModel.getLastValueReferenceUpdateState();
+            if (update == null) {
+                return new SimpleObjectProperty<>();
+            }
+            return new SimpleObjectProperty<>(Pair.of(update.isSuccessful(), update.description));
         });
         parameterUpdateStateColumn.setCellFactory(param -> new ParameterUpdateStateTableCell());
 

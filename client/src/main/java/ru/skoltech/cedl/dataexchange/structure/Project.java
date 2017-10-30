@@ -486,21 +486,29 @@ public class Project {
 
         Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
 
+        systemModel = this.getSystemModel();
         externalModelFileWatcher.clear();
         externalModelFileWatcher.add(systemModel, accessChecker);
-        parameterLinkRegistry.registerAllParameters(getSystemModel());
+        parameterLinkRegistry.registerAllParameters(systemModel);
+        this.updateValueReferences(systemModel);
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+    }
+
+    private void updateValueReferences(SystemModel systemModel) {
+        Iterator<ParameterModel> parameterModelsIterator = new ParameterTreeIterator(systemModel);
+        parameterModelsIterator.forEachRemaining(ParameterModel::updateValueReference);
     }
 
     private void updateExportReferences(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
         Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, accessChecker);
-        while (externalModelsIterator.hasNext()) {
-            ExternalModel externalModel = externalModelsIterator.next();
-            externalModelFileWatcher.maskChangesTo(externalModel.getCacheFile());
+        externalModelsIterator.forEachRemaining(externalModel -> {
+            File cacheFile = externalModel.getCacheFile();
+            externalModelFileWatcher.maskChangesTo(cacheFile);
             externalModel.updateExportReferences();
-            externalModelFileWatcher.unmaskChangesTo(externalModel.getCacheFile());
-        }
+            externalModelFileWatcher.unmaskChangesTo(cacheFile);
+        });
     }
+
 
     public boolean storeUnitManagement() {
         try {
