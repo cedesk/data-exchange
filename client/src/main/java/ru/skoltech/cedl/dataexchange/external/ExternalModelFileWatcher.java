@@ -106,8 +106,14 @@ public class ExternalModelFileWatcher extends Observable {
             logger.debug("File " + changedFilePath + " has been modified (" + dateAndTime + ")");
 
             if (changedFile.lastModified() > externalModel.getLastModification()) {
-                ExternalModelFileWatcher.this.setChanged();
-                ExternalModelFileWatcher.this.notifyObservers(externalModel);
+                try {
+                    externalModel.updateAttachmentFromCache();
+                    logger.info("External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...");
+                    ExternalModelFileWatcher.this.setChanged();
+                    ExternalModelFileWatcher.this.notifyObservers(externalModel);
+                } catch (ExternalModelException e) {
+                    logger.error("Cannot update attachment from cache file of external model: " + e.getMessage(), e);
+                }
             }
         } else {
             logger.debug("Ignoring change on file: " + changedFilePath);

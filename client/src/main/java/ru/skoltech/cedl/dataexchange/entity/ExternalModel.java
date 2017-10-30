@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.external.ExternalModelState.*;
@@ -244,6 +245,22 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
     }
 
     /**
+     * Update all referenced parameter models of this external model.
+     * All successfully updated parameter models engender an event on the passed consumer object.
+     * <p/>
+     * @param parameterModelConsumer a consumer which accepts all successfully updated parameter models
+     */
+    public void updateReferencedParameterModels(Consumer<ParameterModel> parameterModelConsumer) {
+        // return this.getReferencedParameterModels().stream().anyMatch(ParameterModel::updateValueReference);
+        this.getReferencedParameterModels().forEach(parameterModel -> {
+            boolean updated = parameterModel.updateValueReference();
+            if (updated) {
+                parameterModelConsumer.accept(parameterModel);
+            }
+        });
+    }
+
+    /**
      * Update external model data taken from export reference external model.
      * Status of this update is saved and can be retrieved by calling {@link ParameterModel#getLastValueReferenceUpdateState()} method.
      * <p/>
@@ -432,6 +449,10 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
                 }
             }
             Files.write(this.cacheFile.toPath(), this.getAttachment(), StandardOpenOption.CREATE);
+            boolean updateLastModified = cacheFile.setLastModified(this.getLastModification());
+            if (!updateLastModified) {
+                logger.error("Cannot set last modified parameter on the cache file.");
+            }
             logger.debug(this.cacheFile.getAbsolutePath() + " updated");
         } catch (IOException e) {
             throw new ExternalModelException("Cannot create cache file: " + e.getMessage(), e);

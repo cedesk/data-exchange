@@ -44,6 +44,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Consumer;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
@@ -59,6 +60,8 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     private ModelNode parent;
     private SystemModel testModel;
     private ExternalModel externalModel, testExternalModel;
+    private ParameterModel notValidValueReferenceParameterModel;
+    private ParameterModel notCorrectValueReferenceParameterModel;
     private ParameterModel correctValueReferenceParameterModel;
     private String target = "target";
     private Double value = 10.1;
@@ -102,13 +105,13 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         testExternalModelReference.setExternalModel(testExternalModel);
         testExternalModelReference.setTarget(target);
 
-        ParameterModel notValidValueReferenceParameterModel = new ParameterModel();
-        ParameterModel notCorrectValueReferenceParameterModel = new ParameterModel();
+        notValidValueReferenceParameterModel = mock(ParameterModel.class, CALLS_REAL_METHODS);
+        notCorrectValueReferenceParameterModel = mock(ParameterModel.class, CALLS_REAL_METHODS);
         notCorrectValueReferenceParameterModel.setValueSource(ParameterValueSource.REFERENCE);
         notCorrectValueReferenceParameterModel.setIsExported(true);
         notCorrectValueReferenceParameterModel.setValueReference(testExternalModelReference);
         notCorrectValueReferenceParameterModel.setExportReference(testExternalModelReference);
-        correctValueReferenceParameterModel = new ParameterModel();
+        correctValueReferenceParameterModel = mock(ParameterModel.class, CALLS_REAL_METHODS);
         correctValueReferenceParameterModel.setValueSource(ParameterValueSource.REFERENCE);
         correctValueReferenceParameterModel.setIsExported(true);
         correctValueReferenceParameterModel.setValueReference(externalModelReference);
@@ -206,6 +209,16 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     public void testReferencedParameterModels() {
         assertThat(externalModel.getReferencedParameterModels(), hasSize(1));
         assertEquals(externalModel.getReferencedParameterModels().get(0), correctValueReferenceParameterModel);
+    }
+
+    @Test
+    public void testUpdateReferencedParameterModels() {
+        Consumer<ParameterModel> parameterModelConsumer = mock(Consumer.class);
+
+        externalModel.updateReferencedParameterModels(parameterModelConsumer);
+        verify(notValidValueReferenceParameterModel, never()).updateValueReference();
+        verify(notCorrectValueReferenceParameterModel, never()).updateValueReference();
+        verify(correctValueReferenceParameterModel, times(1)).updateValueReference();
     }
 
     @Test(expected = UnsupportedOperationException.class)
