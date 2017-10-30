@@ -29,8 +29,8 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.revision.ExternalModelRepository;
 import ru.skoltech.cedl.dataexchange.repository.revision.SystemModelRepository;
@@ -42,10 +42,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Consumer;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -61,6 +61,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     private SystemModel testModel;
     private ExternalModel externalModel, testExternalModel;
     private ParameterModel notValidValueReferenceParameterModel;
+    private ParameterModel otherValueReferenceParameterModel;
     private ParameterModel notCorrectValueReferenceParameterModel;
     private ParameterModel correctValueReferenceParameterModel;
     private String target = "target";
@@ -70,7 +71,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     private SystemModelRepository systemModelRepository;
 
     @Before
-    public void prepare() throws URISyntaxException, IOException {
+    public void prepare() throws URISyntaxException, IOException, ExternalModelException {
         attachmentFile1 = new File(this.getClass().getResource("/attachment.xls").toURI());
         attachmentFile2 = new File(this.getClass().getResource("/attachment2.xlsx").toURI());
 
@@ -82,6 +83,8 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         SystemModel testModel = new SystemModel("testModel");
         this.testModel = systemModelRepository.saveAndFlush(testModel);
 
+        String wrongTarget = "wrongTarget";
+
         externalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
         externalModel.setUuid("1111");
         externalModel.setName(attachmentFile1.getName());
@@ -89,6 +92,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         externalModel.setAttachment(Files.readAllBytes(Paths.get(attachmentFile1.getAbsolutePath())));
         externalModel.setParent(parent);
         externalModel.init();
+        doThrow(ExternalModelException.class).when(externalModel).getValue(wrongTarget);
 
         testExternalModel = new TestExternalModel();
         testExternalModel.setUuid("2222");
@@ -98,28 +102,48 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         testExternalModel.setParent(testModel);
         testExternalModel.init();
 
-        ExternalModelReference externalModelReference = new ExternalModelReference();
-        externalModelReference.setTarget(target);
-        externalModelReference.setExternalModel(externalModel);
-        ExternalModelReference testExternalModelReference = new ExternalModelReference();
-        testExternalModelReference.setExternalModel(testExternalModel);
-        testExternalModelReference.setTarget(target);
+        ExternalModelReference externalModelReference = mock(ExternalModelReference.class);
+        when(externalModelReference.getTarget()).thenReturn(target);
+        when(externalModelReference.getExternalModel()).thenReturn(externalModel);
+
+        ExternalModelReference wrongExternalModelReference = mock(ExternalModelReference.class);
+        when(wrongExternalModelReference.getTarget()).thenReturn(wrongTarget);
+        when(wrongExternalModelReference.getExternalModel()).thenReturn(externalModel);
+
+        ExternalModelReference testExternalModelReference = mock(ExternalModelReference.class);
+        when(testExternalModelReference.getTarget()).thenReturn(target);
+        when(testExternalModelReference.getExternalModel()).thenReturn(testExternalModel);
 
         notValidValueReferenceParameterModel = mock(ParameterModel.class, CALLS_REAL_METHODS);
+        when(notValidValueReferenceParameterModel.isValidValueReference()).thenReturn(false);
+        when(notValidValueReferenceParameterModel.isValidExportReference()).thenReturn(false);
+
+        otherValueReferenceParameterModel = mock(ParameterModel.class, CALLS_REAL_METHODS);
+        when(otherValueReferenceParameterModel.isValidValueReference()).thenReturn(true);
+        when(otherValueReferenceParameterModel.isValidExportReference()).thenReturn(true);
+        when(otherValueReferenceParameterModel.getValueSource()).thenReturn(ParameterValueSource.REFERENCE);
+//        when(otherValueReferenceParameterModel.getIsExported()).thenReturn(true);
+        when(otherValueReferenceParameterModel.getValueReference()).thenReturn(testExternalModelReference);
+        when(otherValueReferenceParameterModel.getExportReference()).thenReturn(testExternalModelReference);
+
         notCorrectValueReferenceParameterModel = mock(ParameterModel.class, CALLS_REAL_METHODS);
-        notCorrectValueReferenceParameterModel.setValueSource(ParameterValueSource.REFERENCE);
-        notCorrectValueReferenceParameterModel.setIsExported(true);
-        notCorrectValueReferenceParameterModel.setValueReference(testExternalModelReference);
-        notCorrectValueReferenceParameterModel.setExportReference(testExternalModelReference);
+        when(notCorrectValueReferenceParameterModel.isValidValueReference()).thenReturn(true);
+        when(notCorrectValueReferenceParameterModel.getValueSource()).thenReturn(ParameterValueSource.REFERENCE);
+        when(notCorrectValueReferenceParameterModel.getIsExported()).thenReturn(true);
+        when(notCorrectValueReferenceParameterModel.getValueReference()).thenReturn(wrongExternalModelReference);
+
         correctValueReferenceParameterModel = mock(ParameterModel.class, CALLS_REAL_METHODS);
-        correctValueReferenceParameterModel.setValueSource(ParameterValueSource.REFERENCE);
-        correctValueReferenceParameterModel.setIsExported(true);
-        correctValueReferenceParameterModel.setValueReference(externalModelReference);
-        correctValueReferenceParameterModel.setExportReference(externalModelReference);
-        correctValueReferenceParameterModel.setValue(value);
+        when(correctValueReferenceParameterModel.isValidValueReference()).thenReturn(true);
+        when(correctValueReferenceParameterModel.isValidExportReference()).thenReturn(true);
+        when(correctValueReferenceParameterModel.getValueSource()).thenReturn(ParameterValueSource.REFERENCE);
+        when(correctValueReferenceParameterModel.getIsExported()).thenReturn(true);
+        when(correctValueReferenceParameterModel.getValueReference()).thenReturn(externalModelReference);
+        when(correctValueReferenceParameterModel.getExportReference()).thenReturn(externalModelReference);
+        when(correctValueReferenceParameterModel.getEffectiveValue()).thenReturn(value);
 
         when(parent.getParameters()).thenReturn(Arrays.asList(notValidValueReferenceParameterModel,
-                notCorrectValueReferenceParameterModel, correctValueReferenceParameterModel));
+                otherValueReferenceParameterModel, notCorrectValueReferenceParameterModel,
+                correctValueReferenceParameterModel));
 
         externalModelRepository = context.getBean(ExternalModelRepository.class);
 
@@ -207,18 +231,26 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
 
     @Test
     public void testReferencedParameterModels() {
-        assertThat(externalModel.getReferencedParameterModels(), hasSize(1));
-        assertEquals(externalModel.getReferencedParameterModels().get(0), correctValueReferenceParameterModel);
+        assertThat(externalModel.getReferencedParameterModels(), hasSize(2));
+        assertThat(externalModel.getReferencedParameterModels(), hasItem(notCorrectValueReferenceParameterModel));
+        assertThat(externalModel.getReferencedParameterModels(), hasItem(correctValueReferenceParameterModel));
     }
 
     @Test
     public void testUpdateReferencedParameterModels() {
+        @SuppressWarnings("unchecked")
         Consumer<ParameterModel> parameterModelConsumer = mock(Consumer.class);
 
         externalModel.updateReferencedParameterModels(parameterModelConsumer);
         verify(notValidValueReferenceParameterModel, never()).updateValueReference();
-        verify(notCorrectValueReferenceParameterModel, never()).updateValueReference();
+        verify(otherValueReferenceParameterModel, never()).updateValueReference();
+        verify(notCorrectValueReferenceParameterModel, times(1)).updateValueReference();
         verify(correctValueReferenceParameterModel, times(1)).updateValueReference();
+
+        verify(parameterModelConsumer, never()).accept(notValidValueReferenceParameterModel);
+        verify(parameterModelConsumer, never()).accept(otherValueReferenceParameterModel);
+        verify(parameterModelConsumer, never()).accept(notCorrectValueReferenceParameterModel);
+        verify(parameterModelConsumer, times(1)).accept(correctValueReferenceParameterModel);
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -230,7 +262,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     @Test
     public void testExportedParameterModels() {
         assertThat(externalModel.getExportedParameterModels(), hasSize(1));
-        assertEquals(externalModel.getExportedParameterModels().get(0), correctValueReferenceParameterModel);
+        assertThat(externalModel.getExportedParameterModels(), hasItem(correctValueReferenceParameterModel));
     }
 
     @Test(expected = UnsupportedOperationException.class)
