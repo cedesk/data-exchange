@@ -61,6 +61,7 @@ import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -327,7 +328,6 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     public void applyChanges() {
         logger.debug("updating parameter: " + parameterModel.getNodePath());
-        this.updateValueReference();
         this.replaceLinksInParameterLinkRegistry();
         this.validateFields();
 
@@ -358,6 +358,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         parameterModel.setExportReference(exportReference);
         parameterModel.setDescription(descriptionText.getText());
 
+        this.updateValueReference();
         this.updateExportReferences();
         parameterLinkRegistry.updateSinks(parameterModel);
         this.computeDifferences();
@@ -443,12 +444,18 @@ public class ParameterEditorController implements Initializable, Displayable {
                     .filter(pd -> pd.getParameter1().getUuid().equals(parameterModel.getUuid()))
                     .findFirst()
                     .ifPresent(pd -> {
-                        String attDiffs = pd.getAttributes().stream().collect(Collectors.joining(","));
-                        String message = parameterModel.getNodePath() + ": " + attDiffs;
+                        String message;
+                        if (pd.getAttributes() != null) {
+                            String attDiffs = pd.getAttributes().stream().collect(Collectors.joining(","));
+                            message = parameterModel.getNodePath() + ": " + attDiffs;
+                        } else {
+                            message = parameterModel.getNodePath();
+                        }
                         actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, message);
                     });
 
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Error checking repository for changes", e);
             statusLogger.error("Error checking repository for changes");
         }
     }

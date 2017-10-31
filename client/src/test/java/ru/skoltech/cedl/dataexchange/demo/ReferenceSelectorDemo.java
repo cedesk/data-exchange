@@ -97,6 +97,10 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
             file = new File(ReferenceSelectorDemo.class.getResource("/attachment.xls").toURI());
             externalModel = externalModelService.createExternalModelFromFile(file, testSat);
             systemModel.addExternalModel(externalModel);
+
+            file = new File(ReferenceSelectorDemo.class.getResource("/attachment.csv").toURI());
+            externalModel = externalModelService.createExternalModelFromFile(file, testSat);
+            systemModel.addExternalModel(externalModel);
         } catch (Exception e) {
             logger.error(e);
             System.exit(-1);

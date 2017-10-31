@@ -32,7 +32,9 @@
             <Label text="Choose a cell from the spreadsheet."/>
             <HBox spacing="24.0" BorderPane.alignment="CENTER_LEFT">
                 <ComboBox fx:id="attachmentChooser" prefWidth="200.0"/>
-                <ComboBox fx:id="sheetChooser" prefWidth="200.0"/>
+                <HBox fx:id="excelChooser" spacing="24.0" BorderPane.alignment="CENTER_LEFT">
+                    <ComboBox fx:id="sheetChooser" prefWidth="200.0"/>
+                </HBox>
                 <TextField fx:id="referenceText" editable="false" prefWidth="200.0" promptText="cellName"/>
                 <Button mnemonicParsing="false" onAction="#chooseSelectedCell" text="Choose Cell"/>
             </HBox>

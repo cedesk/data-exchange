@@ -16,6 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.entity.ext;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -23,6 +25,10 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
+import org.controlsfx.control.spreadsheet.Grid;
+import org.controlsfx.control.spreadsheet.GridBase;
+import org.controlsfx.control.spreadsheet.SpreadsheetCell;
+import org.controlsfx.control.spreadsheet.SpreadsheetCellType;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
@@ -30,9 +36,12 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * An implementation of {@link ExternalModel} which provide an access to the comma-separated values (CSV) files.
@@ -153,6 +162,41 @@ public class CsvExternalModel extends ExternalModel {
             String where = this.state() == ExternalModelState.NO_CACHE ? "in memory" : "on cache file";
             logger.error("Error saving changes of CSV data to external model " + this.getNodePath() + "(" + where + ")");
             throw new ExternalModelException("\"Error saving changes of CSV data to external model" + this.getNodePath() + "(" + where + ")");
+        }
+    }
+
+    public Grid getGrid() throws ExternalModelException {
+        try (InputStream inputStream = this.getAttachmentAsInputStream()) {
+            try (Reader reader = new InputStreamReader(inputStream)) {
+                CSVParser parser = new CSVParser(reader, CSV_FORMAT);
+                List<CSVRecord> records = parser.getRecords();
+                int maxRows = records.size();
+                int maxColumns = records.stream().map(CSVRecord::size).max(Comparator.naturalOrder()).orElse(0);
+                ArrayList<ObservableList<SpreadsheetCell>> viewRows = new ArrayList<>(maxRows);
+                for (int i = 0; i < maxRows; i++) {
+                    CSVRecord record = records.get(i);
+                    ObservableList<SpreadsheetCell> viewRow = FXCollections.observableArrayList();
+                    for (int j = 0; j < record.size(); j++) {
+                        String value = record.get(j);
+                        SpreadsheetCell viewCell = SpreadsheetCellType.STRING.createCell(i, j, 1, 1, value);
+                        viewRow.add(viewCell);
+                    }
+                    viewRows.add(viewRow);
+                }
+
+                ObservableList<String> columnHeaders = IntStream.rangeClosed(1, maxColumns)
+                        .mapToObj(Integer::toString)
+                        .collect(Collectors.collectingAndThen(Collectors.toList(), FXCollections::observableArrayList));
+
+
+                GridBase grid = new GridBase(maxRows, maxColumns);
+                grid.setRows(viewRows);
+                grid.getColumnHeaders().setAll(columnHeaders);
+                return grid;
+            }
+        } catch (IOException e) {
+            logger.error("Cannot parse CSV data: " + e.getMessage(), e);
+            throw new ExternalModelException("Cannot parse CSV data: " + e.getMessage(), e);
         }
     }
 

@@ -16,37 +16,96 @@
 
 package ru.skoltech.cedl.dataexchange;
 
-import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ext.CsvExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import java.util.List;
 
 /**
  * Created by Nikolay Groshkov on 04-Oct-17.
  */
-public class ExternalModelAdapter extends XmlAdapter<ExcelExternalModel, ExternalModel> {
+public class ExternalModelAdapter extends XmlAdapter<ExternalModelAdapter.AdaptedExternalModel, ExternalModel> {
+
+    private static final String EXCEL_TYPE = "EXCEL";
+    private static final String CSV_TYPE = "CSV";
+    private static final String DEFAULT_TYPE = EXCEL_TYPE;
 
     @Override
-    public ExcelExternalModel marshal(ExternalModel externalModel) throws Exception {
+    public AdaptedExternalModel marshal(ExternalModel externalModel) throws Exception {
         if (null == externalModel) {
             return null;
         }
-        ExcelExternalModel resultExternalModel = new ExcelExternalModel();
-        Utils.copyBean(externalModel, resultExternalModel);
+        String type;
+        if (externalModel instanceof ExcelExternalModel) {
+            type = EXCEL_TYPE;
+        } else if (externalModel instanceof CsvExternalModel) {
+            type = CSV_TYPE;
+        } else {
+            type = DEFAULT_TYPE;
+        }
+        AdaptedExternalModel adaptedExternalModel = new AdaptedExternalModel();
+        adaptedExternalModel.setType(type);
+        Utils.copyBean(externalModel, adaptedExternalModel);
 
-        return resultExternalModel;
+        return adaptedExternalModel;
     }
 
     @Override
-    public ExternalModel unmarshal(ExcelExternalModel adaptedExternalModel) throws Exception {
+    public ExternalModel unmarshal(AdaptedExternalModel adaptedExternalModel) throws Exception {
         if (null == adaptedExternalModel) {
             return null;
         }
 
-        ExternalModel externalModel = (ExternalModel) BeanUtils.cloneBean(adaptedExternalModel);
+        ExternalModel externalModel;
+        String type = adaptedExternalModel.getType();
+        if (EXCEL_TYPE.equals(type)) {
+            externalModel = new ExcelExternalModel();
+        } else if (CSV_TYPE.equals(type)) {
+            externalModel = new CsvExternalModel();
+        } else {
+            throw new AssertionError("Never must be thrown");
+        }
+
+        Utils.copyBean(adaptedExternalModel, externalModel);
         externalModel.init();
         return externalModel;
+    }
+
+    public static class AdaptedExternalModel extends ExternalModel {
+
+        private String type = DEFAULT_TYPE;
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        @Override
+        public Double getValue(String target) throws ExternalModelException {
+            return null;
+        }
+
+        @Override
+        public List<Double> getValues(List<String> targets) throws ExternalModelException {
+            return null;
+        }
+
+        @Override
+        public void setValue(String target, Double value) throws ExternalModelException {
+
+        }
+
+        @Override
+        public void setValues(List<Pair<String, Double>> values) throws ExternalModelException {
+
+        }
     }
 
 }
