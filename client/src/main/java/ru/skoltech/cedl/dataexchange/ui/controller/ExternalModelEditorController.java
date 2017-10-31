@@ -165,7 +165,7 @@ public class ExternalModelEditorController implements Initializable {
     }
 
     public void openCacheFolder() {
-        if (modelNode.getExternalModels().size() > 0) {
+        if (modelNode != null && modelNode.getExternalModels().size() > 0) {
             try {
                 ExternalModel externalModel = modelNode.getExternalModels().get(0);
                 File file = externalModel.getCacheFile();
