@@ -61,6 +61,7 @@ import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference.ChangeLocation;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.awt.*;
@@ -362,10 +363,12 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    public boolean checkUnsavedModifications() {
-        if (project.hasLocalStudyModifications()) {
+    public boolean checkUnsavedStructureModifications() {
+        long nodeChanges = differenceHandler.modelDifferences().stream()
+                .filter(modelDiff -> modelDiff instanceof NodeDifference).count();
+        if (nodeChanges > 0) {
             Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
-                    "Modifications to the model must to be saved before managing user discipline assignment. " +
+                    "Modifications to the model structure must to be saved before managing user discipline assignment. " +
                             "Shall it be saved now?");
             if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
                 try {
@@ -691,7 +694,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openUserRoleManagement() {
-        if (!checkUnsavedModifications()) {
+        if (!checkUnsavedStructureModifications()) {
             return;
         }
 

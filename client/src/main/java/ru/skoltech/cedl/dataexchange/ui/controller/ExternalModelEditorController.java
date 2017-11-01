@@ -45,7 +45,9 @@ import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
+import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -82,12 +84,12 @@ public class ExternalModelEditorController implements Initializable {
         this.actionLogger = actionLogger;
     }
 
-    public void setExternalModelService(ExternalModelService externalModelService) {
-        this.externalModelService = externalModelService;
-    }
-
     public void setExternalModelReloadConsumer(Consumer<ExternalModel> externalModelReloadConsumer) {
         this.externalModelReloadConsumer = externalModelReloadConsumer;
+    }
+
+    public void setExternalModelService(ExternalModelService externalModelService) {
+        this.externalModelService = externalModelService;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -158,6 +160,27 @@ public class ExternalModelEditorController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+    }
+
+    public void openCacheFolder() {
+        if (modelNode != null && modelNode.getExternalModels().size() > 0) {
+            try {
+                ExternalModel externalModel = modelNode.getExternalModels().get(0);
+                File file = externalModel.getCacheFile();
+                if (file != null) {
+                    File path = file.getParentFile();
+                    Desktop desktop = Desktop.getDesktop();
+                    if (path.isDirectory() && desktop.isSupported(Desktop.Action.BROWSE)) {
+                        desktop.browse(path.toURI());
+                    } else {
+                        statusLogger.error("Unable to open folder!");
+                    }
+                }
+            } catch (IOException e) {
+                logger.error("Error retrieving external model to spreadsheet.", e);
+                statusLogger.error("Unable to get cache of external model");
+            }
+        }
     }
 
     public void reloadExternalModels() {
