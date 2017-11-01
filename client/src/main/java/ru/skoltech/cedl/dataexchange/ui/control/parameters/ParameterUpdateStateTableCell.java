@@ -36,6 +36,9 @@ public class ParameterUpdateStateTableCell
     protected void updateItem(Pair<Boolean, String> state, boolean empty) {
         super.updateItem(state, empty);
         if (state == null) {
+            this.setGraphic(null);
+            this.setStyle(style());
+            this.setTooltip(null);
             return;
         }
         this.setGraphic(graphic(state.getKey()));
