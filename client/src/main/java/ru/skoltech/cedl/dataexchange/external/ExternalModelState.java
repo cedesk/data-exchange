@@ -66,6 +66,15 @@ public enum ExternalModelState {
     CACHE_OUTDATED;
 
     /**
+     * Determine the initialization of external model.
+     *
+     * @return <i>true</i> if external model was initialized and <i>false</i> if opposite.
+     */
+    public boolean isInitialized(){
+        return this != EMPTY && this != INCORRECT || this != UNINITIALIZED;
+    }
+
+    /**
      * Determine the existence of cache file.
      *
      * @return <i>true</i> if cache file is exist and <i>false</i> if opposite.

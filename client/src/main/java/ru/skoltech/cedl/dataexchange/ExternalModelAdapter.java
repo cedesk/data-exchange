@@ -22,8 +22,10 @@ import ru.skoltech.cedl.dataexchange.entity.ext.CsvExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Nikolay Groshkov on 04-Oct-17.
@@ -36,16 +38,13 @@ public class ExternalModelAdapter extends XmlAdapter<ExternalModelAdapter.Adapte
 
     @Override
     public AdaptedExternalModel marshal(ExternalModel externalModel) throws Exception {
-        if (null == externalModel) {
-            return null;
-        }
-        String type;
+        Objects.requireNonNull(externalModel);
+
+        String type = DEFAULT_TYPE;
         if (externalModel instanceof ExcelExternalModel) {
             type = EXCEL_TYPE;
         } else if (externalModel instanceof CsvExternalModel) {
             type = CSV_TYPE;
-        } else {
-            type = DEFAULT_TYPE;
         }
         AdaptedExternalModel adaptedExternalModel = new AdaptedExternalModel();
         adaptedExternalModel.setType(type);
@@ -56,9 +55,7 @@ public class ExternalModelAdapter extends XmlAdapter<ExternalModelAdapter.Adapte
 
     @Override
     public ExternalModel unmarshal(AdaptedExternalModel adaptedExternalModel) throws Exception {
-        if (null == adaptedExternalModel) {
-            return null;
-        }
+        Objects.requireNonNull(adaptedExternalModel);
 
         ExternalModel externalModel;
         String type = adaptedExternalModel.getType();
@@ -77,6 +74,7 @@ public class ExternalModelAdapter extends XmlAdapter<ExternalModelAdapter.Adapte
 
     public static class AdaptedExternalModel extends ExternalModel {
 
+        @XmlAttribute
         private String type = DEFAULT_TYPE;
 
         public void setType(String type) {

@@ -129,7 +129,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public Calculation loadCalculation(File inputFile) throws IOException {
+    public Calculation importCalculation(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             final Class[] MC = Calculation.getEntityClasses();
             JAXBContext ct = JAXBContext.newInstance(MC);
@@ -143,7 +143,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public SystemModel loadSystemModel(File inputFile) throws IOException {
+    public SystemModel importSystemModel(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             Set<Class> modelClasses = new HashSet<>();
             modelClasses.addAll(Arrays.asList(MODEL_CLASSES));
@@ -163,7 +163,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public UnitManagement loadUnitManagement(InputStream inputStream) throws IOException {
+    public UnitManagement importUnitManagement(InputStream inputStream) throws IOException {
         try (BufferedInputStream inp = new BufferedInputStream(inputStream)) {
             JAXBContext ct = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
 
@@ -177,7 +177,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public UserRoleManagement loadUserRoleManagement(File inputFile) throws IOException {
+    public UserRoleManagement importUserRoleManagement(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             JAXBContext ct = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
 
@@ -189,7 +189,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public void storeCalculation(Calculation calculation, File outputFile) throws IOException {
+    public void exportCalculation(Calculation calculation, File outputFile) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
             final Class[] MC = Calculation.getEntityClasses();
             JAXBContext jc = JAXBContext.newInstance(MC);
@@ -204,7 +204,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public void storeSystemModel(SystemModel systemModel, File outputFile) throws IOException {
+    public void exportSystemModel(SystemModel systemModel, File outputFile) throws IOException {
         File outputFolder = outputFile.getParentFile();
         this.createDirectory(outputFolder);
 
@@ -233,7 +233,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public void storeUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
+    public void exportUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
         this.createDirectory(outputFile.getParentFile());
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
@@ -250,7 +250,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public void storeUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
+    public void exportUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
         this.createDirectory(outputFile.getParentFile());
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {

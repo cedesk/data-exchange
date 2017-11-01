@@ -465,6 +465,7 @@ public class Project {
 
         UserRoleManagement userRoleManagement = study.getUserRoleManagement();
         userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
+        this.updateValueReferences(systemModel);
     }
 
     public void storeStudy() throws RepositoryException {
