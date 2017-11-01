@@ -287,8 +287,14 @@ public class FileStorageServiceImpl implements FileStorageService {
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             parameterModel.setParent(modelNode);
 
-            parameterModel.setValueReference(parameterModel.getValueReference()); // workaround to re-initialize fields on parameter
-            parameterModel.setExportReference(parameterModel.getExportReference()); // workaround to re-initialize fields on parameter
+            if (parameterModel.getValueReference() != null && parameterModel.getValueReference().getExternalModel() != null) {
+                String externalModelName = parameterModel.getValueReference().getExternalModel().getName();
+                parameterModel.getValueReference().setExternalModel(modelNode.getExternalModelMap().get(externalModelName));
+            }
+            if (parameterModel.getExportReference() != null && parameterModel.getExportReference().getExternalModel() != null) {
+                String externalModelName = parameterModel.getExportReference().getExternalModel().getName();
+                parameterModel.getExportReference().setExternalModel(modelNode.getExternalModelMap().get(externalModelName));
+            }
             if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
                 logger.info(parameterModel.getNodePath() + " <L- " + (parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "null"));
             }

@@ -355,8 +355,6 @@ public class Project {
     public void importSystemModel(SystemModel systemModel) {
         this.createStudy(systemModel);
         this.reinitializeUniqueIdentifiers(systemModel);
-        externalModelFileWatcher.clear();
-        externalModelFileWatcher.add(systemModel, accessChecker);
     }
 
     public void loadLocalStudy() {
@@ -364,8 +362,8 @@ public class Project {
         if (this.study == null) {
             return;
         }
-
         this.initializeHandlers();
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
     }
 
     public void loadLocalStudy(Integer revisionNumber) {
@@ -374,14 +372,16 @@ public class Project {
             return;
         }
         this.initializeHandlers();
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
     }
 
     private void initializeHandlers(){
-        differenceHandler.clearModelDifferences();
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
-        parameterLinkRegistry.registerAllParameters(getSystemModel());
-        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(this.getSystemModel(), accessChecker);
-        iterator.forEachRemaining(externalModel -> externalModel.updateReferencedParameterModels(parameterModel -> parameterLinkRegistry.updateSinks(parameterModel)));
+        Platform.runLater(() -> differenceHandler.clearModelDifferences());
+
+        SystemModel systemModel = getSystemModel();
+        parameterLinkRegistry.clear();
+        parameterLinkRegistry.registerAllParameters(systemModel);
+        parameterLinkRegistry.updateAllSinks(systemModel, accessChecker);
         externalModelFileWatcher.clear();
         externalModelFileWatcher.add(this.getSystemModel(), accessChecker);
     }
@@ -458,10 +458,8 @@ public class Project {
         this.study = studyService.createStudy(systemModel, userManagement);
         this.initProject(systemModel.getName());
         this.setRepositoryStudy(null);
-        Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
-        externalModelFileWatcher.clear();
+        this.initializeHandlers();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
-        parameterLinkRegistry.clear();
 
         UserRoleManagement userRoleManagement = study.getUserRoleManagement();
         userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
@@ -470,6 +468,8 @@ public class Project {
 
     public void storeStudy() throws RepositoryException {
         SystemModel systemModel = this.getSystemModel();
+        this.initializeHandlers();
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
         parameterLinkRegistry.updateAll(systemModel);
         this.updateExportReferences(systemModel, accessChecker);
         if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
@@ -485,14 +485,8 @@ public class Project {
         this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
         this.latestRevisionNumber.set(revisionNumber);
 
-        Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
 
-        systemModel = this.getSystemModel();
-        externalModelFileWatcher.clear();
-        externalModelFileWatcher.add(systemModel, accessChecker);
-        parameterLinkRegistry.registerAllParameters(systemModel);
         this.updateValueReferences(systemModel);
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
     }
 
     private void updateValueReferences(SystemModel systemModel) {

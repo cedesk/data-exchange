@@ -117,7 +117,7 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testImportOldSystemModel() throws IOException, ExternalModelException, URISyntaxException {
+    public void testImportOldSystemModel() throws IOException, URISyntaxException {
         File file = new File(ExportImportTest.class.getResource("/model-old.xml").toURI());
         SystemModel systemModel = fileStorageService.importSystemModel(file);
 
