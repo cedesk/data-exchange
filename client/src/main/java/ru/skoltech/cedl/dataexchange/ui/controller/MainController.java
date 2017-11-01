@@ -318,7 +318,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
             File outputFile = new File(exportPath, outputFileName);
             try {
-                fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
+                fileStorageService.exportSystemModel(project.getSystemModel(), outputFile);
                 statusLogger.info("Successfully exported study!");
                 actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
             } catch (IOException e) {
@@ -486,7 +486,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         if (importFile != null) {
             // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
             try {
-                SystemModel systemModel = fileStorageService.loadSystemModel(importFile);
+                SystemModel systemModel = fileStorageService.importSystemModel(importFile);
                 project.importSystemModel(systemModel);
                 updateView();
                 statusLogger.info("Successfully imported study!");

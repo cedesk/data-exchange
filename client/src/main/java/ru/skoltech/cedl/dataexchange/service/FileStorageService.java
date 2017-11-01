@@ -65,74 +65,74 @@ public interface FileStorageService {
     File dataDir(String repositoryUrl, String repositoryScheme, String projectName);
 
     /**
-     * Load {@link Calculation} from the file.
+     * Import {@link Calculation} from the file.
      *
-     * @param inputFile file which stores {@link Calculation}
-     * @return calculation
-     * @throws IOException if loading is impossible
+     * @param inputFile file which stores {@link Calculation} to import
+     * @return imported calculation
+     * @throws IOException if import is impossible
      */
-    Calculation loadCalculation(File inputFile) throws IOException;
+    Calculation importCalculation(File inputFile) throws IOException;
 
     /**
-     * Load {@link SystemModel} from the file.
+     * Import {@link SystemModel} from the file.
      *
-     * @param inputFile file which stores {@link SystemModel}
-     * @return system model
-     * @throws IOException if loading is impossible
+     * @param inputFile file which stores {@link SystemModel} to import
+     * @return imported system model
+     * @throws IOException if import is impossible
      */
-    SystemModel loadSystemModel(File inputFile) throws IOException;
+    SystemModel importSystemModel(File inputFile) throws IOException;
 
     /**
-     * Load {@link UnitManagement} from the file.
+     * Import {@link UnitManagement} from the file.
      *
-     * @param inputStream inputStream which contains {@link UnitManagement}
-     * @return unit management
-     * @throws IOException if loading is impossible
+     * @param inputStream inputStream which contains {@link UnitManagement} to import
+     * @return imported unit management
+     * @throws IOException if import is impossible
      */
-    UnitManagement loadUnitManagement(InputStream inputStream) throws IOException;
+    UnitManagement importUnitManagement(InputStream inputStream) throws IOException;
 
     /**
-     * Load {@link UserRoleManagement} from the file.
+     * Import {@link UserRoleManagement} from the file.
      *
-     * @param inputFile file which stores {@link UserRoleManagement}
-     * @return user role management
-     * @throws IOException if loading is impossible
+     * @param inputFile file which stores {@link UserRoleManagement} to import
+     * @return imported user role management
+     * @throws IOException if import is impossible
      */
-    UserRoleManagement loadUserRoleManagement(File inputFile) throws IOException;
+    UserRoleManagement importUserRoleManagement(File inputFile) throws IOException;
 
     /**
-     * Store {@link Calculation} in the file.
+     * Export {@link Calculation} to the file.
      *
-     * @param calculation {@link Calculation} for storage
-     * @param outputFile  output file for storage
-     * @throws IOException if storage is impossible
+     * @param calculation {@link Calculation} to export
+     * @param outputFile output file to export
+     * @throws IOException if export is impossible
      */
-    void storeCalculation(Calculation calculation, File outputFile) throws IOException;
+    void exportCalculation(Calculation calculation, File outputFile) throws IOException;
 
     /**
-     * Store {@link SystemModel} in the file.
+     * Export {@link SystemModel} in the file.
      *
-     * @param systemModel {@link SystemModel} for storage
-     * @param outputFile  output file for storage
-     * @throws IOException if storage is impossible
+     * @param systemModel {@link SystemModel} to export
+     * @param outputFile  output file to export
+     * @throws IOException if export is impossible
      */
-    void storeSystemModel(SystemModel systemModel, File outputFile) throws IOException;
+    void exportSystemModel(SystemModel systemModel, File outputFile) throws IOException;
 
     /**
-     * Store {@link UnitManagement} in the file.
+     * Export {@link UnitManagement} in the file.
      *
-     * @param unitManagement {@link UnitManagement} for storage
-     * @param outputFile     output file for storage
-     * @throws IOException if storage is impossible
+     * @param unitManagement {@link UnitManagement} to export
+     * @param outputFile output file to export
+     * @throws IOException if export is impossible
      */
-    void storeUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException;
+    void exportUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException;
 
     /**
-     * Store {@link UserRoleManagement} in the file.
+     * Export {@link UserRoleManagement} in the file.
      *
-     * @param userRoleManagement {@link UserRoleManagement} for storage
-     * @param outputFile         output file for storage
-     * @throws IOException if storage is impossible
+     * @param userRoleManagement {@link UserRoleManagement} to export
+     * @param outputFile output file to export
+     * @throws IOException if export is impossible
      */
-    void storeUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException;
+    void exportUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException;
 }

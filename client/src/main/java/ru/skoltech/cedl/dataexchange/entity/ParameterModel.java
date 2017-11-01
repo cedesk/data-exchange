@@ -408,7 +408,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
      * (<i>null<i/> if parameter model is not exported or current value source is not of type of reference)
      */
     public ParameterReferenceValidity validateExportReference() {
-        if (!this.isExported || this.getValueSource() != ParameterValueSource.REFERENCE) {
+        if (!this.isExported) {
             return null;
         }
         ExternalModelReference exportReference = this.getExportReference();

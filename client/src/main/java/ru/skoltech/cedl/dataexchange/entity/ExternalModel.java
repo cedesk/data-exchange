@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.external.ExternalModelState.*;
@@ -87,7 +88,7 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
 
     @Transient
     @XmlTransient
-    protected File cacheFile;
+    private File cacheFile;
 
     @Transient
     @XmlTransient
@@ -244,6 +245,22 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
     }
 
     /**
+     * Update all referenced parameter models of this external model.
+     * All successfully updated parameter models engender an event on the passed consumer object.
+     * <p/>
+     * @param parameterModelConsumer a consumer which accepts all successfully updated parameter models
+     */
+    public void updateReferencedParameterModels(Consumer<ParameterModel> parameterModelConsumer) {
+        // return this.getReferencedParameterModels().stream().anyMatch(ParameterModel::updateValueReference);
+        this.getReferencedParameterModels().forEach(parameterModel -> {
+            boolean updated = parameterModel.updateValueReference();
+            if (updated) {
+                parameterModelConsumer.accept(parameterModel);
+            }
+        });
+    }
+
+    /**
      * Update external model data taken from export reference external model.
      * Status of this update is saved and can be retrieved by calling {@link ParameterModel#getLastValueReferenceUpdateState()} method.
      * <p/>
@@ -256,7 +273,9 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
             List<Pair<String, Double>> values = exportedParameterModels.stream()
                     .map(pm -> Pair.of(pm.getExportReference().getTarget(), pm.getEffectiveValue()))
                     .collect(Collectors.toList());
-            this.setValues(values);
+            if (!values.isEmpty()) {
+                this.setValues(values);
+            }
             return true;
         } catch (ExternalModelException e) {
             return false;
@@ -353,9 +372,9 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
             case UNINITIALIZED:
                 throw new IOException("External model must be initialized");
             case NO_CACHE:
-                return new ByteArrayOutputStream(this.attachment.length);
+                return new AttachmentByteArrayOutputStream();
             default:
-                return new FileOutputStream(this.cacheFile);
+                return new CacheFileOutputStream();
         }
     }
 
@@ -430,6 +449,10 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
                 }
             }
             Files.write(this.cacheFile.toPath(), this.getAttachment(), StandardOpenOption.CREATE);
+            boolean updateLastModified = cacheFile.setLastModified(this.getLastModification());
+            if (!updateLastModified) {
+                logger.error("Cannot set last modified parameter on the cache file.");
+            }
             logger.debug(this.cacheFile.getAbsolutePath() + " updated");
         } catch (IOException e) {
             throw new ExternalModelException("Cannot create cache file: " + e.getMessage(), e);
@@ -519,4 +542,33 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         sb.append('}');
         return sb.toString();
     }
+
+    private class CacheFileOutputStream extends FileOutputStream {
+        CacheFileOutputStream() throws FileNotFoundException {
+            super(ExternalModel.this.cacheFile);
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            try {
+                ExternalModel.this.updateAttachmentFromCache();
+            } catch (ExternalModelException e) {
+                logger.warn("Cannot update attachment from cache of external model: " + getNodePath());
+            }
+        }
+    }
+
+
+    private class AttachmentByteArrayOutputStream extends ByteArrayOutputStream {
+        AttachmentByteArrayOutputStream() {
+            super(ExternalModel.this.attachment.length);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            ExternalModel.this.setAttachment(this.toByteArray());
+        }
+    }
+
 }
