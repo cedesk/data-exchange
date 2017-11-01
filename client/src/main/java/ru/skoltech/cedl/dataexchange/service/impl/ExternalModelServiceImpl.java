@@ -54,28 +54,32 @@ public class ExternalModelServiceImpl implements ExternalModelService {
     }
 
     private Map<String, ExternalModelType> extension2type = new HashMap<>();
-    private List<Pair<String, List<String>>> fileDescriptionsAndExtensions = new LinkedList<>();
+    private List<String> supportedExtensions = new LinkedList<>();
 
     public ExternalModelServiceImpl() {
         Arrays.stream(ExternalModelType.values())
                 .forEach(type -> {
                     type.extensions.forEach(extension -> extension2type.put(extension, type));
                     List<String> adapted = type.extensions.stream().map(extension -> "*" + extension).collect(Collectors.toList());
-                    fileDescriptionsAndExtensions.add(Pair.of(type.description, adapted));
+                    supportedExtensions.addAll(adapted);
                 });
 
-        fileDescriptionsAndExtensions = Collections.unmodifiableList(fileDescriptionsAndExtensions);
+        supportedExtensions = Collections.unmodifiableList(supportedExtensions);
     }
 
-    public List<Pair<String, List<String>>> fileDescriptionsAndExtensions() {
-        return fileDescriptionsAndExtensions;
+    public List<String> supportedExtensions() {
+        return supportedExtensions;
     }
 
     public Pair<String, List<String>> fileDescriptionAndExtensions(String filterExtension) {
-        String extension = "*" + filterExtension;
-        return fileDescriptionsAndExtensions.stream()
-                .filter(pair -> pair.getRight().contains(extension))
-                .findAny().orElse(null);
+        return Arrays.stream(ExternalModelType.values())
+                .filter(externalModelType -> externalModelType.extensions.contains(filterExtension))
+                .map(externalModelType -> {
+                    List<String> extensions = externalModelType.extensions.stream()
+                            .map(extension -> "*" + extension).collect(Collectors.toList());
+                    return Pair.of(externalModelType.description, extensions);
+                })
+                .findFirst().orElse(null);
     }
 
     @Override

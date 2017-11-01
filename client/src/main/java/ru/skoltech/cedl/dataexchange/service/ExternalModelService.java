@@ -43,7 +43,7 @@ public interface ExternalModelService {
      *
      * @return list of pairs of external model type description and list of supported file extensions
      */
-    List<Pair<String, List<String>>> fileDescriptionsAndExtensions();
+    List<String> supportedExtensions();
 
     /**
      * Retrieve a supported type of external models along with its supported file extensions.
