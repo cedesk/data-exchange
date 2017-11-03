@@ -605,7 +605,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         diffViewBuilder.ownerWindow(ownerStage);
         diffViewBuilder.modality(Modality.APPLICATION_MODAL);
         diffViewBuilder.showAndWait();
-        modelEditingController.clearView();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
