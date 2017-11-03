@@ -576,6 +576,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void openDependencyView() {
         ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
+        dependencyViewBuilder.resizable(false);
         dependencyViewBuilder.ownerWindow(ownerStage);
         dependencyViewBuilder.show();
     }

@@ -276,6 +276,7 @@ public class ModelEditingController implements Initializable {
 
     public void openDependencyView() {
         ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
+        dependencyViewBuilder.resizable(false);
         dependencyViewBuilder.ownerWindow(getAppWindow());
         dependencyViewBuilder.show();
     }
