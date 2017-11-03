@@ -21,7 +21,6 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;

@@ -50,6 +50,7 @@ public class Views {
     public static final URL REVISION_HISTORY_VIEW = Views.class.getResource("revision-history.fxml");
     public static final URL PROJECT_SETTINGS_VIEW = Views.class.getResource("project-settings.fxml");
     public static final URL REPOSITORY_SETTINGS_VIEW = Views.class.getResource("repository-settings.fxml");
+    public static final URL UNIT_CHOOSE_VIEW = Views.class.getResource("unit-choose.fxml");
     public static final URL PARAMETER_SELECTOR_VIEW = Views.class.getResource("parameter-selector.fxml");
     public static final URL EXTERNAL_MODELS_EDITOR_VIEW = Views.class.getResource("external-models-editor.fxml");
     public static final URL CALCULATION_ARGUMENT_VIEW = Views.class.getResource("calculation-argument.fxml");
