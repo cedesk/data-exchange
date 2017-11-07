@@ -150,7 +150,7 @@
         <property name="studyService" ref="studyService"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserManagementController">
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserManagementController" scope="prototype">
         <property name="project" ref="project"/>
         <property name="guiService" ref="guiService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>

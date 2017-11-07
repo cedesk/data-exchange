@@ -529,6 +529,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     public void revertChanges() {
         this.parameterModelProperty.set(null);
         this.parameterModelProperty.set(parameterModel);
+        this.unitProperty.setValue(parameterModel.getUnit());
     }
 
     private void updateView() {

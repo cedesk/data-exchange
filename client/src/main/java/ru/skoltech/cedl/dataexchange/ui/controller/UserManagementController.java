@@ -16,13 +16,19 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
-import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -34,29 +40,24 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.net.URL;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controller for user management.
  * <p>
  * Created by d.knoll on 10.06.2015.
  */
-public class UserManagementController implements Initializable {
+public class UserManagementController implements Initializable, Displayable {
 
     private static final Logger logger = Logger.getLogger(UserManagementController.class);
 
     @FXML
-    private TableView<User> userTable;
-
+    public TextField filterTextField;
     @FXML
-    private Button addUserButton;
-
+    private TableView<User> userTable;
     @FXML
     private Button editUserButton;
-
     @FXML
     private Button deleteUserButton;
 
@@ -65,12 +66,18 @@ public class UserManagementController implements Initializable {
     private UserRoleManagementService userRoleManagementService;
     private StatusLogger statusLogger;
 
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
-    }
+    private Stage ownerStage;
+
+    private List<User> users = new LinkedList<>();
+    private ListProperty<User> userListProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
+
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
@@ -79,6 +86,34 @@ public class UserManagementController implements Initializable {
 
     public void setStatusLogger(StatusLogger statusLogger) {
         this.statusLogger = statusLogger;
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        this.loadUsers();
+
+        userListProperty.setValue(FXCollections.observableList(users));
+        userListProperty.bind(Bindings.createObjectBinding(() -> {
+            List<User> filteredUnits = users.stream()
+                    .filter(user -> user.getUserName().toLowerCase().startsWith(filterTextField.getText().toLowerCase()))
+                    .collect(Collectors.toList());
+            return FXCollections.observableList(filteredUnits);
+        }, filterTextField.textProperty()));
+
+        userTable.itemsProperty().bind(userListProperty);
+        userTable.setOnMousePressed(event -> {
+            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                UserManagementController.this.editUser();
+            }
+        });
+
+        editUserButton.disableProperty().bind(userTable.getSelectionModel().selectedItemProperty().isNull());
+        deleteUserButton.disableProperty().bind(userTable.getSelectionModel().selectedItemProperty().isNull());
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
     }
 
     public void addUser() {
@@ -94,46 +129,34 @@ public class UserManagementController implements Initializable {
             } else {
                 User user = new User();
                 user.setUserName(userName);
-                statusLogger.info("added user: " + user.getUserName());
+                logger.debug("Add user: " + user.getUserName());
+                statusLogger.info("Add user: " + user.getUserName());
                 project.getUserManagement().getUsers().add(user);
             }
         }
-        updateUsers();
+        this.loadUsers();
     }
 
-    public void deleteUser() {
-        User selectedUser = userTable.getSelectionModel().getSelectedItem();
-        project.getUserManagement().getUsers().remove(selectedUser);
-        updateUsers();
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        BooleanBinding noSelectionOnUserTable = userTable.getSelectionModel().selectedItemProperty().isNull();
-        // USERS
-        editUserButton.disableProperty().bind(noSelectionOnUserTable);
-        deleteUserButton.disableProperty().bind(noSelectionOnUserTable);
-        userTable.setOnMousePressed(event -> {
-            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
-                UserManagementController.this.openUserEditingView();
-            }
-        });
-        updateView();
-    }
-
-    public void openUserEditingView() {
+    public void editUser() {
         User selectedUser = userTable.getSelectionModel().getSelectedItem();
         Window ownerWindow = userTable.getScene().getWindow();
         ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder("User details", Views.USER_EDITING_VIEW);
         userDetailsViewBuilder.ownerWindow(ownerWindow);
         userDetailsViewBuilder.modality(Modality.APPLICATION_MODAL);
         userDetailsViewBuilder.showAndWait(selectedUser);
-        updateUsers();
+        this.loadUsers();
+    }
+
+    public void deleteUser() {
+        User selectedUser = userTable.getSelectionModel().getSelectedItem();
+        logger.debug("Remove user: " + selectedUser.getUserName());
+        project.getUserManagement().getUsers().remove(selectedUser);
+        this.loadUsers();
     }
 
     public void reloadUsers() {
         boolean success = project.loadUserManagement();
-        updateUsers();
+        this.loadUsers();
         if (!success) {
             statusLogger.error("Error loading user list!");
         }
@@ -144,19 +167,15 @@ public class UserManagementController implements Initializable {
         if (!success) {
             statusLogger.error("Error saving user list!");
         }
+        ownerStage.close();
     }
 
-    private void updateUsers() {
+    private void loadUsers() {
         if (project.getUserManagement() != null) {
-            List<User> allUsers = project.getUserManagement().getUsers();
-            userTable.getItems().clear();
-            userTable.getItems().addAll(allUsers);
-            userTable.getItems().sort(Comparator.naturalOrder());
+            this.users.clear();
+            this.users.addAll(project.getUserManagement().getUsers());
+            this.users.sort(Comparator.naturalOrder());
         }
-    }
-
-    private void updateView() {
-        updateUsers();
     }
 
 }

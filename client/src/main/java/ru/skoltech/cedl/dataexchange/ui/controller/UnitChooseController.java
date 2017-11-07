@@ -27,6 +27,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
@@ -88,6 +90,11 @@ public class UnitChooseController implements Initializable, Displayable, Applica
         }, filterTextField.textProperty()));
 
         unitTable.itemsProperty().bind(unitListProperty);
+        unitTable.setOnMousePressed(event -> {
+            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                UnitChooseController.this.choose();
+            }
+        });
 
         if (currentUnit != null) {
             unitTable.scrollTo(currentUnit);
@@ -100,6 +107,12 @@ public class UnitChooseController implements Initializable, Displayable, Applica
     @Override
     public void display(Stage stage, WindowEvent windowEvent) {
         this.ownerStage = stage;
+        stage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if(event.getCode() == KeyCode.ENTER){
+                this.choose();
+            }
+        });
+
     }
 
     @Override
@@ -107,6 +120,7 @@ public class UnitChooseController implements Initializable, Displayable, Applica
         this.applyEventHandler = applyEventHandler;
     }
 
+    @FXML
     public void choose() {
         Unit unit = unitTable.getSelectionModel().getSelectedItem();
         if (applyEventHandler != null) {
@@ -116,6 +130,7 @@ public class UnitChooseController implements Initializable, Displayable, Applica
         this.close();
     }
 
+    @FXML
     public void close() {
         ownerStage.close();
     }
