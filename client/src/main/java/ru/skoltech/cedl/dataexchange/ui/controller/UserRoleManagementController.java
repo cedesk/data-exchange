@@ -18,11 +18,7 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -44,6 +40,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -57,51 +54,43 @@ public class UserRoleManagementController implements Initializable, Closeable {
     private static final Logger logger = Logger.getLogger(UserRoleManagementController.class);
 
     @FXML
-    public TableView disciplinesTable;
-
+    public TableView<Discipline> disciplinesTable;
     @FXML
-    public TableView userTable;
-
+    public TableView<User> userTable;
     @FXML
     public Button addDisciplineButton;
-
     @FXML
     public Button deleteDisciplineButton;
-
     @FXML
-    public ListView subsystemsAssignedList;
-
+    public ListView<DisciplineSubSystem> subsystemsAssignedList;
     @FXML
-    public ListView subsystemsAvailableList;
-
+    public ListView<SubSystemModel> subsystemsAvailableList;
     @FXML
     public Button addSubsystemButton;
-
     @FXML
     public Button deleteSubsystemButton;
-
     @FXML
-    public TableColumn disciplineNameColumn;
-
+    public TableColumn<Discipline, Object> disciplineNameColumn;
     @FXML
-    public TableColumn disciplineDescriptionColumn;
-
+    public TableColumn<Object, String> disciplineDescriptionColumn;
+    @FXML
+    public TableColumn<Object, String> subsystemCountColumn;
     @FXML
     public Pane subsystemsPane;
-
     @FXML
-    public ListView userRolesAssignedList;
-
+    public ListView<UserDiscipline> userRolesAssignedList;
     @FXML
     public Button addUserRoleButton;
-
     @FXML
     public Button deleteUserRoleButton;
-
     @FXML
-    public TableColumn subsystemCountColumn;
+    public TextField filterTextField;
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
+
+    private List<User> users = new LinkedList<>();
+    private ListProperty<User> userListProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
+
 
     private Project project;
     private UserRoleManagementService userRoleManagementService;
@@ -117,6 +106,97 @@ public class UserRoleManagementController implements Initializable, Closeable {
 
     public void setStatusLogger(StatusLogger statusLogger) {
         this.statusLogger = statusLogger;
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // DISCIPLINE TABLE
+        disciplinesTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                updateSubsystems(newValue);
+                updateUserDisciplines(newValue);
+            }
+        });
+        disciplineNameColumn.setCellFactory(new DisciplineNameCellFactory());
+        Callback<TableColumn<Object, String>, TableCell<Object, String>> tableCellCallback = TextFieldTableCell.forTableColumn();
+        disciplineDescriptionColumn.setCellFactory(tableCellCallback);
+        subsystemCountColumn.setCellFactory(tableCellCallback);
+        subsystemCountColumn.setCellValueFactory(param -> {
+            Discipline discipline = (Discipline) param.getValue();
+            if (discipline != null) {
+                UserRoleManagement userRoleManagement = project.getUserRoleManagement();
+                List<SubSystemModel> subSystemModels = userRoleManagementService.obtainSubSystemsOfDiscipline(userRoleManagement, discipline);
+                long subSystemsCount = subSystemModels.size();
+                return new SimpleStringProperty(String.valueOf(subSystemsCount));
+            } else {
+                return new SimpleStringProperty("");
+            }
+        });
+        BooleanBinding noSelectionOnDisciplinesTable = disciplinesTable.getSelectionModel().selectedItemProperty().isNull();
+        deleteDisciplineButton.disableProperty().bind(noSelectionOnDisciplinesTable);
+
+        // SUB-SYSTEMS
+        subsystemsPane.disableProperty().bind(noSelectionOnDisciplinesTable);
+
+        subsystemsAvailableList.setCellFactory(new SubsystemsViewCellFactory());
+        subsystemsAvailableList.setOnMousePressed(event -> {
+            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                UserRoleManagementController.this.addDisciplineSubsystem();
+            }
+        });
+
+        subsystemsAssignedList.setCellFactory(new DisciplineSubSystemViewCellFactory());
+        subsystemsAssignedList.setOnMousePressed(event -> {
+            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                UserRoleManagementController.this.deleteDisciplineSubsystem();
+            }
+        });
+
+        BooleanBinding noSelectionOnAvailableSubsystems = subsystemsAvailableList.getSelectionModel().selectedItemProperty().isNull();
+        addSubsystemButton.disableProperty().bind(noSelectionOnAvailableSubsystems);
+        BooleanBinding noSelectionOnAssignedSubsystems = subsystemsAssignedList.getSelectionModel().selectedItemProperty().isNull();
+        deleteSubsystemButton.disableProperty().bind(noSelectionOnAssignedSubsystems);
+
+        // USER-ROLES
+        userRolesAssignedList.disableProperty().bind(noSelectionOnDisciplinesTable);
+        userRolesAssignedList.setCellFactory(new UserDisciplineViewCellFactory());
+        userRolesAssignedList.setOnMousePressed(event -> {
+            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                UserRoleManagementController.this.deleteUserRole();
+            }
+        });
+
+        BooleanBinding noSelectionOnUserTable = userTable.getSelectionModel().selectedItemProperty().isNull();
+        addUserRoleButton.disableProperty().bind(Bindings.or(noSelectionOnUserTable, noSelectionOnDisciplinesTable));
+        BooleanBinding noSelectionOnAssignedUsers = userRolesAssignedList.getSelectionModel().selectedItemProperty().isNull();
+        deleteUserRoleButton.disableProperty().bind(noSelectionOnAssignedUsers);
+
+        //USERS
+        this.updateDisciplineTable();
+        this.loadUsers();
+
+        userListProperty.bind(Bindings.createObjectBinding(() -> {
+            List<User> filteredUnits = users.stream()
+                    .filter(user -> user.getUserName().toLowerCase().startsWith(filterTextField.getText().toLowerCase()))
+                    .collect(Collectors.toList());
+            return FXCollections.observableList(filteredUnits);
+        }, filterTextField.textProperty()));
+
+        userTable.itemsProperty().bind(userListProperty);
+        userTable.setOnMousePressed(event -> {
+            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                UserRoleManagementController.this.addUserRole();
+            }
+        });
+    }
+
+    private void loadUsers() {
+        if (project.getUserManagement() != null) {
+            // all Users
+            this.users.clear();
+            this.users.addAll(project.getUserManagement().getUsers());
+            this.users.sort(Comparator.naturalOrder());
+        }
     }
 
     public void addDiscipline() {
@@ -142,7 +222,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
     }
 
     public void addDisciplineSubsystem() {
-        SubSystemModel subsystem = (SubSystemModel) subsystemsAvailableList.getSelectionModel().getSelectedItem();
+        SubSystemModel subsystem = subsystemsAvailableList.getSelectionModel().getSelectedItem();
         Discipline discipline = getSelectedDiscipline();
         userRoleManagementService.addDisciplineSubsystem(project.getUserRoleManagement(), discipline, subsystem);
         updateSubsystems(discipline);
@@ -180,71 +260,17 @@ public class UserRoleManagementController implements Initializable, Closeable {
     }
 
     public void deleteDisciplineSubsystem() {
-        DisciplineSubSystem disciplineSubsystem = (DisciplineSubSystem) subsystemsAssignedList.getSelectionModel().getSelectedItem();
+        DisciplineSubSystem disciplineSubsystem = subsystemsAssignedList.getSelectionModel().getSelectedItem();
         project.getUserRoleManagement().getDisciplineSubSystems().remove(disciplineSubsystem);
         updateSubsystems(getSelectedDiscipline());
         changed.setValue(true);
     }
 
     public void deleteUserRole() {
-        UserDiscipline selectedUserDiscipline = (UserDiscipline) userRolesAssignedList.getSelectionModel().getSelectedItem();
+        UserDiscipline selectedUserDiscipline = userRolesAssignedList.getSelectionModel().getSelectedItem();
         project.getUserRoleManagement().getUserDisciplines().remove(selectedUserDiscipline);
         updateUserDisciplines(getSelectedDiscipline());
         changed.setValue(true);
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        // DISCIPLINE TABLE
-        disciplinesTable.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                if (newValue != null) {
-                    Discipline discipline = (Discipline) newValue;
-                    updateSubsystems(discipline);
-                    updateUserDisciplines(discipline);
-                }
-            }
-        });
-        disciplineNameColumn.setCellFactory(new DisciplineNameCellFactory());
-        Callback<TableColumn<Object, String>, TableCell<Object, String>> tableCellCallback = TextFieldTableCell.forTableColumn();
-        disciplineDescriptionColumn.setCellFactory(tableCellCallback);
-        subsystemCountColumn.setCellFactory(tableCellCallback);
-        subsystemCountColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Discipline, String>, ObservableValue>() {
-            @Override
-            public ObservableValue call(TableColumn.CellDataFeatures<Discipline, String> param) {
-                Discipline discipline = param.getValue();
-                if (discipline != null) {
-                    UserRoleManagement userRoleManagement = project.getUserRoleManagement();
-                    List<SubSystemModel> subSystemModels = userRoleManagementService.obtainSubSystemsOfDiscipline(userRoleManagement, discipline);
-                    long subSystemsCount = subSystemModels.size();
-                    return new SimpleStringProperty(String.valueOf(subSystemsCount));
-                } else {
-                    return new SimpleStringProperty("");
-                }
-            }
-        });
-        BooleanBinding noSelectionOnDisciplinesTable = disciplinesTable.getSelectionModel().selectedItemProperty().isNull();
-        deleteDisciplineButton.disableProperty().bind(noSelectionOnDisciplinesTable);
-
-        // SUB-SYSTEMS
-        subsystemsPane.disableProperty().bind(noSelectionOnDisciplinesTable);
-
-        subsystemsAvailableList.setCellFactory(new SubsystemsViewCellFactory());
-        subsystemsAssignedList.setCellFactory(new DisciplineSubSystemViewCellFactory());
-        BooleanBinding noSelectionOnAvailableSubsystems = subsystemsAvailableList.getSelectionModel().selectedItemProperty().isNull();
-        addSubsystemButton.disableProperty().bind(noSelectionOnAvailableSubsystems);
-        BooleanBinding noSelectionOnAssignedSubsystems = subsystemsAssignedList.getSelectionModel().selectedItemProperty().isNull();
-        deleteSubsystemButton.disableProperty().bind(noSelectionOnAssignedSubsystems);
-
-        // USER-ROLES
-        userRolesAssignedList.disableProperty().bind(noSelectionOnDisciplinesTable);
-        userRolesAssignedList.setCellFactory(new UserDisciplineViewCellFactory());
-        BooleanBinding noSelectionOnUserTable = userTable.getSelectionModel().selectedItemProperty().isNull();
-        addUserRoleButton.disableProperty().bind(Bindings.or(noSelectionOnUserTable, noSelectionOnDisciplinesTable));
-        BooleanBinding noSelectionOnAssignedUsers = userRolesAssignedList.getSelectionModel().selectedItemProperty().isNull();
-        deleteUserRoleButton.disableProperty().bind(noSelectionOnAssignedUsers);
-        updateView();
     }
 
     private void updateDisciplineTable() {
@@ -261,14 +287,14 @@ public class UserRoleManagementController implements Initializable, Closeable {
             if (discipline != null) {
                 // all discipline-subsystem assignments
                 List<DisciplineSubSystem> disciplineSubSystemList = project.getUserRoleManagement().getDisciplineSubSystems();
-                ObservableList allDisciplineSubsystems = FXCollections.observableArrayList(disciplineSubSystemList);
-                ObservableList assignedSubsystemsList = new FilteredList<DisciplineSubSystem>(allDisciplineSubsystems, new DisciplineSubsystemFilter(discipline));
+                ObservableList<DisciplineSubSystem> allDisciplineSubsystems = FXCollections.observableArrayList(disciplineSubSystemList);
+                ObservableList<DisciplineSubSystem> assignedSubsystemsList = new FilteredList<>(allDisciplineSubsystems, new DisciplineSubsystemFilter(discipline));
                 subsystemsAssignedList.setItems(assignedSubsystemsList);
 
                 // get assigned subsystems
                 LinkedList<SubSystemModel> assignedSubsystems = disciplineSubSystemList.stream()
                         .map(DisciplineSubSystem::getSubSystem).distinct()
-                        .collect(Collectors.toCollection(() -> new LinkedList<>()));
+                        .collect(Collectors.toCollection(LinkedList::new));
                 // get all subsystems
                 List<SubSystemModel> subsystemsList = new ArrayList<>(project.getSystemModel().getSubNodes());
                 // retain only un-assigned subsystems
@@ -284,40 +310,25 @@ public class UserRoleManagementController implements Initializable, Closeable {
         if (project.getUserRoleManagement() != null && discipline != null) {
             // assigned Users
             List<UserDiscipline> userDisciplineList = project.getUserRoleManagement().getUserDisciplines();
-            ObservableList allUserDisciplines = FXCollections.observableArrayList(userDisciplineList);
-            ObservableList assignedUsersList = new FilteredList<UserDiscipline>(allUserDisciplines, new UserDisciplineFilter(discipline));
+            ObservableList<UserDiscipline> allUserDisciplines = FXCollections.observableArrayList(userDisciplineList);
+            ObservableList<UserDiscipline> assignedUsersList = new FilteredList<>(allUserDisciplines, new UserDisciplineFilter(discipline));
             userRolesAssignedList.setItems(assignedUsersList);
         }
     }
 
-    private void updateUsers() {
-        if (project.getUserManagement() != null) {
-            // all Users
-            List<User> allUsers = project.getUserManagement().getUsers();
-            ObservableList<User> allUserList = FXCollections.observableList(allUsers);
-            allUserList.sort(Comparator.naturalOrder());
-            userTable.setItems(allUserList);
-        }
-    }
-
-    private void updateView() {
-        updateDisciplineTable();
-        updateUsers();
-    }
-
     private Discipline getSelectedDiscipline() {
-        return (Discipline) disciplinesTable.getSelectionModel().getSelectedItem();
+        return disciplinesTable.getSelectionModel().getSelectedItem();
     }
 
     private User getSelectedUser() {
-        return (User) userTable.getSelectionModel().getSelectedItem();
+        return userTable.getSelectionModel().getSelectedItem();
     }
 
 
     private class SubsystemsViewCellFactory implements Callback<ListView<SubSystemModel>, ListCell<SubSystemModel>> {
         @Override
         public ListCell<SubSystemModel> call(ListView<SubSystemModel> p) {
-            ListCell<SubSystemModel> cell = new ListCell<SubSystemModel>() {
+            AtomicReference<ListCell<SubSystemModel>> cell = new AtomicReference<>(new ListCell<SubSystemModel>() {
                 @Override
                 protected void updateItem(SubSystemModel model, boolean blank) {
                     super.updateItem(model, blank);
@@ -327,15 +338,15 @@ public class UserRoleManagementController implements Initializable, Closeable {
                         setText(null);
                     }
                 }
-            };
-            return cell;
+            });
+            return cell.get();
         }
     }
 
     private class UserDisciplineViewCellFactory implements Callback<ListView<UserDiscipline>, ListCell<UserDiscipline>> {
         @Override
         public ListCell<UserDiscipline> call(ListView<UserDiscipline> p) {
-            ListCell<UserDiscipline> cell = new ListCell<UserDiscipline>() {
+            return new ListCell<UserDiscipline>() {
                 @Override
                 protected void updateItem(UserDiscipline userDiscipline, boolean blank) {
                     super.updateItem(userDiscipline, blank);
@@ -347,14 +358,13 @@ public class UserRoleManagementController implements Initializable, Closeable {
                     }
                 }
             };
-            return cell;
         }
     }
 
     private class UserDisciplineFilter implements Predicate<UserDiscipline> {
         private Discipline filterDiscipline;
 
-        public UserDisciplineFilter(Discipline discipline) {
+        private UserDisciplineFilter(Discipline discipline) {
             this.filterDiscipline = discipline;
         }
 
@@ -367,7 +377,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
     private class DisciplineSubSystemViewCellFactory implements Callback<ListView<DisciplineSubSystem>, ListCell<DisciplineSubSystem>> {
         @Override
         public ListCell<DisciplineSubSystem> call(ListView<DisciplineSubSystem> p) {
-            ListCell<DisciplineSubSystem> cell = new ListCell<DisciplineSubSystem>() {
+            return new ListCell<DisciplineSubSystem>() {
                 @Override
                 protected void updateItem(DisciplineSubSystem disciplineSubSystem, boolean blank) {
                     super.updateItem(disciplineSubSystem, blank);
@@ -379,14 +389,13 @@ public class UserRoleManagementController implements Initializable, Closeable {
                     }
                 }
             };
-            return cell;
         }
     }
 
     private class DisciplineSubsystemFilter implements Predicate<DisciplineSubSystem> {
         private Discipline filterDiscipline;
 
-        public DisciplineSubsystemFilter(Discipline discipline) {
+        private DisciplineSubsystemFilter(Discipline discipline) {
             this.filterDiscipline = discipline;
         }
 
