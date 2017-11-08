@@ -189,13 +189,14 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         when(parent.getNodePath()).thenReturn("parent");
         externalModel.init();
         assertNotNull(externalModel.getCacheFile());
-        assertTrue(externalModel.getCacheFile().getAbsolutePath().endsWith("parent\\0_name"));
+
+        assertTrue(externalModel.getCacheFile().getAbsolutePath().endsWith("parent" + File.separator + "0_name"));
 
         String projectDir = new File("target/project").getAbsolutePath();
         System.setProperty(Project.PROJECT_HOME_PROPERTY, projectDir);
         externalModel.init();
         assertNotNull(externalModel.getCacheFile());
-        assertTrue(externalModel.getCacheFile().getAbsolutePath().endsWith("project\\parent\\0_name"));
+        assertTrue(externalModel.getCacheFile().getAbsolutePath().endsWith("project" + File.separator + "parent" + File.separator + "0_name"));
     }
 
     @Test(expected = NullPointerException.class)
