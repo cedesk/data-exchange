@@ -22,7 +22,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" minHeight="420.0" minWidth="240.0" stylesheets="@styling.css"
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" minHeight="420.0" minWidth="300.0" stylesheets="@styling.css"
             xmlns="http://javafx.com/javafx/8.0.40"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.UserManagementController">
     <top>
@@ -43,7 +43,9 @@
     </top>
     <center>
         <TableView fx:id="userTable" minHeight="420.0" BorderPane.alignment="CENTER">
-            <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
             <columns>
                 <TableColumn minWidth="100.0" prefWidth="-1.0" text="Name">
                     <cellValueFactory>
@@ -85,9 +87,9 @@
                 </graphic>
             </Button>
             <Separator orientation="VERTICAL"/>
-            <Pane HBox.hgrow="ALWAYS" />
+            <Pane HBox.hgrow="ALWAYS"/>
             <Button fx:id="reloadUsers" mnemonicParsing="false" onAction="#reloadUsers" text="Reload"/>
             <Button fx:id="saveUsers" mnemonicParsing="false" onAction="#saveUsers" text="Save"/>
         </ToolBar>
-        </bottom>
+    </bottom>
 </BorderPane>

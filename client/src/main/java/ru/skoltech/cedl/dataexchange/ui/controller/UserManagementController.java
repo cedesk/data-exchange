@@ -71,49 +71,20 @@ public class UserManagementController implements Initializable, Displayable {
     private List<User> users = new LinkedList<>();
     private ListProperty<User> userListProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
 
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
     }
 
-    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
-        this.userRoleManagementService = userRoleManagementService;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public void setStatusLogger(StatusLogger statusLogger) {
         this.statusLogger = statusLogger;
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        this.loadUsers();
-
-        userListProperty.setValue(FXCollections.observableList(users));
-        userListProperty.bind(Bindings.createObjectBinding(() -> {
-            List<User> filteredUnits = users.stream()
-                    .filter(user -> user.getUserName().toLowerCase().startsWith(filterTextField.getText().toLowerCase()))
-                    .collect(Collectors.toList());
-            return FXCollections.observableList(filteredUnits);
-        }, filterTextField.textProperty()));
-
-        userTable.itemsProperty().bind(userListProperty);
-        userTable.setOnMousePressed(event -> {
-            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
-                UserManagementController.this.editUser();
-            }
-        });
-
-        editUserButton.disableProperty().bind(userTable.getSelectionModel().selectedItemProperty().isNull());
-        deleteUserButton.disableProperty().bind(userTable.getSelectionModel().selectedItemProperty().isNull());
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     public void addUser() {
@@ -137,6 +108,18 @@ public class UserManagementController implements Initializable, Displayable {
         this.loadUsers();
     }
 
+    public void deleteUser() {
+        User selectedUser = userTable.getSelectionModel().getSelectedItem();
+        logger.debug("Remove user: " + selectedUser.getUserName());
+        project.getUserManagement().getUsers().remove(selectedUser);
+        this.loadUsers();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
     public void editUser() {
         User selectedUser = userTable.getSelectionModel().getSelectedItem();
         Window ownerWindow = userTable.getScene().getWindow();
@@ -147,11 +130,29 @@ public class UserManagementController implements Initializable, Displayable {
         this.loadUsers();
     }
 
-    public void deleteUser() {
-        User selectedUser = userTable.getSelectionModel().getSelectedItem();
-        logger.debug("Remove user: " + selectedUser.getUserName());
-        project.getUserManagement().getUsers().remove(selectedUser);
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
         this.loadUsers();
+
+        userListProperty.setValue(FXCollections.observableList(users));
+        userListProperty.bind(Bindings.createObjectBinding(() -> {
+            List<User> filteredUsers = users.stream()
+                    .filter(user -> (user.getUserName().toLowerCase().contains(filterTextField.getText().toLowerCase())
+                            || (user.getFullName() != null &&
+                            user.getFullName().toLowerCase().contains(filterTextField.getText().toLowerCase()))))
+                    .collect(Collectors.toList());
+            return FXCollections.observableList(filteredUsers);
+        }, filterTextField.textProperty()));
+
+        userTable.itemsProperty().bind(userListProperty);
+        userTable.setOnMousePressed(event -> {
+            if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
+                UserManagementController.this.editUser();
+            }
+        });
+
+        editUserButton.disableProperty().bind(userTable.getSelectionModel().selectedItemProperty().isNull());
+        deleteUserButton.disableProperty().bind(userTable.getSelectionModel().selectedItemProperty().isNull());
     }
 
     public void reloadUsers() {
