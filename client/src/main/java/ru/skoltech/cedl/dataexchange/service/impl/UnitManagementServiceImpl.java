@@ -41,7 +41,7 @@ public class UnitManagementServiceImpl implements UnitManagementService {
 
     private static final Logger logger = Logger.getLogger(UnitManagementServiceImpl.class);
 
-    private final String UNIT_MANAGEMENT_RELATIVE_PATH = "units/unit-management.xml";
+    private final String UNIT_MANAGEMENT_RELATIVE_PATH = "units/unit-management-data.xml";
     private final UnitManagementRepository unitManagementRepository;
     private FileStorageService fileStorageService;
 
