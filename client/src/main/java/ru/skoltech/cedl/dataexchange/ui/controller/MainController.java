@@ -230,7 +230,6 @@ public class MainController implements Initializable, Displayable, Closeable {
                     imageView.setPreserveRatio(true);
                     imageView.setSmooth(true);
                     diffButton.setGraphic(imageView);
-                    diffButton.setGraphicTextGap(8);
 
                     modelEditingController.updateView();
                     statusLogger.info("Remote model loaded for comparison.");

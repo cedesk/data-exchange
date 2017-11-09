@@ -16,11 +16,12 @@
   ~ limitations under the License.
   -->
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import org.controlsfx.glyphfont.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.MainController"
             maxHeight="-Infinity" maxWidth="-Infinity"
@@ -79,45 +80,73 @@
                         <VBox.margin>
                             <Insets/>
                         </VBox.margin>
-                        <Button fx:id="newButton" onAction="#newProject" text="_New"/>
-                        <Separator orientation="VERTICAL"/>
-                        <Button fx:id="loadButton" onAction="#reloadProject" text="_Reload"/>
-                        <Button fx:id="saveButton" layoutX="10.0" layoutY="13.0" onAction="#saveProject" text="_Save">
+                        <Button fx:id="newButton" onAction="#newProject">
+                            <tooltip>
+                                <Tooltip text="New Project"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="FILE_TEXT"/>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="loadButton" onAction="#reloadProject">
+                            <tooltip>
+                                <Tooltip text="Reload Project"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="RETWEET"/>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="saveButton" onAction="#saveProject">
                             <tooltip>
                                 <Tooltip text="Save current study"/>
                             </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="SAVE"/>
+                            </graphic>
                         </Button>
                         <Separator orientation="VERTICAL"/>
-                        <Button fx:id="diffButton" onAction="#openDiffView" text="View _Changes"/>
+                        <Button fx:id="diffButton" onAction="#openDiffView">
+                            <tooltip>
+                                <Tooltip text="View Changes"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="INBOX"/>
+                            </graphic>
+                        </Button>
                         <Separator orientation="VERTICAL"/>
-                        <HBox fillHeight="false">
-                            <padding>
-                                <Insets bottom="3.0" left="6.0" right="3.0" top="6.0"/>
-                            </padding>
-                            <Label styleClass="projectDetailsLabels" text="Project:">
-                                <HBox.margin>
-                                    <Insets right="4.0"/>
-                                </HBox.margin>
+                        <HBox fillHeight="false" spacing="8">
+                            <Label fx:id="studyNameLabel" styleClass="projectDetailsLabels" graphicTextGap="6"
+                                   text="--">
+                                <tooltip>
+                                    <Tooltip text="Project"/>
+                                </tooltip>
+                                <graphic>
+                                    <Glyph fontFamily="FontAwesome" icon="CUBE"/>
+                                </graphic>
                             </Label>
-                            <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--"/>
-                            <Label styleClass="projectDetailsLabels" text="Tag:">
-                                <HBox.margin>
-                                    <Insets left="20.0" right="4.0"/>
-                                </HBox.margin>
+                            <Label fx:id="tagLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
+                                <tooltip>
+                                    <Tooltip text="Tag"/>
+                                </tooltip>
+                                <graphic>
+                                    <Glyph fontFamily="FontAwesome" icon="TAG"/>
+                                </graphic>
                             </Label>
-                            <Label fx:id="tagLabel" styleClass="projectDetailsText" text="--"/>
-                            <Label styleClass="projectDetailsLabels" text="User:">
-                                <HBox.margin>
-                                    <Insets left="20.0" right="4.0"/>
-                                </HBox.margin>
+                            <Label fx:id="userNameLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
+                                <tooltip>
+                                    <Tooltip text="User"/>
+                                </tooltip>
+                                <graphic>
+                                    <Glyph fontFamily="FontAwesome" icon="USER_TIMES"/>
+                                </graphic>
                             </Label>
-                            <Label fx:id="userNameLabel" styleClass="projectDetailsText" text="--"/>
-                            <Label styleClass="projectDetailsLabels" text="Roles:">
-                                <HBox.margin>
-                                    <Insets left="20.0" right="4.0"/>
-                                </HBox.margin>
-                            </Label>
-                            <Label fx:id="userRoleLabel" styleClass="projectDetailsText" text="--">
+                            <Label fx:id="userRoleLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
+                                <tooltip>
+                                    <Tooltip text="Roles"/>
+                                </tooltip>
+                                <graphic>
+                                    <Glyph fontFamily="FontAwesome" icon="USERS"/>
+                                </graphic>
                             </Label>
                         </HBox>
                     </ToolBar>
