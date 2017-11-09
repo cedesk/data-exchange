@@ -253,6 +253,17 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.ownerStage = stage;
     }
 
+    public void openLibraryView() {
+        double x = ownerStage.getX() + ownerStage.getWidth();
+        double y = ownerStage.getY();
+
+        ViewBuilder libraryViewBuilder = guiService.createViewBuilder("Component Library", Views.LIBRARY_VIEW);
+        libraryViewBuilder.ownerWindow(ownerStage);
+
+        libraryViewBuilder.xy(x, y);
+        libraryViewBuilder.show();
+    }
+
     private void checkRepository() {
         executor.execute(() -> {
             if (!project.checkUser()) {

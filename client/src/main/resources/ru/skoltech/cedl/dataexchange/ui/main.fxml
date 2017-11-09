@@ -21,14 +21,12 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
-            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.MainController"
-            maxHeight="-Infinity" maxWidth="-Infinity"
-            minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="700.0" prefWidth="1000.0">
-    <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"
-                fx:id="layoutPane">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" stylesheets="@styling.css"
+            xmlns="http://javafx.com/javafx/8.0.121"
+            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.MainController">
+    <BorderPane fx:id="layoutPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <center>
         </center>
         <top>
@@ -54,6 +52,7 @@
                             <MenuItem fx:id="usersAndDisciplinesMenu" onAction="#openUserRoleManagement"
                                       text="User-Discipline Assignment"/>
                             <MenuItem onAction="#openUnitManagement" text="Units and _Measures"/>
+                            <MenuItem onAction="#openLibraryView" text="Component _Library"/>
                             <SeparatorMenuItem/>
                             <MenuItem onAction="#openProjectSettingsDialog" text="_Project Settings"/>
                             <MenuItem onAction="#openRepositorySettingsDialog" text="_Repository Settings"/>
