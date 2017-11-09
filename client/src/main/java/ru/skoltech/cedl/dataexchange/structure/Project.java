@@ -24,14 +24,10 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
-import org.springframework.integration.file.FileReadingMessageSource;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.entity.Study;
-import ru.skoltech.cedl.dataexchange.entity.StudySettings;
+import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
@@ -40,23 +36,22 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.*;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
 import java.io.File;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -68,18 +63,20 @@ public class Project {
 
     private static Logger logger = Logger.getLogger(Project.class);
 
+    public static final String PROJECT_HOME_PROPERTY = "project.home";
+
     private ApplicationSettings applicationSettings;
     private RepositoryStateMachine repositoryStateMachine;
     private DifferenceHandler differenceHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ExternalModelFileWatcher externalModelFileWatcher;
-    private ExternalModelFileHandler externalModelFileHandler;
     private FileStorageService fileStorageService;
     private StudyService studyService;
     private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
     private SourcePollingChannelAdapter inboundFilesChannel;
+    private ActionLogger actionLogger;
     private AsyncTaskExecutor executor;
 
     private String projectName;
@@ -95,20 +92,28 @@ public class Project {
     private BooleanProperty canNew = new SimpleBooleanProperty(false);
     private BooleanProperty canLoad = new SimpleBooleanProperty(false);
     private BooleanProperty canSync = new SimpleBooleanProperty(false);
+    private List<Consumer<ExternalModel>> externalModelConsumers = new LinkedList<>();
 
     private Predicate<ModelNode> accessChecker;
 
-    public void initProject(String projectName) {
-        this.projectName = projectName;
-        this.repositoryStateMachine.reset();
-        this.repositoryStudy = null;
-        this.repositoryStateMachine.addObserver((o, arg) -> updatePossibleActions());
-//        if (this.inboundFilesChannel.isRunning()) {
-//            this.inboundFilesChannel.stop();
-//        }
-//        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectDataDir());
-//        this.inboundFilesChannel.start();
-        this.accessChecker = this::checkUserAccess;
+    public void init() {
+        this.repositoryStateMachine.addObserver((o, arg) -> this.updatePossibleActions());
+        this.externalModelFileWatcher.addObserver((o, arg) -> {
+            ExternalModel externalModel = (ExternalModel) arg;
+            actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
+            this.markStudyModified();
+            externalModel.updateReferencedParameterModels(parameterModel -> parameterLinkRegistry.updateSinks(parameterModel));
+            externalModel.getReferencedParameterModels().forEach(parameterModel -> {
+                ParameterModelUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
+                if (updateState == ParameterModelUpdateState.SUCCESS) {
+                    actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
+                } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
+                    actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
+                            + "#" + parameterModel.getValueReference().getTarget());
+                }
+            });
+            Platform.runLater(() -> this.getExternalModelUpdateConsumers().forEach(consumer -> consumer.accept(externalModel)));
+        });
     }
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
@@ -125,10 +130,6 @@ public class Project {
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
         this.externalModelFileWatcher = externalModelFileWatcher;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -151,6 +152,10 @@ public class Project {
         this.unitManagementService = unitManagementService;
     }
 
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
+    }
+
     public void setInboundFilesChannel(SourcePollingChannelAdapter inboundFilesChannel) {
         this.inboundFilesChannel = inboundFilesChannel;
     }
@@ -163,8 +168,25 @@ public class Project {
         this.executor = executor;
     }
 
+    public void initProject(String projectName) {
+        this.projectName = projectName;
+        System.setProperty(PROJECT_HOME_PROPERTY, this.getProjectHome().getAbsolutePath());
+        this.repositoryStateMachine.reset();
+        this.repositoryStudy = null;
+//        if (this.inboundFilesChannel.isRunning()) {
+//            this.inboundFilesChannel.stop();
+//        }
+//        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectHome());
+//        this.inboundFilesChannel.start();
+        this.accessChecker = this::checkUserAccess;
+    }
+
     public String getProjectName() {
         return projectName;
+    }
+
+    public List<Consumer<ExternalModel>>  getExternalModelUpdateConsumers() {
+        return externalModelConsumers;
     }
 
     public Study getRepositoryStudy() {
@@ -333,7 +355,6 @@ public class Project {
     public void importSystemModel(SystemModel systemModel) {
         this.createStudy(systemModel);
         this.reinitializeUniqueIdentifiers(systemModel);
-        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
     }
 
     public void loadLocalStudy() {
@@ -341,11 +362,8 @@ public class Project {
         if (this.study == null) {
             return;
         }
-
+        this.initializeHandlers();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
-        parameterLinkRegistry.registerAllParameters(getSystemModel());
-        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
-        differenceHandler.clearModelDifferences();
     }
 
     public void loadLocalStudy(Integer revisionNumber) {
@@ -353,11 +371,19 @@ public class Project {
         if (this.study == null) {
             return;
         }
-
+        this.initializeHandlers();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
-        parameterLinkRegistry.registerAllParameters(getSystemModel());
-        externalModelFileHandler.initializeStateOfExternalModels(this.getSystemModel(), accessChecker);
-        differenceHandler.clearModelDifferences();
+    }
+
+    private void initializeHandlers(){
+        Platform.runLater(() -> differenceHandler.clearModelDifferences());
+
+        SystemModel systemModel = getSystemModel();
+        parameterLinkRegistry.clear();
+        parameterLinkRegistry.registerAllParameters(systemModel);
+        parameterLinkRegistry.updateAllSinks(systemModel, accessChecker);
+        externalModelFileWatcher.clear();
+        externalModelFileWatcher.add(this.getSystemModel(), accessChecker);
     }
 
     public Future<List<ModelDifference>> loadRepositoryStudy() {
@@ -432,20 +458,20 @@ public class Project {
         this.study = studyService.createStudy(systemModel, userManagement);
         this.initProject(systemModel.getName());
         this.setRepositoryStudy(null);
-        Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
-        externalModelFileWatcher.clear();
+        this.initializeHandlers();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
-        parameterLinkRegistry.clear();
 
         UserRoleManagement userRoleManagement = study.getUserRoleManagement();
         userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
+        this.updateValueReferences(systemModel);
     }
 
     public void storeStudy() throws RepositoryException {
         SystemModel systemModel = this.getSystemModel();
+        this.initializeHandlers();
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
         parameterLinkRegistry.updateAll(systemModel);
-        externalModelFileHandler.exportValuesToExternalModels(systemModel, accessChecker);
-        externalModelFileHandler.updateExternalModelsInStudy();
+        this.updateExportReferences(systemModel, accessChecker);
         if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
             // store URM separately before study, to prevent links to deleted subsystems have storing study fail
             storeUserRoleManagement();
@@ -455,18 +481,29 @@ public class Project {
         Study newStudy = revision.getLeft();
         Integer revisionNumber = revision.getMiddle();
 
-        externalModelFileHandler.updateExternalModelStateInCache();
-
         this.study = newStudy;
         this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
         this.latestRevisionNumber.set(revisionNumber);
 
-        Platform.runLater(() -> this.differenceHandler.clearModelDifferences());
 
-        externalModelFileHandler.initializeStateOfExternalModels(systemModel, accessChecker);
-        parameterLinkRegistry.registerAllParameters(getSystemModel());
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+        this.updateValueReferences(systemModel);
     }
+
+    private void updateValueReferences(SystemModel systemModel) {
+        Iterator<ParameterModel> parameterModelsIterator = new ParameterTreeIterator(systemModel);
+        parameterModelsIterator.forEachRemaining(ParameterModel::updateValueReference);
+    }
+
+    private void updateExportReferences(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
+        Iterator<ExternalModel> externalModelsIterator = new ExternalModelTreeIterator(systemModel, accessChecker);
+        externalModelsIterator.forEachRemaining(externalModel -> {
+            File cacheFile = externalModel.getCacheFile();
+            externalModelFileWatcher.maskChangesTo(cacheFile);
+            externalModel.updateExportReferences();
+            externalModelFileWatcher.unmaskChangesTo(cacheFile);
+        });
+    }
+
 
     public boolean storeUnitManagement() {
         try {
@@ -537,8 +574,7 @@ public class Project {
         canSync.setValue(isSyncEnabled && isSavePossible);
     }
 
-    public File getProjectDataDir() {
-        String projectName = this.getProjectName();
+    public File getProjectHome() {
         String hostname = applicationSettings.getRepositoryHost();
         String schema = applicationSettings.getRepositorySchemaName();
         return fileStorageService.dataDir(hostname, schema, projectName);

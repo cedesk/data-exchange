@@ -259,7 +259,7 @@ public class TradespaceController implements Initializable {
         String yAxisName = tradespaceView.getChartDefinition().getAxis2().getName();
 
         FileChooser fc = new FileChooser();
-        fc.setInitialDirectory(project.getProjectDataDir());
+        fc.setInitialDirectory(project.getProjectHome());
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
         fc.setInitialFileName("FigureOfMeritChart_" + xAxisName + "--" + yAxisName + "_" + Utils.getFormattedDateAndTime());
         fc.setTitle("Save Chart");

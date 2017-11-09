@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
@@ -82,7 +83,7 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
 
         ParameterModel p3 = new ParameterModel("new-param", 0.24);
         localSystem.addParameter(p3);
-        ExternalModel externalModel3 = new ExternalModel();
+        ExternalModel externalModel3 = new ExcelExternalModel();
         externalModel3.setName("otherfile.tmp");
         localSystem.addExternalModel(externalModel3);
 

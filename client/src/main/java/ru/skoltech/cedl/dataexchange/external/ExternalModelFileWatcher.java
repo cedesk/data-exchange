@@ -19,16 +19,17 @@ package ru.skoltech.cedl.dataexchange.external;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModelTreeIterator;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.service.DirectoryWatchService;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.function.Predicate;
 
 /**
  * Created by D.Knoll on 09.07.2015.
@@ -46,13 +47,29 @@ public class ExternalModelFileWatcher extends Observable {
         this.directoryWatchService = directoryWatchService;
     }
 
-    public void add(ExternalModel externalModel, File cacheFile) {
+    public void add(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
+        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(systemModel, accessChecker);
+        while (iterator.hasNext()) {
+            ExternalModel externalModel = iterator.next();
+            this.add(externalModel);
+        }
+    }
+
+    public void add(ExternalModel externalModel) {
+        ExternalModelState cacheState = externalModel.state();
+        if (!cacheState.isCached()) {
+            logger.warn("Cannot add to directory watch service external model " + externalModel.getNodePath()
+                    + " because of wrong state: " + cacheState);
+            return;
+        }
+        File cacheFile = externalModel.getCacheFile();
         watchedExternalModels.put(cacheFile, externalModel);
         String filePattern = cacheFile.getName();
         try {
             directoryWatchService.register(new FileChangeListener(), cacheFile.getParent(), filePattern);
+            this.onFileModify(cacheFile);
         } catch (IOException e) {
-            logger.error("unable to observe file " + cacheFile.getAbsolutePath() + " for modifications.");
+            logger.error("Unable to observe file " + cacheFile.getAbsolutePath() + " for modifications.");
         }
     }
 
@@ -61,16 +78,16 @@ public class ExternalModelFileWatcher extends Observable {
         watchedExternalModels.clear();
     }
 
+    public void start() {
+        directoryWatchService.start();
+    }
+
     public void close() {
         directoryWatchService.stop();
     }
 
     public void maskChangesTo(File file) {
         this.maskedFiles.add(file);
-    }
-
-    public void start() {
-        directoryWatchService.start();
     }
 
     public void unmaskChangesTo(File file) {
@@ -86,16 +103,20 @@ public class ExternalModelFileWatcher extends Observable {
             ExternalModel externalModel = watchedExternalModels.get(changedFile);
             long lastModified = changedFile.lastModified();
             String dateAndTime = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(lastModified));
-            logger.debug("file " + changedFilePath + " has been modified (" + dateAndTime + ")");
-            // TODO: iif necessary
-            try {
-                ExternalModelFileWatcher.this.setChanged();
-                ExternalModelFileWatcher.this.notifyObservers(externalModel);
-            } catch (Exception ex) {
-                logger.error("error in notifying file change listeners", ex);
+            logger.debug("File " + changedFilePath + " has been modified (" + dateAndTime + ")");
+
+            if (changedFile.lastModified() > externalModel.getLastModification()) {
+                try {
+                    externalModel.updateAttachmentFromCache();
+                    logger.info("External model file '" + externalModel.getName() + "' has been modified. Processing changes to parameters...");
+                    ExternalModelFileWatcher.this.setChanged();
+                    ExternalModelFileWatcher.this.notifyObservers(externalModel);
+                } catch (ExternalModelException e) {
+                    logger.error("Cannot update attachment from cache file of external model: " + e.getMessage(), e);
+                }
             }
         } else {
-            logger.debug("ignoring change on file: " + changedFilePath);
+            logger.debug("Ignoring change on file: " + changedFilePath);
         }
     }
 

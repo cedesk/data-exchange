@@ -21,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ElementModel;
@@ -69,7 +70,7 @@ public class SystemModelTest {
         modelNode23.setName("modelNode23");
         modelNode23.setUuid("uuid23");
 
-        externalModel = new ExternalModel();
+        externalModel = new ExcelExternalModel();
         parameterModel = new ParameterModel();
     }
 

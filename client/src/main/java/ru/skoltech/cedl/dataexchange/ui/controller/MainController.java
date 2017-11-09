@@ -51,7 +51,6 @@ import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
@@ -62,6 +61,7 @@ import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference.ChangeLocation;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.awt.*;
@@ -124,7 +124,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private ApplicationSettings applicationSettings;
     private Project project;
-    private ExternalModelFileHandler externalModelFileHandler;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private DifferenceHandler differenceHandler;
     private StudyService studyService;
@@ -153,10 +152,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
     }
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
@@ -324,7 +319,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
             File outputFile = new File(exportPath, outputFileName);
             try {
-                fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
+                fileStorageService.exportSystemModel(project.getSystemModel(), outputFile);
                 statusLogger.info("Successfully exported study!");
                 actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
             } catch (IOException e) {
@@ -368,10 +363,12 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    public boolean checkUnsavedModifications() {
-        if (project.hasLocalStudyModifications()) {
+    public boolean checkUnsavedStructureModifications() {
+        long nodeChanges = differenceHandler.modelDifferences().stream()
+                .filter(modelDiff -> modelDiff instanceof NodeDifference).count();
+        if (nodeChanges > 0) {
             Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
-                    "Modifications to the model must to be saved before managing user discipline assignment. " +
+                    "Modifications to the model structure must to be saved before managing user discipline assignment. " +
                             "Shall it be saved now?");
             if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
                 try {
@@ -492,7 +489,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         if (importFile != null) {
             // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
             try {
-                SystemModel systemModel = fileStorageService.loadSystemModel(importFile);
+                SystemModel systemModel = fileStorageService.importSystemModel(importFile);
                 project.importSystemModel(systemModel);
                 updateView();
                 statusLogger.info("Successfully imported study!");
@@ -506,7 +503,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void runWorkSessionAnalysis() {
-        File projectDataDir = project.getProjectDataDir();
+        File projectDataDir = project.getProjectHome();
         String dateAndTime = Utils.getFormattedDateAndTime();
         try {
             long studyId = project.getStudy().getId();
@@ -697,7 +694,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openUserRoleManagement() {
-        if (!checkUnsavedModifications()) {
+        if (!checkUnsavedStructureModifications()) {
             return;
         }
 
@@ -764,7 +761,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private boolean hasRemoteDifferences() throws Exception {
         Future<List<ModelDifference>> feature = project.loadRepositoryStudy();
-        externalModelFileHandler.updateExternalModelsInStudy();
+//        externalModelFileHandler.updateExternalModelsAttachment();
 
         List<ModelDifference> modelDifferences = feature.get();
         if (modelDifferences == null) {

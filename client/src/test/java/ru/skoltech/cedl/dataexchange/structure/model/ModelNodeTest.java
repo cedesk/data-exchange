@@ -21,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.Utils;
+import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
@@ -55,12 +56,12 @@ public class ModelNodeTest {
         Assert.assertEquals(currentDate, modelNode.findLatestModificationCurrentNode().longValue());
 
         // lastModification != null | externalModels != empty | parameters = empty
-        ExternalModel externalModel1 = new ExternalModel();
+        ExternalModel externalModel1 = new ExcelExternalModel();
         externalModel1.setLastModification(++currentDate);
         modelNode.addExternalModel(externalModel1);
         Assert.assertEquals(currentDate, modelNode.findLatestModificationCurrentNode().longValue());
 
-        ExternalModel externalModel2 = new ExternalModel();
+        ExternalModel externalModel2 = new ExcelExternalModel();
         externalModel2.setLastModification(++currentDate);
         modelNode.addExternalModel(externalModel2);
         Assert.assertEquals(currentDate, modelNode.findLatestModificationCurrentNode().longValue());
@@ -82,7 +83,7 @@ public class ModelNodeTest {
         modelNode.setLastModification(++currentDate);
         Assert.assertEquals(currentDate, modelNode.findLatestModificationCurrentNode().longValue());
 
-        ExternalModel externalModel3 = new ExternalModel();
+        ExternalModel externalModel3 = new ExcelExternalModel();
         externalModel3.setLastModification(++currentDate);
         modelNode.addExternalModel(externalModel3);
         Assert.assertEquals(currentDate, modelNode.findLatestModificationCurrentNode().longValue());

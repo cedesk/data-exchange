@@ -32,7 +32,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.StringConverter;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
@@ -46,7 +45,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
@@ -56,21 +55,18 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
-import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler;
-import ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateState;
-import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterReferenceValidity;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.entity.ParameterValueSource.*;
-import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS;
-import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
 
 /**
  * Controller for parameter editing.
@@ -124,7 +120,7 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     private Project project;
     private DifferenceHandler differenceHandler;
-    private ExternalModelUpdateHandler externalModelUpdateHandler;
+    private ExternalModelFileWatcher externalModelFileWatcher;
     private ParameterLinkRegistry parameterLinkRegistry;
     private GuiService guiService;
     private UnitManagementService unitManagementService;
@@ -141,7 +137,7 @@ public class ParameterEditorController implements Initializable, Displayable {
     private Stage ownerStage;
 
     private ObjectProperty<ParameterModel> parameterModelProperty = new SimpleObjectProperty<>();
-    private ObjectProperty<ParameterModelUpdateState> parameterModelUpdateStateProperty = new SimpleObjectProperty<>();
+//    private ObjectProperty<ParameterModelUpdateState> parameterModelUpdateStateProperty = new SimpleObjectProperty<>();
     private ListProperty<String> differencesProperty = new SimpleListProperty<>();
     private BooleanProperty nameChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty natureChangedProperty = new SimpleBooleanProperty();
@@ -164,8 +160,8 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.differenceHandler = differenceHandler;
     }
 
-    public void setExternalModelUpdateHandler(ExternalModelUpdateHandler externalModelUpdateHandler) {
-        this.externalModelUpdateHandler = externalModelUpdateHandler;
+    public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
+        this.externalModelFileWatcher = externalModelFileWatcher;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
@@ -277,13 +273,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.ownerStage = stage;
     }
 
-    public void setVisible(boolean visible) {
-        if (!visible) {
-            this.parameterModelProperty.set(null);
-        }
-        parameterEditorPane.setVisible(visible);
-    }
-
     public void displayParameterModel(ParameterModel parameterModel) {
         this.parameterModel = parameterModel;
         this.parameterModelProperty.set(parameterModel);
@@ -311,19 +300,26 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.updateIcon.setIcon(null);
         this.updateIcon.setColor(null);
         this.updateIcon.setTooltip(null);
+
+        ParameterReferenceValidity validity = parameterModel.validateValueReference();
+        if (validity == null) {
+            return;
+        }
+        Boolean state = validity.isValid() && parameterModel.getLastValueReferenceUpdateState().isSuccessful();
+        String message = validity.isValid() ? parameterModel.getLastValueReferenceUpdateState().description : validity.description;
+//        this.parameterModelUpdateStateProperty.setValue(updateState);
+        String icon = state ? "CHECK" : "WARNING";
+        Color color = state ? Color.GREEN : Color.RED;
+        this.updateIcon.setIcon(icon);
+        this.updateIcon.setColor(color);
+        this.updateIcon.setTooltip(new Tooltip(message));
     }
 
-    public void displayParameterModel(ParameterModel parameterModel, ParameterModelUpdateState updateState) {
-        this.displayParameterModel(parameterModel);
-        this.parameterModelUpdateStateProperty.setValue(updateState);
-        if (updateState != null) {
-            boolean success = updateState == SUCCESS || updateState == SUCCESS_WITHOUT_UPDATE;
-            String icon = success ? "CHECK" : "WARNING";
-            Color color = success ? Color.GREEN : Color.RED;
-            this.updateIcon.setIcon(icon);
-            this.updateIcon.setColor(color);
-            this.updateIcon.setTooltip(new Tooltip(updateState.description));
+    public void setVisible(boolean visible) {
+        if (!visible) {
+            this.parameterModelProperty.set(null);
         }
+        parameterEditorPane.setVisible(visible);
     }
 
     public void setEditListener(Consumer<ParameterModel> updateListener) {
@@ -332,7 +328,6 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     public void applyChanges() {
         logger.debug("updating parameter: " + parameterModel.getNodePath());
-        this.applyParameterUpdateFromExternalModel();
         this.replaceLinksInParameterLinkRegistry();
         this.validateFields();
 
@@ -363,49 +358,41 @@ public class ParameterEditorController implements Initializable, Displayable {
         parameterModel.setExportReference(exportReference);
         parameterModel.setDescription(descriptionText.getText());
 
-        this.applyParameterUpdatesToExternalModel();
+        this.updateValueReference();
+        this.updateExportReferences();
         parameterLinkRegistry.updateSinks(parameterModel);
         this.computeDifferences();
         project.markStudyModified();
         editListener.accept(parameterModel);
     }
 
-    private void applyParameterUpdateFromExternalModel() {
-        logger.debug("update parameter value from model");
-        externalModelUpdateHandler.applyParameterUpdateFromExternalModel(parameterModel);
-        ParameterModelUpdateState updateState = externalModelUpdateHandler.parameterModelUpdateState(parameterModel);
-        if (updateState == null) {
+    private void updateValueReference() {
+        ParameterReferenceValidity validity = parameterModel.validateValueReference();
+        if (validity == null) {
             return;
         }
-        if (updateState == SUCCESS || updateState == SUCCESS_WITHOUT_UPDATE) {
-            this.valueText.setText(this.convertToText(parameterModel.getValue()));
-        } else {
-            String errorMessage = "Unable to update value: " + updateState.description;
-            statusLogger.error(errorMessage);
-            UserNotifications.showNotification(ownerStage, "Error", errorMessage);
+        logger.debug("Update parameter value from model");
+        if (validity.isValid()) {
+            parameterModel.updateValueReference();
+            if (parameterModel.getLastValueReferenceUpdateState().isSuccessful()) {
+                this.valueText.setText(this.convertToText(parameterModel.getValue()));
+            }
         }
     }
 
-    private void applyParameterUpdatesToExternalModel() {
+    private void updateExportReferences() {
         if (parameterModel.getIsExported()) {
-            if (this.exportReference != null && this.exportReference.getExternalModel() != null) {
+            if (parameterModel.isValidExportReference()) {
                 ExternalModel externalModel = this.exportReference.getExternalModel();
-                try {
-                    List<Pair<ParameterModel, ExternalModelUpdateState>> updates
-                            = externalModelUpdateHandler.applyParameterUpdatesToExternalModel(externalModel);
-                    updates.forEach(pair -> {
-                        ParameterModel parameterModel = pair.getLeft();
-                        ExternalModelUpdateState update = pair.getRight();
-                        if (update == ExternalModelUpdateState.FAIL_EMPTY_REFERENCE
-                                || update == ExternalModelUpdateState.FAIL_EMPTY_REFERENCE_EXTERNAL_MODEL) {
-                            statusLogger.warn("Parameter " + parameterModel.getNodePath() + " has empty exportReference.");
-                        } else if (update == ExternalModelUpdateState.FAIL_EXPORT) {
-                            statusLogger.warn("Failed to export parameter " + parameterModel.getNodePath());
-                        }
-                    });
-                } catch (ExternalModelException e) {
-                    logger.warn("Cannot apply parameter updates to ExternalModel: " + externalModel.getNodePath(), e);
+                externalModelFileWatcher.maskChangesTo(externalModel.getCacheFile());
+                boolean updated = externalModel.updateExportReferences();
+                if (!updated) {
+                    statusLogger.warn("Failed to export parameter " + parameterModel.getNodePath());
                 }
+                externalModelFileWatcher.unmaskChangesTo(externalModel.getCacheFile());
+            } else {
+                statusLogger.warn("Parameter " + parameterModel.getNodePath() + " has invalid export reference: "
+                        + parameterModel.validateExportReference().description);
             }
         }
     }
@@ -437,7 +424,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         }
         if (isExportedCheckbox.isSelected()) {
             if (exportReference != null && exportReference.equals(valueReference)) {
-                Dialogues.showWarning("inconsistency", "value source and export reference must not be equal. ignoring export reference.");
+                Dialogues.showWarning("Inconsistency", "Value source and export reference must not be equal. Ignoring export reference.");
                 exportReference = null;
             }
         }
@@ -457,12 +444,18 @@ public class ParameterEditorController implements Initializable, Displayable {
                     .filter(pd -> pd.getParameter1().getUuid().equals(parameterModel.getUuid()))
                     .findFirst()
                     .ifPresent(pd -> {
-                        String attDiffs = pd.getAttributes().stream().collect(Collectors.joining(","));
-                        String message = parameterModel.getNodePath() + ": " + attDiffs;
+                        String message;
+                        if (pd.getAttributes() != null) {
+                            String attDiffs = pd.getAttributes().stream().collect(Collectors.joining(","));
+                            message = parameterModel.getNodePath() + ": " + attDiffs;
+                        } else {
+                            message = parameterModel.getNodePath();
+                        }
                         actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, message);
                     });
 
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Error checking repository for changes", e);
             statusLogger.error("Error checking repository for changes");
         }
     }

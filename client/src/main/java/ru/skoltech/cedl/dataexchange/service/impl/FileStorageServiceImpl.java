@@ -32,7 +32,7 @@ import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.service.ExternalModelFileStorageService;
+import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 
 import javax.xml.bind.JAXBContext;
@@ -40,10 +40,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementation of service which handles operations with file system.
@@ -57,7 +54,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
     private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
 
-    private ExternalModelFileStorageService externalModelFileStorageService;
+    private ExternalModelService externalModelService;
 
     private final File applicationDirectory;
 
@@ -86,8 +83,8 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
     }
 
-    public void setExternalModelFileStorageService(ExternalModelFileStorageService externalModelFileStorageService) {
-        this.externalModelFileStorageService = externalModelFileStorageService;
+    public void setExternalModelService(ExternalModelService externalModelService) {
+        this.externalModelService = externalModelService;
     }
 
     @Override
@@ -132,7 +129,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public Calculation loadCalculation(File inputFile) throws IOException {
+    public Calculation importCalculation(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             final Class[] MC = Calculation.getEntityClasses();
             JAXBContext ct = JAXBContext.newInstance(MC);
@@ -146,7 +143,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public SystemModel loadSystemModel(File inputFile) throws IOException {
+    public SystemModel importSystemModel(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             Set<Class> modelClasses = new HashSet<>();
             modelClasses.addAll(Arrays.asList(MODEL_CLASSES));
@@ -166,7 +163,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public UnitManagement loadUnitManagement(InputStream inputStream) throws IOException {
+    public UnitManagement importUnitManagement(InputStream inputStream) throws IOException {
         try (BufferedInputStream inp = new BufferedInputStream(inputStream)) {
             JAXBContext ct = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
 
@@ -180,7 +177,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public UserRoleManagement loadUserRoleManagement(File inputFile) throws IOException {
+    public UserRoleManagement importUserRoleManagement(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             JAXBContext ct = JAXBContext.newInstance(UserRoleManagement.class, User.class, Discipline.class);
 
@@ -192,7 +189,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public void storeCalculation(Calculation calculation, File outputFile) throws IOException {
+    public void exportCalculation(Calculation calculation, File outputFile) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
             final Class[] MC = Calculation.getEntityClasses();
             JAXBContext jc = JAXBContext.newInstance(MC);
@@ -207,7 +204,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public void storeSystemModel(SystemModel systemModel, File outputFile) throws IOException {
+    public void exportSystemModel(SystemModel systemModel, File outputFile) throws IOException {
         File outputFolder = outputFile.getParentFile();
         this.createDirectory(outputFolder);
 
@@ -228,15 +225,15 @@ public class FileStorageServiceImpl implements FileStorageService {
         Iterator<ExternalModel> iterator = systemModel.externalModelsIterator();
         while (iterator.hasNext()) {
             ExternalModel externalModel = iterator.next();
-            String nodePath = externalModelFileStorageService.makeExternalModelPath(externalModel);
+            String nodePath = externalModelService.makeExternalModelPath(externalModel);
             File nodeDir = new File(outputFolder, nodePath);
             this.createDirectory(nodeDir);
-            externalModelFileStorageService.storeExternalModel(externalModel, nodeDir);
+            externalModelService.storeExternalModel(externalModel, nodeDir);
         }
     }
 
     @Override
-    public void storeUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
+    public void exportUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
         this.createDirectory(outputFile.getParentFile());
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
@@ -253,7 +250,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public void storeUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
+    public void exportUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException {
         this.createDirectory(outputFile.getParentFile());
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
@@ -274,11 +271,11 @@ public class FileStorageServiceImpl implements FileStorageService {
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
             externalModel.setParent(modelNode);
             try {
-                String nodePath = externalModelFileStorageService.makeExternalModelPath(externalModel);
+                String nodePath = externalModelService.makeExternalModelPath(externalModel);
                 File nodeDir = new File(inputFolder, nodePath);
                 File file = new File(nodeDir, externalModel.getName());
                 if (file.exists()) {
-                    externalModelFileStorageService.readExternalModelAttachmentFromFile(file, externalModel);
+                    externalModelService.updateExternalModelFromFile(file, externalModel);
                 } else {
                     logger.error("external model file not found!");
                 }
@@ -290,8 +287,14 @@ public class FileStorageServiceImpl implements FileStorageService {
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             parameterModel.setParent(modelNode);
 
-            parameterModel.setValueReference(parameterModel.getValueReference()); // workaround to re-initialize fields on parameter
-            parameterModel.setExportReference(parameterModel.getExportReference()); // workaround to re-initialize fields on parameter
+            if (parameterModel.getValueReference() != null && parameterModel.getValueReference().getExternalModel() != null) {
+                String externalModelName = parameterModel.getValueReference().getExternalModel().getName();
+                parameterModel.getValueReference().setExternalModel(modelNode.getExternalModelMap().get(externalModelName));
+            }
+            if (parameterModel.getExportReference() != null && parameterModel.getExportReference().getExternalModel() != null) {
+                String externalModelName = parameterModel.getExportReference().getExternalModel().getName();
+                parameterModel.getExportReference().setExternalModel(modelNode.getExternalModelMap().get(externalModelName));
+            }
             if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
                 logger.info(parameterModel.getNodePath() + " <L- " + (parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "null"));
             }

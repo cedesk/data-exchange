@@ -31,13 +31,18 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.service.UserManagementService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.util.HashSet;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 /**
  * Controller for adjustment of project settings.
@@ -68,7 +73,6 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
     private ApplicationSettings applicationSettings;
     private Project project;
     private UserManagementService userManagementService;
-    private ExternalModelFileHandler externalModelFileHandler;
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
     private Stage ownerStage;
@@ -85,10 +89,6 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         this.userManagementService = userManagementService;
     }
 
-    public void setExternalModelFileHandler(ExternalModelFileHandler externalModelFileHandler) {
-        this.externalModelFileHandler = externalModelFileHandler;
-    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         StudySettings studySettings = studySettings();
@@ -99,7 +99,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         String projectUserName = applicationSettings.getProjectUserName();
         boolean projectLastAutoload = applicationSettings.isProjectLastAutoload();
 
-        String projectDataDir = project.getProjectDataDir().getAbsolutePath();
+        String projectDataDir = project.getProjectHome().getAbsolutePath();
 
         ChangeListener<Object> changeListener = (observable, oldValue, newValue) ->
                 changed.setValue(parametersChanged(syncEnabled, projectUseOsUser,
@@ -215,7 +215,37 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
 
     public void cleanupProjectCache() {
         SystemModel systemModel = project.getStudy().getSystemModel();
-        externalModelFileHandler.cleanupCache(systemModel);
+        Set<String> actualCacheFiles = new HashSet<>();
+        File projectDataDir = project.getProjectHome();
+        systemModel.externalModelsIterator().forEachRemaining(externalModel -> {
+            actualCacheFiles.add(externalModel.getCacheFile().getAbsolutePath());
+            logger.info("File: '" + externalModel.getCacheFile().getAbsolutePath() + "', [" + externalModel.state() + "], need to keep");
+        });
+        // go through cache directory, check if to keep, otherwise delete
+        try {
+            Files.walk(projectDataDir.toPath(), FileVisitOption.FOLLOW_LINKS).forEach(path -> {
+                File file = path.toFile();
+
+                if (file.isFile() && actualCacheFiles.stream().noneMatch(s -> file.getAbsolutePath().startsWith(s))) {
+                    // files not to be kept
+                    logger.info("Deleting: '" + file.getAbsolutePath() + "' file");
+                    boolean deleted = file.delete();
+                    if (!deleted) {
+                        logger.warn("Cannot delete '" + file.getAbsolutePath() + "' file");
+                    }
+                } else if (file.isDirectory() && file.list() != null && file.list().length == 0) { // empty directories
+                    logger.info("Deleting: '" + file.getAbsolutePath() + "' directory");
+                    boolean deleted = file.delete();
+                    if (!deleted) {
+                        logger.warn("Cannot delete '" + file.getAbsolutePath() + "' directory");
+                    }
+                } else {
+                    logger.info("Keeping: '" + file.getAbsolutePath() + "'");
+                }
+            });
+        } catch (IOException e) {
+            logger.error("Error traversing project directory", e);
+        }
     }
 
 }

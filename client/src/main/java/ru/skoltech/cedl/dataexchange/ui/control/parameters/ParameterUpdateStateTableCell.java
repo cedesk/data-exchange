@@ -23,7 +23,6 @@ import javafx.scene.paint.Color;
 import org.apache.commons.lang3.tuple.Pair;
 import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
 /**
  * Table cell to display parameter model update state.
@@ -31,26 +30,25 @@ import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
  * Created by Nikolay Groshkov on 13-Sep-17.
  */
 public class ParameterUpdateStateTableCell
-        extends TableCell<Pair<ParameterModel, ParameterModelUpdateState>, ParameterModelUpdateState> {
+        extends TableCell<ParameterModel, Pair<Boolean, String>> {
 
     @Override
-    protected void updateItem(ParameterModelUpdateState updateState, boolean empty) {
-        super.updateItem(updateState, empty);
-        if (updateState == null) {
+    protected void updateItem(Pair<Boolean, String> state, boolean empty) {
+        super.updateItem(state, empty);
+        if (state == null) {
+            this.setGraphic(null);
+            this.setStyle(style());
+            this.setTooltip(null);
             return;
         }
-        this.setGraphic(graphic(updateState));
+        this.setGraphic(graphic(state.getKey()));
         this.setStyle(style());
-        this.setTooltip(tooltip(updateState));
+        this.setTooltip(tooltip(state.getValue()));
     }
 
-    private Node graphic(ParameterModelUpdateState updateState) {
-        if (updateState == null) {
-            return null;
-        }
-        boolean success = updateState == ParameterModelUpdateState.SUCCESS || updateState == ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
-        String icon = success ? "CHECK" : "WARNING";
-        Color color = success ? Color.GREEN : Color.RED;
+    private Node graphic(boolean state) {
+        String icon = state ? "CHECK" : "WARNING";
+        Color color = state ? Color.GREEN : Color.RED;
         Glyph glyph = new Glyph();
         glyph.setFontFamily("FontAwesome");
         glyph.setIcon(icon);
@@ -62,10 +60,10 @@ public class ParameterUpdateStateTableCell
         return "-fx-alignment: center;";
     }
 
-    private Tooltip tooltip(ParameterModelUpdateState update) {
-        if (update == null) {
+    private Tooltip tooltip(String state) {
+        if (state == null) {
             return null;
         }
-        return new Tooltip(update.description);
+        return new Tooltip(state);
     }
 }

@@ -25,8 +25,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
 import ru.skoltech.cedl.dataexchange.service.SpreadsheetInputOutputExtractorService;
 import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
@@ -259,7 +258,7 @@ public class SpreadsheetInputOutputExtractorServiceImpl implements SpreadsheetIn
         try {
             Double numericValue = SpreadsheetCellValueAccessor.getNumericValue(numberCell);
             parameter.setValue(numericValue);
-        } catch (ExternalModelException e) {
+        } catch (Exception e) {
             logger.warn("error reading value for parameter '" + parameterName + "' from " + exportReference.toString());
             parameter.setValue(Double.NaN);
         }

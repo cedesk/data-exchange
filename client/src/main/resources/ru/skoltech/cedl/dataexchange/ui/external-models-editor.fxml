@@ -43,6 +43,14 @@
                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
             </graphic>
         </Button>
+        <Button minWidth="28" mnemonicParsing="false" onAction="#openCacheFolder">
+            <tooltip>
+                <Tooltip text="Open the folder of the external model cache"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="FOLDER_OPEN_ALT"/>
+            </graphic>
+        </Button>
         <Button minWidth="28" mnemonicParsing="false" onAction="#reloadExternalModels">
             <tooltip>
                 <Tooltip text="Refresh values from external models"/>

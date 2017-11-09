@@ -19,8 +19,6 @@ package ru.skoltech.cedl.dataexchange.external.excel;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
-import ru.skoltech.cedl.dataexchange.external.SpreadsheetCoordinates;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -100,20 +98,16 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         return result;
     }
 
-    public static Double getNumericValue(Cell cell) throws ExternalModelException {
+    public static Double getNumericValue(Cell cell) throws IOException {
         Double result = Double.NaN;
         if (cell != null) {
             switch (cell.getCellTypeEnum()) {
                 case NUMERIC:
                 case FORMULA:
-                    try {
-                        result = cell.getNumericCellValue();
-                    } catch (Exception e) {
-                        throw new ExternalModelException("unable to get cell value", e);
-                    }
+                    result = cell.getNumericCellValue();
                     break;
                 default:
-                    throw new ExternalModelException("invalid cell type: " + cell.getCellTypeEnum());
+                    throw new IOException("Invalid cell type: " + cell.getCellTypeEnum());
             }
         }
         return result;
@@ -124,31 +118,27 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         wb.close();
     }
 
-    public Cell getCell(SpreadsheetCoordinates cellCoordinates) throws ExternalModelException {
+    public Cell getCell(SpreadsheetCoordinates cellCoordinates) throws IOException {
         try {
-            Sheet sheet = null;
             String sheetName = cellCoordinates.getSheetName();
-            if (sheetName != null) {
-                // TODO: handle invalid sheetname
-                sheet = wb.getSheet(sheetName);
-            } else {
-                sheet = wb.getSheetAt(0);
+            // TODO: handle invalid sheetname
+            Sheet sheet = sheetName != null ? wb.getSheet(sheetName) : wb.getSheetAt(0);
+            if (sheetName == null) {
                 logger.debug("accessing spreadsheet without sheetName");
             }
             Row sheetRow = sheet.getRow(cellCoordinates.getRowNumber() - 1);
             if (sheetRow == null) sheetRow = sheet.createRow(cellCoordinates.getRowNumber() - 1);
-            Cell cell = sheetRow.getCell(cellCoordinates.getColumnNumber() - 1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
-            return cell;
+            return sheetRow.getCell(cellCoordinates.getColumnNumber() - 1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
         } catch (Exception e) {
-            throw new ExternalModelException("error accessing spreadsheet cell: " + cellCoordinates.toString(), e);
+            throw new IOException("Error accessing spreadsheet cell: " + cellCoordinates.toString(), e);
         }
     }
 
-    public Double getNumericValue(SpreadsheetCoordinates coordinates) throws ExternalModelException {
+    public Double getNumericValue(SpreadsheetCoordinates coordinates) throws IOException {
         return getNumericValue(getCell(coordinates));
     }
 
-    public String getValueAsString(SpreadsheetCoordinates coordinates) throws ExternalModelException {
+    public String getValueAsString(SpreadsheetCoordinates coordinates) throws IOException {
         return getValueAsString(getCell(coordinates));
     }
 
@@ -162,7 +152,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         wb.write(outputStream);
     }
 
-    public void setNumericValue(SpreadsheetCoordinates coordinates, Double value) throws ExternalModelException {
+    public void setNumericValue(SpreadsheetCoordinates coordinates, Double value) throws IOException {
         setNumericValue(getCell(coordinates), value);
     }
 
@@ -173,21 +163,13 @@ public class SpreadsheetCellValueAccessor implements Closeable {
     /**
      * This method writes a value to a cell, and memorizes if changes have been such that the spreadsheet needs to be saved afterwards.
      */
-    private void setNumericValue(Cell cell, Double value) throws ExternalModelException {
+    private void setNumericValue(Cell cell, Double value) throws IOException {
         Objects.requireNonNull(cell);
-        boolean change = true;
-        try {
-            Double previousValue = getNumericValue(cell);
-            change = !Precision.equals(previousValue, value, 2) || cell.getCellTypeEnum() != CellType.NUMERIC;
-        } catch (ExternalModelException ignore) {
-        }
+        Double previousValue = getNumericValue(cell);
+        boolean change = !Precision.equals(previousValue, value, 2) || cell.getCellTypeEnum() != CellType.NUMERIC;
         if (change) {
-            try {
-                cell.setCellType(CellType.NUMERIC);
-                cell.setCellValue(value);
-            } catch (IllegalArgumentException | IllegalStateException e) {
-                throw new ExternalModelException("writing to cell failed!", e);
-            }
+            cell.setCellType(CellType.NUMERIC);
+            cell.setCellValue(value);
             markModified();
             formulaEvaluator.notifyUpdateCell(cell);
         }

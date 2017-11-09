@@ -28,7 +28,7 @@ import java.net.URL;
 public interface GuiService {
 
     /**
-     * TODO: add javadoc
+     * Copy the text to the systems clipboard.
      *
      * @param code
      */

@@ -34,13 +34,12 @@
         <property name="project" ref="project"/>
     </bean>
 
-    <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project">
+    <bean id="project" class="ru.skoltech.cedl.dataexchange.structure.Project" init-method="init">
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="repositoryStateMachine" ref="repositoryStateMachine"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
-        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
         <property name="fileStorageService" ref="fileStorageService"/>
         <property name="studyService" ref="studyService"/>
         <property name="userManagementService" ref="userManagementService"/>
@@ -48,6 +47,7 @@
         <property name="unitManagementService" ref="unitManagementService"/>
         <property name="inboundFilesChannel" ref="inboundFilesChannel"/>
         <property name="executor" ref="executor"/>
+        <property name="actionLogger" ref="actionLogger"/>
     </bean>
 
     <util:map id="builderRegistry" map-class="java.util.HashMap">
@@ -78,18 +78,8 @@
           parent="systemBuilder"/>
 
     <bean id="differenceHandler" class="ru.skoltech.cedl.dataexchange.structure.DifferenceHandler">
-        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
         <property name="studyService" ref="studyService"/>
         <property name="nodeDifferenceService" ref="nodeDifferenceService"/>
-        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
-    </bean>
-
-    <bean id="externalModelUpdateHandler" class="ru.skoltech.cedl.dataexchange.structure.update.ExternalModelUpdateHandler">
-        <property name="externalModelAccessorFactory" ref="externalModelAccessorFactory"/>
-        <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
-        <property name="externalModelFileStorageService" ref="externalModelFileStorageService"/>
-        <property name="externalModelFileHandler" ref="externalModelFileHandler"/>
-        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
     </bean>
 
     <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry">
@@ -100,16 +90,6 @@
     <bean id="externalModelFileWatcher" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher">
         <property name="directoryWatchService" ref="directoryWatchService"/>
     </bean>
-
-    <bean id="externalModelFileHandler" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileHandler">
-        <property name="project" ref="project"/>
-        <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
-        <property name="externalModelUpdateHandler" ref="externalModelUpdateHandler"/>
-        <property name="fileStorageService" ref="fileStorageService"/>
-        <property name="externalModelFileStorageService" ref="externalModelFileStorageService"/>
-    </bean>
-
-    <bean id="externalModelAccessorFactory" class="ru.skoltech.cedl.dataexchange.external.ExternalModelAccessorFactory"/>
 
     <bean id="tradespaceModelBridge" class="ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge"
           scope="prototype">

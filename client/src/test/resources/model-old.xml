@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  ~ Copyright 2017 Skolkovo Institute of Science and Technology
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<systemModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="testModel" uuid="46d9ee84-cd7f-423a-9827-bd135c7b9e6a" xsi:schemaLocation="">
+    <externalModels>
+        <externalModel name="attachment.xls" lastModification="1509387311745" uuid="11e95dd3-7de3-4bf6-a941-353f99c06012"/>
+    </externalModels>
+    <parameters>
+        <parameter name="mass" value="21.0" nature="OUTPUT" valueSource="MANUAL" unit="" isExported="false" isReferenceValueOverridden="false" uuid="11073bdf-314a-4413-ae73-ce1ec2ec2f39">
+            <valueReference externalModel="attachment.xls" target="B3"/>
+            <description></description>
+        </parameter>
+        <parameter name="power" value="51.0" nature="OUTPUT" valueSource="MANUAL" unit="" isExported="false" isReferenceValueOverridden="false" uuid="9aa38d61-3db3-49e2-8644-b0d43114ce33">
+            <exportReference externalModel="attachment.xls" target="D4"/>
+            <description></description>
+        </parameter>
+    </parameters>
+    <subNodes/>
+</systemModel>
