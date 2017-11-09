@@ -169,8 +169,6 @@
             <groupId>jdsm</groupId>
             <artifactId>jdsm</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jDSM-1.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jscience</groupId>
@@ -204,6 +202,29 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>install-external</id>
+                        <phase>clean</phase>
+                        <configuration>
+                            <file>${project.basedir}/lib/jDSM-1.0.jar</file>
+                            <repositoryLayout>default</repositoryLayout>
+                            <groupId>jDSM</groupId>
+                            <artifactId>jDSM</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <generatePom>true</generatePom>
+                        </configuration>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>com.zenjava</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
