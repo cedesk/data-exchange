@@ -94,7 +94,8 @@
                        GridPane.rowIndex="3"/>
             <HBox alignment="CENTER_LEFT" prefWidth="200.0" spacing="8" GridPane.columnIndex="2" GridPane.rowIndex="3">
                 <Label text="Unit"/>
-                <ComboBox fx:id="unitComboBox" editable="true" prefWidth="200.0"/>
+                <TextField fx:id="unitTextField" editable="false" prefWidth="200.0"/>
+                <Button fx:id="unitChooseButton" onAction="#chooseUnit" text="Choose..." />
             </HBox>
             <Label text="Override Value" GridPane.halignment="RIGHT" GridPane.rowIndex="4"/>
             <CheckBox fx:id="isReferenceValueOverriddenCheckbox" mnemonicParsing="false" GridPane.columnIndex="1"

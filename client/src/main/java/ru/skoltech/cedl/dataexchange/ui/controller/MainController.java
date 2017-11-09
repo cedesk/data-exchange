@@ -61,6 +61,7 @@ import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference.ChangeLocation;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.awt.*;
@@ -318,7 +319,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
             File outputFile = new File(exportPath, outputFileName);
             try {
-                fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
+                fileStorageService.exportSystemModel(project.getSystemModel(), outputFile);
                 statusLogger.info("Successfully exported study!");
                 actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
             } catch (IOException e) {
@@ -362,10 +363,12 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    public boolean checkUnsavedModifications() {
-        if (project.hasLocalStudyModifications()) {
+    public boolean checkUnsavedStructureModifications() {
+        long nodeChanges = differenceHandler.modelDifferences().stream()
+                .filter(modelDiff -> modelDiff instanceof NodeDifference).count();
+        if (nodeChanges > 0) {
             Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
-                    "Modifications to the model must to be saved before managing user discipline assignment. " +
+                    "Modifications to the model structure must to be saved before managing user discipline assignment. " +
                             "Shall it be saved now?");
             if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
                 try {
@@ -486,7 +489,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         if (importFile != null) {
             // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
             try {
-                SystemModel systemModel = fileStorageService.loadSystemModel(importFile);
+                SystemModel systemModel = fileStorageService.importSystemModel(importFile);
                 project.importSystemModel(systemModel);
                 updateView();
                 statusLogger.info("Successfully imported study!");
@@ -573,6 +576,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void openDependencyView() {
         ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
+        dependencyViewBuilder.resizable(false);
         dependencyViewBuilder.ownerWindow(ownerStage);
         dependencyViewBuilder.show();
     }
@@ -602,7 +606,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         diffViewBuilder.ownerWindow(ownerStage);
         diffViewBuilder.modality(Modality.APPLICATION_MODAL);
         diffViewBuilder.showAndWait();
-        modelEditingController.clearView();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
@@ -677,7 +680,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openUnitManagement() {
-        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_EDITING_VIEW);
+        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_MANAGEMENT_VIEW);
         unitEditingViewBuilder.ownerWindow(ownerStage);
         unitEditingViewBuilder.modality(Modality.APPLICATION_MODAL);
         unitEditingViewBuilder.show();
@@ -691,7 +694,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openUserRoleManagement() {
-        if (!checkUnsavedModifications()) {
+        if (!checkUnsavedStructureModifications()) {
             return;
         }
 

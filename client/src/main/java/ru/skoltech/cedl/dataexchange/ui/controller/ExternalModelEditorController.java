@@ -123,10 +123,8 @@ public class ExternalModelEditorController implements Initializable {
                     "Unable to attach an external model, as long as the project has not been saved yet!");
             return;
         }
-        List<FileChooser.ExtensionFilter> extensionFilters = externalModelService.fileDescriptionsAndExtensions()
-                .stream().map(descriptionAndExtension
-                        -> new FileChooser.ExtensionFilter(descriptionAndExtension.getLeft(), descriptionAndExtension.getRight()))
-                .collect(Collectors.toList());
+        List<String> extensions = externalModelService.supportedExtensions();
+        List<FileChooser.ExtensionFilter> extensionFilters = Collections.singletonList(new FileChooser.ExtensionFilter("External Model", extensions));
         File externalModelFile = chooseExternalModelFile(fileStorageService.applicationDirectory(), extensionFilters);
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
@@ -165,7 +163,7 @@ public class ExternalModelEditorController implements Initializable {
     }
 
     public void openCacheFolder() {
-        if (modelNode.getExternalModels().size() > 0) {
+        if (modelNode != null && modelNode.getExternalModels().size() > 0) {
             try {
                 ExternalModel externalModel = modelNode.getExternalModels().get(0);
                 File file = externalModel.getCacheFile();

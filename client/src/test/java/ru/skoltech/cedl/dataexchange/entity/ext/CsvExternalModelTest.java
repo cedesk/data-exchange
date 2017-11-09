@@ -21,6 +21,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.controlsfx.control.spreadsheet.Grid;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelImplTest;
@@ -243,6 +244,24 @@ public class CsvExternalModelTest extends ExternalModelImplTest {
             e.printStackTrace(System.err);
             fail(e.getMessage());
         }
+    }
+
+    @Test(expected = ExternalModelException.class)
+    public void testGetGridFail() throws ExternalModelException {
+        CsvExternalModel csvExternalModel = (CsvExternalModel) externalModel;
+        csvExternalModel.setAttachment(null);
+        csvExternalModel.getGrid();
+    }
+
+    @Test
+    public void testGetGrid() throws ExternalModelException {
+        CsvExternalModel csvExternalModel = (CsvExternalModel) externalModel;
+        Grid grid = csvExternalModel.getGrid();
+        assertNotNull(grid);
+        assertEquals(6, grid.getRowCount());
+        assertEquals(5, grid.getColumnCount());
+        assertEquals("11:13.6", grid.getRows().get(5).get(2).getText());
+
     }
 
 }

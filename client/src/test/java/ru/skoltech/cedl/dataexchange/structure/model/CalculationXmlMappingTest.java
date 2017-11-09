@@ -65,9 +65,9 @@ public class CalculationXmlMappingTest extends AbstractApplicationContextTest {
 
         File file = new File("target", "Calculation.xml");
         // Export
-        fileStorageService.storeCalculation(calc, file);
+        fileStorageService.exportCalculation(calc, file);
         // Re-import
-        Calculation recalc = fileStorageService.loadCalculation(file);
+        Calculation recalc = fileStorageService.importCalculation(file);
 
         Assert.assertNotEquals(calc, recalc);
     }

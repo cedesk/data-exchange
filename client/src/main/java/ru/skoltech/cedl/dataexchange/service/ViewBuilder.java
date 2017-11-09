@@ -21,6 +21,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -223,6 +225,11 @@ public class ViewBuilder<T> {
 
             if (ownerWindow != null) {
                 stage.initOwner(ownerWindow);
+                stage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+                    if(event.getCode() == KeyCode.ESCAPE){
+                        stage.close();
+                    }
+                });
             }
 
             if (controller instanceof Displayable) {

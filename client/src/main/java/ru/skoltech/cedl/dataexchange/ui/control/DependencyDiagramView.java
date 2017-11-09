@@ -40,19 +40,21 @@ import java.util.stream.Collectors;
  */
 public class DependencyDiagramView extends AnchorPane implements Initializable {
 
-    public static final Color LEGEND_BACKGROUND = Color.WHITE;
+    private static final Color LEGEND_BACKGROUND = Color.WHITE;
     private static final Color ELEMENT_FILL_COLOR = Color.LIGHTGREY;
     private static final Color DEFAULT_CONNECTION_COLOR = Color.DARKGREY;
     private static final Color HIGHLIGHT_CONNECTION_COLOR = Color.BLUE;
     private static final Color HIGHLIGHTED_ELEMENT_COLOR = Color.BLACK;
     private static final Double[] DASHED_STROKE = new Double[]{10d, 7d};
-    private static double CAPTION_SCALE = .75;
-    private static int ELEMENT_PADDING = 15;
-    private static int ELEMENT_HEIGHT = 50;
-    private static int ELEMENT_WIDTH = 100;
-    private static int ARROW_SIZE = 10;
+    public static final double LEGEND_HEIGHT = 18;
+    private static final double LEGEND_LABEL_HEIGHT = 60;
+    private static final double CAPTION_SCALE = .75;
+    public static final int ELEMENT_PADDING = 15;
+    public static final int ELEMENT_HEIGHT = 50;
+    public static final int ELEMENT_WIDTH = 100;
+    private static final int ARROW_SIZE = 10;
+    private static final int LINE_WIDTH = 2;
 
-    private static int LINE_WIDTH = 2;
     private HashMap<String, DiagramElement> elements = new HashMap<>();
     private MultiValuedMap<String, DiagramConnection> fromConnections = new ArrayListValuedHashMap<>();
     private MultiValuedMap<String, DiagramConnection> toConnections = new ArrayListValuedHashMap<>();
@@ -69,12 +71,10 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
     }
 
     public void setModel(DependencyModel dependencyModel) {
-        reset();
+        this.reset();
         dependencyModel.elementStream()
                 .sorted(DependencyModel.Element.POSITION_COMPARATOR)
-                .forEach(element -> {
-                    addElement(element.getName());
-                });
+                .forEach(element -> this.addElement(element.getName()));
         dependencyModel.connectionStream().forEach(conn -> {
             EnumSet<ConnectionState> states = getStates(conn.getLinkingParameters());
             String statefulDescription = conn.getLinkingParameters().stream()
@@ -83,11 +83,11 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
                         return stateAbbr.equals("") ? pm.getName() : "[" + stateAbbr + "] " + pm.getName();
                     })
                     .collect(Collectors.joining(",\n"));
-            addConnection(conn.getFromName(), conn.getToName(), statefulDescription, conn.getStrength(), states);
+            this.addConnection(conn.getFromName(), conn.getToName(), statefulDescription, conn.getStrength(), states);
         });
     }
 
-    public void addConnection(String from, String to, String description, int strength, EnumSet<ConnectionState> connectionState) {
+    private void addConnection(String from, String to, String description, int strength, EnumSet<ConnectionState> connectionState) {
         DiagramElement fromDiagEl = elements.get(from);
         String fromName = fromDiagEl.getName();
         DiagramElement toDiagEl = elements.get(to);
@@ -98,7 +98,7 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         toConnections.put(toName, connection);
         refineStartingPoints(fromName);
         refineEndingPoints(toName);
-        getChildren().add(connection);
+        this.getChildren().add(connection);
     }
 
     public void addConnection(String from, String to, String description, int strength) {
@@ -112,14 +112,14 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         toConnections.put(toName, connection);
         refineStartingPoints(fromName);
         refineEndingPoints(toName);
-        getChildren().add(connection);
+        this.getChildren().add(connection);
     }
 
     public void addElement(String name) {
         if (!elements.containsKey(name)) {
             DiagramElement diagramElement = new DiagramElement(name, elements.size());
             elements.put(name, diagramElement);
-            getChildren().add(diagramElement);
+            this.getChildren().add(diagramElement);
             setPrefWidth(prefWidth(0) + ELEMENT_PADDING);
             setPrefHeight(prefHeight(0) + ELEMENT_PADDING);
         }
@@ -130,7 +130,7 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         drawLegend();
     }
 
-    public void reset() {
+    private void reset() {
         getChildren().clear();
         elements.clear();
         fromConnections.clear();
@@ -139,62 +139,73 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
     }
 
     private void drawLegend() {
-        Rectangle rect = new Rectangle(ELEMENT_WIDTH, ELEMENT_PADDING * 6);
         // legend box
-        rect.setFill(LEGEND_BACKGROUND);
-        rect.setStrokeWidth(LINE_WIDTH);
-        rect.setStroke(DEFAULT_CONNECTION_COLOR);
-        rect.setLayoutX(getWidth() - ELEMENT_WIDTH - ELEMENT_PADDING);
-        rect.setLayoutY(ELEMENT_PADDING);
-        getChildren().add(rect);
+        Rectangle rect = new Rectangle(getWidth(), LEGEND_HEIGHT, LEGEND_BACKGROUND);
+        rect.setLayoutX(0);
+        rect.setLayoutY(0);
+        rect.toBack();
+
         // legend title
-        Label caption = new Label("Link status");
+        Label caption = new Label("Link status: ");
         caption.setLabelFor(rect);
         caption.setMinWidth(ELEMENT_WIDTH);
         caption.setAlignment(Pos.CENTER);
-        caption.setLayoutX(getWidth() - ELEMENT_WIDTH - ELEMENT_PADDING);
-        caption.setLayoutY(ELEMENT_PADDING);
-        getChildren().add(caption);
+        caption.setMinWidth(LEGEND_LABEL_HEIGHT);
+        caption.setLayoutX(ELEMENT_PADDING);
+        caption.setLayoutY(0);
+        caption.toBack();
+
         // connections DEFAULT
-        double layoutY = caption.getLayoutY() + ELEMENT_PADDING * 2;
-        Line line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING * 2, layoutY);
-        line.setStrokeWidth(LINE_WIDTH);
-        line.setStroke(DEFAULT_CONNECTION_COLOR);
-        Label lbl = new Label("consistent");
-        lbl.setLabelFor(line);
-        lbl.setMinWidth(ELEMENT_WIDTH / 2);
-        lbl.setLayoutX(line.getEndX() + ELEMENT_PADDING / 2);
-        lbl.setLayoutY(line.getEndY() - ELEMENT_PADDING / 2);
-        getChildren().addAll(line, lbl);
+        double layoutX = caption.getLayoutX() + caption.getMinWidth() + ELEMENT_PADDING;
+        Line consistentLine = new Line(layoutX , LEGEND_HEIGHT /2, layoutX + ELEMENT_WIDTH/3 + ELEMENT_PADDING, LEGEND_HEIGHT /2);
+        consistentLine.setStrokeWidth(LINE_WIDTH);
+        consistentLine.setStroke(DEFAULT_CONNECTION_COLOR);
+        consistentLine.toBack();
+        Label consistentLabel = new Label("consistent");
+        consistentLabel.setLabelFor(consistentLine);
+        consistentLabel.setMinWidth(LEGEND_LABEL_HEIGHT);
+        consistentLabel.setLayoutX(consistentLine.getEndX() + ELEMENT_PADDING / 2);
+        consistentLabel.setLayoutY(0);
+        consistentLabel.toBack();
+
         // connections NOT_PROP
-        layoutY = caption.getLayoutY() + ELEMENT_PADDING * 3.4;
-        line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING * 2, layoutY);
-        line.setStrokeWidth(LINE_WIDTH);
-        line.setStroke(HIGHLIGHT_CONNECTION_COLOR);
-        lbl = new Label("not prop.");
-        lbl.setLabelFor(line);
-        lbl.setMinWidth(ELEMENT_WIDTH / 2);
-        lbl.setLayoutX(line.getEndX() + ELEMENT_PADDING / 2);
-        lbl.setLayoutY(line.getEndY() - ELEMENT_PADDING / 2);
-        getChildren().addAll(line, lbl);
+        layoutX = consistentLabel.getLayoutX() + consistentLabel.getMinWidth() + ELEMENT_PADDING;
+        Line notPropLine = new Line(layoutX , LEGEND_HEIGHT /2, layoutX + ELEMENT_WIDTH/3 + ELEMENT_PADDING, LEGEND_HEIGHT /2);
+        notPropLine.setStrokeWidth(LINE_WIDTH);
+        notPropLine.setStroke(HIGHLIGHT_CONNECTION_COLOR);
+        notPropLine.toBack();
+        Label notPropLabel = new Label("not prop.");
+        notPropLabel.setLabelFor(notPropLine);
+        notPropLabel.setMinWidth(LEGEND_LABEL_HEIGHT);
+        notPropLabel.setLayoutX(notPropLine.getEndX() + ELEMENT_PADDING / 2);
+        notPropLabel.setLayoutY(0);
+        notPropLabel.toBack();
+
         // connections OVERRIDDEN
-        layoutY = caption.getLayoutY() + ELEMENT_PADDING * 4.8;
-        line = new Line(caption.getLayoutX() + ELEMENT_PADDING / 2, layoutY, caption.getLayoutX() + ELEMENT_PADDING * 2, layoutY);
-        line.setStrokeWidth(LINE_WIDTH);
-        line.setStroke(DEFAULT_CONNECTION_COLOR);
-        double lxe = line.getEndX();
-        double lye = line.getEndY();
+        layoutX = notPropLabel.getLayoutX() + notPropLabel.getMinWidth() + ELEMENT_PADDING;
+        Line overriddenLine = new Line(layoutX , LEGEND_HEIGHT /2, layoutX + ELEMENT_WIDTH/3 + ELEMENT_PADDING, LEGEND_HEIGHT /2);
+        overriddenLine.setStrokeWidth(LINE_WIDTH);
+        overriddenLine.setStroke(DEFAULT_CONNECTION_COLOR);
+        overriddenLine.toBack();
+        double lxe = overriddenLine.getEndX();
+        double lye = overriddenLine.getEndY();
         Polygon arrow = new Polygon(lxe, lye, lxe - ARROW_SIZE, lye - ARROW_SIZE / 2, lxe - ARROW_SIZE, lye + ARROW_SIZE / 2);
         arrow.setStroke(HIGHLIGHT_CONNECTION_COLOR);
         arrow.setStrokeWidth(1);
         arrow.setFill(HIGHLIGHT_CONNECTION_COLOR);
-        lbl = new Label("overridden");
-        lbl.setLabelFor(line);
-        lbl.setMinWidth(ELEMENT_WIDTH / 2);
-        lbl.setLayoutX(line.getEndX() + ELEMENT_PADDING / 2);
-        lbl.setLayoutY(line.getEndY() - ELEMENT_PADDING / 2);
-        getChildren().addAll(line, arrow, lbl);
+        arrow.toBack();
+        Label overriddenLabel = new Label("overridden");
+        overriddenLabel.setLabelFor(overriddenLine);
+        overriddenLabel.setMinWidth(LEGEND_LABEL_HEIGHT);
+        overriddenLabel.setLayoutX(overriddenLine.getEndX() + ELEMENT_PADDING / 2);
+        overriddenLabel.setLayoutY(0);
+        overriddenLabel.toBack();
 
+        this.getChildren().add(rect);
+        this.getChildren().add(caption);
+        this.getChildren().addAll(consistentLine, consistentLabel);
+        this.getChildren().addAll(notPropLine, notPropLabel);
+        this.getChildren().addAll(overriddenLine, arrow, overriddenLabel);
     }
 
     private ConnectionState getParameterLinkState(ParameterModel pm) {
@@ -308,10 +319,8 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
             caption.setAlignment(Pos.CENTER);
             getChildren().addAll(rect, caption);
             setLayoutX(ELEMENT_PADDING + position * (ELEMENT_WIDTH + ELEMENT_PADDING));
-            setLayoutY(ELEMENT_PADDING + position * (ELEMENT_HEIGHT + ELEMENT_PADDING));
-            setOnMouseClicked(event -> {
-                toggleSelection();
-            });
+            setLayoutY(LEGEND_HEIGHT + ELEMENT_PADDING + position * (ELEMENT_HEIGHT + ELEMENT_PADDING));
+            setOnMouseClicked(event -> toggleSelection());
         }
 
         public String getName() {
@@ -409,9 +418,7 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
             caption.setScaleY(CAPTION_SCALE);
             // caption.setStyle("-fx-border-width: 1; -fx-border-color: black; -fx-border-style: solid;");
             getChildren().addAll(line, arrow, caption);
-            setOnMouseClicked(event -> {
-                toggleSelection();
-            });
+            setOnMouseClicked(event -> toggleSelection());
             Tooltip tp = new Tooltip(description);
             Tooltip.install(line, tp);
         }

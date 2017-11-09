@@ -23,10 +23,7 @@ import org.apache.log4j.Logger;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
-import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
-import ru.skoltech.cedl.dataexchange.entity.ParameterTreeIterator;
-import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
@@ -36,6 +33,7 @@ import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -247,6 +245,11 @@ public class ParameterLinkRegistry {
             Calculation calculation = sink.getCalculation();
             addLinks(calculation.getLinkedParameters(), sink);
         });
+    }
+
+    public void updateAllSinks(SystemModel systemModel, Predicate<ModelNode> accessChecker) {
+        Iterator<ExternalModel> iterator = new ExternalModelTreeIterator(systemModel, accessChecker);
+        iterator.forEachRemaining(externalModel -> externalModel.updateReferencedParameterModels(this::updateSinks));
     }
 
     public void removeLink(ParameterModel source, ParameterModel sink) {

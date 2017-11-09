@@ -32,9 +32,7 @@ import ru.skoltech.cedl.dataexchange.service.impl.ExternalModelServiceImpl;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,16 +63,15 @@ public class ExternalModelServiceTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void testFileDescriptionsAndExtensionsFail() {
-        externalModelService.fileDescriptionsAndExtensions().add(Pair.of("", Collections.emptyList()));
+        externalModelService.supportedExtensions().add(".test");
     }
 
     @Test
     public void testFileDescriptionsAndExtensions() {
-        List<Pair<String, List<String>>> fileDescriptionsAndExtensions = externalModelService.fileDescriptionsAndExtensions();
-        assertEquals(2, fileDescriptionsAndExtensions.size());
-        List<List<String>> extensions = fileDescriptionsAndExtensions.stream().map(Pair::getRight).collect(Collectors.toList());
-        assertThat(extensions, hasItem(excelExtensionsMatcher));
-        assertThat(extensions, hasItem(csvExtensionsMatcher));
+        List<String> supportedExtensions = externalModelService.supportedExtensions();
+        assertEquals(4, supportedExtensions.size());
+        assertThat(supportedExtensions, excelExtensionsMatcher);
+        assertThat(supportedExtensions, csvExtensionsMatcher);
     }
 
     @Test(expected = NullPointerException.class)

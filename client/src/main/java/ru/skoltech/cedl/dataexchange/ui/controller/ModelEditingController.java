@@ -27,6 +27,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.stage.Window;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -45,6 +46,7 @@ import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItem;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItemFactory;
@@ -153,6 +155,23 @@ public class ModelEditingController implements Initializable {
         Node externalModelEditorPane = guiService.createControl(Views.EXTERNAL_MODELS_EDITOR_VIEW);
         externalModelParentPane.setContent(externalModelEditorPane);
 
+        project.getExternalModelUpdateConsumers().add(externalModel -> {
+            this.parametersController.refresh();
+            this.updateParameterEditor(this.parametersController.currentParameter());
+
+            String successParameterModelNames = externalModel.getReferencedParameterModels().stream()
+                    .filter(parameterModel -> parameterModel.getLastValueReferenceUpdateState() == ParameterModelUpdateState.SUCCESS)
+                    .map(ParameterModel::getName)
+                    .collect(Collectors.joining(","));
+
+            String message = !successParameterModelNames.isEmpty() ?
+                    "Parameters [" + successParameterModelNames + "] have been updated." : "There are no parameter updates.";
+            message = WordUtils.wrap(message, 100);
+            UserNotifications.showNotification(null, "External model modified",
+                    "External model file '" + externalModel.getName() + "' has been modified.\n"
+                            + message);
+        });
+
         // STRUCTURE TREE VIEW
         structureTree.setCellFactory(param -> new TextFieldTreeCell(project, differenceHandler));
         structureTree.setOnEditCommit(event -> project.markStudyModified());
@@ -257,6 +276,7 @@ public class ModelEditingController implements Initializable {
 
     public void openDependencyView() {
         ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
+        dependencyViewBuilder.resizable(false);
         dependencyViewBuilder.ownerWindow(getAppWindow());
         dependencyViewBuilder.show();
     }
