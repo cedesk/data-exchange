@@ -680,7 +680,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openUnitManagement() {
-        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_EDITING_VIEW);
+        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_MANAGEMENT_VIEW);
         unitEditingViewBuilder.ownerWindow(ownerStage);
         unitEditingViewBuilder.modality(Modality.APPLICATION_MODAL);
         unitEditingViewBuilder.show();
