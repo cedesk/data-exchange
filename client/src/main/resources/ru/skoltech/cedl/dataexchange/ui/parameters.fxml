@@ -61,6 +61,15 @@
                     <Glyph fontFamily="FontAwesome" icon="MINUS"/>
                 </graphic>
             </Button>
+            <Button fx:id="copyParameterButton" minWidth="28"
+                    mnemonicParsing="false" onAction="#copyParameter">
+                <tooltip>
+                    <Tooltip text="Copy Parameter"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon=""/>
+                </graphic>
+            </Button>
             <Button fx:id="viewParameterHistoryButton" minWidth="28"
                     mnemonicParsing="false" onAction="#openParameterHistoryDialog">
                 <tooltip>

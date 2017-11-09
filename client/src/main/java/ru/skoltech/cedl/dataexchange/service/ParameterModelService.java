@@ -29,8 +29,18 @@ import java.util.List;
 public interface ParameterModelService {
 
     /**
-     * Retrieve a list of parameter revisions for specified {@link ParameterModel}.
+     * Create a exact copy of passed {@link ParameterModel} instance with specified name.
+     * <p/>
      *
+     * @param name           name of new {@link ParameterModel instance}
+     * @param parameterModel instance of {@link ParameterModel} to copy from
+     * @return a new instance of {@link ParameterModel} with copied fields
+     */
+    ParameterModel cloneParameterModel(String name, ParameterModel parameterModel);
+
+    /**
+     * Retrieve a list of parameter revisions for specified {@link ParameterModel}.
+     * <p/>
      * @param parameterModel parameter model
      * @return list of parameter revisions
      */
