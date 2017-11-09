@@ -115,6 +115,10 @@
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
     </bean>
 
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.LibraryController">
+        <property name="project" ref="project"/>
+    </bean>
+
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.DependencyController">
         <property name="project" ref="project"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
