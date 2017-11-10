@@ -114,19 +114,20 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
     protected InputStream getAttachmentAsInputStream() throws IOException {
         switch (this.state()) {
             case EMPTY:
-                logger.debug("AttachmentAsInputStream: null");
+                logger.debug("ExternalModel[" + this.id + "] getAttachmentAsInputStream: null");
                 return null;
             case INCORRECT:
-                logger.debug("AttachmentAsInputStream: incorrect");
+                logger.debug("ExternalModel[" + this.id + "] getAttachmentAsInputStream: incorrect");
                 throw new IOException("External model must be in correct state");
             case UNINITIALIZED:
-                logger.debug("AttachmentAsInputStream: uninitialized");
+                logger.debug("ExternalModel[" + this.id + "] getAttachmentAsInputStream: uninitialized");
                 throw new IOException("External model must be initialized");
             case NO_CACHE:
-                logger.debug("AttachmentAsInputStream: memory " + this.getAttachment().length + "B");
+            case CACHE_OUTDATED:
+                logger.debug("ExternalModel[" + this.id + "] getAttachmentAsInputStream: memory " + this.getAttachment().length + "B");
                 return new ByteArrayInputStream(this.getAttachment());
             default:
-                logger.debug("AttachmentAsInputStream: file " + this.getCacheFile().length() + "B");
+                logger.debug("ExternalModel[" + this.id + "] getAttachmentAsInputStream: file " + this.getCacheFile().length() + "B");
                 return new FileInputStream(this.getCacheFile());
         }
     }
