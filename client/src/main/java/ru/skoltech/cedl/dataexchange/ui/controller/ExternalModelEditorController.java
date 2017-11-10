@@ -123,10 +123,8 @@ public class ExternalModelEditorController implements Initializable {
                     "Unable to attach an external model, as long as the project has not been saved yet!");
             return;
         }
-        List<FileChooser.ExtensionFilter> extensionFilters = externalModelService.fileDescriptionsAndExtensions()
-                .stream().map(descriptionAndExtension
-                        -> new FileChooser.ExtensionFilter(descriptionAndExtension.getLeft(), descriptionAndExtension.getRight()))
-                .collect(Collectors.toList());
+        List<String> extensions = externalModelService.supportedExtensions();
+        List<FileChooser.ExtensionFilter> extensionFilters = Collections.singletonList(new FileChooser.ExtensionFilter("External Model", extensions));
         File externalModelFile = chooseExternalModelFile(fileStorageService.applicationDirectory(), extensionFilters);
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
@@ -229,7 +227,7 @@ public class ExternalModelEditorController implements Initializable {
         }
     }
 
-    private void exchangeExternalModel(ActionEvent actionEvent) {
+    private void replaceExternalModel(ActionEvent actionEvent) {
         if (!project.isStudyInRepository()) {
             Dialogues.showError("Save Project", "Unable to attach an external model, "
                     + "as long as the project has not been saved yet!");
@@ -284,7 +282,7 @@ public class ExternalModelEditorController implements Initializable {
 
         Button exchangeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.EXCHANGE));
         exchangeButton.setTooltip(new Tooltip("Replace external model"));
-        exchangeButton.setOnAction(ExternalModelEditorController.this::exchangeExternalModel);
+        exchangeButton.setOnAction(ExternalModelEditorController.this::replaceExternalModel);
         exchangeButton.setMinWidth(28);
 
         Node externalModelNode = guiService.createControl(Views.EXTERNAL_MODEL_VIEW, externalModel);

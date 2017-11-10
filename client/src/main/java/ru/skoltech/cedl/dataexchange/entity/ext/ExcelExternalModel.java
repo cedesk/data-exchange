@@ -22,14 +22,16 @@ import org.controlsfx.control.spreadsheet.Grid;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
-import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCellValueAccessor;
+import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetCoordinates;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetGridViewFactory;
 import ru.skoltech.cedl.dataexchange.external.excel.WorkbookFactory;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,92 +41,19 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of {@link ExternalModel} which provide an access to the Microsoft Excel files.
- *
+ * An implementation of {@link ExternalModel} which provide an access to the Microsoft Excel files.
+ * <p/>
  * Created by Nikolay Groshkov on 04-Oct-17.
  */
 @Entity
 @DiscriminatorValue("EXCEL")
 public class ExcelExternalModel extends ExternalModel {
 
+    private static final Pattern SHEET_NAME_PATTERN = Pattern.compile("^[A-Za-z0-9 \\-\\_]{1,}$");
     private static Logger logger = Logger.getLogger(ExcelExternalModel.class);
 
-    private static final Pattern SHEET_NAME_PATTERN = Pattern.compile("^[A-Za-z0-9 \\-\\_]{1,}$");
-
-    @Override
-    public Double getValue(String target) throws ExternalModelException {
-        if (target == null) {
-            throw new ExternalModelException("Target cannot be null");
-        }
-        try (SpreadsheetCellValueAccessor spreadsheetAccessor = createSpreadsheetCellValueAccessor()) {
-            return this.getSpreadsheetAccessorValue(spreadsheetAccessor, target);
-        } catch (ParseException e) {
-            logger.error("Error parsing coordinates: " + target);
-            throw new ExternalModelException("Error parsing coordinates: " + target, e);
-        } catch (IOException e) {
-            logger.error("Unable to open spreadsheet");
-            throw new ExternalModelException("Unable access excel spreadsheet", e);
-        }
-    }
-
-    @Override
-    public List<Double> getValues(List<String> targets) throws ExternalModelException {
-        if (targets.stream().anyMatch(Objects::isNull)) {
-            throw new ExternalModelException("Contains null target");
-        }
-        try (SpreadsheetCellValueAccessor spreadsheetAccessor = createSpreadsheetCellValueAccessor()) {
-            List<Double> result = new ArrayList<>();
-            for (String target : targets) {
-                try {
-                    Double value = this.getSpreadsheetAccessorValue(spreadsheetAccessor, target);
-                    result.add(value);
-                } catch (ParseException e) {
-                    logger.error("Error parsing coordinates: " + target);
-                    throw new ExternalModelException("Error parsing coordinates: " + target, e);
-                }
-            }
-            return result;
-        } catch (IOException e) {
-            logger.error("Unable to open spreadsheet");
-            throw new ExternalModelException("Unable access excel spreadsheet", e);
-        }
-    }
-
-    @Override
-    public void setValue(String target, Double value) throws ExternalModelException {
-        if (target == null) {
-            throw new ExternalModelException("Target cannot be null");
-        }
-        try (SpreadsheetCellValueAccessor spreadsheetAccessor = createSpreadsheetCellValueAccessor()) {
-            this.setSpreadsheetAccessorValue(spreadsheetAccessor, target, value);
-            this.flush(spreadsheetAccessor);
-        } catch (IOException e) {
-            logger.error("Unable to open spreadsheet");
-            throw new ExternalModelException("Unable access excel spreadsheet", e);
-        }
-    }
-
-    @Override
-    public void setValues(List<Pair<String, Double>> values) throws ExternalModelException {
-        if (values.stream().map(Pair::getLeft).anyMatch(Objects::isNull)) {
-            throw new ExternalModelException("Contains null target");
-        }
-        try (SpreadsheetCellValueAccessor spreadsheetAccessor = createSpreadsheetCellValueAccessor()) {
-            for (Pair<String, Double> pair : values) {
-                String target = pair.getLeft();
-                Double value = pair.getRight();
-                this.setSpreadsheetAccessorValue(spreadsheetAccessor, target, value);
-            }
-            this.flush(spreadsheetAccessor);
-        } catch (IOException e) {
-            logger.error("Unable to open spreadsheet");
-            throw new ExternalModelException("Unable access excel spreadsheet", e);
-        }
-    }
-
     public List<String> getSheetNames() throws ExternalModelException {
-        try {
-            InputStream inputStream = this.getAttachmentAsInputStream();
+        try (InputStream inputStream = this.getAttachmentAsInputStream()) {
             List<String> sheetNames = WorkbookFactory.getSheetNames(inputStream, this.getName());
             Predicate<String> nameTest = SHEET_NAME_PATTERN.asPredicate();
             List<String> validSheets = new ArrayList<>(sheetNames.size());
@@ -151,9 +80,33 @@ public class ExcelExternalModel extends ExternalModel {
         }
     }
 
+    @Override
+    public void setValues(List<Pair<String, Double>> values) throws ExternalModelException {
+        if (values.stream().map(Pair::getLeft).anyMatch(Objects::isNull)) {
+            throw new ExternalModelException("Contains null target");
+        }
+        try (InputStream inputStream = this.getAttachmentAsInputStream()) {
+            try (SpreadsheetCellValueAccessor spreadsheetAccessor = createSpreadsheetCellValueAccessor(inputStream)) {
+                for (Pair<String, Double> pair : values) {
+                    String target = pair.getLeft();
+                    Double value = pair.getRight();
+                    try {
+                        this.setSpreadsheetAccessorValue(spreadsheetAccessor, target, value);
+                    } catch (ParseException e) {
+                        logger.error("Error parsing coordinates: " + target);
+                        throw new ExternalModelException("Error parsing coordinates: " + target, e);
+                    }
+                }
+                this.flush(spreadsheetAccessor);
+            }
+        } catch (IOException e) {
+            logger.error("Unable to open spreadsheet: " + getNodePath());
+            throw new ExternalModelException("Unable access excel spreadsheet: " + getNodePath(), e);
+        }
+    }
+
     public Grid getGrid(String sheetName) throws ExternalModelException {
-        try {
-            InputStream inputStream = this.getAttachmentAsInputStream();
+        try (InputStream inputStream = this.getAttachmentAsInputStream()) {
             String fileName = this.getName();
             return SpreadsheetGridViewFactory.getGrid(inputStream, fileName, sheetName);
         } catch (IOException e) {
@@ -161,58 +114,85 @@ public class ExcelExternalModel extends ExternalModel {
         }
     }
 
-    private Double getSpreadsheetAccessorValue(SpreadsheetCellValueAccessor spreadsheetAccessor, String target) throws ParseException {
-        SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
-        return spreadsheetAccessor.getNumericValue(coordinates);
-    }
-
-    private void setSpreadsheetAccessorValue(SpreadsheetCellValueAccessor spreadsheetAccessor, String target, Double value) throws ExternalModelException {
-        try {
-            SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
-            logger.debug("setting " + value + " on cell " + target + " in " + this.getNodePath());
-            spreadsheetAccessor.setNumericValue(coordinates, value);
-        } catch (ParseException e) {
-            logger.error("Error parsing coordinates: " + target);
-            throw new ExternalModelException("Error parsing coordinates: " + target, e);
+    @Override
+    public Double getValue(String target) throws ExternalModelException {
+        if (target == null) {
+            throw new ExternalModelException("Target cannot be null");
+        }
+        try (InputStream inputStream = this.getAttachmentAsInputStream()) {
+            try (SpreadsheetCellValueAccessor spreadsheetAccessor = createSpreadsheetCellValueAccessor(inputStream)) {
+                return this.getSpreadsheetAccessorValue(spreadsheetAccessor, target);
+            } catch (ParseException e) {
+                logger.error("Error parsing coordinates: " + target);
+                throw new ExternalModelException("Error parsing coordinates: " + target, e);
+            }
+        } catch (Exception e) {
+            logger.error("Unable to open spreadsheet: " + getNodePath());
+            throw new ExternalModelException("Unable access excel spreadsheet: " + getNodePath(), e);
         }
     }
 
-    private SpreadsheetCellValueAccessor createSpreadsheetCellValueAccessor() throws IOException {
-        InputStream inputStream = this.getAttachmentAsInputStream();
+    @Override
+    public List<Double> getValues(List<String> targets) throws ExternalModelException {
+        if (targets.stream().anyMatch(Objects::isNull)) {
+            throw new ExternalModelException("Contains null target");
+        }
+        try (InputStream inputStream = this.getAttachmentAsInputStream()) {
+            try (SpreadsheetCellValueAccessor spreadsheetAccessor = createSpreadsheetCellValueAccessor(inputStream)) {
+                List<Double> result = new ArrayList<>();
+                for (String target : targets) {
+                    try {
+                        Double value = this.getSpreadsheetAccessorValue(spreadsheetAccessor, target);
+                        result.add(value);
+                    } catch (ParseException e) {
+                        logger.error("Error parsing coordinates: " + target);
+                        throw new ExternalModelException("Error parsing coordinates: " + target, e);
+                    }
+                }
+                return result;
+            }
+        } catch (IOException e) {
+            logger.error("Unable to open spreadsheet: " + getNodePath());
+            throw new ExternalModelException("Unable access excel spreadsheet: " + getNodePath(), e);
+        }
+    }
+
+    @Override
+    public void setValue(String target, Double value) throws ExternalModelException {
+        if (target == null) {
+            throw new ExternalModelException("Target cannot be null");
+        }
+        try (InputStream inputStream = this.getAttachmentAsInputStream()) {
+            try (SpreadsheetCellValueAccessor spreadsheetAccessor = createSpreadsheetCellValueAccessor(inputStream)) {
+                this.setSpreadsheetAccessorValue(spreadsheetAccessor, target, value);
+                this.flush(spreadsheetAccessor);
+            } catch (ParseException e) {
+                logger.error("Error parsing coordinates: " + target);
+                throw new ExternalModelException("Error parsing coordinates: " + target, e);
+            }
+        } catch (IOException e) {
+            logger.error("Unable to open spreadsheet: " + getNodePath());
+            throw new ExternalModelException("Unable access excel spreadsheet: " + getNodePath(), e);
+        }
+    }
+
+    private SpreadsheetCellValueAccessor createSpreadsheetCellValueAccessor(InputStream inputStream) throws IOException {
         String fileName = this.getName();
         return new SpreadsheetCellValueAccessor(inputStream, fileName);
     }
 
     private void flush(SpreadsheetCellValueAccessor spreadsheetAccessor) throws ExternalModelException {
-//        try (OutputStream outputStream = this.getAttachmentAsOutputStream()) {
-//            this.flushSpreadsheetCellValueAccessor(spreadsheetAccessor, outputStream);
-//            this.setAttachment(outputStream.toByteArray());
-//        }
-        ExternalModelState cacheState = this.state();
-        if (cacheState == ExternalModelState.NO_CACHE) {
-            logger.debug("Updating " + this.getNodePath() + " with changes from parameters");
-            try (ByteArrayOutputStream bos = new ByteArrayOutputStream(this.getAttachment().length)) {
-                this.flushSpreadsheetCellValueAccessor(spreadsheetAccessor, bos);
-                this.setAttachment(bos.toByteArray());
-            } catch (IOException e) {
-                logger.error("Error saving changes on spreadsheet to external model " + this.getNodePath() + "(in memory).");
-                throw new ExternalModelException("error saving changes to external model" + this.getNodePath());
-            }
-        } else {
-            logger.debug("Updating " + cacheFile.getAbsolutePath() + " with changes from parameters");
-            try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
-                this.flushSpreadsheetCellValueAccessor(spreadsheetAccessor, fos);
-            } catch (FileNotFoundException e) {
-                logger.error("Error saving changes on spreadsheet to external model " + this.getNodePath() + " (on cache file).");
-                throw new ExternalModelException("External model " + this.getNodePath() + " is opened by other application");
-            } catch (IOException e) {
-                logger.error("Error saving changes on spreadsheet to external model " + this.getNodePath() + " (on cache file).");
-                throw new ExternalModelException("Error saving changes to external model " + this.getNodePath());
-            }
+        try (OutputStream outputStream = this.getAttachmentAsOutputStream()) {
+            this.flushSpreadsheetCellValueAccessor(spreadsheetAccessor, outputStream);
+            outputStream.flush();
+        } catch (IOException e) {
+            String where = this.state() == ExternalModelState.NO_CACHE ? "in memory" : "on cache file";
+            logger.error("Error saving changes of spreadsheet to external model " + this.getNodePath() + "(" + where + ")");
+            throw new ExternalModelException("Error saving changes of spreadsheet to external model" + this.getNodePath() + "(" + where + ")");
         }
     }
 
-     private void flushSpreadsheetCellValueAccessor(SpreadsheetCellValueAccessor spreadsheetAccessor, OutputStream outputStream) throws ExternalModelException {
+    private void flushSpreadsheetCellValueAccessor(SpreadsheetCellValueAccessor spreadsheetAccessor, OutputStream outputStream) throws ExternalModelException {
         try {
             if (spreadsheetAccessor.isModified()) {
                 spreadsheetAccessor.saveChanges(outputStream);
@@ -221,6 +201,17 @@ public class ExcelExternalModel extends ExternalModel {
             logger.error("Error saving excel model", e);
             throw new ExternalModelException(e.getMessage(), e);
         }
+    }
+
+    private Double getSpreadsheetAccessorValue(SpreadsheetCellValueAccessor spreadsheetAccessor, String target) throws ParseException, IOException {
+        SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
+        return spreadsheetAccessor.getNumericValue(coordinates);
+    }
+
+    private void setSpreadsheetAccessorValue(SpreadsheetCellValueAccessor spreadsheetAccessor, String target, Double value) throws ParseException, IOException {
+        SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(target);
+        logger.debug("setting " + value + " on cell " + target + " in " + this.getNodePath());
+        spreadsheetAccessor.setNumericValue(coordinates, value);
     }
 
 

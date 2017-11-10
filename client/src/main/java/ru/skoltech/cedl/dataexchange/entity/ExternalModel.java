@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.external.ExternalModelState.*;
@@ -47,7 +48,7 @@ import static ru.skoltech.cedl.dataexchange.external.ExternalModelState.*;
 @Entity
 @Audited
 @Inheritance
-@DiscriminatorColumn(name="TYPE", columnDefinition = "VARCHAR(31) DEFAULT 'EXCEL'")
+@DiscriminatorColumn(name = "TYPE", columnDefinition = "VARCHAR(31) DEFAULT 'EXCEL'")
 @XmlJavaTypeAdapter(ExternalModelAdapter.class)
 @XmlType(propOrder = {"name", "lastModification", "uuid"})
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -87,11 +88,101 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
 
     @Transient
     @XmlTransient
-    protected File cacheFile;
+    private File cacheFile;
 
     @Transient
     @XmlTransient
     private File timestampFile;
+
+    public byte[] getAttachment() {
+        return attachment;
+    }
+
+    public void setAttachment(byte[] attachment) {
+        this.attachment = attachment;
+    }
+
+    /**
+     * Retrieve an external model attachment as input stream.
+     *
+     * @return In case of non-empty and correct cache state (both not INCORRECT and not UNINITIALIZED)
+     * it returns {@link FileInputStream} of cache file if it is in some CACHE* state
+     * and {@link ByteArrayInputStream} of attachment if there is no cache.
+     * In case of EMPTY cache state returns <i>null</i>.
+     * @throws IOException in case of incorrect cache state (INCORRECT or UNINITIALIZED)
+     */
+    protected InputStream getAttachmentAsInputStream() throws IOException {
+        switch (this.state()) {
+            case EMPTY:
+                logger.debug("ExternalModel[" + this.id + "] getAttachmentAsInputStream: null");
+                return null;
+            case INCORRECT:
+                logger.debug("ExternalModel[" + this.id + "] getAttachmentAsInputStream: incorrect");
+                throw new IOException("External model must be in correct state");
+            case UNINITIALIZED:
+                logger.debug("ExternalModel[" + this.id + "] getAttachmentAsInputStream: uninitialized");
+                throw new IOException("External model must be initialized");
+            case NO_CACHE:
+            case CACHE_OUTDATED:
+                logger.debug("ExternalModel[" + this.id + "] getAttachmentAsInputStream: memory " + this.getAttachment().length + "B");
+                return new ByteArrayInputStream(this.getAttachment());
+            default:
+                logger.debug("ExternalModel[" + this.id + "] getAttachmentAsInputStream: file " + this.getCacheFile().length() + "B");
+                return new FileInputStream(this.getCacheFile());
+        }
+    }
+
+    /**
+     * Retrieve an external model attachment as output stream.
+     *
+     * @return In case of non-empty and correct cache state (both not INCORRECT and not UNINITIALIZED)
+     * it returns {@link FileOutputStream} of cache initFile if it is in some CACHE* state
+     * and {@link ByteArrayOutputStream} of attachment if there is no cache.
+     * In case of EMPTY cache state returns <i>null</i>.
+     * @throws IOException in case of incorrect cache state (INCORRECT or UNINITIALIZED)
+     */
+    protected OutputStream getAttachmentAsOutputStream() throws IOException {
+        switch (this.state()) {
+            case EMPTY:
+                return null;
+            case INCORRECT:
+                throw new IOException("External model must be in correct state");
+            case UNINITIALIZED:
+                throw new IOException("External model must be initialized");
+            case NO_CACHE:
+                return new AttachmentByteArrayOutputStream();
+            default:
+                return new CacheFileOutputStream();
+        }
+    }
+
+    /**
+     * Retrieve a file where a data of current external model can be stored (cache file).
+     * <p/>
+     *
+     * @return cache file
+     */
+    public File getCacheFile() {
+        return cacheFile;
+    }
+
+    /**
+     * Retrieve a list of parameter model with export reference to this external model.
+     * All parameter models have a same parent {@link ModelNode} as this external model.
+     * If external model does not have parent model node then {@link UnsupportedOperationException} will be thrown.
+     * <p/>
+     *
+     * @return list of parameter model with export reference to this external model
+     */
+    public List<ParameterModel> getExportedParameterModels() {
+        if (this.parent == null) {
+            throw new UnsupportedOperationException("External model is not belonged to any model node");
+        }
+        return this.getParent().getParameters().stream()
+                .filter(parameterModel -> parameterModel.isValidExportReference() &&
+                        parameterModel.getExportReference().getExternalModel().getUuid().equals(uuid))
+                .collect(Collectors.toList());
+    }
 
     @Override
     public long getId() {
@@ -102,20 +193,12 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         this.id = id;
     }
 
-    public int getRevision() {
-        return revision;
+    public Long getLastModification() {
+        return lastModification;
     }
 
-    public void setRevision(int revision) {
-        this.revision = revision;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setLastModification(Long lastModification) {
+        this.lastModification = lastModification;
     }
 
     public String getName() {
@@ -126,20 +209,8 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         this.name = name;
     }
 
-    public byte[] getAttachment() {
-        return attachment;
-    }
-
-    public void setAttachment(byte[] attachment) {
-        this.attachment = attachment;
-    }
-
-    public Long getLastModification() {
-        return lastModification;
-    }
-
-    public void setLastModification(Long lastModification) {
-        this.lastModification = lastModification;
+    public String getNodePath() {
+        return parent.getNodePath() + "#" + name;
     }
 
     public ModelNode getParent() {
@@ -148,6 +219,100 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
 
     public void setParent(ModelNode parent) {
         this.parent = parent;
+    }
+
+    /**
+     * Retrieve a list of parameter model with value reference to this external model.
+     * All parameter models have a same parent {@link ModelNode} as this external model.
+     * If external model does not have parent model node then {@link UnsupportedOperationException} will be thrown.
+     * <p/>
+     *
+     * @return list of parameter model with value reference to this external model
+     */
+    public List<ParameterModel> getReferencedParameterModels() {
+        if (this.parent == null) {
+            throw new UnsupportedOperationException("External model is not belonged to any model node");
+        }
+        return this.parent.getParameters().stream()
+                .filter(parameterModel -> parameterModel.isValidValueReference() &&
+                        parameterModel.getValueReference().getExternalModel().getUuid().equals(uuid))
+                .collect(Collectors.toList());
+    }
+
+    public int getRevision() {
+        return revision;
+    }
+
+    public void setRevision(int revision) {
+        this.revision = revision;
+    }
+
+    File getTimestampFile() {
+        return timestampFile;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public abstract void setValues(List<Pair<String, Double>> values) throws ExternalModelException;
+
+    /**
+     * This method only forms the full path where the external model would be cached.<br/>
+     * It does not actually assure the file nor the folder exist.
+     *
+     * @param projectHome project home directory
+     * @param path        path to the cache file
+     * @param name        name of cache file
+     * @return a file of the location where the external model would be stored.
+     */
+    private static File initCacheFile(String projectHome, String path, long id, String name) {
+        String nodePath = path.replace(' ', '_').replace(ModelNode.NODE_SEPARATOR, File.separator);
+        File nodeHome = new File(projectHome, nodePath);
+        String rectifiedFileName = id + "_" + name.replace(' ', '_');
+        return new File(nodeHome, rectifiedFileName);
+    }
+
+    /*
+     * The comparison is done only based on the name, so it enables sorting of external models parameters by name.
+     */
+    @Override
+    public int compareTo(ExternalModel o) {
+        return name.compareTo(o.name);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ExternalModel that = (ExternalModel) o;
+
+        return (name != null ? name.equals(that.name) : that.name == null)
+                && Arrays.equals(attachment, that.attachment);
+    }
+
+    /**
+     * Retrieve a value from external model. Provided target value defines location of the value to be retrieved
+     * from the particular implementation.
+     *
+     * @param target defines an exact location to retrieve a value form particular implementation of accessor
+     * @return a value
+     * @throws ExternalModelException if access in impossible
+     */
+    public abstract Double getValue(String target) throws ExternalModelException;
+
+    public abstract List<Double> getValues(List<String> targets) throws ExternalModelException;
+
+    @Override
+    public int hashCode() {
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (attachment != null ? Arrays.hashCode(attachment) : 0);
+        return result;
     }
 
     /**
@@ -190,91 +355,14 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
     }
 
     /**
-     * This method only forms the full path where the external model would be cached.<br/>
-     * It does not actually assure the file nor the folder exist.
+     * Place a provided value to the external model. Provided target value defines location of the value to be placed
+     * inside the particular implementation.
      *
-     * @param projectHome project home directory
-     * @param path path to the cache file
-     * @param name name of cache file
-     * @return a file of the location where the external model would be stored.
+     * @param target defines an exact location to place a value inside particular implementation of accessor
+     * @param value  a value
+     * @throws ExternalModelException if access in impossible
      */
-    private static File initCacheFile(String projectHome, String path, long id, String name) {
-        String nodePath = path.replace(' ', '_').replace(ModelNode.NODE_SEPARATOR, File.separator);
-        File nodeHome = new File(projectHome, nodePath);
-        String rectifiedFileName = id + "_" + name.replace(' ', '_');
-        return new File(nodeHome, rectifiedFileName);
-    }
-
-    public String getNodePath() {
-        return parent.getNodePath() + "#" + name;
-    }
-
-    /**
-     * Retrieve a list of parameter model with value reference to this external model.
-     * All parameter models have a same parent {@link ModelNode} as this external model.
-     * If external model does not have parent model node then {@link UnsupportedOperationException} will be thrown.
-     * <p/>
-     * @return list of parameter model with value reference to this external model
-     */
-    public List<ParameterModel> getReferencedParameterModels() {
-        if (this.parent == null) {
-            throw new UnsupportedOperationException("External model is not belonged to any model node");
-        }
-        return this.parent.getParameters().stream()
-                .filter(parameterModel -> parameterModel.isValidValueReference() &&
-                        parameterModel.getValueReference().getExternalModel().getUuid().equals(uuid))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Retrieve a list of parameter model with export reference to this external model.
-     * All parameter models have a same parent {@link ModelNode} as this external model.
-     * If external model does not have parent model node then {@link UnsupportedOperationException} will be thrown.
-     * <p/>
-     * @return list of parameter model with export reference to this external model
-     */
-    public List<ParameterModel> getExportedParameterModels() {
-        if (this.parent == null) {
-            throw new UnsupportedOperationException("External model is not belonged to any model node");
-        }
-        return this.getParent().getParameters().stream()
-                .filter(parameterModel -> parameterModel.isValidExportReference() &&
-                        parameterModel.getExportReference().getExternalModel().getUuid().equals(uuid))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Update external model data taken from export reference external model.
-     * Status of this update is saved and can be retrieved by calling {@link ParameterModel#getLastValueReferenceUpdateState()} method.
-     * <p/>
-     * @return <i>true</i> if parameter model has received a new correct value
-     * from the data of value reference external model, <i>false<i/> if opposite
-     */
-    public boolean updateExportReferences() {
-        try {
-            List<ParameterModel> exportedParameterModels = this.getExportedParameterModels();
-            List<Pair<String, Double>> values = exportedParameterModels.stream()
-                    .map(pm -> Pair.of(pm.getExportReference().getTarget(), pm.getEffectiveValue()))
-                    .collect(Collectors.toList());
-            this.setValues(values);
-            return true;
-        } catch (ExternalModelException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Retrieve a file where a data of current external model can be stored (cache file).
-     * <p/>
-     * @return cache file
-     */
-    public File getCacheFile() {
-        return cacheFile;
-    }
-
-    File getTimestampFile() {
-        return timestampFile;
-    }
+    public abstract void setValue(String target, Double value) throws ExternalModelException;
 
     /**
      * Runtime determination of actual state of external model.
@@ -311,52 +399,18 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         return ExternalModelState.NO_CACHE;
     }
 
-    /**
-     * Retrieve an external model attachment as input stream.
-     *
-     * @return In case of non-empty and correct cache state (both not INCORRECT and not UNINITIALIZED)
-     * it returns {@link FileInputStream} of cache file if it is in some CACHE* state
-     * and {@link ByteArrayInputStream} of attachment if there is no cache.
-     * In case of EMPTY cache state returns <i>null</i>.
-     * @throws IOException in case of incorrect cache state (INCORRECT or UNINITIALIZED)
-     */
-    protected InputStream getAttachmentAsInputStream() throws IOException {
-        switch (this.state()) {
-            case EMPTY:
-                return null;
-            case INCORRECT:
-                throw new IOException("External model must be in correct state");
-            case UNINITIALIZED:
-                throw new IOException("External model must be initialized");
-            case NO_CACHE:
-                return new ByteArrayInputStream(this.getAttachment());
-            default:
-                return new FileInputStream(this.getCacheFile());
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ExternalModel{");
+        sb.append("id=").append(id);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", attachment-length=").append(attachment != null ? attachment.length : null);
+        sb.append(", lastModification=").append(lastModification);
+        if (parent != null) {
+            sb.append(", parent=").append(parent.getNodePath());
         }
-    }
-
-    /**
-     * Retrieve an external model attachment as output stream.
-     *
-     * @return In case of non-empty and correct cache state (both not INCORRECT and not UNINITIALIZED)
-     * it returns {@link FileOutputStream} of cache initFile if it is in some CACHE* state
-     * and {@link ByteArrayOutputStream} of attachment if there is no cache.
-     * In case of EMPTY cache state returns <i>null</i>.
-     * @throws IOException in case of incorrect cache state (INCORRECT or UNINITIALIZED)
-     */
-    protected OutputStream getAttachmentAsOutputStream() throws IOException {
-        switch (this.state()) {
-            case EMPTY:
-                return null;
-            case INCORRECT:
-                throw new IOException("External model must be in correct state");
-            case UNINITIALIZED:
-                throw new IOException("External model must be initialized");
-            case NO_CACHE:
-                return new ByteArrayOutputStream(this.attachment.length);
-            default:
-                return new FileOutputStream(this.cacheFile);
-        }
+        sb.append('}');
+        return sb.toString();
     }
 
     /**
@@ -404,18 +458,44 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         this.updateTimestampFile();
     }
 
-    private void updateDirectory() throws ExternalModelException {
-        File path = cacheFile.getParentFile();
-        if (!path.exists()) {
-            logger.info("Creating directory: " + cacheFile.getParentFile().toString());
-            boolean created = path.mkdirs();
-            if (!created) {
-                throw new ExternalModelException("Unable to create directory: " + path.getAbsolutePath());
+    /**
+     * Update external model data taken from export reference external model.
+     * Status of this update is saved and can be retrieved by calling {@link ParameterModel#getLastValueReferenceUpdateState()} method.
+     * <p/>
+     *
+     * @return <i>true</i> if parameter model has received a new correct value
+     * from the data of value reference external model, <i>false<i/> if opposite
+     */
+    public boolean updateExportReferences() {
+        try {
+            List<ParameterModel> exportedParameterModels = this.getExportedParameterModels();
+            List<Pair<String, Double>> values = exportedParameterModels.stream()
+                    .map(pm -> Pair.of(pm.getExportReference().getTarget(), pm.getEffectiveValue()))
+                    .collect(Collectors.toList());
+            if (!values.isEmpty()) {
+                this.setValues(values);
             }
+            return true;
+        } catch (ExternalModelException e) {
+            return false;
         }
-        if (!path.canRead() || !path.canWrite()) {
-            throw new ExternalModelException("Unable to use directory: " + path.toString());
-        }
+    }
+
+    /**
+     * Update all referenced parameter models of this external model.
+     * All successfully updated parameter models engender an event on the passed consumer object.
+     * <p/>
+     *
+     * @param parameterModelConsumer a consumer which accepts all successfully updated parameter models
+     */
+    public void updateReferencedParameterModels(Consumer<ParameterModel> parameterModelConsumer) {
+        // return this.getReferencedParameterModels().stream().anyMatch(ParameterModel::updateValueReference);
+        this.getReferencedParameterModels().forEach(parameterModel -> {
+            boolean updated = parameterModel.updateValueReference();
+            if (updated) {
+                parameterModelConsumer.accept(parameterModel);
+            }
+        });
     }
 
     private void updateCacheFile() throws ExternalModelException {
@@ -430,9 +510,27 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
                 }
             }
             Files.write(this.cacheFile.toPath(), this.getAttachment(), StandardOpenOption.CREATE);
-            logger.debug(this.cacheFile.getAbsolutePath() + " updated");
+            boolean updateLastModified = cacheFile.setLastModified(this.getLastModification());
+            if (!updateLastModified) {
+                logger.error("Cannot set last modified parameter on the cache file.");
+            }
+            logger.debug(this.cacheFile.getAbsolutePath() + " updated, " + this.cacheFile.length());
         } catch (IOException e) {
             throw new ExternalModelException("Cannot create cache file: " + e.getMessage(), e);
+        }
+    }
+
+    private void updateDirectory() throws ExternalModelException {
+        File path = cacheFile.getParentFile();
+        if (!path.exists()) {
+            logger.info("Creating directory: " + cacheFile.getParentFile().toString());
+            boolean created = path.mkdirs();
+            if (!created) {
+                throw new ExternalModelException("Unable to create directory: " + path.getAbsolutePath());
+            }
+        }
+        if (!path.canRead() || !path.canWrite()) {
+            throw new ExternalModelException("Unable to use directory: " + path.toString());
         }
     }
 
@@ -456,67 +554,32 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         }
     }
 
-    /**
-     * Retrieve a value from external model. Provided target value defines location of the value to be retrieved
-     * from the particular implementation.
-     *
-     * @param target defines an exact location to retrieve a value form particular implementation of accessor
-     * @return a value
-     * @throws ExternalModelException if access in impossible
-     */
-    public abstract Double getValue(String target) throws ExternalModelException;
-
-    public abstract List<Double> getValues(List<String> targets) throws ExternalModelException;
-
-    /**
-     * Place a provided value to the external model. Provided target value defines location of the value to be placed
-     * inside the particular implementation.
-     *
-     * @param target defines an exact location to place a value inside particular implementation of accessor
-     * @param value  a value
-     * @throws ExternalModelException if access in impossible
-     */
-    public abstract void setValue(String target, Double value) throws ExternalModelException;
-
-    public abstract void setValues(List<Pair<String, Double>> values) throws ExternalModelException;
-
-    /*
-     * The comparison is done only based on the name, so it enables sorting of external models parameters by name.
-     */
-    @Override
-    public int compareTo(ExternalModel o) {
-        return name.compareTo(o.name);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ExternalModel that = (ExternalModel) o;
-
-        return (name != null ? name.equals(that.name) : that.name == null)
-                && Arrays.equals(attachment, that.attachment);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (attachment != null ? Arrays.hashCode(attachment) : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ExternalModel{");
-        sb.append("id=").append(id);
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", attachment-length=").append(attachment != null ? attachment.length : null);
-        sb.append(", lastModification=").append(lastModification);
-        if (parent != null) {
-            sb.append(", parent=").append(parent.getNodePath());
+    private class CacheFileOutputStream extends FileOutputStream {
+        CacheFileOutputStream() throws FileNotFoundException {
+            super(ExternalModel.this.cacheFile);
         }
-        sb.append('}');
-        return sb.toString();
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            try {
+                ExternalModel.this.updateAttachmentFromCache();
+            } catch (ExternalModelException e) {
+                logger.warn("Cannot update attachment from cache of external model: " + getNodePath());
+            }
+        }
     }
+
+
+    private class AttachmentByteArrayOutputStream extends ByteArrayOutputStream {
+        AttachmentByteArrayOutputStream() {
+            super(ExternalModel.this.attachment.length);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            ExternalModel.this.setAttachment(this.toByteArray());
+        }
+    }
+
 }

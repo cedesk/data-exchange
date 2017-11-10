@@ -34,6 +34,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -45,11 +46,13 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.ParameterModelService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterReferenceValidity;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterModelTableRow;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterUpdateStateTableCell;
@@ -88,11 +91,13 @@ public class ParametersController implements Initializable, Displayable {
     @FXML
     private TableColumn<ParameterModel, String> parameterDescriptionColumn;
     @FXML
-    public TableColumn<ParameterModel, ParameterModelUpdateState> parameterUpdateStateColumn;
+    public TableColumn<ParameterModel, Pair<Boolean, String>> parameterUpdateStateColumn;
     @FXML
     private Button addParameterButton;
     @FXML
     private Button deleteParameterButton;
+    @FXML
+    public Button copyParameterButton;
     @FXML
     private Button viewParameterHistoryButton;
 
@@ -108,6 +113,7 @@ public class ParametersController implements Initializable, Displayable {
     private DifferenceHandler differenceHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private GuiService guiService;
+    private ParameterModelService parameterModelService;
     private ActionLogger actionLogger;
     private StatusLogger statusLogger;
 
@@ -127,6 +133,10 @@ public class ParametersController implements Initializable, Displayable {
         this.guiService = guiService;
     }
 
+    public void setParameterModelService(ParameterModelService parameterModelService) {
+        this.parameterModelService = parameterModelService;
+    }
+
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
     }
@@ -135,77 +145,29 @@ public class ParametersController implements Initializable, Displayable {
         this.statusLogger = statusLogger;
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        addParameterButton.disableProperty().bind(Bindings.or(emptyProperty, editableProperty.not()));
-        BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
-        deleteParameterButton.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
-        viewParameterHistoryButton.disableProperty().bind(noSelectionOnParameterTableView);
+    @FXML
+    public void addParameter() {
+        Objects.requireNonNull(modelNode, "There is no model node to add parameter");
 
-        // NODE PARAMETER TABLE
-        parameterTable.editableProperty().bind(editableProperty);
-        parameterTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        parameterTable.setRowFactory(param -> new ParameterModelTableRow(differenceHandler));
-
-        parameterNatureColumn.setCellValueFactory(createBeanPropertyCellValueFactory("nature"));
-        parameterNameColumn.setCellValueFactory(createBeanPropertyCellValueFactory("name"));
-        parameterValueColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null) {
-                return new SimpleStringProperty();
+        Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
+        if (parameterNameChoice.isPresent()) {
+            String parameterName = parameterNameChoice.get();
+            if (!Identifiers.validateParameterName(parameterName)) {
+                Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
+                return;
             }
-            ParameterModel parameterModel = param.getValue();
-            double valueToDisplay = parameterModel.getEffectiveValue();
-            String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
-            return new SimpleStringProperty(formattedValue);
-        });
-        parameterUnitColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null) {
-                return new SimpleStringProperty();
+            if (modelNode.hasParameter(parameterName)) {
+                Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
+                return;
             }
-            ParameterModel parameterModel = param.getValue();
-            if (parameterModel.getUnit() == null) {
-                return new SimpleStringProperty();
-            }
-            return new SimpleStringProperty(parameterModel.getUnit().asText());
-        });
-        parameterValueSourceColumn.setCellValueFactory(createBeanPropertyCellValueFactory("valueSource"));
-        parameterInfoColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null) {
-                return new SimpleStringProperty();
-            }
-            ParameterModel parameterModel = param.getValue();
-
-            if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
-                return new SimpleStringProperty(parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "--");
-            }
-            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                return new SimpleStringProperty(parameterModel.getValueReference() != null ? parameterModel.getValueReference().toString() : "--");
-            }
-            return new SimpleStringProperty();
-        });
-        parameterDescriptionColumn.setCellValueFactory(createBeanPropertyCellValueFactory("description"));
-        parameterUpdateStateColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null) {
-                return new SimpleObjectProperty<>();
-            }
-            ParameterModelUpdateState update = param.getValue().getLastValueReferenceUpdateState();
-            return new SimpleObjectProperty<>(update);
-        });
-        parameterUpdateStateColumn.setCellFactory(param -> new ParameterUpdateStateTableCell());
-
-        parameterTable.setItems(parameterModels);
-
-        // NODE PARAMETERS TABLE CONTEXT MENU
-        ContextMenu parameterContextMenu = new ContextMenu();
-        MenuItem deleteParameterMenuItem = new MenuItem("Delete parameter");
-        deleteParameterMenuItem.setOnAction(event -> this.deleteParameter());
-        deleteParameterMenuItem.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
-        parameterContextMenu.getItems().add(deleteParameterMenuItem);
-        MenuItem addNodeMenuItem = new MenuItem("View history");
-        addNodeMenuItem.setOnAction(event -> this.openParameterHistoryDialog());
-        addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
-        parameterContextMenu.getItems().add(addNodeMenuItem);
-        parameterTable.setContextMenu(parameterContextMenu);
+            ParameterModel parameterModel = new ParameterModel(parameterName, 0.0);
+            modelNode.addParameter(parameterModel);
+            statusLogger.info("Parameter added: " + parameterModel.getName());
+            actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, parameterModel.getNodePath());
+            project.markStudyModified();
+            this.parameterModels.add(parameterModel);
+            this.parameterTable.getSelectionModel().select(parameterModel);
+        }
     }
 
     public void addParameterModelChangeListener(ChangeListener<ParameterModel> listener) {
@@ -271,10 +233,12 @@ public class ParametersController implements Initializable, Displayable {
         return parameterTable.getSelectionModel().getSelectedItem();
     }
 
-    public void addParameter() {
+    @FXML
+    public void copyParameter() {
         Objects.requireNonNull(modelNode, "There is no model node to add parameter");
 
-        Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
+        ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem();
+        Optional<String> parameterNameChoice = Dialogues.inputParameterName(parameterModel.getName() + " (copy)");
         if (parameterNameChoice.isPresent()) {
             String parameterName = parameterNameChoice.get();
             if (!Identifiers.validateParameterName(parameterName)) {
@@ -285,17 +249,19 @@ public class ParametersController implements Initializable, Displayable {
                 Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
                 return;
             }
-            ParameterModel parameterModel = new ParameterModel(parameterName, 0.0);
-            modelNode.addParameter(parameterModel);
-            statusLogger.info("added parameter: " + parameterModel.getName());
-            actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, parameterModel.getNodePath());
-            project.markStudyModified();
-            this.parameterModels.add(parameterModel);
-            this.parameterTable.getSelectionModel().select(parameterModel);
-        }
 
+            ParameterModel newParameterModel = parameterModelService.cloneParameterModel(parameterName, parameterModel);
+
+            modelNode.addParameter(newParameterModel);
+            statusLogger.info("Parameter copied: " + newParameterModel.getName());
+            actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, newParameterModel.getNodePath());
+            project.markStudyModified();
+            this.parameterModels.add(newParameterModel);
+            this.parameterTable.getSelectionModel().select(newParameterModel);
+        }
     }
 
+    @FXML
     public void deleteParameter() {
         ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem();
         List<ParameterModel> dependentParameters = parameterLinkRegistry.getDependentParameters(parameterModel);
@@ -309,11 +275,96 @@ public class ParametersController implements Initializable, Displayable {
         if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
             modelNode.getParameters().remove(parameterModel);
             parameterLinkRegistry.removeSink(parameterModel);
-            statusLogger.info("deleted parameter: " + parameterModel.getName());
+            statusLogger.info("Parameter deleted: " + parameterModel.getName());
             actionLogger.log(ActionLogger.ActionType.PARAMETER_REMOVE, parameterModel.getNodePath());
             updateParameters(modelNode, editableProperty.get());
             project.markStudyModified();
         }
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        addParameterButton.disableProperty().bind(Bindings.or(emptyProperty, editableProperty.not()));
+        BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
+        deleteParameterButton.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
+        copyParameterButton.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
+        viewParameterHistoryButton.disableProperty().bind(noSelectionOnParameterTableView);
+
+        // NODE PARAMETER TABLE
+        parameterTable.editableProperty().bind(editableProperty);
+        parameterTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        parameterTable.setRowFactory(param -> new ParameterModelTableRow(differenceHandler));
+
+        parameterNatureColumn.setCellValueFactory(createBeanPropertyCellValueFactory("nature"));
+        parameterNameColumn.setCellValueFactory(createBeanPropertyCellValueFactory("name"));
+        parameterValueColumn.setCellValueFactory(param -> {
+            if (param == null || param.getValue() == null) {
+                return new SimpleStringProperty();
+            }
+            ParameterModel parameterModel = param.getValue();
+            double valueToDisplay = parameterModel.getEffectiveValue();
+            String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
+            return new SimpleStringProperty(formattedValue);
+        });
+        parameterUnitColumn.setCellValueFactory(param -> {
+            if (param == null || param.getValue() == null) {
+                return new SimpleStringProperty();
+            }
+            ParameterModel parameterModel = param.getValue();
+            if (parameterModel.getUnit() == null) {
+                return new SimpleStringProperty();
+            }
+            return new SimpleStringProperty(parameterModel.getUnit().asText());
+        });
+        parameterValueSourceColumn.setCellValueFactory(createBeanPropertyCellValueFactory("valueSource"));
+        parameterInfoColumn.setCellValueFactory(param -> {
+            if (param == null || param.getValue() == null) {
+                return new SimpleStringProperty();
+            }
+            ParameterModel parameterModel = param.getValue();
+
+            if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
+                return new SimpleStringProperty(parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "--");
+            }
+            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+                return new SimpleStringProperty(parameterModel.getValueReference() != null ? parameterModel.getValueReference().toString() : "--");
+            }
+            return new SimpleStringProperty();
+        });
+        parameterDescriptionColumn.setCellValueFactory(createBeanPropertyCellValueFactory("description"));
+        parameterUpdateStateColumn.setCellValueFactory(param -> {
+            if (param == null || param.getValue() == null) {
+                return new SimpleObjectProperty<>();
+            }
+            ParameterModel parameterModel = param.getValue();
+            ParameterReferenceValidity validity = parameterModel.validateValueReference();
+            if (validity == null) {
+                return new SimpleObjectProperty<>();
+            }
+            if (!validity.isValid()) {
+                return new SimpleObjectProperty<>(Pair.of(false, validity.description));
+            }
+            ParameterModelUpdateState update = parameterModel.getLastValueReferenceUpdateState();
+            if (update == null) {
+                return new SimpleObjectProperty<>();
+            }
+            return new SimpleObjectProperty<>(Pair.of(update.isSuccessful(), update.description));
+        });
+        parameterUpdateStateColumn.setCellFactory(param -> new ParameterUpdateStateTableCell());
+
+        parameterTable.setItems(parameterModels);
+
+        // NODE PARAMETERS TABLE CONTEXT MENU
+        ContextMenu parameterContextMenu = new ContextMenu();
+        MenuItem deleteParameterMenuItem = new MenuItem("Delete parameter");
+        deleteParameterMenuItem.setOnAction(event -> this.deleteParameter());
+        deleteParameterMenuItem.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
+        parameterContextMenu.getItems().add(deleteParameterMenuItem);
+        MenuItem addNodeMenuItem = new MenuItem("View history");
+        addNodeMenuItem.setOnAction(event -> this.openParameterHistoryDialog());
+        addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
+        parameterContextMenu.getItems().add(addNodeMenuItem);
+        parameterTable.setContextMenu(parameterContextMenu);
     }
 
     public void openParameterHistoryDialog() {

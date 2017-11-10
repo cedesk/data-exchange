@@ -98,7 +98,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         return result;
     }
 
-    public static Double getNumericValue(Cell cell)  {
+    public static Double getNumericValue(Cell cell) throws IOException {
         Double result = Double.NaN;
         if (cell != null) {
             switch (cell.getCellTypeEnum()) {
@@ -107,7 +107,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
                     result = cell.getNumericCellValue();
                     break;
                 default:
-                    throw new IllegalArgumentException("Invalid cell type: " + cell.getCellTypeEnum());
+                    throw new IOException("Invalid cell type: " + cell.getCellTypeEnum());
             }
         }
         return result;
@@ -118,7 +118,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         wb.close();
     }
 
-    public Cell getCell(SpreadsheetCoordinates cellCoordinates) {
+    public Cell getCell(SpreadsheetCoordinates cellCoordinates) throws IOException {
         try {
             String sheetName = cellCoordinates.getSheetName();
             // TODO: handle invalid sheetname
@@ -130,15 +130,15 @@ public class SpreadsheetCellValueAccessor implements Closeable {
             if (sheetRow == null) sheetRow = sheet.createRow(cellCoordinates.getRowNumber() - 1);
             return sheetRow.getCell(cellCoordinates.getColumnNumber() - 1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error accessing spreadsheet cell: " + cellCoordinates.toString(), e);
+            throw new IOException("Error accessing spreadsheet cell: " + cellCoordinates.toString(), e);
         }
     }
 
-    public Double getNumericValue(SpreadsheetCoordinates coordinates) {
+    public Double getNumericValue(SpreadsheetCoordinates coordinates) throws IOException {
         return getNumericValue(getCell(coordinates));
     }
 
-    public String getValueAsString(SpreadsheetCoordinates coordinates) {
+    public String getValueAsString(SpreadsheetCoordinates coordinates) throws IOException {
         return getValueAsString(getCell(coordinates));
     }
 
@@ -152,7 +152,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
         wb.write(outputStream);
     }
 
-    public void setNumericValue(SpreadsheetCoordinates coordinates, Double value) {
+    public void setNumericValue(SpreadsheetCoordinates coordinates, Double value) throws IOException {
         setNumericValue(getCell(coordinates), value);
     }
 
@@ -163,7 +163,7 @@ public class SpreadsheetCellValueAccessor implements Closeable {
     /**
      * This method writes a value to a cell, and memorizes if changes have been such that the spreadsheet needs to be saved afterwards.
      */
-    private void setNumericValue(Cell cell, Double value) {
+    private void setNumericValue(Cell cell, Double value) throws IOException {
         Objects.requireNonNull(cell);
         Double previousValue = getNumericValue(cell);
         boolean change = !Precision.equals(previousValue, value, 2) || cell.getCellTypeEnum() != CellType.NUMERIC;

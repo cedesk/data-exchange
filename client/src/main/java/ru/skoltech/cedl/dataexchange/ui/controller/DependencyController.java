@@ -26,9 +26,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.ToolBar;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
@@ -56,31 +59,26 @@ import java.util.stream.StreamSupport;
  * <p>
  * Created by D.Knoll on 02.11.2015.
  */
-public class DependencyController implements Initializable {
+public class DependencyController implements Initializable, Displayable {
 
     private static final Logger logger = Logger.getLogger(DependencyController.class);
 
     @FXML
+    private ToolBar dependencyToolbar;
+    @FXML
     private RadioButton sortDefaultRadio;
-
     @FXML
     private RadioButton sortByPriorityRadio;
-
     @FXML
     private RadioButton sortAlphabeticRadio;
-
     @FXML
     private RadioButton sourceLocalRadio;
-
     @FXML
     private RadioButton sourceRepositoryRadio;
-
     @FXML
     private ToggleGroup sortOrderGroup;
-
     @FXML
     private ToggleGroup sourceGroup;
-
     @FXML
     private DependencyDiagramView dependencyDiagramView;
 
@@ -88,6 +86,8 @@ public class DependencyController implements Initializable {
     private ParameterLinkRegistry parameterLinkRegistry;
     private DifferenceHandler differenceHandler;
     private BooleanBinding repositoryNewer;
+
+    private Stage ownerStage;
 
     public void setDifferenceHandler(DifferenceHandler differenceHandler) {
         this.differenceHandler = differenceHandler;
@@ -119,6 +119,10 @@ public class DependencyController implements Initializable {
         });
 
     }
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
 
     public void refreshView() {
         DependencyModel dependencyModel;
@@ -132,6 +136,13 @@ public class DependencyController implements Initializable {
             parameterLinkRegistry.registerAllParameters(systemModel);
             dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
         }
+
+        long elementCount = dependencyModel.elementStream().count();
+        ownerStage.setMinWidth(DependencyDiagramView.ELEMENT_WIDTH * elementCount +
+                DependencyDiagramView.ELEMENT_PADDING*(elementCount+1));
+        ownerStage.setMinHeight(DependencyDiagramView.LEGEND_HEIGHT + dependencyToolbar.getHeight() + 24 +
+                DependencyDiagramView.ELEMENT_HEIGHT * elementCount +
+                DependencyDiagramView.ELEMENT_PADDING*(elementCount+2));
 
         if (sortOrderGroup.getSelectedToggle() == sortDefaultRadio) {
             HashMap<String, Integer> originalPositions = new HashMap<>();
@@ -154,11 +165,12 @@ public class DependencyController implements Initializable {
                     .forEach(element -> element.setPosition(position[0]++));
         }
         dependencyDiagramView.setModel(dependencyModel);
-        Iterable<ModelNode> nodeIterable = () -> systemModel.treeIterator();
+        Iterable<ModelNode> nodeIterable = systemModel::treeIterator;
         List<String> ownerElements = StreamSupport.stream(nodeIterable.spliterator(), false)
                 .filter(node -> project.checkUserAccess(node))
                 .map(ModelNode::getName).collect(Collectors.toList());
         dependencyDiagramView.setHighlightedElements(ownerElements);
+
     }
 
     public void saveDiagram() {
@@ -189,8 +201,6 @@ public class DependencyController implements Initializable {
         repositoryNewer = Bindings.isNotEmpty(differenceHandler.modelDifferences());
         repositoryNewer.addListener(listener);
 
-        dependencyDiagramView.getScene().getWindow().setOnCloseRequest(event -> {
-            repositoryNewer.removeListener(listener);
-        });
+        dependencyDiagramView.getScene().getWindow().setOnCloseRequest(event -> repositoryNewer.removeListener(listener));
     }
 }

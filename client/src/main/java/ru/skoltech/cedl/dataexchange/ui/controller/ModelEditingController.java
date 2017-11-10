@@ -27,6 +27,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.stage.Window;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -45,6 +46,7 @@ import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
+import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItem;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.StructureTreeItemFactory;
@@ -64,7 +66,7 @@ public class ModelEditingController implements Initializable {
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
 
     @FXML
-    private TextField ownersText;
+    private Label ownersText;
     @FXML
     private SplitPane viewPane;
     @FXML
@@ -76,9 +78,9 @@ public class ModelEditingController implements Initializable {
     @FXML
     private Button deleteNodeButton;
     @FXML
-    private TextField upstreamDependenciesText;
+    private Label upstreamDependenciesLabel;
     @FXML
-    private TextField downstreamDependenciesText;
+    private Label downstreamDependenciesLabel;
     @FXML
     public TitledPane parametersParentPane;
     @FXML
@@ -152,6 +154,23 @@ public class ModelEditingController implements Initializable {
 
         Node externalModelEditorPane = guiService.createControl(Views.EXTERNAL_MODELS_EDITOR_VIEW);
         externalModelParentPane.setContent(externalModelEditorPane);
+
+        project.getExternalModelUpdateConsumers().add(externalModel -> {
+            this.parametersController.refresh();
+            this.updateParameterEditor(this.parametersController.currentParameter());
+
+            String successParameterModelNames = externalModel.getReferencedParameterModels().stream()
+                    .filter(parameterModel -> parameterModel.getLastValueReferenceUpdateState() == ParameterModelUpdateState.SUCCESS)
+                    .map(ParameterModel::getName)
+                    .collect(Collectors.joining(","));
+
+            String message = !successParameterModelNames.isEmpty() ?
+                    "Parameters [" + successParameterModelNames + "] have been updated." : "There are no parameter updates.";
+            message = WordUtils.wrap(message, 100);
+            UserNotifications.showNotification(null, "External model modified",
+                    "External model file '" + externalModel.getName() + "' has been modified.\n"
+                            + message);
+        });
 
         // STRUCTURE TREE VIEW
         structureTree.setCellFactory(param -> new TextFieldTreeCell(project, differenceHandler));
@@ -257,6 +276,7 @@ public class ModelEditingController implements Initializable {
 
     public void openDependencyView() {
         ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
+        dependencyViewBuilder.resizable(false);
         dependencyViewBuilder.ownerWindow(getAppWindow());
         dependencyViewBuilder.show();
     }
@@ -370,13 +390,13 @@ public class ModelEditingController implements Initializable {
 
     private void updateDependencies(ModelNode modelNode) {
         String upstreamDependencies = parameterLinkRegistry.getUpstreamDependencies(modelNode);
-        upstreamDependenciesText.setText(upstreamDependencies);
+        upstreamDependenciesLabel.setText(upstreamDependencies);
         if (upstreamDependencies.length() > 0)
-            upstreamDependenciesText.setTooltip(new Tooltip(upstreamDependencies));
+            upstreamDependenciesLabel.setTooltip(new Tooltip(upstreamDependencies));
         String downstreamDependencies = parameterLinkRegistry.getDownstreamDependencies(modelNode);
-        downstreamDependenciesText.setText(downstreamDependencies);
+        downstreamDependenciesLabel.setText(downstreamDependencies);
         if (downstreamDependencies.length() > 0)
-            downstreamDependenciesText.setTooltip(new Tooltip(downstreamDependencies));
+            downstreamDependenciesLabel.setTooltip(new Tooltip(downstreamDependencies));
     }
 
     private void updateExternalModelEditor(ModelNode modelNode) {
@@ -431,8 +451,8 @@ public class ModelEditingController implements Initializable {
                 ModelEditingController.this.updateExternalModelEditor(modelNode);
             } else {
                 parametersController.clearParameters();
-                upstreamDependenciesText.setText(null);
-                downstreamDependenciesText.setText(null);
+                upstreamDependenciesLabel.setText(null);
+                downstreamDependenciesLabel.setText(null);
                 selectedNodeCannotHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
                 selectedNodeIsEditable.setValue(false);

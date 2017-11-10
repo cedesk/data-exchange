@@ -129,10 +129,6 @@ public class ParameterModelTest {
         assertNull(parameterModel.validateExportReference());
         assertFalse(parameterModel.isValidExportReference());
 
-        parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-        assertNull(parameterModel.validateExportReference());
-        assertFalse(parameterModel.isValidExportReference());
-
         parameterModel.setIsExported(true);
         assertEquals(ParameterReferenceValidity.INVALID_EMPTY_REFERENCE, parameterModel.validateExportReference());
         assertFalse(parameterModel.isValidExportReference());

@@ -41,7 +41,7 @@ public class UnitManagementServiceImpl implements UnitManagementService {
 
     private static final Logger logger = Logger.getLogger(UnitManagementServiceImpl.class);
 
-    private final String UNIT_MANAGEMENT_RELATIVE_PATH = "units/unit-management.xml";
+    private final String UNIT_MANAGEMENT_RELATIVE_PATH = "units/unit-management-data.xml";
     private final UnitManagementRepository unitManagementRepository;
     private FileStorageService fileStorageService;
 
@@ -64,7 +64,7 @@ public class UnitManagementServiceImpl implements UnitManagementService {
         UnitManagement unitManagement = null;
         try {
             InputStream inputStream = ClientApplication.class.getResourceAsStream(UNIT_MANAGEMENT_RELATIVE_PATH);
-            unitManagement = fileStorageService.loadUnitManagement(inputStream);
+            unitManagement = fileStorageService.importUnitManagement(inputStream);
             unitManagement.setId(IDENTIFIER);
         } catch (IOException e) {
             logger.error("error loading unit management from file", e);

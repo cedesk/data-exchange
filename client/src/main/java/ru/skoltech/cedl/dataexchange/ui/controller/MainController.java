@@ -230,7 +230,6 @@ public class MainController implements Initializable, Displayable, Closeable {
                     imageView.setPreserveRatio(true);
                     imageView.setSmooth(true);
                     diffButton.setGraphic(imageView);
-                    diffButton.setGraphicTextGap(8);
 
                     modelEditingController.updateView();
                     statusLogger.info("Remote model loaded for comparison.");
@@ -330,7 +329,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
             File outputFile = new File(exportPath, outputFileName);
             try {
-                fileStorageService.storeSystemModel(project.getSystemModel(), outputFile);
+                fileStorageService.exportSystemModel(project.getSystemModel(), outputFile);
                 statusLogger.info("Successfully exported study!");
                 actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
             } catch (IOException e) {
@@ -500,7 +499,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         if (importFile != null) {
             // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
             try {
-                SystemModel systemModel = fileStorageService.loadSystemModel(importFile);
+                SystemModel systemModel = fileStorageService.importSystemModel(importFile);
                 project.importSystemModel(systemModel);
                 updateView();
                 statusLogger.info("Successfully imported study!");
@@ -587,6 +586,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void openDependencyView() {
         ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
+        dependencyViewBuilder.resizable(false);
         dependencyViewBuilder.ownerWindow(ownerStage);
         dependencyViewBuilder.show();
     }
@@ -616,7 +616,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         diffViewBuilder.ownerWindow(ownerStage);
         diffViewBuilder.modality(Modality.APPLICATION_MODAL);
         diffViewBuilder.showAndWait();
-        modelEditingController.clearView();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
@@ -691,7 +690,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openUnitManagement() {
-        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_EDITING_VIEW);
+        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_MANAGEMENT_VIEW);
         unitEditingViewBuilder.ownerWindow(ownerStage);
         unitEditingViewBuilder.modality(Modality.APPLICATION_MODAL);
         unitEditingViewBuilder.show();

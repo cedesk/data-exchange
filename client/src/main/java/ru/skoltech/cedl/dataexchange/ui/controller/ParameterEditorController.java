@@ -29,12 +29,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
-import org.controlsfx.control.textfield.AutoCompletionBinding;
-import org.controlsfx.control.textfield.TextFields;
 import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
@@ -44,11 +42,9 @@ import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -56,19 +52,20 @@ import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ParameterDifference;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterReferenceValidity;
-import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.NumericTextFieldValidator;
 
 import java.net.URL;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.entity.ParameterValueSource.*;
-import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS;
-import static ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState.SUCCESS_WITHOUT_UPDATE;
 
 /**
  * Controller for parameter editing.
@@ -100,7 +97,9 @@ public class ParameterEditorController implements Initializable, Displayable {
     @FXML
     private TextField dependentsText;
     @FXML
-    private ComboBox<Unit> unitComboBox;
+    private TextField unitTextField;
+    @FXML
+    public Button unitChooseButton;
     @FXML
     private CheckBox isReferenceValueOverriddenCheckbox;
     @FXML
@@ -125,21 +124,19 @@ public class ParameterEditorController implements Initializable, Displayable {
     private ExternalModelFileWatcher externalModelFileWatcher;
     private ParameterLinkRegistry parameterLinkRegistry;
     private GuiService guiService;
-    private UnitManagementService unitManagementService;
     private ActionLogger actionLogger;
     private StatusLogger statusLogger;
 
     private ParameterModel parameterModel;
     private ExternalModelReference valueReference;
+    private ObjectProperty<Unit> unitProperty = new SimpleObjectProperty<>();
     private ExternalModelReference exportReference;
     private ParameterModel valueLinkParameter;
     private Calculation calculation;
     private Consumer<ParameterModel> editListener;
-    private AutoCompletionBinding<String> binding;
     private Stage ownerStage;
 
     private ObjectProperty<ParameterModel> parameterModelProperty = new SimpleObjectProperty<>();
-//    private ObjectProperty<ParameterModelUpdateState> parameterModelUpdateStateProperty = new SimpleObjectProperty<>();
     private ListProperty<String> differencesProperty = new SimpleListProperty<>();
     private BooleanProperty nameChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty natureChangedProperty = new SimpleBooleanProperty();
@@ -174,10 +171,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.guiService = guiService;
     }
 
-    public void setUnitManagementService(UnitManagementService unitManagementService) {
-        this.unitManagementService = unitManagementService;
-    }
-
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
     }
@@ -186,9 +179,18 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.statusLogger = statusLogger;
     }
 
+    public void chooseUnit() {
+        ViewBuilder unitChooseViewBuilder = guiService.createViewBuilder("Choose Unit", Views.UNIT_CHOOSE_VIEW);
+        unitChooseViewBuilder.resizable(false);
+        unitChooseViewBuilder.modality(Modality.APPLICATION_MODAL);
+        unitChooseViewBuilder.applyEventHandler(event -> this.unitProperty.setValue((Unit)event.getSource()));
+        unitChooseViewBuilder.showAndWait(this.unitProperty.getValue(), project.getUnitManagement());
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         parameterModelProperty.addListener((observable, oldValue, newValue) -> this.updateView());
+        unitTextField.textProperty().bind(Bindings.createStringBinding(() -> unitProperty.getValue() != null ? unitProperty.getValue().asText() : null, unitProperty));
 
         nameChangedProperty.bind(this.createDifferencesPropertyBinding("name"));
         natureChangedProperty.bind(this.createDifferencesPropertyBinding("nature"));
@@ -231,8 +233,8 @@ public class ParameterEditorController implements Initializable, Displayable {
         valueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
         valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(MANUAL));
         valueText.styleProperty().bind(Bindings.when(valueChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        unitComboBox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(LINK));
-        unitComboBox.styleProperty().bind(Bindings.when(unitChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        unitTextField.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(LINK));
+        unitTextField.styleProperty().bind(Bindings.when(unitChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(MANUAL));
         isReferenceValueOverriddenCheckbox.styleProperty().bind(Bindings.when(isReferenceValueOverriddenChangedProperty).then("-fx-outer-border: #FF6A00;").otherwise((String) null));
         valueOverrideText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
@@ -242,13 +244,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         isExportedCheckbox.styleProperty().bind(Bindings.when(isExportedChangedProperty).then("-fx-outer-border: #FF6A00;").otherwise((String) null));
         exportReferenceText.styleProperty().bind(Bindings.when(exportReferenceChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
         descriptionText.styleProperty().bind(Bindings.when(descriptionChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-
-        List<String> unitsTexts = unitComboBox.getItems().stream().map(Unit::asText).collect(Collectors.toList());
-        binding = TextFields.bindAutoCompletion(unitComboBox.getEditor(), unitsTexts);
-
-        unitComboBox.setConverter(new UnitStringConverter());
-        unitComboBox.setButtonCell(new UnitListCell());
-        unitComboBox.setCellFactory(p -> new UnitListCell());
 
 //        TODO: bind updateIcon
 //        this.updateIcon.iconProperty().bind(Bindings.when(parameterModelUpdateStateProperty.isNotNull())
@@ -275,16 +270,10 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.ownerStage = stage;
     }
 
-    public void setVisible(boolean visible) {
-        if (!visible) {
-            this.parameterModelProperty.set(null);
-        }
-        parameterEditorPane.setVisible(visible);
-    }
-
     public void displayParameterModel(ParameterModel parameterModel) {
         this.parameterModel = parameterModel;
         this.parameterModelProperty.set(parameterModel);
+        this.unitProperty.setValue(parameterModel.getUnit());
         this.updateView();
         ParameterDifference parameterDifference = differenceHandler.modelDifferences().stream()
                 .filter(modelDifference -> modelDifference instanceof ParameterDifference)
@@ -310,16 +299,25 @@ public class ParameterEditorController implements Initializable, Displayable {
         this.updateIcon.setColor(null);
         this.updateIcon.setTooltip(null);
 
-        ParameterModelUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
-//        this.parameterModelUpdateStateProperty.setValue(updateState);
-        if (updateState != null) {
-            boolean success = updateState == SUCCESS || updateState == SUCCESS_WITHOUT_UPDATE;
-            String icon = success ? "CHECK" : "WARNING";
-            Color color = success ? Color.GREEN : Color.RED;
-            this.updateIcon.setIcon(icon);
-            this.updateIcon.setColor(color);
-            this.updateIcon.setTooltip(new Tooltip(updateState.description));
+        ParameterReferenceValidity validity = parameterModel.validateValueReference();
+        if (validity == null) {
+            return;
         }
+        Boolean state = validity.isValid() && parameterModel.getLastValueReferenceUpdateState().isSuccessful();
+        String message = validity.isValid() ? parameterModel.getLastValueReferenceUpdateState().description : validity.description;
+//        this.parameterModelUpdateStateProperty.setValue(updateState);
+        String icon = state ? "CHECK" : "WARNING";
+        Color color = state ? Color.GREEN : Color.RED;
+        this.updateIcon.setIcon(icon);
+        this.updateIcon.setColor(color);
+        this.updateIcon.setTooltip(new Tooltip(message));
+    }
+
+    public void setVisible(boolean visible) {
+        if (!visible) {
+            this.parameterModelProperty.set(null);
+        }
+        parameterEditorPane.setVisible(visible);
     }
 
     public void setEditListener(Consumer<ParameterModel> updateListener) {
@@ -328,7 +326,6 @@ public class ParameterEditorController implements Initializable, Displayable {
 
     public void applyChanges() {
         logger.debug("updating parameter: " + parameterModel.getNodePath());
-        this.updateValueReference();
         this.replaceLinksInParameterLinkRegistry();
         this.validateFields();
 
@@ -352,13 +349,14 @@ public class ParameterEditorController implements Initializable, Displayable {
         parameterModel.setValueLink(valueLinkParameter);
         parameterModel.setCalculation(calculation);
         parameterModel.setValue(value);
-        parameterModel.setUnit(unitComboBox.getValue());
+        parameterModel.setUnit(unitProperty.getValue());
         parameterModel.setIsReferenceValueOverridden(isReferenceValueOverridden);
         parameterModel.setOverrideValue(overrideValue);
         parameterModel.setIsExported(isExported);
         parameterModel.setExportReference(exportReference);
         parameterModel.setDescription(descriptionText.getText());
 
+        this.updateValueReference();
         this.updateExportReferences();
         parameterLinkRegistry.updateSinks(parameterModel);
         this.computeDifferences();
@@ -367,23 +365,16 @@ public class ParameterEditorController implements Initializable, Displayable {
     }
 
     private void updateValueReference() {
+        ParameterReferenceValidity validity = parameterModel.validateValueReference();
+        if (validity == null) {
+            return;
+        }
         logger.debug("Update parameter value from model");
-
-        if (parameterModel.isValidValueReference()) {
+        if (validity.isValid()) {
             parameterModel.updateValueReference();
-            ParameterModelUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
-            if (updateState == SUCCESS || updateState == SUCCESS_WITHOUT_UPDATE) {
+            if (parameterModel.getLastValueReferenceUpdateState().isSuccessful()) {
                 this.valueText.setText(this.convertToText(parameterModel.getValue()));
-            } else {
-                String errorMessage = "Unable to update value: " + updateState.description;
-                statusLogger.error(errorMessage);
-                UserNotifications.showNotification(ownerStage, "Error", errorMessage);
             }
-        } else {
-            ParameterReferenceValidity valueReferenceValidity = parameterModel.validateValueReference();
-            String errorMessage = "Unable to update value: " + valueReferenceValidity.description;
-            statusLogger.error(errorMessage);
-            UserNotifications.showNotification(ownerStage, "Error", errorMessage);
         }
     }
 
@@ -431,7 +422,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         }
         if (isExportedCheckbox.isSelected()) {
             if (exportReference != null && exportReference.equals(valueReference)) {
-                Dialogues.showWarning("inconsistency", "value source and export reference must not be equal. ignoring export reference.");
+                Dialogues.showWarning("Inconsistency", "Value source and export reference must not be equal. Ignoring export reference.");
                 exportReference = null;
             }
         }
@@ -451,12 +442,18 @@ public class ParameterEditorController implements Initializable, Displayable {
                     .filter(pd -> pd.getParameter1().getUuid().equals(parameterModel.getUuid()))
                     .findFirst()
                     .ifPresent(pd -> {
-                        String attDiffs = pd.getAttributes().stream().collect(Collectors.joining(","));
-                        String message = parameterModel.getNodePath() + ": " + attDiffs;
+                        String message;
+                        if (pd.getAttributes() != null) {
+                            String attDiffs = pd.getAttributes().stream().collect(Collectors.joining(","));
+                            message = parameterModel.getNodePath() + ": " + attDiffs;
+                        } else {
+                            message = parameterModel.getNodePath();
+                        }
                         actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_MANUAL, message);
                     });
 
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Error checking repository for changes", e);
             statusLogger.error("Error checking repository for changes");
         }
     }
@@ -481,7 +478,7 @@ public class ParameterEditorController implements Initializable, Displayable {
                 valueLinkParameter = parameterModel;
                 parameterLinkText.setText(valueLinkParameter.getNodePath());
                 valueText.setText(convertToText(valueLinkParameter.getValue()));
-                unitComboBox.setValue(valueLinkParameter.getUnit());
+                unitTextField.setText(valueLinkParameter.getUnit() != null ? valueLinkParameter.getUnit().asText() : null);
             } else {
                 parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : null);
             }
@@ -532,16 +529,10 @@ public class ParameterEditorController implements Initializable, Displayable {
     public void revertChanges() {
         this.parameterModelProperty.set(null);
         this.parameterModelProperty.set(parameterModel);
+        this.unitProperty.setValue(parameterModel.getUnit());
     }
 
     private void updateView() {
-        // refresh unit's list, since list can be changed
-        List<Unit> units = project.getUnitManagement().getUnits();
-        units.sort(Comparator.comparing(Unit::asText));
-        unitComboBox.setItems(FXCollections.observableArrayList(units));
-        List<String> unitsTexts = unitComboBox.getItems().stream().map(Unit::asText).collect(Collectors.toList());
-        binding = TextFields.bindAutoCompletion(unitComboBox.getEditor(), unitsTexts);
-
         nameText.setText(parameterModel.getName());
         valueText.setText(convertToText(parameterModel.getValue()));
         isReferenceValueOverriddenCheckbox.setSelected(parameterModel.getIsReferenceValueOverridden());
@@ -555,7 +546,6 @@ public class ParameterEditorController implements Initializable, Displayable {
         calculation = parameterModel.getCalculation();
         natureChoiceBox.valueProperty().setValue(parameterModel.getNature());
         valueSourceChoiceBox.valueProperty().setValue(parameterModel.getValueSource());
-        unitComboBox.valueProperty().setValue(parameterModel.getUnit());
         valueReferenceText.setText(parameterModel.getValueReference() != null ? parameterModel.getValueReference().toString() : "");
         parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : "");
         calculationText.setText(calculation != null ? calculation.asText() : "");
@@ -595,34 +585,6 @@ public class ParameterEditorController implements Initializable, Displayable {
                 externalModelReferenceTextField.setText(externalModelReference.toString());
             } else {
                 externalModelReferenceTextField.setText(externalModelReference != null ? externalModelReference.toString() : null);
-            }
-        }
-    }
-
-    private class UnitStringConverter extends StringConverter<Unit> {
-        @Override
-        public Unit fromString(String unitStr) {
-            UnitManagement unitManagement = project.getUnitManagement();
-            return unitManagementService.obtainUnitByText(unitManagement, unitStr);
-        }
-
-        @Override
-        public String toString(Unit unit) {
-            if (unit == null) {
-                return null;
-            }
-            return unit.asText();
-        }
-    }
-
-    private class UnitListCell extends ListCell<Unit> {
-        @Override
-        protected void updateItem(Unit unit, boolean empty) {
-            super.updateItem(unit, empty);
-            if (empty) {
-                setText("");
-            } else {
-                setText(unit.getName());
             }
         }
     }
