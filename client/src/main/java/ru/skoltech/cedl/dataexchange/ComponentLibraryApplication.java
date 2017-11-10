@@ -14,24 +14,34 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.demo;
+package ru.skoltech.cedl.dataexchange;
 
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 /**
- * Created by Nikolay Groshkov on 28-Sep-17.
+ * Created by Dominik Knoll on 10-Nov-17.
  */
-public class ComponentLibraryDemo extends AbstractApplicationContextDemo {
+public class ComponentLibraryApplication extends ContextAwareApplication {
+
+    private static Logger logger = Logger.getLogger(ComponentLibraryApplication.class);
+
+    public static void main(String[] args) {
+        contextInit();
+        launch(args);
+    }
 
     @Override
-    public void demo(Stage primaryStage) {
+    public void start(Stage primaryStage) throws Exception {
+        loadContext();
+        loadLastProject();
+
         GuiService guiService = context.getBean(GuiService.class);
-        ViewBuilder viewBuilder = guiService.createViewBuilder("Component Library Demo", Views.LIBRARY_VIEW);
+        ViewBuilder viewBuilder = guiService.createViewBuilder("Component Library Application", Views.LIBRARY_VIEW);
         viewBuilder.resizable(false);
         viewBuilder.modality(Modality.APPLICATION_MODAL);
         viewBuilder.showAndWait();

@@ -21,11 +21,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="250.0"
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="700.0" prefWidth="300.0"
             xmlns="http://javafx.com/javafx/8.0.121"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.LibraryController">
     <top>
-        <GridPane>
+        <GridPane prefHeight="80" BorderPane.alignment="TOP_LEFT">
             <padding>
                 <Insets bottom="10" left="10" right="10" top="10"/>
             </padding>
@@ -39,7 +39,7 @@
                     <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
                 </rowConstraints>
                 <Text text="Search:" GridPane.rowIndex="0"/>
-                <TextField fx:id="searchTextField" promptText="tag" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                <TextField fx:id="searchTextField" promptText="keyword" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
                 <Text text="Category:" GridPane.rowIndex="1"/>
                 <ChoiceBox fx:id="categoryChoice" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
             </GridPane>
@@ -52,13 +52,13 @@
         </GridPane>
     </top>
     <center>
-        <TitledPane animated="false" collapsible="false" text="Components">
-            <ListView fx:id="componentList"/>
+        <TitledPane animated="false" collapsible="false" text="Components" BorderPane.alignment="TOP_LEFT">
+            <ListView fx:id="componentList" prefHeight="636.0" prefWidth="298.0"/>
         </TitledPane>
     </center>
     <bottom>
-        <ToolBar prefHeight="30.0">
-            <Button fx:id="addNodeButton" minWidth="28" mnemonicParsing="false">
+        <ToolBar prefHeight="30.0" BorderPane.alignment="BOTTOM_LEFT">
+            <Button fx:id="addComponentButton" minWidth="28" mnemonicParsing="false">
                 <tooltip>
                     <Tooltip text="Add Node"/>
                 </tooltip>
@@ -66,7 +66,7 @@
                     <Glyph fontFamily="FontAwesome" icon="PLUS"/>
                 </graphic>
             </Button>
-            <Button fx:id="deleteNodeButton" minWidth="28" mnemonicParsing="false">
+            <Button fx:id="deleteComponentButton" minWidth="28" mnemonicParsing="false" onAction="#deleteComponent">
                 <tooltip>
                     <Tooltip text="Remove Node"/>
                 </tooltip>
