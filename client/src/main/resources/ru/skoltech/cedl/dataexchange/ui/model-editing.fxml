@@ -16,20 +16,19 @@
   ~ limitations under the License.
   -->
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.controlsfx.glyphfont.Glyph?>
+<?import org.controlsfx.glyphfont.*?>
 <SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="700.0"
            prefWidth="900.0"
            stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.112-ea"
            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ModelEditingController">
     <AnchorPane>
-        <TitledPane animated="false" collapsible="false" text="Structure" AnchorPane.bottomAnchor="290.0"
+        <TitledPane animated="false" collapsible="false" text="Structure" AnchorPane.bottomAnchor="270.0"
                     AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <TreeView fx:id="structureTree"/>
         </TitledPane>
-        <ToolBar prefHeight="40.0" AnchorPane.bottomAnchor="250.0" AnchorPane.leftAnchor="0.0"
+        <ToolBar prefHeight="40.0" AnchorPane.bottomAnchor="230.0" AnchorPane.leftAnchor="0.0"
                  AnchorPane.rightAnchor="0.0">
             <Button fx:id="addNodeButton" minWidth="28" mnemonicParsing="false" onAction="#addNode">
                 <tooltip>
@@ -57,30 +56,55 @@
             </Button>
         </ToolBar>
         <TitledPane fx:id="ownerPane" collapsible="false" prefHeight="70.0"
-                    text="Owners" AnchorPane.bottomAnchor="170.0" AnchorPane.leftAnchor="0.0"
+                    text="Owners" AnchorPane.bottomAnchor="150.0" AnchorPane.leftAnchor="0.0"
                     AnchorPane.rightAnchor="0.0">
-            <VBox>
-                <TextField fx:id="ownersText" editable="false"/>
+            <VBox spacing="8">
+                <Label fx:id="ownersText" styleClass="projectDetailsLabels">
+                    <tooltip>
+                        <Tooltip text="Owning Users"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="USER"/>
+                    </graphic>
+                </Label>
             </VBox>
         </TitledPane>
-        <TitledPane fx:id="dependencyPane" collapsible="false" prefHeight="170.0"
+        <TitledPane fx:id="dependencyPane" collapsible="false" prefHeight="120.0"
                     text="Dependencies" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                     AnchorPane.rightAnchor="0.0">
-            <VBox>
-                <Label text="upstream"/>
-                <TextField fx:id="upstreamDependenciesText" editable="false"/>
-                <Label text="downstream"/>
-                <TextField fx:id="downstreamDependenciesText" editable="false"/>
-                <HBox>
-                    <VBox.margin>
-                        <Insets top="8.0"/>
-                    </VBox.margin>
+            <VBox spacing="8">
+                <Label fx:id="upstreamDependenciesLabel" styleClass="projectDetailsLabels">
+                    <tooltip>
+                        <Tooltip text="Upstream"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="ARROW_LEFT"/>
+                    </graphic>
+                </Label>
+                <Label fx:id="downstreamDependenciesLabel" styleClass="projectDetailsLabels">
+                    <tooltip>
+                        <Tooltip text="Downstream"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="ARROW_RIGHT"/>
+                    </graphic>
+                </Label>
+                <HBox spacing="8">
                     <Button mnemonicParsing="false" onAction="#openDsmView" text="View DSM">
+                        <tooltip>
+                            <Tooltip text="View Depencency Structure Matrix"/>
+                        </tooltip>
+                        <graphic>
+                            <Glyph fontFamily="FontAwesome" icon="TH_LARGE"/>
+                        </graphic>
                     </Button>
                     <Button mnemonicParsing="false" onAction="#openDependencyView" text="View N2">
-                        <HBox.margin>
-                            <Insets left="8.0"/>
-                        </HBox.margin>
+                        <tooltip>
+                            <Tooltip text="View N-Square Chart"/>
+                        </tooltip>
+                        <graphic>
+                            <Glyph fontFamily="FontAwesome" icon="ARROWS"/>
+                        </graphic>
                     </Button>
                 </HBox>
             </VBox>

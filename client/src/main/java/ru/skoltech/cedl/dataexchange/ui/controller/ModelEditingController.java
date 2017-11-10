@@ -66,7 +66,7 @@ public class ModelEditingController implements Initializable {
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
 
     @FXML
-    private TextField ownersText;
+    private Label ownersText;
     @FXML
     private SplitPane viewPane;
     @FXML
@@ -78,9 +78,9 @@ public class ModelEditingController implements Initializable {
     @FXML
     private Button deleteNodeButton;
     @FXML
-    private TextField upstreamDependenciesText;
+    private Label upstreamDependenciesLabel;
     @FXML
-    private TextField downstreamDependenciesText;
+    private Label downstreamDependenciesLabel;
     @FXML
     public TitledPane parametersParentPane;
     @FXML
@@ -390,13 +390,13 @@ public class ModelEditingController implements Initializable {
 
     private void updateDependencies(ModelNode modelNode) {
         String upstreamDependencies = parameterLinkRegistry.getUpstreamDependencies(modelNode);
-        upstreamDependenciesText.setText(upstreamDependencies);
+        upstreamDependenciesLabel.setText(upstreamDependencies);
         if (upstreamDependencies.length() > 0)
-            upstreamDependenciesText.setTooltip(new Tooltip(upstreamDependencies));
+            upstreamDependenciesLabel.setTooltip(new Tooltip(upstreamDependencies));
         String downstreamDependencies = parameterLinkRegistry.getDownstreamDependencies(modelNode);
-        downstreamDependenciesText.setText(downstreamDependencies);
+        downstreamDependenciesLabel.setText(downstreamDependencies);
         if (downstreamDependencies.length() > 0)
-            downstreamDependenciesText.setTooltip(new Tooltip(downstreamDependencies));
+            downstreamDependenciesLabel.setTooltip(new Tooltip(downstreamDependencies));
     }
 
     private void updateExternalModelEditor(ModelNode modelNode) {
@@ -451,8 +451,8 @@ public class ModelEditingController implements Initializable {
                 ModelEditingController.this.updateExternalModelEditor(modelNode);
             } else {
                 parametersController.clearParameters();
-                upstreamDependenciesText.setText(null);
-                downstreamDependenciesText.setText(null);
+                upstreamDependenciesLabel.setText(null);
+                downstreamDependenciesLabel.setText(null);
                 selectedNodeCannotHaveChildren.setValue(false);
                 selectedNodeIsRoot.setValue(false);
                 selectedNodeIsEditable.setValue(false);
