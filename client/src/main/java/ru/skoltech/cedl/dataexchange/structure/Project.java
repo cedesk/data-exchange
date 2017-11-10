@@ -362,8 +362,8 @@ public class Project {
         if (this.study == null) {
             return;
         }
-        this.initializeHandlers();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        this.initializeHandlers();
     }
 
     public void loadLocalStudy(Integer revisionNumber) {
@@ -371,8 +371,8 @@ public class Project {
         if (this.study == null) {
             return;
         }
-        this.initializeHandlers();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        this.initializeHandlers();
     }
 
     private void initializeHandlers(){
