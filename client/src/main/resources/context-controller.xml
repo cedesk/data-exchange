@@ -56,6 +56,7 @@
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="guiService" ref="guiService"/>
+        <property name="modelNodeService" ref="modelNodeService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="statusLogger" ref="statusLogger"/>

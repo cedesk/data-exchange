@@ -33,6 +33,11 @@
 
     <bean id="logEntryService" class="ru.skoltech.cedl.dataexchange.service.impl.LogEntryServiceImpl"/>
 
+    <bean id="modelNodeService" class="ru.skoltech.cedl.dataexchange.service.impl.ModelNodeServiceImpl">
+        <property name="externalModelService" ref="externalModelService"/>
+        <property name="parameterModelService" ref="parameterModelService"/>
+    </bean>
+
     <bean id="parameterModelService" class="ru.skoltech.cedl.dataexchange.service.impl.ParameterModelServiceImpl"/>
 
     <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UserManagementServiceImpl"/>

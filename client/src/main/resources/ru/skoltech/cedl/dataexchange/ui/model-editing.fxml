@@ -54,8 +54,17 @@
                     <Glyph fontFamily="FontAwesome" icon="MINUS"/>
                 </graphic>
             </Button>
+            <Button fx:id="copyNodeButton" minWidth="28"
+                    mnemonicParsing="false" onAction="#copyNode">
+                <tooltip>
+                    <Tooltip text="Copy Parameter"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon=""/>
+                </graphic>
+            </Button>
         </ToolBar>
-        <TitledPane fx:id="ownerPane" collapsible="false" prefHeight="70.0"
+        <TitledPane collapsible="false" prefHeight="70.0"
                     text="Owners" AnchorPane.bottomAnchor="150.0" AnchorPane.leftAnchor="0.0"
                     AnchorPane.rightAnchor="0.0">
             <VBox spacing="8">
@@ -69,7 +78,7 @@
                 </Label>
             </VBox>
         </TitledPane>
-        <TitledPane fx:id="dependencyPane" collapsible="false" prefHeight="120.0"
+        <TitledPane collapsible="false" prefHeight="120.0"
                     text="Dependencies" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                     AnchorPane.rightAnchor="0.0">
             <VBox spacing="8">
