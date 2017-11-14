@@ -377,8 +377,14 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         assertTrue(inputStream instanceof ByteArrayInputStream);
         inputStream.close();
 
-        for (ExternalModelState state : Arrays.asList(CACHE, CACHE_OUTDATED,
-                CACHE_CONFLICT, CACHE_MODIFIED)) {
+        when(externalModel.state()).thenReturn(CACHE_OUTDATED);
+        inputStream = externalModel.getAttachmentAsInputStream();
+        assertNotNull(inputStream);
+        assertTrue(inputStream instanceof ByteArrayInputStream);
+        inputStream.close();
+
+
+        for (ExternalModelState state : Arrays.asList(CACHE, CACHE_CONFLICT, CACHE_MODIFIED)) {
             when(externalModel.state()).thenReturn(state);
             inputStream = externalModel.getAttachmentAsInputStream();
             assertNotNull(inputStream);
