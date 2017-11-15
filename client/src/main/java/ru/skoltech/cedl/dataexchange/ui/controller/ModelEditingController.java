@@ -37,8 +37,6 @@ import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ElementModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
-import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
-import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
@@ -67,8 +65,6 @@ public class ModelEditingController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
 
-    @FXML
-    private Label ownersText;
     @FXML
     private SplitPane viewPane;
     @FXML
@@ -499,14 +495,6 @@ public class ModelEditingController implements Initializable {
         externalModelParentPane.setExpanded(hasExtModels);
     }
 
-    private void updateOwners(ModelNode modelNode) {
-        UserRoleManagement userRoleManagement = project.getUserRoleManagement();
-        Discipline disciplineOfSubSystem = userRoleManagementService.obtainDisciplineOfSubSystem(userRoleManagement, modelNode);
-        List<User> usersOfDiscipline = userRoleManagementService.obtainUsersOfDiscipline(userRoleManagement, disciplineOfSubSystem);
-        String userNames = usersOfDiscipline.stream().map(User::name).collect(Collectors.joining(", "));
-        ownersText.setText(userNames);
-    }
-
     private void updateParameterEditor(ParameterModel parameterModel) {
         if (parameterModel != null) {
             ModelNode modelNode = parameterModel.getParent();
@@ -551,7 +539,6 @@ public class ModelEditingController implements Initializable {
                 selectedNodeIsEditable.setValue(editable);
 
                 ModelEditingController.this.updateParameters(modelNode);
-                ModelEditingController.this.updateOwners(modelNode);
                 ModelEditingController.this.updateDependencies(modelNode);
                 ModelEditingController.this.updateExternalModelEditor(modelNode);
             } else {
