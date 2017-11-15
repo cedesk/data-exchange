@@ -50,8 +50,8 @@
                                 </rowConstraints>
                                 <TextArea fx:id="descriptionTextField" prefHeight="40" promptText="description"
                                           GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0"/>
-                                <Text text="Embodiment" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                                <TextField fx:id="embodimentTextField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                <TextField fx:id="embodimentTextField" promptText="embodiment"
+                                           GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1"/>
                                 <Text text="Completion" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
                                 <CheckBox fx:id="completionCheckBox" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                             </GridPane>
@@ -76,6 +76,14 @@
                                 <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
                             </graphic>
                         </Button>
+                        <Button fx:id="copyNodeButton" minWidth="28" mnemonicParsing="false" onAction="#copyNode">
+                            <tooltip>
+                                <Tooltip text="Copy Node"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon=""/>
+                            </graphic>
+                        </Button>
                         <Button fx:id="deleteNodeButton" minWidth="28" mnemonicParsing="false" onAction="#deleteNode">
                             <tooltip>
                                 <Tooltip text="Remove Node"/>
@@ -84,12 +92,22 @@
                                 <Glyph fontFamily="FontAwesome" icon="MINUS"/>
                             </graphic>
                         </Button>
-                        <Button fx:id="copyNodeButton" minWidth="28" mnemonicParsing="false" onAction="#copyNode">
+                        <Separator orientation="VERTICAL"/>
+                        <Button fx:id="moveNodeUpButton" minWidth="28" mnemonicParsing="false" onAction="#moveNodeUp">
                             <tooltip>
-                                <Tooltip text="Copy Parameter"/>
+                                <Tooltip text="Copy Node"/>
                             </tooltip>
                             <graphic>
-                                <Glyph fontFamily="FontAwesome" icon=""/>
+                                <Glyph fontFamily="FontAwesome" icon="CARET_UP"/>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="moveNodeDownButton" minWidth="28" mnemonicParsing="false"
+                                onAction="#moveNodeDown">
+                            <tooltip>
+                                <Tooltip text="Copy Node"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="CARET_DOWN"/>
                             </graphic>
                         </Button>
                         <Pane HBox.hgrow="ALWAYS"/>

@@ -64,17 +64,18 @@ import java.util.stream.Collectors;
 public class ModelEditingController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
-
+    @FXML
+    private TextArea descriptionTextField;
+    @FXML
+    private TextField embodimentTextField;
+    @FXML
+    private CheckBox completionCheckBox;
+    @FXML
+    private TitledPane parametersParentPane;
     @FXML
     private SplitPane viewPane;
     @FXML
     private TreeView<ModelNode> structureTree;
-    @FXML
-    public TextArea descriptionTextField;
-    @FXML
-    public TextField embodimentTextField;
-    @FXML
-    public CheckBox completionCheckBox;
     @FXML
     private Button addNodeButton;
     @FXML
@@ -82,13 +83,15 @@ public class ModelEditingController implements Initializable {
     @FXML
     private Button deleteNodeButton;
     @FXML
-    public Button copyNodeButton;
+    private Button copyNodeButton;
+    @FXML
+    private Button moveNodeUpButton;
+    @FXML
+    private Button moveNodeDownButton;
     @FXML
     private Label upstreamDependenciesLabel;
     @FXML
     private Label downstreamDependenciesLabel;
-    @FXML
-    public TitledPane parametersParentPane;
     @FXML
     private TitledPane parameterEditorParentPane;
     @FXML
@@ -115,28 +118,24 @@ public class ModelEditingController implements Initializable {
     private ChangeListener<String> embodimentChangeListener;
     private ChangeListener<Boolean> completionChangeListener;
 
-    public void setParametersController(ParametersController parametersController) {
-        this.parametersController = parametersController;
+    private Window getAppWindow() {
+        return viewPane.getScene().getWindow();
     }
 
-    public void setParameterEditorController(ParameterEditorController parameterEditorController) {
-        this.parameterEditorController = parameterEditorController;
+    private TreeItem<ModelNode> getSelectedTreeItem() {
+        return structureTree.getSelectionModel().getSelectedItem();
     }
 
-    public void setExternalModelEditorController(ExternalModelEditorController externalModelEditorController) {
-        this.externalModelEditorController = externalModelEditorController;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
     public void setDifferenceHandler(DifferenceHandler differenceHandler) {
         this.differenceHandler = differenceHandler;
     }
 
-    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
-        this.userRoleManagementService = userRoleManagementService;
+    public void setExternalModelEditorController(ExternalModelEditorController externalModelEditorController) {
+        this.externalModelEditorController = externalModelEditorController;
     }
 
     public void setGuiService(GuiService guiService) {
@@ -147,16 +146,28 @@ public class ModelEditingController implements Initializable {
         this.modelNodeService = modelNodeService;
     }
 
+    public void setParameterEditorController(ParameterEditorController parameterEditorController) {
+        this.parameterEditorController = parameterEditorController;
+    }
+
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
+    public void setParametersController(ParametersController parametersController) {
+        this.parametersController = parametersController;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public void setStatusLogger(StatusLogger statusLogger) {
         this.statusLogger = statusLogger;
+    }
+
+    public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
+        this.userRoleManagementService = userRoleManagementService;
     }
 
     @FXML
@@ -307,6 +318,8 @@ public class ModelEditingController implements Initializable {
         renameNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
         deleteNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
         copyNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
+        moveNodeUpButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
+        moveNodeDownButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
 
         descriptionChangeListener = (observable, oldValue, newValue) -> {
             if (this.getSelectedTreeItem() != null) {
@@ -335,6 +348,12 @@ public class ModelEditingController implements Initializable {
                 this.updateParameterEditor(newValue));
         this.parameterEditorController.setVisible(false);
         this.parameterEditorController.setEditListener(parameterModel -> parametersController.refresh());
+    }
+
+    public void moveNodeDown() {
+    }
+
+    public void moveNodeUp() {
     }
 
     public void openDependencyView() {
@@ -387,23 +406,6 @@ public class ModelEditingController implements Initializable {
         }
     }
 
-    private StructureTreeItem createStructureTreeItem(TreeItem<ModelNode> parentItem, ModelNode modelNode) {
-        StructureTreeItem structureTreeItem = new StructureTreeItem(modelNode);
-        parentItem.getChildren().add(structureTreeItem);
-        parentItem.setExpanded(true);
-        if (modelNode instanceof CompositeModelNode) {
-            CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
-            if (compositeModelNode instanceof SubSystemModel) {
-                SubSystemModel subSystemModel = (SubSystemModel) modelNode;
-                subSystemModel.getSubNodes().forEach(elementModel -> this.createStructureTreeItem(structureTreeItem, elementModel));
-            } else if (compositeModelNode instanceof ElementModel) {
-                ElementModel elementModel = (ElementModel) modelNode;
-                elementModel.getSubNodes().forEach(instrumentModel -> this.createStructureTreeItem(structureTreeItem, instrumentModel));
-            }
-        }
-        return structureTreeItem;
-    }
-
     public void updateView() {
         if (project.getSystemModel() != null) {
             int selectedIndex = structureTree.getSelectionModel().getSelectedIndex();
@@ -444,12 +446,21 @@ public class ModelEditingController implements Initializable {
         }
     }
 
-    private Window getAppWindow() {
-        return viewPane.getScene().getWindow();
-    }
-
-    private TreeItem<ModelNode> getSelectedTreeItem() {
-        return structureTree.getSelectionModel().getSelectedItem();
+    private StructureTreeItem createStructureTreeItem(TreeItem<ModelNode> parentItem, ModelNode modelNode) {
+        StructureTreeItem structureTreeItem = new StructureTreeItem(modelNode);
+        parentItem.getChildren().add(structureTreeItem);
+        parentItem.setExpanded(true);
+        if (modelNode instanceof CompositeModelNode) {
+            CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
+            if (compositeModelNode instanceof SubSystemModel) {
+                SubSystemModel subSystemModel = (SubSystemModel) modelNode;
+                subSystemModel.getSubNodes().forEach(elementModel -> this.createStructureTreeItem(structureTreeItem, elementModel));
+            } else if (compositeModelNode instanceof ElementModel) {
+                ElementModel elementModel = (ElementModel) modelNode;
+                elementModel.getSubNodes().forEach(instrumentModel -> this.createStructureTreeItem(structureTreeItem, instrumentModel));
+            }
+        }
+        return structureTreeItem;
     }
 
     private ContextMenu makeStructureTreeContextMenu(BooleanBinding structureNotEditable) {
