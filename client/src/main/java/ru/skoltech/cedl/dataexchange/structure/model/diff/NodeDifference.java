@@ -132,6 +132,9 @@ public class NodeDifference extends ModelDifference {
                 Objects.requireNonNull(node2);
                 node1.setLastModification(node2.getLastModification());
                 node1.setName(node2.getName());
+                node1.setDescription(node2.getDescription());
+                node1.setEmbodiment(node2.getEmbodiment());
+                node1.setCompletion(node2.isCompletion());
                 break;
             }
             default: {
@@ -152,6 +155,9 @@ public class NodeDifference extends ModelDifference {
                 Objects.requireNonNull(node2);
                 node1.setLastModification(node2.getLastModification());
                 node1.setName(node2.getName());
+                node1.setDescription(node2.getDescription());
+                node1.setEmbodiment(node2.getEmbodiment());
+                node1.setCompletion(node2.isCompletion());
                 break;
             }
             case ADD: { // remove local again

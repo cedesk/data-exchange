@@ -74,6 +74,12 @@ public class ModelEditingController implements Initializable {
     @FXML
     private TreeView<ModelNode> structureTree;
     @FXML
+    public TextArea descriptionTextField;
+    @FXML
+    public TextField embodimentTextField;
+    @FXML
+    public CheckBox completionCheckBox;
+    @FXML
     private Button addNodeButton;
     @FXML
     private Button renameNodeButton;
@@ -108,6 +114,11 @@ public class ModelEditingController implements Initializable {
     private GuiService guiService;
     private ActionLogger actionLogger;
     private StatusLogger statusLogger;
+
+    private ChangeListener<String> descriptionChangeListener;
+    private ChangeListener<String> embodimentChangeListener;
+    private ChangeListener<Boolean> completionChangeListener;
+
     public void setParametersController(ParametersController parametersController) {
         this.parametersController = parametersController;
     }
@@ -284,7 +295,7 @@ public class ModelEditingController implements Initializable {
         });
 
         // STRUCTURE TREE VIEW
-        structureTree.setCellFactory(param -> new TextFieldTreeCell(project, differenceHandler));
+        structureTree.setCellFactory(param -> new TextFieldTreeCell(project, differenceHandler, userRoleManagementService));
         structureTree.setOnEditCommit(event -> project.markStudyModified());
 
         // STRUCTURE MODIFICATION BUTTONS
@@ -292,10 +303,30 @@ public class ModelEditingController implements Initializable {
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
         BooleanBinding noSelectionOnStructureTreeView = structureTree.getSelectionModel().selectedItemProperty().isNull();
         BooleanBinding structureNotEditable = structureTree.editableProperty().not();
+
+        descriptionTextField.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, structureNotEditable));
+        embodimentTextField.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, structureNotEditable));
+        completionCheckBox.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, structureNotEditable));
         addNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeCannotHaveChildren.or(structureNotEditable)));
         renameNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
         deleteNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
         copyNodeButton.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, selectedNodeIsRoot.or(structureNotEditable)));
+
+        descriptionChangeListener = (observable, oldValue, newValue) -> {
+            if (this.getSelectedTreeItem() != null) {
+                this.getSelectedTreeItem().getValue().setDescription(newValue);
+            }
+        };
+        embodimentChangeListener = (observable, oldValue, newValue) -> {
+            if (this.getSelectedTreeItem() != null) {
+                this.getSelectedTreeItem().getValue().setEmbodiment(newValue);
+            }
+        };
+        completionChangeListener = (observable, oldValue, newValue) -> {
+            if (this.getSelectedTreeItem() != null) {
+                this.getSelectedTreeItem().getValue().setCompletion(newValue);
+            }
+        };
 
         // STRUCTURE TREE CONTEXT MENU
         structureTree.setContextMenu(makeStructureTreeContextMenu(structureNotEditable));
@@ -426,19 +457,27 @@ public class ModelEditingController implements Initializable {
     }
 
     private ContextMenu makeStructureTreeContextMenu(BooleanBinding structureNotEditable) {
-        ContextMenu structureContextMenu = new ContextMenu();
         MenuItem addNodeMenuItem = new MenuItem("Add subnode");
         addNodeMenuItem.setOnAction(event -> this.addNode());
         addNodeMenuItem.disableProperty().bind(structureNotEditable);
-        structureContextMenu.getItems().add(addNodeMenuItem);
+
         MenuItem renameNodeMenuItem = new MenuItem("Rename node");
         renameNodeMenuItem.setOnAction(event -> this.renameNode());
         renameNodeMenuItem.disableProperty().bind(Bindings.or(structureNotEditable, selectedNodeIsRoot));
-        structureContextMenu.getItems().add(renameNodeMenuItem);
+
         MenuItem deleteNodeMenuItem = new MenuItem("Delete node");
         deleteNodeMenuItem.setOnAction(event -> this.deleteNode());
         deleteNodeMenuItem.disableProperty().bind(Bindings.or(structureNotEditable, selectedNodeIsRoot));
+
+        MenuItem copyNodeMenuItem = new MenuItem("Copy node");
+        copyNodeMenuItem.setOnAction(event -> this.copyNode());
+        copyNodeMenuItem.disableProperty().bind(Bindings.or(structureNotEditable, selectedNodeIsRoot));
+
+        ContextMenu structureContextMenu = new ContextMenu();
+        structureContextMenu.getItems().add(addNodeMenuItem);
+        structureContextMenu.getItems().add(renameNodeMenuItem);
         structureContextMenu.getItems().add(deleteNodeMenuItem);
+        structureContextMenu.getItems().add(copyNodeMenuItem);
         return structureContextMenu;
     }
 
@@ -490,10 +529,22 @@ public class ModelEditingController implements Initializable {
         @Override
         public void changed(ObservableValue<? extends TreeItem<ModelNode>> observable,
                             TreeItem<ModelNode> oldValue, TreeItem<ModelNode> newValue) {
+            descriptionTextField.textProperty().removeListener(descriptionChangeListener);
+            embodimentTextField.textProperty().removeListener(embodimentChangeListener);
+            completionCheckBox.selectedProperty().removeListener(completionChangeListener);
+
             if (newValue != null) {
                 ModelNode modelNode = newValue.getValue();
                 boolean editable = project.checkUserAccess(modelNode);
                 logger.debug("selected node: " + modelNode.getNodePath() + ", editable: " + editable);
+
+                descriptionTextField.setText(modelNode.getDescription());
+                embodimentTextField.setText(modelNode.getEmbodiment());
+                completionCheckBox.setSelected(modelNode.isCompletion());
+
+                descriptionTextField.textProperty().addListener(descriptionChangeListener);
+                embodimentTextField.textProperty().addListener(embodimentChangeListener);
+                completionCheckBox.selectedProperty().addListener(completionChangeListener);
 
                 selectedNodeCannotHaveChildren.setValue(!(modelNode instanceof CompositeModelNode));
                 selectedNodeIsRoot.setValue(modelNode.isRootNode());
@@ -504,6 +555,10 @@ public class ModelEditingController implements Initializable {
                 ModelEditingController.this.updateDependencies(modelNode);
                 ModelEditingController.this.updateExternalModelEditor(modelNode);
             } else {
+                descriptionTextField.clear();
+                embodimentTextField.clear();
+                completionCheckBox.setSelected(false);
+
                 parametersController.clearParameters();
                 upstreamDependenciesLabel.setText(null);
                 downstreamDependenciesLabel.setText(null);

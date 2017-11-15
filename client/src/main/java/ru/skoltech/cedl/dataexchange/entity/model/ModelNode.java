@@ -61,6 +61,15 @@ public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntit
     @XmlAttribute
     protected String uuid = UUID.randomUUID().toString();
 
+    @XmlTransient
+    private String description;
+
+    @XmlTransient
+    private String embodiment;
+
+    @XmlTransient
+    private boolean completion;
+
     @XmlElementWrapper(name = "parameters")
     @XmlElement(name = "parameter")
     protected List<ParameterModel> parameters = new LinkedList<>();
@@ -167,6 +176,30 @@ public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntit
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getEmbodiment() {
+        return embodiment;
+    }
+
+    public void setEmbodiment(String embodiment) {
+        this.embodiment = embodiment;
+    }
+
+    public boolean isCompletion() {
+        return completion;
+    }
+
+    public void setCompletion(boolean completion) {
+        this.completion = completion;
     }
 
     @Transient

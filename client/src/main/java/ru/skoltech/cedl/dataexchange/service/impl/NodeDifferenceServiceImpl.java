@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.service.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelDifferenceService;
@@ -110,6 +111,22 @@ public class NodeDifferenceServiceImpl implements NodeDifferenceService {
             String value2 = remoteNode.getName();
             modelDifferences.add(createNodeAttributesModified(localNode, remoteNode, "name", value1, value2));
         }
+        if (!StringUtils.equals(localNode.getDescription(), remoteNode.getDescription())) {
+            String value1 = localNode.getDescription();
+            String value2 = remoteNode.getDescription();
+            modelDifferences.add(createNodeAttributesModified(localNode, remoteNode, "description", value1, value2));
+        }
+        if (!StringUtils.equals(localNode.getEmbodiment(), remoteNode.getEmbodiment())) {
+            String value1 = localNode.getEmbodiment();
+            String value2 = remoteNode.getEmbodiment();
+            modelDifferences.add(createNodeAttributesModified(localNode, remoteNode, "description", value1, value2));
+        }
+        if (localNode.isCompletion() != remoteNode.isCompletion()) {
+            String value1 = Boolean.toString(localNode.isCompletion());
+            String value2 = Boolean.toString(remoteNode.isCompletion());
+            modelDifferences.add(createNodeAttributesModified(localNode, remoteNode, "completion", value1, value2));
+        }
+
         modelDifferences.addAll(parameterDifferenceService.computeParameterDifferences(localNode, remoteNode, currentRevisionNumber));
         modelDifferences.addAll(externalModelDifferenceService.computeExternalModelDifferences(localNode, remoteNode, currentRevisionNumber));
         if (localNode instanceof CompositeModelNode && remoteNode instanceof CompositeModelNode) {
