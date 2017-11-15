@@ -329,15 +329,15 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         externalModel.setLastModification(cacheFile.lastModified());
         assertEquals(CACHE, externalModel.state());
 
-        externalModel.setLastModification(externalModel.getLastModification() + 10);
+        externalModel.setLastModification(externalModel.getLastModification() + 2000);
         assertEquals(CACHE_OUTDATED, externalModel.state());
 
-        if (!cacheFile.setLastModified(cacheFile.lastModified() + 5)) {
+        if (!cacheFile.setLastModified(cacheFile.lastModified() + 2000)) {
             fail("Cache file cannot be updated");
         }
         assertEquals(CACHE_CONFLICT, externalModel.state());
 
-        if (!cacheFile.setLastModified(cacheFile.lastModified() + 10)) {
+        if (!cacheFile.setLastModified(cacheFile.lastModified() + 2000)) {
             fail("Cache file cannot be updated");
         }
         if (!timestampFile.setLastModified(externalModel.getLastModification())) {
@@ -465,7 +465,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         Cell cell = row.createCell(cellReference.getCol());
         cell.setCellValue(value);
         cacheInputStream.close();
-        long newLastModified = externalModel.getTimestampFile().lastModified() + 10;
+        long newLastModified = externalModel.getTimestampFile().lastModified() + 2000;
         boolean updateCacheFile = externalModel.getCacheFile().setLastModified(newLastModified);
         if (!updateCacheFile) {
             fail("Cannot update last modification parameter of cache file");
