@@ -92,7 +92,7 @@
                                 <Glyph fontFamily="FontAwesome" icon="MINUS"/>
                             </graphic>
                         </Button>
-                        <Separator orientation="VERTICAL"/>
+                        <Pane HBox.hgrow="ALWAYS"/>
                         <Button fx:id="moveNodeUpButton" minWidth="28" mnemonicParsing="false" onAction="#moveNodeUp">
                             <tooltip>
                                 <Tooltip text="Copy Node"/>
@@ -110,7 +110,6 @@
                                 <Glyph fontFamily="FontAwesome" icon="CARET_DOWN"/>
                             </graphic>
                         </Button>
-                        <Pane HBox.hgrow="ALWAYS"/>
                     </ToolBar>
                 </bottom>
             </BorderPane>

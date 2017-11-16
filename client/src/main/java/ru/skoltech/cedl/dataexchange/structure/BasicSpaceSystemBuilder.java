@@ -69,7 +69,7 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
         return element;
     }
 
-    private InstrumentModel createInstrument(String name, ModelNode parent) {
+    private InstrumentModel createInstrument(String name, CompositeModelNode<? extends ModelNode> parent) {
         InstrumentModel instrument = new InstrumentModel(name);
         instrument.setParent(parent);
         instrument.addParameter(createParameter());

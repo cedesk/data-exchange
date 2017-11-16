@@ -111,6 +111,11 @@ public class NodeDifferenceServiceImpl implements NodeDifferenceService {
             String value2 = remoteNode.getName();
             modelDifferences.add(createNodeAttributesModified(localNode, remoteNode, "name", value1, value2));
         }
+        if (localNode.getPosition() != remoteNode.getPosition()) {
+            String value1 = Integer.toString(localNode.getPosition());
+            String value2 = Integer.toString(remoteNode.getPosition());
+            modelDifferences.add(createNodeAttributesModified(localNode, remoteNode, "position", value1, value2));
+        }
         if (!StringUtils.equals(localNode.getDescription(), remoteNode.getDescription())) {
             String value1 = localNode.getDescription();
             String value2 = remoteNode.getDescription();

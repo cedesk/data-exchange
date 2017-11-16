@@ -53,6 +53,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 /**
  * Created by D.Knoll on 13.03.2015.
@@ -362,6 +363,7 @@ public class Project {
         if (this.study == null) {
             return;
         }
+        this.setupModelNodePosition(study); // revise an order
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         this.initializeHandlers();
     }
@@ -371,9 +373,30 @@ public class Project {
         if (this.study == null) {
             return;
         }
+        this.setupModelNodePosition(study); // revise an order
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         this.initializeHandlers();
     }
+
+    private void setupModelNodePosition(Study study) {
+        setupModelNodePosition(study.getSystemModel().getSubNodes());
+        study.getSystemModel().getSubNodes().forEach(subSystemModel -> {
+            setupModelNodePosition(subSystemModel.getSubNodes());
+            subSystemModel.getSubNodes().forEach(elementModel -> {
+                setupModelNodePosition(elementModel.getSubNodes());
+            });
+        });
+    }
+
+    private void setupModelNodePosition(List<? extends ModelNode> modelNodes) {
+        Objects.requireNonNull(modelNodes);
+        IntStream.range(0, modelNodes.size()).forEach(i -> {
+            if (modelNodes.get(i).getPosition() == 0) {
+                modelNodes.get(i).setPosition(i + 1);
+            }
+        });
+    }
+
 
     private void initializeHandlers(){
         Platform.runLater(() -> differenceHandler.clearModelDifferences());

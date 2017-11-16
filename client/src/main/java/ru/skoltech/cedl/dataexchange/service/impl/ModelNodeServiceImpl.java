@@ -84,6 +84,10 @@ public class ModelNodeServiceImpl implements ModelNodeService {
         // clone ModelNode
         ModelNode newModelNode = this.addSubNode(parentNode, name);
         assert newModelNode.getClass() == modelNode.getClass();
+        newModelNode.setPosition(modelNode.getPosition());
+        newModelNode.setDescription(modelNode.getDescription());
+        newModelNode.setEmbodiment(modelNode.getEmbodiment());
+        newModelNode.setCompletion(modelNode.isCompletion());
 
         if (modelNode instanceof CompositeModelNode) {
             CompositeModelNode newCompositeModelNode = (CompositeModelNode) newModelNode;
