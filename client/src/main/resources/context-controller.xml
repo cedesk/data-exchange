@@ -56,6 +56,7 @@
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="guiService" ref="guiService"/>
+        <property name="modelNodeService" ref="modelNodeService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="statusLogger" ref="statusLogger"/>
@@ -66,6 +67,7 @@
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="guiService" ref="guiService"/>
+        <property name="parameterModelService" ref="parameterModelService"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
@@ -84,7 +86,6 @@
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
-        <property name="unitManagementService" ref="unitManagementService"/>
         <property name="guiService" ref="guiService"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="statusLogger" ref="statusLogger"/>
@@ -151,7 +152,7 @@
         <property name="studyService" ref="studyService"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserManagementController">
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserManagementController" scope="prototype">
         <property name="project" ref="project"/>
         <property name="guiService" ref="guiService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
@@ -185,6 +186,8 @@
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="userManagementService" ref="userManagementService"/>
     </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UnitChooseController" scope="prototype"/>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ReferenceSelectorController" scope="prototype"/>
 

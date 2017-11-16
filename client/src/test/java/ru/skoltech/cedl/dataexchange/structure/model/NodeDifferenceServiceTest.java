@@ -16,7 +16,6 @@
 
 package ru.skoltech.cedl.dataexchange.structure.model;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
@@ -24,10 +23,12 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.revision.SystemModelRepository;
 import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.MergeException;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 
 import java.util.List;
 
+import static org.junit.Assert.*;
 import static ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference.ChangeLocation;
 import static ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference.ChangeType;
 
@@ -59,28 +60,28 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         SubSystemModel newLocalSub = new SubSystemModel("subsys");
         localSystem.addSubNode(newLocalSub);
 
-        Assert.assertEquals(1, localSystem.getSubNodes().size());
+        assertEquals(1, localSystem.getSubNodes().size());
 
         List<ModelDifference> differences
                 = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(1, differences.size());
+        assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
-        Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
-        Assert.assertEquals(ChangeType.ADD, md.getChangeType());
-        Assert.assertEquals(newLocalSub.getNodePath(), md.getElementPath());
+        assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
+        assertEquals(ChangeType.ADD, md.getChangeType());
+        assertEquals(newLocalSub.getNodePath(), md.getElementPath());
 
-        Assert.assertTrue(md.isRevertible());
+        assertTrue(md.isRevertible());
 
         md.revertDifference();
 
-        Assert.assertEquals(0, localSystem.getSubNodes().size());
+        assertEquals(0, localSystem.getSubNodes().size());
 
         differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(0, differences.size());
+        assertEquals(0, differences.size());
     }
 
     @Test
-    public void localNodeModify() throws Exception {
+    public void localNodeModify() {
         SubSystemModel subSystem = new SubSystemModel("subSystem");
 
         SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
@@ -92,23 +93,30 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
 
         subSystem = localSystem.getSubNodes().get(0);
         subSystem.setName(subSystem.getName() + "-v2");
+        subSystem.setDescription("description");
+        subSystem.setEmbodiment("embodiment");
+        subSystem.setCompletion(true);
 
         List<ModelDifference> differences
                 = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(1, differences.size());
-        ModelDifference md = differences.get(0);
-        Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
-        Assert.assertEquals(ChangeType.MODIFY, md.getChangeType());
+        assertEquals(4, differences.size());
+        differences.forEach(modelDifference -> {
+            assertEquals(ChangeLocation.ARG1, modelDifference.getChangeLocation());
+            assertEquals(ChangeType.MODIFY, modelDifference.getChangeType());
+            assertTrue(modelDifference.isRevertible());
+            try {
+                modelDifference.revertDifference();
+            } catch (MergeException e) {
+                fail();
+            }
+        });
 
-        Assert.assertTrue(md.isRevertible());
 
-        md.revertDifference();
-
-        Assert.assertEquals(1, localSystem.getSubNodes().size());
-        Assert.assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
+        assertEquals(1, localSystem.getSubNodes().size());
+        assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
         differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(0, differences.size());
+        assertEquals(0, differences.size());
     }
 
     @Test
@@ -126,20 +134,20 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
 
         List<ModelDifference> differences
                 = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(1, differences.size());
+        assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
-        Assert.assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
-        Assert.assertEquals(ChangeType.REMOVE, md.getChangeType());
+        assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
+        assertEquals(ChangeType.REMOVE, md.getChangeType());
 
-        Assert.assertTrue(md.isRevertible());
+        assertTrue(md.isRevertible());
 
         md.revertDifference();
 
-        Assert.assertEquals(1, localSystem.getSubNodes().size());
-        Assert.assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
+        assertEquals(1, localSystem.getSubNodes().size());
+        assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
         differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(0, differences.size());
+        assertEquals(0, differences.size());
     }
 
     @Test
@@ -153,23 +161,23 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         remoteSystem = systemModelRepository.saveAndFlush(remoteSystem);
 
         int lastRevisionNumber = remoteSystem.getRevision();
-        Assert.assertTrue(currentRevisionNumber < lastRevisionNumber);
+        assertTrue(currentRevisionNumber < lastRevisionNumber);
 
         List<ModelDifference> differences
                 = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(1, differences.size());
+        assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
-        Assert.assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
-        Assert.assertEquals(ChangeType.ADD, md.getChangeType());
+        assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
+        assertEquals(ChangeType.ADD, md.getChangeType());
 
-        Assert.assertTrue(md.isMergeable());
+        assertTrue(md.isMergeable());
         md.mergeDifference();
 
-        Assert.assertEquals(1, localSystem.getSubNodes().size());
-        Assert.assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
+        assertEquals(1, localSystem.getSubNodes().size());
+        assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
         differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(0, differences.size());
+        assertEquals(0, differences.size());
     }
 
     @Test
@@ -189,19 +197,19 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
 
         List<ModelDifference> differences
                 = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(1, differences.size());
+        assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
-        Assert.assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
-        Assert.assertEquals(ChangeType.MODIFY, md.getChangeType());
+        assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
+        assertEquals(ChangeType.MODIFY, md.getChangeType());
 
-        Assert.assertTrue(md.isMergeable());
+        assertTrue(md.isMergeable());
         md.mergeDifference();
 
-        Assert.assertEquals(1, localSystem.getSubNodes().size());
-        Assert.assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
+        assertEquals(1, localSystem.getSubNodes().size());
+        assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
         differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(0, differences.size());
+        assertEquals(0, differences.size());
     }
 
     @Test
@@ -221,18 +229,18 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
 
         List<ModelDifference> differences
                 = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(1, differences.size());
+        assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
-        Assert.assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
-        Assert.assertEquals(ChangeType.REMOVE, md.getChangeType());
+        assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
+        assertEquals(ChangeType.REMOVE, md.getChangeType());
 
-        Assert.assertTrue(md.isMergeable());
+        assertTrue(md.isMergeable());
         md.mergeDifference();
 
-        Assert.assertEquals(0, localSystem.getSubNodes().size());
+        assertEquals(0, localSystem.getSubNodes().size());
 
         differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
-        Assert.assertEquals(0, differences.size());
+        assertEquals(0, differences.size());
     }
 
 }

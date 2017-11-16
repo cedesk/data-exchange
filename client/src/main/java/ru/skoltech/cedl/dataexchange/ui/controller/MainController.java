@@ -30,13 +30,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
+import org.controlsfx.glyphfont.Glyph;
 import org.springframework.transaction.CannotCreateTransactionException;
 import ru.skoltech.cedl.dataexchange.ApplicationPackage;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -224,22 +224,15 @@ public class MainController implements Initializable, Displayable, Closeable {
 
         repositoryNewerListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
+                Glyph glyph = (Glyph) diffButton.getGraphic();
+                glyph.setIcon(newValue ? "BOLT" : "INBOX");
+                glyph.setColor(newValue ? Color.web("FF6A00") : Color.BLACK);
                 if (newValue) {
-                    ImageView imageView = new ImageView(new Image(FLASH_ICON_URL));
-                    imageView.setFitWidth(8);
-                    imageView.setPreserveRatio(true);
-                    imageView.setSmooth(true);
-                    diffButton.setGraphic(imageView);
-                    diffButton.setGraphicTextGap(8);
-
                     modelEditingController.updateView();
                     statusLogger.info("Remote model loaded for comparison.");
                     UserNotifications.showActionableNotification(ownerStage, "Updates on study",
                             "New version of study in repository!", "View Differences",
                             actionEvent -> this.openDiffView(), true);
-
-                } else {
-                    diffButton.setGraphic(null);
                 }
             }
         };
@@ -576,6 +569,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void openDependencyView() {
         ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
+        dependencyViewBuilder.resizable(false);
         dependencyViewBuilder.ownerWindow(ownerStage);
         dependencyViewBuilder.show();
     }
@@ -605,7 +599,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         diffViewBuilder.ownerWindow(ownerStage);
         diffViewBuilder.modality(Modality.APPLICATION_MODAL);
         diffViewBuilder.showAndWait();
-        modelEditingController.clearView();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
@@ -680,7 +673,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openUnitManagement() {
-        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_EDITING_VIEW);
+        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_MANAGEMENT_VIEW);
         unitEditingViewBuilder.ownerWindow(ownerStage);
         unitEditingViewBuilder.modality(Modality.APPLICATION_MODAL);
         unitEditingViewBuilder.show();

@@ -40,7 +40,7 @@ public class InstrumentModel extends ModelNode {
 
     @Override
     @ManyToOne(targetEntity = ElementModel.class)
-    public ModelNode getParent() {
-        return super.getParent();
+    public ElementModel getParent() {
+        return (ElementModel) super.getParent();
     }
 }

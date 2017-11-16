@@ -31,7 +31,7 @@
                 <ToggleGroup fx:id="sortOrderGroup"/>
                 <ToggleGroup fx:id="sourceGroup"/>
             </fx:define>
-            <ToolBar>
+            <ToolBar fx:id="dependencyToolbar">
                 <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView">
                     <tooltip>
                         <Tooltip text="Refresh"/>

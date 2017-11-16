@@ -19,7 +19,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.controlsfx.glyphfont.Glyph?>
+<?import org.controlsfx.glyphfont.*?>
 <?import ru.skoltech.cedl.dataexchange.ui.control.TradespaceView?>
 <AnchorPane prefHeight="600.0" prefWidth="1100.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.121"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -33,12 +33,17 @@
                 <Separator orientation="VERTICAL"/>
                 <Button mnemonicParsing="false" onAction="#importTadespaceFromCSV" text="Import"/>
                 <Separator orientation="VERTICAL"/>
-                <Label styleClass="projectDetailsLabels" text="Study:">
+                <Label fx:id="studyNameLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
                     <HBox.margin>
                         <Insets right="4.0"/>
                     </HBox.margin>
+                    <tooltip>
+                        <Tooltip text="Project"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="CUBE"/>
+                    </graphic>
                 </Label>
-                <Label fx:id="studyNameLabel" styleClass="projectDetailsText" text="--"/>
             </ToolBar>
         </top>
         <center>

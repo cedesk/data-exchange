@@ -83,7 +83,8 @@ public class ParameterLinkRegistry {
             // dependency goes from SOURCE to SINK
             dependencyGraph.addEdge(sourceModel, sinkModel);
         } else {
-            logger.warn("trying to add self reference on node " + sourceModel.getNodePath());
+            // TODO: FIX: not recording this blocks evaluation of calculations within a node
+            logger.warn("skipping same-node reference: " + sink.getNodePath() + " -> " + source.getNodePath());
         }
     }
 

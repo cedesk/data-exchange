@@ -56,7 +56,7 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
 
     @Override
     @ManyToOne(targetEntity = SystemModel.class)
-    public ModelNode getParent() {
+    public SystemModel getParent() {
         return null;
     }
 

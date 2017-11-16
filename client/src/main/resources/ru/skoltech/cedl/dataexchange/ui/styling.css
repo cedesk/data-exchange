@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+.button {
+    -fx-min-height: 28px;
+    -fx-graphic-text-gap: 6px;
+}
+
 .text-input:readonly {
     -fx-background-color: transparent;
     -fx-border-style: solid;
@@ -23,12 +28,14 @@
 }
 
 .projectDetailsLabels {
-    /*    -fx-font-style: italic;
-        -fx-underline: true;*/
-}
-
-.projectDetailsText {
     -fx-font-weight: bold;
+    -fx-padding: 4px;
+    -fx-border-color: transparent transparent black black;
+    -fx-background-color: whitesmoke;
+    -fx-border-width: 1px;
+    -fx-border-radius: 2px;
+    -fx-graphic-text-gap: 6px;
+    -fx-min-width: 100px;
 }
 
 .sectionTitle {

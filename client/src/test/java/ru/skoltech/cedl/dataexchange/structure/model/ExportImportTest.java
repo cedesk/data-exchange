@@ -21,19 +21,22 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
+import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,6 +52,10 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     private SystemBuilder systemBuilder;
     private FileStorageService fileStorageService;
     private ExternalModelService externalModelService;
+    private UnitManagementService unitManagementService;
+//    private UserManagementService userManagementService;
+//    private UserRoleManagementService userRoleManagementService;
+//    private UserManagementRepository userManagementRepository;
 
     @Before
     public void setup() throws IOException, NoSuchFieldException, IllegalAccessException, URISyntaxException {
@@ -59,6 +66,10 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         systemBuilder.modelDepth(1);
         fileStorageService = context.getBean(FileStorageService.class);
         externalModelService = context.getBean(ExternalModelService.class);
+        unitManagementService = context.getBean(UnitManagementService.class);
+//        userManagementService = context.getBean(UserManagementService.class);
+//        userManagementRepository = context.getBean(UserManagementRepository.class);
+//        userRoleManagementService = context.getBean(UserRoleManagementService.class);
     }
 
     @Test
@@ -105,7 +116,7 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         ParameterModel parameterModel2 = originalSystemModel.getParameters().get(1);
         parameterModel2.setExportReference(exportModelReference);
 
-        File file = new File("target", "DummySystemModel.xml");
+        File file = new File("target", "dummy-system-model.xml");
         fileStorageService.exportSystemModel(originalSystemModel, file);
         SystemModel importedSystemModel = fileStorageService.importSystemModel(file);
 
@@ -114,6 +125,8 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         assertThat(importedSystemModel.getExternalModels(), hasItem(csvExternalModel));
         importedSystemModel.getExternalModels()
                 .forEach(externalModel -> assertTrue(externalModel.state().isInitialized()));
+
+        file.deleteOnExit();
     }
 
     @Test
@@ -138,14 +151,29 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testExportImportUnitManagement() {
-        //TODO
+    public void testExportImportUnitManagement() throws IOException {
+        UnitManagement unitManagement = unitManagementService.loadDefaultUnitManagement();
+        File unitManagementFile = new File("target", "dummy-unit-management.xml");
+        fileStorageService.exportUnitManagement(unitManagement, unitManagementFile);
+        try (InputStream inputStream = new FileInputStream(unitManagementFile)) {
+            UnitManagement unitManagementImported = fileStorageService.importUnitManagement(inputStream);
+            assertEquals(unitManagement, unitManagementImported);
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail("Thrown exception: " + e.getMessage());
+        } finally {
+            unitManagementFile.deleteOnExit();
+        }
     }
 
     @Test
-    public void testExportImportUserRoleManagement() {
-        //TODO
+    public void testExportImportUserRoleManagement() throws IOException {
+//        UserManagement userManagement = userManagementService.findUserManagement();
+//
+//        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement(userManagement);
+//        File userRoleManagementFile = new File("target", "dummy-user-role-management.xml");
+//        fileStorageService.exportUserRoleManagement(userRoleManagement, userRoleManagementFile);
+//        UserRoleManagement userRoleManagementImported = fileStorageService.importUserRoleManagement(userRoleManagementFile);
+//        assertEquals(userRoleManagement, userRoleManagementImported);
     }
-
-
 }

@@ -16,65 +16,80 @@
   ~ limitations under the License.
   -->
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="420.0" minWidth="240.0" stylesheets="@styling.css"
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" minHeight="420.0" minWidth="300.0" stylesheets="@styling.css"
             xmlns="http://javafx.com/javafx/8.0.40"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.UserManagementController">
-    <children>
-        <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-              AnchorPane.topAnchor="0.0">
-            <children>
-                <TableView fx:id="userTable" minHeight="420.0" BorderPane.alignment="CENTER">
-                    <columns>
-                        <TableColumn fx:id="userNameColumn" minWidth="100.0" prefWidth="-1.0" text="Name">
-                            <cellValueFactory>
-                                <PropertyValueFactory property="userName"/>
-                            </cellValueFactory>
-                        </TableColumn>
-                        <TableColumn fx:id="userFullNameColumn" minWidth="160.0" prefWidth="-1.0" text="Full Name">
-                            <cellValueFactory>
-                                <PropertyValueFactory property="fullName"/>
-                            </cellValueFactory>
-                        </TableColumn>
-                    </columns>
-                </TableView>
-                <ToolBar>
-                    <items>
-                        <Button fx:id="addUserButton" minWidth="28" mnemonicParsing="false" onAction="#addUser" text="">
-                            <tooltip>
-                                <Tooltip text="Add user"/>
-                            </tooltip>
-                            <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="PLUS"/>
-                            </graphic>
-                        </Button>
-                        <Button fx:id="editUserButton" minWidth="28" mnemonicParsing="false"
-                                onAction="#openUserEditingView" text="">
-                            <tooltip>
-                                <Tooltip text="Edit user"/>
-                            </tooltip>
-                            <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
-                            </graphic>
-                        </Button>
-                        <Button fx:id="deleteUserButton" minWidth="28" mnemonicParsing="false" onAction="#deleteUser"
-                                text="">
-                            <tooltip>
-                                <Tooltip text="Remove user"/>
-                            </tooltip>
-                            <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="MINUS"/>
-                            </graphic>
-                        </Button>
-                        <Separator orientation="VERTICAL"/>
-                        <Button fx:id="reloadUsers" mnemonicParsing="false" onAction="#reloadUsers" text="Reload"/>
-                        <Button fx:id="saveUsers" mnemonicParsing="false" onAction="#saveUsers" text="Save"/>
-                    </items>
-                </ToolBar>
-            </children>
-        </VBox>
-    </children>
-</AnchorPane>
+    <top>
+        <GridPane hgap="8.0" vgap="2.0">
+            <padding>
+                <Insets bottom="5" left="5" right="5" top="5"/>
+            </padding>
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="15.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Filter :"/>
+            <TextField fx:id="filterTextField" GridPane.columnIndex="1"/>
+        </GridPane>
+    </top>
+    <center>
+        <TableView fx:id="userTable" minHeight="420.0" BorderPane.alignment="CENTER">
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+            <columns>
+                <TableColumn minWidth="100.0" prefWidth="-1.0" text="Name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="userName"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn minWidth="160.0" prefWidth="-1.0" text="Full Name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="fullName"/>
+                    </cellValueFactory>
+                </TableColumn>
+            </columns>
+        </TableView>
+    </center>
+    <bottom>
+        <ToolBar>
+            <Button minWidth="28" mnemonicParsing="false" onAction="#addUser">
+                <tooltip>
+                    <Tooltip text="Add user"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                </graphic>
+            </Button>
+            <Button fx:id="editUserButton" minWidth="28" mnemonicParsing="false" onAction="#editUser">
+                <tooltip>
+                    <Tooltip text="Edit user"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
+                </graphic>
+            </Button>
+            <Button fx:id="deleteUserButton" minWidth="28" mnemonicParsing="false" onAction="#deleteUser">
+                <tooltip>
+                    <Tooltip text="Remove user"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="MINUS"/>
+                </graphic>
+            </Button>
+            <Separator orientation="VERTICAL"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button fx:id="reloadUsers" mnemonicParsing="false" onAction="#reloadUsers" text="Reload"/>
+            <Button fx:id="saveUsers" mnemonicParsing="false" onAction="#saveUsers" text="Save"/>
+        </ToolBar>
+    </bottom>
+</BorderPane>

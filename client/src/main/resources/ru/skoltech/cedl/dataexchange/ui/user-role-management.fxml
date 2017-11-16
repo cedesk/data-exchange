@@ -21,6 +21,7 @@
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
+<?import javafx.scene.text.Text?>
 <SplitPane xmlns:fx="http://javafx.com/fxml/1" dividerPositions="0.33" prefHeight="600.0" prefWidth="800.0"
            stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8"
            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.UserRoleManagementController">
@@ -128,29 +129,49 @@
                     </Label>
                 </top>
                 <right>
-                    <VBox>
-                        <Label styleClass="sectionTitle" text="available">
-                            <padding>
-                                <Insets left="16.0"/>
-                            </padding>
-                        </Label>
-                        <TableView fx:id="userTable" BorderPane.alignment="CENTER">
-                            <columns>
-                                <TableColumn fx:id="userNameColumn" minWidth="80.0"
-                                             prefWidth="-1.0" text="Name">
-                                    <cellValueFactory>
-                                        <PropertyValueFactory property="userName"/>
-                                    </cellValueFactory>
-                                </TableColumn>
-                                <TableColumn fx:id="userFullNameColumn" minWidth="160.0"
-                                             prefWidth="-1.0" text="Full Name">
-                                    <cellValueFactory>
-                                        <PropertyValueFactory property="fullName"/>
-                                    </cellValueFactory>
-                                </TableColumn>
-                            </columns>
-                        </TableView>
-                    </VBox>
+                    <BorderPane>
+                        <top>
+                            <Label styleClass="sectionTitle" text="available">
+                                <padding>
+                                    <Insets left="16.0"/>
+                                </padding>
+                            </Label>
+                        </top>
+                        <center>
+                            <TableView fx:id="userTable" BorderPane.alignment="CENTER">
+                                <columns>
+                                    <TableColumn fx:id="userNameColumn" minWidth="80.0"
+                                                 prefWidth="-1.0" text="Name">
+                                        <cellValueFactory>
+                                            <PropertyValueFactory property="userName"/>
+                                        </cellValueFactory>
+                                    </TableColumn>
+                                    <TableColumn fx:id="userFullNameColumn" minWidth="160.0"
+                                                 prefWidth="-1.0" text="Full Name">
+                                        <cellValueFactory>
+                                            <PropertyValueFactory property="fullName"/>
+                                        </cellValueFactory>
+                                    </TableColumn>
+                                </columns>
+                            </TableView>
+                        </center>
+                        <bottom>
+                            <GridPane hgap="8.0" vgap="2.0">
+                                <padding>
+                                    <Insets bottom="5" left="5" right="5" top="5"/>
+                                </padding>
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="15.0"/>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                </rowConstraints>
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Filter :"/>
+                                <TextField fx:id="filterTextField" GridPane.columnIndex="1"/>
+                            </GridPane>
+                        </bottom>
+                    </BorderPane>
                 </right>
                 <center>
                     <VBox alignment="CENTER">

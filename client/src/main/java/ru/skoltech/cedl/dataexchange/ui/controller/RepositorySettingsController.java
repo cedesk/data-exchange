@@ -126,7 +126,7 @@ public class RepositorySettingsController implements Initializable, Displayable,
         boolean repositoryWatcherAutosync = applicationSettings.isRepositoryWatcherAutosync();
 
         ChangeListener<Object> changeListener = (observable, oldValue, newValue) ->
-                changed.setValue(parametersChanged(repositoryHost, repositoryUser, repositoryPassword, repositoryWatcherAutosync));
+                changed.setValue(parametersChanged(repositoryHost, repositorySchemaName, repositoryUser, repositoryPassword, repositoryWatcherAutosync));
 
         repositoryHostTextField.setText(repositoryHost);
         repositoryHostTextField.textProperty().addListener(changeListener);
@@ -139,6 +139,7 @@ public class RepositorySettingsController implements Initializable, Displayable,
 
         applicationDirectoryTextField.setText(applicationDirectory);
         repositorySchemaNameTextField.setText(repositorySchemaName);
+        repositorySchemaNameTextField.textProperty().addListener(changeListener);
 
         repositoryWatcherAutosyncCheckBox.setSelected(repositoryWatcherAutosync);
         repositoryWatcherAutosyncCheckBox.selectedProperty().addListener(changeListener);
@@ -210,11 +211,13 @@ public class RepositorySettingsController implements Initializable, Displayable,
         }
 
         String repositoryHost = repositoryHostTextField.getText();
+        String repositorySchema = repositorySchemaNameTextField.getText();
         String repositoryUser = repositoryUserTextField.getText();
         String repositoryPassword = repositoryPasswordTextField.getText();
         boolean repositoryWatcherAutosync = repositoryWatcherAutosyncCheckBox.isSelected();
 
         applicationSettings.storeRepositoryHost(repositoryHost);
+        applicationSettings.storeRepositorySchemaName(repositorySchema);
         applicationSettings.storeRepositoryUser(repositoryUser);
         applicationSettings.storeRepositoryPassword(repositoryPassword);
         applicationSettings.storeRepositoryWatcherAutosync(repositoryWatcherAutosync);
@@ -223,21 +226,23 @@ public class RepositorySettingsController implements Initializable, Displayable,
         logger.info("applied");
     }
 
-    private boolean parametersChanged(String baseRepositoryHost, String baseRepositoryUser,
+    private boolean parametersChanged(String baseRepositoryHost, String baseRepositorySchemaName, String baseRepositoryUser,
                                       String baseRepositoryPassword, boolean baseRepositoryWatcherAutosync) {
         String newRepositoryHost = repositoryHostTextField.getText();
+        String newRepositorySchema = repositorySchemaNameTextField.getText();
         String newRepositoryUser = repositoryUserTextField.getText();
         String newRepositoryPassword = repositoryPasswordTextField.getText();
         boolean newRepositoryWatcherAutosync = repositoryWatcherAutosyncCheckBox.isSelected();
         return !baseRepositoryHost.equals(newRepositoryHost)
+                || !baseRepositorySchemaName.equals(newRepositorySchema)
                 || !baseRepositoryUser.equals(newRepositoryUser)
                 || !baseRepositoryPassword.equals(newRepositoryPassword)
                 || baseRepositoryWatcherAutosync != newRepositoryWatcherAutosync;
     }
 
     private boolean testConnection() {
-        String repositorySchemaName = applicationSettings.getRepositorySchemaName();
         String repositoryHost = repositoryHostTextField.getText();
+        String repositorySchemaName = applicationSettings.getRepositorySchemaName();
         String repositoryUser = repositoryUserTextField.getText();
         String repositoryPassword = repositoryPasswordTextField.getText();
 

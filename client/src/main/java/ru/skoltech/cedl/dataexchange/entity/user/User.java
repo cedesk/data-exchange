@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.*;
  */
 @Entity
 @Audited
-@XmlType(propOrder = {"userName", "fullName", "disciplines"})
+@XmlType(propOrder = {"userName", "fullName"})
 @XmlAccessorType(XmlAccessType.FIELD)
 public class User implements Comparable<User> {
 

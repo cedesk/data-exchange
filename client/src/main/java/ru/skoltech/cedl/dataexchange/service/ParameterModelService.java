@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.service;
 
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 
 import java.util.List;
 
@@ -29,8 +30,35 @@ import java.util.List;
 public interface ParameterModelService {
 
     /**
-     * Retrieve a list of parameter revisions for specified {@link ParameterModel}.
+     * Create a exact clone of {@link ParameterModel} instance with specified name for the same {@link ModelNode}
+     * as the parent of the specified {@link ParameterModel} to clone from.
+     * <p/>
+     * This method registers a parent for new instance of {@link ParameterModel} but it is still required
+     * to add this instance to the list of supported {@link ParameterModel}s of this parent {@link ModelNode}.
+     * <p/>
+     * @param name name of new {@link ParameterModel} instance
+     * @param parameterModel instance of {@link ParameterModel} to clone from
+     * @return a new instance of copied {@link ParameterModel}
+     */
+    ParameterModel cloneParameterModel(String name, ParameterModel parameterModel);
+
+    /**
+     * Create a exact clone of {@link ParameterModel} instance for the specified {@link ModelNode}.
+     * <p/>
+     * This method registers a parent for new instance of {@link ParameterModel} but it is still required
+     * to add this instance to the list of supported {@link ParameterModel}s of this parent {@link ModelNode}.
+     * <p/>
      *
+     * @param name            name of new {@link ParameterModel} instance
+     * @param parameterModel  instance of {@link ParameterModel} to clone from
+     * @param parentModelNode parent {@link ModelNode} for copied {@link ParameterModel}
+     * @return a new instance of copied {@link ParameterModel}
+     */
+    ParameterModel cloneParameterModel(String name, ParameterModel parameterModel, ModelNode parentModelNode);
+
+    /**
+     * Retrieve a list of parameter revisions for specified {@link ParameterModel}.
+     * <p/>
      * @param parameterModel parameter model
      * @return list of parameter revisions
      */
