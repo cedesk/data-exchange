@@ -33,12 +33,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Implementation operations with external model.
- *
+ * Implementation of {@link ExternalModelService}.
+ * <p/>
  * Created by Nikolay Groshkov on 31-Aug-17.
  */
 public class ExternalModelServiceImpl implements ExternalModelService {
-
 
     private enum ExternalModelType {
         EXCEL("Excel Spreadsheets", XLS, XLSX, XLSM),
@@ -83,29 +82,51 @@ public class ExternalModelServiceImpl implements ExternalModelService {
     }
 
     @Override
+    public ExternalModel cloneExternalModel(ExternalModel externalModel) {
+        Objects.requireNonNull(externalModel);
+
+        return this.cloneExternalModel(externalModel, externalModel.getParent());
+    }
+
+    @Override
+    public ExternalModel cloneExternalModel(ExternalModel externalModel, ModelNode parent) {
+        Objects.requireNonNull(externalModel);
+        Objects.requireNonNull(parent);
+
+        ExternalModel newExternalModel = createExternalModel(externalModel.getName());
+        newExternalModel.setName(externalModel.getName());
+        newExternalModel.setAttachment(externalModel.getAttachment());
+        newExternalModel.init();
+        newExternalModel.setParent(parent);
+        return newExternalModel;
+    }
+
+    @Override
     public ExternalModel createExternalModelFromFile(File file, ModelNode parent) throws ExternalModelException {
         Objects.requireNonNull(file);
         Objects.requireNonNull(parent);
 
-        String fileExtension = Utils.getExtension(file.getName());
+        ExternalModel externalModel = createExternalModel(file.getName());
+        externalModel.setParent(parent);
+        externalModel.initByFile(file);
+        return externalModel;
+    }
+
+    private ExternalModel createExternalModel(String fileName) {
+        String fileExtension = Utils.getExtension(fileName);
         ExternalModelType type = extension2type.get(fileExtension);
         if (type == null) {
             throw new IllegalArgumentException("Cannot defile external model for " + fileExtension + " type.");
         }
-        ExternalModel externalModel;
+
         switch (type) {
             case EXCEL:
-                externalModel = new ExcelExternalModel();
-                break;
+                return new ExcelExternalModel();
             case COMMA_SEPARATED_VALUES:
-                externalModel = new CsvExternalModel();
-                break;
+                return new CsvExternalModel();
             default:
                 throw new AssertionError("Never must be thrown");
         }
-        externalModel.setParent(parent);
-        externalModel.initByFile(file);
-        return externalModel;
     }
 
     @Override

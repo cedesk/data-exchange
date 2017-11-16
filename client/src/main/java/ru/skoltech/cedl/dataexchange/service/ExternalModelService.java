@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  * Operations with external models
- *
+ * <p/>
  * Created by Nikolay Groshkov on 31-Aug-17.
  */
 public interface ExternalModelService {
@@ -37,29 +37,36 @@ public interface ExternalModelService {
     String XLSM = ".xlsm";
     String CSV = ".csv";
 
+    /**
+     * Create an exact clone of the {@link ExternalModel} instance for the same {@link ModelNode}
+     * as the parent of the specified {@link ExternalModel} to clone from.
+     * <p/>
+     * This method registers a parent for new instance of {@link ExternalModel} but it is still required
+     * to add this instance to the list of supported {@link ExternalModel}s of this parent {@link ModelNode}.
+     * <p/>
+     *
+     * @param externalModel external model to clone from
+     * @return a new instance of copied {@link ExternalModel}
+     */
+    ExternalModel cloneExternalModel(ExternalModel externalModel);
 
     /**
-     * Retrieve a full list of supported types of external models along with their supported file extensions.
-     *
-     * @return list of pairs of external model type description and list of supported file extensions
+     * Create an exact clone of the {@link ExternalModel} instance for the specified {@link ModelNode}.
+     * <p/>
+     * This method registers a parent for new instance of {@link ExternalModel} but it is still required
+     * to add this instance to the list of supported {@link ExternalModel}s of this parent {@link ModelNode}.
+     * <p/>
+     * @param externalModel external model to clone from
+     * @param parent parent {@link ModelNode} for copied {@link ExternalModel}
+     * @return a new instance of copied {@link ExternalModel}
      */
-    List<String> supportedExtensions();
-
-    /**
-     * Retrieve a supported type of external models along with its supported file extensions.
-     * Returned type defined by passed file extension, it must be the only which support this extension
-     * or <i>null</i> if such a type is not defined.
-     *
-     * @param filterExtension file extension to define external model type
-     * @return pair of external model type description and list of supported file extensions
-     * or <i>null</i> if not found
-     */
-    Pair<String, List<String>> fileDescriptionAndExtensions(String filterExtension);
+    ExternalModel cloneExternalModel(ExternalModel externalModel, ModelNode parent);
 
     /**
      * External model factory which create an instances depends on the file name.
+     * <p/>
      *
-     * @param file file which define new instance of external model
+     * @param file   file which define new instance of external model
      * @param parent parent node of external model
      * @return a new instance of external model
      * @throws ExternalModelException if it is not possible to define a type of new external model
@@ -67,8 +74,26 @@ public interface ExternalModelService {
     ExternalModel createExternalModelFromFile(File file, ModelNode parent) throws ExternalModelException;
 
     /**
+     * Retrieve a supported type of external models along with its supported file extensions.
+     * Returned type defined by passed file extension, it must be the only which support this extension
+     * or <i>null</i> if such a type is not defined.
+     * <p/>
+     * @param filterExtension file extension to define external model type
+     * @return pair of external model type description and list of supported file extensions
+     * or <i>null</i> if not found
+     */
+    Pair<String, List<String>> fileDescriptionAndExtensions(String filterExtension);
+
+    /**
+     * Retrieve a full list of supported types of external models along with their supported file extensions.
+     * <p/>
+     * @return list of pairs of external model type description and list of supported file extensions
+     */
+    List<String> supportedExtensions();
+
+    /**
      * Update passed external model with new attachment file.
-     *
+     * <p/>
      * @param file attachment file to update external model
      * @throws ExternalModelException if it is not possible to update current external model for some reason
      */

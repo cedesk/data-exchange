@@ -40,22 +40,28 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by D.Knoll on 23.06.2015.
  */
 public class ParameterModelServiceTest extends AbstractApplicationContextTest {
 
-    private static final String ADMIN = "admin";
-    private SystemModel systemModel;
-    private ParameterModel parameterModel;
-
+    private SystemBuilder systemBuilder;
     private ParameterModelService parameterModelService;
     private SystemModelRepository systemModelRepository;
 
+    private static final String ADMIN = "admin";
+    private SystemModel systemModel;
+    private ParameterModel parameterModel;
+    private ExternalModelReference valueReference, exportReference;
+    private ExternalModel importExternalModel, exportExternalModel;
+    private Operation operation;
+    private Argument argument1, argument2;
+
     @Before
     public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        SystemBuilder systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
+        systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
         systemBuilder.modelDepth(1);
 
         parameterModelService = context.getBean(ParameterModelService.class);
@@ -64,26 +70,27 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
         systemModel = systemBuilder.build("testModel");
         systemModel = systemModelRepository.saveAndFlush(systemModel);
 
-        parameterModel = systemModel.getParameters().get(0);
-    }
+        importExternalModel = mock(ExternalModel.class);
+        when(importExternalModel.getName()).thenReturn("importExternalModel");
+        when(importExternalModel.getUuid()).thenReturn("1111");
+        exportExternalModel = mock(ExternalModel.class);
+        when(exportExternalModel.getName()).thenReturn("exportExternalModel");
+        when(exportExternalModel.getUuid()).thenReturn("2222");
+        systemModel.addExternalModel(importExternalModel);
+        systemModel.addExternalModel(exportExternalModel);
 
-    @Test
-    public void testCloneParameterModel() {
-        ExternalModel importExportExternalModel = mock(ExternalModel.class);
-        ExternalModel exportImportExternalModel = mock(ExternalModel.class);
-
-        ExternalModelReference valueReference = new ExternalModelReference();
+        valueReference = new ExternalModelReference();
         valueReference.setTarget("importTarget");
-        valueReference.setExternalModel(importExportExternalModel);
+        valueReference.setExternalModel(importExternalModel);
 
-        ExternalModelReference exportReference = new ExternalModelReference();
+        exportReference = new ExternalModelReference();
         exportReference.setTarget("exportTarget");
-        exportReference.setExternalModel(exportImportExternalModel);
+        exportReference.setExternalModel(exportExternalModel);
 
-        Operation operation = mock(Operation.class);
+        operation = mock(Operation.class);
+        argument1 = mock(Argument.class);
+        argument2 = mock(Argument.class);
         Calculation calculation = new Calculation();
-        Argument argument1 = mock(Argument.class);
-        Argument argument2 = mock(Argument.class);
         calculation.setOperation(operation);
         calculation.setArguments(Arrays.asList(argument1, argument2));
 
@@ -91,46 +98,21 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
         parameterModel.setValueReference(valueReference);
         parameterModel.setExportReference(exportReference);
         parameterModel.setCalculation(calculation);
+    }
 
-
+    @Test
+    public void testCloneParameterModel() {
         String name = "name";
-        ParameterModel newParameterModel = parameterModelService.cloneParameterModel(name, parameterModel);
+        ParameterModel newParameterModel1 = parameterModelService.cloneParameterModel(name, parameterModel);
+        ParameterModel newParameterModel2 = parameterModelService.cloneParameterModel(name, parameterModel, systemModel);
 
-        assertNotNull(newParameterModel);
-        assertNotEquals(parameterModel, newParameterModel);
-        assertNotEquals(parameterModel.getUuid(), newParameterModel.getUuid());
-        assertEquals(name, newParameterModel.getName());
-        assertEquals(parameterModel.getValue(), newParameterModel.getValue());
-        assertEquals(parameterModel.getUnit(), newParameterModel.getUnit());
-        assertEquals(parameterModel.getNature(), newParameterModel.getNature());
-        assertEquals(parameterModel.getValueSource(), newParameterModel.getValueSource());
-        assertFalse(parameterModel.getValueReference() == newParameterModel.getValueReference());
-        assertEquals(valueReference, newParameterModel.getValueReference());
-        assertEquals(parameterModel.getValueReference().getTarget(), newParameterModel.getValueReference().getTarget());
-        assertEquals(importExportExternalModel, newParameterModel.getValueReference().getExternalModel());
-        assertEquals(parameterModel.getValueLink(), newParameterModel.getValueLink());
-        assertEquals(parameterModel.getCalculation(), newParameterModel.getCalculation());
-        assertEquals(parameterModel.getImportModel(), newParameterModel.getImportModel());
-        assertEquals(parameterModel.getImportField(), newParameterModel.getImportField());
-        assertEquals(parameterModel.getIsReferenceValueOverridden(), newParameterModel.getIsReferenceValueOverridden());
-        assertEquals(parameterModel.getIsExported(), newParameterModel.getIsExported());
-        assertFalse(parameterModel.getExportReference() == newParameterModel.getExportReference());
-        assertEquals(exportReference, newParameterModel.getExportReference());
-        assertEquals(parameterModel.getExportReference().getTarget(), newParameterModel.getExportReference().getTarget());
-        assertEquals(exportImportExternalModel, newParameterModel.getExportReference().getExternalModel());
-        assertEquals(parameterModel.getExportModel(), newParameterModel.getExportModel());
-        assertEquals(parameterModel.getExportField(), newParameterModel.getExportField());
-        assertEquals(parameterModel.getDescription(), newParameterModel.getDescription());
-        assertEquals(parameterModel.getLastModification(), newParameterModel.getLastModification());
-        assertFalse(parameterModel.getCalculation() == newParameterModel.getCalculation());
-        assertEquals(parameterModel.getCalculation(), newParameterModel.getCalculation());
-        assertEquals(parameterModel.getCalculation().getOperation(), newParameterModel.getCalculation().getOperation());
-        assertEquals(operation, newParameterModel.getCalculation().getOperation());
-        assertEquals(parameterModel.getCalculation().getArguments(), newParameterModel.getCalculation().getArguments());
-        assertEquals(2, newParameterModel.getCalculation().getArguments().size());
-        assertThat(parameterModel.getCalculation().getArguments(), hasItem(argument1));
-        assertThat(parameterModel.getCalculation().getArguments(), hasItem(argument2));
-        assertEquals(systemModel, newParameterModel.getParent());
+        this.checkCloneParameterModel(newParameterModel1, name);
+        this.checkCloneParameterModel(newParameterModel2, name);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCloneParameterModelFail3() {
+        parameterModelService.cloneParameterModel(null, new ParameterModel(), systemModel);
     }
 
     @Test(expected = NullPointerException.class)
@@ -143,18 +125,68 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
         parameterModelService.cloneParameterModel("name", null);
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testCloneParameterModelFail4() {
+        parameterModelService.cloneParameterModel("name", null, systemModel);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCloneParameterModelFail5() {
+        parameterModelService.cloneParameterModel("name", new ParameterModel(), null);
+    }
+
     @Test
     public void testParameterModelChangeHistory() {
-        parameterModel.setName("parameter-1-renamed");
-
         //ParameterModel newParameterModel = new ParameterModel("new-parameter-A", 3.1415);
         //systemModel.addParameter(newParameterModel);
 
+        SystemModel systemModel = systemBuilder.build("testModel");
+        systemModel = systemModelRepository.saveAndFlush(systemModel);
+        ParameterModel parameterModel = systemModel.getParameters().get(0);
+        parameterModel.setName("parameter-1-renamed");
         systemModelRepository.saveAndFlush(systemModel);
 
         List<ParameterRevision> changeHistory = parameterModelService.parameterModelChangeHistory(parameterModel);
 
         Assert.assertEquals(2, changeHistory.size());
         Assert.assertEquals(ADMIN, changeHistory.get(0).getRevisionAuthor());
+    }
+
+    private void checkCloneParameterModel(ParameterModel clonedParameterModel, String name) {
+        assertNotNull(clonedParameterModel);
+        assertNotEquals(parameterModel, clonedParameterModel);
+        assertNotEquals(parameterModel.getUuid(), clonedParameterModel.getUuid());
+        assertEquals(name, clonedParameterModel.getName());
+        assertEquals(parameterModel.getValue(), clonedParameterModel.getValue());
+        assertEquals(parameterModel.getUnit(), clonedParameterModel.getUnit());
+        assertEquals(parameterModel.getNature(), clonedParameterModel.getNature());
+        assertEquals(parameterModel.getValueSource(), clonedParameterModel.getValueSource());
+        assertFalse(parameterModel.getValueReference() == clonedParameterModel.getValueReference());
+        assertEquals(valueReference, clonedParameterModel.getValueReference());
+        assertEquals(parameterModel.getValueReference().getTarget(), clonedParameterModel.getValueReference().getTarget());
+        assertEquals(importExternalModel, clonedParameterModel.getValueReference().getExternalModel());
+        assertEquals(parameterModel.getValueLink(), clonedParameterModel.getValueLink());
+        assertEquals(parameterModel.getCalculation(), clonedParameterModel.getCalculation());
+        assertEquals(parameterModel.getImportModel(), clonedParameterModel.getImportModel());
+        assertEquals(parameterModel.getImportField(), clonedParameterModel.getImportField());
+        assertEquals(parameterModel.getIsReferenceValueOverridden(), clonedParameterModel.getIsReferenceValueOverridden());
+        assertEquals(parameterModel.getIsExported(), clonedParameterModel.getIsExported());
+        assertFalse(parameterModel.getExportReference() == clonedParameterModel.getExportReference());
+        assertEquals(exportReference, clonedParameterModel.getExportReference());
+        assertEquals(parameterModel.getExportReference().getTarget(), clonedParameterModel.getExportReference().getTarget());
+        assertEquals(exportExternalModel, clonedParameterModel.getExportReference().getExternalModel());
+        assertEquals(parameterModel.getExportModel(), clonedParameterModel.getExportModel());
+        assertEquals(parameterModel.getExportField(), clonedParameterModel.getExportField());
+        assertEquals(parameterModel.getDescription(), clonedParameterModel.getDescription());
+        assertEquals(parameterModel.getLastModification(), clonedParameterModel.getLastModification());
+        assertFalse(parameterModel.getCalculation() == clonedParameterModel.getCalculation());
+        assertEquals(parameterModel.getCalculation(), clonedParameterModel.getCalculation());
+        assertEquals(parameterModel.getCalculation().getOperation(), clonedParameterModel.getCalculation().getOperation());
+        assertEquals(operation, clonedParameterModel.getCalculation().getOperation());
+        assertEquals(parameterModel.getCalculation().getArguments(), clonedParameterModel.getCalculation().getArguments());
+        assertEquals(2, clonedParameterModel.getCalculation().getArguments().size());
+        assertThat(parameterModel.getCalculation().getArguments(), hasItem(argument1));
+        assertThat(parameterModel.getCalculation().getArguments(), hasItem(argument2));
+        assertEquals(systemModel, clonedParameterModel.getParent());
     }
 }
