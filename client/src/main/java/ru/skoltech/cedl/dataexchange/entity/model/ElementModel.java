@@ -41,8 +41,8 @@ public class ElementModel extends CompositeModelNode<InstrumentModel> {
 
     @Override
     @ManyToOne(targetEntity = SubSystemModel.class)
-    public ModelNode getParent() {
-        return super.getParent();
+    public SubSystemModel getParent() {
+        return (SubSystemModel) super.getParent();
     }
 
     @Override

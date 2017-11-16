@@ -36,7 +36,9 @@ public class StructureTreeItemFactory {
     public static StructureTreeItem getTreeView(CompositeModelNode modelNode) {
         StructureTreeItem viewNode = new StructureTreeItem(modelNode);
         viewNode.setExpanded(true);
-        for (ModelNode subNode : (List<ModelNode>) modelNode.getSubNodes()) {
+        List<ModelNode> subNodes = (List<ModelNode>) modelNode.getSubNodes();
+        subNodes.sort(ModelNode::compareTo);
+        for (ModelNode subNode : subNodes) {
             if (subNode instanceof CompositeModelNode) {
                 StructureTreeItem childNode = getTreeView((CompositeModelNode) subNode);
                 if (childNode != null) {
@@ -53,7 +55,9 @@ public class StructureTreeItemFactory {
     public static StructureTreeItem getTreeView(CompositeModelNode localModel, CompositeModelNode remoteModel) {
         StructureTreeItem viewNode = new StructureTreeItem(localModel, remoteModel);
         viewNode.setExpanded(true);
-        for (ModelNode subNode : (List<ModelNode>) localModel.getSubNodes()) {
+        List<ModelNode> subNodes = (List<ModelNode>) localModel.getSubNodes();
+        subNodes.sort(ModelNode::compareTo);
+        for (ModelNode subNode : subNodes) {
             Map<String, ModelNode> remoteModelSubNodesMap = remoteModel.getSubNodesMap();
             ModelNode remoteSubNode = remoteModelSubNodesMap.get(subNode.getName());
             if (subNode instanceof CompositeModelNode) {
@@ -109,9 +113,8 @@ public class StructureTreeItemFactory {
         if (compositeModelNode == null) // happens if a node was added locally and is not present in remote
             return new HashMap<>();
         List<ModelNode> subNodes = compositeModelNode.getSubNodes();
-        Map<String, ModelNode> result = subNodes.stream().collect(
+        return subNodes.stream().collect(
                 Collectors.toMap(ModelNode::getUuid, Function.identity())
         );
-        return result;
     }
 }

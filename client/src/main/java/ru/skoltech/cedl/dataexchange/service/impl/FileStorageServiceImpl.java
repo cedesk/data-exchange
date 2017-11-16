@@ -40,7 +40,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Implementation of service which handles operations with file system.
@@ -266,7 +269,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
     }
 
-    private void postProcessSystemModel(ModelNode modelNode, ModelNode parent, File inputFolder) {
+    private void postProcessSystemModel(ModelNode modelNode, CompositeModelNode<? extends ModelNode> parent, File inputFolder) {
         modelNode.setParent(parent);
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
             externalModel.setParent(modelNode);
@@ -317,7 +320,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         if (modelNode instanceof CompositeModelNode) {
             CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
             for (Object node : compositeModelNode.getSubNodes()) {
-                postProcessSystemModel((ModelNode) node, modelNode, inputFolder);
+                postProcessSystemModel((ModelNode) node, compositeModelNode, inputFolder);
             }
         }
     }

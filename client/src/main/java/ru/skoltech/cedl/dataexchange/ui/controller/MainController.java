@@ -30,13 +30,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
+import org.controlsfx.glyphfont.Glyph;
 import org.springframework.transaction.CannotCreateTransactionException;
 import ru.skoltech.cedl.dataexchange.ApplicationPackage;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -224,21 +224,15 @@ public class MainController implements Initializable, Displayable, Closeable {
 
         repositoryNewerListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
+                Glyph glyph = (Glyph) diffButton.getGraphic();
+                glyph.setIcon(newValue ? "BOLT" : "INBOX");
+                glyph.setColor(newValue ? Color.web("FF6A00") : Color.BLACK);
                 if (newValue) {
-                    ImageView imageView = new ImageView(new Image(FLASH_ICON_URL));
-                    imageView.setFitWidth(8);
-                    imageView.setPreserveRatio(true);
-                    imageView.setSmooth(true);
-                    diffButton.setGraphic(imageView);
-
                     modelEditingController.updateView();
                     statusLogger.info("Remote model loaded for comparison.");
                     UserNotifications.showActionableNotification(ownerStage, "Updates on study",
                             "New version of study in repository!", "View Differences",
                             actionEvent -> this.openDiffView(), true);
-
-                } else {
-                    diffButton.setGraphic(null);
                 }
             }
         };

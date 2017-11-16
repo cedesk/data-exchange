@@ -17,10 +17,12 @@
 package ru.skoltech.cedl.dataexchange.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.repository.envers.ParameterModelRevisionRepository;
 import ru.skoltech.cedl.dataexchange.service.ParameterModelService;
 
@@ -46,14 +48,26 @@ public class ParameterModelServiceImpl implements ParameterModelService {
         Objects.requireNonNull(name);
         Objects.requireNonNull(parameterModel);
 
+        return this.cloneParameterModel(name, parameterModel, parameterModel.getParent());
+    }
+
+    @Override
+    public ParameterModel cloneParameterModel(String name, ParameterModel parameterModel, ModelNode parentModelNode) {
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(parameterModel);
+        Objects.requireNonNull(parentModelNode);
+
         ParameterModel newParameterModel = new ParameterModel(name, parameterModel.getValue());
         newParameterModel.setUnit(parameterModel.getUnit());
         newParameterModel.setNature(parameterModel.getNature());
         newParameterModel.setValueSource(parameterModel.getValueSource());
         if (parameterModel.getValueReference() != null) {
             ExternalModelReference externalModelReference = new ExternalModelReference();
-            externalModelReference.setExternalModel(parameterModel.getValueReference().getExternalModel());
             externalModelReference.setTarget(parameterModel.getValueReference().getTarget());
+            if (parameterModel.getValueReference().getExternalModel() != null) {
+                ExternalModel externalModel = parentModelNode.getExternalModelMap().get(parameterModel.getValueReference().getExternalModel().getName());
+                externalModelReference.setExternalModel(externalModel);
+            }
             newParameterModel.setValueReference(externalModelReference);
         }
         newParameterModel.setValueLink(parameterModel.getValueLink());
@@ -69,15 +83,18 @@ public class ParameterModelServiceImpl implements ParameterModelService {
         newParameterModel.setIsExported(parameterModel.getIsExported());
         if (parameterModel.getExportReference() != null) {
             ExternalModelReference externalModelReference = new ExternalModelReference();
-            externalModelReference.setExternalModel(parameterModel.getExportReference().getExternalModel());
             externalModelReference.setTarget(parameterModel.getExportReference().getTarget());
+            if (parameterModel.getExportReference().getExternalModel() != null) {
+                ExternalModel externalModel = parentModelNode.getExternalModelMap().get(parameterModel.getExportReference().getExternalModel().getName());
+                externalModelReference.setExternalModel(externalModel);
+            }
             newParameterModel.setExportReference(externalModelReference);
         }
         newParameterModel.setExportModel(parameterModel.getExportModel());
         newParameterModel.setExportField(parameterModel.getExportField());
         newParameterModel.setDescription(parameterModel.getDescription());
         newParameterModel.setLastModification(parameterModel.getLastModification());
-        newParameterModel.setParent(parameterModel.getParent());
+        newParameterModel.setParent(parentModelNode);
 
         return newParameterModel;
     }
