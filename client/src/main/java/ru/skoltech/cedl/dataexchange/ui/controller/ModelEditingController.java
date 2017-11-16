@@ -309,7 +309,7 @@ public class ModelEditingController implements Initializable {
         structureTree.editableProperty().bind(selectedNodeIsEditable);
         structureTree.getSelectionModel().selectedItemProperty().addListener(new TreeItemSelectionListener());
         BooleanBinding noSelectionOnStructureTreeView = structureTree.getSelectionModel().selectedItemProperty().isNull();
-        BooleanBinding structureNotEditable = structureTree.editableProperty().not();
+        BooleanBinding structureNotEditable = selectedNodeIsEditable.not();
 
         descriptionTextField.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, structureNotEditable));
         embodimentTextField.disableProperty().bind(Bindings.or(noSelectionOnStructureTreeView, structureNotEditable));
@@ -590,8 +590,8 @@ public class ModelEditingController implements Initializable {
                 selectedNodeIsRoot.setValue(modelNode.isRootNode());
                 selectedNodeIsEditable.setValue(editable);
                 selectedNodeParentIsEditable.setValue(parentEditable);
-                selectedNodeIsFirst.setValue(parentModelNode.getSubNodes().indexOf(modelNode) == 0);
-                selectedNodeIsLast.setValue(parentModelNode.getSubNodes().indexOf(modelNode) == parentModelNode.getSubNodes().size() - 1);
+                selectedNodeIsFirst.setValue(parentModelNode != null && parentModelNode.getSubNodes().indexOf(modelNode) == 0);
+                selectedNodeIsLast.setValue(parentModelNode != null && parentModelNode.getSubNodes().indexOf(modelNode) == parentModelNode.getSubNodes().size() - 1);
 
                 ModelEditingController.this.updateParameters(modelNode);
                 ModelEditingController.this.updateDependencies(modelNode);
