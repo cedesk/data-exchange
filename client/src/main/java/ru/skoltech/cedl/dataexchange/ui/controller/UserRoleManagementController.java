@@ -177,7 +177,9 @@ public class UserRoleManagementController implements Initializable, Closeable {
 
         userListProperty.bind(Bindings.createObjectBinding(() -> {
             List<User> filteredUnits = users.stream()
-                    .filter(user -> user.getUserName().toLowerCase().startsWith(filterTextField.getText().toLowerCase()))
+                    .filter(user -> (user.getUserName().toLowerCase().contains(filterTextField.getText().toLowerCase())
+                            || (user.getFullName() != null &&
+                            user.getFullName().toLowerCase().contains(filterTextField.getText().toLowerCase()))))
                     .collect(Collectors.toList());
             return FXCollections.observableList(filteredUnits);
         }, filterTextField.textProperty()));
