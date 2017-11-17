@@ -45,7 +45,31 @@ public class ModelNodeServiceImpl implements ModelNodeService {
     }
 
     @Override
-    public ModelNode addSubNode(CompositeModelNode parentNode, String name) {
+    public ModelNode cloneModelNode(String name, ModelNode modelNode) {
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(modelNode);
+
+        ModelNode newModelNode = this.createModelNode(name, modelNode.getClass());
+        return this.deepModelNodeClone(newModelNode, modelNode);
+    }
+
+    @Override
+    public ModelNode cloneModelNode(CompositeModelNode parentNode, String name, ModelNode modelNode) {
+        Objects.requireNonNull(parentNode);
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(modelNode);
+
+        if (modelNode instanceof SystemModel) {
+            throw new IllegalArgumentException("Cannot clone SystemModel. " +
+                    "Either CompositeModelNode or ElementModel can be cloned.");
+        }
+
+        ModelNode newModelNode = this.createModelNode(parentNode, name);
+        return this.deepModelNodeClone(newModelNode, modelNode);
+    }
+
+    @Override
+    public ModelNode createModelNode(CompositeModelNode parentNode, String name) {
         Objects.requireNonNull(parentNode);
         Objects.requireNonNull(name);
 
@@ -71,56 +95,24 @@ public class ModelNodeServiceImpl implements ModelNodeService {
     }
 
     @Override
-    public ModelNode cloneSubNode(CompositeModelNode parentNode, String name, ModelNode modelNode) {
-        Objects.requireNonNull(parentNode);
+    public ModelNode createModelNode(String name, Class<? extends ModelNode> clazz) {
         Objects.requireNonNull(name);
-        Objects.requireNonNull(modelNode);
 
-        if (modelNode instanceof SystemModel) {
-            throw new IllegalArgumentException("Cannot clone SystemModel. " +
-                    "Either CompositeModelNode or ElementModel can be cloned.");
+        if (clazz == SystemModel.class) {
+            return new SystemModel(name);
+        } else if (clazz == SubSystemModel.class) {
+            return new SubSystemModel(name);
+        } else if (clazz == ElementModel.class) {
+            return new ElementModel(name);
+        } else if (clazz == InstrumentModel.class) {
+            return new InstrumentModel(name);
+        } else {
+            throw new AssertionError("Must never be thrown.");
         }
-
-        // clone ModelNode
-        ModelNode newModelNode = this.addSubNode(parentNode, name);
-        assert newModelNode.getClass() == modelNode.getClass();
-        newModelNode.setPosition(modelNode.getPosition());
-        newModelNode.setDescription(modelNode.getDescription());
-        newModelNode.setEmbodiment(modelNode.getEmbodiment());
-        newModelNode.setCompletion(modelNode.isCompletion());
-
-        if (modelNode instanceof CompositeModelNode) {
-            CompositeModelNode newCompositeModelNode = (CompositeModelNode) newModelNode;
-            if (modelNode instanceof SubSystemModel) {
-                SubSystemModel subSystemModel = (SubSystemModel) modelNode;
-                subSystemModel.getSubNodes()
-                        .forEach(elementModel -> this.cloneSubNode(newCompositeModelNode, elementModel.getName(), elementModel));
-            } else if (modelNode instanceof ElementModel) {
-                ElementModel elementModel = (ElementModel) modelNode;
-                elementModel.getSubNodes()
-                        .forEach(instrumentModel -> this.cloneSubNode(newCompositeModelNode, instrumentModel.getName(), instrumentModel));
-            }
-        }
-
-        // clone ExternalModels
-        modelNode.getExternalModels()
-                .forEach(externalModel -> {
-                    ExternalModel newExternalModel = externalModelService.cloneExternalModel(externalModel, newModelNode);
-                    newModelNode.addExternalModel(newExternalModel);
-                });
-
-        // clone ParameterModels
-        modelNode.getParameters()
-                .forEach(parameterModel -> {
-                    ParameterModel newParameterModel = parameterModelService.cloneParameterModel(parameterModel.getName(), parameterModel, modelNode);
-                    newModelNode.addParameter(newParameterModel);
-                });
-
-        return newModelNode;
     }
 
     @Override
-    public void deleteNode(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement) {
+    public void deleteModelNode(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement) {
         Objects.requireNonNull(parentNode);
         Objects.requireNonNull(deleteNode);
 
@@ -130,5 +122,45 @@ public class ModelNodeServiceImpl implements ModelNodeService {
         }
         userRoleManagement.getDisciplineSubSystems()
                 .removeIf(disciplineSubSystem -> disciplineSubSystem.getSubSystem() == deleteNode);
+    }
+
+    private ModelNode deepModelNodeClone(ModelNode newModelNode, ModelNode originalModelNode) {
+        Objects.requireNonNull(newModelNode);
+        Objects.requireNonNull(originalModelNode);
+        assert newModelNode.getClass() == originalModelNode.getClass();
+
+        newModelNode.setPosition(originalModelNode.getPosition());
+        newModelNode.setDescription(originalModelNode.getDescription());
+        newModelNode.setEmbodiment(originalModelNode.getEmbodiment());
+        newModelNode.setCompletion(originalModelNode.isCompletion());
+
+        if (originalModelNode instanceof CompositeModelNode) {
+            CompositeModelNode newCompositeModelNode = (CompositeModelNode) newModelNode;
+            if (originalModelNode instanceof SubSystemModel) {
+                SubSystemModel subSystemModel = (SubSystemModel) originalModelNode;
+                subSystemModel.getSubNodes()
+                        .forEach(elementModel -> this.cloneModelNode(newCompositeModelNode, elementModel.getName(), elementModel));
+            } else if (originalModelNode instanceof ElementModel) {
+                ElementModel elementModel = (ElementModel) originalModelNode;
+                elementModel.getSubNodes()
+                        .forEach(instrumentModel -> this.cloneModelNode(newCompositeModelNode, instrumentModel.getName(), instrumentModel));
+            }
+        }
+
+        // clone ExternalModels
+        originalModelNode.getExternalModels()
+                .forEach(externalModel -> {
+                    ExternalModel newExternalModel = externalModelService.cloneExternalModel(externalModel, newModelNode);
+                    newModelNode.addExternalModel(newExternalModel);
+                });
+
+        // clone ParameterModels
+        originalModelNode.getParameters()
+                .forEach(parameterModel -> {
+                    ParameterModel newParameterModel = parameterModelService.cloneParameterModel(parameterModel.getName(), parameterModel, newModelNode);
+                    newModelNode.addParameter(newParameterModel);
+                });
+
+        return newModelNode;
     }
 }

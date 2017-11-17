@@ -71,53 +71,7 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testAddSubNode() {
-        SystemModel systemModel = new SystemModel("systemModel");
-        String subSystemModelName = "subSystemModelName";
-        assertTrue(systemModel.getSubNodes().isEmpty());
-        ModelNode addedModelNode1 = modelNodeService.addSubNode(systemModel, subSystemModelName);
-        assertNotNull(addedModelNode1);
-        assertThat(addedModelNode1, instanceOf(SubSystemModel.class));
-        assertEquals(subSystemModelName, addedModelNode1.getName());
-        assertEquals(systemModel, addedModelNode1.getParent());
-        assertEquals(1, systemModel.getSubNodes().size());
-        assertEquals(addedModelNode1, systemModel.getSubNodes().get(0));
-
-        SubSystemModel subSystemModel = new SubSystemModel("subSystemModel");
-        String elementModelName = "elementModelName";
-        assertTrue(subSystemModel.getSubNodes().isEmpty());
-        ModelNode addedModelNode2 = modelNodeService.addSubNode(subSystemModel, elementModelName);
-        assertNotNull(addedModelNode2);
-        assertThat(addedModelNode2, instanceOf(ElementModel.class));
-        assertEquals(elementModelName, addedModelNode2.getName());
-        assertEquals(subSystemModel, addedModelNode2.getParent());
-        assertEquals(1, subSystemModel.getSubNodes().size());
-        assertEquals(addedModelNode2, subSystemModel.getSubNodes().get(0));
-
-        ElementModel elementModel = new ElementModel("elementModel");
-        String instrumentModelName = "instrumentModelName";
-        assertTrue(elementModel.getSubNodes().isEmpty());
-        ModelNode addedModelNode3 = modelNodeService.addSubNode(elementModel, instrumentModelName);
-        assertNotNull(addedModelNode3);
-        assertThat(addedModelNode3, instanceOf(InstrumentModel.class));
-        assertEquals(instrumentModelName, addedModelNode3.getName());
-        assertEquals(elementModel, addedModelNode3.getParent());
-        assertEquals(1, elementModel.getSubNodes().size());
-        assertEquals(addedModelNode3, elementModel.getSubNodes().get(0));
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testAddSubNodeFail1() {
-        modelNodeService.addSubNode(null, "name");
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testAddSubNodeFail2() {
-        modelNodeService.addSubNode(systemModel, null);
-    }
-
-    @Test
-    public void testCloneSubNode() {
+    public void testCloneModelNode1() {
         SystemModel systemModel = systemBuilder.build("systemName");
         ExternalModel externalModel = mock(ExternalModel.class);
         when(externalModel.getName()).thenReturn("test.xls");
@@ -126,11 +80,15 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
         SubSystemModel originalModelNode = systemModel.getSubNodes().get(0);
         originalModelNode.addExternalModel(externalModel);
         String name = "name";
-        ModelNode clonedModelNode = modelNodeService.cloneSubNode(systemModel, name, originalModelNode);
+        ModelNode clonedModelNode = modelNodeService.cloneModelNode(systemModel, name, originalModelNode);
 
         assertNotNull(clonedModelNode);
         assertTrue(clonedModelNode instanceof SubSystemModel);
         assertEquals(name, clonedModelNode.getName());
+        assertEquals(originalModelNode.getPosition(), clonedModelNode.getPosition());
+        assertEquals(originalModelNode.getDescription(), clonedModelNode.getDescription());
+        assertEquals(originalModelNode.getEmbodiment(), clonedModelNode.getEmbodiment());
+        assertEquals(originalModelNode.isCompletion(), clonedModelNode.isCompletion());
         assertEquals(systemModel, clonedModelNode.getParent());
         assertFalse(originalModelNode == clonedModelNode);
         assertEquals(originalModelNode.getExternalModels().size(), clonedModelNode.getExternalModelMap().size());
@@ -158,38 +116,161 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
         });
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testCloneSubNodeFail1() {
-        modelNodeService.cloneSubNode(null, "name", subSystemModel);
+    @Test
+    public void testCloneModelNode2() {
+        SystemModel systemModel = systemBuilder.build("systemName");
+        ExternalModel externalModel = mock(ExternalModel.class);
+        when(externalModel.getName()).thenReturn("test.xls");
+
+        assertFalse(systemModel.getSubNodes().isEmpty());
+        SubSystemModel originalModelNode = systemModel.getSubNodes().get(0);
+        originalModelNode.addExternalModel(externalModel);
+        String name = "name";
+        ModelNode clonedModelNode = modelNodeService.cloneModelNode(name, originalModelNode);
+
+        assertNotNull(clonedModelNode);
+        assertTrue(clonedModelNode instanceof SubSystemModel);
+        assertEquals(name, clonedModelNode.getName());
+        assertEquals(originalModelNode.getPosition(), clonedModelNode.getPosition());
+        assertEquals(originalModelNode.getDescription(), clonedModelNode.getDescription());
+        assertEquals(originalModelNode.getEmbodiment(), clonedModelNode.getEmbodiment());
+        assertEquals(originalModelNode.isCompletion(), clonedModelNode.isCompletion());
+        assertNull(clonedModelNode.getParent());
+        assertFalse(originalModelNode == clonedModelNode);
+        assertEquals(originalModelNode.getExternalModels().size(), clonedModelNode.getExternalModelMap().size());
+        assertEquals(originalModelNode.getParameters().size(), clonedModelNode.getParameters().size());
+
+        Map<String, ModelNode> originalSubNodesMap = originalModelNode.getSubNodesMap();
+        Map<String, ModelNode> clonedSubNodesMap = ((SubSystemModel) clonedModelNode).getSubNodesMap();
+        clonedSubNodesMap.forEach((key, value) -> {
+            assertTrue(originalSubNodesMap.containsKey(key));
+            assertFalse(originalSubNodesMap.get(key) == value);
+        });
+
+        Map<String, ExternalModel> originalExternalModelMap = originalModelNode.getExternalModelMap();
+        Map<String, ExternalModel> clonedExternalModelMap = clonedModelNode.getExternalModelMap();
+        clonedExternalModelMap.forEach((key, value) -> {
+            assertTrue(originalExternalModelMap.containsKey(key));
+            assertFalse(originalExternalModelMap.get(key) == value);
+        });
+
+        Map<String, ParameterModel> originalParameterModelMap = originalModelNode.getParameterMap();
+        Map<String, ParameterModel> clonedParameterModelMap = clonedModelNode.getParameterMap();
+        clonedParameterModelMap.forEach((key, value) -> {
+            assertTrue(originalParameterModelMap.containsKey(key));
+            assertFalse(originalParameterModelMap.get(key) == value);
+        });
     }
 
     @Test(expected = NullPointerException.class)
-    public void testCloneSubNodeFail2() {
-        modelNodeService.cloneSubNode(systemModel, null, subSystemModel);
+    public void testCloneModelNodeFail1() {
+        modelNodeService.cloneModelNode(null, "name", subSystemModel);
     }
 
     @Test(expected = NullPointerException.class)
-    public void testCloneSubNodeFail3() {
-        modelNodeService.cloneSubNode(systemModel, "name", null);
+    public void testCloneModelNodeFail2() {
+        modelNodeService.cloneModelNode(systemModel, null, subSystemModel);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCloneModelNodeFail3() {
+        modelNodeService.cloneModelNode(systemModel, "name", null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCloneSubNodeFail4() {
-        modelNodeService.cloneSubNode(systemModel, "name", systemModel);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testDeleteNodeFail1() {
-        modelNodeService.deleteNode(null, subSystemModel, null);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testDeleteNodeFail2() {
-        modelNodeService.deleteNode(systemModel, null, null);
+    public void testCloneModelNodeFail4() {
+        modelNodeService.cloneModelNode(systemModel, "name", systemModel);
     }
 
     @Test
-    public void testDeleteNodeWithUserRoleManager() {
+    public void testCreateModelNode1() {
+        SystemModel systemModel = new SystemModel("systemModel");
+        String subSystemModelName = "subSystemModelName";
+        assertTrue(systemModel.getSubNodes().isEmpty());
+        ModelNode addedModelNode1 = modelNodeService.createModelNode(systemModel, subSystemModelName);
+        assertNotNull(addedModelNode1);
+        assertThat(addedModelNode1, instanceOf(SubSystemModel.class));
+        assertEquals(subSystemModelName, addedModelNode1.getName());
+        assertEquals(systemModel, addedModelNode1.getParent());
+        assertEquals(1, systemModel.getSubNodes().size());
+        assertEquals(addedModelNode1, systemModel.getSubNodes().get(0));
+
+        SubSystemModel subSystemModel = new SubSystemModel("subSystemModel");
+        String elementModelName = "elementModelName";
+        assertTrue(subSystemModel.getSubNodes().isEmpty());
+        ModelNode addedModelNode2 = modelNodeService.createModelNode(subSystemModel, elementModelName);
+        assertNotNull(addedModelNode2);
+        assertThat(addedModelNode2, instanceOf(ElementModel.class));
+        assertEquals(elementModelName, addedModelNode2.getName());
+        assertEquals(subSystemModel, addedModelNode2.getParent());
+        assertEquals(1, subSystemModel.getSubNodes().size());
+        assertEquals(addedModelNode2, subSystemModel.getSubNodes().get(0));
+
+        ElementModel elementModel = new ElementModel("elementModel");
+        String instrumentModelName = "instrumentModelName";
+        assertTrue(elementModel.getSubNodes().isEmpty());
+        ModelNode addedModelNode3 = modelNodeService.createModelNode(elementModel, instrumentModelName);
+        assertNotNull(addedModelNode3);
+        assertThat(addedModelNode3, instanceOf(InstrumentModel.class));
+        assertEquals(instrumentModelName, addedModelNode3.getName());
+        assertEquals(elementModel, addedModelNode3.getParent());
+        assertEquals(1, elementModel.getSubNodes().size());
+        assertEquals(addedModelNode3, elementModel.getSubNodes().get(0));
+    }
+
+    @Test
+    public void testCreateModelNode2() {
+        String systemModelName = "systemModelName";
+        ModelNode addedModelNode1 = modelNodeService.createModelNode(systemModelName, SystemModel.class);
+        assertNotNull(addedModelNode1);
+        assertThat(addedModelNode1, instanceOf(SystemModel.class));
+        assertEquals(systemModelName, addedModelNode1.getName());
+        assertNull(addedModelNode1.getParent());
+
+        String subSystemModelName = "subSystemModelName";
+        ModelNode addedModelNode2 = modelNodeService.createModelNode(subSystemModelName, SubSystemModel.class);
+        assertNotNull(addedModelNode2);
+        assertThat(addedModelNode2, instanceOf(SubSystemModel.class));
+        assertEquals(subSystemModelName, addedModelNode2.getName());
+        assertNull(addedModelNode2.getParent());
+
+        String elementModelName = "elementModelName";
+        ModelNode addedModelNode3 = modelNodeService.createModelNode(elementModelName, ElementModel.class);
+        assertNotNull(addedModelNode3);
+        assertThat(addedModelNode3, instanceOf(ElementModel.class));
+        assertEquals(elementModelName, addedModelNode3.getName());
+        assertNull(addedModelNode3.getParent());
+
+        String instrumentModelName = "instrumentModelName";
+        ModelNode addedModelNode4 = modelNodeService.createModelNode(instrumentModelName, InstrumentModel.class);
+        assertNotNull(addedModelNode4);
+        assertThat(addedModelNode4, instanceOf(InstrumentModel.class));
+        assertEquals(instrumentModelName, addedModelNode4.getName());
+        assertNull(addedModelNode4.getParent());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCreateModelNodeFail1() {
+        modelNodeService.createModelNode(null, "name");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCreateModelNodeFail2() {
+        modelNodeService.createModelNode(systemModel, null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testDeleteModelNodeFail1() {
+        modelNodeService.deleteModelNode(null, subSystemModel, null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testDeleteModelNodeFail2() {
+        modelNodeService.deleteModelNode(systemModel, null, null);
+    }
+
+    @Test
+    public void testDeleteModelNodeWithUserRoleManager() {
         UserManagement userManagement = userManagementService.createDefaultUserManagement();
         UserRoleManagement userRoleManagement = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, userManagement);
 
@@ -208,7 +289,7 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
                         allOf(hasProperty("discipline", is(discipline)),
                                 hasProperty("subSystem", is(subSystemModel)))));
 
-        modelNodeService.deleteNode(systemModel, subSystemModel, userRoleManagement);
+        modelNodeService.deleteModelNode(systemModel, subSystemModel, userRoleManagement);
         assertTrue(systemModel.getSubNodes().isEmpty());
 
         assertThat(userRoleManagement.getDisciplineSubSystems(),
@@ -219,8 +300,8 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testDeleteNodeWithoutUserRoleManager() {
-        modelNodeService.deleteNode(systemModel, subSystemModel, null);
+    public void testDeleteModelNodeWithoutUserRoleManager() {
+        modelNodeService.deleteModelNode(systemModel, subSystemModel, null);
         assertTrue(systemModel.getSubNodes().isEmpty());
     }
 

@@ -31,14 +31,14 @@ import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 public interface ModelNodeService {
 
     /**
-     * Add a new {@link ModelNode} to the passed parent with specified name.
+     * Create an exact clone of the {@link ModelNode} instance along with all sub {@link ModelNode}s,
+     * {@link ExternalModel}s and {@link ParameterModel}s.
      * <p/>
-     *
-     * @param parentNode parent node to add a new model node
-     * @param name       a name of new {@link ModelNode}
-     * @return an instance of added {@link ModelNode}
+     * @param name       name of new {@link ModelNode} instance
+     * @param modelNode  model node to clone from
+     * @return a new instance of copied {@link ModelNode}
      */
-    ModelNode addSubNode(CompositeModelNode parentNode, String name);
+    ModelNode cloneModelNode(String name, ModelNode modelNode);
 
     /**
      * Create an exact clone of the {@link ModelNode} instance along with all sub {@link ModelNode}s,
@@ -50,7 +50,27 @@ public interface ModelNodeService {
      * @param modelNode  model node to clone from
      * @return a new instance of copied {@link ModelNode}
      */
-    ModelNode cloneSubNode(CompositeModelNode parentNode, String name, ModelNode modelNode);
+    ModelNode cloneModelNode(CompositeModelNode parentNode, String name, ModelNode modelNode);
+
+    /**
+     * Create a new {@link ModelNode} and add to the passed parent with specified name.
+     * <p/>
+     *
+     * @param parentNode parent node to add a new model node
+     * @param name       a name of new {@link ModelNode}
+     * @return an instance of added {@link ModelNode}
+     */
+    ModelNode createModelNode(CompositeModelNode parentNode, String name);
+
+    /**
+     * Create a new instance of extension of {@link ModelNode} specified by class name parameter .
+     * <p/>
+     *
+     * @param name  a name of new {@link ModelNode}
+     * @param clazz a type of the new instance
+     * @return an instance of added {@link ModelNode}
+     */
+    ModelNode createModelNode(String name, Class<? extends ModelNode> clazz);
 
     /**
      * Delete a {@link ModelNode} from the passed parent. If {@link UserRoleManagement} argument is passed
@@ -63,6 +83,6 @@ public interface ModelNodeService {
      * @param userRoleManagement {@link UserRoleManagement} to delete all {@link DisciplineSubSystem}
      *                           of removed {@link ModelNode} in case of their existence
      */
-    void deleteNode(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement);
+    void deleteModelNode(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement);
 
 }

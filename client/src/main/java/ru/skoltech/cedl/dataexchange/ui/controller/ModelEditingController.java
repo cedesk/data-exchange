@@ -187,7 +187,7 @@ public class ModelEditingController implements Initializable {
                 if (node.getSubNodesMap().containsKey(subNodeName)) {
                     Dialogues.showError("Duplicate node name", "There is already a sub-node named like that!");
                 } else {
-                    ModelNode newNode = modelNodeService.addSubNode(node, subNodeName);
+                    ModelNode newNode = modelNodeService.createModelNode(node, subNodeName);
                     project.markStudyModified();
                     statusLogger.info("Node added: " + newNode.getNodePath());
                     actionLogger.log(ActionLogger.ActionType.NODE_ADD, newNode.getNodePath());
@@ -229,7 +229,7 @@ public class ModelEditingController implements Initializable {
                 return;
             }
 
-            ModelNode newModelNode = modelNodeService.cloneSubNode(parent, nodeName, copyNode);
+            ModelNode newModelNode = modelNodeService.cloneModelNode(parent, nodeName, copyNode);
             project.markStudyModified();
             statusLogger.info("Node copied: " + newModelNode.getNodePath());
             actionLogger.log(ActionLogger.ActionType.NODE_ADD, newModelNode.getNodePath());
@@ -264,7 +264,7 @@ public class ModelEditingController implements Initializable {
                 TreeItem<ModelNode> parent = selectedItem.getParent();
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                 UserRoleManagement userRoleManagement = project.getUserRoleManagement();
-                modelNodeService.deleteNode(parentNode, deleteNode, userRoleManagement);
+                modelNodeService.deleteModelNode(parentNode, deleteNode, userRoleManagement);
                 project.markStudyModified();
                 statusLogger.info("Node deleted: " + deleteNode.getNodePath());
                 actionLogger.log(ActionLogger.ActionType.NODE_REMOVE, deleteNode.getNodePath());
