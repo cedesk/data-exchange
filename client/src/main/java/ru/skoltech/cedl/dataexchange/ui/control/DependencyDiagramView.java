@@ -40,18 +40,18 @@ import java.util.stream.Collectors;
  */
 public class DependencyDiagramView extends AnchorPane implements Initializable {
 
+    public static final double LEGEND_HEIGHT = 18;
+    public static final int ELEMENT_PADDING = 15;
+    public static final int ELEMENT_HEIGHT = 50;
+    public static final int ELEMENT_WIDTH = 100;
     private static final Color LEGEND_BACKGROUND = Color.WHITE;
     private static final Color ELEMENT_FILL_COLOR = Color.LIGHTGREY;
     private static final Color DEFAULT_CONNECTION_COLOR = Color.DARKGREY;
     private static final Color HIGHLIGHT_CONNECTION_COLOR = Color.BLUE;
     private static final Color HIGHLIGHTED_ELEMENT_COLOR = Color.BLACK;
     private static final Double[] DASHED_STROKE = new Double[]{10d, 7d};
-    public static final double LEGEND_HEIGHT = 18;
     private static final double LEGEND_LABEL_HEIGHT = 60;
     private static final double CAPTION_SCALE = .75;
-    public static final int ELEMENT_PADDING = 15;
-    public static final int ELEMENT_HEIGHT = 50;
-    public static final int ELEMENT_WIDTH = 100;
     private static final int ARROW_SIZE = 10;
     private static final int LINE_WIDTH = 2;
 
@@ -87,20 +87,6 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         });
     }
 
-    private void addConnection(String from, String to, String description, int strength, EnumSet<ConnectionState> connectionState) {
-        DiagramElement fromDiagEl = elements.get(from);
-        String fromName = fromDiagEl.getName();
-        DiagramElement toDiagEl = elements.get(to);
-        String toName = toDiagEl.getName();
-
-        DiagramConnection connection = new DiagramConnection(fromDiagEl, toDiagEl, description, strength, connectionState);
-        fromConnections.put(fromName, connection);
-        toConnections.put(toName, connection);
-        refineStartingPoints(fromName);
-        refineEndingPoints(toName);
-        this.getChildren().add(connection);
-    }
-
     public void addConnection(String from, String to, String description, int strength) {
         DiagramElement fromDiagEl = elements.get(from);
         String fromName = fromDiagEl.getName();
@@ -130,12 +116,18 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         drawLegend();
     }
 
-    private void reset() {
-        getChildren().clear();
-        elements.clear();
-        fromConnections.clear();
-        toConnections.clear();
-        drawLegend();
+    private void addConnection(String from, String to, String description, int strength, EnumSet<ConnectionState> connectionState) {
+        DiagramElement fromDiagEl = elements.get(from);
+        String fromName = fromDiagEl.getName();
+        DiagramElement toDiagEl = elements.get(to);
+        String toName = toDiagEl.getName();
+
+        DiagramConnection connection = new DiagramConnection(fromDiagEl, toDiagEl, description, strength, connectionState);
+        fromConnections.put(fromName, connection);
+        toConnections.put(toName, connection);
+        refineStartingPoints(fromName);
+        refineEndingPoints(toName);
+        this.getChildren().add(connection);
     }
 
     private void drawLegend() {
@@ -157,7 +149,7 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
 
         // connections DEFAULT
         double layoutX = caption.getLayoutX() + caption.getMinWidth() + ELEMENT_PADDING;
-        Line consistentLine = new Line(layoutX , LEGEND_HEIGHT /2, layoutX + ELEMENT_WIDTH/3 + ELEMENT_PADDING, LEGEND_HEIGHT /2);
+        Line consistentLine = new Line(layoutX, LEGEND_HEIGHT / 2, layoutX + ELEMENT_WIDTH / 3 + ELEMENT_PADDING, LEGEND_HEIGHT / 2);
         consistentLine.setStrokeWidth(LINE_WIDTH);
         consistentLine.setStroke(DEFAULT_CONNECTION_COLOR);
         consistentLine.toBack();
@@ -170,7 +162,7 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
 
         // connections NOT_PROP
         layoutX = consistentLabel.getLayoutX() + consistentLabel.getMinWidth() + ELEMENT_PADDING;
-        Line notPropLine = new Line(layoutX , LEGEND_HEIGHT /2, layoutX + ELEMENT_WIDTH/3 + ELEMENT_PADDING, LEGEND_HEIGHT /2);
+        Line notPropLine = new Line(layoutX, LEGEND_HEIGHT / 2, layoutX + ELEMENT_WIDTH / 3 + ELEMENT_PADDING, LEGEND_HEIGHT / 2);
         notPropLine.setStrokeWidth(LINE_WIDTH);
         notPropLine.setStroke(HIGHLIGHT_CONNECTION_COLOR);
         notPropLine.toBack();
@@ -183,7 +175,7 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
 
         // connections OVERRIDDEN
         layoutX = notPropLabel.getLayoutX() + notPropLabel.getMinWidth() + ELEMENT_PADDING;
-        Line overriddenLine = new Line(layoutX , LEGEND_HEIGHT /2, layoutX + ELEMENT_WIDTH/3 + ELEMENT_PADDING, LEGEND_HEIGHT /2);
+        Line overriddenLine = new Line(layoutX, LEGEND_HEIGHT / 2, layoutX + ELEMENT_WIDTH / 3 + ELEMENT_PADDING, LEGEND_HEIGHT / 2);
         overriddenLine.setStrokeWidth(LINE_WIDTH);
         overriddenLine.setStroke(DEFAULT_CONNECTION_COLOR);
         overriddenLine.toBack();
@@ -276,6 +268,14 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         }
     }
 
+    private void reset() {
+        getChildren().clear();
+        elements.clear();
+        fromConnections.clear();
+        toConnections.clear();
+        drawLegend();
+    }
+
     public enum ConnectionState {
         CONSISTENT(""),
         NOT_PROPAGATED("p"),
@@ -297,6 +297,7 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         private boolean isHighlighted = false;
         private boolean isSelected = false;
         private Rectangle rect;
+        private Label caption;
         private String name;
         private int position;
 
@@ -312,7 +313,7 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
             rect.setFill(ELEMENT_FILL_COLOR);
             rect.setStrokeWidth(LINE_WIDTH);
             rect.setStroke(DEFAULT_CONNECTION_COLOR);
-            Label caption = new Label(name);
+            caption = new Label(name);
             caption.setLabelFor(rect);
             caption.setMinWidth(ELEMENT_WIDTH);
             caption.setMinHeight(ELEMENT_HEIGHT);
@@ -348,8 +349,12 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
             this.isSelected = selected;
             if (selected) {
                 rect.getStrokeDashArray().setAll(DASHED_STROKE);
+                rect.setStrokeWidth(LINE_WIDTH * 2);
+                rect.toFront();
+                caption.toFront();
             } else {
                 rect.getStrokeDashArray().clear();
+                rect.setStrokeWidth(LINE_WIDTH);
             }
         }
 
@@ -468,8 +473,12 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         public void setSelected(boolean selected) {
             this.isSelected = selected;
             if (selected) {
+                caption.setStyle("-fx-background-color: khaki");
+                caption.toFront();
                 line.getStrokeDashArray().setAll(DASHED_STROKE);
+                line.toFront();
             } else {
+                caption.setStyle("-fx-background-color: transparent");
                 line.getStrokeDashArray().clear();
             }
         }
