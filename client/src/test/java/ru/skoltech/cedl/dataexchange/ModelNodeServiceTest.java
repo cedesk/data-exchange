@@ -305,4 +305,15 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
         assertTrue(systemModel.getSubNodes().isEmpty());
     }
 
+    @Test
+    public void testSaveModelNode() {
+        String name = "name";
+        SubSystemModel modelNode = modelNodeService.createModelNode(name, SubSystemModel.class);
+        assertEquals(0, modelNode.getId());
+        assertEquals(name, modelNode.getName());
+        ModelNode savedModelNode = modelNodeService.saveModelNode(modelNode);
+        assertNotEquals(0, savedModelNode.getId());
+        assertEquals(name, savedModelNode.getName());
+    }
+
 }

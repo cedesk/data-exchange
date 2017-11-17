@@ -16,10 +16,12 @@
 
 package ru.skoltech.cedl.dataexchange.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.model.*;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.repository.revision.ModelNodeRepository;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.ModelNodeService;
 import ru.skoltech.cedl.dataexchange.service.ParameterModelService;
@@ -33,8 +35,14 @@ import java.util.Objects;
  */
 public class ModelNodeServiceImpl implements ModelNodeService {
 
+    private final ModelNodeRepository modelNodeRepository;
     private ExternalModelService externalModelService;
     private ParameterModelService parameterModelService;
+
+    @Autowired
+    public ModelNodeServiceImpl(ModelNodeRepository modelNodeRepository) {
+        this.modelNodeRepository = modelNodeRepository;
+    }
 
     public void setExternalModelService(ExternalModelService externalModelService) {
         this.externalModelService = externalModelService;
@@ -95,17 +103,18 @@ public class ModelNodeServiceImpl implements ModelNodeService {
     }
 
     @Override
-    public ModelNode createModelNode(String name, Class<? extends ModelNode> clazz) {
+    @SuppressWarnings("unchecked")
+    public <T extends ModelNode> T createModelNode(String name, Class<T> clazz) {
         Objects.requireNonNull(name);
 
         if (clazz == SystemModel.class) {
-            return new SystemModel(name);
+            return (T) new SystemModel(name);
         } else if (clazz == SubSystemModel.class) {
-            return new SubSystemModel(name);
+            return (T) new SubSystemModel(name);
         } else if (clazz == ElementModel.class) {
-            return new ElementModel(name);
+            return (T) new ElementModel(name);
         } else if (clazz == InstrumentModel.class) {
-            return new InstrumentModel(name);
+            return (T) new InstrumentModel(name);
         } else {
             throw new AssertionError("Must never be thrown.");
         }
@@ -122,6 +131,11 @@ public class ModelNodeServiceImpl implements ModelNodeService {
         }
         userRoleManagement.getDisciplineSubSystems()
                 .removeIf(disciplineSubSystem -> disciplineSubSystem.getSubSystem() == deleteNode);
+    }
+
+    @Override
+    public <T extends ModelNode> T saveModelNode(T modelNode) {
+        return modelNodeRepository.saveAndFlush(modelNode);
     }
 
     private ModelNode deepModelNodeClone(ModelNode newModelNode, ModelNode originalModelNode) {

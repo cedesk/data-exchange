@@ -65,6 +65,10 @@
         <property name="jsoupService" ref="jsoupService"/>
     </bean>
 
+    <bean id="componentService" class="ru.skoltech.cedl.dataexchange.service.impl.ComponentServiceImpl">
+        <property name="modelNodeService" ref="modelNodeService"/>
+    </bean>
+
     <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.service.impl.JsoupServiceImpl"/>
 
     <bean class="ru.skoltech.cedl.dataexchange.service.impl.SpreadsheetInputOutputExtractorServiceImpl"

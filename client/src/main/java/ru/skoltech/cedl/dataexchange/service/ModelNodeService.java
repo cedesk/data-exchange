@@ -70,7 +70,7 @@ public interface ModelNodeService {
      * @param clazz a type of the new instance
      * @return an instance of added {@link ModelNode}
      */
-    ModelNode createModelNode(String name, Class<? extends ModelNode> clazz);
+    <T extends ModelNode> T createModelNode(String name, Class<T> clazz);
 
     /**
      * Delete a {@link ModelNode} from the passed parent. If {@link UserRoleManagement} argument is passed
@@ -85,4 +85,12 @@ public interface ModelNodeService {
      */
     void deleteModelNode(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement);
 
+    /**
+     * Save an instance of the model node in the database.
+     * <p/>
+     *
+     * @param modelNode instance to save
+     * @return new instance of model node after save
+     */
+    <T extends ModelNode> T saveModelNode(T modelNode);
 }
