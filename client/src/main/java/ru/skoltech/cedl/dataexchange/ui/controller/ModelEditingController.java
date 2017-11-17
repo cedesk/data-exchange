@@ -82,9 +82,9 @@ public class ModelEditingController implements Initializable {
     @FXML
     private Button copyNodeButton;
     @FXML
-    public Button moveNodeUpButton;
+    private Button moveNodeUpButton;
     @FXML
-    public Button moveNodeDownButton;
+    private Button moveNodeDownButton;
     @FXML
     private Label upstreamDependenciesLabel;
     @FXML
@@ -529,11 +529,15 @@ public class ModelEditingController implements Initializable {
         String upstreamDependencies = parameterLinkRegistry.getUpstreamDependencies(modelNode);
         upstreamDependenciesLabel.setText(upstreamDependencies);
         if (upstreamDependencies.length() > 0)
-            upstreamDependenciesLabel.setTooltip(new Tooltip(upstreamDependencies));
+            upstreamDependenciesLabel.getTooltip().setText("Upstream: " + upstreamDependencies);
+        else
+            upstreamDependenciesLabel.getTooltip().setText("No upstream dependencies");
         String downstreamDependencies = parameterLinkRegistry.getDownstreamDependencies(modelNode);
         downstreamDependenciesLabel.setText(downstreamDependencies);
         if (downstreamDependencies.length() > 0)
-            downstreamDependenciesLabel.setTooltip(new Tooltip(downstreamDependencies));
+            downstreamDependenciesLabel.getTooltip().setText("Downstream:" + downstreamDependencies);
+        else
+            downstreamDependenciesLabel.getTooltip().setText("No downstream dependencies");
     }
 
     private void updateExternalModelEditor(ModelNode modelNode) {
