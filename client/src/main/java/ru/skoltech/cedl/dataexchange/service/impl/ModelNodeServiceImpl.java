@@ -121,7 +121,12 @@ public class ModelNodeServiceImpl implements ModelNodeService {
     }
 
     @Override
-    public void deleteModelNode(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement) {
+    public void deleteModelNode(ModelNode deleteNode) {
+        modelNodeRepository.delete(deleteNode.getId());
+    }
+
+    @Override
+    public void deleteModelNodeFromParent(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement) {
         Objects.requireNonNull(parentNode);
         Objects.requireNonNull(deleteNode);
 

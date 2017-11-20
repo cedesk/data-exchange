@@ -73,6 +73,14 @@ public interface ModelNodeService {
     <T extends ModelNode> T createModelNode(String name, Class<T> clazz);
 
     /**
+     * Delete model node from the database.
+     * <p/>
+     *
+     * @param deleteNode a model node to delete
+     */
+    void deleteModelNode(ModelNode deleteNode);
+
+    /**
      * Delete a {@link ModelNode} from the passed parent. If {@link UserRoleManagement} argument is passed
      * than all {@link DisciplineSubSystem} with this deleting {@link ModelNode}
      * will be also removed from {@link UserRoleManagement}.
@@ -83,8 +91,7 @@ public interface ModelNodeService {
      * @param userRoleManagement {@link UserRoleManagement} to delete all {@link DisciplineSubSystem}
      *                           of removed {@link ModelNode} in case of their existence
      */
-    void deleteModelNode(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement);
-
+    void deleteModelNodeFromParent(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement);
     /**
      * Save an instance of the model node in the database.
      * <p/>

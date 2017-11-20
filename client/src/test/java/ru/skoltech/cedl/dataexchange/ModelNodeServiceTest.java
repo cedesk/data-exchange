@@ -261,12 +261,12 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
 
     @Test(expected = NullPointerException.class)
     public void testDeleteModelNodeFail1() {
-        modelNodeService.deleteModelNode(null, subSystemModel, null);
+        modelNodeService.deleteModelNodeFromParent(null, subSystemModel, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testDeleteModelNodeFail2() {
-        modelNodeService.deleteModelNode(systemModel, null, null);
+        modelNodeService.deleteModelNodeFromParent(systemModel, null, null);
     }
 
     @Test
@@ -289,7 +289,7 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
                         allOf(hasProperty("discipline", is(discipline)),
                                 hasProperty("subSystem", is(subSystemModel)))));
 
-        modelNodeService.deleteModelNode(systemModel, subSystemModel, userRoleManagement);
+        modelNodeService.deleteModelNodeFromParent(systemModel, subSystemModel, userRoleManagement);
         assertTrue(systemModel.getSubNodes().isEmpty());
 
         assertThat(userRoleManagement.getDisciplineSubSystems(),
@@ -301,7 +301,7 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
 
     @Test
     public void testDeleteModelNodeWithoutUserRoleManager() {
-        modelNodeService.deleteModelNode(systemModel, subSystemModel, null);
+        modelNodeService.deleteModelNodeFromParent(systemModel, subSystemModel, null);
         assertTrue(systemModel.getSubNodes().isEmpty());
     }
 

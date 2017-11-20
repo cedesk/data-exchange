@@ -61,7 +61,9 @@ public class ComponentServiceImpl implements ComponentService {
     public void deleteComponent(Component component) {
         Objects.requireNonNull(component);
 
+        ModelNode modelNode = component.getModelNode();
         componentRepository.delete(component.getId());
+        modelNodeService.deleteModelNode(modelNode);
     }
 
     @Override

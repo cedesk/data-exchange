@@ -19,8 +19,10 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.Component;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.repository.revision.ModelNodeRepository;
 import ru.skoltech.cedl.dataexchange.service.ComponentService;
 import ru.skoltech.cedl.dataexchange.service.ModelNodeService;
 
@@ -34,11 +36,13 @@ import static org.junit.Assert.*;
 public class ComponentServiceTest extends AbstractApplicationContextTest {
 
     private ComponentService componentService;
+    private ModelNodeRepository modelNodeRepository;
     private SubSystemModel modelNode;
 
     @Before
     public void prepare() {
         componentService = context.getBean(ComponentService.class);
+        modelNodeRepository = context.getBean(ModelNodeRepository.class);
         ModelNodeService modelNodeService = context.getBean(ModelNodeService.class);
         SubSystemModel modelNode = modelNodeService.createModelNode("name", SubSystemModel.class);
         this.modelNode = modelNodeService.saveModelNode(modelNode);
@@ -78,6 +82,9 @@ public class ComponentServiceTest extends AbstractApplicationContextTest {
         List<Component> emptyList = componentService.findComponents();
         assertNotNull(emptyList);
         assertTrue(emptyList.isEmpty());
+
+        ModelNode storedModelNode = modelNodeRepository.findOne(component.getModelNode().getId());
+        assertNull(storedModelNode);
     }
 
     @Test(expected = NullPointerException.class)

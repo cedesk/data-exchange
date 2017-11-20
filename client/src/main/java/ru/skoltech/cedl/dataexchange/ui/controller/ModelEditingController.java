@@ -264,7 +264,7 @@ public class ModelEditingController implements Initializable {
                 TreeItem<ModelNode> parent = selectedItem.getParent();
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                 UserRoleManagement userRoleManagement = project.getUserRoleManagement();
-                modelNodeService.deleteModelNode(parentNode, deleteNode, userRoleManagement);
+                modelNodeService.deleteModelNodeFromParent(parentNode, deleteNode, userRoleManagement);
                 project.markStudyModified();
                 statusLogger.info("Node deleted: " + deleteNode.getNodePath());
                 actionLogger.log(ActionLogger.ActionType.NODE_REMOVE, deleteNode.getNodePath());
