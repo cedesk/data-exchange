@@ -29,7 +29,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import ru.skoltech.cedl.dataexchange.entity.Component;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
-import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.*;
 import ru.skoltech.cedl.dataexchange.service.ComponentService;
 
 import java.net.URL;
@@ -141,6 +141,19 @@ public class LibraryController implements Initializable, Displayable {
         return components;
     }
 
+    private String getModelType(ModelNode model) {
+        if (model instanceof SystemModel) {
+            return "System";
+        } else if (model instanceof SubSystemModel) {
+            return "Subsystem";
+        } else if (model instanceof ElementModel) {
+            return "Element";
+        } else if (model instanceof InstrumentModel) {
+            return "Instrument";
+        }
+        return "";
+    }
+
     private class ModelNodeViewCellFactory implements Callback<ListView<Component>, ListCell<Component>> {
         @Override
         public ListCell<Component> call(ListView<Component> p) {
@@ -156,7 +169,9 @@ public class LibraryController implements Initializable, Displayable {
                         String outputNames = model.getParameters().stream()
                                 .filter(pm -> pm.getNature() == OUTPUT).map(ParameterModel::getName).sorted()
                                 .collect(Collectors.joining(", "));
-                        setText(model.getName() + " Instrument 1\n\tinputs: " + inputNames + "\n\toutputs: " + outputNames);
+                        String modelType = getModelType(model);
+                        setText(model.getName() + " (" + modelType + ") [" + component.getAuthor() + "]\n" +
+                                "\tinputs: " + inputNames + "\n\toutputs: " + outputNames);
                     } else {
                         setText(null);
                     }
