@@ -95,7 +95,7 @@
                         <Button fx:id="componentButton" minWidth="28" mnemonicParsing="false"
                                 onAction="#createComponent">
                             <tooltip>
-                                <Tooltip text="Make library component from Node"/>
+                                <Tooltip text="Add node to the library component."/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="BOOK"/>
