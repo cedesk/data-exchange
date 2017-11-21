@@ -151,6 +151,35 @@ public class ViewBuilder<T> {
     }
 
     /**
+     * Setup a horizontal location on the screen of a feature view.
+     *
+     * @param x horizontal location of view
+     */
+    public void x(double x) {
+        this.x = x;
+    }
+
+    /**
+     * Setup a vertical location on the screen of a feature view.
+     *
+     * @param y vertical location of view
+     */
+    public void y(double y) {
+        this.y = y;
+    }
+
+    /**
+     * Setup both horizontal and vertical location on the screen of a feature view.
+     *
+     * @param x horizontal location of view
+     * @param y vertical location of view
+     */
+    public void xy(double x, double y) {
+        x(x);
+        y(y);
+    }
+
+    /**
      * Display a view on current adjustments.
      * This must be a final operation of the builder.
      *
@@ -174,35 +203,12 @@ public class ViewBuilder<T> {
     }
 
     /**
-     * Setup a horizontal location on the screen of a feature view.
+     * Create a stage instance based on current adjustments.
      *
-     * @param x horizontal location of view
+     * @param args arguments for JavaFX controller constructor of a view
+     * @return an instance of created {@link Stage}
      */
-    public void x(double x) {
-        this.x = x;
-    }
-
-    /**
-     * Setup both horizontal and vertical location on the screen of a feature view.
-     *
-     * @param x horizontal location of view
-     * @param y vertical location of view
-     */
-    public void xy(double x, double y) {
-        x(x);
-        y(y);
-    }
-
-    /**
-     * Setup a vertical location on the screen of a feature view.
-     *
-     * @param y vertical location of view
-     */
-    public void y(double y) {
-        this.y = y;
-    }
-
-    private Stage createStage(Object... args) {
+    public Stage createStage(Object... args) {
         try {
             FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(location, args);
             Parent root = loader.load();

@@ -137,6 +137,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     private StatusLogger statusLogger;
 
     private Stage ownerStage;
+    private Stage componentLibraryStage;
 
     private StringProperty tagProperty = new SimpleStringProperty("");
     private BooleanBinding repositoryNewer;
@@ -244,19 +245,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     @Override
     public void display(Stage stage, WindowEvent windowEvent) {
         this.ownerStage = stage;
-    }
-
-    public void openLibraryView() {
-        double x = ownerStage.getX() + ownerStage.getWidth();
-        double y = ownerStage.getY();
-
-        ViewBuilder libraryViewBuilder = guiService.createViewBuilder("Component Library", Views.LIBRARY_VIEW);
-        libraryViewBuilder.ownerWindow(ownerStage);
-
-        libraryViewBuilder.xy(x, y);
-        libraryViewBuilder.resizable(false);
-        libraryViewBuilder.initStyle(StageStyle.UTILITY);
-        libraryViewBuilder.show();
+        this.modelEditingController.ownerStage(ownerStage);
     }
 
     private void checkRepository() {
@@ -616,9 +605,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openDsmView() {
-        ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_VIEW);
-        dsmViewBuilder.ownerWindow(ownerStage);
-        dsmViewBuilder.show();
+        modelEditingController.openDsmView();
     }
 
     public void openGuideDialog() {
@@ -630,6 +617,23 @@ public class MainController implements Initializable, Displayable, Closeable {
         guideViewBuilder.xy(x, y);
         guideViewBuilder.show();
     }
+
+    public void openLibraryView() {
+        if (componentLibraryStage == null || !componentLibraryStage.isShowing()) {
+            double x = ownerStage.getX() + ownerStage.getWidth();
+            double y = ownerStage.getY();
+
+            ViewBuilder libraryViewBuilder = guiService.createViewBuilder("Component Library", Views.LIBRARY_VIEW);
+            libraryViewBuilder.xy(x, y);
+            libraryViewBuilder.resizable(false);
+            libraryViewBuilder.initStyle(StageStyle.UTILITY);
+            componentLibraryStage = libraryViewBuilder.createStage();
+            componentLibraryStage.show();
+        } else {
+            componentLibraryStage.toFront();
+        }
+    }
+
 
     public void saveProject() {
         try {

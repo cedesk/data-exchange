@@ -31,7 +31,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -72,7 +71,7 @@ import static ru.skoltech.cedl.dataexchange.entity.ParameterValueSource.*;
  * <p>
  * Created by D.Knoll on 03.07.2015.
  */
-public class ParameterEditorController implements Initializable, Displayable {
+public class ParameterEditorController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ParameterEditorController.class);
 
@@ -265,8 +264,7 @@ public class ParameterEditorController implements Initializable, Displayable {
         return Bindings.createBooleanBinding(() -> differencesProperty.contains(field), differencesProperty);
     }
 
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
+    public void ownerStage(Stage stage) {
         this.ownerStage = stage;
     }
 

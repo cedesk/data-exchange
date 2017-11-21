@@ -26,7 +26,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.stage.Window;
+import javafx.stage.Stage;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -68,8 +68,6 @@ public class ModelEditingController implements Initializable {
     @FXML
     private TitledPane parametersParentPane;
     @FXML
-    private SplitPane viewPane;
-    @FXML
     private TreeView<ModelNode> structureTree;
     @FXML
     private Button addNodeButton;
@@ -101,9 +99,9 @@ public class ModelEditingController implements Initializable {
     private BooleanProperty selectedNodeIsFirst = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeIsLast = new SimpleBooleanProperty(true);
 
+    private ExternalModelEditorController externalModelEditorController;
     private ParametersController parametersController;
     private ParameterEditorController parameterEditorController;
-    private ExternalModelEditorController externalModelEditorController;
 
     private Project project;
     private DifferenceHandler differenceHandler;
@@ -119,16 +117,11 @@ public class ModelEditingController implements Initializable {
     private ChangeListener<String> embodimentChangeListener;
     private ChangeListener<Boolean> completionChangeListener;
 
+    private Stage ownerStage;
+    private Stage dsmStage;
+
     public void setParametersController(ParametersController parametersController) {
         this.parametersController = parametersController;
-    }
-
-    private Window getAppWindow() {
-        return viewPane.getScene().getWindow();
-    }
-
-    private TreeItem<ModelNode> getSelectedTreeItem() {
-        return structureTree.getSelectionModel().getSelectedItem();
     }
 
     public void setProject(Project project) {
@@ -177,6 +170,10 @@ public class ModelEditingController implements Initializable {
 
     public void clearView() {
         structureTree.setRoot(null);
+    }
+
+    private TreeItem<ModelNode> getSelectedTreeItem() {
+        return structureTree.getSelectionModel().getSelectedItem();
     }
 
     @FXML
@@ -293,6 +290,12 @@ public class ModelEditingController implements Initializable {
         String author = project.getUser().getUserName();
         ModelNode currentModelNode = this.getSelectedTreeItem().getValue();
         componentService.createComponent(category, author, currentModelNode);
+    }
+
+    public void ownerStage(Stage ownerStage) {
+        this.ownerStage = ownerStage;
+        this.parametersController.ownerStage(ownerStage);
+        this.parameterEditorController.ownerStage(ownerStage);
     }
 
     @Override
@@ -414,20 +417,23 @@ public class ModelEditingController implements Initializable {
             this.updateParameters(item.getValue());
             this.updateExternalModelEditor(item.getValue());
         }
-
     }
 
     public void openDependencyView() {
         ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
         dependencyViewBuilder.resizable(false);
-        dependencyViewBuilder.ownerWindow(getAppWindow());
+        dependencyViewBuilder.ownerWindow(this.ownerStage);
         dependencyViewBuilder.show();
     }
 
     public void openDsmView() {
-        ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_VIEW);
-        dsmViewBuilder.ownerWindow(getAppWindow());
-        dsmViewBuilder.show();
+        if (dsmStage == null || !dsmStage.isShowing()) {
+            ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_VIEW);
+            dsmStage = dsmViewBuilder.createStage();
+            dsmStage.show();
+        } else {
+            dsmStage.toFront();
+        }
     }
 
     public void updateView() {

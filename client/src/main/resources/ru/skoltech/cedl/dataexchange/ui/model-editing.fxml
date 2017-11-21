@@ -21,7 +21,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import org.controlsfx.glyphfont.*?>
-<SplitPane xmlns:fx="http://javafx.com/fxml/1" fx:id="viewPane" dividerPositions="0.25" prefHeight="700.0"
+<SplitPane xmlns:fx="http://javafx.com/fxml/1" dividerPositions="0.25" prefHeight="700.0"
            prefWidth="900.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.121"
            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ModelEditingController">
     <BorderPane minWidth="220">
