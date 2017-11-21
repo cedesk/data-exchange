@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange.service;
 import ru.skoltech.cedl.dataexchange.entity.Component;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 /**
@@ -34,10 +35,12 @@ public interface ComponentService {
      * <p/>
      *
      * @param category  category of the component
+     * @param author  the creator of the component
      * @param modelNode model node to link to
      * @return an new saved instance of {@link Component}
      */
-    Component createComponent(String category, ModelNode modelNode);
+    @Transactional
+    Component createComponent(String category, String author, ModelNode modelNode);
 
     /**
      * Delete component from the database.
@@ -45,6 +48,7 @@ public interface ComponentService {
      *
      * @param component a component to delete
      */
+    @Transactional
     void deleteComponent(Component component);
 
     /**
@@ -63,4 +67,13 @@ public interface ComponentService {
      * @return a list of components
      */
     List<Component> findComponents(String category);
+
+    /**
+     * Retrieve a list of all categories from the database.
+     * <p/>
+     *
+     * @return a list with all saved categories
+     */
+    List<String> findCategories();
+
 }

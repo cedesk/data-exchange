@@ -57,6 +57,7 @@
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
         <property name="guiService" ref="guiService"/>
         <property name="modelNodeService" ref="modelNodeService"/>
+        <property name="componentService" ref="componentService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="statusLogger" ref="statusLogger"/>
@@ -117,7 +118,7 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.LibraryController">
-        <property name="project" ref="project"/>
+        <property name="componentService" ref="componentService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.DependencyController">

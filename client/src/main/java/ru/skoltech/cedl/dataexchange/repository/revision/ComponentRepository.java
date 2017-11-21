@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.repository.revision;
 
+import org.springframework.data.jpa.repository.Query;
 import ru.skoltech.cedl.dataexchange.entity.Component;
 import ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionEntityRepository;
 
@@ -35,4 +36,12 @@ public interface ComponentRepository extends JpaRevisionEntityRepository<Compone
      * @return list of components
      */
     List<Component> findAllByCategory(String category);
+
+    /**
+     * Retrieve all component categories.
+     *
+     * @return list of component categories
+     */
+    @Query("SELECT DISTINCT category FROM Component order by category")
+    List<String> findAllCategories();
 }

@@ -23,10 +23,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
+import javafx.stage.*;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.IconSet;
 import ru.skoltech.cedl.dataexchange.ui.controller.Applicable;
@@ -59,6 +56,7 @@ public class ViewBuilder<T> {
     private Double x;
     private Double y;
     private boolean resizable = true;
+    private StageStyle initStyle = StageStyle.DECORATED;
 
     private T controller;
     private EventHandler<WindowEvent> displayEventHandler;
@@ -131,6 +129,15 @@ public class ViewBuilder<T> {
      */
     public void primaryStage(Stage primaryStage) {
         this.primaryStage = primaryStage;
+    }
+
+    /**
+     * Setup a init state style of a feature view.
+     *
+     * @param initStyle {@link StageStyle} parameter of view
+     */
+    public void initStyle(StageStyle initStyle) {
+        this.initStyle = initStyle;
     }
 
     /**
@@ -218,6 +225,7 @@ public class ViewBuilder<T> {
             stage.setTitle(title);
             stage.getIcons().add(IconSet.APP_ICON);
             stage.setResizable(resizable);
+            stage.initStyle(initStyle);
 
             if (primaryStage == null) {
                 stage.initModality(modality);

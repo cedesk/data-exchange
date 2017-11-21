@@ -34,6 +34,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.Glyph;
@@ -90,7 +91,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private static final Logger logger = Logger.getLogger(MainController.class);
 
-    private final static String FLASH_ICON_URL = "/icons/flash-orange.png";
     @FXML
     private MenuItem exportMenu;
     @FXML
@@ -254,6 +254,8 @@ public class MainController implements Initializable, Displayable, Closeable {
         libraryViewBuilder.ownerWindow(ownerStage);
 
         libraryViewBuilder.xy(x, y);
+        libraryViewBuilder.resizable(false);
+        libraryViewBuilder.initStyle(StageStyle.UTILITY);
         libraryViewBuilder.show();
     }
 

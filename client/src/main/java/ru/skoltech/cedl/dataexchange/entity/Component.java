@@ -44,7 +44,7 @@ public class Component {
     private int revision;
 
     @NotFound(action = NotFoundAction.EXCEPTION)
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private ModelNode modelNode;
 
     private String author;

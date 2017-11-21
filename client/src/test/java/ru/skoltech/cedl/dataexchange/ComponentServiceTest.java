@@ -46,33 +46,36 @@ public class ComponentServiceTest extends AbstractApplicationContextTest {
         ModelNodeService modelNodeService = context.getBean(ModelNodeService.class);
         SubSystemModel modelNode = modelNodeService.createModelNode("name", SubSystemModel.class);
         this.modelNode = modelNodeService.saveModelNode(modelNode);
-
     }
 
     @Test
     public void testCreateComponent() {
         String category = "category";
-        Component component = componentService.createComponent(category, modelNode);
+        String author = "author";
+        Component component = componentService.createComponent(category, author, modelNode);
         assertNotNull(component);
         assertNotEquals(0, component.getId());
         assertNotEquals(modelNode, component.getModelNode());
         assertEquals(category, component.getCategory());
+        assertEquals(author, component.getAuthor());
         componentService.deleteComponent(component);
+        ModelNode deletedModelNode = modelNodeRepository.findOne(component.getModelNode().getId());
+        assertNull(deletedModelNode);
     }
 
     @Test(expected = NullPointerException.class)
     public void testCreateComponentFail1() {
-        componentService.createComponent(null, modelNode);
+        componentService.createComponent(null, null, modelNode);
     }
 
     @Test(expected = NullPointerException.class)
     public void testCreateComponentFail2() {
-        componentService.createComponent("category", null);
+        componentService.createComponent("category", null, null);
     }
 
     @Test
     public void testDeleteComponent() {
-        Component component = componentService.createComponent("category", modelNode);
+        Component component = componentService.createComponent("category", null, modelNode);
         List<Component> componentsList = componentService.findComponents();
         assertNotNull(componentsList);
         assertEquals(1, componentsList.size());
@@ -99,7 +102,7 @@ public class ComponentServiceTest extends AbstractApplicationContextTest {
         assertTrue(emptyList.isEmpty());
 
         String category = "category";
-        componentService.createComponent(category, modelNode);
+        componentService.createComponent(category, null, modelNode);
         List<Component> componentsList1 = componentService.findComponents();
         assertNotNull(componentsList1);
         assertEquals(1, componentsList1.size());

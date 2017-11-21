@@ -23,6 +23,7 @@ import ru.skoltech.cedl.dataexchange.repository.revision.ComponentRepository;
 import ru.skoltech.cedl.dataexchange.service.ComponentService;
 import ru.skoltech.cedl.dataexchange.service.ModelNodeService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,14 +47,16 @@ public class ComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public Component createComponent(String category, ModelNode modelNode) {
+    public Component createComponent(String category, String author, ModelNode modelNode) {
         Objects.requireNonNull(category);
         Objects.requireNonNull(modelNode);
 
+        Date currentDate = new Date();
         ModelNode clonedModelNode = modelNodeService.cloneModelNode(modelNode.getName(), modelNode);
-        clonedModelNode = modelNodeService.saveModelNode(clonedModelNode);
         Component component = new Component(clonedModelNode);
         component.setCategory(category);
+        component.setAuthor(author);
+        component.setDate(currentDate);
         return componentRepository.saveAndFlush(component);
     }
 
@@ -61,9 +64,7 @@ public class ComponentServiceImpl implements ComponentService {
     public void deleteComponent(Component component) {
         Objects.requireNonNull(component);
 
-        ModelNode modelNode = component.getModelNode();
         componentRepository.delete(component.getId());
-        modelNodeService.deleteModelNode(modelNode);
     }
 
     @Override
@@ -76,5 +77,10 @@ public class ComponentServiceImpl implements ComponentService {
         Objects.requireNonNull(category);
 
         return componentRepository.findAllByCategory(category);
+    }
+
+    @Override
+    public List<String> findCategories() {
+        return componentRepository.findAllCategories();
     }
 }

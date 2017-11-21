@@ -23,6 +23,8 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.user.DisciplineSubSystem;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 
+import javax.transaction.Transactional;
+
 /**
  * Operations with model nodes.
  * <p/>
@@ -78,6 +80,7 @@ public interface ModelNodeService {
      *
      * @param deleteNode a model node to delete
      */
+    @Transactional
     void deleteModelNode(ModelNode deleteNode);
 
     /**
@@ -99,5 +102,6 @@ public interface ModelNodeService {
      * @param modelNode instance to save
      * @return new instance of model node after save
      */
+    @Transactional
     <T extends ModelNode> T saveModelNode(T modelNode);
 }
