@@ -115,6 +115,31 @@
                             </graphic>
                         </Button>
                         <Separator orientation="VERTICAL"/>
+                        <ToggleButton fx:id="libraryViewButton">
+                            <tooltip>
+                                <Tooltip text="View Component Library"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="BOOK"/>
+                            </graphic>
+                        </ToggleButton>
+                        <Button mnemonicParsing="false" onAction="#openDsmView">
+                            <tooltip>
+                                <Tooltip text="View Depencency Structure Matrix"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="TH_LARGE"/>
+                            </graphic>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#openDependencyView">
+                            <tooltip>
+                                <Tooltip text="View N-Square Chart"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="ARROWS"/>
+                            </graphic>
+                        </Button>
+                        <Pane HBox.hgrow="ALWAYS"/>
                         <HBox fillHeight="false" spacing="8">
                             <Label fx:id="studyNameLabel" styleClass="projectDetailsLabels" graphicTextGap="6"
                                    text="--">

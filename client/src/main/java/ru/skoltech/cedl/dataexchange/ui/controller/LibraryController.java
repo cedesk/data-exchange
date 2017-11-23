@@ -20,8 +20,11 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleListProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -62,6 +65,8 @@ public class LibraryController implements Initializable, Displayable {
     private ListView<Component> componentListView;
     @FXML
     private Button deleteComponentButton;
+    @FXML
+    private Button insertComponentButton;
     @FXML
     private ToolBar toolbar;
 
@@ -108,6 +113,11 @@ public class LibraryController implements Initializable, Displayable {
     public void addToolbarButton(Button button) {
         Objects.requireNonNull(button);
         this.toolbar.getItems().add(0, button);
+    }
+
+    public void setInsertComponentHandler(ObservableValue<Boolean> observable, EventHandler<ActionEvent> eventHandler) {
+        insertComponentButton.disableProperty().bind(observable);
+        insertComponentButton.setOnAction(eventHandler);
     }
 
     public ReadOnlyObjectProperty<Component> selectedItemProperty() {

@@ -30,7 +30,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
-import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.Component;
@@ -39,7 +38,10 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.model.*;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
-import ru.skoltech.cedl.dataexchange.service.*;
+import ru.skoltech.cedl.dataexchange.service.ComponentService;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.ModelNodeService;
+import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
@@ -127,7 +129,6 @@ public class ModelEditingController implements Initializable {
     private ChangeListener<Boolean> completionChangeListener;
 
     private Stage ownerStage;
-    private Stage dsmStage;
 
     public void setExternalModelEditorController(ExternalModelEditorController externalModelEditorController) {
         this.externalModelEditorController = externalModelEditorController;
@@ -269,18 +270,13 @@ public class ModelEditingController implements Initializable {
         modelEditingPane.getItems().remove(libraryParentPane);
         libraryParentPane.visibleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                modelEditingPane.getItems().add(2, libraryParentPane);
+                modelEditingPane.getItems().add(libraryParentPane);
             } else {
                 modelEditingPane.getItems().remove(libraryParentPane);
             }
         });
 
-        Button extractComponentButton = new Button();
-        extractComponentButton.setMinWidth(28);
-        extractComponentButton.setMnemonicParsing(false);
-        extractComponentButton.setTooltip(new Tooltip("Extract component"));
-        extractComponentButton.setGraphic(new Glyph("FontAwesome", "UPLOAD"));
-        extractComponentButton.disableProperty().bind(Bindings.createBooleanBinding(() -> {
+        BooleanBinding insertButtonDisabled = Bindings.createBooleanBinding(() -> {
             if (libraryController.selectedItemProperty().isNull().get()) {
                 return true;
             }
@@ -298,9 +294,8 @@ public class ModelEditingController implements Initializable {
                 return false;
             }
             return true;
-        }, libraryController.selectedItemProperty(), structureTree.getSelectionModel().selectedItemProperty()));
-        extractComponentButton.setOnAction(event -> this.extractComponent());
-        libraryController.addToolbarButton(extractComponentButton);
+        }, libraryController.selectedItemProperty(), structureTree.getSelectionModel().selectedItemProperty());
+        libraryController.setInsertComponentHandler(insertButtonDisabled, event -> this.extractComponent());
         libraryController.setCloseEventHandler(aVoid -> libraryDisplayProperty.setValue(false));
     }
 
@@ -454,23 +449,6 @@ public class ModelEditingController implements Initializable {
             TreeItem<ModelNode> item = structureTree.getTreeItem(selectedIndex);
             this.updateParameters(item.getValue());
             this.updateExternalModelEditor(item.getValue());
-        }
-    }
-
-    public void openDependencyView() {
-        ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
-        dependencyViewBuilder.resizable(false);
-        dependencyViewBuilder.ownerWindow(this.ownerStage);
-        dependencyViewBuilder.show();
-    }
-
-    public void openDsmView() {
-        if (dsmStage == null || !dsmStage.isShowing()) {
-            ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_VIEW);
-            dsmStage = dsmViewBuilder.createStage();
-            dsmStage.show();
-        } else {
-            dsmStage.toFront();
         }
     }
 

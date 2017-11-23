@@ -98,7 +98,7 @@
                                 <Tooltip text="Add node to the library component."/>
                             </tooltip>
                             <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="BOOK"/>
+                                <Glyph fontFamily="FontAwesome" icon="UPLOAD"/>
                             </graphic>
                         </Button>
                         <Pane HBox.hgrow="ALWAYS"/>
@@ -125,55 +125,26 @@
         </center>
         <bottom>
             <TitledPane collapsible="false" text="Dependencies">
-                <BorderPane>
-                    <padding>
-                        <Insets bottom="4" left="4" right="4" top="4"/>
-                    </padding>
-                    <center>
-                        <VBox spacing="5">
-                            <Label fx:id="upstreamDependenciesLabel" styleClass="projectDetailsLabels"
-                                   GridPane.columnIndex="0" GridPane.rowIndex="0">
-                                <tooltip>
-                                    <Tooltip text="Upstream"/>
-                                </tooltip>
-                                <graphic>
-                                    <Glyph fontFamily="FontAwesome" icon="ARROW_LEFT"/>
-                                </graphic>
-                            </Label>
-                            <Label fx:id="downstreamDependenciesLabel" styleClass="projectDetailsLabels"
-                                   GridPane.columnIndex="0" GridPane.rowIndex="1">
-                                <tooltip>
-                                    <Tooltip text="Downstream"/>
-                                </tooltip>
-                                <graphic>
-                                    <Glyph fontFamily="FontAwesome" icon="ARROW_RIGHT"/>
-                                </graphic>
-                            </Label>
-                        </VBox>
-                    </center>
-                    <right>
-                        <VBox spacing="5">
-                            <Button mnemonicParsing="false" onAction="#openDsmView" text="View DSM"
-                                    GridPane.columnIndex="1" GridPane.rowIndex="0">
-                                <tooltip>
-                                    <Tooltip text="View Depencency Structure Matrix"/>
-                                </tooltip>
-                                <graphic>
-                                    <Glyph fontFamily="FontAwesome" icon="TH_LARGE"/>
-                                </graphic>
-                            </Button>
-                            <Button mnemonicParsing="false" onAction="#openDependencyView" text="View N2"
-                                    GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                <tooltip>
-                                    <Tooltip text="View N-Square Chart"/>
-                                </tooltip>
-                                <graphic>
-                                    <Glyph fontFamily="FontAwesome" icon="ARROWS"/>
-                                </graphic>
-                            </Button>
-                        </VBox>
-                    </right>
-                </BorderPane>
+                <VBox spacing="5">
+                    <Label fx:id="upstreamDependenciesLabel" styleClass="projectDetailsLabels"
+                           GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <tooltip>
+                            <Tooltip text="Upstream"/>
+                        </tooltip>
+                        <graphic>
+                            <Glyph fontFamily="FontAwesome" icon="ARROW_LEFT"/>
+                        </graphic>
+                    </Label>
+                    <Label fx:id="downstreamDependenciesLabel" styleClass="projectDetailsLabels"
+                           GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <tooltip>
+                            <Tooltip text="Downstream"/>
+                        </tooltip>
+                        <graphic>
+                            <Glyph fontFamily="FontAwesome" icon="ARROW_RIGHT"/>
+                        </graphic>
+                    </Label>
+                </VBox>
             </TitledPane>
         </bottom>
     </BorderPane>

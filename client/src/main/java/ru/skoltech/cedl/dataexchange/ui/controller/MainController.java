@@ -111,6 +111,8 @@ public class MainController implements Initializable, Displayable, Closeable {
     @FXML
     private Button diffButton;
     @FXML
+    private ToggleButton libraryViewButton;
+    @FXML
     private Label studyNameLabel;
     @FXML
     private Label tagLabel;
@@ -138,6 +140,8 @@ public class MainController implements Initializable, Displayable, Closeable {
     private StatusLogger statusLogger;
 
     private Stage ownerStage;
+    private Stage dsmStage;
+    private Stage dependencyStage;
 
     private StringProperty tagProperty = new SimpleStringProperty("");
     private BooleanBinding repositoryNewer;
@@ -220,6 +224,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         tagMenu.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("_Tag current revision...").otherwise("_Untag current revision"));
 
         libraryViewMenu.selectedProperty().bindBidirectional(modelEditingController.libraryDisplayProperty());
+        libraryViewButton.selectedProperty().bindBidirectional(modelEditingController.libraryDisplayProperty());
 
         repositoryNewer = Bindings.createBooleanBinding(() -> differenceHandler.modelDifferences().stream()
                 .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2)
@@ -572,10 +577,14 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openDependencyView() {
-        ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
-        dependencyViewBuilder.resizable(false);
-        dependencyViewBuilder.ownerWindow(ownerStage);
-        dependencyViewBuilder.show();
+        if (dependencyStage == null || !dependencyStage.isShowing()) {
+            ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
+            dependencyViewBuilder.resizable(false);
+            dependencyViewBuilder.ownerWindow(this.ownerStage);
+            dependencyViewBuilder.show();
+        } else {
+            dependencyStage.toFront();
+        }
     }
 
     public void openStudyRevisionsView() {
@@ -607,7 +616,13 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openDsmView() {
-        modelEditingController.openDsmView();
+        if (dsmStage == null || !dsmStage.isShowing()) {
+            ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_VIEW);
+            dsmStage = dsmViewBuilder.createStage();
+            dsmStage.show();
+        } else {
+            dsmStage.toFront();
+        }
     }
 
     public void openGuideDialog() {
