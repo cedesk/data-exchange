@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ListProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -34,9 +35,11 @@ import ru.skoltech.cedl.dataexchange.service.ComponentService;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.entity.ParameterNature.INPUT;
@@ -59,8 +62,12 @@ public class LibraryController implements Initializable, Displayable {
     private ListView<Component> componentListView;
     @FXML
     private Button deleteComponentButton;
+    @FXML
+    private ToolBar toolbar;
 
     private Stage ownerStage;
+    private Consumer<Void> closeEventHandler = aVoid -> ownerStage.close();
+
     private ListProperty<Component> componentListProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
     private ListProperty<String> categoryListProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
 
@@ -70,9 +77,41 @@ public class LibraryController implements Initializable, Displayable {
         this.componentService = componentService;
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        categoryChoice.itemsProperty().bind(categoryListProperty);
+        componentListView.setCellFactory(new ModelNodeViewCellFactory());
+        deleteComponentButton.disableProperty().bind(componentListView.getSelectionModel().selectedItemProperty().isNull());
+
+        componentListView.itemsProperty().bind(Bindings.createObjectBinding(() -> {
+            List<Component> filteredComponents = filterComponents();
+            return FXCollections.observableList(filteredComponents);
+        }, searchTextField.textProperty(), categoryChoice.valueProperty(), componentListProperty));
+        this.refreshComponents();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
     @FXML
     public void close() {
-        ownerStage.close();
+        this.closeEventHandler.accept(null);
+    }
+
+    public void setCloseEventHandler(Consumer<Void> closeEventHandler) {
+        Objects.requireNonNull(closeEventHandler);
+        this.closeEventHandler = closeEventHandler;
+    }
+
+    public void addToolbarButton(Button button) {
+        Objects.requireNonNull(button);
+        this.toolbar.getItems().add(0, button);
+    }
+
+    public ReadOnlyObjectProperty<Component> selectedItemProperty() {
+        return componentListView.getSelectionModel().selectedItemProperty();
     }
 
     @FXML
@@ -89,25 +128,6 @@ public class LibraryController implements Initializable, Displayable {
         }
     }
 
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        categoryChoice.itemsProperty().bind(categoryListProperty);
-        componentListView.setCellFactory(new ModelNodeViewCellFactory());
-        deleteComponentButton.disableProperty().bind(componentListView.getSelectionModel().selectedItemProperty().isNull());
-
-        componentListView.itemsProperty().bind(Bindings.createObjectBinding(() -> {
-            List<Component> filteredComponents = filterComponents();
-            return FXCollections.observableList(filteredComponents);
-        }, searchTextField.textProperty(), categoryChoice.valueProperty(), componentListProperty));
-        this.refreshComponents();
-    }
-
-    @FXML
     public void refreshComponents() {
         List<Component> components = componentService.findComponents();
         componentListProperty.setValue(FXCollections.observableList(components));

@@ -52,6 +52,7 @@
         <property name="parametersController" ref="parametersController"/>
         <property name="parameterEditorController" ref="parameterEditorController"/>
         <property name="externalModelEditorController" ref="externalModelEditorController"/>
+        <property name="libraryController" ref="libraryController"/>
         <property name="project" ref="project"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
@@ -117,7 +118,7 @@
         <property name="parameterLinkRegistry" ref="parameterLinkRegistry"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.LibraryController">
+    <bean id="libraryController" class="ru.skoltech.cedl.dataexchange.ui.controller.LibraryController">
         <property name="componentService" ref="componentService"/>
     </bean>
 

@@ -16,7 +16,7 @@
   ~ limitations under the License.
   -->
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -55,7 +55,7 @@
                             <MenuItem fx:id="usersAndDisciplinesMenu" onAction="#openUserRoleManagement"
                                       text="User-Discipline Assignment"/>
                             <MenuItem onAction="#openUnitManagement" text="Units and _Measures"/>
-                            <MenuItem onAction="#openLibraryView" text="Component _Library"/>
+                            <CheckMenuItem fx:id="libraryViewMenu" text="Component _Library"/>
                             <SeparatorMenuItem/>
                             <MenuItem onAction="#openProjectSettingsDialog" text="_Project Settings"/>
                             <MenuItem onAction="#openRepositorySettingsDialog" text="_Repository Settings"/>

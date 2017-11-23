@@ -47,15 +47,7 @@
         <ListView fx:id="componentListView" prefHeight="636.0" prefWidth="298.0"/>
     </center>
     <bottom>
-        <ToolBar prefHeight="30.0" BorderPane.alignment="BOTTOM_LEFT">
-            <Button minWidth="28" mnemonicParsing="false" onAction="#refreshComponents">
-                <tooltip>
-                    <Tooltip text="Refresh Library"/>
-                </tooltip>
-                <graphic>
-                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                </graphic>
-            </Button>
+        <ToolBar fx:id="toolbar" prefHeight="30.0" BorderPane.alignment="BOTTOM_LEFT">
             <Button fx:id="deleteComponentButton" minWidth="28" mnemonicParsing="false" onAction="#deleteComponent">
                 <tooltip>
                     <Tooltip text="Remove Node"/>

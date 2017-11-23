@@ -27,14 +27,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.Glyph;
@@ -100,6 +99,8 @@ public class MainController implements Initializable, Displayable, Closeable {
     @FXML
     private MenuItem usersAndDisciplinesMenu;
     @FXML
+    public CheckMenuItem libraryViewMenu;
+    @FXML
     private Button newButton;
     @FXML
     private Button loadButton;
@@ -137,7 +138,6 @@ public class MainController implements Initializable, Displayable, Closeable {
     private StatusLogger statusLogger;
 
     private Stage ownerStage;
-    private Stage componentLibraryStage;
 
     private StringProperty tagProperty = new SimpleStringProperty("");
     private BooleanBinding repositoryNewer;
@@ -218,6 +218,8 @@ public class MainController implements Initializable, Displayable, Closeable {
 
         tagLabel.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("--").otherwise(tagProperty));
         tagMenu.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("_Tag current revision...").otherwise("_Untag current revision"));
+
+        libraryViewMenu.selectedProperty().bindBidirectional(modelEditingController.libraryDisplayProperty());
 
         repositoryNewer = Bindings.createBooleanBinding(() -> differenceHandler.modelDifferences().stream()
                 .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2)
@@ -617,23 +619,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         guideViewBuilder.xy(x, y);
         guideViewBuilder.show();
     }
-
-    public void openLibraryView() {
-        if (componentLibraryStage == null || !componentLibraryStage.isShowing()) {
-            double x = ownerStage.getX() + ownerStage.getWidth();
-            double y = ownerStage.getY();
-
-            ViewBuilder libraryViewBuilder = guiService.createViewBuilder("Component Library", Views.LIBRARY_VIEW);
-            libraryViewBuilder.xy(x, y);
-            libraryViewBuilder.resizable(false);
-            libraryViewBuilder.initStyle(StageStyle.UTILITY);
-            componentLibraryStage = libraryViewBuilder.createStage();
-            componentLibraryStage.show();
-        } else {
-            componentLibraryStage.toFront();
-        }
-    }
-
 
     public void saveProject() {
         try {
