@@ -19,10 +19,7 @@ package ru.skoltech.cedl.dataexchange.entity.user;
 import org.hibernate.envers.Audited;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 /**
  * Created by D.Knoll on 16.06.2015.
@@ -41,7 +38,7 @@ public class DisciplineSubSystem {
     @ManyToOne(optional = false, targetEntity = Discipline.class)
     private Discipline discipline;
 
-    @ManyToOne(optional = false, targetEntity = SubSystemModel.class)
+    @ManyToOne(optional = false, targetEntity = SubSystemModel.class, cascade = {CascadeType.REMOVE, CascadeType.PERSIST})
     private SubSystemModel subSystem;
 
     private DisciplineSubSystem() {
