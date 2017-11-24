@@ -16,7 +16,6 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
-import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -53,7 +52,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.logging.ActionLogger.ActionType.*;
 
@@ -227,6 +225,25 @@ public class ExternalModelEditorController implements Initializable {
         }
     }
 
+    private void renderExternalModelView(ExternalModel externalModel) {
+        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
+        removeButton.setTooltip(new Tooltip("Remove external model"));
+        removeButton.setOnAction(ExternalModelEditorController.this::deleteExternalModel);
+        removeButton.setMinWidth(28);
+
+        Button exchangeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.EXCHANGE));
+        exchangeButton.setTooltip(new Tooltip("Replace external model"));
+        exchangeButton.setOnAction(ExternalModelEditorController.this::replaceExternalModel);
+        exchangeButton.setMinWidth(28);
+
+        Node externalModelNode = guiService.createControl(Views.EXTERNAL_MODEL_VIEW, externalModel);
+        HBox extModRow = new HBox(6, externalModelNode, removeButton, exchangeButton);
+        removeButton.setUserData(Pair.of(externalModel, extModRow));
+        exchangeButton.setUserData(externalModel);
+        externalModelViewContainer.getChildren().add(extModRow);
+        externalModelViewContainer.setVisible(true);
+    }
+
     private void replaceExternalModel(ActionEvent actionEvent) {
         if (!project.isStudyInRepository()) {
             Dialogues.showError("Save Project", "Unable to attach an external model, "
@@ -256,7 +273,7 @@ public class ExternalModelEditorController implements Initializable {
             if (externalModelFile.isFile()) {
                 try {
                     externalModelService.updateExternalModelFromFile(externalModelFile, externalModel);
-                    Platform.runLater(ExternalModelEditorController.this::updateView);
+                    this.updateView();
                     Dialogues.showWarning("The file is now under CEDESK version control.",
                             "The file has been imported into the repository. "
                                     + "Further modifications on the local copy will not be reflected "
@@ -272,24 +289,6 @@ public class ExternalModelEditorController implements Initializable {
                 Dialogues.showError("Invalid file selected.", "The chosen file is not a valid external model.");
             }
         }
-    }
-
-    private void renderExternalModelView(ExternalModel externalModel) {
-        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
-        removeButton.setTooltip(new Tooltip("Remove external model"));
-        removeButton.setOnAction(ExternalModelEditorController.this::deleteExternalModel);
-        removeButton.setMinWidth(28);
-
-        Button exchangeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.EXCHANGE));
-        exchangeButton.setTooltip(new Tooltip("Replace external model"));
-        exchangeButton.setOnAction(ExternalModelEditorController.this::replaceExternalModel);
-        exchangeButton.setMinWidth(28);
-
-        Node externalModelNode = guiService.createControl(Views.EXTERNAL_MODEL_VIEW, externalModel);
-        HBox extModRow = new HBox(6, externalModelNode, removeButton, exchangeButton);
-        removeButton.setUserData(Pair.of(externalModel, extModRow));
-        exchangeButton.setUserData(externalModel);
-        externalModelViewContainer.getChildren().add(extModRow);
     }
 
     private void updateView() {

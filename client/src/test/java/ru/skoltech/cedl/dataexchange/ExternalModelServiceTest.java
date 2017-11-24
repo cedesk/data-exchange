@@ -37,6 +37,8 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by Nikolay Groshkov on 20-Oct-17.
@@ -48,9 +50,11 @@ public class ExternalModelServiceTest {
     private static final Matcher<Iterable<? super String>> csvExtensionsMatcher = hasItem("*" + ExternalModelService.CSV);
 
     private ExternalModelService externalModelService;
+
     private File excelAttachmentFile;
     private File csvAttachmentFile;
-    private SystemModel testModel;
+    private SystemModel systemModel;
+    private ExternalModel externalModel;
 
     @Before
     public void prepare() throws URISyntaxException, IOException {
@@ -58,7 +62,12 @@ public class ExternalModelServiceTest {
         excelAttachmentFile = new File(this.getClass().getResource("/attachment.xls").toURI());
         csvAttachmentFile = new File(this.getClass().getResource("/attachment.csv").toURI());
 
-        testModel = new SystemModel("testSat");
+        systemModel = new SystemModel("testSat");
+
+        externalModel = mock(ExternalModel.class);
+        when(externalModel.getName()).thenReturn("externalModelName.xls");
+        when(externalModel.getAttachment()).thenReturn(new byte[]{1, 2, 3});
+        when(externalModel.getParent()).thenReturn(systemModel);
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -74,9 +83,13 @@ public class ExternalModelServiceTest {
         assertThat(supportedExtensions, csvExtensionsMatcher);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testCreateExternalModelFromFileFail1() throws ExternalModelException {
-        externalModelService.createExternalModelFromFile(null, testModel);
+    @Test
+    public void testCloneExternalModel() {
+        ExternalModel newExternalModel1 = externalModelService.cloneExternalModel(externalModel);
+        ExternalModel newExternalModel2 = externalModelService.cloneExternalModel(externalModel, systemModel);
+
+        this.checkCloneExternalModel(newExternalModel1);
+        this.checkCloneExternalModel(newExternalModel2);
     }
 
     @Test(expected = NullPointerException.class)
@@ -84,27 +97,56 @@ public class ExternalModelServiceTest {
         externalModelService.createExternalModelFromFile(excelAttachmentFile, null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateExternalModelFromFileFail3() throws URISyntaxException, ExternalModelException {
-        File notSupportedAttachmentFile = new File(this.getClass().getResource("/application.settings").toURI());
-        externalModelService.createExternalModelFromFile(notSupportedAttachmentFile, testModel);
+    @Test(expected = NullPointerException.class)
+    public void testCloneExternalModelFail1() {
+        externalModelService.cloneExternalModel(null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCloneExternalModelFail2() {
+        externalModelService.cloneExternalModel(null, systemModel);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCloneExternalModelFail3() {
+        externalModelService.cloneExternalModel(mock(ExternalModel.class), null);
     }
 
     @Test
     public void testCreateExternalModelFromFile() throws ExternalModelException {
-        ExternalModel excelExternalModel = externalModelService.createExternalModelFromFile(excelAttachmentFile, testModel);
+        ExternalModel excelExternalModel = externalModelService.createExternalModelFromFile(excelAttachmentFile, systemModel);
         assertNotNull(excelExternalModel);
         assertThat(excelExternalModel, instanceOf(ExcelExternalModel.class));
         assertEquals(excelAttachmentFile.getName(), excelExternalModel.getName());
-        assertEquals(testModel, excelExternalModel.getParent());
+        assertEquals(systemModel, excelExternalModel.getParent());
         assertNotEquals(ExternalModelState.UNINITIALIZED, excelExternalModel.state());
 
-        ExternalModel csvExternalModel = externalModelService.createExternalModelFromFile(csvAttachmentFile, testModel);
+        ExternalModel csvExternalModel = externalModelService.createExternalModelFromFile(csvAttachmentFile, systemModel);
         assertNotNull(csvExternalModel);
         assertThat(csvExternalModel, instanceOf(CsvExternalModel.class));
         assertEquals(csvAttachmentFile.getName(), csvExternalModel.getName());
-        assertEquals(testModel, csvExternalModel.getParent());
+        assertEquals(systemModel, csvExternalModel.getParent());
         assertNotEquals(ExternalModelState.UNINITIALIZED, csvExternalModel.state());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCreateExternalModelFromFileFail1() throws ExternalModelException {
+        externalModelService.createExternalModelFromFile(null, systemModel);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateExternalModelFromFileFail3() throws URISyntaxException, ExternalModelException {
+        File notSupportedAttachmentFile = new File(this.getClass().getResource("/application.settings").toURI());
+        externalModelService.createExternalModelFromFile(notSupportedAttachmentFile, systemModel);
+    }
+
+    private void checkCloneExternalModel(ExternalModel clonedExternalModel) {
+        assertNotNull(clonedExternalModel);
+        assertFalse(externalModel == clonedExternalModel);
+        assertEquals(externalModel.getName(), clonedExternalModel.getName());
+        assertEquals(externalModel.getAttachment(), clonedExternalModel.getAttachment());
+        assertTrue(clonedExternalModel.state().isInitialized());
+        assertEquals(systemModel, clonedExternalModel.getParent());
     }
 
     @Test

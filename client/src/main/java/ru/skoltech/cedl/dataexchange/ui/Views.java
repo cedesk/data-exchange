@@ -33,6 +33,7 @@ public class Views {
     public static final URL STATUS_VIEW = Views.class.getResource("status.fxml");
     public static final URL MODEL_DIFF_VIEW = Views.class.getResource("model-diff.fxml");
     public static final URL MODEL_CONSISTENCY_VIEW = Views.class.getResource("model-consistency.fxml");
+    public static final URL LIBRARY_VIEW = Views.class.getResource("library.fxml");
     public static final URL TAG_VIEW = Views.class.getResource("tag.fxml");
     public static final URL DSM_VIEW = Views.class.getResource("dsm.fxml");
     public static final URL DEPENDENCY_VIEW = Views.class.getResource("dependency.fxml");

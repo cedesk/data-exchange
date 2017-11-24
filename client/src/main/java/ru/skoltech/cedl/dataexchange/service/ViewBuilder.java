@@ -23,10 +23,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
+import javafx.stage.*;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.ui.control.structure.IconSet;
 import ru.skoltech.cedl.dataexchange.ui.controller.Applicable;
@@ -59,6 +56,7 @@ public class ViewBuilder<T> {
     private Double x;
     private Double y;
     private boolean resizable = true;
+    private StageStyle initStyle = StageStyle.DECORATED;
 
     private T controller;
     private EventHandler<WindowEvent> displayEventHandler;
@@ -134,6 +132,15 @@ public class ViewBuilder<T> {
     }
 
     /**
+     * Setup a init state style of a feature view.
+     *
+     * @param initStyle {@link StageStyle} parameter of view
+     */
+    public void initStyle(StageStyle initStyle) {
+        this.initStyle = initStyle;
+    }
+
+    /**
      * Setup a resizable parameter of a feature view
      * (<i>true</i> by default).
      *
@@ -141,6 +148,35 @@ public class ViewBuilder<T> {
      */
     public void resizable(boolean resizable) {
         this.resizable = resizable;
+    }
+
+    /**
+     * Setup a horizontal location on the screen of a feature view.
+     *
+     * @param x horizontal location of view
+     */
+    public void x(double x) {
+        this.x = x;
+    }
+
+    /**
+     * Setup a vertical location on the screen of a feature view.
+     *
+     * @param y vertical location of view
+     */
+    public void y(double y) {
+        this.y = y;
+    }
+
+    /**
+     * Setup both horizontal and vertical location on the screen of a feature view.
+     *
+     * @param x horizontal location of view
+     * @param y vertical location of view
+     */
+    public void xy(double x, double y) {
+        x(x);
+        y(y);
     }
 
     /**
@@ -167,35 +203,12 @@ public class ViewBuilder<T> {
     }
 
     /**
-     * Setup a horizontal location on the screen of a feature view.
+     * Create a stage instance based on current adjustments.
      *
-     * @param x horizontal location of view
+     * @param args arguments for JavaFX controller constructor of a view
+     * @return an instance of created {@link Stage}
      */
-    public void x(double x) {
-        this.x = x;
-    }
-
-    /**
-     * Setup both horizontal and vertical location on the screen of a feature view.
-     *
-     * @param x horizontal location of view
-     * @param y vertical location of view
-     */
-    public void xy(double x, double y) {
-        x(x);
-        y(y);
-    }
-
-    /**
-     * Setup a vertical location on the screen of a feature view.
-     *
-     * @param y vertical location of view
-     */
-    public void y(double y) {
-        this.y = y;
-    }
-
-    private Stage createStage(Object... args) {
+    public Stage createStage(Object... args) {
         try {
             FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(location, args);
             Parent root = loader.load();
@@ -218,6 +231,7 @@ public class ViewBuilder<T> {
             stage.setTitle(title);
             stage.getIcons().add(IconSet.APP_ICON);
             stage.setResizable(resizable);
+            stage.initStyle(initStyle);
 
             if (primaryStage == null) {
                 stage.initModality(modality);

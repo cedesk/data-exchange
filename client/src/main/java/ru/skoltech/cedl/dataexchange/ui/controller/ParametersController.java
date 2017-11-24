@@ -31,7 +31,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -46,6 +45,7 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.ParameterModelService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -69,7 +69,7 @@ import java.util.stream.Collectors;
  * <p>
  * Created by Nikolay Groshkov on 08-Sep-17.
  */
-public class ParametersController implements Initializable, Displayable {
+public class ParametersController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ParametersController.class);
 
@@ -96,6 +96,8 @@ public class ParametersController implements Initializable, Displayable {
     @FXML
     private Button deleteParameterButton;
     @FXML
+    public Button copyParameterButton;
+    @FXML
     private Button viewParameterHistoryButton;
 
     private Stage ownerStage;
@@ -110,6 +112,7 @@ public class ParametersController implements Initializable, Displayable {
     private DifferenceHandler differenceHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private GuiService guiService;
+    private ParameterModelService parameterModelService;
     private ActionLogger actionLogger;
     private StatusLogger statusLogger;
 
@@ -129,6 +132,10 @@ public class ParametersController implements Initializable, Displayable {
         this.guiService = guiService;
     }
 
+    public void setParameterModelService(ParameterModelService parameterModelService) {
+        this.parameterModelService = parameterModelService;
+    }
+
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
     }
@@ -137,11 +144,148 @@ public class ParametersController implements Initializable, Displayable {
         this.statusLogger = statusLogger;
     }
 
+    @FXML
+    public void addParameter() {
+        Objects.requireNonNull(modelNode, "There is no model node to add parameter");
+
+        Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
+        if (parameterNameChoice.isPresent()) {
+            String parameterName = parameterNameChoice.get();
+            if (!Identifiers.validateParameterName(parameterName)) {
+                Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
+                return;
+            }
+            if (modelNode.hasParameter(parameterName)) {
+                Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
+                return;
+            }
+            ParameterModel parameterModel = new ParameterModel(parameterName, 0.0);
+            modelNode.addParameter(parameterModel);
+            statusLogger.info("Parameter added: " + parameterModel.getName());
+            actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, parameterModel.getNodePath());
+            project.markStudyModified();
+            this.parameterModels.add(parameterModel);
+            this.parameterTable.getSelectionModel().select(parameterModel);
+        }
+    }
+
+    public void addParameterModelChangeListener(ChangeListener<ParameterModel> listener) {
+        parameterTable.getSelectionModel().selectedItemProperty().addListener(listener);
+    }
+
+    public void removeParameterModelChangeListener(ChangeListener<ParameterModel> listener) {
+        parameterTable.getSelectionModel().selectedItemProperty().removeListener(listener);
+    }
+
+    public void ownerStage(Stage stage) {
+        this.ownerStage = stage;
+    }
+
+    public void updateParameters(ModelNode modelNode, boolean editable) {
+        this.modelNode = modelNode;
+        emptyProperty.setValue(modelNode == null);
+        editableProperty.setValue(editable);
+
+        if (modelNode == null) {
+            parameterModels.clear();
+            return;
+        }
+
+        int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
+
+        List<ParameterModel> newParameterModels;
+        if (!editableProperty.get()) {
+            newParameterModels = modelNode.getParameters().stream()
+                    .filter(parameterModel -> parameterModel.getNature() == ParameterNature.OUTPUT)
+                    .sorted(new ParameterComparatorByNatureAndName())
+                    .collect(Collectors.toList());
+        } else {
+            newParameterModels = modelNode.getParameters().stream()
+                    .sorted(new ParameterComparatorByNatureAndName())
+                    .collect(Collectors.toList());
+        }
+
+        parameterModels.clear();
+        parameterModels.addAll(newParameterModels);
+
+        logger.debug("updateParameters " + !editableProperty.get() + " #" + parameterModels.size());
+
+        parameterTable.refresh();
+        // TODO: maybe redo selection only if same node
+        if (selectedIndex < parameterTable.getItems().size()) {
+            parameterTable.getSelectionModel().select(selectedIndex);
+        } else if (parameterTable.getItems().size() > 0) {
+            parameterTable.getSelectionModel().select(0);
+        }
+    }
+
+    public void clearParameters() {
+        parameterModels.clear();
+    }
+
+    public void refresh() {
+        parameterTable.refresh();
+    }
+
+    public ParameterModel currentParameter() {
+        return parameterTable.getSelectionModel().getSelectedItem();
+    }
+
+    @FXML
+    public void copyParameter() {
+        Objects.requireNonNull(modelNode, "There is no model node to add parameter");
+
+        ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem();
+        Optional<String> parameterNameChoice = Dialogues.inputParameterName(parameterModel.getName() + " (copy)");
+        if (parameterNameChoice.isPresent()) {
+            String parameterName = parameterNameChoice.get();
+            if (!Identifiers.validateParameterName(parameterName)) {
+                Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
+                return;
+            }
+            if (modelNode.hasParameter(parameterName)) {
+                Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
+                return;
+            }
+
+            ParameterModel newParameterModel = parameterModelService.cloneParameterModel(parameterName, parameterModel);
+
+            modelNode.addParameter(newParameterModel);
+            statusLogger.info("Parameter copied: " + newParameterModel.getName());
+            actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, newParameterModel.getNodePath());
+            project.markStudyModified();
+            this.parameterModels.add(newParameterModel);
+            this.parameterTable.getSelectionModel().select(newParameterModel);
+        }
+    }
+
+    @FXML
+    public void deleteParameter() {
+        ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem();
+        List<ParameterModel> dependentParameters = parameterLinkRegistry.getDependentParameters(parameterModel);
+        if (dependentParameters.size() > 0) {
+            String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
+            Dialogues.showWarning("Parameter deletion impossible!", "This parameter is referenced by " + dependentParams);
+            return;
+        }
+
+        Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Parameter deletion", "Are you sure you want to delete this parameter?");
+        if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
+            modelNode.getParameters().remove(parameterModel);
+            parameterLinkRegistry.removeSink(parameterModel);
+            statusLogger.info("Parameter deleted: " + parameterModel.getName());
+            actionLogger.log(ActionLogger.ActionType.PARAMETER_REMOVE, parameterModel.getNodePath());
+            updateParameters(modelNode, editableProperty.get());
+            project.markStudyModified();
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         addParameterButton.disableProperty().bind(Bindings.or(emptyProperty, editableProperty.not()));
         BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
         deleteParameterButton.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
+        copyParameterButton.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
         viewParameterHistoryButton.disableProperty().bind(noSelectionOnParameterTableView);
 
         // NODE PARAMETER TABLE
@@ -219,114 +363,6 @@ public class ParametersController implements Initializable, Displayable {
         addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
         parameterContextMenu.getItems().add(addNodeMenuItem);
         parameterTable.setContextMenu(parameterContextMenu);
-    }
-
-    public void addParameterModelChangeListener(ChangeListener<ParameterModel> listener) {
-        parameterTable.getSelectionModel().selectedItemProperty().addListener(listener);
-    }
-
-    public void removeParameterModelChangeListener(ChangeListener<ParameterModel> listener) {
-        parameterTable.getSelectionModel().selectedItemProperty().removeListener(listener);
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    public void updateParameters(ModelNode modelNode, boolean editable) {
-        this.modelNode = modelNode;
-        emptyProperty.setValue(modelNode == null);
-        editableProperty.setValue(editable);
-
-        if (modelNode == null) {
-            parameterModels.clear();
-            return;
-        }
-
-        int selectedIndex = parameterTable.getSelectionModel().getSelectedIndex();
-
-        List<ParameterModel> newParameterModels;
-        if (!editableProperty.get()) {
-            newParameterModels = modelNode.getParameters().stream()
-                    .filter(parameterModel -> parameterModel.getNature() == ParameterNature.OUTPUT)
-                    .sorted(new ParameterComparatorByNatureAndName())
-                    .collect(Collectors.toList());
-        } else {
-            newParameterModels = modelNode.getParameters().stream()
-                    .sorted(new ParameterComparatorByNatureAndName())
-                    .collect(Collectors.toList());
-        }
-
-        parameterModels.clear();
-        parameterModels.addAll(newParameterModels);
-
-        logger.debug("updateParameters " + !editableProperty.get() + " #" + parameterModels.size());
-
-        parameterTable.refresh();
-        // TODO: maybe redo selection only if same node
-        if (selectedIndex < parameterTable.getItems().size()) {
-            parameterTable.getSelectionModel().select(selectedIndex);
-        } else if (parameterTable.getItems().size() > 0) {
-            parameterTable.getSelectionModel().select(0);
-        }
-    }
-
-    public void clearParameters() {
-        parameterModels.clear();
-    }
-
-    public void refresh() {
-        parameterTable.refresh();
-    }
-
-    public ParameterModel currentParameter() {
-        return parameterTable.getSelectionModel().getSelectedItem();
-    }
-
-    public void addParameter() {
-        Objects.requireNonNull(modelNode, "There is no model node to add parameter");
-
-        Optional<String> parameterNameChoice = Dialogues.inputParameterName("new-parameter");
-        if (parameterNameChoice.isPresent()) {
-            String parameterName = parameterNameChoice.get();
-            if (!Identifiers.validateParameterName(parameterName)) {
-                Dialogues.showError("Invalid name", Identifiers.getParameterNameValidationDescription());
-                return;
-            }
-            if (modelNode.hasParameter(parameterName)) {
-                Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
-                return;
-            }
-            ParameterModel parameterModel = new ParameterModel(parameterName, 0.0);
-            modelNode.addParameter(parameterModel);
-            statusLogger.info("added parameter: " + parameterModel.getName());
-            actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, parameterModel.getNodePath());
-            project.markStudyModified();
-            this.parameterModels.add(parameterModel);
-            this.parameterTable.getSelectionModel().select(parameterModel);
-        }
-
-    }
-
-    public void deleteParameter() {
-        ParameterModel parameterModel = parameterTable.getSelectionModel().getSelectedItem();
-        List<ParameterModel> dependentParameters = parameterLinkRegistry.getDependentParameters(parameterModel);
-        if (dependentParameters.size() > 0) {
-            String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
-            Dialogues.showWarning("Parameter deletion impossible!", "This parameter is referenced by " + dependentParams);
-            return;
-        }
-
-        Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Parameter deletion", "Are you sure you want to delete this parameter?");
-        if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
-            modelNode.getParameters().remove(parameterModel);
-            parameterLinkRegistry.removeSink(parameterModel);
-            statusLogger.info("deleted parameter: " + parameterModel.getName());
-            actionLogger.log(ActionLogger.ActionType.PARAMETER_REMOVE, parameterModel.getNodePath());
-            updateParameters(modelNode, editableProperty.get());
-            project.markStudyModified();
-        }
     }
 
     public void openParameterHistoryDialog() {

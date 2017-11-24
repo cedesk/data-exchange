@@ -78,7 +78,7 @@
                         <Insets right="8.0"/>
                     </GridPane.margin>
                 </Text>
-                <TextField fx:id="repositorySchemaNameTextField" editable="false" GridPane.columnIndex="1"
+                <TextField fx:id="repositorySchemaNameTextField" GridPane.columnIndex="1"
                            GridPane.rowIndex="1"/>
             </GridPane>
         </TitledPane>

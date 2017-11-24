@@ -104,34 +104,15 @@ public class NodeDifference extends ModelDifference {
 
         switch (changeType) {
             case ADD: { // add node to local parent
-                Objects.requireNonNull(parent);
-                CompositeModelNode compositeParent = (CompositeModelNode) parent;
-                if (compositeParent.getSubNodesMap().containsKey(node1.getName())) {
-                    logger.error("unable to add parameter, because another parameter of same name is already there");
-                } else {
-                    compositeParent.addSubNode(node1);
-                }
-                break;
-            }
-            case REMOVE: { // remove node from local parent
-                Objects.requireNonNull(parent);
-                final String uuid = node1.getUuid();
-                final List<ModelNode> siblingNodes = ((CompositeModelNode) parent).getSubNodes();
-                // TODO: block changes that make the model inconsistent (links to this parameter, ...)
-                boolean removed = siblingNodes.removeIf(mn -> mn.getUuid().equals(uuid));
-                if (!removed) {
-                    logger.warn("node to remove not present: " + node1.getNodePath());
-                } else {
-                    // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
-                    ((CompositeModelNode) parent).setSubNodes(new LinkedList<>(siblingNodes));
-                }
+                this.addNodeToParent(parent, node1);
                 break;
             }
             case MODIFY: { // copy remote over local
-                Objects.requireNonNull(node1);
-                Objects.requireNonNull(node2);
-                node1.setLastModification(node2.getLastModification());
-                node1.setName(node2.getName());
+                this.copyNodeFields(node1, node2);
+                break;
+            }
+            case REMOVE: { // remove node from local parent
+                this.removeNodeFromParent(parent, node1);
                 break;
             }
             default: {
@@ -147,36 +128,53 @@ public class NodeDifference extends ModelDifference {
             throw new IllegalStateException("non-local difference can not be reverted");
 
         switch (changeType) {
-            case MODIFY: { // copy remote over local
-                Objects.requireNonNull(node1);
-                Objects.requireNonNull(node2);
-                node1.setLastModification(node2.getLastModification());
-                node1.setName(node2.getName());
+            case ADD: { // remove local again
+                this.removeNodeFromParent(parent, node1);
                 break;
             }
-            case ADD: { // remove local again
-                Objects.requireNonNull(parent);
-                String uuid = node1.getUuid();
-                List<ModelNode> siblingNodes = ((CompositeModelNode) parent).getSubNodes();
-                // TODO: block changes that make the model inconsistent (links to this parameter, ...)
-                boolean removed = siblingNodes.removeIf(mn -> mn.getUuid().equals(uuid));
-                if (!removed) {
-                    logger.warn("node to remove not present: " + node1.getNodePath());
-                } else {
-                    // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
-                    ((CompositeModelNode) parent).setSubNodes(new LinkedList<>(siblingNodes));
-                }
+            case MODIFY: { // copy remote over local
+                this.copyNodeFields(node1, node2);
                 break;
             }
             case REMOVE: { // re-add local again
-                Objects.requireNonNull(parent);
-                CompositeModelNode compositeParent = (CompositeModelNode) parent;
-                if (compositeParent.getSubNodesMap().containsKey(node1.getName())) {
-                    logger.error("unable to re-add parameter, because another parameter of same name is already there");
-                } else {
-                    compositeParent.addSubNode(node1);
-                }
+                this.addNodeToParent(parent, node1);
+                break;
             }
+        }
+    }
+
+    private void addNodeToParent(ModelNode parent, ModelNode node) {
+        Objects.requireNonNull(parent);
+        CompositeModelNode compositeParent = (CompositeModelNode) parent;
+        if (compositeParent.getSubNodesMap().containsKey(node.getName())) {
+            logger.error("Unable to add parameter, because another parameter of same name is already there");
+        } else {
+            compositeParent.addSubNode(node);
+        }
+    }
+
+    private void copyNodeFields(ModelNode node1, ModelNode node2) {
+        Objects.requireNonNull(node1);
+        Objects.requireNonNull(node2);
+        node1.setLastModification(node2.getLastModification());
+        node1.setName(node2.getName());
+        node1.setPosition(node2.getPosition());
+        node1.setDescription(node2.getDescription());
+        node1.setEmbodiment(node2.getEmbodiment());
+        node1.setCompletion(node2.isCompletion());
+    }
+
+    private void removeNodeFromParent(ModelNode parent, ModelNode node) {
+        Objects.requireNonNull(parent);
+        String uuid = node.getUuid();
+        List<ModelNode> siblingNodes = ((CompositeModelNode) parent).getSubNodes();
+        // TODO: block changes that make the model inconsistent (links to this parameter, ...)
+        boolean removed = siblingNodes.removeIf(mn -> mn.getUuid().equals(uuid));
+        if (!removed) {
+            logger.warn("Node to remove not present: " + node.getNodePath());
+        } else {
+            // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
+            ((CompositeModelNode) parent).setSubNodes(new LinkedList<>(siblingNodes));
         }
     }
 

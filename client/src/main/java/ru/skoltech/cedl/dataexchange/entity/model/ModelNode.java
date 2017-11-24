@@ -52,7 +52,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntit
     private int revision;
 
     @XmlTransient
-    protected ModelNode parent;
+    protected CompositeModelNode<? extends ModelNode> parent;
 
     @XmlAttribute
     protected String name;
@@ -60,6 +60,18 @@ public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntit
     @XmlID
     @XmlAttribute
     protected String uuid = UUID.randomUUID().toString();
+
+    @XmlAttribute
+    private int position;
+
+    @XmlAttribute
+    private String description;
+
+    @XmlAttribute
+    private String embodiment;
+
+    @XmlAttribute
+    private boolean completion;
 
     @XmlElementWrapper(name = "parameters")
     @XmlElement(name = "parameter")
@@ -153,11 +165,11 @@ public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntit
     }
 
     @Transient
-    public ModelNode getParent() {
+    public CompositeModelNode<? extends ModelNode> getParent() {
         return parent;
     }
 
-    public void setParent(ModelNode parent) {
+    public void setParent(CompositeModelNode<? extends ModelNode> parent) {
         this.parent = parent;
     }
 
@@ -169,15 +181,49 @@ public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntit
         this.uuid = uuid;
     }
 
-    @Transient
-    public boolean isLeafNode() {
-        return true;
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getEmbodiment() {
+        return embodiment;
+    }
+
+    public void setEmbodiment(String embodiment) {
+        this.embodiment = embodiment;
+    }
+
+    public boolean isCompletion() {
+        return completion;
+    }
+
+    public void setCompletion(boolean completion) {
+        this.completion = completion;
     }
 
     @Transient
     public boolean isRootNode() {
         return parent == null;
     }
+
+    @Transient
+    public abstract boolean isLeafNode();
+
+    public abstract int possibleDepth();
+
+    public abstract int actualDepth();
 
     public void addExternalModel(ExternalModel externalModel) {
         externalModels.add(externalModel);
@@ -190,14 +236,18 @@ public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntit
     }
 
     /**
-     * For natural ordering by name.
-     *
-     * @param other
-     * @return <code>name.compareTo(other.name)</code>
+     * Order according to position fields.
+     * For the nodes with the same position natural order by the name field is applied.
+     * <p/>
+     * @param other instance to compare with
+     * @return position in relation to the comparable instance
      */
     @Override
     public int compareTo(ModelNode other) {
-        return name.compareTo(other.name);
+        if (position == other.position) {
+            return name.compareTo(other.name);
+        }
+        return Integer.compare(position, other.position);
     }
 
     @Override

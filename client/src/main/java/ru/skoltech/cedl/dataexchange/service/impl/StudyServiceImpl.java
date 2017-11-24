@@ -148,6 +148,8 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public void deleteStudyByName(String studyName) {
         Study study = studyRepository.findByName(studyName);
+        study.getUserRoleManagement().getDisciplineSubSystems().clear();
+        study = studyRepository.saveAndFlush(study);
         studyRepository.delete(study);
     }
 
