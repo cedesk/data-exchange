@@ -214,14 +214,16 @@ public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntit
     }
 
     @Transient
-    public boolean isLeafNode() {
-        return true;
-    }
-
-    @Transient
     public boolean isRootNode() {
         return parent == null;
     }
+
+    @Transient
+    public abstract boolean isLeafNode();
+
+    public abstract int possibleDepth();
+
+    public abstract int actualDepth();
 
     public void addExternalModel(ExternalModel externalModel) {
         externalModels.add(externalModel);

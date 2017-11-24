@@ -53,6 +53,11 @@ public class SubSystemModel extends CompositeModelNode<ElementModel> {
     }
 
     @Override
+    public int possibleDepth() {
+        return 2;
+    }
+
+    @Override
     @OneToMany(targetEntity = ElementModel.class, mappedBy = "parent", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @Fetch(FetchMode.SELECT)
     public List<ElementModel> getSubNodes() {

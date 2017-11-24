@@ -33,6 +33,26 @@ import javax.transaction.Transactional;
 public interface ModelNodeService {
 
     /**
+     * Create a new {@link ModelNode} and add to the passed parent with specified name.
+     * <p/>
+     *
+     * @param parentNode parent node to add a new model node
+     * @param name       a name of new {@link ModelNode}
+     * @return an instance of added {@link ModelNode}
+     */
+    ModelNode createModelNode(CompositeModelNode parentNode, String name);
+
+    /**
+     * Create a new instance of extension of {@link ModelNode} specified by class name parameter .
+     * <p/>
+     *
+     * @param name  a name of new {@link ModelNode}
+     * @param clazz a type of the new instance
+     * @return an instance of added {@link ModelNode}
+     */
+    <T extends ModelNode> T createModelNode(String name, Class<T> clazz);
+
+    /**
      * Create an exact clone of the {@link ModelNode} instance along with all sub {@link ModelNode}s,
      * {@link ExternalModel}s and {@link ParameterModel}s.
      * <p/>
@@ -53,26 +73,6 @@ public interface ModelNodeService {
      * @return a new instance of copied {@link ModelNode}
      */
     ModelNode cloneModelNode(CompositeModelNode parentNode, String name, ModelNode modelNode);
-
-    /**
-     * Create a new {@link ModelNode} and add to the passed parent with specified name.
-     * <p/>
-     *
-     * @param parentNode parent node to add a new model node
-     * @param name       a name of new {@link ModelNode}
-     * @return an instance of added {@link ModelNode}
-     */
-    ModelNode createModelNode(CompositeModelNode parentNode, String name);
-
-    /**
-     * Create a new instance of extension of {@link ModelNode} specified by class name parameter .
-     * <p/>
-     *
-     * @param name  a name of new {@link ModelNode}
-     * @param clazz a type of the new instance
-     * @return an instance of added {@link ModelNode}
-     */
-    <T extends ModelNode> T createModelNode(String name, Class<T> clazz);
 
     /**
      * Delete model node from the database.

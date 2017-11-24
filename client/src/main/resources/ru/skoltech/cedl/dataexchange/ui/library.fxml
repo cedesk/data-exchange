@@ -57,14 +57,6 @@
                 </graphic>
             </Button>
             <Separator orientation="VERTICAL"/>
-            <Button fx:id="insertComponentButton" minWidth="28" mnemonicParsing="false">
-                <tooltip>
-                    <Tooltip text="Insert Component into currently selected Node"/>
-                </tooltip>
-                <graphic>
-                    <Glyph fontFamily="FontAwesome" icon="DOWNLOAD"/>
-                </graphic>
-            </Button>
             <Pane HBox.hgrow="ALWAYS"/>
             <Button onAction="#close" mnemonicParsing="false" text="Close"/>
         </ToolBar>

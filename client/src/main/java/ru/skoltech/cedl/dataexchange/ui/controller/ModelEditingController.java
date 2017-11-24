@@ -30,6 +30,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
+import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.Component;
@@ -276,26 +277,17 @@ public class ModelEditingController implements Initializable {
             }
         });
 
-        BooleanBinding insertButtonDisabled = Bindings.createBooleanBinding(() -> {
-            if (libraryController.selectedItemProperty().isNull().get()) {
-                return true;
-            }
-            if (structureTree.getSelectionModel().getSelectedItem() == null) {
-                return true;
-            }
-            ModelNode modelNode = structureTree.getSelectionModel().getSelectedItem().getValue();
-            Component component = libraryController.selectedItemProperty().get();
-            ModelNode extractedModelNode = component.getModelNode();
-            if (modelNode instanceof SystemModel && extractedModelNode instanceof SubSystemModel) {
-                return false;
-            } else if (modelNode instanceof SubSystemModel && extractedModelNode instanceof ElementModel) {
-                return false;
-            } else if (modelNode instanceof ElementModel && extractedModelNode instanceof InstrumentModel) {
-                return false;
-            }
-            return true;
-        }, libraryController.selectedItemProperty(), structureTree.getSelectionModel().selectedItemProperty());
-        libraryController.setInsertComponentHandler(insertButtonDisabled, event -> this.extractComponent());
+        Button insertComponentButton = new Button();
+        insertComponentButton.setMinWidth(28);
+        insertComponentButton.setMnemonicParsing(false);
+        insertComponentButton.setTooltip(new Tooltip("Insert Component into currently selected Node"));
+        insertComponentButton.setGraphic(new Glyph("FontAwesome", "DOWNLOAD"));
+        insertComponentButton.disableProperty().bind(Bindings.createBooleanBinding(() ->
+                        libraryController.selectedItemProperty().isNull().get()
+                                || structureTree.getSelectionModel().getSelectedItem() == null,
+                libraryController.selectedItemProperty(), structureTree.getSelectionModel().selectedItemProperty()));
+        insertComponentButton.setOnAction(event -> this.extractComponent());
+        libraryController.addToolbarButton(insertComponentButton);
         libraryController.setCloseEventHandler(aVoid -> libraryDisplayProperty.setValue(false));
     }
 
@@ -608,9 +600,14 @@ public class ModelEditingController implements Initializable {
 
     private void extractComponent() {
         TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        ModelNode modelNode = selectedItem.getValue();
         Component component = libraryController.selectedItemProperty().getValue();
-        ModelNode extractedModelNode = component.getModelNode();
-        this.copyNode(selectedItem, extractedModelNode);
+        ModelNode insertedModelNode = component.getModelNode();
+        if (insertedModelNode.actualDepth() > modelNode.possibleDepth()) {
+            Dialogues.showError("Incompatible depth of inserted node", "Inserted node contains sub nodes of incompatible depth!");
+            return;
+        }
+        this.copyNode(selectedItem, insertedModelNode);
     }
 
     private void copyNode(TreeItem<ModelNode> parentItem, ModelNode modelNode) {

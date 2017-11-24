@@ -177,11 +177,6 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
         modelNodeService.cloneModelNode(systemModel, "name", null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testCloneModelNodeFail4() {
-        modelNodeService.cloneModelNode(systemModel, "name", systemModel);
-    }
-
     @Test
     public void testCreateModelNode1() {
         SystemModel systemModel = new SystemModel("systemModel");

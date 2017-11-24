@@ -18,10 +18,7 @@ package ru.skoltech.cedl.dataexchange.entity.model;
 
 import org.hibernate.envers.Audited;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 /**
  * Created by D.Knoll on 12.03.2015.
@@ -42,5 +39,21 @@ public class InstrumentModel extends ModelNode {
     @ManyToOne(targetEntity = ElementModel.class)
     public ElementModel getParent() {
         return (ElementModel) super.getParent();
+    }
+
+    @Transient
+    @Override
+    public boolean isLeafNode() {
+        return true;
+    }
+
+    @Override
+    public int possibleDepth() {
+        return 0;
+    }
+
+    @Override
+    public int actualDepth() {
+        return 0;
     }
 }
