@@ -20,6 +20,7 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -53,6 +54,8 @@ public class ParameterSelectorController implements Initializable, Displayable, 
     private TextField unitText;
     @FXML
     private TextArea descriptionText;
+    @FXML
+    private Button applyButton;
 
     private Stage ownerStage;
     private EventHandler<Event> applyEventHandler;
@@ -93,6 +96,7 @@ public class ParameterSelectorController implements Initializable, Displayable, 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        applyButton.disableProperty().bind(parameterChoiceBox.getSelectionModel().selectedItemProperty().isNull());
         // SUBSYSTEM CHOICE
         subsystemChoiceBox.setConverter(new StringConverter<ModelNode>() {
             @Override
