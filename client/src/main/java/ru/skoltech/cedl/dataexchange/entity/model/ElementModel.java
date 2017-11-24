@@ -46,6 +46,11 @@ public class ElementModel extends CompositeModelNode<InstrumentModel> {
     }
 
     @Override
+    public int possibleDepth() {
+        return 1;
+    }
+
+    @Override
     @OneToMany(targetEntity = InstrumentModel.class, mappedBy = "parent", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @Fetch(FetchMode.SELECT)
     public List<InstrumentModel> getSubNodes() {

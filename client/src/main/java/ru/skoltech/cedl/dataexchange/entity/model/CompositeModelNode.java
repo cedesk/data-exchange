@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @Access(AccessType.PROPERTY)
 @Audited
 @XmlAccessorType(XmlAccessType.FIELD)
-public class CompositeModelNode<S extends ModelNode> extends ModelNode {
+public abstract class CompositeModelNode<S extends ModelNode> extends ModelNode {
 
     @XmlElementWrapper(name = "subNodes")
     @XmlElement(name = "subNode")
@@ -71,8 +71,14 @@ public class CompositeModelNode<S extends ModelNode> extends ModelNode {
 
     //--------------
     @Transient
+    @Override
     public boolean isLeafNode() {
         return subNodes.isEmpty();
+    }
+
+    @Override
+    public int actualDepth() {
+        return subNodes.stream().mapToInt(ModelNode::actualDepth).max().orElse(0) + 1;
     }
 
     public void addSubNode(S subnode) {

@@ -27,7 +27,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
@@ -90,7 +90,6 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private static final Logger logger = Logger.getLogger(MainController.class);
 
-    private final static String FLASH_ICON_URL = "/icons/flash-orange.png";
     @FXML
     private MenuItem exportMenu;
     @FXML
@@ -99,6 +98,8 @@ public class MainController implements Initializable, Displayable, Closeable {
     private MenuItem usersMenu;
     @FXML
     private MenuItem usersAndDisciplinesMenu;
+    @FXML
+    public CheckMenuItem libraryViewMenu;
     @FXML
     private Button newButton;
     @FXML
@@ -109,6 +110,8 @@ public class MainController implements Initializable, Displayable, Closeable {
     private MenuItem tagMenu;
     @FXML
     private Button diffButton;
+    @FXML
+    private ToggleButton libraryViewButton;
     @FXML
     private Label studyNameLabel;
     @FXML
@@ -137,6 +140,8 @@ public class MainController implements Initializable, Displayable, Closeable {
     private StatusLogger statusLogger;
 
     private Stage ownerStage;
+    private Stage dsmStage;
+    private Stage dependencyStage;
 
     private StringProperty tagProperty = new SimpleStringProperty("");
     private BooleanBinding repositoryNewer;
@@ -218,6 +223,9 @@ public class MainController implements Initializable, Displayable, Closeable {
         tagLabel.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("--").otherwise(tagProperty));
         tagMenu.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("_Tag current revision...").otherwise("_Untag current revision"));
 
+        libraryViewMenu.selectedProperty().bindBidirectional(modelEditingController.libraryDisplayProperty());
+        libraryViewButton.selectedProperty().bindBidirectional(modelEditingController.libraryDisplayProperty());
+
         repositoryNewer = Bindings.createBooleanBinding(() -> differenceHandler.modelDifferences().stream()
                 .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2)
                 .count() > 0, differenceHandler.modelDifferences());
@@ -244,6 +252,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     @Override
     public void display(Stage stage, WindowEvent windowEvent) {
         this.ownerStage = stage;
+        this.modelEditingController.ownerStage(ownerStage);
     }
 
     private void checkRepository() {
@@ -568,10 +577,14 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openDependencyView() {
-        ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
-        dependencyViewBuilder.resizable(false);
-        dependencyViewBuilder.ownerWindow(ownerStage);
-        dependencyViewBuilder.show();
+        if (dependencyStage == null || !dependencyStage.isShowing()) {
+            ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
+            dependencyViewBuilder.resizable(false);
+            dependencyViewBuilder.ownerWindow(this.ownerStage);
+            dependencyViewBuilder.show();
+        } else {
+            dependencyStage.toFront();
+        }
     }
 
     public void openStudyRevisionsView() {
@@ -603,9 +616,13 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openDsmView() {
-        ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_VIEW);
-        dsmViewBuilder.ownerWindow(ownerStage);
-        dsmViewBuilder.show();
+        if (dsmStage == null || !dsmStage.isShowing()) {
+            ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_VIEW);
+            dsmStage = dsmViewBuilder.createStage();
+            dsmStage.show();
+        } else {
+            dsmStage.toFront();
+        }
     }
 
     public void openGuideDialog() {

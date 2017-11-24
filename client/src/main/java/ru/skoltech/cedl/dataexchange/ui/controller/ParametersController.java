@@ -31,7 +31,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -70,7 +69,7 @@ import java.util.stream.Collectors;
  * <p>
  * Created by Nikolay Groshkov on 08-Sep-17.
  */
-public class ParametersController implements Initializable, Displayable {
+public class ParametersController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ParametersController.class);
 
@@ -178,8 +177,7 @@ public class ParametersController implements Initializable, Displayable {
         parameterTable.getSelectionModel().selectedItemProperty().removeListener(listener);
     }
 
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
+    public void ownerStage(Stage stage) {
         this.ownerStage = stage;
     }
 

@@ -16,14 +16,17 @@
 
 package ru.skoltech.cedl.dataexchange.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.model.*;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
+import ru.skoltech.cedl.dataexchange.repository.revision.ModelNodeRepository;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.ModelNodeService;
 import ru.skoltech.cedl.dataexchange.service.ParameterModelService;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -33,8 +36,14 @@ import java.util.Objects;
  */
 public class ModelNodeServiceImpl implements ModelNodeService {
 
+    private final ModelNodeRepository modelNodeRepository;
     private ExternalModelService externalModelService;
     private ParameterModelService parameterModelService;
+
+    @Autowired
+    public ModelNodeServiceImpl(ModelNodeRepository modelNodeRepository) {
+        this.modelNodeRepository = modelNodeRepository;
+    }
 
     public void setExternalModelService(ExternalModelService externalModelService) {
         this.externalModelService = externalModelService;
@@ -45,7 +54,7 @@ public class ModelNodeServiceImpl implements ModelNodeService {
     }
 
     @Override
-    public ModelNode addSubNode(CompositeModelNode parentNode, String name) {
+    public ModelNode createModelNode(CompositeModelNode parentNode, String name) {
         Objects.requireNonNull(parentNode);
         Objects.requireNonNull(name);
 
@@ -71,19 +80,29 @@ public class ModelNodeServiceImpl implements ModelNodeService {
     }
 
     @Override
-    public ModelNode cloneSubNode(CompositeModelNode parentNode, String name, ModelNode modelNode) {
-        Objects.requireNonNull(parentNode);
+    @SuppressWarnings("unchecked")
+    public <T extends ModelNode> T createModelNode(String name, Class<T> clazz) {
+        Objects.requireNonNull(name);
+
+        if (clazz == SystemModel.class) {
+            return (T) new SystemModel(name);
+        } else if (clazz == SubSystemModel.class) {
+            return (T) new SubSystemModel(name);
+        } else if (clazz == ElementModel.class) {
+            return (T) new ElementModel(name);
+        } else if (clazz == InstrumentModel.class) {
+            return (T) new InstrumentModel(name);
+        } else {
+            throw new AssertionError("Must never be thrown.");
+        }
+    }
+
+    @Override
+    public ModelNode cloneModelNode(String name, ModelNode modelNode) {
         Objects.requireNonNull(name);
         Objects.requireNonNull(modelNode);
 
-        if (modelNode instanceof SystemModel) {
-            throw new IllegalArgumentException("Cannot clone SystemModel. " +
-                    "Either CompositeModelNode or ElementModel can be cloned.");
-        }
-
-        // clone ModelNode
-        ModelNode newModelNode = this.addSubNode(parentNode, name);
-        assert newModelNode.getClass() == modelNode.getClass();
+        ModelNode newModelNode = this.createModelNode(name, modelNode.getClass());
         newModelNode.setPosition(modelNode.getPosition());
         newModelNode.setDescription(modelNode.getDescription());
         newModelNode.setEmbodiment(modelNode.getEmbodiment());
@@ -94,11 +113,11 @@ public class ModelNodeServiceImpl implements ModelNodeService {
             if (modelNode instanceof SubSystemModel) {
                 SubSystemModel subSystemModel = (SubSystemModel) modelNode;
                 subSystemModel.getSubNodes()
-                        .forEach(elementModel -> this.cloneSubNode(newCompositeModelNode, elementModel.getName(), elementModel));
+                        .forEach(elementModel -> this.cloneModelNode(newCompositeModelNode, elementModel.getName(), elementModel));
             } else if (modelNode instanceof ElementModel) {
                 ElementModel elementModel = (ElementModel) modelNode;
                 elementModel.getSubNodes()
-                        .forEach(instrumentModel -> this.cloneSubNode(newCompositeModelNode, instrumentModel.getName(), instrumentModel));
+                        .forEach(instrumentModel -> this.cloneModelNode(newCompositeModelNode, instrumentModel.getName(), instrumentModel));
             }
         }
 
@@ -112,7 +131,7 @@ public class ModelNodeServiceImpl implements ModelNodeService {
         // clone ParameterModels
         modelNode.getParameters()
                 .forEach(parameterModel -> {
-                    ParameterModel newParameterModel = parameterModelService.cloneParameterModel(parameterModel.getName(), parameterModel, modelNode);
+                    ParameterModel newParameterModel = parameterModelService.cloneParameterModel(parameterModel.getName(), parameterModel, newModelNode);
                     newModelNode.addParameter(newParameterModel);
                 });
 
@@ -120,7 +139,51 @@ public class ModelNodeServiceImpl implements ModelNodeService {
     }
 
     @Override
-    public void deleteNode(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement) {
+    public ModelNode cloneModelNode(CompositeModelNode parentNode, String name, ModelNode modelNode) {
+        Objects.requireNonNull(parentNode);
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(modelNode);
+
+        ModelNode newModelNode = this.createModelNode(parentNode, name);
+        newModelNode.setPosition(modelNode.getPosition());
+        newModelNode.setDescription(modelNode.getDescription());
+        newModelNode.setEmbodiment(modelNode.getEmbodiment());
+        newModelNode.setCompletion(modelNode.isCompletion());
+
+        // clone sub nodes
+        if (modelNode instanceof CompositeModelNode) {
+            if (newModelNode instanceof CompositeModelNode) {
+                CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
+                @SuppressWarnings("unchecked")
+                List<ModelNode> subNodes = compositeModelNode.getSubNodes();
+                subNodes.forEach(mn -> this.cloneModelNode((CompositeModelNode) newModelNode, mn.getName(), mn));
+            }
+        }
+
+        // clone external models
+        modelNode.getExternalModels()
+                .forEach(externalModel -> {
+                    ExternalModel newExternalModel = externalModelService.cloneExternalModel(externalModel, newModelNode);
+                    newModelNode.addExternalModel(newExternalModel);
+                });
+
+        // clone parameter models
+        modelNode.getParameters()
+                .forEach(parameterModel -> {
+                    ParameterModel newParameterModel = parameterModelService.cloneParameterModel(parameterModel.getName(), parameterModel, newModelNode);
+                    newModelNode.addParameter(newParameterModel);
+                });
+
+        return newModelNode;
+    }
+
+    @Override
+    public void deleteModelNode(ModelNode deleteNode) {
+        modelNodeRepository.delete(deleteNode.getId());
+    }
+
+    @Override
+    public void deleteModelNodeFromParent(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement) {
         Objects.requireNonNull(parentNode);
         Objects.requireNonNull(deleteNode);
 
@@ -131,4 +194,10 @@ public class ModelNodeServiceImpl implements ModelNodeService {
         userRoleManagement.getDisciplineSubSystems()
                 .removeIf(disciplineSubSystem -> disciplineSubSystem.getSubSystem() == deleteNode);
     }
+
+    @Override
+    public <T extends ModelNode> T saveModelNode(T modelNode) {
+        return modelNodeRepository.saveAndFlush(modelNode);
+    }
+
 }

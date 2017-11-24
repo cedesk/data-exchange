@@ -84,7 +84,7 @@ public class UnitChooseController implements Initializable, Displayable, Applica
         unitListProperty.setValue(FXCollections.observableList(units));
         unitListProperty.bind(Bindings.createObjectBinding(() -> {
             List<Unit> filteredUnits = units.stream()
-                    .filter(unit -> unit.getName().toLowerCase().startsWith(filterTextField.getText().toLowerCase()))
+                    .filter(unit -> unit.getName().toLowerCase().contains(filterTextField.getText().toLowerCase()))
                     .collect(Collectors.toList());
             return FXCollections.observableList(filteredUnits);
         }, filterTextField.textProperty()));

@@ -97,7 +97,19 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
         parameterModel = systemModel.getParameters().get(0);
         parameterModel.setValueReference(valueReference);
         parameterModel.setExportReference(exportReference);
+        parameterModel.setImportModel(importExternalModel);
+        parameterModel.setExportModel(exportExternalModel);
         parameterModel.setCalculation(calculation);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCloneParameterModelFail1() {
+        parameterModelService.cloneParameterModel(null, new ParameterModel());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCloneParameterModelFail2() {
+        parameterModelService.cloneParameterModel("name", null);
     }
 
     @Test
@@ -111,21 +123,6 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testCloneParameterModelFail3() {
-        parameterModelService.cloneParameterModel(null, new ParameterModel(), systemModel);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testCloneParameterModelFail1() {
-        parameterModelService.cloneParameterModel(null, new ParameterModel());
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testCloneParameterModelFail2() {
-        parameterModelService.cloneParameterModel("name", null);
-    }
-
-    @Test(expected = NullPointerException.class)
     public void testCloneParameterModelFail4() {
         parameterModelService.cloneParameterModel("name", null, systemModel);
     }
@@ -133,6 +130,11 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
     @Test(expected = NullPointerException.class)
     public void testCloneParameterModelFail5() {
         parameterModelService.cloneParameterModel("name", new ParameterModel(), null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCloneParameterModelFail3() {
+        parameterModelService.cloneParameterModel(null, new ParameterModel(), systemModel);
     }
 
     @Test
@@ -167,7 +169,7 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
         assertEquals(importExternalModel, clonedParameterModel.getValueReference().getExternalModel());
         assertEquals(parameterModel.getValueLink(), clonedParameterModel.getValueLink());
         assertEquals(parameterModel.getCalculation(), clonedParameterModel.getCalculation());
-        assertEquals(parameterModel.getImportModel(), clonedParameterModel.getImportModel());
+        assertEquals(importExternalModel, clonedParameterModel.getImportModel());
         assertEquals(parameterModel.getImportField(), clonedParameterModel.getImportField());
         assertEquals(parameterModel.getIsReferenceValueOverridden(), clonedParameterModel.getIsReferenceValueOverridden());
         assertEquals(parameterModel.getIsExported(), clonedParameterModel.getIsExported());
@@ -175,7 +177,7 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
         assertEquals(exportReference, clonedParameterModel.getExportReference());
         assertEquals(parameterModel.getExportReference().getTarget(), clonedParameterModel.getExportReference().getTarget());
         assertEquals(exportExternalModel, clonedParameterModel.getExportReference().getExternalModel());
-        assertEquals(parameterModel.getExportModel(), clonedParameterModel.getExportModel());
+        assertEquals(exportExternalModel, clonedParameterModel.getExportModel());
         assertEquals(parameterModel.getExportField(), clonedParameterModel.getExportField());
         assertEquals(parameterModel.getDescription(), clonedParameterModel.getDescription());
         assertEquals(parameterModel.getLastModification(), clonedParameterModel.getLastModification());

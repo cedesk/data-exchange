@@ -77,7 +77,10 @@ public class ParameterModelServiceImpl implements ParameterModelService {
             calculation.setArguments(parameterModel.getCalculation().getArguments());
             newParameterModel.setCalculation(calculation);
         }
-        newParameterModel.setImportModel(parameterModel.getImportModel());
+        if (parameterModel.getImportModel() != null) {
+            ExternalModel externalModel = parentModelNode.getExternalModelMap().get(parameterModel.getImportModel().getName());
+            newParameterModel.setImportModel(externalModel);
+        }
         newParameterModel.setImportField(parameterModel.getImportField());
         newParameterModel.setIsReferenceValueOverridden(parameterModel.getIsReferenceValueOverridden());
         newParameterModel.setIsExported(parameterModel.getIsExported());
@@ -90,7 +93,10 @@ public class ParameterModelServiceImpl implements ParameterModelService {
             }
             newParameterModel.setExportReference(externalModelReference);
         }
-        newParameterModel.setExportModel(parameterModel.getExportModel());
+        if (parameterModel.getExportModel() != null) {
+            ExternalModel externalModel = parentModelNode.getExternalModelMap().get(parameterModel.getExportModel().getName());
+            newParameterModel.setExportModel(externalModel);
+        }
         newParameterModel.setExportField(parameterModel.getExportField());
         newParameterModel.setDescription(parameterModel.getDescription());
         newParameterModel.setLastModification(parameterModel.getLastModification());

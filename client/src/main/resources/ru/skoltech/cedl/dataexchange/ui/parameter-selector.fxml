@@ -64,7 +64,7 @@
     </center>
     <bottom>
         <ToolBar nodeOrientation="RIGHT_TO_LEFT">
-            <Button defaultButton="true" mnemonicParsing="false" onAction="#apply" text="Ok"/>
+            <Button fx:id="applyButton" defaultButton="true" mnemonicParsing="false" onAction="#apply" text="Ok"/>
             <Button cancelButton="true" mnemonicParsing="false" onAction="#close" text="Cancel"/>
         </ToolBar>
     </bottom>

@@ -37,7 +37,7 @@ public abstract class ContextAwareApplication extends Application {
 
     protected static void contextInit() {
         ApplicationSettingsInitializer.initialize();
-        PropertyConfigurator.configure(TradespaceExplorerApplication.class.getResource("/log4j/log4j.properties"));
+        PropertyConfigurator.configure(ContextAwareApplication.class.getResource("/log4j/log4j.properties"));
 
         ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);

@@ -26,20 +26,23 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.stage.Window;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
+import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
+import ru.skoltech.cedl.dataexchange.entity.Component;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.model.*;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.service.ComponentService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ModelNodeService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
-import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
@@ -61,6 +64,9 @@ import java.util.stream.Collectors;
 public class ModelEditingController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(ModelEditingController.class);
+
+    @FXML
+    private SplitPane modelEditingPane;
     @FXML
     private TextArea descriptionTextField;
     @FXML
@@ -69,8 +75,6 @@ public class ModelEditingController implements Initializable {
     private CheckBox completionCheckBox;
     @FXML
     private TitledPane parametersParentPane;
-    @FXML
-    private SplitPane viewPane;
     @FXML
     private TreeView<ModelNode> structureTree;
     @FXML
@@ -82,9 +86,11 @@ public class ModelEditingController implements Initializable {
     @FXML
     private Button copyNodeButton;
     @FXML
-    public Button moveNodeUpButton;
+    private Button moveNodeUpButton;
     @FXML
-    public Button moveNodeDownButton;
+    private Button moveNodeDownButton;
+    @FXML
+    private Button componentButton;
     @FXML
     private Label upstreamDependenciesLabel;
     @FXML
@@ -93,6 +99,8 @@ public class ModelEditingController implements Initializable {
     private TitledPane parameterEditorParentPane;
     @FXML
     private TitledPane externalModelParentPane;
+    @FXML
+    private BorderPane libraryParentPane;
 
     private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeCannotHaveChildren = new SimpleBooleanProperty(true);
@@ -100,15 +108,18 @@ public class ModelEditingController implements Initializable {
     private BooleanProperty selectedNodeParentIsEditable = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeIsFirst = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeIsLast = new SimpleBooleanProperty(true);
+    private BooleanProperty libraryDisplayProperty = new SimpleBooleanProperty(false);
 
+    private ExternalModelEditorController externalModelEditorController;
     private ParametersController parametersController;
     private ParameterEditorController parameterEditorController;
-    private ExternalModelEditorController externalModelEditorController;
+    private LibraryController libraryController;
 
     private Project project;
     private DifferenceHandler differenceHandler;
     private ParameterLinkRegistry parameterLinkRegistry;
     private ModelNodeService modelNodeService;
+    private ComponentService componentService;
     private UserRoleManagementService userRoleManagementService;
     private GuiService guiService;
     private ActionLogger actionLogger;
@@ -118,159 +129,58 @@ public class ModelEditingController implements Initializable {
     private ChangeListener<String> embodimentChangeListener;
     private ChangeListener<Boolean> completionChangeListener;
 
-    private Window getAppWindow() {
-        return viewPane.getScene().getWindow();
-    }
-
-    private TreeItem<ModelNode> getSelectedTreeItem() {
-        return structureTree.getSelectionModel().getSelectedItem();
-    }
-
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
-    }
-
-    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
-        this.differenceHandler = differenceHandler;
-    }
+    private Stage ownerStage;
 
     public void setExternalModelEditorController(ExternalModelEditorController externalModelEditorController) {
         this.externalModelEditorController = externalModelEditorController;
-    }
-
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
-    }
-
-    public void setModelNodeService(ModelNodeService modelNodeService) {
-        this.modelNodeService = modelNodeService;
-    }
-
-    public void setParameterEditorController(ParameterEditorController parameterEditorController) {
-        this.parameterEditorController = parameterEditorController;
-    }
-
-    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
-        this.parameterLinkRegistry = parameterLinkRegistry;
     }
 
     public void setParametersController(ParametersController parametersController) {
         this.parametersController = parametersController;
     }
 
+    public void setParameterEditorController(ParameterEditorController parameterEditorController) {
+        this.parameterEditorController = parameterEditorController;
+    }
+
+    public void setLibraryController(LibraryController libraryController) {
+        this.libraryController = libraryController;
+    }
+
     public void setProject(Project project) {
         this.project = project;
     }
 
-    public void setStatusLogger(StatusLogger statusLogger) {
-        this.statusLogger = statusLogger;
+    public void setDifferenceHandler(DifferenceHandler differenceHandler) {
+        this.differenceHandler = differenceHandler;
+    }
+
+    public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
+        this.parameterLinkRegistry = parameterLinkRegistry;
+    }
+
+    public void setModelNodeService(ModelNodeService modelNodeService) {
+        this.modelNodeService = modelNodeService;
+    }
+
+    public void setComponentService(ComponentService componentService) {
+        this.componentService = componentService;
+    }
+
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
         this.userRoleManagementService = userRoleManagementService;
     }
 
-    @FXML
-    public void addNode() {
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        Objects.requireNonNull(selectedItem, "no item selected in tree view");
-
-        if (selectedItem.getValue() instanceof CompositeModelNode) {
-            CompositeModelNode node = (CompositeModelNode) selectedItem.getValue();
-            Optional<String> nodeNameChoice = Dialogues.inputModelNodeName("new-node");
-            if (nodeNameChoice.isPresent()) {
-                String subNodeName = nodeNameChoice.get();
-                if (!Identifiers.validateNodeName(subNodeName)) {
-                    Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
-                    return;
-                }
-                if (node.getSubNodesMap().containsKey(subNodeName)) {
-                    Dialogues.showError("Duplicate node name", "There is already a sub-node named like that!");
-                } else {
-                    ModelNode newNode = modelNodeService.addSubNode(node, subNodeName);
-                    project.markStudyModified();
-                    statusLogger.info("Node added: " + newNode.getNodePath());
-                    actionLogger.log(ActionLogger.ActionType.NODE_ADD, newNode.getNodePath());
-                    StructureTreeItem structureTreeItem = new StructureTreeItem(newNode);
-                    selectedItem.getChildren().add(structureTreeItem);
-                    selectedItem.setExpanded(true);
-                }
-            }
-        } else {
-            statusLogger.warn("The selected node may not have subnodes.");
-        }
+    public void setActionLogger(ActionLogger actionLogger) {
+        this.actionLogger = actionLogger;
     }
 
-    public void clearView() {
-        structureTree.setRoot(null);
-    }
-
-    @FXML
-    public void copyNode() {
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        Objects.requireNonNull(selectedItem, "no item selected in tree view");
-        if (selectedItem.getParent() == null) { // is ROOT
-            statusLogger.error("Node can not be deleted!");
-            return;
-        }
-        ModelNode copyNode = selectedItem.getValue();
-
-        Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(copyNode.getName() + "-copy");
-        if (nodeNameChoice.isPresent()) {
-            String nodeName = nodeNameChoice.get();
-            if (!Identifiers.validateNodeName(nodeName)) {
-                Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
-                return;
-            }
-
-            CompositeModelNode parent = copyNode.getParent();
-            if (parent.getSubNodesMap().containsKey(nodeName)) {
-                Dialogues.showError("Duplicate node name", "There is already a sub-node named like that!");
-                return;
-            }
-
-            ModelNode newModelNode = modelNodeService.cloneSubNode(parent, nodeName, copyNode);
-            project.markStudyModified();
-            statusLogger.info("Node copied: " + newModelNode.getNodePath());
-            actionLogger.log(ActionLogger.ActionType.NODE_ADD, newModelNode.getNodePath());
-
-            TreeItem<ModelNode> parentItem = selectedItem.getParent();
-            this.createStructureTreeItem(parentItem, newModelNode);
-        }
-    }
-
-    @FXML
-    public void deleteNode() {
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        Objects.requireNonNull(selectedItem, "no item selected in tree view");
-        if (selectedItem.getParent() == null) { // is ROOT
-            statusLogger.error("Node can not be deleted!");
-        } else {
-            ModelNode deleteNode = selectedItem.getValue();
-            List<ParameterModel> dependentParameters = new LinkedList<>();
-            for (ParameterModel parameterModel : deleteNode.getParameters()) {
-                if (parameterModel.getNature() == ParameterNature.OUTPUT) {
-                    dependentParameters.addAll(parameterLinkRegistry.getDependentParameters(parameterModel));
-                }
-            }
-            if (dependentParameters.size() > 0) {
-                String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
-                Dialogues.showWarning("Node deletion impossible!", "It's parameters are referenced by " + dependentParams);
-                return;
-            }
-
-            Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Node deletion", "Are you sure you want to delete this node?");
-            if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
-                TreeItem<ModelNode> parent = selectedItem.getParent();
-                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                UserRoleManagement userRoleManagement = project.getUserRoleManagement();
-                modelNodeService.deleteNode(parentNode, deleteNode, userRoleManagement);
-                project.markStudyModified();
-                statusLogger.info("Node deleted: " + deleteNode.getNodePath());
-                actionLogger.log(ActionLogger.ActionType.NODE_REMOVE, deleteNode.getNodePath());
-                parent.getChildren().remove(selectedItem);
-            }
-        }
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
     }
 
     @Override
@@ -283,6 +193,9 @@ public class ModelEditingController implements Initializable {
 
         Node externalModelEditorPane = guiService.createControl(Views.EXTERNAL_MODELS_EDITOR_VIEW);
         externalModelParentPane.setContent(externalModelEditorPane);
+
+        Node libraryPane = guiService.createControl(Views.LIBRARY_VIEW);
+        libraryParentPane.setCenter(libraryPane);
 
         project.getExternalModelUpdateConsumers().add(externalModel -> {
             this.parametersController.refresh();
@@ -318,6 +231,7 @@ public class ModelEditingController implements Initializable {
         renameNodeButton.disableProperty().bind(noSelectionOnStructureTreeView.or(selectedNodeIsRoot).or(structureNotEditable));
         deleteNodeButton.disableProperty().bind(noSelectionOnStructureTreeView.or(selectedNodeIsRoot).or(structureNotEditable));
         copyNodeButton.disableProperty().bind(noSelectionOnStructureTreeView.or(selectedNodeIsRoot).or(structureNotEditable));
+        componentButton.disableProperty().bind(noSelectionOnStructureTreeView.or(selectedNodeIsRoot).or(structureNotEditable));
         moveNodeUpButton.disableProperty().bind(noSelectionOnStructureTreeView.or(selectedNodeIsFirst).or(selectedNodeParentIsEditable.not()).or(structureNotEditable));
         moveNodeDownButton.disableProperty().bind(noSelectionOnStructureTreeView.or(selectedNodeIsLast).or(selectedNodeParentIsEditable.not()).or(structureNotEditable));
 
@@ -351,6 +265,143 @@ public class ModelEditingController implements Initializable {
                 this.updateParameterEditor(newValue));
         this.parameterEditorController.setVisible(false);
         this.parameterEditorController.setEditListener(parameterModel -> parametersController.refresh());
+
+        //LIBRARY PANE
+        libraryParentPane.visibleProperty().bind(libraryDisplayProperty);
+        modelEditingPane.getItems().remove(libraryParentPane);
+        libraryParentPane.visibleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                modelEditingPane.getItems().add(libraryParentPane);
+            } else {
+                modelEditingPane.getItems().remove(libraryParentPane);
+            }
+        });
+
+        Button insertComponentButton = new Button();
+        insertComponentButton.setMinWidth(28);
+        insertComponentButton.setMnemonicParsing(false);
+        insertComponentButton.setTooltip(new Tooltip("Insert Component into currently selected Node"));
+        insertComponentButton.setGraphic(new Glyph("FontAwesome", "DOWNLOAD"));
+        insertComponentButton.disableProperty().bind(Bindings.createBooleanBinding(() ->
+                        libraryController.selectedItemProperty().isNull().get()
+                                || structureTree.getSelectionModel().getSelectedItem() == null,
+                libraryController.selectedItemProperty(), structureTree.getSelectionModel().selectedItemProperty()));
+        insertComponentButton.setOnAction(event -> this.extractComponent());
+        libraryController.addToolbarButton(insertComponentButton);
+        libraryController.setCloseEventHandler(aVoid -> libraryDisplayProperty.setValue(false));
+    }
+
+    public void clearView() {
+        structureTree.setRoot(null);
+    }
+
+    public BooleanProperty libraryDisplayProperty() {
+        return libraryDisplayProperty;
+    }
+
+    private TreeItem<ModelNode> getSelectedTreeItem() {
+        return structureTree.getSelectionModel().getSelectedItem();
+    }
+
+    @FXML
+    public void addNode() {
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
+
+        if (selectedItem.getValue() instanceof CompositeModelNode) {
+            CompositeModelNode node = (CompositeModelNode) selectedItem.getValue();
+            Optional<String> nodeNameChoice = Dialogues.inputModelNodeName("new-node");
+            if (nodeNameChoice.isPresent()) {
+                String subNodeName = nodeNameChoice.get();
+                if (!Identifiers.validateNodeName(subNodeName)) {
+                    Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
+                    return;
+                }
+                if (node.getSubNodesMap().containsKey(subNodeName)) {
+                    Dialogues.showError("Duplicate node name", "There is already a sub-node named like that!");
+                } else {
+                    ModelNode newNode = modelNodeService.createModelNode(node, subNodeName);
+                    project.markStudyModified();
+                    statusLogger.info("Node added: " + newNode.getNodePath());
+                    actionLogger.log(ActionLogger.ActionType.NODE_ADD, newNode.getNodePath());
+                    StructureTreeItem structureTreeItem = new StructureTreeItem(newNode);
+                    selectedItem.getChildren().add(structureTreeItem);
+                    selectedItem.setExpanded(true);
+                }
+            }
+        } else {
+            statusLogger.warn("The selected node may not have subnodes.");
+        }
+    }
+
+    @FXML
+    public void copyNode() {
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
+        if (selectedItem.getParent() == null) { // is ROOT
+            statusLogger.error("Node can not be copied!");
+            return;
+        }
+        ModelNode copyNode = selectedItem.getValue();
+        this.copyNode(selectedItem.getParent(), copyNode);
+    }
+
+    @FXML
+    public void deleteNode() {
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
+        if (selectedItem.getParent() == null) { // is ROOT
+            statusLogger.error("Node can not be deleted!");
+        } else {
+            ModelNode deleteNode = selectedItem.getValue();
+            List<ParameterModel> dependentParameters = new LinkedList<>();
+            for (ParameterModel parameterModel : deleteNode.getParameters()) {
+                if (parameterModel.getNature() == ParameterNature.OUTPUT) {
+                    dependentParameters.addAll(parameterLinkRegistry.getDependentParameters(parameterModel));
+                }
+            }
+            if (dependentParameters.size() > 0) {
+                String dependentParams = dependentParameters.stream().map(ParameterModel::getNodePath).collect(Collectors.joining(", "));
+                Dialogues.showWarning("Node deletion impossible!", "It's parameters are referenced by " + dependentParams);
+                return;
+            }
+
+            Optional<ButtonType> deleteChoice = Dialogues.chooseYesNo("Node deletion", "Are you sure you want to delete this node?");
+            if (deleteChoice.isPresent() && deleteChoice.get() == ButtonType.YES) {
+                TreeItem<ModelNode> parent = selectedItem.getParent();
+                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
+                UserRoleManagement userRoleManagement = project.getUserRoleManagement();
+                modelNodeService.deleteModelNodeFromParent(parentNode, deleteNode, userRoleManagement);
+                project.markStudyModified();
+                statusLogger.info("Node deleted: " + deleteNode.getNodePath());
+                actionLogger.log(ActionLogger.ActionType.NODE_REMOVE, deleteNode.getNodePath());
+                parent.getChildren().remove(selectedItem);
+            }
+        }
+    }
+
+    @FXML
+    public void createComponent() {
+        TextInputDialog dialog = new TextInputDialog("category");
+        dialog.setTitle("Create library component");
+        dialog.setHeaderText("Please insert the category of the component.");
+        dialog.setContentText("Category");
+        Optional<String> categoryChoice = dialog.showAndWait();
+        if (!categoryChoice.isPresent()) {
+            return;
+        }
+
+        String category = categoryChoice.get();
+        String author = project.getUser().getUserName();
+        ModelNode currentModelNode = this.getSelectedTreeItem().getValue();
+        componentService.createComponent(category, author, currentModelNode);
+        libraryController.refreshComponents();
+    }
+
+    public void ownerStage(Stage ownerStage) {
+        this.ownerStage = ownerStage;
+        this.parametersController.ownerStage(ownerStage);
+        this.parameterEditorController.ownerStage(ownerStage);
     }
 
     @FXML
@@ -391,57 +442,6 @@ public class ModelEditingController implements Initializable {
             this.updateParameters(item.getValue());
             this.updateExternalModelEditor(item.getValue());
         }
-
-    }
-
-    public void openDependencyView() {
-        ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
-        dependencyViewBuilder.resizable(false);
-        dependencyViewBuilder.ownerWindow(getAppWindow());
-        dependencyViewBuilder.show();
-    }
-
-    public void openDsmView() {
-        ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_VIEW);
-        dsmViewBuilder.ownerWindow(getAppWindow());
-        dsmViewBuilder.show();
-    }
-
-    @FXML
-    public void renameNode() {
-        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
-        Objects.requireNonNull(selectedItem, "no item selected in tree view");
-        if (selectedItem.getParent() == null) {
-            Dialogues.showError("System can not be renamed", "System can not be renamed!");
-            return;
-        }
-        ModelNode modelNode = selectedItem.getValue();
-        String oldNodeName = modelNode.getName();
-        Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(oldNodeName);
-        if (nodeNameChoice.isPresent()) {
-            String newNodeName = nodeNameChoice.get();
-            if (!Identifiers.validateNodeName(newNodeName)) {
-                Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
-                return;
-            }
-
-            if (newNodeName.equals(oldNodeName)) return;
-            TreeItem<ModelNode> parent = selectedItem.getParent();
-            if (parent != null) {
-                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                Map subNodesMap = parentNode.getSubNodesMap();
-                if (subNodesMap.containsKey(newNodeName)) {
-                    Dialogues.showError("Duplicate node name", "There is already a sibling node named like that!");
-                    return;
-                }
-            }
-            // model
-            modelNode.setName(newNodeName);
-            // view
-            selectedItem.valueProperty().setValue(modelNode);
-            project.markStudyModified();
-            this.updateView();
-        }
     }
 
     public void updateView() {
@@ -480,6 +480,43 @@ public class ModelEditingController implements Initializable {
         } else {
             structureTree.setRoot(null);
             parametersController.clearParameters();
+        }
+    }
+
+    @FXML
+    public void renameNode() {
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        Objects.requireNonNull(selectedItem, "no item selected in tree view");
+        if (selectedItem.getParent() == null) {
+            Dialogues.showError("System can not be renamed", "System can not be renamed!");
+            return;
+        }
+        ModelNode modelNode = selectedItem.getValue();
+        String oldNodeName = modelNode.getName();
+        Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(oldNodeName);
+        if (nodeNameChoice.isPresent()) {
+            String newNodeName = nodeNameChoice.get();
+            if (!Identifiers.validateNodeName(newNodeName)) {
+                Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
+                return;
+            }
+
+            if (newNodeName.equals(oldNodeName)) return;
+            TreeItem<ModelNode> parent = selectedItem.getParent();
+            if (parent != null) {
+                CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
+                Map subNodesMap = parentNode.getSubNodesMap();
+                if (subNodesMap.containsKey(newNodeName)) {
+                    Dialogues.showError("Duplicate node name", "There is already a sibling node named like that!");
+                    return;
+                }
+            }
+            // model
+            modelNode.setName(newNodeName);
+            // view
+            selectedItem.valueProperty().setValue(modelNode);
+            project.markStudyModified();
+            this.updateView();
         }
     }
 
@@ -529,11 +566,15 @@ public class ModelEditingController implements Initializable {
         String upstreamDependencies = parameterLinkRegistry.getUpstreamDependencies(modelNode);
         upstreamDependenciesLabel.setText(upstreamDependencies);
         if (upstreamDependencies.length() > 0)
-            upstreamDependenciesLabel.setTooltip(new Tooltip(upstreamDependencies));
+            upstreamDependenciesLabel.getTooltip().setText("Upstream: " + upstreamDependencies);
+        else
+            upstreamDependenciesLabel.getTooltip().setText("No upstream dependencies");
         String downstreamDependencies = parameterLinkRegistry.getDownstreamDependencies(modelNode);
         downstreamDependenciesLabel.setText(downstreamDependencies);
         if (downstreamDependencies.length() > 0)
-            downstreamDependenciesLabel.setTooltip(new Tooltip(downstreamDependencies));
+            downstreamDependenciesLabel.getTooltip().setText("Downstream:" + downstreamDependencies);
+        else
+            downstreamDependenciesLabel.getTooltip().setText("No downstream dependencies");
     }
 
     private void updateExternalModelEditor(ModelNode modelNode) {
@@ -559,6 +600,42 @@ public class ModelEditingController implements Initializable {
 
     private void updateParameters(ModelNode modelNode) {
         parametersController.updateParameters(modelNode, selectedNodeIsEditable.get());
+    }
+
+    private void extractComponent() {
+        TreeItem<ModelNode> selectedItem = getSelectedTreeItem();
+        ModelNode modelNode = selectedItem.getValue();
+        Component component = libraryController.selectedItemProperty().getValue();
+        ModelNode insertedModelNode = component.getModelNode();
+        if (insertedModelNode.actualDepth() > modelNode.possibleDepth()) {
+            Dialogues.showError("Incompatible depth of inserted node", "Inserted node contains sub nodes of incompatible depth!");
+            return;
+        }
+        this.copyNode(selectedItem, insertedModelNode);
+    }
+
+    private void copyNode(TreeItem<ModelNode> parentItem, ModelNode modelNode) {
+        Optional<String> nodeNameChoice = Dialogues.inputModelNodeName(modelNode.getName() + "-copy");
+        if (nodeNameChoice.isPresent()) {
+            String nodeName = nodeNameChoice.get();
+            if (!Identifiers.validateNodeName(nodeName)) {
+                Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
+                return;
+            }
+
+            CompositeModelNode parent = (CompositeModelNode) parentItem.getValue();
+            if (parent.getSubNodesMap().containsKey(nodeName)) {
+                Dialogues.showError("Duplicate node name", "There is already a sub-node named like that!");
+                return;
+            }
+
+            ModelNode newModelNode = modelNodeService.cloneModelNode(parent, nodeName, modelNode);
+            project.markStudyModified();
+            statusLogger.info("Node copied: " + newModelNode.getNodePath());
+            actionLogger.log(ActionLogger.ActionType.NODE_ADD, newModelNode.getNodePath());
+
+            this.createStructureTreeItem(parentItem, newModelNode);
+        }
     }
 
     private class TreeItemSelectionListener implements ChangeListener<TreeItem<ModelNode>> {

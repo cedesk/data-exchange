@@ -27,6 +27,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by Nikolay Groshkov on 14-Jun-17.
@@ -37,22 +38,27 @@ public class ModelTreeIteratorTest {
     private CompositeModelNode compositeModelNodeForExceptions;
     private Iterator<ModelNode> iterator;
 
+    @Before
+    @SuppressWarnings("unchecked")
+    public void prepare() {
+        compositeModelNode = mock(CompositeModelNode.class, CALLS_REAL_METHODS);
+        when(compositeModelNode.getUuid()).thenReturn("uuid");
+        when(compositeModelNode.getName()).thenReturn("name");
+        compositeModelNode.setSubNodes(new LinkedList());
+
+
+        compositeModelNodeForExceptions = mock(CompositeModelNode.class, CALLS_REAL_METHODS);
+        when(compositeModelNodeForExceptions.getUuid()).thenReturn("uuid");
+        when(compositeModelNodeForExceptions.getName()).thenReturn("name");
+        when(compositeModelNodeForExceptions.getSubNodes()).thenReturn(Collections.emptyList());
+    }
+
     @After
     public void cleanup() {
     }
 
-    @Before
-    public void prepare() {
-        compositeModelNode = new CompositeModelNode();
-        compositeModelNode.setUuid("uuid");
-        compositeModelNode.setName("name");
-
-        compositeModelNodeForExceptions = new CompositeModelNode();
-        compositeModelNodeForExceptions.setUuid("uuid");
-        compositeModelNodeForExceptions.setName("name");
-    }
-
     @Test
+    @SuppressWarnings("unchecked")
     public void testModelTreeIterator() {
         // test hasNext on an empty SubNodes (returns one element)
         iterator = compositeModelNode.treeIterator();
@@ -66,9 +72,11 @@ public class ModelTreeIteratorTest {
         ModelNode modelNode1 = new ElementModel();
         modelNode1.setName("modelNode1");
 
-        CompositeModelNode modelNode2 = new CompositeModelNode();
+
+        CompositeModelNode modelNode2 = mock(CompositeModelNode.class, CALLS_REAL_METHODS);
         modelNode2.setName("modelNode2");
         modelNode2.setUuid("uuid2");
+        modelNode2.setSubNodes(new LinkedList());
 
         ModelNode modelNode21 = new ElementModel();
         modelNode21.setName("modelNode21");
@@ -135,6 +143,7 @@ public class ModelTreeIteratorTest {
 
     // test next() on an empty collection (throws exception)
     @Test(expected = NoSuchElementException.class)
+    @SuppressWarnings("unchecked")
     public void testNoSuchElementException() {
         iterator = compositeModelNodeForExceptions.treeIterator();
         iterator.next();
@@ -143,6 +152,7 @@ public class ModelTreeIteratorTest {
 
     // test remove on that collection: UnsupportedOperationException
     @Test(expected = UnsupportedOperationException.class)
+    @SuppressWarnings("unchecked")
     public void testRemove() {
         iterator = compositeModelNodeForExceptions.treeIterator();
         iterator.remove();
