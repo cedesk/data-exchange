@@ -39,7 +39,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -104,15 +106,37 @@ public class DsmController implements Initializable {
     public void runDsmSequencing() {
         final SystemModel systemModel = project.getSystemModel();
         DependencyDSM dsm = parameterLinkRegistry.makeBinaryDSM(systemModel);
+        Map<String, Integer> originalNamePositionMappings = dsm.getNamePositionMappings();
+        logger.info("Original positions");
+        print(originalNamePositionMappings);
+
+        //Compute clustered  cost
+        ClusteredCost.ClusteredCostResult clusteredCostResult =
+                ClusteredCost.computeClusteredCost(dsm, 0.1d);
+        DesignStructureMatrix<Dependency> costResultDsm = clusteredCostResult.getDsm();
+
+        // updated ordering of nodes
+        Map<String, Integer> optimizedNamePositionMappings = costResultDsm.getNamePositionMappings();
+        logger.info("Optimized positions");
+        print(optimizedNamePositionMappings);
+        Comparator<ModelNode> assignedPositionComparator = (o1, o2) ->
+                Integer.compare(optimizedNamePositionMappings.get(o1.getName()), optimizedNamePositionMappings.get(o2.getName()));
+        systemModel.getSubNodes().sort(assignedPositionComparator);
+
+        DependencyModel dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
+        dsmView.setModel(dependencyModel);
+
+    }
+
+    private void print(Map<String, Integer> namePositionMappings) {
+        namePositionMappings.forEach((name, position) -> logger.info(name + ": " + position));
+    }
+
+    private void writeSvgFiles(DependencyDSM dsm, DesignStructureMatrix<Dependency> costResultDsm) {
         try {
             File oFile = new File(project.getProjectHome(), "dsm_orig.svg");
             SVGOutput.printDsm(dsm, new FileOutputStream(oFile));
             logger.info("wrote DSM to SVG file: " + oFile.getAbsolutePath());
-
-            //Compute clustered  cost
-            ClusteredCost.ClusteredCostResult clusteredCostResult =
-                    ClusteredCost.computeClusteredCost(dsm, 0.1d);
-            DesignStructureMatrix<Dependency> costResultDsm = clusteredCostResult.getDsm();
 
             oFile = new File(project.getProjectHome(), "dsm_optimized.svg");
             SVGOutput.printDsm(costResultDsm, new FileOutputStream(oFile));

@@ -20,8 +20,8 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Rotate;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 11.10.2017.
  */
-public class DsmView extends AnchorPane implements Initializable {
+public class DsmView extends ScrollPane implements Initializable {
 
     private static final Color ELEMENT_FILL_COLOR = Color.LIGHTGREY;
     private static final Color DEFAULT_CONNECTION_COLOR = Color.DARKGREY;
@@ -60,8 +60,8 @@ public class DsmView extends AnchorPane implements Initializable {
     }
 
     public void setHighlightedElements(List<String> elementNames) {
-        elementNames.forEach(elmentName -> {
-            Pair<DiagramElement, DiagramElement> diagramElements = elements.get(elmentName);
+        elementNames.forEach(elementName -> {
+            Pair<DiagramElement, DiagramElement> diagramElements = elements.get(elementName);
             if (diagramElements != null)
                 diagramElements.getLeft().setHighlighted(true);
             diagramElements.getRight().setHighlighted(true);
@@ -170,7 +170,7 @@ public class DsmView extends AnchorPane implements Initializable {
         ROW, COLUMN
     }
 
-    private static class DiagramElement extends Group {
+    private class DiagramElement extends Group {
 
         private boolean isHighlighted = false;
         private boolean isSelected = false;
@@ -208,6 +208,8 @@ public class DsmView extends AnchorPane implements Initializable {
             }
             setOnMouseClicked(event -> {
                 toggleSelection();
+                Collection<DiagramConnection> diagramConnections = DsmView.this.connections.get(name);
+                diagramConnections.forEach(dc -> dc.setSelected(isSelected));
             });
         }
 
@@ -247,10 +249,10 @@ public class DsmView extends AnchorPane implements Initializable {
 
     }
 
-    private static class DiagramConnection extends Group {
+    private class DiagramConnection extends Group {
 
-        static Comparator<DiagramConnection> TO_COMPARATOR = (o1, o2) -> Integer.compare(o2.toEl.getPosition(), o1.toEl.getPosition());
-        static Comparator<DiagramConnection> FROM_COMPARATOR = (o1, o2) -> Integer.compare(o2.fromEl.getPosition(), o1.fromEl.getPosition());
+        Comparator<DiagramConnection> TO_COMPARATOR = (o1, o2) -> Integer.compare(o2.toEl.getPosition(), o1.toEl.getPosition());
+        Comparator<DiagramConnection> FROM_COMPARATOR = (o1, o2) -> Integer.compare(o2.fromEl.getPosition(), o1.fromEl.getPosition());
 
         private DiagramElement fromEl;
         private DiagramElement toEl;
@@ -287,6 +289,8 @@ public class DsmView extends AnchorPane implements Initializable {
             setLayoutY(toEl.getLayoutY());
             setOnMouseClicked(event -> {
                 toggleSelection();
+                fromEl.setSelected(isSelected);
+                toEl.setSelected(isSelected);
             });
             Tooltip.install(caption, new Tooltip(description));
         }
