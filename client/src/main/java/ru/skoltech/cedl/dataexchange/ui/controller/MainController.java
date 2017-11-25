@@ -142,6 +142,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     private Stage ownerStage;
     private Stage dsmStage;
     private Stage dependencyStage;
+    private Stage guideStage;
 
     private StringProperty tagProperty = new SimpleStringProperty("");
     private BooleanBinding repositoryNewer;
@@ -579,9 +580,9 @@ public class MainController implements Initializable, Displayable, Closeable {
     public void openDependencyView() {
         if (dependencyStage == null || !dependencyStage.isShowing()) {
             ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
-            dependencyViewBuilder.resizable(false);
             dependencyViewBuilder.ownerWindow(this.ownerStage);
-            dependencyViewBuilder.show();
+            dependencyStage = dependencyViewBuilder.createStage();
+            dependencyStage.show();
         } else {
             dependencyStage.toFront();
         }
@@ -618,6 +619,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     public void openDsmView() {
         if (dsmStage == null || !dsmStage.isShowing()) {
             ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_VIEW);
+            dsmViewBuilder.ownerWindow(this.ownerStage);
             dsmStage = dsmViewBuilder.createStage();
             dsmStage.show();
         } else {
@@ -626,13 +628,18 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openGuideDialog() {
-        double x = ownerStage.getX() + ownerStage.getWidth();
-        double y = ownerStage.getY();
+        if (guideStage == null || !guideStage.isShowing()) {
+            double x = ownerStage.getX() + ownerStage.getWidth();
+            double y = ownerStage.getY();
 
-        ViewBuilder guideViewBuilder = guiService.createViewBuilder("Process Guide", Views.GUIDE_VIEW);
-        guideViewBuilder.ownerWindow(ownerStage);
-        guideViewBuilder.xy(x, y);
-        guideViewBuilder.show();
+            ViewBuilder guideViewBuilder = guiService.createViewBuilder("Process Guide", Views.GUIDE_VIEW);
+            guideViewBuilder.ownerWindow(ownerStage);
+            guideViewBuilder.xy(x, y);
+            guideStage = guideViewBuilder.createStage();
+            guideStage.show();
+        } else {
+            guideStage.toFront();
+        }
     }
 
     public void saveProject() {
