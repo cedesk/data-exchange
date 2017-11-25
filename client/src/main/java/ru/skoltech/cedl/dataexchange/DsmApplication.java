@@ -18,9 +18,13 @@ package ru.skoltech.cedl.dataexchange;
 
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.ui.Views;
+
+import java.util.List;
 
 /**
  * Created by d.knoll on 6/23/2017.
@@ -38,11 +42,22 @@ public class DsmApplication extends ContextAwareApplication {
     public void start(Stage primaryStage) throws Exception {
         loadContext();
         loadLastProject();
+        sortTree(project.getSystemModel());
 
         GuiService guiService = context.getBean(GuiService.class);
         ViewBuilder cedeskDsmViewer = guiService.createViewBuilder("CEDESK DSM Viewer", Views.DSM_VIEW);
         cedeskDsmViewer.primaryStage(primaryStage);
         cedeskDsmViewer.show();
+    }
+
+    private void sortTree(ModelNode modelNode) {
+        if (modelNode instanceof CompositeModelNode) {
+            List<ModelNode> modelNodes = ((CompositeModelNode) modelNode).getSubNodes();
+            for (Object subnode : modelNodes) {
+                sortTree((ModelNode) subnode);
+            }
+            modelNodes.sort(ModelNode::compareTo);
+        }
     }
 
 }
