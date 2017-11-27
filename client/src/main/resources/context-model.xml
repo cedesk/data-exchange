@@ -42,7 +42,7 @@
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="fileStorageService" ref="fileStorageService"/>
         <property name="studyService" ref="studyService"/>
-        <property name="userManagementService" ref="userManagementService"/>
+        <property name="userService" ref="userService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="unitManagementService" ref="unitManagementService"/>
         <property name="inboundFilesChannel" ref="inboundFilesChannel"/>

@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.service;
 
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
@@ -74,6 +75,15 @@ public interface FileStorageService {
     Calculation importCalculation(File inputFile) throws IOException;
 
     /**
+     * Import {@link Study} from the file.
+     *
+     * @param inputFile file which stores {@link Study} to import
+     * @return imported study
+     * @throws IOException if import is impossible
+     */
+    Study importStudy(File inputFile) throws IOException;
+
+    /**
      * Import {@link SystemModel} from the file.
      *
      * @param inputFile file which stores {@link SystemModel} to import
@@ -109,6 +119,14 @@ public interface FileStorageService {
      */
     void exportCalculation(Calculation calculation, File outputFile) throws IOException;
 
+    /**
+     * Export {@link Study} to the file.
+     *
+     * @param study      {@link Study} to export
+     * @param outputFile output file to export
+     * @throws IOException if export is impossible
+     */
+    void exportStudy(Study study, File outputFile) throws IOException;
     /**
      * Export {@link SystemModel} in the file.
      *

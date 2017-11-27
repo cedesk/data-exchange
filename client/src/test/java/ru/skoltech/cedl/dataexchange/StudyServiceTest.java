@@ -72,7 +72,7 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         String systemModelName = "createdSystemModelName";
         SystemModel systemModel = systemBuilder.build(systemModelName);
 
-        Study study = studyService.createStudy(systemModel, null);
+        Study study = studyService.createStudy(systemModel);
         assertEquals(systemModelName, study.getName());
         assertEquals(0, study.getId());
         assertNotNull(study.getStudySettings());
@@ -104,7 +104,7 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
     public void testFindLatestRevision() {
         String systemModelName = "systemModelName";
         SystemModel systemModel = systemBuilder.build(systemModelName);
-        Study study = studyService.createStudy(systemModel, null);
+        Study study = studyService.createStudy(systemModel);
 
         Pair<Integer, Date> revisionPair = studyService.findLatestRevision(study.getId());
         assertNull(revisionPair);
@@ -232,7 +232,7 @@ public class StudyServiceTest extends AbstractApplicationContextTest {
         study.setSystemModel(systemModel);
         study.setName(projectName);
         UserRoleManagement userRoleManagement
-                = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, null);
+                = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel);
         study.setUserRoleManagement(userRoleManagement);
         studyService.relinkStudySubSystems(study);
         return study;

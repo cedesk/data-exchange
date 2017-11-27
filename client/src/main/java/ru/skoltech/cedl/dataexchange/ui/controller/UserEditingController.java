@@ -24,6 +24,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.service.UserService;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -41,20 +42,33 @@ public class UserEditingController implements Initializable {
     @FXML
     private TextField fullNameText;
 
-    private User userModel;
+    private UserService userService;
+    private User user;
 
     private UserEditingController() {
     }
 
     public UserEditingController(User userModel) {
-        this.userModel = userModel;
+        this.user = userModel;
+    }
+
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        if (user != null) {
+            userNameText.setText(user.getUserName());
+            fullNameText.setText(user.getFullName());
+        }
     }
 
     public void applyAndClose(ActionEvent actionEvent) {
-        boolean success = updateModel();
-        if (success) {
-            cancel(actionEvent);
-        }
+        user.setUserName(userNameText.getText());
+        user.setFullName(fullNameText.getText());
+        userService.saveUser(user);
+        this.cancel(actionEvent);
     }
 
     public void cancel(ActionEvent actionEvent) {
@@ -63,17 +77,4 @@ public class UserEditingController implements Initializable {
         stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        if (userModel != null) {
-            userNameText.setText(userModel.getUserName());
-            fullNameText.setText(userModel.getFullName());
-        }
-    }
-
-    private boolean updateModel() {
-        userModel.setUserName(userNameText.getText());
-        userModel.setFullName(fullNameText.getText());
-        return true;
-    }
 }

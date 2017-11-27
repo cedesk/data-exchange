@@ -17,30 +17,41 @@
 package ru.skoltech.cedl.dataexchange.entity.user;
 
 import org.hibernate.envers.Audited;
+import ru.skoltech.cedl.dataexchange.structure.adapters.DisciplineAdapter;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Created by D.Knoll on 09.06.2015.
  */
 @Entity
 @Audited
+@XmlAccessorType(XmlAccessType.FIELD)
 public class UserDiscipline {
 
     @Id
     @GeneratedValue
+    @XmlTransient
     private long id;
 
     @ManyToOne(targetEntity = UserRoleManagement.class)
+    @XmlTransient
     private UserRoleManagement userRoleManagement;
 
     @ManyToOne(targetEntity = User.class)
     private User user;
 
     @ManyToOne(targetEntity = Discipline.class)
+    @XmlAttribute
+    @XmlJavaTypeAdapter(DisciplineAdapter.class)
     private Discipline discipline;
 
     private UserDiscipline() {

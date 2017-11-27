@@ -88,8 +88,7 @@
             </Button>
             <Separator orientation="VERTICAL"/>
             <Pane HBox.hgrow="ALWAYS"/>
-            <Button fx:id="reloadUsers" mnemonicParsing="false" onAction="#reloadUsers" text="Reload"/>
-            <Button fx:id="saveUsers" mnemonicParsing="false" onAction="#saveUsers" text="Save"/>
+            <Button mnemonicParsing="false" onAction="#close" text="Close"/>
         </ToolBar>
     </bottom>
 </BorderPane>

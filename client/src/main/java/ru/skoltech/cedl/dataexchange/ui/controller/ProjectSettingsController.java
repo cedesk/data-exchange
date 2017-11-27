@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.service.UserManagementService;
+import ru.skoltech.cedl.dataexchange.service.UserService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
@@ -72,7 +72,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
 
     private ApplicationSettings applicationSettings;
     private Project project;
-    private UserManagementService userManagementService;
+    private UserService userService;
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
     private Stage ownerStage;
@@ -85,8 +85,8 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         this.project = project;
     }
 
-    public void setUserManagementService(UserManagementService userManagementService) {
-        this.userManagementService = userManagementService;
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     @Override
@@ -186,7 +186,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         } else {
             userName = projectUserName;
         }
-        boolean validUser = userManagementService.checkUserName(project.getUserManagement(), userName);
+        boolean validUser = userService.checkUser(userName);
         logger.info("using user: '" + userName + "', valid: " + validUser);
         if (validUser) {
             applicationSettings.storeProjectUserName(userName);

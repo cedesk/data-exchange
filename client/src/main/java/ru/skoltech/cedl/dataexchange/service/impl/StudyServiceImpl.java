@@ -27,7 +27,6 @@ import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.DisciplineSubSystem;
-import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.repository.envers.StudyRevisionRepository;
 import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
@@ -67,14 +66,14 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
-    public Study createStudy(SystemModel systemModel, UserManagement userManagement) {
+    public Study createStudy(SystemModel systemModel) {
         Study study = new Study();
         study.setStudySettings(new StudySettings());
         study.setSystemModel(systemModel);
         study.setName(systemModel.getName());
         study.setVersion(0);
         UserRoleManagement userRoleManagement =
-                userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, userManagement);
+                userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel);
         study.setUserRoleManagement(userRoleManagement);
         this.relinkStudySubSystems(study);
         return study;

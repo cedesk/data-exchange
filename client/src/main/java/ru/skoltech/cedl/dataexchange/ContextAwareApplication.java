@@ -79,10 +79,6 @@ public abstract class ContextAwareApplication extends Application {
         if (!success) {
             throw new RuntimeException("loading unit management failed!");
         }
-        success = project.loadUserManagement();
-        if (!success) {
-            throw new RuntimeException("loading user management failed!");
-        }
 
         String projectName = applicationSettings.getProjectLastName();
         if (projectName == null) {

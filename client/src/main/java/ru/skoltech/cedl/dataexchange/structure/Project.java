@@ -34,7 +34,6 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
-import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
@@ -70,7 +69,7 @@ public class Project {
     private ExternalModelFileWatcher externalModelFileWatcher;
     private FileStorageService fileStorageService;
     private StudyService studyService;
-    private UserManagementService userManagementService;
+    private UserService userService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
     private SourcePollingChannelAdapter inboundFilesChannel;
@@ -84,7 +83,6 @@ public class Project {
 
     private AtomicInteger latestRevisionNumber = new AtomicInteger();
 
-    private UserManagement userManagement;
     private UnitManagement unitManagement;
 
     private BooleanProperty canNew = new SimpleBooleanProperty(false);
@@ -154,23 +152,15 @@ public class Project {
 
     public User getUser() {
         String userName = applicationSettings.getProjectUserName();
-        UserManagement userManagement = this.getUserManagement();
-        User user = userManagementService.obtainUser(userManagement, userName);
+        User user = userService.findUser(userName);
         if (user == null) {
             boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
-            userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
+            userName = isStudyNew ? UserService.ADMIN_USER_NAME : UserService.OBSERVER_USER_NAME;
             logger.warn("User not found in user management. Assuming " + userName + "!");
-            user = userManagementService.obtainUser(userManagement, userName);
+            user = userService.findUser(userName);
             Objects.requireNonNull(user);
         }
         return user;
-    }
-
-    public UserManagement getUserManagement() {
-        if (userManagement == null) {
-            loadUserManagement();
-        }
-        return userManagement;
     }
 
     public UserRoleManagement getUserRoleManagement() {
@@ -187,10 +177,7 @@ public class Project {
 
     public boolean isStudyInRepository() {
         // TODO: it is an imprecise assumption that in case of any import setting, this study is also available in the repository
-        if (applicationSettings.getProjectImportName() != null) {
-            return true;
-        }
-        return repositoryStateMachine.wasLoadedOrSaved();
+        return applicationSettings.getProjectImportName() != null || repositoryStateMachine.wasLoadedOrSaved();
     }
 
     public void setActionLogger(ActionLogger actionLogger) {
@@ -233,7 +220,7 @@ public class Project {
         this.studyService = studyService;
     }
 
-    public void setStudySettings(StudySettings studySettings) {
+    private void setStudySettings(StudySettings studySettings) {
         this.study.setStudySettings(studySettings);
         updatePossibleActions();
     }
@@ -242,8 +229,8 @@ public class Project {
         this.unitManagementService = unitManagementService;
     }
 
-    public void setUserManagementService(UserManagementService userManagementService) {
-        this.userManagementService = userManagementService;
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
@@ -303,10 +290,9 @@ public class Project {
         String userName = applicationSettings.getProjectUserName();
         if (userName == null) {
             boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
-            userName = isStudyNew ? UserManagementService.ADMIN_USER_NAME : UserManagementService.OBSERVER_USER_NAME;
+            userName = isStudyNew ? UserService.ADMIN_USER_NAME : UserService.OBSERVER_USER_NAME;
         }
-        UserManagement userManagement = this.getUserManagement();
-        return userManagementService.checkUserName(userManagement, userName);
+        return userService.checkUser(userName);
     }
 
     public boolean checkUserAccess(ModelNode modelNode) {
@@ -317,7 +303,7 @@ public class Project {
     }
 
     public void createStudy(SystemModel systemModel) {
-        this.study = studyService.createStudy(systemModel, userManagement);
+        this.study = studyService.createStudy(systemModel);
         this.initProject(systemModel.getName());
         this.setRepositoryStudy(null);
         this.initializeHandlers();
@@ -342,6 +328,7 @@ public class Project {
     }
 
     public void init() {
+        this.userService.createDefaultUsers();
         this.repositoryStateMachine.addObserver((o, arg) -> this.updatePossibleActions());
         this.externalModelFileWatcher.addObserver((o, arg) -> {
             ExternalModel externalModel = (ExternalModel) arg;
@@ -435,29 +422,6 @@ public class Project {
         return false;
     }
 
-    public boolean loadUserManagement() {
-        userManagement = userManagementService.findUserManagement();
-        if (userManagement != null) {
-            return true;
-        }
-
-        logger.warn("Error loading user management. recreating new user management.");
-        initializeUserManagement();
-        return false;
-    }
-
-    public boolean loadUserRoleManagement() {
-        long userRoleManagementId = study.getUserRoleManagement().getId();
-        UserRoleManagement newUserRoleManagement = userRoleManagementService.findUserRoleManagement(userRoleManagementId);
-        if (newUserRoleManagement == null) {
-            logger.error("Error loading user role management. recreating new user role management.");
-//            initializeUserRoleManagement(); //TODO initialize default UserRoleManagement?
-            return false;
-        }
-        this.setUserRoleManagement(newUserRoleManagement);
-        return true;
-    }
-
     public void markStudyModified() {
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
     }
@@ -495,26 +459,14 @@ public class Project {
         return false;
     }
 
-    public boolean storeUserManagement() {
-        try {
-            userManagement = userManagementService.saveUserManagement(userManagement);
-            return true;
-        } catch (Exception e) {
-            logger.error("Error storing user management.", e);
-        }
-        return false;
-    }
-
-    public boolean storeUserRoleManagement() {
+    private void storeUserRoleManagement() {
         try {
             UserRoleManagement userRoleManagement = this.study.getUserRoleManagement();
             UserRoleManagement newUserRoleManagement = userRoleManagementService.saveUserRoleManagement(userRoleManagement);
             this.setUserRoleManagement(newUserRoleManagement);
-            return true;
         } catch (Exception e) {
             logger.error("Error storing user role management.", e);
         }
-        return false;
     }
 
     @Override
@@ -542,11 +494,6 @@ public class Project {
         storeUnitManagement();
     }
 
-    private void initializeUserManagement() {
-        userManagement = userManagementService.createDefaultUserManagement();
-        storeUserManagement();
-    }
-
     private void reinitializeUniqueIdentifiers(ModelNode modelNode) {
         modelNode.setUuid(UUID.randomUUID().toString());
         for (ParameterModel parameterModel : modelNode.getParameters()) {
@@ -567,9 +514,7 @@ public class Project {
         setupModelNodePosition(study.getSystemModel().getSubNodes());
         study.getSystemModel().getSubNodes().forEach(subSystemModel -> {
             setupModelNodePosition(subSystemModel.getSubNodes());
-            subSystemModel.getSubNodes().forEach(elementModel -> {
-                setupModelNodePosition(elementModel.getSubNodes());
-            });
+            subSystemModel.getSubNodes().forEach(elementModel -> setupModelNodePosition(elementModel.getSubNodes()));
         });
     }
 
