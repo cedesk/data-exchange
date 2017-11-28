@@ -23,6 +23,7 @@ import ru.skoltech.cedl.dataexchange.repository.revision.UserRepository;
 import ru.skoltech.cedl.dataexchange.service.UserService;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Implementation of {@link UserService}.
@@ -62,6 +63,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean checkUser(String userName) {
         return userRepository.existsByName(userName);
+    }
+
+    public User createUser(String userName, String fullName) {
+        Objects.requireNonNull(userName);
+
+        User user = new User(userName, fullName);
+        return userRepository.saveAndFlush(user);
     }
 
     @Override

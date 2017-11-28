@@ -68,6 +68,15 @@ public interface UserService {
     boolean checkUser(String userName);
 
     /**
+     * Create new user with specified username and full name.
+     *
+     * @param userName username for new user
+     * @param fullName full name for new user
+     * @return an instance of new just created user
+     */
+    User createUser(String userName, String fullName);
+
+    /**
      * Saves an user instance.
      *
      * @param user user to save

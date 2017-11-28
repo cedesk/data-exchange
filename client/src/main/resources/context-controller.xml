@@ -33,6 +33,7 @@
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="guiService" ref="guiService"/>
+        <property name="userService" ref="userService"/>
         <property name="studyService" ref="studyService"/>
         <property name="fileStorageService" ref="fileStorageService"/>
         <property name="updateService" ref="updateService"/>

@@ -51,6 +51,8 @@ import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
+import ru.skoltech.cedl.dataexchange.entity.user.User;
+import ru.skoltech.cedl.dataexchange.entity.user.UserDiscipline;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
@@ -129,8 +131,9 @@ public class MainController implements Initializable, Displayable, Closeable {
     private Project project;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private DifferenceHandler differenceHandler;
-    private StudyService studyService;
     private GuiService guiService;
+    private StudyService studyService;
+    private UserService userService;
     private FileStorageService fileStorageService;
     private UpdateService updateService;
     private LogEntryService logEntryService;
@@ -167,12 +170,16 @@ public class MainController implements Initializable, Displayable, Closeable {
         this.differenceHandler = differenceHandler;
     }
 
+    public void setGuiService(GuiService guiService) {
+        this.guiService = guiService;
+    }
+
     public void setStudyService(StudyService studyService) {
         this.studyService = studyService;
     }
 
-    public void setGuiService(GuiService guiService) {
-        this.guiService = guiService;
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     public void setFileStorageService(FileStorageService fileStorageService) {
@@ -269,8 +276,98 @@ public class MainController implements Initializable, Displayable, Closeable {
         if (ApplicationPackage.isRelease(appVersion)) {
             executor.execute(() -> {
                 Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
-                Platform.runLater(() -> MainController.this.validateLatestUpdate(latestVersionAvailable, null));
+                Platform.runLater(() -> {
+                    if (latestVersionAvailable.isPresent()) {
+                        ApplicationPackage applicationPackage = latestVersionAvailable.get();
+                        MainController.this.validateLatestUpdate(applicationPackage);
+                    } else {
+                        statusLogger.warn("Update check failed. Unable to connect to Distribution Server!");
+                    }
+                });
             });
+        }
+    }
+
+    public void exportProject() {
+        File exportPath = Dialogues.chooseExportPath(fileStorageService.applicationDirectory());
+        if (exportPath != null) {
+            String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-study.xml";
+            File outputFile = new File(exportPath, outputFileName);
+            try {
+                fileStorageService.exportStudy(project.getStudy(), outputFile);
+                statusLogger.info("Successfully exported study!");
+                actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
+            } catch (IOException e) {
+                logger.error("Error exporting study to file", e);
+            }
+        } else {
+            logger.info("User aborted export path selection.");
+        }
+    }
+
+    public void importProject() {
+        File importFile = Dialogues.chooseImportFile(fileStorageService.applicationDirectory());
+        this.importProject(importFile);
+    }
+
+    private void importProject(String projectName) {
+        File importFile = null;
+        if (projectName != null && !projectName.isEmpty()) {
+            importFile = new File(fileStorageService.applicationDirectory(), projectName);
+            if (importFile.exists()) {
+                logger.info("Importing " + importFile.getAbsolutePath());
+            } else {
+                logger.info("Missing project to import " + importFile.getAbsolutePath());
+                importFile = null;
+            }
+        } else {
+            logger.error("Missing setting: project.import.name");
+        }
+        if (importFile == null) {
+            // TODO: warn user about replacing current project
+            importFile = Dialogues.chooseImportFile(fileStorageService.applicationDirectory());
+        }
+        this.importProject(importFile);
+    }
+
+    private void importProject(File importFile) {
+        if (importFile != null) {
+            // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
+            try {
+                try {
+                    Study study = fileStorageService.importStudy(importFile);
+                    project.importStudy(study);
+                    List<User> detectedUsers = study.getUserRoleManagement().getUserDisciplines()
+                            .stream().map(UserDiscipline::getUser).collect(Collectors.toList());
+                    List<User> users = userService.findAllUsers();
+
+                    List<User> newUsers = detectedUsers.stream()
+                            .filter(du -> users.stream().noneMatch(u -> du.getUserName().equals(u.getUserName())))
+                            .collect(Collectors.toList());
+                    if (!newUsers.isEmpty()) {
+                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("New users detected",
+                                "Some of the users in the imported are not registered in the current database.\n" +
+                                        "Do you want to create them?");
+                        if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
+                            newUsers.forEach(user -> userService.createUser(user.getUserName(), user.getFullName()));
+                            logger.debug("New users have been added: " + newUsers.stream()
+                                    .map(User::getFullName)
+                                    .collect(Collectors.joining(",")));
+                        }
+                    }
+                } catch (Exception e) {
+                    SystemModel systemModel = fileStorageService.importSystemModel(importFile);
+                    project.importSystemModel(systemModel);
+                } finally {
+                    updateView();
+                    statusLogger.info("Successfully imported study!");
+                    actionLogger.log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName());
+                }
+            } catch (IOException e) {
+                logger.error("Error importing model from file.", e);
+            }
+        } else {
+            logger.info("User aborted import file selection.");
         }
     }
 
@@ -310,29 +407,8 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    public void checkForApplicationUpdate(ActionEvent actionEvent) {
+    public void checkForApplicationUpdate() {
         Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
-        validateLatestUpdate(latestVersionAvailable, actionEvent);
-    }
-
-    public void exportProject() {
-        File exportPath = Dialogues.chooseExportPath(fileStorageService.applicationDirectory());
-        if (exportPath != null) {
-            String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-system-model.xml";
-            File outputFile = new File(exportPath, outputFileName);
-            try {
-                fileStorageService.exportSystemModel(project.getSystemModel(), outputFile);
-                statusLogger.info("Successfully exported study!");
-                actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
-            } catch (IOException e) {
-                logger.error("error exporting model to file", e);
-            }
-        } else {
-            logger.info("user aborted export path selection.");
-        }
-    }
-
-    private void validateLatestUpdate(Optional<ApplicationPackage> latestVersionAvailable, ActionEvent actionEvent) {
         if (latestVersionAvailable.isPresent()) {
             ApplicationPackage applicationPackage = latestVersionAvailable.get();
             logger.info("available package: " + applicationPackage.toString());
@@ -348,24 +424,35 @@ public class MainController implements Initializable, Displayable, Closeable {
                         "You are using " + appVersion + ", " +
                                 "which is newer than the latest available " + packageVersion + ". Please publish!");
             } else {
-                if (actionEvent != null) {
-                    UserNotifications.showNotification(ownerStage, "Application Update",
-                            "Latest version installed. No need to update.");
-                } else {
-                    statusLogger.info("Latest application version installed. No need to update.");
-                }
+                UserNotifications.showNotification(ownerStage, "Application Update",
+                        "Latest version installed. No need to update.");
             }
         } else {
-            if (actionEvent != null) {
-                UserNotifications.showNotification(ownerStage, "Update check failed",
-                        "Unable to connect to Distribution Server!");
-            } else {
-                statusLogger.warn("Update check failed. Unable to connect to Distribution Server!");
-            }
+            UserNotifications.showNotification(ownerStage, "Update check failed",
+                    "Unable to connect to Distribution Server!");
         }
     }
 
-    public boolean checkUnsavedStructureModifications() {
+    private void validateLatestUpdate(ApplicationPackage applicationPackage) {
+        logger.info("available package: " + applicationPackage.toString());
+        String packageVersion = applicationPackage.getVersion();
+        String appVersion = applicationSettings.getApplicationVersion();
+        int versionCompare = Utils.compareVersions(appVersion, packageVersion);
+        if (versionCompare < 0) {
+            UserNotifications.showActionableNotification(ownerStage, "Application Update",
+                    "You are using " + appVersion + ", while " + packageVersion + " is already available. Please update!",
+                    "Download Update", new UpdateDownloader(applicationPackage), false);
+        } else if (versionCompare > 0) {
+            UserNotifications.showNotification(ownerStage, "Application Update",
+                    "You are using " + appVersion + ", " +
+                            "which is newer than the latest available " + packageVersion + ". Please publish!");
+        } else {
+            statusLogger.info("Latest application version installed. No need to update.");
+        }
+    }
+
+
+    private boolean checkUnsavedStructureModifications() {
         long nodeChanges = differenceHandler.modelDifferences().stream()
                 .filter(modelDiff -> modelDiff instanceof NodeDifference).count();
         if (nodeChanges > 0) {
@@ -468,42 +555,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    public void importProject(ActionEvent actionEvent) {
-        File importFile = null;
-        if (actionEvent == null) { // invoked from startup
-            String projectToImport = applicationSettings.getProjectImportName();
-            if (projectToImport != null && !projectToImport.isEmpty()) {
-                importFile = new File(fileStorageService.applicationDirectory(), projectToImport);
-                if (importFile.exists()) {
-                    logger.info("importing " + importFile.getAbsolutePath());
-                } else {
-                    logger.info("missing project to import " + importFile.getAbsolutePath());
-                    importFile = null;
-                }
-            } else {
-                logger.error("missing setting: project.import.name");
-            }
-        }
-        if (importFile == null) {
-            // TODO: warn user about replacing current project
-            importFile = Dialogues.chooseImportFile(fileStorageService.applicationDirectory());
-        }
-        if (importFile != null) {
-            // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
-            try {
-                SystemModel systemModel = fileStorageService.importSystemModel(importFile);
-                project.importSystemModel(systemModel);
-                updateView();
-                statusLogger.info("Successfully imported study!");
-                actionLogger.log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName());
-            } catch (IOException e) {
-                logger.error("Error importing model from file.", e);
-            }
-        } else {
-            logger.info("User aborted import file selection.");
-        }
-    }
-
     public void runWorkSessionAnalysis() {
         File projectDataDir = project.getProjectHome();
         String dateAndTime = Utils.getFormattedDateAndTime();
@@ -581,7 +632,8 @@ public class MainController implements Initializable, Displayable, Closeable {
             ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
             dependencyViewBuilder.resizable(false);
             dependencyViewBuilder.ownerWindow(this.ownerStage);
-            dependencyViewBuilder.show();
+            dependencyStage = dependencyViewBuilder.createStage();
+            dependencyStage.show();
         } else {
             dependencyStage.toFront();
         }
@@ -742,7 +794,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
         String projectImportName = applicationSettings.getProjectImportName();
         if (projectImportName != null && !projectImportName.isEmpty()) {
-            this.importProject(null);
+            this.importProject(projectImportName);
         } else if (applicationSettings.isProjectLastAutoload()) {
             String projectName = applicationSettings.getProjectLastName();
             if (projectName != null) {
@@ -889,7 +941,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     private class UpdateDownloader implements Consumer<ActionEvent> {
         ApplicationPackage applicationPackage;
 
-        public UpdateDownloader(ApplicationPackage applicationPackage) {
+        private UpdateDownloader(ApplicationPackage applicationPackage) {
             this.applicationPackage = applicationPackage;
         }
 

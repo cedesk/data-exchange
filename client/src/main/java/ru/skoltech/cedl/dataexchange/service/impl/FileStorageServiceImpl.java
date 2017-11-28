@@ -316,7 +316,8 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
     }
 
-    private void postProcessSystemModel(ModelNode modelNode, CompositeModelNode<? extends ModelNode> parent, File inputFolder) {
+    @SuppressWarnings("unchecked")
+    private void postProcessSystemModel(ModelNode modelNode, CompositeModelNode parent, File inputFolder) {
         modelNode.setParent(parent);
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
             externalModel.setParent(modelNode);

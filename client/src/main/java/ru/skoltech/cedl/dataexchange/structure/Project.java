@@ -302,16 +302,25 @@ public class Project {
         return userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
     }
 
+    public void createStudy(Study study) {
+        this.study = study;
+        this.initCurrentStudy();
+    }
+
     public void createStudy(SystemModel systemModel) {
         this.study = studyService.createStudy(systemModel);
-        this.initProject(systemModel.getName());
+        this.initCurrentStudy();
+    }
+
+    private void initCurrentStudy() {
+        this.initProject(study.getName());
         this.setRepositoryStudy(null);
         this.initializeHandlers();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
 
         UserRoleManagement userRoleManagement = study.getUserRoleManagement();
         userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
-        this.updateValueReferences(systemModel);
+        this.updateValueReferences(study.getSystemModel());
     }
 
     public void deleteStudy(String studyName) throws RepositoryException {
@@ -320,6 +329,11 @@ public class Project {
 
     public boolean hasLocalStudyModifications() {
         return repositoryStateMachine.hasModifications();
+    }
+
+    public void importStudy(Study study) {
+        this.createStudy(study);
+        this.reinitializeUniqueIdentifiers(study.getSystemModel());
     }
 
     public void importSystemModel(SystemModel systemModel) {
