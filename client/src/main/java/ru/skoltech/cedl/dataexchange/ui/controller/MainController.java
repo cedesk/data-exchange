@@ -354,6 +354,13 @@ public class MainController implements Initializable, Displayable, Closeable {
                                     .map(User::getFullName)
                                     .collect(Collectors.joining(",")));
                         }
+                        project.getUserRoleManagement().getUserDisciplines().forEach(userDiscipline -> {
+                            User user = userDiscipline.getUser();
+                            User actualUser = userService.findUser(user.getUserName());
+                            userDiscipline.setUser(actualUser);
+                        });
+                        project.getUserRoleManagement().getUserDisciplines()
+                                .removeIf(userDiscipline -> userDiscipline.getUser() == null);
                     }
                 } catch (Exception e) {
                     SystemModel systemModel = fileStorageService.importSystemModel(importFile);
