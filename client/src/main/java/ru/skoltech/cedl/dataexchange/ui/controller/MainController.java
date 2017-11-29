@@ -291,10 +291,10 @@ public class MainController implements Initializable, Displayable, Closeable {
     public void exportProject() {
         File exportPath = Dialogues.chooseExportPath(fileStorageService.applicationDirectory());
         if (exportPath != null) {
-            String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-study.xml";
+            String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-study.zip";
             File outputFile = new File(exportPath, outputFileName);
             try {
-                fileStorageService.exportStudy(project.getStudy(), outputFile);
+                fileStorageService.exportStudyToZip(project.getStudy(), outputFile);
                 statusLogger.info("Successfully exported study!");
                 actionLogger.log(ActionLogger.ActionType.PROJECT_EXPORT, project.getProjectName());
             } catch (IOException e) {
@@ -335,7 +335,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
             try {
                 try {
-                    Study study = fileStorageService.importStudy(importFile);
+                    Study study = fileStorageService.importStudyFromZip(importFile);
                     project.importStudy(study);
                     List<User> detectedUsers = study.getUserRoleManagement().getUserDisciplines()
                             .stream().map(UserDiscipline::getUser).collect(Collectors.toList());

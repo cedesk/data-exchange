@@ -22,7 +22,6 @@ import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -99,8 +98,20 @@ public interface ExternalModelService {
      */
     void updateExternalModelFromFile(File file, ExternalModel externalModel) throws ExternalModelException;
 
+    /**
+     * Define a path for store passed {@link ExternalModel} in current file system.
+     *
+     * @param externalModel external model to define the path
+     * @return path in current file system
+     */
     String makeExternalModelPath(ExternalModel externalModel);
 
-    void storeExternalModel(ExternalModel externalModel, File folder) throws IOException;
+    /**
+     * Define a path for store passed {@link ExternalModel} inside a zip file.
+     *
+     * @param externalModel external model to define the path
+     * @return path inside the zip file
+     */
+    String makeExternalModelZipPath(ExternalModel externalModel);
 
 }

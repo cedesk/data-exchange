@@ -16,12 +16,12 @@
 
 package ru.skoltech.cedl.dataexchange.external.excel;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import ru.skoltech.cedl.dataexchange.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,8 +46,8 @@ public class WorkbookFactory {
     }
 
     public static boolean isWorkbookFile(String filename) {
-        String extension = Utils.getExtension(filename);
-        int idx = Arrays.binarySearch(KNOWN_FILE_EXTENSIONS, extension);
+        String extension = FilenameUtils.getExtension(filename);
+        int idx = Arrays.binarySearch(KNOWN_FILE_EXTENSIONS, "." + extension);
         return idx >= 0;
     }
 

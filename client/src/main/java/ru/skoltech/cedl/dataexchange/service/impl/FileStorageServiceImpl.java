@@ -16,6 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.service.impl;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
@@ -37,8 +39,13 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Implementation of service which handles operations with file system.
@@ -141,6 +148,38 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
+    public Study importStudyFromZip(File inputFile) throws IOException {
+        ZipFile zipFile = new ZipFile(inputFile);
+
+        ZipEntry xmlZipEntry = Collections.list(zipFile.entries()).stream()
+                .filter(o -> "xml".equals(FilenameUtils.getExtension(o.getName())))
+                .findFirst().orElse(null);
+        if (xmlZipEntry == null) {
+            throw new IOException("File does not contain study to import.");
+        }
+
+        try (InputStream inputStream = zipFile.getInputStream(xmlZipEntry)) {
+            Set<Class> modelClasses = new HashSet<>();
+            modelClasses.add(Study.class);
+            modelClasses.addAll(Arrays.asList(UserRoleManagement.class, User.class, Discipline.class));
+            modelClasses.addAll(Arrays.asList(MODEL_CLASSES));
+            modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
+            JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
+
+            Unmarshaller u = jc.createUnmarshaller();
+            Study study = (Study) u.unmarshal(inputStream);
+
+            this.postProcessUserRoleManagement(study.getUserRoleManagement());
+            this.postProcessStudy(study);
+            this.postProcessSystemModel(study.getSystemModel(), null, zipFile);
+
+            return study;
+        } catch (JAXBException e) {
+            throw new IOException("Error reading study from XML file.", e);
+        }
+    }
+
+    @Override
     public Study importStudy(File inputFile) throws IOException {
         try (FileInputStream inp = new FileInputStream(inputFile)) {
             Set<Class> modelClasses = new HashSet<>();
@@ -177,7 +216,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
             File inputFolder = inputFile.getParentFile();
 
-            postProcessSystemModel(systemModel, null, inputFolder);
+            this.postProcessSystemModel(systemModel, null, inputFolder);
             return systemModel;
         } catch (JAXBException e) {
             throw new IOException("Error reading system model from XML file.", e);
@@ -222,6 +261,55 @@ public class FileStorageServiceImpl implements FileStorageService {
             m.marshal(calculation, fos);
         } catch (JAXBException e) {
             throw new IOException("Error writing system model to XML file.", e);
+        }
+    }
+
+    @Override
+    public void exportStudyToZip(Study study, File outputFile) throws IOException {
+        File outputFolder = outputFile.getParentFile();
+        this.createDirectory(outputFolder);
+
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+            try (ZipOutputStream zos = new ZipOutputStream(fos)) {
+                String xmlFileName = FilenameUtils.getBaseName(outputFile.getName());
+                ZipEntry studyXmlZipEntry = new ZipEntry(xmlFileName + ".xml");
+                zos.putNextEntry(studyXmlZipEntry);
+
+                Set<Class> modelClasses = new HashSet<>();
+                modelClasses.add(Study.class);
+                modelClasses.addAll(Arrays.asList(UserRoleManagement.class, User.class, Discipline.class));
+                modelClasses.addAll(Arrays.asList(MODEL_CLASSES));
+                modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
+                JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
+
+                Marshaller m = jc.createMarshaller();
+                m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+                m.marshal(study, zos);
+
+                Iterator<ExternalModel> iterator = study.getSystemModel().externalModelsIterator();
+                Set<String> createdExternalModelPaths = new HashSet<>();
+                while (iterator.hasNext()) {
+                    ExternalModel externalModel = iterator.next();
+                    String externalModelPath = externalModelService.makeExternalModelZipPath(externalModel);
+                    String externalModelZipEntryName = externalModelPath + externalModel.getName();
+
+                    if (!createdExternalModelPaths.contains(externalModelPath)) {
+                        ZipEntry nodePathZipEntry = new ZipEntry(externalModelPath);
+                        zos.putNextEntry(nodePathZipEntry);
+                        createdExternalModelPaths.add(externalModelPath);
+                    }
+
+                    ZipEntry externalModelZipEntry = new ZipEntry(externalModelZipEntryName);
+                    externalModelZipEntry.setSize(externalModel.getAttachment().length);
+                    zos.putNextEntry(externalModelZipEntry);
+                    zos.write(externalModel.getAttachment());
+                    zos.closeEntry();
+                }
+                zos.flush();
+            }
+        } catch (JAXBException e) {
+            throw new IOException("Error writing study to XML file.", e);
         }
     }
 
@@ -278,7 +366,9 @@ public class FileStorageServiceImpl implements FileStorageService {
             String nodePath = externalModelService.makeExternalModelPath(externalModel);
             File nodeDir = new File(outputFolder, nodePath);
             this.createDirectory(nodeDir);
-            externalModelService.storeExternalModel(externalModel, nodeDir);
+
+            File externalModelFile = new File(nodeDir, externalModel.getName());
+            Files.write(externalModelFile.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
         }
     }
 
@@ -317,6 +407,42 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @SuppressWarnings("unchecked")
+    private void postProcessSystemModel(ModelNode modelNode, CompositeModelNode parent, ZipFile zipFile) {
+        modelNode.setParent(parent);
+        for (ExternalModel externalModel : modelNode.getExternalModels()) {
+            externalModel.setParent(modelNode);
+            try {
+                String externalModelPath = externalModelService.makeExternalModelZipPath(externalModel);
+                String externalModelZipEntryName = externalModelPath + externalModel.getName();
+                ZipEntry externalModelZipEntry = zipFile.getEntry(externalModelZipEntryName);
+                if (externalModelZipEntry != null) {
+                    try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                        try (InputStream is = zipFile.getInputStream(externalModelZipEntry)) {
+                            IOUtils.copy(is, os);
+                            externalModel.setAttachment(os.toByteArray());
+                            externalModel.init();
+                        }
+                    }
+                } else {
+                    logger.error("external model file not found!");
+                }
+            } catch (Exception e) {
+                logger.error("external model file import failed!", e);
+            }
+        }
+
+        this.postProcessParameterModels(modelNode);
+
+        if (modelNode instanceof CompositeModelNode) {
+            CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
+            for (Object node : compositeModelNode.getSubNodes()) {
+                postProcessSystemModel((ModelNode) node, compositeModelNode, zipFile);
+            }
+        }
+    }
+
+
+    @SuppressWarnings("unchecked")
     private void postProcessSystemModel(ModelNode modelNode, CompositeModelNode parent, File inputFolder) {
         modelNode.setParent(parent);
         for (ExternalModel externalModel : modelNode.getExternalModels()) {
@@ -335,6 +461,17 @@ public class FileStorageServiceImpl implements FileStorageService {
             }
         }
 
+        this.postProcessParameterModels(modelNode);
+
+        if (modelNode instanceof CompositeModelNode) {
+            CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
+            for (Object node : compositeModelNode.getSubNodes()) {
+                postProcessSystemModel((ModelNode) node, compositeModelNode, inputFolder);
+            }
+        }
+    }
+
+    private void postProcessParameterModels(ModelNode modelNode) {
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             parameterModel.setParent(modelNode);
 
@@ -363,12 +500,6 @@ public class FileStorageServiceImpl implements FileStorageService {
                 for (Argument argument : calculation.getArguments()) {
                     argument.setParent(calculation);
                 }
-            }
-        }
-        if (modelNode instanceof CompositeModelNode) {
-            CompositeModelNode compositeModelNode = (CompositeModelNode) modelNode;
-            for (Object node : compositeModelNode.getSubNodes()) {
-                postProcessSystemModel((ModelNode) node, compositeModelNode, inputFolder);
             }
         }
     }

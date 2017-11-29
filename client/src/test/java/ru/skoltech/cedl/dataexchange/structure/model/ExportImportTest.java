@@ -45,6 +45,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -56,15 +57,17 @@ import static org.junit.Assert.*;
  */
 public class ExportImportTest extends AbstractApplicationContextTest {
 
-    private File excelAttachmentFile, csvAttachmentFile;
     private SystemBuilder systemBuilder;
     private FileStorageService fileStorageService;
     private ExternalModelService externalModelService;
     private UnitManagementService unitManagementService;
-    private UserRoleManagementService userRoleManagementService;
+
+    private File excelAttachmentFile, csvAttachmentFile;
+    private Study originalStudy;
+    private ExternalModel excelExternalModel, csvExternalModel;
 
     @Before
-    public void setup() throws IOException, NoSuchFieldException, IllegalAccessException, URISyntaxException {
+    public void setup() throws IOException, NoSuchFieldException, IllegalAccessException, URISyntaxException, ExternalModelException {
         excelAttachmentFile = new File(ExportImportTest.class.getResource("/attachment.xls").toURI());
         csvAttachmentFile = new File(ExportImportTest.class.getResource("/attachment.csv").toURI());
 
@@ -73,17 +76,14 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         fileStorageService = context.getBean(FileStorageService.class);
         externalModelService = context.getBean(ExternalModelService.class);
         unitManagementService = context.getBean(UnitManagementService.class);
-        userRoleManagementService = context.getBean(UserRoleManagementService.class);
-    }
+        UserRoleManagementService userRoleManagementService = context.getBean(UserRoleManagementService.class);
 
-    @Test
-    public void testExportImportStudy() throws IOException, ExternalModelException {
         UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement();
         systemBuilder.modelDepth(2);
         SystemModel originalSystemModel = systemBuilder.build("testModel");
 
-        ExternalModel excelExternalModel = externalModelService.createExternalModelFromFile(excelAttachmentFile, originalSystemModel);
-        ExternalModel csvExternalModel = externalModelService.createExternalModelFromFile(csvAttachmentFile, originalSystemModel);
+        excelExternalModel = externalModelService.createExternalModelFromFile(excelAttachmentFile, originalSystemModel);
+        csvExternalModel = externalModelService.createExternalModelFromFile(csvAttachmentFile, originalSystemModel);
         originalSystemModel.addExternalModel(excelExternalModel);
         originalSystemModel.addExternalModel(csvExternalModel);
 
@@ -100,7 +100,7 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         parameterModel2.setExportReference(exportModelReference);
 
         String studyName = "studyName";
-        Study originalStudy = new Study();
+        originalStudy = new Study();
         originalStudy.setName(studyName);
         originalStudy.setSystemModel(originalSystemModel);
         originalStudy.setUserRoleManagement(userRoleManagement);
@@ -113,14 +113,29 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         boolean added2 = userRoleManagementService.addDisciplineSubsystem(userRoleManagement, discipline2, subSystemMode2);
         assertTrue(added1);
         assertTrue(added2);
+    }
 
+    @Test
+    public void testExportImportStudyZip() throws IOException {
+        File file = new File("target", "dummy-study.zip");
+        fileStorageService.exportStudyToZip(originalStudy, file);
+        Study importedStudy = fileStorageService.importStudyFromZip(file);
+        this.checkImportedStudy(importedStudy);
+        file.deleteOnExit();
+    }
 
+    @Test
+    public void testExportImportStudy() throws IOException, ExternalModelException {
         File file = new File("target", "dummy-study.xml");
         fileStorageService.exportStudy(originalStudy, file);
         Study importedStudy = fileStorageService.importStudy(file);
+        this.checkImportedStudy(importedStudy);
+        file.deleteOnExit();
+    }
 
-//        assertEquals(originalStudy, importedStudy);
-        assertEquals(studyName, importedStudy.getName());
+    private void checkImportedStudy(Study importedStudy) {
+        //        assertEquals(originalStudy, importedStudy);
+        assertEquals(originalStudy.getName(), importedStudy.getName());
         assertThat(importedStudy.getSystemModel().getExternalModels(), hasItem(excelExternalModel));
         assertThat(importedStudy.getSystemModel().getExternalModels(), hasItem(csvExternalModel));
         importedStudy.getSystemModel().getExternalModels()
@@ -143,9 +158,6 @@ public class ExportImportTest extends AbstractApplicationContextTest {
                 .forEach(userDiscipline -> assertEquals(importedStudy.getUserRoleManagement(), userDiscipline.getUserRoleManagement()));
         importedStudy.getUserRoleManagement().getDisciplineSubSystems()
                 .forEach(disciplineSubSystem -> assertEquals(importedStudy.getUserRoleManagement(), disciplineSubSystem.getUserRoleManagement()));
-
-        file.deleteOnExit();
-
     }
 
     @Test
@@ -208,7 +220,10 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     @Test
     public void testImportOldSystemModel() throws IOException, URISyntaxException {
         File file = new File(ExportImportTest.class.getResource("/model-old.xml").toURI());
-        SystemModel systemModel = fileStorageService.importSystemModel(file);
+        File modelFile = new File("target", "model-old.xml");
+        Files.copy(file.toPath(), modelFile.toPath());
+
+        SystemModel systemModel = fileStorageService.importSystemModel(modelFile);
 
         assertNotNull(systemModel);
         assertFalse(systemModel.getExternalModels().isEmpty());
@@ -217,6 +232,7 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         assertNotNull(externalModel);
         assertTrue(externalModel instanceof ExcelExternalModel);
         assertTrue(externalModel.state().isInitialized());
+        modelFile.deleteOnExit();
     }
 
     @Test

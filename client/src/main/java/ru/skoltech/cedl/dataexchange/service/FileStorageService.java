@@ -75,6 +75,15 @@ public interface FileStorageService {
     Calculation importCalculation(File inputFile) throws IOException;
 
     /**
+     * Import {@link Study} from the zip file.
+     *
+     * @param inputFile file which stores {@link Study} to import
+     * @return imported study
+     * @throws IOException if import is impossible
+     */
+    Study importStudyFromZip(File inputFile) throws IOException;
+
+    /**
      * Import {@link Study} from the file.
      *
      * @param inputFile file which stores {@link Study} to import
@@ -123,10 +132,20 @@ public interface FileStorageService {
      * Export {@link Study} to the file.
      *
      * @param study      {@link Study} to export
-     * @param outputFile output file to export
+     * @param outputFile output xml file to export
      * @throws IOException if export is impossible
      */
     void exportStudy(Study study, File outputFile) throws IOException;
+
+    /**
+     * Export {@link Study} to the zip file.
+     *
+     * @param study      {@link Study} to export
+     * @param outputFile output zip file to export
+     * @throws IOException if export is impossible
+     */
+    void exportStudyToZip(Study study, File outputFile) throws IOException;
+
     /**
      * Export {@link SystemModel} in the file.
      *

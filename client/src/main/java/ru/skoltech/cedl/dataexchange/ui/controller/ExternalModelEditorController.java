@@ -26,12 +26,12 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
@@ -252,9 +252,9 @@ public class ExternalModelEditorController implements Initializable {
         }
         Button exchangeButton = (Button) actionEvent.getSource();
         ExternalModel externalModel = (ExternalModel) exchangeButton.getUserData();
-        String fileExtension = Utils.getExtension(externalModel.getName());
+        String fileExtension = FilenameUtils.getExtension(externalModel.getName());
 
-        Pair<String, List<String>> fileDescriptionAndExtensions = externalModelService.fileDescriptionAndExtensions(fileExtension);
+        Pair<String, List<String>> fileDescriptionAndExtensions = externalModelService.fileDescriptionAndExtensions("." + fileExtension);
         if (fileDescriptionAndExtensions == null) {
             Dialogues.showWarning("Undefined external model type.",
                     "Cannot define type of current external model, " +
