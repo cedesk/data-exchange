@@ -17,28 +17,27 @@
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
+import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.*;
 import org.controlsfx.control.spreadsheet.Grid;
 import org.controlsfx.control.spreadsheet.GridBase;
 import org.controlsfx.control.spreadsheet.SpreadsheetView;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
 import ru.skoltech.cedl.dataexchange.external.excel.SpreadsheetGridViewFactory;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.ui.control.ErrorAlert;
 
 import java.io.File;
@@ -53,7 +52,7 @@ import java.util.stream.IntStream;
  * <p>
  * Created by Nikolay Groshkov on 30-Nov-17.
  */
-public class ImportTradespaceFromExcelController implements Initializable, Applicable, Displayable {
+public class ImportTradespaceFromExcelController extends AbstractImportTradespaceController {
 
     private static final Logger logger = Logger.getLogger(ImportTradespaceFromExcelController.class);
 
@@ -69,29 +68,11 @@ public class ImportTradespaceFromExcelController implements Initializable, Appli
     private Spinner<Integer> firstRowSpinner;
     @FXML
     private IntegerSpinnerValueFactory firstRowSpinnerValueFactory;
-    @FXML
-    private ListView<String> figuresOfMeritListView;
-    @FXML
-    private ListView<String> epochsListView;
-    @FXML
-    private ListView<String> descriptionListView;
-    @FXML
-    private Button importButton;
 
-    private FileStorageService fileStorageService;
-
-    private Stage ownerStage;
-    private EventHandler<Event> applyEventHandler;
-
-    private SimpleObjectProperty<File> fileProperty = new SimpleObjectProperty<>();
+    private ObjectProperty<File> fileProperty = new SimpleObjectProperty<>();
     private BooleanProperty fileReadProperty = new SimpleBooleanProperty();
     private ObjectProperty<Workbook> workbookProperty = new SimpleObjectProperty<>();
     private ObjectProperty<Sheet> sheetProperty = new SimpleObjectProperty<>();
-    private ListProperty<String> columnsProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
-
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
-    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -133,10 +114,6 @@ public class ImportTradespaceFromExcelController implements Initializable, Appli
             }
         }, sheetNameComboBox.selectionModelProperty(), workbookProperty));
 
-        figuresOfMeritListView.disableProperty().bind(spreadsheetView.gridProperty().isNull());
-        epochsListView.disableProperty().bind(spreadsheetView.gridProperty().isNull());
-        descriptionListView.disableProperty().bind(spreadsheetView.gridProperty().isNull());
-
         columnsProperty.bind(Bindings.createObjectBinding(() -> {
             if (sheetProperty.isNull().get()) {
                 return FXCollections.emptyObservableList();
@@ -153,28 +130,8 @@ public class ImportTradespaceFromExcelController implements Initializable, Appli
             return FXCollections.observableList(headers);
         }, sheetProperty, firstRowSpinner.valueProperty()));
 
-        figuresOfMeritListView.itemsProperty().bind(columnsProperty);
-        figuresOfMeritListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        epochsListView.itemsProperty().bind(columnsProperty);
-        descriptionListView.itemsProperty().bind(columnsProperty);
-
-        importButton.disableProperty().bind(figuresOfMeritListView.getSelectionModel().selectedItemProperty().isNull()
-                .or(epochsListView.getSelectionModel().selectedItemProperty().isNull())
-                .or(descriptionListView.getSelectionModel().selectedItemProperty().isNull()));
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    @Override
-    public void setOnApply(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
-    }
-
-    public void cancel() {
-        ownerStage.close();
+        columnsTableView.disableProperty().bind(fileProperty.isNull().or(fileReadProperty.not()));
+        this.initializeColumnsTableView();
     }
 
     public void chooseCsvFile() {
@@ -196,19 +153,21 @@ public class ImportTradespaceFromExcelController implements Initializable, Appli
         this.readSpreadsheet(file);
     }
 
+    @Override
     public void importTradespace() {
         try {
-
             Sheet sheet = sheetProperty.get();
             Integer columnRowNumber = firstRowSpinner.getValue();
 
-            String descriptionColumn = descriptionListView.getSelectionModel().getSelectedItem();
-            String[] figuresOfMeritColumns = figuresOfMeritListView.getSelectionModel().getSelectedItems().toArray(new String[0]);
-            String epochColumn = epochsListView.getSelectionModel().getSelectedItem();
+            String descriptionColumn = descriptionProperty.getValue();
+            String[] figuresOfMeritColumns = figuresOfMeritProperty.getValue().toArray(new String[0]);
+            String epochColumn = epochProperty.getValue();
 
-            int descriptionColumnIndex = descriptionListView.getSelectionModel().getSelectedIndex();
-            ObservableList<Integer> figuresOfMeritColumnsIndexes = figuresOfMeritListView.getSelectionModel().getSelectedIndices();
-            int epochColumnIndex = epochsListView.getSelectionModel().getSelectedIndex();
+            int descriptionColumnIndex = columnsProperty.indexOf(descriptionColumn);
+            List<Integer> figuresOfMeritColumnsIndexes = Arrays.stream(figuresOfMeritColumns)
+                    .map(figuresOfMeritColumn -> columnsProperty.indexOf(figuresOfMeritColumn))
+                    .collect(Collectors.toList());
+            int epochColumnIndex = columnsProperty.indexOf(epochColumn);
 
             List<FigureOfMeritDefinition> definitions = FigureOfMeritDefinition
                     .buildFigureOfMeritDefinitions(figuresOfMeritColumns);

@@ -21,21 +21,16 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.ui.control.ErrorAlert;
 
 import java.io.File;
@@ -53,7 +48,7 @@ import static java.util.stream.Collectors.collectingAndThen;
  * <p>
  * Created by Nikolay Groshkov on 28-Sep-17.
  */
-public class ImportTradespaceFromCsvController implements Initializable, Applicable, Displayable {
+public class ImportTradespaceFromCsvController extends AbstractImportTradespaceController {
 
     private static final Logger logger = Logger.getLogger(ImportTradespaceFromCsvController.class);
 
@@ -69,38 +64,53 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
     private ComboBox<String> delimiterComboBox;
     @FXML
     private TextField qualifierTextField;
-    @FXML
-    private ListView<String> figuresOfMeritListView;
-    @FXML
-    private ListView<String> epochsListView;
-    @FXML
-    private ListView<String> descriptionListView;
-    @FXML
-    private Button importButton;
 
-    private FileStorageService fileStorageService;
-
-    private Stage ownerStage;
-    private EventHandler<Event> applyEventHandler;
     private Map<String, Character> delimiters = new HashMap<>();
 
-    private SimpleObjectProperty<File> fileProperty = new SimpleObjectProperty<>();
+    private ObjectProperty<File> fileProperty = new SimpleObjectProperty<>();
     private BooleanProperty fileReadProperty = new SimpleBooleanProperty();
     private ListProperty<String> fileLinesProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
     private ListProperty<String> fileLinesFilteredProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
-    private ListProperty<String> columnsProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
-
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
-    }
 
     @Override
-    public void setOnApply(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
-    }
+    public void initialize(URL location, ResourceBundle resources) {
+        delimiters.put("Comma", ',');
+        delimiters.put("Semicolon", ';');
+        delimiters.put("Tab", '\t');
+        delimiters.put("Space", ' ');
 
-    public void cancel() {
-        ownerStage.close();
+        firstRowSpinner.disableProperty().bind(fileProperty.isNull().or(fileReadProperty.not()));
+
+        fileLinesFilteredProperty
+                .bind(Bindings.createObjectBinding(() -> fileLinesProperty.get().stream()
+                                .skip(firstRowSpinner.getValue() - 1)
+                                .collect(collectingAndThen(Collectors.toList(), FXCollections::observableArrayList)),
+                        fileLinesProperty, firstRowSpinner.valueProperty()));
+        fileLinesTextArea.textProperty()
+                .bind(Bindings.createStringBinding(() -> fileLinesFilteredProperty.get().stream()
+                                .collect(Collectors.joining("\n")),
+                        fileLinesFilteredProperty));
+
+        BooleanBinding validFileLinesBinding = Bindings.createBooleanBinding(() -> fileLinesTextArea.getText().trim().isEmpty(),
+                fileLinesTextArea.textProperty()).and(fileReadProperty.not());
+
+        delimiterComboBox.disableProperty().bind(validFileLinesBinding);
+        qualifierTextField.disableProperty().bind(validFileLinesBinding);
+
+        columnsProperty.bind(Bindings.createObjectBinding(() -> {
+            if (fileLinesFilteredProperty.get().isEmpty() || validFileLinesBinding.get()) {
+                return FXCollections.emptyObservableList();
+            }
+            String columnLine = fileLinesFilteredProperty.get(0);
+            CSVFormat format = createCSVFormat();
+            CSVParser parser = CSVParser.parse(columnLine, format);
+            List<String> headers = new ArrayList<>();
+            parser.getRecords().get(0).iterator().forEachRemaining(headers::add);
+            return FXCollections.observableList(headers);
+        }, fileLinesFilteredProperty, delimiterComboBox.getSelectionModel().selectedItemProperty(), qualifierTextField.textProperty()));
+
+        columnsTableView.disableProperty().bind(validFileLinesBinding);
+        this.initializeColumnsTableView();
     }
 
     public void chooseCsvFile() {
@@ -123,15 +133,11 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
     }
 
     @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
     public void importTradespace() {
         try {
-            String descriptionColumn = descriptionListView.getSelectionModel().getSelectedItem();
-            String[] figuresOfMeritColumns = figuresOfMeritListView.getSelectionModel().getSelectedItems().toArray(new String[0]);
-            String epochColumn = epochsListView.getSelectionModel().getSelectedItem();
+            String descriptionColumn = descriptionProperty.getValue();
+            String[] figuresOfMeritColumns = figuresOfMeritProperty.getValue().toArray(new String[0]);
+            String epochColumn = epochProperty.getValue();
 
             List<FigureOfMeritDefinition> definitions = FigureOfMeritDefinition
                     .buildFigureOfMeritDefinitions(figuresOfMeritColumns);
@@ -192,56 +198,6 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
             Alert errorAlert = new ErrorAlert(message, e);
             errorAlert.showAndWait();
         }
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        delimiters.put("Comma", ',');
-        delimiters.put("Semicolon", ';');
-        delimiters.put("Tab", '\t');
-        delimiters.put("Space", ' ');
-
-        firstRowSpinner.disableProperty().bind(fileProperty.isNull().or(fileReadProperty.not()));
-
-        fileLinesFilteredProperty
-                .bind(Bindings.createObjectBinding(() -> fileLinesProperty.get().stream()
-                                .skip(firstRowSpinner.getValue() - 1)
-                                .collect(collectingAndThen(Collectors.toList(), FXCollections::observableArrayList)),
-                        fileLinesProperty, firstRowSpinner.valueProperty()));
-        fileLinesTextArea.textProperty()
-                .bind(Bindings.createStringBinding(() -> fileLinesFilteredProperty.get().stream()
-                                .collect(Collectors.joining("\n")),
-                        fileLinesFilteredProperty));
-
-        BooleanBinding validFileLinesBinding = Bindings.createBooleanBinding(() -> fileLinesTextArea.getText().trim().isEmpty(),
-                fileLinesTextArea.textProperty()).and(fileReadProperty.not());
-
-        delimiterComboBox.disableProperty().bind(validFileLinesBinding);
-        qualifierTextField.disableProperty().bind(validFileLinesBinding);
-        figuresOfMeritListView.disableProperty().bind(validFileLinesBinding);
-        epochsListView.disableProperty().bind(validFileLinesBinding);
-        descriptionListView.disableProperty().bind(validFileLinesBinding);
-
-        columnsProperty.bind(Bindings.createObjectBinding(() -> {
-            if (fileLinesFilteredProperty.get().isEmpty() || validFileLinesBinding.get()) {
-                return FXCollections.emptyObservableList();
-            }
-            String columnLine = fileLinesFilteredProperty.get(0);
-            CSVFormat format = createCSVFormat();
-            CSVParser parser = CSVParser.parse(columnLine, format);
-            List<String> headers = new ArrayList<>();
-            parser.getRecords().get(0).iterator().forEachRemaining(headers::add);
-            return FXCollections.observableList(headers);
-        }, fileLinesFilteredProperty, delimiterComboBox.getSelectionModel().selectedItemProperty(), qualifierTextField.textProperty()));
-
-        figuresOfMeritListView.itemsProperty().bind(columnsProperty);
-        figuresOfMeritListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        epochsListView.itemsProperty().bind(columnsProperty);
-        descriptionListView.itemsProperty().bind(columnsProperty);
-
-        importButton.disableProperty().bind(figuresOfMeritListView.getSelectionModel().selectedItemProperty().isNull()
-                .or(epochsListView.getSelectionModel().selectedItemProperty().isNull())
-                .or(descriptionListView.getSelectionModel().selectedItemProperty().isNull()));
     }
 
     private CSVFormat createCSVFormat() {
