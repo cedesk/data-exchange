@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2017 Skolkovo Institute of Science and Technology
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
+<BorderPane prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.121"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ImportTradespaceFromExcelController">
+    <center>
+        <VBox spacing="10.0">
+            <padding>
+                <Insets bottom="10" left="10" right="10" top="10"/>
+            </padding>
+            <GridPane>
+                <columnConstraints>
+                    <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" percentWidth="20.0"/>
+                    <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" percentWidth="60.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                </rowConstraints>
+                <Label text="File to import:">
+                    <padding>
+                        <Insets right="5.0"/>
+                    </padding>
+                </Label>
+                <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1">
+                    <TextField fx:id="filePathTextField" editable="false" prefWidth="330.0"/>
+                    <Button mnemonicParsing="false" onAction="#chooseCsvFile" text="Choose"/>
+                </HBox>
+                <Label prefHeight="17.0" GridPane.rowIndex="1" text="Sheet name:"/>
+                <ComboBox fx:id="sheetNameComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            </GridPane>
+            <BorderPane prefHeight="140.0" prefWidth="580.0">
+                <top>
+                    <Label text="Data preview:" BorderPane.alignment="CENTER_LEFT"/>
+                </top>
+                <center>
+                    <SpreadsheetView fx:id="spreadsheetView" editable="false" prefHeight="108.0" prefWidth="580.0"/>
+                </center>
+            </BorderPane>
+            <GridPane hgap="10.0">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="160.0" minWidth="10.0" prefWidth="90.0"/>
+                    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="253.0" minWidth="10.0"
+                                       prefWidth="192.0"/>
+                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="174.0" minWidth="10.0" prefWidth="90.0"/>
+                    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="239.0" minWidth="10.0"
+                                       prefWidth="192.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                </rowConstraints>
+                <Label text="Start import at row:">
+                    <padding>
+                        <Insets right="5.0"/>
+                    </padding>
+                </Label>
+                <Spinner fx:id="firstRowSpinner" editable="true" prefWidth="80.0" GridPane.columnIndex="1">
+                    <GridPane.margin>
+                        <Insets left="5.0"/>
+                    </GridPane.margin>
+                    <valueFactory>
+                        <SpinnerValueFactory.IntegerSpinnerValueFactory fx:id="firstRowSpinnerValueFactory" max="1"
+                                                                        min="1"/>
+                    </valueFactory>
+                </Spinner>
+            </GridPane>
+            <GridPane hgap="10.0" prefHeight="180.0" prefWidth="680.0">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                </rowConstraints>
+                <BorderPane prefHeight="200.0" prefWidth="200.0">
+                    <top>
+                        <Label text="Choose Description column" BorderPane.alignment="TOP_LEFT"/>
+                    </top>
+                    <center>
+                        <ListView fx:id="descriptionListView" prefHeight="200.0" prefWidth="200.0"
+                                  BorderPane.alignment="CENTER"/>
+                    </center>
+                </BorderPane>
+                <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+                    <top>
+                        <Label text="Choose Figure of Merit columns" BorderPane.alignment="CENTER_LEFT"/>
+                    </top>
+                    <center>
+                        <ListView fx:id="figuresOfMeritListView" prefHeight="200.0" prefWidth="200.0"
+                                  BorderPane.alignment="CENTER"/>
+                    </center>
+                </BorderPane>
+                <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
+                    <top>
+                        <Label text="Choose Epoch column" BorderPane.alignment="CENTER_LEFT"/>
+                    </top>
+                    <center>
+                        <ListView fx:id="epochsListView" prefHeight="200.0" prefWidth="200.0"
+                                  BorderPane.alignment="CENTER"/>
+                    </center>
+                </BorderPane>
+            </GridPane>
+        </VBox>
+    </center>
+    <bottom>
+        <ToolBar prefWidth="618.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                 AnchorPane.rightAnchor="0.0">
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button minWidth="28" onAction="#cancel" text="_Cancel"/>
+            <Button fx:id="importButton" minWidth="28" onAction="#importTradespace" text="_Import"/>
+        </ToolBar>
+    </bottom>
+</BorderPane>

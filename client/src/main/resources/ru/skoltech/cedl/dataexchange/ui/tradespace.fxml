@@ -31,7 +31,8 @@
                 <Button mnemonicParsing="false" onAction="#loadTradespace" text="Load"/>
                 <Button mnemonicParsing="false" onAction="#saveTradespace" text="Save"/>
                 <Separator orientation="VERTICAL"/>
-                <Button mnemonicParsing="false" onAction="#importTadespaceFromCSV" text="Import"/>
+                <Button mnemonicParsing="false" onAction="#importTadespaceFromCSV" text="Import CSV"/>
+                <Button mnemonicParsing="false" onAction="#importTadespaceFromExcel" text="Import Excel"/>
                 <Separator orientation="VERTICAL"/>
                 <Label fx:id="studyNameLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
                     <HBox.margin>

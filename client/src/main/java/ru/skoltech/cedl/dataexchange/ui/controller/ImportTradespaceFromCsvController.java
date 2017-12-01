@@ -58,25 +58,25 @@ public class ImportTradespaceFromCsvController implements Initializable, Applica
     private static final Logger logger = Logger.getLogger(ImportTradespaceFromCsvController.class);
 
     @FXML
-    public TextField filePathTextField;
+    private TextField filePathTextField;
     @FXML
-    public Spinner<Integer> firstRowSpinner;
+    private Spinner<Integer> firstRowSpinner;
     @FXML
-    public IntegerSpinnerValueFactory firstRowSpinnerValueFactory;
+    private IntegerSpinnerValueFactory firstRowSpinnerValueFactory;
     @FXML
-    public TextArea fileLinesTextArea;
+    private TextArea fileLinesTextArea;
     @FXML
-    public ComboBox<String> delimiterComboBox;
+    private ComboBox<String> delimiterComboBox;
     @FXML
-    public TextField qualifierTextField;
+    private TextField qualifierTextField;
     @FXML
-    public ListView<String> figuresOfMeritListView;
+    private ListView<String> figuresOfMeritListView;
     @FXML
-    public ListView<String> epochsListView;
+    private ListView<String> epochsListView;
     @FXML
-    public ListView<String> descriptionListView;
+    private ListView<String> descriptionListView;
     @FXML
-    public Button importButton;
+    private Button importButton;
 
     private FileStorageService fileStorageService;
 
