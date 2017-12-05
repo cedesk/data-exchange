@@ -18,30 +18,44 @@ package ru.skoltech.cedl.dataexchange.entity.user;
 
 import org.hibernate.envers.Audited;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
+import ru.skoltech.cedl.dataexchange.structure.adapters.DisciplineAdapter;
+import ru.skoltech.cedl.dataexchange.structure.adapters.SubSystemModelAdapter;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Created by D.Knoll on 16.06.2015.
  */
 @Entity
 @Audited
+@XmlAccessorType(XmlAccessType.FIELD)
 public class DisciplineSubSystem {
 
     @Id
     @GeneratedValue
+    @XmlTransient
     private long id;
 
     @ManyToOne(optional = false, targetEntity = UserRoleManagement.class)
+    @XmlTransient
     private UserRoleManagement userRoleManagement;
 
     @ManyToOne(optional = false, targetEntity = Discipline.class)
+    @XmlAttribute
+    @XmlJavaTypeAdapter(DisciplineAdapter.class)
     private Discipline discipline;
 
     @ManyToOne(optional = false, targetEntity = SubSystemModel.class)
+    @XmlAttribute
+    @XmlJavaTypeAdapter(SubSystemModelAdapter.class)
     private SubSystemModel subSystem;
 
     private DisciplineSubSystem() {

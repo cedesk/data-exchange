@@ -71,7 +71,7 @@ public enum ExternalModelState {
      * @return <i>true</i> if external model was initialized and <i>false</i> if opposite.
      */
     public boolean isInitialized(){
-        return this != EMPTY && this != INCORRECT || this != UNINITIALIZED;
+        return this != EMPTY && this != INCORRECT && this != UNINITIALIZED;
     }
 
     /**

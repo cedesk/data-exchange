@@ -52,9 +52,13 @@ public class User implements Comparable<User> {
     public User() {
     }
 
-    public User(String userName, String fullName, String salt) {
+    public User(String userName, String fullName) {
         this.userName = userName;
         this.fullName = fullName;
+    }
+
+    public User(String userName, String fullName, String salt) {
+        this(userName, fullName);
         this.salt = salt;
     }
 

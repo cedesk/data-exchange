@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -43,9 +44,14 @@ public class GuiServiceImpl implements GuiService {
     private static final Logger logger = Logger.getLogger(GuiServiceImpl.class);
 
     private FXMLLoaderFactory fxmlLoaderFactory;
+    private Locale locale;
 
     public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
+    }
+
+    public void setLocale(Locale locale) {
+        this.locale = locale;
     }
 
     @Override
@@ -77,7 +83,7 @@ public class GuiServiceImpl implements GuiService {
 
     @Override
     public ViewBuilder createViewBuilder(String title, URL location) {
-        return new ViewBuilder(fxmlLoaderFactory, title, location);
+        return new ViewBuilder(fxmlLoaderFactory, locale, title, location);
     }
 
     @Override

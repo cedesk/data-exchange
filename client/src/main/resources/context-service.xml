@@ -40,11 +40,11 @@
 
     <bean id="parameterModelService" class="ru.skoltech.cedl.dataexchange.service.impl.ParameterModelServiceImpl"/>
 
-    <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UserManagementServiceImpl"/>
+    <bean id="userService" class="ru.skoltech.cedl.dataexchange.service.impl.UserServiceImpl"/>
 
     <bean id="userRoleManagementService"
           class="ru.skoltech.cedl.dataexchange.service.impl.UserRoleManagementServiceImpl">
-        <property name="userManagementService" ref="userManagementService"/>
+        <property name="userService" ref="userService"/>
     </bean>
 
     <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UnitManagementServiceImpl">

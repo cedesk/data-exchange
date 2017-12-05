@@ -157,6 +157,15 @@ public class TradespaceController implements Initializable {
 
     public void importTadespaceFromCSV() {
         ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from CSV File", Views.IMPORT_TRADESPACE_FROM_CSV_VIEW);
+        this.importTadespace(viewBuilder);
+    }
+
+    public void importTadespaceFromExcel() {
+        ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from Excel File", Views.IMPORT_TRADESPACE_FROM_EXCEL_VIEW);
+        this.importTadespace(viewBuilder);
+    }
+
+    private void importTadespace(ViewBuilder viewBuilder) {
         viewBuilder.resizable(false);
         viewBuilder.modality(Modality.APPLICATION_MODAL);
         viewBuilder.applyEventHandler(event -> {
@@ -247,7 +256,7 @@ public class TradespaceController implements Initializable {
         }
     }
 
-    public void newTradespace() {
+    private void newTradespace() {
         MultitemporalTradespace newTradespace = new MultitemporalTradespace();
         newTradespace.setId(studyId);
         logger.info("new tradespace initialized");

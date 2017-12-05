@@ -48,6 +48,7 @@ public class Discipline implements Comparable<Discipline> {
     private boolean builtIn = false;
 
     @ManyToOne(optional = false, targetEntity = UserRoleManagement.class)
+    @XmlTransient
     private UserRoleManagement userRoleManagement;
 
     public Discipline() {

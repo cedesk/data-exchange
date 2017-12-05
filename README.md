@@ -10,6 +10,7 @@ On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
 ## Release History and Notes
 
+* 2017-12-05 - Version 1.37   (export/import as zip, import of tradespace data in Excel format, i18n framework)
 * 2017-11-24 - Version 1.36   (component library, bug fixes)
 * 2017-11-16 - Version 1.35   (new ModelMode attributes (description, embodiment, completion, position), UI enhancements)
 * 2017-11-01 - Version 1.34   (CSV external model, bug fixes)

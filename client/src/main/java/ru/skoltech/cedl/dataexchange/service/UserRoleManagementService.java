@@ -37,8 +37,8 @@ public interface UserRoleManagementService {
      *
      * @param userRoleManagement {@link UserRoleManagement} to add in
      * @param user               {@link User} to build {@link UserDiscipline}
-     * @return <i>false</i> if {@link UserDiscipline} was added successfully (not existent before),
-     * <i>true</i> if opposite
+     * @return <i>true</i> if {@link UserDiscipline} was added successfully (not existent before),
+     * <i>false</i> if opposite
      */
     boolean addAdminDiscipline(UserRoleManagement userRoleManagement, User user);
 
@@ -49,8 +49,8 @@ public interface UserRoleManagementService {
      * @param userRoleManagement {@link UserRoleManagement} to add in
      * @param discipline         {@link Discipline} to build {@link DisciplineSubSystem}
      * @param subSystem          {@link SubSystemModel} to build {@link DisciplineSubSystem}
-     * @return <i>false</i> if {@link DisciplineSubSystem} was added successfully (not existent before),
-     * <i>true</i> if opposite
+     * @return <i>true</i> if {@link DisciplineSubSystem} was added successfully (not existent before),
+     * <i>false</i> if opposite
      */
     boolean addDisciplineSubsystem(UserRoleManagement userRoleManagement, Discipline discipline, SubSystemModel subSystem);
 
@@ -61,8 +61,8 @@ public interface UserRoleManagementService {
      * @param userRoleManagement {@link UserRoleManagement} to add in
      * @param user               {@link User} to build {@link UserDiscipline}
      * @param discipline         {@link Discipline} to build {@link UserDiscipline}
-     * @return <i>false</i> if {@link UserDiscipline} was added successfully (not existent before),
-     * <i>true</i> if opposite
+     * @return <i>true</i> if {@link UserDiscipline} was added successfully (not existent before),
+     * <i>false</i> if opposite
      */
     boolean addUserDiscipline(UserRoleManagement userRoleManagement, User user, Discipline discipline);
 
@@ -70,10 +70,9 @@ public interface UserRoleManagementService {
      * Add user with specified name and set an administrator role to him.
      *
      * @param userRoleManagement {@link UserRoleManagement} to add on
-     * @param userManagement     {@link UserManagement} to add on
      * @param userName           name of new {@link User}
      */
-    void addUserWithAdminRole(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName);
+    void addUserWithAdminRole(UserRoleManagement userRoleManagement, String userName);
 
     /**
      * Check if {@link User} has rights to edit a {@link ModelNode} in the specified {@link UserRoleManagement}.
@@ -97,10 +96,9 @@ public interface UserRoleManagementService {
     /**
      * Create default {@link UserRoleManagement}.
      *
-     * @param userManagement {@link UserManagement} to base on
      * @return created instance of {@link UserRoleManagement}
      */
-    UserRoleManagement createDefaultUserRoleManagement(UserManagement userManagement);
+    UserRoleManagement createDefaultUserRoleManagement();
 
     /**
      * Build {@link UserRoleManagement} which contains <i>Admin</i> {@link Discipline} with full rights.
@@ -110,14 +108,12 @@ public interface UserRoleManagementService {
     UserRoleManagement createUserRoleManagement();
 
     /**
-     * Create {@link UserRoleManagement} based on {@link SystemModel} subsystems and
-     * {@link UserManagement} disciplines.
+     * Create {@link UserRoleManagement} based on {@link SystemModel} subsystems.
      *
      * @param systemModel    {@link SystemModel} to base on
-     * @param userManagement {@link UserManagement} to base on
      * @return created instance of {@link UserRoleManagement}
      */
-    UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement);
+    UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel);
 
     /**
      * Build a {@link Map} of current {@link UserRoleManagement} disciplines

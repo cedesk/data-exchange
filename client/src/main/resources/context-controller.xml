@@ -33,6 +33,7 @@
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="differenceHandler" ref="differenceHandler"/>
         <property name="guiService" ref="guiService"/>
+        <property name="userService" ref="userService"/>
         <property name="studyService" ref="studyService"/>
         <property name="fileStorageService" ref="fileStorageService"/>
         <property name="updateService" ref="updateService"/>
@@ -145,6 +146,10 @@
         <property name="fileStorageService" ref="fileStorageService"/>
     </bean>
 
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ImportTradespaceFromExcelController" scope="prototype">
+        <property name="fileStorageService" ref="fileStorageService"/>
+    </bean>
+
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController" scope="prototype">
         <property name="guiService" ref="guiService"/>
     </bean>
@@ -161,14 +166,18 @@
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserManagementController" scope="prototype">
         <property name="project" ref="project"/>
         <property name="guiService" ref="guiService"/>
+        <property name="userService" ref="userService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserEditingController" scope="prototype"/>
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserEditingController" scope="prototype">
+        <property name="userService" ref="userService"/>
+    </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserRoleManagementController">
         <property name="project" ref="project"/>
+        <property name="userService" ref="userService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
@@ -190,7 +199,7 @@
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ProjectSettingsController">
         <property name="project" ref="project"/>
         <property name="applicationSettings" ref="applicationSettings"/>
-        <property name="userManagementService" ref="userManagementService"/>
+        <property name="userService" ref="userService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UnitChooseController" scope="prototype"/>

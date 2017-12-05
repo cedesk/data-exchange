@@ -21,15 +21,22 @@ import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
+import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
+import ru.skoltech.cedl.dataexchange.entity.user.DisciplineSubSystem;
+import ru.skoltech.cedl.dataexchange.entity.user.UserDiscipline;
+import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
+import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
@@ -38,9 +45,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.*;
 
 /**
@@ -48,17 +57,17 @@ import static org.junit.Assert.*;
  */
 public class ExportImportTest extends AbstractApplicationContextTest {
 
-    private File excelAttachmentFile, csvAttachmentFile;
     private SystemBuilder systemBuilder;
     private FileStorageService fileStorageService;
     private ExternalModelService externalModelService;
     private UnitManagementService unitManagementService;
-//    private UserManagementService userManagementService;
-//    private UserRoleManagementService userRoleManagementService;
-//    private UserManagementRepository userManagementRepository;
+
+    private File excelAttachmentFile, csvAttachmentFile;
+    private Study originalStudy;
+    private ExternalModel excelExternalModel, csvExternalModel;
 
     @Before
-    public void setup() throws IOException, NoSuchFieldException, IllegalAccessException, URISyntaxException {
+    public void setup() throws IOException, NoSuchFieldException, IllegalAccessException, URISyntaxException, ExternalModelException {
         excelAttachmentFile = new File(ExportImportTest.class.getResource("/attachment.xls").toURI());
         csvAttachmentFile = new File(ExportImportTest.class.getResource("/attachment.csv").toURI());
 
@@ -67,9 +76,88 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         fileStorageService = context.getBean(FileStorageService.class);
         externalModelService = context.getBean(ExternalModelService.class);
         unitManagementService = context.getBean(UnitManagementService.class);
-//        userManagementService = context.getBean(UserManagementService.class);
-//        userManagementRepository = context.getBean(UserManagementRepository.class);
-//        userRoleManagementService = context.getBean(UserRoleManagementService.class);
+        UserRoleManagementService userRoleManagementService = context.getBean(UserRoleManagementService.class);
+
+        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement();
+        systemBuilder.modelDepth(2);
+        SystemModel originalSystemModel = systemBuilder.build("testModel");
+
+        excelExternalModel = externalModelService.createExternalModelFromFile(excelAttachmentFile, originalSystemModel);
+        csvExternalModel = externalModelService.createExternalModelFromFile(csvAttachmentFile, originalSystemModel);
+        originalSystemModel.addExternalModel(excelExternalModel);
+        originalSystemModel.addExternalModel(csvExternalModel);
+
+        ExternalModelReference valueModelReference1 = new ExternalModelReference();
+        valueModelReference1.setExternalModel(excelExternalModel);
+        valueModelReference1.setTarget("B3");
+        ExternalModelReference exportModelReference = new ExternalModelReference();
+        exportModelReference.setExternalModel(excelExternalModel);
+        exportModelReference.setTarget("D4");
+
+        ParameterModel parameterModel1 = originalSystemModel.getParameters().get(0);
+        parameterModel1.setValueReference(valueModelReference1);
+        ParameterModel parameterModel2 = originalSystemModel.getParameters().get(1);
+        parameterModel2.setExportReference(exportModelReference);
+
+        String studyName = "studyName";
+        originalStudy = new Study();
+        originalStudy.setName(studyName);
+        originalStudy.setSystemModel(originalSystemModel);
+        originalStudy.setUserRoleManagement(userRoleManagement);
+
+        Discipline discipline1 = userRoleManagement.getDisciplines().get(0);
+        Discipline discipline2 = userRoleManagement.getDisciplines().get(1);
+        SubSystemModel subSystemModel = originalSystemModel.getSubNodes().get(0);
+        SubSystemModel subSystemMode2 = originalSystemModel.getSubNodes().get(1);
+        boolean added1 = userRoleManagementService.addDisciplineSubsystem(userRoleManagement, discipline1, subSystemModel);
+        boolean added2 = userRoleManagementService.addDisciplineSubsystem(userRoleManagement, discipline2, subSystemMode2);
+        assertTrue(added1);
+        assertTrue(added2);
+    }
+
+    @Test
+    public void testExportImportStudyZip() throws IOException {
+        File file = new File("target", "dummy-study.zip");
+        fileStorageService.exportStudyToZip(originalStudy, file);
+        Study importedStudy = fileStorageService.importStudyFromZip(file);
+        this.checkImportedStudy(importedStudy);
+        file.deleteOnExit();
+    }
+
+    @Test
+    public void testExportImportStudy() throws IOException, ExternalModelException {
+        File file = new File("target", "dummy-study.xml");
+        fileStorageService.exportStudy(originalStudy, file);
+        Study importedStudy = fileStorageService.importStudy(file);
+        this.checkImportedStudy(importedStudy);
+        file.deleteOnExit();
+    }
+
+    private void checkImportedStudy(Study importedStudy) {
+        //        assertEquals(originalStudy, importedStudy);
+        assertEquals(originalStudy.getName(), importedStudy.getName());
+        assertThat(importedStudy.getSystemModel().getExternalModels(), hasItem(excelExternalModel));
+        assertThat(importedStudy.getSystemModel().getExternalModels(), hasItem(csvExternalModel));
+        importedStudy.getSystemModel().getExternalModels()
+                .forEach(externalModel -> assertTrue(externalModel.state().isInitialized()));
+
+        Discipline[] userDisciplines = importedStudy.getUserRoleManagement().getUserDisciplines()
+                .stream().map(UserDiscipline::getDiscipline).toArray(Discipline[]::new);
+        Discipline[] subsystemDisciplines = importedStudy.getUserRoleManagement().getDisciplineSubSystems()
+                .stream().map(DisciplineSubSystem::getDiscipline).toArray(Discipline[]::new);
+        SubSystemModel[] disciplineSubSystemModels = importedStudy.getUserRoleManagement().getDisciplineSubSystems()
+                .stream().map(DisciplineSubSystem::getSubSystem).toArray(SubSystemModel[]::new);
+
+        assertThat(importedStudy.getUserRoleManagement().getDisciplines(), hasItems(userDisciplines));
+        assertThat(importedStudy.getUserRoleManagement().getDisciplines(), hasItems(subsystemDisciplines));
+        assertThat(importedStudy.getSystemModel().getSubNodes(), hasItems(disciplineSubSystemModels));
+
+        importedStudy.getUserRoleManagement().getDisciplines()
+                .forEach(discipline -> assertEquals(importedStudy.getUserRoleManagement(), discipline.getUserRoleManagement()));
+        importedStudy.getUserRoleManagement().getUserDisciplines()
+                .forEach(userDiscipline -> assertEquals(importedStudy.getUserRoleManagement(), userDiscipline.getUserRoleManagement()));
+        importedStudy.getUserRoleManagement().getDisciplineSubSystems()
+                .forEach(disciplineSubSystem -> assertEquals(importedStudy.getUserRoleManagement(), disciplineSubSystem.getUserRoleManagement()));
     }
 
     @Test
@@ -132,7 +220,10 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     @Test
     public void testImportOldSystemModel() throws IOException, URISyntaxException {
         File file = new File(ExportImportTest.class.getResource("/model-old.xml").toURI());
-        SystemModel systemModel = fileStorageService.importSystemModel(file);
+        File modelFile = new File("target", "model-old.xml");
+        Files.copy(file.toPath(), modelFile.toPath());
+
+        SystemModel systemModel = fileStorageService.importSystemModel(modelFile);
 
         assertNotNull(systemModel);
         assertFalse(systemModel.getExternalModels().isEmpty());
@@ -141,6 +232,7 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         assertNotNull(externalModel);
         assertTrue(externalModel instanceof ExcelExternalModel);
         assertTrue(externalModel.state().isInitialized());
+        modelFile.deleteOnExit();
     }
 
     @Test
@@ -168,7 +260,7 @@ public class ExportImportTest extends AbstractApplicationContextTest {
 
     @Test
     public void testExportImportUserRoleManagement() throws IOException {
-//        UserManagement userManagement = userManagementService.findUserManagement();
+//        UserManagement userManagement = userService.findUserManagement();
 //
 //        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement(userManagement);
 //        File userRoleManagementFile = new File("target", "dummy-user-role-management.xml");

@@ -22,11 +22,9 @@ import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.model.*;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
-import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.service.ModelNodeService;
-import ru.skoltech.cedl.dataexchange.service.UserManagementService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
@@ -46,7 +44,6 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
 
     private SystemBuilder systemBuilder;
     private ModelNodeService modelNodeService;
-    private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
 
     private SystemModel systemModel;
@@ -55,7 +52,6 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
     @Before
     public void prepare() {
         modelNodeService = context.getBean(ModelNodeService.class);
-        userManagementService = context.getBean(UserManagementService.class);
         userRoleManagementService = context.getBean(UserRoleManagementService.class);
         systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
         systemBuilder.modelDepth(4);
@@ -266,12 +262,11 @@ public class ModelNodeServiceTest extends AbstractApplicationContextTest {
 
     @Test
     public void testDeleteModelNodeWithUserRoleManager() {
-        UserManagement userManagement = userManagementService.createDefaultUserManagement();
-        UserRoleManagement userRoleManagement = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel, userManagement);
+        UserRoleManagement userRoleManagement = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel);
 
         userRoleManagement.getDisciplines().forEach(discipline -> {
             boolean added = userRoleManagementService.addDisciplineSubsystem(userRoleManagement, discipline, subSystemModel);
-            assertFalse(added);
+            assertTrue(added);
         });
 
         Discipline discipline = userRoleManagement.getDisciplines().stream()

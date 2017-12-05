@@ -35,6 +35,7 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.service.UserService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
@@ -62,6 +63,7 @@ public class UserManagementController implements Initializable, Displayable {
     private Button deleteUserButton;
 
     private Project project;
+    private UserService userService;
     private GuiService guiService;
     private UserRoleManagementService userRoleManagementService;
     private StatusLogger statusLogger;
@@ -79,6 +81,10 @@ public class UserManagementController implements Initializable, Displayable {
         this.project = project;
     }
 
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
     public void setStatusLogger(StatusLogger statusLogger) {
         this.statusLogger = statusLogger;
     }
@@ -87,52 +93,9 @@ public class UserManagementController implements Initializable, Displayable {
         this.userRoleManagementService = userRoleManagementService;
     }
 
-    public void addUser() {
-        Optional<String> userNameChoice = Dialogues.inputUserName();
-        if (userNameChoice.isPresent()) {
-            String userName = userNameChoice.get();
-            if (!Identifiers.validateUserName(userName)) {
-                Dialogues.showError("Invalid name", Identifiers.getUserNameValidationDescription());
-                return;
-            }
-            if (userRoleManagementService.disciplineMap(project.getUserRoleManagement()).containsKey(userName)) {
-                Dialogues.showError("Duplicate user name", "There is already a user named like that!");
-            } else {
-                User user = new User();
-                user.setUserName(userName);
-                logger.debug("Add user: " + user.getUserName());
-                statusLogger.info("Add user: " + user.getUserName());
-                project.getUserManagement().getUsers().add(user);
-            }
-        }
-        this.loadUsers();
-    }
-
-    public void deleteUser() {
-        User selectedUser = userTable.getSelectionModel().getSelectedItem();
-        logger.debug("Remove user: " + selectedUser.getUserName());
-        project.getUserManagement().getUsers().remove(selectedUser);
-        this.loadUsers();
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-    }
-
-    public void editUser() {
-        User selectedUser = userTable.getSelectionModel().getSelectedItem();
-        Window ownerWindow = userTable.getScene().getWindow();
-        ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder("User details", Views.USER_EDITING_VIEW);
-        userDetailsViewBuilder.ownerWindow(ownerWindow);
-        userDetailsViewBuilder.modality(Modality.APPLICATION_MODAL);
-        userDetailsViewBuilder.showAndWait(selectedUser);
-        this.loadUsers();
-    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        this.loadUsers();
+        this.reloadUsers();
 
         userListProperty.setValue(FXCollections.observableList(users));
         userListProperty.bind(Bindings.createObjectBinding(() -> {
@@ -155,28 +118,57 @@ public class UserManagementController implements Initializable, Displayable {
         deleteUserButton.disableProperty().bind(userTable.getSelectionModel().selectedItemProperty().isNull());
     }
 
-    public void reloadUsers() {
-        boolean success = project.loadUserManagement();
-        this.loadUsers();
-        if (!success) {
-            statusLogger.error("Error loading user list!");
+    public void addUser() {
+        Optional<String> userNameChoice = Dialogues.inputUserName();
+        if (userNameChoice.isPresent()) {
+            String userName = userNameChoice.get();
+            if (!Identifiers.validateUserName(userName)) {
+                Dialogues.showError("Invalid name", Identifiers.getUserNameValidationDescription());
+                return;
+            }
+            if (userRoleManagementService.disciplineMap(project.getUserRoleManagement()).containsKey(userName)) {
+                Dialogues.showError("Duplicate user name", "There is already a user named like that!");
+            } else {
+                User user = new User();
+                user.setUserName(userName);
+                logger.debug("Add user: " + user.getUserName());
+                statusLogger.info("Add user: " + user.getUserName());
+                userService.saveUser(user);
+            }
         }
+        this.reloadUsers();
     }
 
-    public void saveUsers() {
-        boolean success = project.storeUserManagement();
-        if (!success) {
-            statusLogger.error("Error saving user list!");
-        }
+    public void editUser() {
+        User selectedUser = userTable.getSelectionModel().getSelectedItem();
+        Window ownerWindow = userTable.getScene().getWindow();
+        ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder("User details", Views.USER_EDITING_VIEW);
+        userDetailsViewBuilder.ownerWindow(ownerWindow);
+        userDetailsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        userDetailsViewBuilder.showAndWait(selectedUser);
+        this.reloadUsers();
+    }
+
+    public void deleteUser() {
+        User selectedUser = userTable.getSelectionModel().getSelectedItem();
+        logger.debug("Remove user: " + selectedUser.getUserName());
+        userService.deleteUser(selectedUser);
+        this.reloadUsers();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
+    @FXML
+    public void close() {
         ownerStage.close();
     }
 
-    private void loadUsers() {
-        if (project.getUserManagement() != null) {
-            this.users.clear();
-            this.users.addAll(project.getUserManagement().getUsers());
-            this.users.sort(Comparator.naturalOrder());
-        }
+    private void reloadUsers() {
+        this.users.clear();
+        this.users.addAll(userService.findAllUsers());
+        this.users.sort(Comparator.naturalOrder());
     }
-
 }

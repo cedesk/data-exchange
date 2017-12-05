@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.entity;
+package ru.skoltech.cedl.dataexchange.structure.adapters;
 
 import org.springframework.context.ApplicationContext;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;

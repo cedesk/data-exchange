@@ -78,7 +78,7 @@ public class SpreadsheetGridViewFactory {
         return grid;
     }
 
-    private static Grid getGrid(Sheet sheet) {
+    public static Grid getGrid(Sheet sheet) {
         if (sheet == null) return new GridBase(0, 0);
         final int maxRows = sheet.getLastRowNum() + 1;
         final int maxColumns = extractColumns(sheet);

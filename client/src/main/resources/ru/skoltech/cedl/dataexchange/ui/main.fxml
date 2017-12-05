@@ -37,7 +37,7 @@
                 <VBox HBox.hgrow="ALWAYS">
                     <MenuBar>
                         <Menu text="_Project">
-                            <MenuItem onAction="#newProject" text="_New..."/>
+                            <MenuItem onAction="#newProject" text="%main.menu.project.new"/>
                             <MenuItem onAction="#openProject" text="_Open..."/>
                             <MenuItem onAction="#openStudyRevisionsView" text="_Load tagged revision..."/>
                             <MenuItem onAction="#saveProject" text="_Save"/>

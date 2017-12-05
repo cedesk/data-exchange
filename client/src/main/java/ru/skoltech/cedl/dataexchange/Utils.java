@@ -126,12 +126,6 @@ public class Utils {
         return target;
     }
 
-    public static String getExtension(String fileName) {
-        int beginIndex = fileName.lastIndexOf('.');
-        if (beginIndex < 0) return "";
-        return fileName.substring(beginIndex).toLowerCase();
-    }
-
     static void writeToFile(Serializable object, File file) {
         logger.info("writing to file: " + file.getAbsolutePath());
         try {

@@ -16,14 +16,13 @@
   ~ limitations under the License.
   -->
 
-<?import javafx.collections.FXCollections?>
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import java.lang.*?>
+<?import org.controlsfx.control.spreadsheet.SpreadsheetView?>
 <BorderPane prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.121"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ImportTradespaceFromCsvController">
+            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.ImportTradespaceFromExcelController">
     <center>
         <VBox spacing="10.0">
             <padding>
@@ -43,36 +42,19 @@
                         <Insets right="5.0"/>
                     </padding>
                 </Label>
-                <Label text="Start import at row:" GridPane.rowIndex="1">
-                    <padding>
-                        <Insets right="5.0"/>
-                    </padding>
-                </Label>
                 <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1">
-                    <padding>
-                        <Insets left="5.0"/>
-                    </padding>
                     <TextField fx:id="filePathTextField" editable="false" prefWidth="330.0"/>
                     <Button mnemonicParsing="false" onAction="#chooseCsvFile" text="Choose"/>
                 </HBox>
-                <Spinner fx:id="firstRowSpinner" editable="true" prefWidth="80.0" GridPane.columnIndex="1"
-                         GridPane.rowIndex="1">
-                    <GridPane.margin>
-                        <Insets left="5.0"/>
-                    </GridPane.margin>
-                    <valueFactory>
-                        <SpinnerValueFactory.IntegerSpinnerValueFactory fx:id="firstRowSpinnerValueFactory" max="1"
-                                                                        min="1"/>
-                    </valueFactory>
-                </Spinner>
+                <Label prefHeight="17.0" GridPane.rowIndex="1" text="Sheet name:"/>
+                <ComboBox fx:id="sheetNameComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
             </GridPane>
             <BorderPane prefHeight="140.0" prefWidth="580.0">
                 <top>
                     <Label text="Data preview:" BorderPane.alignment="CENTER_LEFT"/>
                 </top>
                 <center>
-                    <TextArea fx:id="fileLinesTextArea" editable="false" prefHeight="108.0" prefWidth="580.0"
-                              BorderPane.alignment="CENTER"/>
+                    <SpreadsheetView fx:id="spreadsheetView" editable="false" prefHeight="108.0" prefWidth="580.0"/>
                 </center>
             </BorderPane>
             <GridPane hgap="10.0">
@@ -87,23 +69,20 @@
                 <rowConstraints>
                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                 </rowConstraints>
-                <Label prefHeight="17.0" prefWidth="65.0" text="Delimiter:"/>
-                <Label text="Text qualifier:" GridPane.columnIndex="2"/>
-                <ComboBox fx:id="delimiterComboBox" prefWidth="120.0" GridPane.columnIndex="1">
-                    <items>
-                        <FXCollections fx:factory="observableArrayList">
-                            <String fx:value="Comma"/>
-                            <String fx:value="Semicolon"/>
-                            <String fx:value="Tab"/>
-                            <String fx:value="Space"/>
-                        </FXCollections>
-                    </items>
-                    <value>
-                        <String fx:value="Comma"/>
-                    </value>
-                </ComboBox>
-                <TextField fx:id="qualifierTextField" alignment="CENTER_RIGHT" prefWidth="30.0" text="&quot;"
-                           GridPane.columnIndex="3"/>
+                <Label text="Start import at row:">
+                    <padding>
+                        <Insets right="5.0"/>
+                    </padding>
+                </Label>
+                <Spinner fx:id="firstRowSpinner" editable="true" prefWidth="80.0" GridPane.columnIndex="1">
+                    <GridPane.margin>
+                        <Insets left="5.0"/>
+                    </GridPane.margin>
+                    <valueFactory>
+                        <SpinnerValueFactory.IntegerSpinnerValueFactory fx:id="firstRowSpinnerValueFactory" max="1"
+                                                                        min="1"/>
+                    </valueFactory>
+                </Spinner>
             </GridPane>
             <TableView fx:id="columnsTableView" editable="true" prefHeight="180.0" prefWidth="680.0">
                 <columnResizePolicy>
