@@ -37,6 +37,7 @@ public class ApplicationSettingsInitializer {
     private static final String CEDESK_APP_FILE = "cedesk.app.file";
     private static final String CEDESK_APP_FILE_COMMENT = "cedesk.app.file.comment";
 
+    private static final String APPLICATION_LANGUAGE = "application.language";
     private static final String REPOSITORY_HOST = "repository.host";
     private static final String REPOSITORY_SCHEMA_NAME = "repository.schema.name";
     private static final String REPOSITORY_SCHEMA_CREATE = "repository.schema.create";
@@ -62,6 +63,7 @@ public class ApplicationSettingsInitializer {
 
         Properties applicationSettings = applicationSettings(applicationSettingsFile);
 
+        applicationSettings.putIfAbsent(APPLICATION_LANGUAGE, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + APPLICATION_LANGUAGE));
         applicationSettings.putIfAbsent(REPOSITORY_HOST, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_HOST));
         applicationSettings.putIfAbsent(REPOSITORY_SCHEMA_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_SCHEMA_NAME));
         applicationSettings.putIfAbsent(REPOSITORY_SCHEMA_CREATE, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_SCHEMA_CREATE));

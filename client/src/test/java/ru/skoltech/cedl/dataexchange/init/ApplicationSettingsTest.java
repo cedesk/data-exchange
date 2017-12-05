@@ -42,6 +42,7 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
 
     private static final String CEDESK_APP_FILE_COMMENT = "cedesk.app.file.comment";
 
+    private static final String DEFAULT_APPLICATION_LANGUAGE = "default.application.language";
     private static final String DEFAULT_REPOSITORY_HOST = "default.repository.host";
     private static final String DEFAULT_REPOSITORY_SCHEMA_CREATE = "default.repository.schema.create";
     private static final String DEFAULT_REPOSITORY_SCHEMA_NAME = "default.repository.schema.name";
@@ -87,6 +88,7 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
         assertThat(applicationSettings.getApplicationDistributionServerUrl(), is(cedeskProps.getProperty(APPLICATION_DISTRIBUTION_SERVER_URL)));
         assertThat(applicationSettings.getApplicationVersion(), is(cedeskProps.getProperty(APPLICATION_VERSION)));
         assertThat(applicationSettings.getCedeskAppFileComment(), is(cedeskProps.getProperty(CEDESK_APP_FILE_COMMENT)));
+        assertThat(applicationSettings.getDefaultApplicationLanguage(), is(cedeskProps.getProperty(DEFAULT_APPLICATION_LANGUAGE)));
         assertThat(applicationSettings.getDefaultRepositoryHost(), is(cedeskProps.getProperty(DEFAULT_REPOSITORY_HOST)));
         assertThat(applicationSettings.isDefaultRepositorySchemaCreate(), is(Boolean.valueOf(cedeskProps.getProperty(DEFAULT_REPOSITORY_SCHEMA_CREATE))));
         assertThat(applicationSettings.getDefaultRepositorySchemaName(), is(cedeskProps.getProperty(DEFAULT_REPOSITORY_SCHEMA_NAME)));
@@ -147,6 +149,7 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
     }
 
     private void testGetApplicationSettings(Properties appSettingsProps) {
+        assertThat(applicationSettings.getApplicationLanguage(), is(appSettingsProps.getProperty(APPLICATION_LANGUAGE)));
         assertThat(applicationSettings.getRepositoryHost(), is(appSettingsProps.getProperty(REPOSITORY_HOST)));
         assertThat(applicationSettings.isRepositorySchemaCreate(), is(Boolean.valueOf(appSettingsProps.getProperty(REPOSITORY_SCHEMA_CREATE))));
         assertThat(applicationSettings.getRepositorySchemaName(), is(appSettingsProps.getProperty(REPOSITORY_SCHEMA_NAME)));

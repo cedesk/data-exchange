@@ -32,6 +32,7 @@ import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.ErrorAlert;
 
 import java.io.IOException;
+import java.util.Locale;
 
 public class ClientApplication extends Application {
 
@@ -118,7 +119,9 @@ public class ClientApplication extends Application {
         logger.info("Opening CEDESK ...");
         String appVersion = applicationSettings.getApplicationVersion();
         String dbSchemaVersion = applicationSettings.getRepositorySchemaVersion();
+        Locale locale = context.getBean(Locale.class);
         logger.info("Application Version " + appVersion + ", DB Schema Version " + dbSchemaVersion);
+        logger.info("Locale " + locale);
 
         ViewBuilder mainViewBuilder = guiService.createViewBuilder("Concurrent Engineering Data Exchange Skoltech", Views.MAIN_VIEW);
         mainViewBuilder.primaryStage(primaryStage);

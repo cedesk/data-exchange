@@ -125,6 +125,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     @FXML
     private BorderPane layoutPane;
 
+    private ResourceBundle resources;
     private ModelEditingController modelEditingController;
 
     private ApplicationSettings applicationSettings;
@@ -216,6 +217,8 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        this.resources = resources;
+
         // EDITING PANE
         Node modelEditingPane = guiService.createControl(Views.MODEL_EDITING_VIEW);
         layoutPane.setCenter(modelEditingPane);
@@ -609,7 +612,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openAboutDialog() {
-        ViewBuilder aboutViewBuilder = guiService.createViewBuilder("About CEDESK", Views.ABOUT_VIEW);
+        ViewBuilder aboutViewBuilder = guiService.createViewBuilder(resources.getString("about.title"), Views.ABOUT_VIEW);
         aboutViewBuilder.ownerWindow(ownerStage);
         aboutViewBuilder.modality(Modality.APPLICATION_MODAL);
         aboutViewBuilder.show();
