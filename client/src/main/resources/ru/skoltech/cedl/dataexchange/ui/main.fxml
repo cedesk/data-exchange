@@ -36,45 +36,46 @@
             <HBox prefHeight="48.0" prefWidth="800.0" BorderPane.alignment="CENTER">
                 <VBox HBox.hgrow="ALWAYS">
                     <MenuBar>
-                        <Menu text="_Project">
+                        <Menu text="%main.menu.project">
                             <MenuItem onAction="#newProject" text="%main.menu.project.new"/>
-                            <MenuItem onAction="#openProject" text="_Open..."/>
-                            <MenuItem onAction="#openStudyRevisionsView" text="_Load tagged revision..."/>
-                            <MenuItem onAction="#saveProject" text="_Save"/>
-                            <MenuItem fx:id="tagMenu" onAction="#tagStudy" text="_Tag current revision"/>
+                            <MenuItem onAction="#openProject" text="%main.menu.project.open"/>
+                            <MenuItem onAction="#openStudyRevisionsView" text="%main.menu.project.load_tag"/>
+                            <MenuItem onAction="#saveProject" text="%main.menu.project.save"/>
+                            <MenuItem fx:id="tagMenu" onAction="#tagStudy" text="%main.menu.project.set_tag"/>
                             <SeparatorMenuItem/>
-                            <MenuItem onAction="#importProject" text="_Import"/>
-                            <MenuItem fx:id="exportMenu" onAction="#exportProject" text="_Export"/>
+                            <MenuItem onAction="#importProject" text="%main.menu.project.import"/>
+                            <MenuItem fx:id="exportMenu" onAction="#exportProject" text="%main.menu.project.export"/>
                             <SeparatorMenuItem/>
-                            <MenuItem fx:id="deleteMenu" onAction="#deleteProject" text="_Delete..."/>
+                            <MenuItem fx:id="deleteMenu" onAction="#deleteProject" text="%main.menu.project.delete"/>
                             <SeparatorMenuItem/>
-                            <MenuItem onAction="#quit" text="_Quit"/>
+                            <MenuItem onAction="#quit" text="%main.menu.project.quit"/>
                         </Menu>
-                        <Menu text="_Edit">
-                            <MenuItem fx:id="usersMenu" onAction="#openUserManagement" text="Users"/>
+                        <Menu text="%main.menu.edit">
+                            <MenuItem fx:id="usersMenu" onAction="#openUserManagement" text="%user_management.title"/>
                             <MenuItem fx:id="usersAndDisciplinesMenu" onAction="#openUserRoleManagement"
-                                      text="User-Discipline Assignment"/>
-                            <MenuItem onAction="#openUnitManagement" text="Units and _Measures"/>
-                            <CheckMenuItem fx:id="libraryViewMenu" text="Component _Library"/>
+                                      text="%user_management.title"/>
+                            <MenuItem onAction="#openUnitManagement" text="%unit_management.title"/>
+                            <CheckMenuItem fx:id="libraryViewMenu" text="%component_library.title"/>
                             <SeparatorMenuItem/>
-                            <MenuItem onAction="#openProjectSettingsDialog" text="_Project Settings"/>
-                            <MenuItem onAction="#openRepositorySettingsDialog" text="_Repository Settings"/>
+                            <MenuItem onAction="#openProjectSettingsDialog" text="%project_settings.title"/>
+                            <MenuItem onAction="#openRepositorySettingsDialog" text="%repository_settings.title"/>
                         </Menu>
-                        <Menu text="_View">
-                            <MenuItem onAction="#openConsistencyView" text="Consistency"/>
-                            <MenuItem onAction="#openDiffView" text="Differences"/>
-                            <MenuItem onAction="#openDsmView" text="Design Structure Matrix"/>
-                            <MenuItem onAction="#openDependencyView" text="N-square Chart"/>
+                        <Menu text="%main.menu.view">
+                            <MenuItem onAction="#openConsistencyView" text="%consistency.title"/>
+                            <MenuItem onAction="#openDiffView" text="%model_differences.title"/>
+                            <MenuItem onAction="#openDsmView" text="%dependency_structure_matrix.title"/>
+                            <MenuItem onAction="#openDependencyView" text="%dependency_analysis.title"/>
                         </Menu>
-                        <Menu text="_Tools">
-                            <MenuItem onAction="#openTradespaceExplorer" text="Tradespace Explorer"/>
-                            <MenuItem onAction="#runWorkSessionAnalysis" text="Run Work Session Analysis"/>
-                            <MenuItem onAction="#openChangeHistoryAnalysis" text="Change History Analyis"/>
+                        <Menu text="%main.menu.tools">
+                            <MenuItem onAction="#openTradespaceExplorer" text="%tradespace_explorer.title"/>
+                            <MenuItem onAction="#runWorkSessionAnalysis"
+                                      text="%main.menu.tools.run_work_session_analysis"/>
+                            <MenuItem onAction="#openChangeHistoryAnalysis" text="%change_history_analysis.title"/>
                         </Menu>
-                        <Menu text="_Help">
-                            <MenuItem onAction="#checkForApplicationUpdate" text="Check for _Update"/>
-                            <MenuItem onAction="#openGuideDialog" text="_Process Guide"/>
-                            <MenuItem onAction="#openAboutDialog" text="_About"/>
+                        <Menu text="%main.menu.help">
+                            <MenuItem onAction="#checkForApplicationUpdate" text="%main.menu.check_update"/>
+                            <MenuItem onAction="#openGuideDialog" text="%process_guide.title"/>
+                            <MenuItem onAction="#openAboutDialog" text="%about.title"/>
                         </Menu>
                     </MenuBar>
                     <ToolBar>
@@ -83,7 +84,7 @@
                         </VBox.margin>
                         <Button fx:id="newButton" onAction="#newProject">
                             <tooltip>
-                                <Tooltip text="New Project"/>
+                                <Tooltip text="%main.toolbar.new_project.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="FILE_TEXT"/>
@@ -91,7 +92,7 @@
                         </Button>
                         <Button fx:id="loadButton" onAction="#reloadProject">
                             <tooltip>
-                                <Tooltip text="Reload Project"/>
+                                <Tooltip text="%main.toolbar.reload_project.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="RETWEET"/>
@@ -99,7 +100,7 @@
                         </Button>
                         <Button fx:id="saveButton" onAction="#saveProject">
                             <tooltip>
-                                <Tooltip text="Save current study"/>
+                                <Tooltip text="%main.toolbar.save_project.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="SAVE"/>
@@ -108,7 +109,7 @@
                         <Separator orientation="VERTICAL"/>
                         <Button fx:id="diffButton" onAction="#openDiffView">
                             <tooltip>
-                                <Tooltip text="View Changes"/>
+                                <Tooltip text="%main.toolbar.differences.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="INBOX"/>
@@ -117,7 +118,7 @@
                         <Separator orientation="VERTICAL"/>
                         <ToggleButton fx:id="libraryViewButton">
                             <tooltip>
-                                <Tooltip text="View Component Library"/>
+                                <Tooltip text="%main.toolbar.component_library.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="BOOK"/>
@@ -125,7 +126,7 @@
                         </ToggleButton>
                         <Button mnemonicParsing="false" onAction="#openDsmView">
                             <tooltip>
-                                <Tooltip text="View Depencency Structure Matrix"/>
+                                <Tooltip text="%main.toolbar.dependency_structure_matrix.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="TH_LARGE"/>
@@ -133,7 +134,7 @@
                         </Button>
                         <Button mnemonicParsing="false" onAction="#openDependencyView">
                             <tooltip>
-                                <Tooltip text="View N-Square Chart"/>
+                                <Tooltip text="%main.toolbar.dependencies.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="ARROWS"/>
@@ -144,7 +145,7 @@
                             <Label fx:id="studyNameLabel" styleClass="projectDetailsLabels" graphicTextGap="6"
                                    text="--">
                                 <tooltip>
-                                    <Tooltip text="Project"/>
+                                    <Tooltip text="%main.toolbar.project.tooltip"/>
                                 </tooltip>
                                 <graphic>
                                     <Glyph fontFamily="FontAwesome" icon="CUBE"/>
@@ -152,7 +153,7 @@
                             </Label>
                             <Label fx:id="tagLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
                                 <tooltip>
-                                    <Tooltip text="Tag"/>
+                                    <Tooltip text="%main.toolbar.tag.tooltip"/>
                                 </tooltip>
                                 <graphic>
                                     <Glyph fontFamily="FontAwesome" icon="TAG"/>
@@ -160,7 +161,7 @@
                             </Label>
                             <Label fx:id="userNameLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
                                 <tooltip>
-                                    <Tooltip text="User"/>
+                                    <Tooltip text="%main.toolbar.user.tooltip"/>
                                 </tooltip>
                                 <graphic>
                                     <Glyph fontFamily="FontAwesome" icon="USER_TIMES"/>
@@ -168,7 +169,7 @@
                             </Label>
                             <Label fx:id="userRoleLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
                                 <tooltip>
-                                    <Tooltip text="Roles"/>
+                                    <Tooltip text="%main.toolbar.roles.tooltip"/>
                                 </tooltip>
                                 <graphic>
                                     <Glyph fontFamily="FontAwesome" icon="USERS"/>

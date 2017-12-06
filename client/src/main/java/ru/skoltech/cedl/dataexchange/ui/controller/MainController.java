@@ -618,28 +618,22 @@ public class MainController implements Initializable, Displayable, Closeable {
         aboutViewBuilder.show();
     }
 
+    public void openChangeHistoryAnalysis() {
+        ViewBuilder changeHistoryAnalysisViewBuilder = guiService.createViewBuilder(resources.getString("change_history_analysis.title"), Views.CHANGE_HISTORY_ANALYSIS_VIEW);
+        changeHistoryAnalysisViewBuilder.ownerWindow(ownerStage);
+        changeHistoryAnalysisViewBuilder.show();
+    }
+
     public void openConsistencyView() {
-        ViewBuilder modelConsistencyViewBuilder = guiService.createViewBuilder("Model consistency", Views.MODEL_CONSISTENCY_VIEW);
+        ViewBuilder modelConsistencyViewBuilder = guiService.createViewBuilder(resources.getString("consistency.title"), Views.MODEL_CONSISTENCY_VIEW);
         modelConsistencyViewBuilder.ownerWindow(ownerStage);
         modelConsistencyViewBuilder.showAndWait();
         modelEditingController.updateView();// TODO: avoid dropping changes made in parameter editor pane
     }
 
-    public void openChangeHistoryAnalysis() {
-        ViewBuilder changeHistoryAnalysisViewBuilder = guiService.createViewBuilder("Change History Analyis", Views.CHANGE_HISTORY_ANALYSIS_VIEW);
-        changeHistoryAnalysisViewBuilder.ownerWindow(ownerStage);
-        changeHistoryAnalysisViewBuilder.show();
-    }
-
-    public void openTradespaceExplorer() {
-        ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder("Tradespace Explorer", Views.TRADESPACE_VIEW);
-        tradespaceViewBuilder.ownerWindow(ownerStage);
-        tradespaceViewBuilder.show();
-    }
-
     public void openDependencyView() {
         if (dependencyStage == null || !dependencyStage.isShowing()) {
-            ViewBuilder dependencyViewBuilder = guiService.createViewBuilder("N-Square Chart", Views.DEPENDENCY_VIEW);
+            ViewBuilder dependencyViewBuilder = guiService.createViewBuilder(resources.getString("dependency_analysis.title"), Views.DEPENDENCY_VIEW);
             dependencyViewBuilder.resizable(false);
             dependencyViewBuilder.ownerWindow(this.ownerStage);
             dependencyStage = dependencyViewBuilder.createStage();
@@ -649,28 +643,12 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    public void openStudyRevisionsView() {
-        Study study = project.getStudy();
-
-        ViewBuilder studyRevisionsViewBuilder = guiService.createViewBuilder("Study Revisions", Views.STUDY_REVISIONS_VIEW);
-        studyRevisionsViewBuilder.modality(Modality.APPLICATION_MODAL);
-        studyRevisionsViewBuilder.ownerWindow(ownerStage);
-        studyRevisionsViewBuilder.resizable(false);
-        studyRevisionsViewBuilder.applyEventHandler(event -> {
-            CustomRevisionEntity customRevisionEntity = (CustomRevisionEntity) event.getSource();
-            project.loadLocalStudy(customRevisionEntity.getId());
-            this.updateView();
-            tagProperty.setValue(customRevisionEntity.getTag());
-        });
-        studyRevisionsViewBuilder.showAndWait(study);
-    }
-
     public void openDiffView() {
         if (project.getSystemModel() == null) {
             return;
         }
 
-        ViewBuilder diffViewBuilder = guiService.createViewBuilder("Model differences", Views.MODEL_DIFF_VIEW);
+        ViewBuilder diffViewBuilder = guiService.createViewBuilder(resources.getString("model_differences.title"), Views.MODEL_DIFF_VIEW);
         diffViewBuilder.ownerWindow(ownerStage);
         diffViewBuilder.modality(Modality.APPLICATION_MODAL);
         diffViewBuilder.showAndWait();
@@ -679,7 +657,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void openDsmView() {
         if (dsmStage == null || !dsmStage.isShowing()) {
-            ViewBuilder dsmViewBuilder = guiService.createViewBuilder("Dependency Structure Matrix", Views.DSM_VIEW);
+            ViewBuilder dsmViewBuilder = guiService.createViewBuilder(resources.getString("dependency_structure_matrix.title"), Views.DSM_VIEW);
             dsmStage = dsmViewBuilder.createStage();
             dsmStage.show();
         } else {
@@ -691,10 +669,31 @@ public class MainController implements Initializable, Displayable, Closeable {
         double x = ownerStage.getX() + ownerStage.getWidth();
         double y = ownerStage.getY();
 
-        ViewBuilder guideViewBuilder = guiService.createViewBuilder("Process Guide", Views.GUIDE_VIEW);
+        ViewBuilder guideViewBuilder = guiService.createViewBuilder(resources.getString("process_guide.title"), Views.GUIDE_VIEW);
         guideViewBuilder.ownerWindow(ownerStage);
         guideViewBuilder.xy(x, y);
         guideViewBuilder.show();
+    }
+
+    public void openProjectSettingsDialog() {
+        ViewBuilder projectSettingsViewBuilder = guiService.createViewBuilder(resources.getString("project_settings.title"), Views.PROJECT_SETTINGS_VIEW);
+        projectSettingsViewBuilder.ownerWindow(ownerStage);
+        projectSettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        projectSettingsViewBuilder.closeEventHandler(event -> {
+            if (!project.checkUser()) {
+                this.displayInvalidUserDialog();
+            }
+        });
+        projectSettingsViewBuilder.showAndWait();
+        updateView();
+    }
+
+    public void openRepositorySettingsDialog() {
+        ViewBuilder repositorySettingsViewBuilder = guiService.createViewBuilder(resources.getString("repository_settings.title"), Views.REPOSITORY_SETTINGS_VIEW);
+        repositorySettingsViewBuilder.ownerWindow(ownerStage);
+        repositorySettingsViewBuilder.applyEventHandler(event -> this.quit());
+        repositorySettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        repositorySettingsViewBuilder.showAndWait();
     }
 
     public void saveProject() {
@@ -730,36 +729,37 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    public void openProjectSettingsDialog() {
-        ViewBuilder projectSettingsViewBuilder = guiService.createViewBuilder("Project settings", Views.PROJECT_SETTINGS_VIEW);
-        projectSettingsViewBuilder.ownerWindow(ownerStage);
-        projectSettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
-        projectSettingsViewBuilder.closeEventHandler(event -> {
-            if (!project.checkUser()) {
-                this.displayInvalidUserDialog();
-            }
+    public void openStudyRevisionsView() {
+        Study study = project.getStudy();
+
+        ViewBuilder studyRevisionsViewBuilder = guiService.createViewBuilder(resources.getString("study_revisions.title"), Views.STUDY_REVISIONS_VIEW);
+        studyRevisionsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        studyRevisionsViewBuilder.ownerWindow(ownerStage);
+        studyRevisionsViewBuilder.resizable(false);
+        studyRevisionsViewBuilder.applyEventHandler(event -> {
+            CustomRevisionEntity customRevisionEntity = (CustomRevisionEntity) event.getSource();
+            project.loadLocalStudy(customRevisionEntity.getId());
+            this.updateView();
+            tagProperty.setValue(customRevisionEntity.getTag());
         });
-        projectSettingsViewBuilder.showAndWait();
-        updateView();
+        studyRevisionsViewBuilder.showAndWait(study);
     }
 
-    public void openRepositorySettingsDialog() {
-        ViewBuilder repositorySettingsViewBuilder = guiService.createViewBuilder("Repository settings", Views.REPOSITORY_SETTINGS_VIEW);
-        repositorySettingsViewBuilder.ownerWindow(ownerStage);
-        repositorySettingsViewBuilder.applyEventHandler(event -> this.quit());
-        repositorySettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
-        repositorySettingsViewBuilder.showAndWait();
+    public void openTradespaceExplorer() {
+        ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder(resources.getString("tradespace_explorer.title"), Views.TRADESPACE_VIEW);
+        tradespaceViewBuilder.ownerWindow(ownerStage);
+        tradespaceViewBuilder.show();
     }
 
     public void openUnitManagement() {
-        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder("Unit Management", Views.UNIT_MANAGEMENT_VIEW);
+        ViewBuilder unitEditingViewBuilder = guiService.createViewBuilder(resources.getString("unit_management.title"), Views.UNIT_MANAGEMENT_VIEW);
         unitEditingViewBuilder.ownerWindow(ownerStage);
         unitEditingViewBuilder.modality(Modality.APPLICATION_MODAL);
         unitEditingViewBuilder.show();
     }
 
     public void openUserManagement() {
-        ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder("User Management", Views.USER_MANAGEMENT_VIEW);
+        ViewBuilder userDetailsViewBuilder = guiService.createViewBuilder(resources.getString("user_management.title"), Views.USER_MANAGEMENT_VIEW);
         userDetailsViewBuilder.ownerWindow(ownerStage);
         userDetailsViewBuilder.modality(Modality.APPLICATION_MODAL);
         userDetailsViewBuilder.show();
@@ -770,7 +770,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             return;
         }
 
-        ViewBuilder userRoleManagementViewBuilder = guiService.createViewBuilder("User Role Management", Views.USER_ROLE_MANAGEMENT_VIEW);
+        ViewBuilder userRoleManagementViewBuilder = guiService.createViewBuilder(resources.getString("user_role_management.title"), Views.USER_ROLE_MANAGEMENT_VIEW);
         userRoleManagementViewBuilder.ownerWindow(ownerStage);
         userRoleManagementViewBuilder.modality(Modality.APPLICATION_MODAL);
         userRoleManagementViewBuilder.show();

@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +67,7 @@ public class GuiServiceImpl implements GuiService {
     public <T extends Node> T createControl(URL location, Object... args) {
         try {
             FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(location, args);
+            loader.setResources(ResourceBundle.getBundle("i18n.MessagesBundle", locale));
             T control = loader.load();
             Object controller = loader.getController();
             control.setUserData(controller);

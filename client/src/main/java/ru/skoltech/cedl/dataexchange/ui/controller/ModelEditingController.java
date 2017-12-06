@@ -130,6 +130,7 @@ public class ModelEditingController implements Initializable {
     private ChangeListener<Boolean> completionChangeListener;
 
     private Stage ownerStage;
+    private ResourceBundle resources;
 
     public void setExternalModelEditorController(ExternalModelEditorController externalModelEditorController) {
         this.externalModelEditorController = externalModelEditorController;
@@ -185,6 +186,7 @@ public class ModelEditingController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        this.resources = resources;
         Node parametersNode = guiService.createControl(Views.PARAMETERS_VIEW);
         parametersParentPane.setContent(parametersNode);
 
