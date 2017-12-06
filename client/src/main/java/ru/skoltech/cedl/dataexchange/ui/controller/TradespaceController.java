@@ -17,16 +17,11 @@
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.collections.FXCollections;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
-import javafx.scene.image.WritableImage;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
-import javafx.stage.Window;
 import javafx.util.StringConverter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
@@ -39,11 +34,7 @@ import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
-import ru.skoltech.cedl.dataexchange.ui.control.TradespaceView;
 
-import javax.imageio.ImageIO;
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,7 +47,7 @@ import java.util.stream.Collectors;
 public class TradespaceController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(TradespaceController.class);
-    private final TradespaceRepository tradespaceRepository;
+
     @FXML
     public TitledPane figuresOfMeritEditorPane;
     @FXML
@@ -68,15 +59,16 @@ public class TradespaceController implements Initializable {
     @FXML
     private ChoiceBox<Epoch> epochChoice;
     @FXML
-    private ComboBox<FigureOfMeritDefinition> xAxisCombo;
+    private Tab tradespaceScatterPlotParent;
     @FXML
-    private ComboBox<FigureOfMeritDefinition> yAxisCombo;
-    @FXML
-    private TradespaceView tradespaceView;
+    private Tab tradespacePolarPlotParent;
+
+    private TradespaceScatterPlotController tradespaceScatterPlotController;
 
     private Project project;
     private ApplicationSettings applicationSettings;
     private GuiService guiService;
+    private final TradespaceRepository tradespaceRepository;
     private TradespaceToStudyBridge tradespaceToStudyBridge;
 
     private MultitemporalTradespace multitemporalTradespace;
@@ -87,8 +79,8 @@ public class TradespaceController implements Initializable {
         this.tradespaceRepository = tradespaceRepository;
     }
 
-    private MultitemporalTradespace getModel() {
-        return multitemporalTradespace;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
@@ -99,21 +91,50 @@ public class TradespaceController implements Initializable {
         this.guiService = guiService;
     }
 
-    private void setMultitemporalTradespace(MultitemporalTradespace multitemporalTradespace) {
-        this.multitemporalTradespace = multitemporalTradespace;
-        tradespaceView.setTradespace(multitemporalTradespace);
-        FiguresOfMeritEditorController figuresOfMeritEditorController = (FiguresOfMeritEditorController) figuresOfMeritEditorPane.getContent().getUserData();
-        figuresOfMeritEditorController.setTradespace(getModel());
-        updateComboBoxes();
+    public void setTradespaceModelBridge(TradespaceToStudyBridge tradespaceModelBridge) {
+        this.tradespaceToStudyBridge = tradespaceModelBridge;
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        Node tradespaceScatterPlotNode = guiService.createControl(Views.TRADESPACE_SCATTER_PLOT_VIEW);
+        tradespaceScatterPlotParent.setContent(tradespaceScatterPlotNode);
+        tradespaceScatterPlotController = (TradespaceScatterPlotController) tradespaceScatterPlotNode.getUserData();
+
+
+        Node figuresOfMeritEditorNode = guiService.createControl(Views.FIGURES_OF_MERIT_EDITOR_VIEW);
+        figuresOfMeritEditorPane.setContent(figuresOfMeritEditorNode);
+
+        studyId = project.getStudy().getId();
+        epochChoice.setConverter(new StringConverter<Epoch>() {
+            @Override
+            public Epoch fromString(String string) {
+                return null;
+            }
+
+            @Override
+            public String toString(Epoch epoch) {
+                return epoch.asText();
+            }
+        });
+
+
+        if (applicationSettings.isProjectLastAutoload()) {
+            loadTradespace();
+        } else {
+            newTradespace();
+        }
         updateView();
     }
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public void setTradespaceModelBridge(TradespaceToStudyBridge tradespaceModelBridge) {
-        this.tradespaceToStudyBridge = tradespaceModelBridge;
+    public void loadTradespace() {
+        MultitemporalTradespace newTradespace = tradespaceRepository.findOne(studyId);
+        if (newTradespace != null) {
+            logger.info("tradespace loaded successfully");
+            setMultitemporalTradespace(newTradespace);
+        } else {
+            newTradespace();
+        }
     }
 
     public void addDesignPoint() {
@@ -128,7 +149,7 @@ public class TradespaceController implements Initializable {
         dp.setValues(fomValues);
         dp.setDescription("from study model"); // TODO: add revision ... tradespaceRepository.getCurrentRevisionNumber()
         multitemporalTradespace.getDesignPoints().add(dp);
-        tradespaceView.updateView();
+        tradespaceScatterPlotController.updateView();
     }
 
     public void editEpochs() {
@@ -165,6 +186,16 @@ public class TradespaceController implements Initializable {
         this.importTadespace(viewBuilder);
     }
 
+    private void setMultitemporalTradespace(MultitemporalTradespace multitemporalTradespace) {
+        this.multitemporalTradespace = multitemporalTradespace;
+        FiguresOfMeritEditorController figuresOfMeritEditorController = (FiguresOfMeritEditorController) figuresOfMeritEditorPane.getContent().getUserData();
+        figuresOfMeritEditorController.setTradespace(this.multitemporalTradespace);
+
+        tradespaceScatterPlotController.setTradespace(multitemporalTradespace);
+
+        updateView();
+    }
+
     private void importTadespace(ViewBuilder viewBuilder) {
         viewBuilder.resizable(false);
         viewBuilder.modality(Modality.APPLICATION_MODAL);
@@ -184,59 +215,6 @@ public class TradespaceController implements Initializable {
         viewBuilder.showAndWait();
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        studyId = project.getStudy().getId();
-        tradespaceView.setLoadRevisionListener(revision -> project.loadLocalStudy(revision));
-        StringConverter<FigureOfMeritDefinition> stringConverter = new StringConverter<FigureOfMeritDefinition>() {
-            @Override
-            public FigureOfMeritDefinition fromString(String unitStr) {
-                return null;
-            }
-
-            @Override
-            public String toString(FigureOfMeritDefinition figureOfMeritDefinition) {
-                if (figureOfMeritDefinition == null) {
-                    return null;
-                }
-                return figureOfMeritDefinition.getName();
-            }
-        };
-        xAxisCombo.setConverter(stringConverter);
-        xAxisCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                updateTradespaceView();
-            }
-        });
-        yAxisCombo.setConverter(stringConverter);
-        yAxisCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                updateTradespaceView();
-            }
-        });
-        epochChoice.setConverter(new StringConverter<Epoch>() {
-            @Override
-            public Epoch fromString(String string) {
-                return null;
-            }
-
-            @Override
-            public String toString(Epoch epoch) {
-                return epoch.asText();
-            }
-        });
-
-        Node figuresOfMeritEditorNode = guiService.createControl(Views.FIGURES_OF_MERIT_EDITOR_VIEW);
-        figuresOfMeritEditorPane.setContent(figuresOfMeritEditorNode);
-
-        if (applicationSettings.isProjectLastAutoload()) {
-            loadTradespace();
-        } else {
-            newTradespace();
-        }
-        updateView();
-    }
-
     /*
     public void loadSampleTradespace() {
         URL url = TradespaceExplorerApplication.class.getResource("/GPUdataset_2013-2016.csv");
@@ -246,16 +224,6 @@ public class TradespaceController implements Initializable {
         setMultitemporalTradespace(multitemporalTradespace);
     }*/
 
-    public void loadTradespace() {
-        MultitemporalTradespace newTradespace = tradespaceRepository.findOne(studyId);
-        if (newTradespace != null) {
-            logger.info("tradespace loaded successfully");
-            setMultitemporalTradespace(newTradespace);
-        } else {
-            newTradespace();
-        }
-    }
-
     private void newTradespace() {
         MultitemporalTradespace newTradespace = new MultitemporalTradespace();
         newTradespace.setId(studyId);
@@ -263,27 +231,6 @@ public class TradespaceController implements Initializable {
         setMultitemporalTradespace(newTradespace);
     }
 
-    public void saveDiagram() {
-        String xAxisName = tradespaceView.getChartDefinition().getAxis1().getName();
-        String yAxisName = tradespaceView.getChartDefinition().getAxis2().getName();
-
-        FileChooser fc = new FileChooser();
-        fc.setInitialDirectory(project.getProjectHome());
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
-        fc.setInitialFileName("FigureOfMeritChart_" + xAxisName + "--" + yAxisName + "_" + Utils.getFormattedDateAndTime());
-        fc.setTitle("Save Chart");
-        Window window = tradespaceView.getScene().getWindow();
-        File file = fc.showSaveDialog(window);
-        if (file != null) {
-            SnapshotParameters snapshotParameters = new SnapshotParameters();
-            WritableImage snapshot = tradespaceView.snapshot(snapshotParameters, null);
-            try {
-                ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null), "png", file);
-            } catch (IOException e) {
-                logger.error("Error saving chart to file", e);
-            }
-        }
-    }
 
     public void saveTradespace() {
         tradespaceRepository.saveAndFlush(multitemporalTradespace);
@@ -298,24 +245,6 @@ public class TradespaceController implements Initializable {
             fomTexts.add(String.format("%s: %s (%s)", figureOfMeritDefinition.getName(), formattedValue, figureOfMeritDefinition.getUnitOfMeasure()));
         }
         figureOfMeritValuesText.setText(fomTexts.stream().collect(Collectors.joining(",\n")));
-    }
-
-    private void updateComboBoxes() {
-        List<FigureOfMeritDefinition> figureOfMeritDefinitions = multitemporalTradespace.getDefinitions();
-        xAxisCombo.setItems(FXCollections.observableArrayList(figureOfMeritDefinitions));
-        yAxisCombo.setItems(FXCollections.observableArrayList(figureOfMeritDefinitions));
-        if (figureOfMeritDefinitions.size() > 0)
-            xAxisCombo.getSelectionModel().select(figureOfMeritDefinitions.get(0));
-        if (figureOfMeritDefinitions.size() > 1)
-            yAxisCombo.getSelectionModel().select(figureOfMeritDefinitions.get(1));
-    }
-
-    public void updateTradespaceView() {
-        FigureOfMeritDefinition axis1 = xAxisCombo.getValue();
-        FigureOfMeritDefinition axis2 = yAxisCombo.getValue();
-        FigureOfMeritChartDefinition chartDef = new FigureOfMeritChartDefinition(axis1, axis2);
-        tradespaceView.setChartDefinition(chartDef);
-        tradespaceView.updateView();
     }
 
     private void updateView() {

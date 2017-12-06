@@ -150,6 +150,10 @@
         <property name="fileStorageService" ref="fileStorageService"/>
     </bean>
 
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TradespaceScatterPlotController" scope="prototype">
+        <property name="project" ref="project"/>
+    </bean>
+
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController" scope="prototype">
         <property name="guiService" ref="guiService"/>
     </bean>

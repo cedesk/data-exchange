@@ -43,6 +43,8 @@ public class Views {
     public static final URL FIGURE_OF_MERIT_VIEW = Views.class.getResource("figure-of-merit.fxml");
     public static final URL IMPORT_TRADESPACE_FROM_CSV_VIEW = Views.class.getResource("import-tradespace-from-csv.fxml");
     public static final URL IMPORT_TRADESPACE_FROM_EXCEL_VIEW = Views.class.getResource("import-tradespace-from-excel.fxml");
+    public static final URL TRADESPACE_SCATTER_PLOT_VIEW = Views.class.getResource("tradespace-scatter-plot.fxml");
+    public static final URL TRADESPACE_POLAR_PLOT_VIEW = Views.class.getResource("tradespace-polar-plot.fxml");
     public static final URL STUDY_REVISIONS_VIEW = Views.class.getResource("study-revisions.fxml");
     public static final URL USER_MANAGEMENT_VIEW = Views.class.getResource("user-management.fxml");
     public static final URL USER_EDITING_VIEW = Views.class.getResource("user-editing.fxml");
