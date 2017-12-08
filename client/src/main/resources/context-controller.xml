@@ -154,6 +154,11 @@
         <property name="project" ref="project"/>
     </bean>
 
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TradespacePolarPlotController" scope="prototype">
+        <property name="project" ref="project"/>
+        <property name="guiService" ref="guiService"/>
+    </bean>
+
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController" scope="prototype">
         <property name="guiService" ref="guiService"/>
     </bean>

@@ -64,6 +64,7 @@ public class TradespaceController implements Initializable {
     private Tab tradespacePolarPlotParent;
 
     private TradespaceScatterPlotController tradespaceScatterPlotController;
+    private TradespacePolarPlotController tradespacePolarPlotController;
 
     private Project project;
     private ApplicationSettings applicationSettings;
@@ -101,6 +102,9 @@ public class TradespaceController implements Initializable {
         tradespaceScatterPlotParent.setContent(tradespaceScatterPlotNode);
         tradespaceScatterPlotController = (TradespaceScatterPlotController) tradespaceScatterPlotNode.getUserData();
 
+        Node tradespacePolarPlotNode = guiService.createControl(Views.TRADESPACE_POLAR_PLOT_VIEW);
+        tradespacePolarPlotParent.setContent(tradespacePolarPlotNode);
+        tradespacePolarPlotController = (TradespacePolarPlotController) tradespacePolarPlotNode.getUserData();
 
         Node figuresOfMeritEditorNode = guiService.createControl(Views.FIGURES_OF_MERIT_EDITOR_VIEW);
         figuresOfMeritEditorPane.setContent(figuresOfMeritEditorNode);
@@ -150,6 +154,7 @@ public class TradespaceController implements Initializable {
         dp.setDescription("from study model"); // TODO: add revision ... tradespaceRepository.getCurrentRevisionNumber()
         multitemporalTradespace.getDesignPoints().add(dp);
         tradespaceScatterPlotController.updateView();
+        tradespacePolarPlotController.updateView();
     }
 
     public void editEpochs() {
@@ -192,6 +197,7 @@ public class TradespaceController implements Initializable {
         figuresOfMeritEditorController.setTradespace(this.multitemporalTradespace);
 
         tradespaceScatterPlotController.setTradespace(multitemporalTradespace);
+        tradespacePolarPlotController.setTradespace(multitemporalTradespace);
 
         updateView();
     }
