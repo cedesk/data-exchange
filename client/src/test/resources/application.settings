@@ -19,7 +19,7 @@
 application.language=en
 repository.host=srv-cedl-01.skoltech.ru
 repository.schema.create=true
-repository.schema.name=cedesk_repo
+repository.schema.name=cedesk_prod
 repository.user=cedesk
 repository.password=cedesk
 repository.watcher.autosync=true
