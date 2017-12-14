@@ -215,6 +215,23 @@ public class MainController implements Initializable, Displayable, Closeable {
         externalModelFileWatcher.start();
     }
 
+    public void checkForApplicationUpdate() {
+        Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
+        if (latestVersionAvailable.isPresent()) {
+            ApplicationPackage applicationPackage = latestVersionAvailable.get();
+            MainController.this.validateLatestUpdate(applicationPackage);
+        } else {
+            UserNotifications.showNotification(ownerStage, "Update check failed",
+                    "Unable to connect to Distribution Server!");
+        }
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+        this.modelEditingController.ownerStage(ownerStage);
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
@@ -254,24 +271,10 @@ public class MainController implements Initializable, Displayable, Closeable {
                 }
             }
         };
+        actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
 
-        this.checkRepository();
+        this.checkUserAndLoadProject();
         this.checkVersionUpdate();
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
-        this.modelEditingController.ownerStage(ownerStage);
-    }
-
-    private void checkRepository() {
-        executor.execute(() -> {
-            if (!project.checkUser()) {
-                Platform.runLater(this::displayInvalidUserDialog);
-            }
-            Platform.runLater(this::loadLastProject);
-        });
     }
 
     private void checkVersionUpdate() {
@@ -417,30 +420,13 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
-    public void checkForApplicationUpdate() {
-        Optional<ApplicationPackage> latestVersionAvailable = updateService.getLatestVersionAvailable();
-        if (latestVersionAvailable.isPresent()) {
-            ApplicationPackage applicationPackage = latestVersionAvailable.get();
-            logger.info("available package: " + applicationPackage.toString());
-            String packageVersion = applicationPackage.getVersion();
-            String appVersion = applicationSettings.getApplicationVersion();
-            int versionCompare = Utils.compareVersions(appVersion, packageVersion);
-            if (versionCompare < 0) {
-                UserNotifications.showActionableNotification(ownerStage, "Application Update",
-                        "You are using " + appVersion + ", while " + packageVersion + " is already available. Please update!",
-                        "Download Update", new UpdateDownloader(applicationPackage), false);
-            } else if (versionCompare > 0) {
-                UserNotifications.showNotification(ownerStage, "Application Update",
-                        "You are using " + appVersion + ", " +
-                                "which is newer than the latest available " + packageVersion + ". Please publish!");
-            } else {
-                UserNotifications.showNotification(ownerStage, "Application Update",
-                        "Latest version installed. No need to update.");
+    private void checkUserAndLoadProject() {
+        executor.execute(() -> {
+            if (!project.checkUser()) {
+                Platform.runLater(this::displayInvalidUserDialog);
             }
-        } else {
-            UserNotifications.showNotification(ownerStage, "Update check failed",
-                    "Unable to connect to Distribution Server!");
-        }
+            Platform.runLater(this::loadLastProject);
+        });
     }
 
     private void validateLatestUpdate(ApplicationPackage applicationPackage) {
@@ -801,13 +787,12 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     private void loadLastProject() {
-        actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
         String projectImportName = applicationSettings.getProjectImportName();
         if (projectImportName != null && !projectImportName.isEmpty()) {
             this.importProject(projectImportName);
         } else if (applicationSettings.isProjectLastAutoload()) {
             String projectName = applicationSettings.getProjectLastName();
-            if (projectName != null) {
+            if (projectName != null && !projectName.isEmpty()) {
                 project.initProject(projectName);
                 this.reloadProject();
 
