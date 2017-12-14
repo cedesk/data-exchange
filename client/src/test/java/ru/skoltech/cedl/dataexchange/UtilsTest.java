@@ -64,5 +64,7 @@ public class UtilsTest {
         Assert.assertEquals(0, Utils.compareVersions("1.27.1", "1.27.1"));
 
         Assert.assertEquals(-1, Utils.compareVersions("1.27", "1.27.1"));
+
+        Assert.assertEquals(1, Utils.compareVersions("1.37.prod", "1.37"));
     }
 }
