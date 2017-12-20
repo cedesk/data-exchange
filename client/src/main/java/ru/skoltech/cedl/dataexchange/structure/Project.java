@@ -546,7 +546,11 @@ public class Project {
         externalModelsIterator.forEachRemaining(externalModel -> {
             File cacheFile = externalModel.getCacheFile();
             externalModelFileWatcher.maskChangesTo(cacheFile);
-            externalModel.updateExportReferences();
+            try {
+                externalModel.updateExportReferences();
+            } catch (Exception e) {
+                logger.warn("Cannot update export references of " + externalModel.getNodePath() + " external model", e);
+            }
             externalModelFileWatcher.unmaskChangesTo(cacheFile);
         });
     }

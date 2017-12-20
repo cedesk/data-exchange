@@ -76,7 +76,7 @@ public class TradespaceToStudyBridge {
         if (parameterUuid == null) return "<not defined>";
 
         ParameterModel parameterModel = getParameterDictionary().get(parameterUuid);
-        if (parameterModel != null) {
+        if (parameterModel != null && parameterModel.getUnit() != null) {
             return parameterModel.getUnit().asText();
         }
         return "<not found>";
