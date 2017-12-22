@@ -63,23 +63,26 @@ public class TradespaceToStudyBridge {
     }
 
     public String getParameterName(String parameterUuid) {
-        if (parameterUuid == null) return "<not defined>";
+        if (parameterUuid == null || parameterUuid.isEmpty()) return "<not defined>";
 
         ParameterModel parameterModel = getParameterDictionary().get(parameterUuid);
-        if (parameterModel != null) {
-            return parameterModel.getNodePath();
+        if (parameterModel == null) {
+            return "<not found>";
         }
-        return "<not found>";
+        return parameterModel.getNodePath();
     }
 
     public String getParameterUnitOfMeasure(String parameterUuid) {
-        if (parameterUuid == null) return "<not defined>";
+        if (parameterUuid == null || parameterUuid.isEmpty()) return "<not defined>";
 
         ParameterModel parameterModel = getParameterDictionary().get(parameterUuid);
-        if (parameterModel != null && parameterModel.getUnit() != null) {
-            return parameterModel.getUnit().asText();
+        if (parameterModel == null) {
+            return "<not found>";
         }
-        return "<not found>";
+        if (parameterModel.getUnit() == null) {
+            return "<not defined>";
+        }
+        return parameterModel.getUnit().asText();
     }
 
     public Double getParameterValue(String parameterUuid) {
