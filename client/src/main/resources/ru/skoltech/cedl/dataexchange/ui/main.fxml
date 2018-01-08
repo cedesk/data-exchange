@@ -53,7 +53,7 @@
                         <Menu text="%main.menu.edit">
                             <MenuItem fx:id="usersMenu" onAction="#openUserManagement" text="%user_management.title"/>
                             <MenuItem fx:id="usersAndDisciplinesMenu" onAction="#openUserRoleManagement"
-                                      text="%user_management.title"/>
+                                      text="%user_role_management.title"/>
                             <MenuItem onAction="#openUnitManagement" text="%unit_management.title"/>
                             <CheckMenuItem fx:id="libraryViewMenu" text="%component_library.title"/>
                             <SeparatorMenuItem/>
@@ -95,7 +95,7 @@
                                 <Tooltip text="%main.toolbar.reload_project.tooltip"/>
                             </tooltip>
                             <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="RETWEET"/>
+                                <Glyph fontFamily="FontAwesome" icon="LEVEL_DOWN"/>
                             </graphic>
                         </Button>
                         <Button fx:id="saveButton" onAction="#saveProject">
@@ -129,7 +129,7 @@
                                 <Tooltip text="%main.toolbar.dependency_structure_matrix.tooltip"/>
                             </tooltip>
                             <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="TH_LARGE"/>
+                                <Glyph fontFamily="FontAwesome" icon="TH"/>
                             </graphic>
                         </Button>
                         <Button mnemonicParsing="false" onAction="#openDependencyView">
