@@ -100,7 +100,7 @@
                                 <Tooltip text="%model_editing.structure.toolbar.create_component.tooltip"/>
                             </tooltip>
                             <graphic>
-                                <Glyph fontFamily="FontAwesome" icon="UPLOAD"/>
+                                <Glyph fontFamily="FontAwesome" icon="SHARE_ALT"/>
                             </graphic>
                         </Button>
                         <Pane HBox.hgrow="ALWAYS"/>

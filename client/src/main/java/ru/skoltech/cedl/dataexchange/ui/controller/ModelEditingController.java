@@ -283,7 +283,7 @@ public class ModelEditingController implements Initializable {
         insertComponentButton.setMinWidth(28);
         insertComponentButton.setMnemonicParsing(false);
         insertComponentButton.setTooltip(new Tooltip("Insert Component into currently selected Node"));
-        insertComponentButton.setGraphic(new Glyph("FontAwesome", "DOWNLOAD"));
+        insertComponentButton.setGraphic(new Glyph("FontAwesome", "RETWEET"));
         insertComponentButton.disableProperty().bind(Bindings.createBooleanBinding(() ->
                         libraryController.selectedItemProperty().isNull().get()
                                 || structureTree.getSelectionModel().getSelectedItem() == null,

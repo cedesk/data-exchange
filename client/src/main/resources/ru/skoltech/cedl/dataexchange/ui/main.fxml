@@ -140,6 +140,14 @@
                                 <Glyph fontFamily="FontAwesome" icon="ARROWS"/>
                             </graphic>
                         </Button>
+                        <Button mnemonicParsing="false" onAction="#openTradespaceExplorer">
+                            <tooltip>
+                                <Tooltip text="%main.toolbar.tradespace.tooltip"/>
+                            </tooltip>
+                            <graphic>
+                                <Glyph fontFamily="FontAwesome" icon="AREA_CHART"/>
+                            </graphic>
+                        </Button>
                         <Pane HBox.hgrow="ALWAYS"/>
                         <HBox fillHeight="false" spacing="8">
                             <Label fx:id="studyNameLabel" styleClass="projectDetailsLabels" graphicTextGap="6"
