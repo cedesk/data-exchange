@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.logging.ActionLogger.ActionType.*;
 
@@ -122,7 +123,8 @@ public class ExternalModelEditorController implements Initializable {
             return;
         }
         List<String> extensions = externalModelService.supportedExtensions();
-        List<FileChooser.ExtensionFilter> extensionFilters = Collections.singletonList(new FileChooser.ExtensionFilter("External Model", extensions));
+        String filterName = String.format("External Models (%s)", extensions.stream().collect(Collectors.joining(",")));
+        List<FileChooser.ExtensionFilter> extensionFilters = Collections.singletonList(new FileChooser.ExtensionFilter(filterName, extensions));
         File externalModelFile = chooseExternalModelFile(fileStorageService.applicationDirectory(), extensionFilters);
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
