@@ -561,7 +561,7 @@ public class Project {
         canNew.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
         canLoad.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
         boolean isAdmin = checkAdminUser();
-        boolean isSyncEnabled = !isAdmin && studySettings == null || studySettings.getSyncEnabled();
+        boolean isSyncEnabled = isAdmin || (studySettings != null && studySettings.getSyncEnabled());
         boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
         canSync.setValue(isSyncEnabled && isSavePossible);
     }
