@@ -26,11 +26,9 @@ import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.DesignPoint;
-import ru.skoltech.cedl.dataexchange.entity.tradespace.Epoch;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.net.URL;
 import java.util.List;
@@ -53,14 +51,9 @@ public class TradespacePolarPlotController implements Initializable {
     @FXML
     private WebView polarChartWebView;
 
-    private Project project;
     private GuiService guiService;
 
     private JSObject windowObject;
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
 
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
@@ -109,7 +102,6 @@ public class TradespacePolarPlotController implements Initializable {
 
     public void setTradespace(MultitemporalTradespace multitemporalTradespace) {
         List<FigureOfMeritDefinition> figures = multitemporalTradespace.getDefinitions();
-        List<Epoch> epochs = multitemporalTradespace.getEpochs();
         List<DesignPoint> designPoints = multitemporalTradespace.getDesignPoints();
         if (designPoints.isEmpty()) {
             return;

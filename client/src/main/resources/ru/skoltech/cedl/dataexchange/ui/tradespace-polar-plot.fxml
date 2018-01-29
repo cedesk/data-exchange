@@ -30,7 +30,7 @@
     </padding>
     <top>
         <ToolBar BorderPane.alignment="CENTER">
-            <CheckBox fx:id="revisionCheckBox" text="Use points related to revision"/>
+            <CheckBox fx:id="revisionCheckBox" text="Only show points related to the design"/>
             <Pane HBox.hgrow="ALWAYS"/>
             <Button minWidth="28" mnemonicParsing="false" onAction="#updateTradespaceView">
                 <tooltip>
