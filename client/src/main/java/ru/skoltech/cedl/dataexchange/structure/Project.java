@@ -315,8 +315,8 @@ public class Project {
     private void initCurrentStudy() {
         this.initProject(study.getName());
         this.setRepositoryStudy(null);
-        this.initializeHandlers();
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+        this.initializeHandlers();
 
         UserRoleManagement userRoleManagement = study.getUserRoleManagement();
         userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
