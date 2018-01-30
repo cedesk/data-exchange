@@ -577,7 +577,7 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         }
 
         @Override
-        public void flush() throws IOException {
+        public void close() throws IOException {
             ExternalModel.this.setAttachment(this.toByteArray());
         }
     }
