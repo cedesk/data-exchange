@@ -27,11 +27,13 @@ import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializer;
-import ru.skoltech.cedl.dataexchange.service.*;
+import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
+import ru.skoltech.cedl.dataexchange.service.RepositorySchemeService;
+import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.ErrorAlert;
 
-import java.io.IOException;
 import java.util.Locale;
 
 public class ClientApplication extends Application {
@@ -45,7 +47,7 @@ public class ClientApplication extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         try {
             ApplicationSettingsInitializer.initialize();
             PropertyConfigurator.configure(ClientApplication.class.getResource("/log4j/log4j.properties"));
@@ -77,7 +79,7 @@ public class ClientApplication extends Application {
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         logger.info("Stopping CEDESK ...");
         try {
             context.close();
@@ -87,7 +89,7 @@ public class ClientApplication extends Application {
         logger.info("CEDESK stopped.");
     }
 
-    private void startMainController(Stage primaryStage) throws IOException {
+    private void startMainController(Stage primaryStage) {
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
         RepositorySchemeService repositorySchemeService = context.getBean(RepositorySchemeService.class);
 
@@ -110,10 +112,9 @@ public class ClientApplication extends Application {
             }
         }
 
-        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
         GuiService guiService = context.getBean(GuiService.class);
 
-        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
+        System.out.println("using: " + applicationSettings.applicationDirectory().getAbsolutePath() +
                 "/" + applicationSettings.getCedeskAppFile());
         logger.info("----------------------------------------------------------------------------------------------------");
         logger.info("Opening CEDESK ...");
@@ -128,7 +129,7 @@ public class ClientApplication extends Application {
         mainViewBuilder.show();
     }
 
-    private void startRepositorySettingsController(Stage primaryStage) throws IOException {
+    private void startRepositorySettingsController(Stage primaryStage) {
         GuiService guiService = context.getBean(GuiService.class);
         ViewBuilder repositorySettingsViewBuilder = guiService.createViewBuilder("Repository settings", Views.REPOSITORY_SETTINGS_VIEW);
         repositorySettingsViewBuilder.primaryStage(primaryStage);

@@ -135,7 +135,7 @@ public class ImportTradespaceFromExcelController extends AbstractImportTradespac
     }
 
     public void chooseCsvFile() {
-        File applicationDirectory = fileStorageService.applicationDirectory();
+        File applicationDirectory = applicationSettings.applicationDirectory();
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(applicationDirectory);

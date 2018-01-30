@@ -72,7 +72,6 @@
     <bean id="fxmlLoaderFactory" class="ru.skoltech.cedl.dataexchange.ui.controller.FXMLLoaderFactory"/>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.RepositorySettingsController">
-        <property name="fileStorageService" ref="fileStorageService"/>
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="repositoryConnectionService" ref="repositoryConnectionService"/>
         <property name="executor" ref="executor"/>
@@ -86,11 +85,6 @@
     <bean id="guiService" class="ru.skoltech.cedl.dataexchange.service.impl.GuiServiceImpl">
         <property name="fxmlLoaderFactory" ref="fxmlLoaderFactory"/>
         <property name="locale" ref="locale"/>
-    </bean>
-
-    <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.service.impl.FileStorageServiceImpl">
-        <constructor-arg type="ru.skoltech.cedl.dataexchange.init.ApplicationSettings" ref="applicationSettings"/>
-        <property name="externalModelService" ref="externalModelService"/>
     </bean>
 
     <bean id="externalModelService" class="ru.skoltech.cedl.dataexchange.service.impl.ExternalModelServiceImpl"/>

@@ -24,7 +24,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettingsInitializer;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 public abstract class ContextAwareApplication extends Application {
@@ -41,8 +40,7 @@ public abstract class ContextAwareApplication extends Application {
 
         ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
         ApplicationSettings applicationSettings = context.getBean(ApplicationSettings.class);
-        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
-        System.out.println("using: " + fileStorageService.applicationDirectory().getAbsolutePath() +
+        System.out.println("using: " + applicationSettings.applicationDirectory().getAbsolutePath() +
                 "/" + applicationSettings.getCedeskAppFile());
 
     }

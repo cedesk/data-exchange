@@ -33,7 +33,6 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
 
 import java.net.URL;
@@ -67,9 +66,8 @@ public class RepositorySettingsController implements Initializable, Displayable,
     @FXML
     private Button saveButton;
 
-    private RepositoryConnectionService repositoryConnectionService;
-    private FileStorageService fileStorageService;
     private ApplicationSettings applicationSettings;
+    private RepositoryConnectionService repositoryConnectionService;
     private Executor executor;
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
@@ -82,10 +80,6 @@ public class RepositorySettingsController implements Initializable, Displayable,
 
     public void setExecutor(Executor executor) {
         this.executor = executor;
-    }
-
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -118,7 +112,7 @@ public class RepositorySettingsController implements Initializable, Displayable,
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        String applicationDirectory = fileStorageService.applicationDirectory().getAbsolutePath();
+        String applicationDirectory = applicationSettings.applicationDirectory().getAbsolutePath();
         String repositorySchemaName = applicationSettings.getRepositorySchemaName();
         String repositoryHost = applicationSettings.getRepositoryHost();
         String repositoryUser = applicationSettings.getRepositoryUser();

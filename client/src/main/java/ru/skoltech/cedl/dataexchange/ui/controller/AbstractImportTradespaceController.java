@@ -28,7 +28,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 
 /**
  * Abstract controller for import tradespace views.
@@ -46,7 +46,7 @@ public abstract class AbstractImportTradespaceController implements Initializabl
     @FXML
     private Button importButton;
 
-    protected FileStorageService fileStorageService;
+    protected ApplicationSettings applicationSettings;
 
     protected ListProperty<String> columnsProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
     protected StringProperty descriptionProperty = new SimpleStringProperty();
@@ -56,8 +56,8 @@ public abstract class AbstractImportTradespaceController implements Initializabl
     protected Stage ownerStage;
     protected EventHandler<Event> applyEventHandler;
 
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
     }
 
     @Override

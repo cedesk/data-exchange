@@ -295,7 +295,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void exportProject() {
-        File exportPath = Dialogues.chooseExportPath(fileStorageService.applicationDirectory());
+        File exportPath = Dialogues.chooseExportPath(applicationSettings.applicationDirectory());
         if (exportPath != null) {
             String outputFileName = project.getProjectName() + "_" + Utils.getFormattedDateAndTime() + "_cedesk-study.zip";
             File outputFile = new File(exportPath, outputFileName);
@@ -312,14 +312,14 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void importProject() {
-        File importFile = Dialogues.chooseImportFile(fileStorageService.applicationDirectory());
+        File importFile = Dialogues.chooseImportFile(applicationSettings.applicationDirectory());
         this.importProject(importFile);
     }
 
     private void importProject(String projectName) {
         File importFile = null;
         if (projectName != null && !projectName.isEmpty()) {
-            importFile = new File(fileStorageService.applicationDirectory(), projectName);
+            importFile = new File(applicationSettings.applicationDirectory(), projectName);
             if (importFile.exists()) {
                 logger.info("Importing " + importFile.getAbsolutePath());
             } else {
@@ -331,7 +331,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
         if (importFile == null) {
             // TODO: warn user about replacing current project
-            importFile = Dialogues.chooseImportFile(fileStorageService.applicationDirectory());
+            importFile = Dialogues.chooseImportFile(applicationSettings.applicationDirectory());
         }
         this.importProject(importFile);
     }
@@ -342,32 +342,24 @@ public class MainController implements Initializable, Displayable, Closeable {
             try {
                 try {
                     Study study = fileStorageService.importStudyFromZip(importFile);
-                    project.importStudy(study);
                     List<User> detectedUsers = study.getUserRoleManagement().getUserDisciplines()
                             .stream().map(UserDiscipline::getUser).collect(Collectors.toList());
                     List<User> users = userService.findAllUsers();
-
                     List<User> newUsers = detectedUsers.stream()
                             .filter(du -> users.stream().noneMatch(u -> du.getUserName().equals(u.getUserName())))
                             .collect(Collectors.toList());
+
                     if (!newUsers.isEmpty()) {
                         Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("New users detected",
                                 "Some of the users in the imported are not registered in the current database.\n" +
                                         "Do you want to create them?");
                         if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                             newUsers.forEach(user -> userService.createUser(user.getUserName(), user.getFullName()));
-                            logger.debug("New users have been added: " + newUsers.stream()
-                                    .map(User::getFullName)
-                                    .collect(Collectors.joining(",")));
+                            String newUsersString = newUsers.stream().map(User::getFullName).collect(Collectors.joining(","));
+                            logger.debug("New users have been added: " + newUsersString);
                         }
-                        project.getUserRoleManagement().getUserDisciplines().forEach(userDiscipline -> {
-                            User user = userDiscipline.getUser();
-                            User actualUser = userService.findUser(user.getUserName());
-                            userDiscipline.setUser(actualUser);
-                        });
-                        project.getUserRoleManagement().getUserDisciplines()
-                                .removeIf(userDiscipline -> userDiscipline.getUser() == null);
                     }
+                    project.importStudy(study);
                 } catch (Exception e) {
                     SystemModel systemModel = fileStorageService.importSystemModel(importFile);
                     project.importSystemModel(systemModel);

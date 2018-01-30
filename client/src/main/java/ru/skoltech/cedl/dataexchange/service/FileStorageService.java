@@ -34,13 +34,6 @@ import java.io.InputStream;
 public interface FileStorageService {
 
     /**
-     * Retrieve a basic application directory.
-     *
-     * @return application directory.
-     */
-    File applicationDirectory();
-
-    /**
      * Check file existence and non emptiness.
      *
      * @param file file to check

@@ -72,6 +72,7 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
     private String projectImportName;
     private String studyModelDepth;
 
+    private final File applicationDirectory;
     private File file;
 
     public ApplicationSettingsImpl(String cedeskAppDir, String cedeskAppFile) {
@@ -79,11 +80,20 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
         this.cedeskAppFile = cedeskAppFile;
         File cedeskAppDirFile = new File(cedeskAppDir);
         if (cedeskAppDirFile.isAbsolute()) {
+            this.applicationDirectory = cedeskAppDirFile;
             this.file = new File(cedeskAppDirFile, cedeskAppFile);
         } else {
             String userHome = System.getProperty("user.home");
             File userDir = new File(userHome, cedeskAppDir);
+            this.applicationDirectory = new File(userHome, cedeskAppDir);
             this.file = new File(userDir, cedeskAppFile);
+        }
+
+        if (!this.applicationDirectory.exists()) {
+            boolean created = this.applicationDirectory.mkdirs();
+            if (!created) {
+                logger.error("unable to create application directory: " + this.applicationDirectory.getAbsolutePath());
+            }
         }
     }
 
@@ -549,6 +559,11 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
         } catch (IOException e) {
             logger.error("Error saving application settings!");
         }
+    }
+
+    @Override
+    public File applicationDirectory() {
+        return applicationDirectory;
     }
 
 }

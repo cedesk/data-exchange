@@ -37,9 +37,9 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
@@ -68,9 +68,9 @@ public class ExternalModelEditorController implements Initializable {
     @FXML
     private VBox externalModelViewContainer;
 
+    private ApplicationSettings applicationSettings;
     private Project project;
     private GuiService guiService;
-    private FileStorageService fileStorageService;
     private ExternalModelService externalModelService;
     private ActionLogger actionLogger;
     private StatusLogger statusLogger;
@@ -91,8 +91,8 @@ public class ExternalModelEditorController implements Initializable {
         this.externalModelService = externalModelService;
     }
 
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
     }
 
     public void setGuiService(GuiService guiService) {
@@ -125,7 +125,7 @@ public class ExternalModelEditorController implements Initializable {
         List<String> extensions = externalModelService.supportedExtensions();
         String filterName = String.format("External Models (%s)", extensions.stream().collect(Collectors.joining(",")));
         List<FileChooser.ExtensionFilter> extensionFilters = Collections.singletonList(new FileChooser.ExtensionFilter(filterName, extensions));
-        File externalModelFile = chooseExternalModelFile(fileStorageService.applicationDirectory(), extensionFilters);
+        File externalModelFile = chooseExternalModelFile(applicationSettings.applicationDirectory(), extensionFilters);
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
             if (externalModelFile.isFile()) {
@@ -267,7 +267,7 @@ public class ExternalModelEditorController implements Initializable {
         FileChooser.ExtensionFilter extensionFilter
                 = new FileChooser.ExtensionFilter(fileDescriptionAndExtensions.getLeft(), fileDescriptionAndExtensions.getRight());
 
-        File externalModelFile = chooseExternalModelFile(fileStorageService.applicationDirectory(), Collections.singletonList(extensionFilter));
+        File externalModelFile = chooseExternalModelFile(applicationSettings.applicationDirectory(), Collections.singletonList(extensionFilter));
         String oldFileName = externalModel.getName();
         String oldNodePath = externalModel.getNodePath();
         if (externalModelFile != null) {

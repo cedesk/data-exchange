@@ -78,10 +78,10 @@
     <bean id="externalModelEditorController" class="ru.skoltech.cedl.dataexchange.ui.controller.ExternalModelEditorController">
         <property name="project" ref="project"/>
         <property name="guiService" ref="guiService"/>
-        <property name="fileStorageService" ref="fileStorageService"/>
         <property name="externalModelService" ref="externalModelService"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="statusLogger" ref="statusLogger"/>
+        <property name="applicationSettings" ref="applicationSettings"/>
     </bean>
 
     <bean id="parameterEditorController" class="ru.skoltech.cedl.dataexchange.ui.controller.ParameterEditorController">
@@ -143,11 +143,11 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ImportTradespaceFromCsvController" scope="prototype">
-        <property name="fileStorageService" ref="fileStorageService"/>
+        <property name="applicationSettings" ref="applicationSettings"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ImportTradespaceFromExcelController" scope="prototype">
-        <property name="fileStorageService" ref="fileStorageService"/>
+        <property name="applicationSettings" ref="applicationSettings"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TradespaceScatterPlotController" scope="prototype">

@@ -441,16 +441,6 @@ public class Project {
     }
 
     public void storeStudy() throws RepositoryException {
-        SystemModel systemModel = this.getSystemModel();
-        this.initializeHandlers();
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
-        parameterLinkRegistry.updateAll(systemModel);
-        this.updateExportReferences(systemModel, accessChecker);
-        if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
-            // store URM separately before study, to prevent links to deleted subsystems have storing study fail
-            storeUserRoleManagement();
-        }
-
         Triple<Study, Integer, Date> revision = studyService.saveStudy(this.study);
         Study newStudy = revision.getLeft();
         Integer revisionNumber = revision.getMiddle();
@@ -459,6 +449,16 @@ public class Project {
         this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
         this.latestRevisionNumber.set(revisionNumber);
 
+        SystemModel systemModel = this.getSystemModel();
+
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+        this.initializeHandlers();
+        parameterLinkRegistry.updateAll(systemModel);
+        this.updateExportReferences(systemModel, accessChecker);
+        if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
+            // store URM separately before study, to prevent links to deleted subsystems have storing study fail
+            storeUserRoleManagement();
+        }
 
         this.updateValueReferences(systemModel);
     }
@@ -495,12 +495,12 @@ public class Project {
     private void initializeHandlers() {
         Platform.runLater(() -> differenceHandler.clearModelDifferences());
 
-        SystemModel systemModel = getSystemModel();
+        SystemModel systemModel = this.getSystemModel();
         parameterLinkRegistry.clear();
         parameterLinkRegistry.registerAllParameters(systemModel);
         parameterLinkRegistry.updateAllSinks(systemModel, accessChecker);
         externalModelFileWatcher.clear();
-        externalModelFileWatcher.add(this.getSystemModel(), accessChecker);
+        externalModelFileWatcher.add(systemModel, accessChecker);
     }
 
     private void initializeUnitManagement() {
