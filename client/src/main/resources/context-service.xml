@@ -93,6 +93,14 @@
     <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository.revision"
                       factory-class="ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionRepositoryFactoryBean"/>
 
+    <bean class="ru.skoltech.cedl.dataexchange.InitializeDatabaseViews" init-method="init">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"/>
 
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
