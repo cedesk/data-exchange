@@ -21,6 +21,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.context.ApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.File;
 
@@ -48,6 +49,13 @@ public abstract class AbstractApplicationContextTest {
 
         ApplicationContextInitializer.initialize("/context-test.xml");
         context = ApplicationContextInitializer.getInstance().getContext();
+
+        JdbcTemplate template = context.getBean("jdbcTemplate", JdbcTemplate.class);
+
+        // test views existence
+        template.queryForList("SELECT * FROM modelnode");
+        template.queryForList("SELECT * FROM parameter_changes");
+        template.queryForList("SELECT * FROM overall_study_statistics");
     }
 
     @AfterClass

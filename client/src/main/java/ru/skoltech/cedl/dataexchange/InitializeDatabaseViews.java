@@ -17,7 +17,7 @@
 package ru.skoltech.cedl.dataexchange;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.support.EncodedResource;
+import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 
@@ -31,8 +31,6 @@ import java.sql.SQLException;
  */
 public class InitializeDatabaseViews {
 
-    private static final String DEFAULT_COMMENT_PREFIX = "#";
-
     private JdbcTemplate jdbcTemplate;
 
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
@@ -41,9 +39,7 @@ public class InitializeDatabaseViews {
 
     public void init() throws SQLException {
         Connection connection = jdbcTemplate.getDataSource().getConnection();
-        EncodedResource createViewsScript = new EncodedResource(new ClassPathResource("create-views.sql"));
-        ScriptUtils.executeSqlScript(connection, createViewsScript, false, false,
-                DEFAULT_COMMENT_PREFIX, ScriptUtils.DEFAULT_STATEMENT_SEPARATOR,
-                ScriptUtils.DEFAULT_BLOCK_COMMENT_START_DELIMITER, ScriptUtils.DEFAULT_BLOCK_COMMENT_END_DELIMITER);
+        Resource createViewsScript = new ClassPathResource("create-views.sql");
+        ScriptUtils.executeSqlScript(connection, createViewsScript);
     }
 }

@@ -1,4 +1,4 @@
-## --------------------------------------------------------
+/* --------------------------------------------------------*/
 
 CREATE OR REPLACE VIEW `modelnode` AS
   SELECT
@@ -36,10 +36,10 @@ CREATE OR REPLACE VIEW `modelnode` AS
             JOIN systemmodel su2 ON e2.parent_id = su2.id
             JOIN systemmodel sy ON su2.parent_id = sy.id);
 
-# this ignores parameters which were associated to nodes that were deleted
+/* this ignores parameters which were associated to nodes that were deleted*/
 CREATE OR REPLACE VIEW `parameter_changes` AS
   SELECT
-    # all parameter attributes
+    /* all parameter attributes*/
     pa.`id`                                  AS param_id,
     pa.`description`,
     pa.`exportField`,
@@ -59,11 +59,11 @@ CREATE OR REPLACE VIEW `parameter_changes` AS
     pa.`parent_id`,
     pa.`unit_id`,
     pa.`valueLink_id`,
-    # revision attributes
+    /* revision attributes*/
     ri.id                                    AS rev_id,
     ri.`timestamp`,
     ri.`username`,
-    # attributes human readable
+    /* attributes human readable*/
     FROM_UNIXTIME(`timestamp` / 1000)        AS `timestamp_h`,
     FROM_UNIXTIME(`lastModification` / 1000) AS `lastModification_h`,
     CASE pa.valueSource
@@ -75,7 +75,7 @@ CREATE OR REPLACE VIEW `parameter_changes` AS
       THEN 'calc'
     WHEN 3
       THEN 'import' END                      AS value_source,
-    # belonging model node information
+    /* belonging model node information*/
     mn.id                                    AS node_id,
     mn.node_name,
     mn.sys_id,
