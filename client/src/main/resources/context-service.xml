@@ -77,11 +77,6 @@
 
     <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.service.impl.JsoupServiceImpl"/>
 
-    <bean class="ru.skoltech.cedl.dataexchange.service.impl.SpreadsheetInputOutputExtractorServiceImpl"
-          id="spreadsheetInputOutputExtractorService">
-        <property name="unitManagementService" ref="unitManagementService"/>
-    </bean>
-
     <bean id="directoryWatchService" class="ru.skoltech.cedl.dataexchange.service.impl.SimpleDirectoryWatchService" />
 
     <!-- persistence -->
