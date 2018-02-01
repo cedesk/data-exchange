@@ -17,12 +17,12 @@
   -->
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.web.WebView?>
-<?import org.controlsfx.glyphfont.Glyph?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.TradespacePolarPlotController">
     <padding>
@@ -32,22 +32,6 @@
         <ToolBar BorderPane.alignment="CENTER">
             <CheckBox fx:id="revisionCheckBox" text="Only show points related to the design"/>
             <Pane HBox.hgrow="ALWAYS"/>
-            <Button minWidth="28" mnemonicParsing="false" onAction="#updateTradespaceView">
-                <tooltip>
-                    <Tooltip text="Refresh"/>
-                </tooltip>
-                <graphic>
-                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                </graphic>
-            </Button>
-            <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram">
-                <tooltip>
-                    <Tooltip text="Save the diagram as image file"/>
-                </tooltip>
-                <graphic>
-                    <Glyph fontFamily="FontAwesome" icon="SAVE"/>
-                </graphic>
-            </Button>
         </ToolBar>
     </top>
     <center>

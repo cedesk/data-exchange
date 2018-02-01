@@ -44,7 +44,7 @@ public class TradespacePolarPlotController implements Initializable {
 
     private static final Logger logger = Logger.getLogger(TradespacePolarPlotController.class);
 
-    private static final boolean ENABLE_FIREBUG = true;
+    private static final boolean ENABLE_FIREBUG = false;
 
     @FXML
     private CheckBox revisionCheckBox;
@@ -96,7 +96,7 @@ public class TradespacePolarPlotController implements Initializable {
             webEngine.loadContent("<canvas id='canvas'/>");
             windowObject = (JSObject) webEngine.executeScript("window");
         } catch (LoadException e) {
-            logger.error("Cannot load '???????' page: " + e.getMessage(), e);
+            logger.error("Cannot load radar plot page: " + e.getMessage(), e);
         }
     }
 
@@ -126,15 +126,6 @@ public class TradespacePolarPlotController implements Initializable {
         windowObject.setMember("datasets", datasets);
         windowObject.setMember("data", data);
         polarChartWebView.getEngine().executeScript("updateTradespaceRadar()");
-    }
-
-    public void updateView() {
-    }
-
-    public void updateTradespaceView() {
-    }
-
-    public void saveDiagram() {
     }
 
 }

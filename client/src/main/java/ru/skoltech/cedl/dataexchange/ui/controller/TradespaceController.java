@@ -154,7 +154,6 @@ public class TradespaceController implements Initializable {
         dp.setDescription("from study model"); // TODO: add revision ... tradespaceRepository.getCurrentRevisionNumber()
         multitemporalTradespace.getDesignPoints().add(dp);
         tradespaceScatterPlotController.updateView();
-        tradespacePolarPlotController.updateView();
     }
 
     public void editEpochs() {

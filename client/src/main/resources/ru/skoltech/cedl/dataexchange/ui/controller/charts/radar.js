@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-var randomScalingFactor = function () {
-    return Math.round(Math.random() * 100);
-};
-
-
 var config = {type: 'radar'};
 config.options = {
     legend: {position: 'bottom'},
@@ -29,38 +24,6 @@ config.options = {
 
 config.data = {};
 config.data.datasets = [];
-config.data.datasets[0] = {
-    label: "2014",
-    backgroundColor: Chart.helpers.color(window.chartColors.red).alpha(0.2).rgbString(),
-    borderColor: window.chartColors.red,
-    pointBackgroundColor: window.chartColors.red,
-    data: [
-        randomScalingFactor(),
-        randomScalingFactor(),
-        randomScalingFactor(),
-        randomScalingFactor(),
-        randomScalingFactor(),
-        randomScalingFactor(),
-        randomScalingFactor()
-    ]
-};
-config.data.datasets[1] = {
-    label: "2015",
-    backgroundColor: Chart.helpers.color(window.chartColors.blue).alpha(0.2).rgbString(),
-    borderColor: window.chartColors.blue,
-    pointBackgroundColor: window.chartColors.blue,
-    data: [
-        randomScalingFactor(),
-        randomScalingFactor(),
-        randomScalingFactor(),
-        randomScalingFactor(),
-        randomScalingFactor(),
-        randomScalingFactor(),
-        randomScalingFactor()
-    ]
-};
-
-config.data.labels = ["FigureOfMerit1", "FigureOfMerit2", "FigureOfMerit3", "FigureOfMerit4", "FigureOfMerit5", "FigureOfMerit6", "FigureOfMerit7"];
 
 var tradespaceRadar = new Chart(document.getElementById("canvas"), config);
 
