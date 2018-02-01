@@ -16,10 +16,12 @@
 
 package ru.skoltech.cedl.dataexchange;
 
+import org.apache.log4j.Logger;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -31,15 +33,30 @@ import java.sql.SQLException;
  */
 public class InitializeDatabaseViews {
 
+    private static final Logger logger = Logger.getLogger(InitializeDatabaseViews.class);
+
     private JdbcTemplate jdbcTemplate;
+
+    private ApplicationSettings applicationSettings;
+
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
 
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
     public void init() throws SQLException {
-        Connection connection = jdbcTemplate.getDataSource().getConnection();
-        Resource createViewsScript = new ClassPathResource("create-views.sql");
-        ScriptUtils.executeSqlScript(connection, createViewsScript);
+        if (applicationSettings.isRepositorySchemaCreate()) {
+            try {
+                Connection connection = jdbcTemplate.getDataSource().getConnection();
+                Resource createViewsScript = new ClassPathResource("create-views.sql");
+                ScriptUtils.executeSqlScript(connection, createViewsScript);
+            } catch (SQLException e) {
+                logger.error("Failed to create views in DB.", e);
+                throw e;
+            }
+        }
     }
 }

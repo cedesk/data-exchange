@@ -89,6 +89,7 @@
                       factory-class="ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionRepositoryFactoryBean"/>
 
     <bean id="databaseViewInitializer" class="ru.skoltech.cedl.dataexchange.InitializeDatabaseViews" init-method="init">
+        <property name="applicationSettings" ref="applicationSettings"/>
         <property name="jdbcTemplate" ref="jdbcTemplate"/>
     </bean>
 
