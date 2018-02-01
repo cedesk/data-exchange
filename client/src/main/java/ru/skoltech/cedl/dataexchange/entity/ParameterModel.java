@@ -199,7 +199,8 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     }
 
     public ExternalModelReference getExportReference() {
-        return this.getReference(this.exportReference, this.exportModel, this.exportField);
+        this.exportReference = this.getReference(this.exportReference, this.exportModel, this.exportField);
+        return this.exportReference;
     }
 
     public void setExportReference(ExternalModelReference exportReference) {
@@ -340,7 +341,8 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     }
 
     public ExternalModelReference getValueReference() {
-        return this.getReference(this.valueReference, this.importModel, this.importField);
+        this.valueReference = this.getReference(this.valueReference, this.importModel, this.importField);
+        return this.valueReference;
     }
 
     public void setValueReference(ExternalModelReference valueReference) {
