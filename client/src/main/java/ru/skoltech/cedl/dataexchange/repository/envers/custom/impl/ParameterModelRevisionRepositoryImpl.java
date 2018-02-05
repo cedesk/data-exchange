@@ -75,8 +75,7 @@ public class ParameterModelRevisionRepositoryImpl implements ParameterModelRevis
                 .map(revision -> new ParameterRevision((ParameterModel) revision[0], (CustomRevisionEntity) revision[1]))
                 .collect(Collectors.toList());
 
-        // TODO: intentionally traverse joined entities, to force fetching, not doing so will produce an exception
-        // must be fixed somehow
+        // intentionally traverse joined entities, to force fetching, not doing so will produce an exception
         parameterRevisions.forEach(parameterRevision -> {
             parameterRevision.getUnitAsText();
             parameterRevision.getNodePath();
