@@ -55,46 +55,55 @@
                         <Tab fx:id="tradespacePolarPlotParent" closable="false" text="Polar Chart"/>
                     </TabPane>
                 </AnchorPane>
-                <AnchorPane SplitPane.resizableWithParent="true">
-                    <SplitPane dividerPositions="0.3, 0.3" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0"
-                               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <BorderPane>
+                    <center>
                         <TitledPane fx:id="figuresOfMeritEditorPane" collapsible="false"
                                     text="Figures of Merit Definitions"/>
-                        <TitledPane collapsible="false" text="Epochs">
-                            <HBox>
-                                <TextField fx:id="epochText" editable="false" prefWidth="300"/>
-                                <Button minWidth="28" mnemonicParsing="false" onAction="#editEpochs">
-                                    <tooltip>
-                                        <Tooltip text="Edit the epochs"/>
-                                    </tooltip>
-                                    <graphic>
-                                        <Glyph fontFamily="FontAwesome" icon="EDIT"/>
-                                    </graphic>
-                                </Button>
-                            </HBox>
-                        </TitledPane>
-                        <TitledPane collapsible="false" text="Current Design Point">
-                            <VBox>
-                                <HBox>
-                                    <TextArea fx:id="figureOfMeritValuesText" editable="false" prefHeight="60.0"/>
-                                    <Button minWidth="28" mnemonicParsing="false" onAction="#updateFigureOfMeritValues">
-                                        <tooltip>
-                                            <Tooltip text="Reload Values"/>
-                                        </tooltip>
-                                        <graphic>
-                                            <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                                        </graphic>
-                                    </Button>
-                                </HBox>
-                                <HBox>
-                                    <ChoiceBox fx:id="epochChoice" prefWidth="80.0"/>
-                                    <Button mnemonicParsing="false" onAction="#addDesignPoint"
-                                            text="Add to Tradespace"/>
-                                </HBox>
-                            </VBox>
-                        </TitledPane>
-                    </SplitPane>
-                </AnchorPane>
+                    </center>
+                    <bottom>
+                        <BorderPane>
+                            <center>
+                                <TitledPane collapsible="false" text="Epochs">
+                                    <HBox>
+                                        <TextField fx:id="epochText" editable="false" prefWidth="300"/>
+                                        <Button minWidth="28" mnemonicParsing="false" onAction="#editEpochs">
+                                            <tooltip>
+                                                <Tooltip text="Edit the epochs"/>
+                                            </tooltip>
+                                            <graphic>
+                                                <Glyph fontFamily="FontAwesome" icon="EDIT"/>
+                                            </graphic>
+                                        </Button>
+                                    </HBox>
+                                </TitledPane>
+                            </center>
+                            <bottom>
+                                <TitledPane collapsible="false" text="Current Design Point">
+                                    <VBox>
+                                        <HBox>
+                                            <TextArea fx:id="figureOfMeritValuesText" editable="false"
+                                                      prefHeight="60.0"/>
+                                            <Button minWidth="28" mnemonicParsing="false"
+                                                    onAction="#updateFigureOfMeritValues">
+                                                <tooltip>
+                                                    <Tooltip text="Reload Values"/>
+                                                </tooltip>
+                                                <graphic>
+                                                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                                                </graphic>
+                                            </Button>
+                                        </HBox>
+                                        <HBox>
+                                            <ChoiceBox fx:id="epochChoice" prefWidth="80.0"/>
+                                            <Button mnemonicParsing="false" onAction="#addDesignPoint"
+                                                    text="Add to Tradespace"/>
+                                        </HBox>
+                                    </VBox>
+                                </TitledPane>
+                            </bottom>
+                        </BorderPane>
+                    </bottom>
+                </BorderPane>
             </SplitPane>
         </center>
     </BorderPane>

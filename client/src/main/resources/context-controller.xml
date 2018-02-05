@@ -156,15 +156,12 @@
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TradespacePolarPlotController" scope="prototype">
         <property name="guiService" ref="guiService"/>
+        <property name="executor" ref="executor"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController" scope="prototype">
         <property name="guiService" ref="guiService"/>
-    </bean>
-
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.FigureOfMeritController" scope="prototype">
-        <property name="tradespaceModelBridge" ref="tradespaceModelBridge"/>
-        <property name="guiService" ref="guiService"/>
+        <property name="tradespaceToStudyBridge" ref="tradespaceModelBridge"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.StudyRevisionsController" scope="prototype">
