@@ -16,12 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.ui.control.structure;
 
-import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.input.KeyCode;
-import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
@@ -31,7 +27,6 @@ import ru.skoltech.cedl.dataexchange.structure.DifferenceHandler;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.model.diff.NodeDifference;
-import ru.skoltech.cedl.dataexchange.ui.controller.Dialogues;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,34 +39,12 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
     private Project project;
     private DifferenceHandler differenceHandler;
     private UserRoleManagementService userRoleManagementService;
-    private TextField textField;
 
     public TextFieldTreeCell(Project project, DifferenceHandler differenceHandler, UserRoleManagementService userRoleManagementService) {
         this.project = project;
         this.differenceHandler = differenceHandler;
         this.userRoleManagementService = userRoleManagementService;
         this.setEditable(false);
-    }
-
-    @Override
-    public void cancelEdit() {
-        super.cancelEdit();
-        this.setText(name());
-        this.setGraphic(getTreeItem().getGraphic());
-    }
-
-    @Override
-    public void startEdit() {
-        if (!isEditable()) return;
-        super.startEdit();
-
-        if (textField == null) {
-            createTextField();
-        }
-        textField.setText(name());
-        this.setText(null);
-        this.setGraphic(textField);
-        textField.selectAll();
     }
 
     @Override
@@ -86,38 +59,9 @@ public class TextFieldTreeCell extends TreeCell<ModelNode> {
             this.setStyle(null);
             return;
         }
-        if (isEditing()) {
-            if (textField != null) {
-                textField.setText(name());
-            }
-            this.setText(null);
-            this.setGraphic(textField);
-            return;
-        }
         this.setText(name());
         this.setStyle(style(item));
         this.setGraphic(getTreeItem().getGraphic());
-    }
-
-    private void createTextField() {
-        textField = new TextField();
-        textField.setOnKeyReleased(t -> {
-            if (t.getCode() == KeyCode.ENTER) {
-                String newName = textField.getText();
-                TreeItem<ModelNode> parent = getTreeItem().getParent();
-                if (parent != null) {
-                    CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
-                    if (parentNode.getSubNodesMap().containsKey(newName)) {
-                        Dialogues.showError("Duplicate node name", "There is already a sibling node named like that!");
-                        return;
-                    }
-                }
-                getItem().setName(newName);
-                commitEdit(getItem());
-            } else if (t.getCode() == KeyCode.ESCAPE) {
-                cancelEdit();
-            }
-        });
     }
 
     private String name() {
