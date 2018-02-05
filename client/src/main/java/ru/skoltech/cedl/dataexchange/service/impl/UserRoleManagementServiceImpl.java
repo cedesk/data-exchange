@@ -128,38 +128,6 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
     }
 
     @Override
-    public UserRoleManagement createDefaultUserRoleManagement() {
-        UserRoleManagement urm = this.createUserRoleManagement();
-
-        // create Disciplines
-        Discipline orbitDiscipline = new Discipline("Orbit", urm);
-        Discipline payloadDiscipline = new Discipline("Payload", urm);
-        Discipline aocsDiscipline = new Discipline("AOCS", urm);
-        Discipline powerDiscipline = new Discipline("Power", urm);
-        Discipline thermalDiscipline = new Discipline("Thermal", urm);
-        Discipline communicationDiscipline = new Discipline("Communications", urm);
-        Discipline propulsionDiscipline = new Discipline("Propulsion", urm);
-        Discipline missionDiscipline = new Discipline("Mission", urm);
-
-        // add disciplines
-        urm.getDisciplines().add(aocsDiscipline);
-        urm.getDisciplines().add(orbitDiscipline);
-        urm.getDisciplines().add(payloadDiscipline);
-        urm.getDisciplines().add(powerDiscipline);
-        urm.getDisciplines().add(thermalDiscipline);
-        urm.getDisciplines().add(communicationDiscipline);
-        urm.getDisciplines().add(propulsionDiscipline);
-        urm.getDisciplines().add(missionDiscipline);
-
-        // add user disciplines
-        User admin = userService.findAdminUser();
-        if (admin != null) {
-            this.addAdminDiscipline(urm, admin);
-        }
-        return urm;
-    }
-
-    @Override
     public UserRoleManagement createUserRoleManagement() {
         UserRoleManagement userRoleManagement = new UserRoleManagement();
 

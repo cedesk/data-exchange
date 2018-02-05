@@ -51,16 +51,15 @@ public class UserRoleManagementServiceTest extends AbstractApplicationContextTes
 
     @Test
     public void testCheckAccessAdminTest() {
-        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement();
+        SystemModel systemModel = systemBuilder.build("testModel");
+
+        UserRoleManagement userRoleManagement = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel);
 
         User admin = userService.findAdminUser();
         Assert.assertTrue(userRoleManagementService.checkUserAdmin(userRoleManagement, admin));
 
         String testUserName = "test user";
         userRoleManagementService.addUserWithAdminRole(userRoleManagement, testUserName);
-
-
-        SystemModel systemModel = systemBuilder.build("testModel");
 
         SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
@@ -73,13 +72,14 @@ public class UserRoleManagementServiceTest extends AbstractApplicationContextTes
 
     @Test
     public void testCheckAccessExpertTest() {
-        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement();
+        SystemModel systemModel = systemBuilder.build("testModel");
+
+        UserRoleManagement userRoleManagement = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel);
 
         String testUserName = "testUSER";
         User testUser = new User(testUserName, "", "");
         testUser = userService.saveUser(testUser);
 
-        SystemModel systemModel = systemBuilder.build("testModel");
         SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
         Discipline secondDiscipline = userRoleManagement.getDisciplines().get(1);

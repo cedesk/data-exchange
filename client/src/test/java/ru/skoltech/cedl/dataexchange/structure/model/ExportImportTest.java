@@ -78,9 +78,9 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         unitManagementService = context.getBean(UnitManagementService.class);
         UserRoleManagementService userRoleManagementService = context.getBean(UserRoleManagementService.class);
 
-        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement();
         systemBuilder.modelDepth(2);
         SystemModel originalSystemModel = systemBuilder.build("testModel");
+        UserRoleManagement userRoleManagement = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(originalSystemModel);
 
         excelExternalModel = externalModelService.createExternalModelFromFile(excelAttachmentFile, originalSystemModel);
         csvExternalModel = externalModelService.createExternalModelFromFile(csvAttachmentFile, originalSystemModel);
