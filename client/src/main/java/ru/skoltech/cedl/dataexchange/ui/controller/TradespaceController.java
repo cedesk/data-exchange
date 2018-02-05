@@ -16,6 +16,9 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -75,6 +78,8 @@ public class TradespaceController implements Initializable {
     private MultitemporalTradespace multitemporalTradespace;
     private long studyId;
 
+    private ListProperty<Epoch> epochListProperty = new SimpleListProperty<>();
+
     @Autowired
     public TradespaceController(TradespaceRepository tradespaceRepository) {
         this.tradespaceRepository = tradespaceRepository;
@@ -110,6 +115,10 @@ public class TradespaceController implements Initializable {
         figuresOfMeritEditorPane.setContent(figuresOfMeritEditorNode);
 
         studyId = project.getStudy().getId();
+        epochText.textProperty().bind(Bindings.createStringBinding(() ->
+                epochListProperty.stream().map(Epoch::asText).collect(Collectors.joining(", ")), epochListProperty));
+        epochChoice.itemsProperty().bind(epochListProperty);
+        epochChoice.itemsProperty().addListener((observable, oldValue, newValue) -> epochChoice.getSelectionModel().selectFirst());
         epochChoice.setConverter(new StringConverter<Epoch>() {
             @Override
             public Epoch fromString(String string) {
@@ -118,6 +127,9 @@ public class TradespaceController implements Initializable {
 
             @Override
             public String toString(Epoch epoch) {
+                if (epoch == null) {
+                    return null;
+                }
                 return epoch.asText();
             }
         });
@@ -128,7 +140,6 @@ public class TradespaceController implements Initializable {
         } else {
             newTradespace();
         }
-        updateView();
     }
 
     public void loadTradespace() {
@@ -157,26 +168,32 @@ public class TradespaceController implements Initializable {
     }
 
     public void editEpochs() {
-        Optional<String> epochStringOptional = Dialogues.inputEpochs(multitemporalTradespace.getEpochsFormatted());
+        String currentEpochsString = epochListProperty.stream().map(Epoch::asText).collect(Collectors.joining(", "));
+        Optional<String> epochStringOptional = Dialogues.inputEpochs(currentEpochsString);
         if (epochStringOptional.isPresent()) {
             List<Epoch> epochList = multitemporalTradespace.getEpochs();
             List<Epoch> newEpochList = new ArrayList<>();
-            String epochString = epochStringOptional.get();
+            String epochString = epochStringOptional.get().trim();
             // TODO: add input validation
-            String[] yearStrings = epochString.split(",");
-            for (String yearString : yearStrings) {
-                int year = Integer.valueOf(yearString.trim());
-                Epoch epoch = new Epoch(year);
-                if (epochList.contains(epoch)) { // such an epoch already exists
-                    epoch = epochList.get(epochList.indexOf(epoch)); // reuse same object
-                }
-                newEpochList.add(epoch);
+            if (epochString.isEmpty()) {
+                newEpochList = Collections.emptyList();
+            } else {
+                String[] yearStrings = epochString.trim().split(",");
+                List<Epoch> finalNewEpochList = newEpochList;
+                Arrays.stream(yearStrings).forEach(yearString -> {
+                    int year = Integer.valueOf(yearString.trim());
+                    Epoch epoch = new Epoch(year);
+                    if (epochList.contains(epoch)) { // such an epoch already exists
+                        epoch = epochList.get(epochList.indexOf(epoch)); // reuse same object
+                    }
+                    finalNewEpochList.add(epoch);
+                });
             }
             if (!CollectionUtils.isEqualCollection(epochList, newEpochList)) {
                 Dialogues.showWarning("Changing Epochs", "Removing epochs harms data consistency!");
                 multitemporalTradespace.setEpochs(newEpochList);
             }
-            epochText.setText(multitemporalTradespace.getEpochsFormatted());
+            epochListProperty.setValue(FXCollections.observableArrayList(newEpochList));
         }
     }
 
@@ -198,7 +215,9 @@ public class TradespaceController implements Initializable {
         tradespaceScatterPlotController.setTradespace(multitemporalTradespace);
         tradespacePolarPlotController.setTradespace(multitemporalTradespace);
 
-        updateView();
+        studyNameLabel.setText(project.getStudy().getName());
+        epochListProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
+        updateFigureOfMeritValues();
     }
 
     private void importTadespace(ViewBuilder viewBuilder) {
@@ -252,16 +271,4 @@ public class TradespaceController implements Initializable {
         figureOfMeritValuesText.setText(fomTexts.stream().collect(Collectors.joining(",\n")));
     }
 
-    private void updateView() {
-        studyNameLabel.setText(project.getStudy().getName());
-
-        if (multitemporalTradespace.getEpochs() != null) {
-            epochText.setText(multitemporalTradespace.getEpochs().stream().map(Epoch::asText).collect(Collectors.joining(", ")));
-            epochChoice.setItems(FXCollections.observableList(multitemporalTradespace.getEpochs()));
-            if (multitemporalTradespace.getEpochs().size() > 0) {
-                epochChoice.setValue(multitemporalTradespace.getEpochs().get(0));
-            }
-        }
-        updateFigureOfMeritValues();
-    }
 }
