@@ -51,7 +51,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.logging.ActionLogger.ActionType.*;
@@ -77,22 +76,16 @@ public class ExternalModelEditorController implements Initializable {
 
     private ModelNode modelNode;
 
-    private Consumer<ExternalModel> externalModelReloadConsumer;
-
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
     }
 
-    public void setExternalModelReloadConsumer(Consumer<ExternalModel> externalModelReloadConsumer) {
-        this.externalModelReloadConsumer = externalModelReloadConsumer;
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
     }
 
     public void setExternalModelService(ExternalModelService externalModelService) {
         this.externalModelService = externalModelService;
-    }
-
-    public void setApplicationSettings(ApplicationSettings applicationSettings) {
-        this.applicationSettings = applicationSettings;
     }
 
     public void setGuiService(GuiService guiService) {
@@ -184,11 +177,14 @@ public class ExternalModelEditorController implements Initializable {
     }
 
     public void reloadExternalModels() {
-        if (externalModelReloadConsumer == null) {
+        if (project.getExternalModelUpdateConsumers().isEmpty()) {
             return;
         }
 
-        modelNode.getExternalModels().forEach(externalModel -> externalModelReloadConsumer.accept(externalModel));
+        modelNode.getExternalModels().forEach(
+                externalModel -> project.getExternalModelUpdateConsumers().forEach(
+                        externalModelConsumer -> externalModelConsumer.accept(externalModel))
+        );
     }
 
     private File chooseExternalModelFile(File applicationDirectory, List<FileChooser.ExtensionFilter> extensionFilters) {
