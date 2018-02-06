@@ -612,8 +612,6 @@ public class MainController implements Initializable, Displayable, Closeable {
     public void openDependencyView() {
         if (dependencyStage == null || !dependencyStage.isShowing()) {
             ViewBuilder dependencyViewBuilder = guiService.createViewBuilder(resources.getString("dependency_analysis.title"), Views.DEPENDENCY_VIEW);
-            dependencyViewBuilder.resizable(false);
-            dependencyViewBuilder.ownerWindow(this.ownerStage);
             dependencyStage = dependencyViewBuilder.createStage();
             dependencyStage.show();
         } else {
