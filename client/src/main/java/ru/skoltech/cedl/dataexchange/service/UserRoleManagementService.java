@@ -94,13 +94,6 @@ public interface UserRoleManagementService {
     boolean checkUserAdmin(UserRoleManagement userRoleManagement, User user);
 
     /**
-     * Create default {@link UserRoleManagement}.
-     *
-     * @return created instance of {@link UserRoleManagement}
-     */
-    UserRoleManagement createDefaultUserRoleManagement();
-
-    /**
      * Build {@link UserRoleManagement} which contains <i>Admin</i> {@link Discipline} with full rights.
      *
      * @return UserRoleManagement instance

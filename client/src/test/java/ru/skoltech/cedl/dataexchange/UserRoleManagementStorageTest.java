@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
 import ru.skoltech.cedl.dataexchange.repository.revision.UserRoleManagementRepository;
@@ -40,7 +41,7 @@ public class UserRoleManagementStorageTest extends AbstractApplicationContextTes
 
     @Test
     public void testStoreAndRetrieveUserManagement() {
-        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement();
+        UserRoleManagement userRoleManagement = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(new SystemModel());
         userRoleManagementRepository.saveAndFlush(userRoleManagement);
         long id = userRoleManagement.getId();
 
