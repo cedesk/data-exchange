@@ -45,6 +45,7 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.analysis.WorkPeriodAnalysis;
 import ru.skoltech.cedl.dataexchange.analysis.WorkSessionAnalysis;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
+import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
@@ -130,6 +131,7 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private ApplicationSettings applicationSettings;
     private Project project;
+    private RepositoryStateMachine repositoryStateMachine;
     private ExternalModelFileWatcher externalModelFileWatcher;
     private DifferenceHandler differenceHandler;
     private GuiService guiService;
@@ -161,6 +163,10 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
+        this.repositoryStateMachine = repositoryStateMachine;
     }
 
     public void setExternalModelFileWatcher(ExternalModelFileWatcher externalModelFileWatcher) {
@@ -243,9 +249,12 @@ public class MainController implements Initializable, Displayable, Closeable {
         Node statusPane = guiService.createControl(Views.STATUS_VIEW);
         layoutPane.setBottom(statusPane);
 
-        newButton.disableProperty().bind(project.canNewProperty().not());
-        loadButton.disableProperty().bind(project.canLoadProperty().not());
-        saveButton.disableProperty().bind(project.canSyncProperty().not());
+        BooleanBinding isAdminBinding = Bindings.createBooleanBinding(() -> project.checkAdminUser(), userNameLabel.textProperty());
+        newButton.disableProperty().bind(repositoryStateMachine.canNewProperty().not());
+        loadButton.disableProperty().bind(repositoryStateMachine.canLoadProperty().not().or(project.isStudyInRepositoryProperty().not()));
+//        saveButton.disableProperty().bind(repositoryStateMachine.canSaveProperty().not().or(isAdminBinding.not().and(project.isSyncEnabledProperty().not())));
+        saveButton.disableProperty().bind(repositoryStateMachine.canSaveProperty().not());
+        diffButton.disableProperty().bind(repositoryStateMachine.canDiffProperty().not().or(project.isStudyInRepositoryProperty().not()));
 
         tagLabel.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("--").otherwise(tagProperty));
         tagMenu.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("_Tag current revision...").otherwise("_Untag current revision"));
@@ -254,8 +263,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         libraryViewButton.selectedProperty().bindBidirectional(modelEditingController.libraryDisplayProperty());
 
         repositoryNewer = Bindings.createBooleanBinding(() -> differenceHandler.modelDifferences().stream()
-                .filter(md -> md.getChangeLocation() == ChangeLocation.ARG2)
-                .count() > 0, differenceHandler.modelDifferences());
+                .anyMatch(md -> md.getChangeLocation() == ChangeLocation.ARG2), differenceHandler.modelDifferences());
 
         repositoryNewerListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -472,7 +480,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     private boolean confirmCloseRequest() {
-        if (project.hasLocalStudyModifications()) {
+        if (repositoryStateMachine.hasModifications()) {
             Optional<ButtonType> saveYesNoCancel = Dialogues.chooseYesNoCancel("Unsaved modifications",
                     "Save the modifications before closing?");
             if (saveYesNoCancel.isPresent() && saveYesNoCancel.get() == ButtonType.YES) {
@@ -799,6 +807,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
     }
 
+    // TODO to remove
     private boolean isSaveEnabled() {
         StudySettings studySettings = project.getStudy().getStudySettings();
         boolean isSyncDisabled = studySettings == null || !studySettings.getSyncEnabled();

@@ -42,6 +42,7 @@
         <property name="executor" ref="executor"/>
         <property name="actionLogger" ref="actionLogger"/>
         <property name="statusLogger" ref="statusLogger"/>
+        <property name="repositoryStateMachine" ref="repositoryStateMachine"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ChangeAnalysisController">
@@ -191,6 +192,7 @@
         <property name="project" ref="project"/>
         <property name="guiService" ref="guiService"/>
         <property name="statusLogger" ref="statusLogger"/>
+        <property name="unitManagementService" ref="unitManagementService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.AddUnitController" scope="prototype">

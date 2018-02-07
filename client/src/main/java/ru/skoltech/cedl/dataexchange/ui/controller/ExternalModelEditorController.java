@@ -110,7 +110,7 @@ public class ExternalModelEditorController implements Initializable {
     }
 
     public void addExternalModel() {
-        if (!project.isStudyInRepository()) {
+        if (!project.isStudyInRepositoryProperty().get()) {
             Dialogues.showError("Save Project",
                     "Unable to attach an external model, as long as the project has not been saved yet!");
             return;
@@ -243,7 +243,7 @@ public class ExternalModelEditorController implements Initializable {
     }
 
     private void replaceExternalModel(ActionEvent actionEvent) {
-        if (!project.isStudyInRepository()) {
+        if (!project.isStudyInRepositoryProperty().get()) {
             Dialogues.showError("Save Project", "Unable to attach an external model, "
                     + "as long as the project has not been saved yet!");
             return;

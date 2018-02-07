@@ -35,6 +35,7 @@ import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
+import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
@@ -54,34 +55,24 @@ public class UnitManagementController implements Initializable, Closeable {
 
     @FXML
     private AnchorPane unitManagementPane;
-
     @FXML
     public TableColumn<Unit, String> unitQuantityKindColumn;
-
     @FXML
     private AnchorPane unitsDetailPane;
-
     @FXML
     private AnchorPane quantityKindsDetailPane;
-
     @FXML
     private TableView<Unit> unitsTableView;
-
     @FXML
     private TableView<QuantityKind> quantityTableView;
-
     @FXML
     private Button addUnitButton;
-
     @FXML
     private Button saveUnitsButton;
-
     @FXML
     private Button deleteUnitButton;
-
     @FXML
     private Button addQuantityKindButton;
-
     @FXML
     private Button deleteQuantityKindButton;
 
@@ -89,6 +80,7 @@ public class UnitManagementController implements Initializable, Closeable {
 
     private Project project;
     private GuiService guiService;
+    private UnitManagementService unitManagementService;
     private StatusLogger statusLogger;
 
     public void setProject(Project project) {
@@ -97,6 +89,10 @@ public class UnitManagementController implements Initializable, Closeable {
 
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
+    }
+
+    public void setUnitManagementService(UnitManagementService unitManagementService) {
+        this.unitManagementService = unitManagementService;
     }
 
     public void setStatusLogger(StatusLogger statusLogger) {
@@ -144,7 +140,7 @@ public class UnitManagementController implements Initializable, Closeable {
         }
     }
 
-    public void updateView() {
+    private void updateView() {
         UnitManagement unitManagement = project.getUnitManagement();
         ObservableList<Unit> unitsList = FXCollections.observableList(unitManagement.getUnits());
         unitsTableView.setItems(unitsList);
@@ -160,11 +156,14 @@ public class UnitManagementController implements Initializable, Closeable {
     }
 
     public void saveUnits() {
-        boolean success = project.storeUnitManagement();
-        if (!success) {
+        try {
+            unitManagementService.saveUnitManagement(project.getUnitManagement());
+        } catch (Exception e) {
             statusLogger.error("Error saving unit management!");
+            logger.error("Error storing unit management.", e);
+        } finally {
+            changed.setValue(false);
         }
-        changed.setValue(false);
     }
 
     public void deleteUnit() {

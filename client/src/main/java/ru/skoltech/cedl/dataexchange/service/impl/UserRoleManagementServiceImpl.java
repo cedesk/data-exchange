@@ -121,6 +121,9 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
 
     @Override
     public boolean checkUserAdmin(UserRoleManagement userRoleManagement, User user) {
+        if (userRoleManagement == null || user == null) {
+            return false;
+        }
         for (Discipline discipline : this.obtainDisciplinesOfUser(userRoleManagement, user)) {
             if (discipline.isBuiltIn()) return true;
         }
