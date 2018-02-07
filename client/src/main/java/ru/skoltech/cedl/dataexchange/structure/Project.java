@@ -145,6 +145,7 @@ public class Project {
 
     public void init() {
         this.userService.createDefaultUsers();
+        this.loadUnitManagement();
         this.externalModelFileWatcher.addObserver((o, arg) -> {
             ExternalModel externalModel = (ExternalModel) arg;
             actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
@@ -240,6 +241,7 @@ public class Project {
         this.initProject(study.getName());
         this.setRepositoryStudy(null);
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+        this.isStudyInRepositoryProperty.set(false);
         this.initializeHandlers();
 
         UserRoleManagement userRoleManagement = study.getUserRoleManagement();
@@ -286,6 +288,7 @@ public class Project {
         SystemModel systemModel = this.getSystemModel();
 
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+        isStudyInRepositoryProperty.set(true);
         this.initializeHandlers();
         parameterLinkRegistry.updateAll(systemModel);
         this.updateExportReferences(systemModel, accessChecker);
@@ -439,21 +442,18 @@ public class Project {
     }
 
     public UnitManagement getUnitManagement() {
-        if (unitManagement == null) {
-            loadUnitManagement();
-        }
         return unitManagement;
     }
 
-    public boolean loadUnitManagement() {
-        unitManagement = unitManagementService.findUnitManagement();
+    private void loadUnitManagement() {
+        UnitManagement unitManagement = unitManagementService.findUnitManagement();
         if (unitManagement != null) {
-            return true;
+            this.unitManagement = unitManagement;
+            return;
         }
         logger.error("Error loading unit management. recreating new unit management.");
         unitManagement = unitManagementService.loadDefaultUnitManagement();
-        unitManagementService.saveUnitManagement(unitManagement);
-        return false;
+        this.unitManagement = unitManagementService.saveUnitManagement(unitManagement);
     }
 
     @Override

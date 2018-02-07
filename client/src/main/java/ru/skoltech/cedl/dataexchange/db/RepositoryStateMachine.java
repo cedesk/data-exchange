@@ -22,24 +22,13 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.EnumSet;
-import java.util.Observable;
 
 /**
  * Created by D.Knoll on 04.05.2015.
  */
-public class RepositoryStateMachine extends Observable {
+public class RepositoryStateMachine {
 
     private ObjectProperty<RepositoryState> stateProperty = new SimpleObjectProperty<>(RepositoryState.INITIAL);
-
-    public RepositoryStateMachine() {
-        stateProperty.addListener((observable, oldValue, newValue) -> {
-            if (oldValue != newValue) {
-                this.stateProperty.set(newValue);
-                this.setChanged();
-                this.notifyObservers(newValue);
-            }
-        });
-    }
 
     public boolean hasModifications() {
         return stateProperty.get() == RepositoryState.DIRTY;

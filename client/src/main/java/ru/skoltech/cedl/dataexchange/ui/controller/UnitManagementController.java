@@ -135,8 +135,6 @@ public class UnitManagementController implements Initializable, Closeable {
             windowEvent.consume();
         } else if (result.get() == yesButton) {
             saveUnits();
-        } else if (result.get() == noButton) {
-            project.loadUnitManagement();
         }
     }
 

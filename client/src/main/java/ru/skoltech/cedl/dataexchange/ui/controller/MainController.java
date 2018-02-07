@@ -94,6 +94,10 @@ public class MainController implements Initializable, Displayable, Closeable {
     private static final Logger logger = Logger.getLogger(MainController.class);
 
     @FXML
+    private MenuItem newMenu;
+    @FXML
+    private MenuItem saveMenu;
+    @FXML
     private MenuItem exportMenu;
     @FXML
     private MenuItem deleteMenu;
@@ -252,9 +256,11 @@ public class MainController implements Initializable, Displayable, Closeable {
         BooleanBinding isAdminBinding = Bindings.createBooleanBinding(() -> project.checkAdminUser(), userNameLabel.textProperty());
         newButton.disableProperty().bind(repositoryStateMachine.canNewProperty().not());
         loadButton.disableProperty().bind(repositoryStateMachine.canLoadProperty().not().or(project.isStudyInRepositoryProperty().not()));
-//        saveButton.disableProperty().bind(repositoryStateMachine.canSaveProperty().not().or(isAdminBinding.not().and(project.isSyncEnabledProperty().not())));
-        saveButton.disableProperty().bind(repositoryStateMachine.canSaveProperty().not());
+        saveButton.disableProperty().bind(repositoryStateMachine.canSaveProperty().not().or(isAdminBinding.not().and(project.isSyncEnabledProperty().not())));
         diffButton.disableProperty().bind(repositoryStateMachine.canDiffProperty().not().or(project.isStudyInRepositoryProperty().not()));
+
+        newMenu.disableProperty().bind(newButton.disableProperty());
+        saveMenu.disableProperty().bind(saveButton.disableProperty());
 
         tagLabel.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("--").otherwise(tagProperty));
         tagMenu.textProperty().bind(Bindings.when(tagProperty.isEmpty()).then("_Tag current revision...").otherwise("_Untag current revision"));

@@ -37,10 +37,10 @@
                 <VBox HBox.hgrow="ALWAYS">
                     <MenuBar>
                         <Menu text="%main.menu.project">
-                            <MenuItem onAction="#newProject" text="%main.menu.project.new"/>
+                            <MenuItem fx:id="newMenu" onAction="#newProject" text="%main.menu.project.new"/>
                             <MenuItem onAction="#openProject" text="%main.menu.project.open"/>
                             <MenuItem onAction="#openStudyRevisionsView" text="%main.menu.project.load_tag"/>
-                            <MenuItem onAction="#saveProject" text="%main.menu.project.save"/>
+                            <MenuItem fx:id="saveMenu" onAction="#saveProject" text="%main.menu.project.save"/>
                             <MenuItem fx:id="tagMenu" onAction="#tagStudy" text="%main.menu.project.set_tag"/>
                             <SeparatorMenuItem/>
                             <MenuItem onAction="#importProject" text="%main.menu.project.import"/>

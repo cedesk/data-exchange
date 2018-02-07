@@ -73,11 +73,6 @@ public abstract class ContextAwareApplication extends Application {
         // boolean validRepository = project.checkRepositoryScheme();
         //  project.connectRepositor
 
-        boolean success = project.loadUnitManagement();
-        if (!success) {
-            throw new RuntimeException("loading unit management failed!");
-        }
-
         String projectName = applicationSettings.getProjectLastName();
         if (projectName == null) {
             throw new RuntimeException("no study to load");
