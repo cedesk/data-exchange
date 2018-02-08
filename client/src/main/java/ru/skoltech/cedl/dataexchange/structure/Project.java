@@ -247,7 +247,6 @@ public class Project {
         UserRoleManagement userRoleManagement = study.getUserRoleManagement();
         userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
         this.updateValueReferences(study.getSystemModel());
-        System.out.println(">>>> " + repositoryStateMachine.canSaveProperty().get());
     }
 
     public void importStudy(Study study) {

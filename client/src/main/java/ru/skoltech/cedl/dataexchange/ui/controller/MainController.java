@@ -106,7 +106,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     @FXML
     private MenuItem usersAndDisciplinesMenu;
     @FXML
-    public CheckMenuItem libraryViewMenu;
+    private CheckMenuItem libraryViewMenu;
     @FXML
     private Button newButton;
     @FXML
