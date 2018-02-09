@@ -198,6 +198,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
             boolean oldSaveEnabled = studySettings.getSyncEnabled();
             studySettings.setSyncEnabled(saveEnabled);
             if (oldSaveEnabled != saveEnabled) {
+                project.isSyncEnabledProperty().setValue(saveEnabled);
                 project.markStudyModified();
             }
             logger.info(studySettings);
