@@ -17,12 +17,11 @@
   -->
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<?import ru.skoltech.cedl.dataexchange.ui.control.TradespaceScatterPlotView?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.TradespaceScatterPlotController">
     <padding>
@@ -34,14 +33,6 @@
             <ComboBox prefWidth="150.0" fx:id="xAxisCombo"/>
             <Label text="Y-Axis"/>
             <ComboBox fx:id="yAxisCombo" prefWidth="150.0"/>
-            <Button minWidth="28" mnemonicParsing="false" onAction="#updateTradespaceView">
-                <tooltip>
-                    <Tooltip text="Refresh"/>
-                </tooltip>
-                <graphic>
-                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                </graphic>
-            </Button>
             <Pane HBox.hgrow="ALWAYS"/>
             <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram">
                 <tooltip>
@@ -54,6 +45,15 @@
         </ToolBar>
     </top>
     <center>
-        <TradespaceScatterPlotView fx:id="tradespaceScatterPlotView"/>
+        <BorderPane fx:id="scatterPlotPane">
+            <LineChart fx:id="scatterPlot">
+                <xAxis>
+                    <NumberAxis fx:id="xAxis"/>
+                </xAxis>
+                <yAxis>
+                    <NumberAxis fx:id="yAxis"/>
+                </yAxis>
+            </LineChart>
+        </BorderPane>
     </center>
 </BorderPane>

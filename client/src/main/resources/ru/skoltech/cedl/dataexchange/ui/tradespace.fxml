@@ -16,7 +16,7 @@
   ~ limitations under the License.
   -->
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
@@ -58,7 +58,38 @@
                 <BorderPane>
                     <center>
                         <TitledPane fx:id="figuresOfMeritEditorPane" collapsible="false"
-                                    text="Figures of Merit Definitions"/>
+                                    text="Figures of Merit Definitions">
+                            <BorderPane>
+                                <padding>
+                                    <Insets/>
+                                </padding>
+                                <center>
+                                    <TableView fx:id="figureOfMeritTable">
+                                        <columns>
+                                            <TableColumn fx:id="nameColumn" editable="false" text="Name"/>
+                                            <TableColumn fx:id="unitColumn" editable="false" text="Unit"/>
+                                            <TableColumn fx:id="optimalityColumn" editable="false" maxWidth="75"
+                                                         minWidth="75" text="Optimality"/>
+                                            <TableColumn fx:id="parameterLinkColumn" editable="false" minWidth="120"
+                                                         text="Parameter Link"/>
+                                            <TableColumn fx:id="deleteColumn" maxWidth="30" minWidth="30"/>
+                                        </columns>
+                                    </TableView>
+                                </center>
+                                <bottom>
+                                    <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+                                        <Button minWidth="28" mnemonicParsing="false" onAction="#addFigureOfMerit">
+                                            <tooltip>
+                                                <Tooltip text="Add external model"/>
+                                            </tooltip>
+                                            <graphic>
+                                                <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                                            </graphic>
+                                        </Button>
+                                    </ToolBar>
+                                </bottom>
+                            </BorderPane>
+                        </TitledPane>
                     </center>
                     <bottom>
                         <BorderPane>
@@ -79,27 +110,45 @@
                             </center>
                             <bottom>
                                 <TitledPane collapsible="false" text="Current Design Point">
-                                    <VBox>
-                                        <HBox>
-                                            <TextArea fx:id="figureOfMeritValuesText" editable="false"
-                                                      prefHeight="60.0"/>
-                                            <Button minWidth="28" mnemonicParsing="false"
-                                                    onAction="#updateFigureOfMeritValues">
-                                                <tooltip>
-                                                    <Tooltip text="Reload Values"/>
-                                                </tooltip>
-                                                <graphic>
-                                                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                                                </graphic>
-                                            </Button>
-                                        </HBox>
-                                        <HBox>
-                                            <ChoiceBox fx:id="epochChoice" prefWidth="80.0"/>
-                                            <Button fx:id="addDesignPointButton" mnemonicParsing="false"
-                                                    onAction="#addDesignPoint"
-                                                    text="Add to Tradespace"/>
-                                        </HBox>
-                                    </VBox>
+                                    <BorderPane>
+                                        <padding>
+                                            <Insets/>
+                                        </padding>
+                                        <center>
+                                            <BorderPane>
+                                                <padding>
+                                                    <Insets top="5" right="5" bottom="5" left="5"/>
+                                                </padding>
+                                                <center>
+                                                    <TextArea fx:id="figureOfMeritValuesText" editable="false"
+                                                              prefHeight="120.0">
+                                                    </TextArea>
+                                                </center>
+                                            </BorderPane>
+                                        </center>
+                                        <right>
+                                            <BorderPane>
+                                                <center>
+                                                    <BorderPane>
+                                                        <padding>
+                                                            <Insets top="5" right="5" bottom="5" left="5"/>
+                                                        </padding>
+                                                        <center>
+                                                            <ListView fx:id="epochListView" prefWidth="80.0"
+                                                                      prefHeight="120.0"/>
+                                                        </center>
+                                                    </BorderPane>
+                                                </center>
+                                                <!--<bottom>-->
+                                                <!--<ToolBar>-->
+                                                <!--<Button fx:id="addDesignPointButton" mnemonicParsing="false"-->
+                                                <!--onAction="#addDesignPoint"-->
+                                                <!--text="Add to Tradespace"/>-->
+                                                <!--</ToolBar>-->
+                                                <!--</bottom>-->
+                                            </BorderPane>
+                                        </right>
+                                    </BorderPane>
                                 </TitledPane>
                             </bottom>
                         </BorderPane>
