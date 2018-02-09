@@ -148,26 +148,24 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        StudySettings studySettings = studySettings();
-
         String projectName = project.getProjectName();
         boolean noProject = projectName == null || projectName.isEmpty();
-        boolean saveEnabled = studySettings != null && studySettings.getSyncEnabled();
+        String projectDataDir = noProject ? "" : project.getProjectHome().getAbsolutePath();
+
+        projectNameTextField.setText(projectName);
+        projectDirectoryTextField.setText(projectDataDir);
+
+        StudySettings studySettings = studySettings();
+        boolean saveEnabled = studySettings == null || studySettings.getSyncEnabled();
         boolean projectUseOsUser = applicationSettings.isProjectUseOsUser();
         String projectUserName = applicationSettings.getProjectUserName();
         boolean projectLastAutoload = applicationSettings.isProjectLastAutoload();
 
-        String projectDataDir = noProject ? "" : project.getProjectHome().getAbsolutePath();
-
         ChangeListener<Object> changeListener = (observable, oldValue, newValue) ->
-                changed.setValue(parametersChanged(saveEnabled, projectUseOsUser,
-                        projectUserName, projectLastAutoload));
+                changed.setValue(parametersChanged(saveEnabled, projectUseOsUser, projectUserName, projectLastAutoload));
 
-        teamSettingsPane.setDisable(studySettings == null);
+        teamSettingsPane.setDisable(!project.checkAdminUser());
 
-        projectNameTextField.setText(projectName);
-
-        saveEnabledCheckBox.setDisable(studySettings == null);
         saveEnabledCheckBox.setSelected(saveEnabled);
         saveEnabledCheckBox.selectedProperty().addListener(changeListener);
 
@@ -180,8 +178,6 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
 
         projectLastAutoloadCheckBox.setSelected(projectLastAutoload);
         projectLastAutoloadCheckBox.selectedProperty().addListener(changeListener);
-
-        projectDirectoryTextField.setText(projectDataDir);
 
         saveButton.disableProperty().bind(Bindings.not(changed));
     }
@@ -198,7 +194,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         boolean projectLastAutoload = projectLastAutoloadCheckBox.isSelected();
 
         StudySettings studySettings = studySettings();
-        if (studySettings != null) {
+        if (project.checkAdminUser()) {
             boolean oldSaveEnabled = studySettings.getSyncEnabled();
             studySettings.setSyncEnabled(saveEnabled);
             if (oldSaveEnabled != saveEnabled) {
@@ -244,9 +240,12 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
 
     private StudySettings studySettings() {
         if (project != null && project.getStudy() != null) {
-            if (project.checkAdminUser()) {
-                return project.getStudy().getStudySettings();
+            StudySettings studySettings = project.getStudy().getStudySettings();
+            if (studySettings == null) {
+                studySettings = new StudySettings();
+                project.getStudy().setStudySettings(studySettings);
             }
+            return studySettings;
         }
         return null;
     }
