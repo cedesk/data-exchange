@@ -41,7 +41,10 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 
 import java.net.URL;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**
@@ -70,8 +73,7 @@ public class UserManagementController implements Initializable, Displayable {
 
     private Stage ownerStage;
 
-    private List<User> users = new LinkedList<>();
-    private ListProperty<User> userListProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
+    private ListProperty<User> usersProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
 
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
@@ -95,19 +97,17 @@ public class UserManagementController implements Initializable, Displayable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        this.reloadUsers();
-
-        userListProperty.setValue(FXCollections.observableList(users));
-        userListProperty.bind(Bindings.createObjectBinding(() -> {
-            List<User> filteredUsers = users.stream()
+        userTable.itemsProperty().bind(Bindings.createObjectBinding(() -> {
+            List<User> filteredUsers = usersProperty.stream()
                     .filter(user -> (user.getUserName().toLowerCase().contains(filterTextField.getText().toLowerCase())
                             || (user.getFullName() != null &&
                             user.getFullName().toLowerCase().contains(filterTextField.getText().toLowerCase()))))
                     .collect(Collectors.toList());
             return FXCollections.observableList(filteredUsers);
-        }, filterTextField.textProperty()));
+        }, filterTextField.textProperty(), usersProperty));
 
-        userTable.itemsProperty().bind(userListProperty);
+        this.reloadUsers();
+
         userTable.setOnMousePressed(event -> {
             if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
                 UserManagementController.this.editUser();
@@ -147,6 +147,7 @@ public class UserManagementController implements Initializable, Displayable {
         userDetailsViewBuilder.modality(Modality.APPLICATION_MODAL);
         userDetailsViewBuilder.showAndWait(selectedUser);
         this.reloadUsers();
+        userTable.refresh();
     }
 
     public void deleteUser() {
@@ -167,8 +168,8 @@ public class UserManagementController implements Initializable, Displayable {
     }
 
     private void reloadUsers() {
-        this.users.clear();
-        this.users.addAll(userService.findAllUsers());
-        this.users.sort(Comparator.naturalOrder());
+        List<User> users = userService.findAllUsers();
+        users.sort(Comparator.naturalOrder());
+        this.usersProperty.set(FXCollections.observableList(users));
     }
 }

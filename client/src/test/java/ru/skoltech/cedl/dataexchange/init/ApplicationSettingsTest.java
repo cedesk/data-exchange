@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static ru.skoltech.cedl.dataexchange.init.ApplicationSettings.*;
@@ -146,6 +147,18 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
 
         applicationSettings.setProjectUseOsUser(false);
         assertThat(applicationSettings.getProjectUserName(), is(projectUserName));
+    }
+
+    @Test
+    public void testApplicationDirectory() {
+        assertThat(applicationSettings.applicationDirectory(), is(cedeskAppFile.getParentFile()));
+
+        String newCedeskAppDir = ".cedesk-new";
+        ApplicationSettingsImpl applicationSettings = new ApplicationSettingsImpl(newCedeskAppDir, this.applicationSettings.getCedeskAppFile());
+
+        assertThat(applicationSettings.applicationDirectory(), is(new File("target/" + newCedeskAppDir).getAbsoluteFile()));
+        assertTrue(applicationSettings.applicationDirectory().exists());
+        applicationSettings.applicationDirectory().deleteOnExit();
     }
 
     private void testGetApplicationSettings(Properties appSettingsProps) {

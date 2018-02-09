@@ -30,7 +30,8 @@
                 <center>
                     <BorderPane>
                         <center>
-                            <TitledPane animated="false" collapsible="false" text="Structure" prefHeight="Infinity">
+                            <TitledPane animated="false" collapsible="false" text="%model_editing.structure_tree.title"
+                                        prefHeight="Infinity">
                                 <TreeView fx:id="structureTree"/>
                             </TitledPane>
                         </center>
@@ -48,11 +49,12 @@
                                     <RowConstraints/>
                                     <RowConstraints/>
                                 </rowConstraints>
-                                <TextArea fx:id="descriptionTextField" prefHeight="40" promptText="description"
+                                <TextArea fx:id="descriptionTextField" prefHeight="40"
+                                          promptText="%model_node.description"
                                           GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0"/>
-                                <TextField fx:id="embodimentTextField" promptText="embodiment"
+                                <TextField fx:id="embodimentTextField" promptText="%model_node.embodiment"
                                            GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1"/>
-                                <Text text="Completion" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <Text text="%model_node.completion" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
                                 <CheckBox fx:id="completionCheckBox" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                             </GridPane>
                         </bottom>
@@ -62,7 +64,7 @@
                     <ToolBar prefHeight="40.0">
                         <Button fx:id="addNodeButton" minWidth="28" mnemonicParsing="false" onAction="#addNode">
                             <tooltip>
-                                <Tooltip text="Add Node"/>
+                                <Tooltip text="%model_editing.structure.toolbar.add.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="PLUS"/>
@@ -70,7 +72,7 @@
                         </Button>
                         <Button fx:id="renameNodeButton" minWidth="28" mnemonicParsing="false" onAction="#renameNode">
                             <tooltip>
-                                <Tooltip text="Rename node"/>
+                                <Tooltip text="%model_editing.structure.toolbar.rename.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
@@ -78,7 +80,7 @@
                         </Button>
                         <Button fx:id="copyNodeButton" minWidth="28" mnemonicParsing="false" onAction="#copyNode">
                             <tooltip>
-                                <Tooltip text="Copy Node"/>
+                                <Tooltip text="%model_editing.structure.toolbar.copy.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon=""/>
@@ -86,7 +88,7 @@
                         </Button>
                         <Button fx:id="deleteNodeButton" minWidth="28" mnemonicParsing="false" onAction="#deleteNode">
                             <tooltip>
-                                <Tooltip text="Remove Node"/>
+                                <Tooltip text="%model_editing.structure.toolbar.delete.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="MINUS"/>
@@ -95,7 +97,7 @@
                         <Button fx:id="componentButton" minWidth="28" mnemonicParsing="false"
                                 onAction="#createComponent">
                             <tooltip>
-                                <Tooltip text="Add node to the library component."/>
+                                <Tooltip text="%model_editing.structure.toolbar.create_component.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="UPLOAD"/>
@@ -104,7 +106,7 @@
                         <Pane HBox.hgrow="ALWAYS"/>
                         <Button fx:id="moveNodeUpButton" minWidth="28" mnemonicParsing="false" onAction="#moveNodeUp">
                             <tooltip>
-                                <Tooltip text="Copy Node"/>
+                                <Tooltip text="%model_editing.structure.toolbar.move_up.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="CARET_UP"/>
@@ -113,7 +115,7 @@
                         <Button fx:id="moveNodeDownButton" minWidth="28" mnemonicParsing="false"
                                 onAction="#moveNodeDown">
                             <tooltip>
-                                <Tooltip text="Copy Node"/>
+                                <Tooltip text="%model_editing.structure.toolbar.move_down.tooltip"/>
                             </tooltip>
                             <graphic>
                                 <Glyph fontFamily="FontAwesome" icon="CARET_DOWN"/>
@@ -124,12 +126,12 @@
             </BorderPane>
         </center>
         <bottom>
-            <TitledPane collapsible="false" text="Dependencies">
+            <TitledPane collapsible="false" text="%model_editing.dependencies.title">
                 <VBox spacing="5">
                     <Label fx:id="upstreamDependenciesLabel" styleClass="projectDetailsLabels"
                            GridPane.columnIndex="0" GridPane.rowIndex="0">
                         <tooltip>
-                            <Tooltip text="Upstream"/>
+                            <Tooltip text="%model_editing.dependencies.upstream"/>
                         </tooltip>
                         <graphic>
                             <Glyph fontFamily="FontAwesome" icon="ARROW_LEFT"/>
@@ -138,7 +140,7 @@
                     <Label fx:id="downstreamDependenciesLabel" styleClass="projectDetailsLabels"
                            GridPane.columnIndex="0" GridPane.rowIndex="1">
                         <tooltip>
-                            <Tooltip text="Downstream"/>
+                            <Tooltip text="%model_editing.dependencies.downstream"/>
                         </tooltip>
                         <graphic>
                             <Glyph fontFamily="FontAwesome" icon="ARROW_RIGHT"/>
@@ -150,13 +152,14 @@
     </BorderPane>
     <BorderPane>
         <top>
-            <TitledPane fx:id="externalModelParentPane" animated="false" text="External Models"/>
+            <TitledPane fx:id="externalModelParentPane" animated="false" text="%model_editing.external_models.title"/>
         </top>
         <center>
-            <TitledPane fx:id="parametersParentPane" collapsible="false" text="Parameters"/>
+            <TitledPane fx:id="parametersParentPane" collapsible="false" text="%model_editing.parameters.title"/>
         </center>
         <bottom>
-            <TitledPane fx:id="parameterEditorParentPane" collapsible="false" text="Parameter Details"/>
+            <TitledPane fx:id="parameterEditorParentPane" collapsible="false"
+                        text="%model_editing.parameter_details.title"/>
         </bottom>
     </BorderPane>
     <BorderPane fx:id="libraryParentPane"/>

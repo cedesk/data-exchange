@@ -166,6 +166,6 @@ public class ModelStorageTest extends AbstractApplicationContextTest {
         System.out.println("systemModel.revision: " + revision);
         int revision1 = systemModel1.getRevision();
         System.out.println("systemModel1.revision: " + revision);
-        Assert.assertTrue(revision <= revision1); // TODO: fix to strictly smaller!
+        Assert.assertTrue(revision == revision1);
     }
 }

@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 /**
  * Created by d.knoll on 23/06/2017.
  */
-public class TradespaceView extends BorderPane {
+public class TradespaceScatterPlotView extends BorderPane {
 
     private LineChart<Number, Number> chart;
     private MultitemporalTradespace tradespace;
@@ -50,7 +50,7 @@ public class TradespaceView extends BorderPane {
 
     private Consumer<Integer> loadRevisionListener;
 
-    public TradespaceView() {
+    public TradespaceScatterPlotView() {
     }
 
     public FigureOfMeritChartDefinition getChartDefinition() {

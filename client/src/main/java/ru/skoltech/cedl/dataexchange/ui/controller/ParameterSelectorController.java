@@ -31,10 +31,7 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 
 import java.net.URL;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -109,7 +106,10 @@ public class ParameterSelectorController implements Initializable, Displayable, 
                 return modelNode.getNodePath();
             }
         });
-        subsystemChoiceBox.getItems().addAll(nodeParametersMap.keySet());
+        List<ModelNode> subsystemModels = nodeParametersMap.keySet().stream()
+                .sorted(Comparator.comparing(ModelNode::getName))
+                .collect(Collectors.toList());
+        subsystemChoiceBox.getItems().addAll(subsystemModels);
         subsystemChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             parameterChoiceBox.getItems().clear();
             List<ParameterModel> parameterModels = nodeParametersMap.get(newValue);

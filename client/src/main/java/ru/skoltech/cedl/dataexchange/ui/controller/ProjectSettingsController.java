@@ -60,7 +60,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
     @FXML
     private TextField projectNameTextField;
     @FXML
-    private CheckBox syncEnabledCheckBox;
+    private CheckBox saveEnabledCheckBox;
     @FXML
     private CheckBox projectUseOsUserCheckBox;
     @FXML
@@ -89,29 +89,85 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         this.userService = userService;
     }
 
+    public void cancel() {
+        this.close();
+    }
+
+    public void cleanupProjectCache() {
+        SystemModel systemModel = project.getStudy().getSystemModel();
+        Set<String> actualCacheFiles = new HashSet<>();
+        File projectDataDir = project.getProjectHome();
+        if (!projectDataDir.exists()) {
+            return;
+        }
+        systemModel.externalModelsIterator().forEachRemaining(externalModel -> {
+            actualCacheFiles.add(externalModel.getCacheFile().getAbsolutePath());
+            logger.info("File: '" + externalModel.getCacheFile().getAbsolutePath() + "', [" + externalModel.state() + "], need to keep");
+        });
+        // go through cache directory, check if to keep, otherwise delete
+        try {
+            Files.walk(projectDataDir.toPath(), FileVisitOption.FOLLOW_LINKS).forEach(path -> {
+                File file = path.toFile();
+                // skip files which are actualCacheFiles and the related .tstamp file
+                if (file.isFile() && actualCacheFiles.stream().noneMatch(s -> file.getAbsolutePath().startsWith(s))) {
+                    // files not to be kept
+                    logger.info("Deleting: '" + file.getAbsolutePath() + "' file");
+                    boolean deleted = file.delete();
+                    if (!deleted) {
+                        logger.warn("Cannot delete '" + file.getAbsolutePath() + "' file");
+                    }
+                } else if (file.isDirectory() && file.list() != null && file.list().length == 0) { // empty directories
+                    logger.info("Deleting: '" + file.getAbsolutePath() + "' directory");
+                    boolean deleted = file.delete();
+                    if (!deleted) {
+                        logger.warn("Cannot delete '" + file.getAbsolutePath() + "' directory");
+                    }
+                } else {
+                    logger.info("Keeping: '" + file.getAbsolutePath() + "'");
+                }
+            });
+        } catch (IOException e) {
+            logger.error("Error traversing project directory", e);
+        }
+    }
+
+    public void close() {
+        ownerStage.close();
+        logger.info("closed");
+    }
+
+    @Override
+    public void close(Stage stage, WindowEvent windowEvent) {
+        this.close();
+    }
+
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        StudySettings studySettings = studySettings();
-
         String projectName = project.getProjectName();
-        boolean syncEnabled = studySettings != null && studySettings.getSyncEnabled();
+        boolean noProject = projectName == null || projectName.isEmpty();
+        String projectDataDir = noProject ? "" : project.getProjectHome().getAbsolutePath();
+
+        projectNameTextField.setText(projectName);
+        projectDirectoryTextField.setText(projectDataDir);
+
+        StudySettings studySettings = studySettings();
+        boolean saveEnabled = studySettings == null || studySettings.getSyncEnabled();
         boolean projectUseOsUser = applicationSettings.isProjectUseOsUser();
         String projectUserName = applicationSettings.getProjectUserName();
         boolean projectLastAutoload = applicationSettings.isProjectLastAutoload();
 
-        String projectDataDir = project.getProjectHome().getAbsolutePath();
-
         ChangeListener<Object> changeListener = (observable, oldValue, newValue) ->
-                changed.setValue(parametersChanged(syncEnabled, projectUseOsUser,
-                        projectUserName, projectLastAutoload));
+                changed.setValue(parametersChanged(saveEnabled, projectUseOsUser, projectUserName, projectLastAutoload));
 
-        teamSettingsPane.setDisable(studySettings == null);
+        teamSettingsPane.setDisable(!project.checkAdminUser());
 
-        projectNameTextField.setText(projectName);
-
-        syncEnabledCheckBox.setDisable(studySettings == null);
-        syncEnabledCheckBox.setSelected(syncEnabled);
-        syncEnabledCheckBox.selectedProperty().addListener(changeListener);
+        saveEnabledCheckBox.setSelected(saveEnabled);
+        saveEnabledCheckBox.selectedProperty().addListener(changeListener);
 
         projectUseOsUserCheckBox.setSelected(projectUseOsUser);
         projectUseOsUserCheckBox.selectedProperty().addListener(changeListener);
@@ -123,36 +179,7 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         projectLastAutoloadCheckBox.setSelected(projectLastAutoload);
         projectLastAutoloadCheckBox.selectedProperty().addListener(changeListener);
 
-        projectDirectoryTextField.setText(projectDataDir);
-
         saveButton.disableProperty().bind(Bindings.not(changed));
-    }
-
-    private boolean parametersChanged(boolean repositoryWatcherAutosync, boolean projectUseOsUser,
-                                      String projectUserName, boolean projectLastAutoload) {
-        boolean newRepositoryWatcherAutosync = syncEnabledCheckBox.isSelected();
-        boolean newProjectUseOsUser = projectUseOsUserCheckBox.isSelected();
-        String newProjectUserName = projectUserNameText.getText();
-        boolean newProjectLastAutoload = projectLastAutoloadCheckBox.isSelected();
-        return repositoryWatcherAutosync != newRepositoryWatcherAutosync
-                || projectUseOsUser != newProjectUseOsUser
-                || !projectUserName.equals(newProjectUserName)
-                || projectLastAutoload != newProjectLastAutoload;
-    }
-
-
-    private StudySettings studySettings() {
-        if (project != null && project.getStudy() != null) {
-            if (project.checkAdminUser()) {
-                return project.getStudy().getStudySettings();
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
     }
 
     public void save() {
@@ -161,16 +188,17 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
             return;
         }
 
-        boolean repositoryWatcherAutosync = syncEnabledCheckBox.isSelected();
+        boolean saveEnabled = saveEnabledCheckBox.isSelected();
         boolean projectUseOsUser = projectUseOsUserCheckBox.isSelected();
         String projectUserName = projectUserNameText.getText();
         boolean projectLastAutoload = projectLastAutoloadCheckBox.isSelected();
 
         StudySettings studySettings = studySettings();
-        if (studySettings != null) {
-            boolean oldSyncEnabled = studySettings.getSyncEnabled();
-            studySettings.setSyncEnabled(repositoryWatcherAutosync);
-            if (oldSyncEnabled != repositoryWatcherAutosync) {
+        if (project.checkAdminUser()) {
+            boolean oldSaveEnabled = studySettings.getSyncEnabled();
+            studySettings.setSyncEnabled(saveEnabled);
+            if (oldSaveEnabled != saveEnabled) {
+                project.isSyncEnabledProperty().setValue(saveEnabled);
                 project.markStudyModified();
             }
             logger.info(studySettings);
@@ -199,53 +227,28 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         this.close();
     }
 
-    public void cancel() {
-        this.close();
+    private boolean parametersChanged(boolean saveEnabled, boolean projectUseOsUser,
+                                      String projectUserName, boolean projectLastAutoload) {
+        boolean newSaveEnabled = saveEnabledCheckBox.isSelected();
+        boolean newProjectUseOsUser = projectUseOsUserCheckBox.isSelected();
+        String newProjectUserName = projectUserNameText.getText();
+        boolean newProjectLastAutoload = projectLastAutoloadCheckBox.isSelected();
+        return saveEnabled != newSaveEnabled
+                || projectUseOsUser != newProjectUseOsUser
+                || !projectUserName.equals(newProjectUserName)
+                || projectLastAutoload != newProjectLastAutoload;
     }
 
-    @Override
-    public void close(Stage stage, WindowEvent windowEvent) {
-        this.close();
-    }
-
-    public void close() {
-        ownerStage.close();
-        logger.info("closed");
-    }
-
-    public void cleanupProjectCache() {
-        SystemModel systemModel = project.getStudy().getSystemModel();
-        Set<String> actualCacheFiles = new HashSet<>();
-        File projectDataDir = project.getProjectHome();
-        systemModel.externalModelsIterator().forEachRemaining(externalModel -> {
-            actualCacheFiles.add(externalModel.getCacheFile().getAbsolutePath());
-            logger.info("File: '" + externalModel.getCacheFile().getAbsolutePath() + "', [" + externalModel.state() + "], need to keep");
-        });
-        // go through cache directory, check if to keep, otherwise delete
-        try {
-            Files.walk(projectDataDir.toPath(), FileVisitOption.FOLLOW_LINKS).forEach(path -> {
-                File file = path.toFile();
-
-                if (file.isFile() && actualCacheFiles.stream().noneMatch(s -> file.getAbsolutePath().startsWith(s))) {
-                    // files not to be kept
-                    logger.info("Deleting: '" + file.getAbsolutePath() + "' file");
-                    boolean deleted = file.delete();
-                    if (!deleted) {
-                        logger.warn("Cannot delete '" + file.getAbsolutePath() + "' file");
-                    }
-                } else if (file.isDirectory() && file.list() != null && file.list().length == 0) { // empty directories
-                    logger.info("Deleting: '" + file.getAbsolutePath() + "' directory");
-                    boolean deleted = file.delete();
-                    if (!deleted) {
-                        logger.warn("Cannot delete '" + file.getAbsolutePath() + "' directory");
-                    }
-                } else {
-                    logger.info("Keeping: '" + file.getAbsolutePath() + "'");
-                }
-            });
-        } catch (IOException e) {
-            logger.error("Error traversing project directory", e);
+    private StudySettings studySettings() {
+        if (project != null && project.getStudy() != null) {
+            StudySettings studySettings = project.getStudy().getStudySettings();
+            if (studySettings == null) {
+                studySettings = new StudySettings();
+                project.getStudy().setStudySettings(studySettings);
+            }
+            return studySettings;
         }
+        return null;
     }
 
 }

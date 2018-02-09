@@ -23,7 +23,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -31,8 +30,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Identifiers;
@@ -55,8 +52,8 @@ import ru.skoltech.cedl.dataexchange.structure.update.ParameterReferenceValidity
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterModelTableRow;
 import ru.skoltech.cedl.dataexchange.ui.control.parameters.ParameterUpdateStateTableCell;
+import ru.skoltech.cedl.dataexchange.ui.utils.BeanPropertyCellValueFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
@@ -142,6 +139,91 @@ public class ParametersController implements Initializable {
 
     public void setStatusLogger(StatusLogger statusLogger) {
         this.statusLogger = statusLogger;
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        addParameterButton.disableProperty().bind(Bindings.or(emptyProperty, editableProperty.not()));
+        BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
+        deleteParameterButton.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
+        copyParameterButton.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
+        viewParameterHistoryButton.disableProperty().bind(noSelectionOnParameterTableView);
+
+        // NODE PARAMETER TABLE
+        parameterTable.editableProperty().bind(editableProperty);
+        parameterTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        parameterTable.setRowFactory(param -> new ParameterModelTableRow(differenceHandler));
+
+        parameterNatureColumn.setCellValueFactory(BeanPropertyCellValueFactory.createBeanPropertyCellValueFactory("nature"));
+        parameterNameColumn.setCellValueFactory(BeanPropertyCellValueFactory.createBeanPropertyCellValueFactory("name"));
+        parameterValueColumn.setCellValueFactory(param -> {
+            if (param == null || param.getValue() == null) {
+                return new SimpleStringProperty();
+            }
+            ParameterModel parameterModel = param.getValue();
+            double valueToDisplay = parameterModel.getEffectiveValue();
+            String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
+            return new SimpleStringProperty(formattedValue);
+        });
+        parameterUnitColumn.setCellValueFactory(param -> {
+            if (param == null || param.getValue() == null) {
+                return new SimpleStringProperty();
+            }
+            ParameterModel parameterModel = param.getValue();
+            if (parameterModel.getUnit() == null) {
+                return new SimpleStringProperty();
+            }
+            return new SimpleStringProperty(parameterModel.getUnit().asText());
+        });
+        parameterValueSourceColumn.setCellValueFactory(BeanPropertyCellValueFactory.createBeanPropertyCellValueFactory("valueSource"));
+        parameterInfoColumn.setCellValueFactory(param -> {
+            if (param == null || param.getValue() == null) {
+                return new SimpleStringProperty();
+            }
+            ParameterModel parameterModel = param.getValue();
+
+            if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
+                return new SimpleStringProperty(parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "--");
+            }
+            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
+                return new SimpleStringProperty(parameterModel.getValueReference() != null ? parameterModel.getValueReference().toString() : "--");
+            }
+            return new SimpleStringProperty();
+        });
+        parameterDescriptionColumn.setCellValueFactory(BeanPropertyCellValueFactory.createBeanPropertyCellValueFactory("description"));
+        parameterUpdateStateColumn.setCellValueFactory(param -> {
+            if (param == null || param.getValue() == null) {
+                return new SimpleObjectProperty<>();
+            }
+            ParameterModel parameterModel = param.getValue();
+            ParameterReferenceValidity validity = parameterModel.validateValueReference();
+            if (validity == null) {
+                return new SimpleObjectProperty<>();
+            }
+            if (!validity.isValid()) {
+                return new SimpleObjectProperty<>(Pair.of(false, validity.description));
+            }
+            ParameterModelUpdateState update = parameterModel.getLastValueReferenceUpdateState();
+            if (update == null) {
+                return new SimpleObjectProperty<>();
+            }
+            return new SimpleObjectProperty<>(Pair.of(update.isSuccessful(), update.description));
+        });
+        parameterUpdateStateColumn.setCellFactory(param -> new ParameterUpdateStateTableCell());
+
+        parameterTable.setItems(parameterModels);
+
+        // NODE PARAMETERS TABLE CONTEXT MENU
+        ContextMenu parameterContextMenu = new ContextMenu();
+        MenuItem deleteParameterMenuItem = new MenuItem("Delete parameter");
+        deleteParameterMenuItem.setOnAction(event -> this.deleteParameter());
+        deleteParameterMenuItem.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
+        parameterContextMenu.getItems().add(deleteParameterMenuItem);
+        MenuItem addNodeMenuItem = new MenuItem("View history");
+        addNodeMenuItem.setOnAction(event -> this.openParameterHistoryDialog());
+        addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
+        parameterContextMenu.getItems().add(addNodeMenuItem);
+        parameterTable.setContextMenu(parameterContextMenu);
     }
 
     @FXML
@@ -280,91 +362,6 @@ public class ParametersController implements Initializable {
         }
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        addParameterButton.disableProperty().bind(Bindings.or(emptyProperty, editableProperty.not()));
-        BooleanBinding noSelectionOnParameterTableView = parameterTable.getSelectionModel().selectedItemProperty().isNull();
-        deleteParameterButton.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
-        copyParameterButton.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
-        viewParameterHistoryButton.disableProperty().bind(noSelectionOnParameterTableView);
-
-        // NODE PARAMETER TABLE
-        parameterTable.editableProperty().bind(editableProperty);
-        parameterTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        parameterTable.setRowFactory(param -> new ParameterModelTableRow(differenceHandler));
-
-        parameterNatureColumn.setCellValueFactory(createBeanPropertyCellValueFactory("nature"));
-        parameterNameColumn.setCellValueFactory(createBeanPropertyCellValueFactory("name"));
-        parameterValueColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null) {
-                return new SimpleStringProperty();
-            }
-            ParameterModel parameterModel = param.getValue();
-            double valueToDisplay = parameterModel.getEffectiveValue();
-            String formattedValue = Utils.NUMBER_FORMAT.format(valueToDisplay);
-            return new SimpleStringProperty(formattedValue);
-        });
-        parameterUnitColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null) {
-                return new SimpleStringProperty();
-            }
-            ParameterModel parameterModel = param.getValue();
-            if (parameterModel.getUnit() == null) {
-                return new SimpleStringProperty();
-            }
-            return new SimpleStringProperty(parameterModel.getUnit().asText());
-        });
-        parameterValueSourceColumn.setCellValueFactory(createBeanPropertyCellValueFactory("valueSource"));
-        parameterInfoColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null) {
-                return new SimpleStringProperty();
-            }
-            ParameterModel parameterModel = param.getValue();
-
-            if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
-                return new SimpleStringProperty(parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "--");
-            }
-            if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                return new SimpleStringProperty(parameterModel.getValueReference() != null ? parameterModel.getValueReference().toString() : "--");
-            }
-            return new SimpleStringProperty();
-        });
-        parameterDescriptionColumn.setCellValueFactory(createBeanPropertyCellValueFactory("description"));
-        parameterUpdateStateColumn.setCellValueFactory(param -> {
-            if (param == null || param.getValue() == null) {
-                return new SimpleObjectProperty<>();
-            }
-            ParameterModel parameterModel = param.getValue();
-            ParameterReferenceValidity validity = parameterModel.validateValueReference();
-            if (validity == null) {
-                return new SimpleObjectProperty<>();
-            }
-            if (!validity.isValid()) {
-                return new SimpleObjectProperty<>(Pair.of(false, validity.description));
-            }
-            ParameterModelUpdateState update = parameterModel.getLastValueReferenceUpdateState();
-            if (update == null) {
-                return new SimpleObjectProperty<>();
-            }
-            return new SimpleObjectProperty<>(Pair.of(update.isSuccessful(), update.description));
-        });
-        parameterUpdateStateColumn.setCellFactory(param -> new ParameterUpdateStateTableCell());
-
-        parameterTable.setItems(parameterModels);
-
-        // NODE PARAMETERS TABLE CONTEXT MENU
-        ContextMenu parameterContextMenu = new ContextMenu();
-        MenuItem deleteParameterMenuItem = new MenuItem("Delete parameter");
-        deleteParameterMenuItem.setOnAction(event -> this.deleteParameter());
-        deleteParameterMenuItem.disableProperty().bind(Bindings.or(editableProperty.not(), noSelectionOnParameterTableView));
-        parameterContextMenu.getItems().add(deleteParameterMenuItem);
-        MenuItem addNodeMenuItem = new MenuItem("View history");
-        addNodeMenuItem.setOnAction(event -> this.openParameterHistoryDialog());
-        addNodeMenuItem.disableProperty().bind(noSelectionOnParameterTableView);
-        parameterContextMenu.getItems().add(addNodeMenuItem);
-        parameterTable.setContextMenu(parameterContextMenu);
-    }
-
     public void openParameterHistoryDialog() {
         ParameterModel selectedParameter = parameterTable.getSelectionModel().getSelectedItem();
         Objects.requireNonNull(selectedParameter, "no parameter selected");
@@ -373,31 +370,6 @@ public class ParametersController implements Initializable {
         revisionHistoryViewBuilder.ownerWindow(ownerStage);
         revisionHistoryViewBuilder.modality(Modality.APPLICATION_MODAL);
         revisionHistoryViewBuilder.show(selectedParameter);
-    }
-
-    private static BeanPropertyCellValueFactory createBeanPropertyCellValueFactory(String property) {
-        return new BeanPropertyCellValueFactory(property);
-    }
-
-    private static class BeanPropertyCellValueFactory implements Callback<TableColumn.CellDataFeatures<ParameterModel, String>, ObservableValue<String>> {
-
-        private String property;
-
-        private BeanPropertyCellValueFactory(String property) {
-            this.property = property;
-        }
-
-        @Override
-        public ObservableValue<String> call(TableColumn.CellDataFeatures<ParameterModel, String> param) {
-            try {
-                ParameterModel parameterModel = param.getValue();
-                String value = BeanUtils.getProperty(parameterModel, property);
-                return new SimpleStringProperty(value);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                return new SimpleStringProperty();
-            }
-
-        }
     }
 
 }

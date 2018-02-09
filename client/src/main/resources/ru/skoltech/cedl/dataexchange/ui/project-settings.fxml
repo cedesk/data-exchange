@@ -38,7 +38,7 @@
                 <TextField fx:id="projectNameTextField" editable="false" GridPane.columnIndex="1"/>
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Enable Team to save"
                       GridPane.halignment="RIGHT" GridPane.rowIndex="1"/>
-                <CheckBox fx:id="syncEnabledCheckBox" graphicTextGap="8.0" mnemonicParsing="false"
+                <CheckBox fx:id="saveEnabledCheckBox" graphicTextGap="8.0" mnemonicParsing="false"
                           GridPane.columnIndex="1" GridPane.rowIndex="1"/>
             </GridPane>
         </TitledPane>
@@ -67,7 +67,7 @@
                           GridPane.columnIndex="1" GridPane.rowIndex="2"/>
             </GridPane>
         </TitledPane>
-        <TitledPane animated="false" collapsible="false" text="Project Directory">
+        <TitledPane animated="false" collapsible="false" text="Project Cache">
             <GridPane hgap="8.0" vgap="2.0">
                 <columnConstraints>
                     <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" percentWidth="30.0"/>
@@ -77,12 +77,14 @@
                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
                 </rowConstraints>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Project Directory" GridPane.halignment="RIGHT"/>
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Cache Directory" GridPane.halignment="RIGHT"/>
                 <TextField fx:id="projectDirectoryTextField" editable="false" GridPane.columnIndex="1"/>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Clean up" GridPane.halignment="RIGHT"
-                      GridPane.rowIndex="1"/>
                 <Button mnemonicParsing="false" onAction="#cleanupProjectCache"
-                        text="Delete unused files" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        text="Clean up cache" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <tooltip>
+                        <Tooltip text="Delete unused files"/>
+                    </tooltip>
+                </Button>
             </GridPane>
         </TitledPane>
         <ToolBar nodeOrientation="LEFT_TO_RIGHT">

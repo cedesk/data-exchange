@@ -80,10 +80,6 @@ public class MultitemporalTradespace {
         return epochs;
     }
 
-    public String getEpochsFormatted() {
-        return epochs.stream().map(Epoch::asText).collect(Collectors.joining(", "));
-    }
-
     public void setEpochs(List<Epoch> epochs) {
         this.epochs = epochs;
     }

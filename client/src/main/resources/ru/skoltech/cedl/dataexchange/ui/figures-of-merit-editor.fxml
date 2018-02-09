@@ -18,36 +18,35 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<ScrollPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.112" stylesheets="@styling.css"
-            fitToHeight="true" fitToWidth="true" prefWidth="300.0"
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.112" stylesheets="@styling.css"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController">
-    <HBox spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-          AnchorPane.topAnchor="0.0">
-        <padding>
-            <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
-        </padding>
-        <VBox fx:id="figuresOfMeritsViewContainer" spacing="4.0">
-            <padding>
-                <Insets right="16.0"/>
-            </padding>
-        </VBox>
-        <Button minWidth="28" mnemonicParsing="false" onAction="#addFigureOfMerit">
-            <tooltip>
-                <Tooltip text="Add external model"/>
-            </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="PLUS"/>
-            </graphic>
-        </Button>
-        <Button minWidth="28" disable="true" mnemonicParsing="false" onAction="#reloadValues">
-            <tooltip>
-                <Tooltip text="Refresh values from external models"/>
-            </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-            </graphic>
-        </Button>
-    </HBox>
-</ScrollPane>
+    <padding>
+        <Insets/>
+    </padding>
+    <center>
+        <TableView fx:id="figureOfMeritTable">
+            <columns>
+                <TableColumn fx:id="nameColumn" editable="false" text="Name"/>
+                <TableColumn fx:id="unitColumn" editable="false" text="Unit"/>
+                <TableColumn fx:id="optimalityColumn" editable="false" maxWidth="75" minWidth="75" text="Optimality"/>
+                <TableColumn fx:id="parameterLinkColumn" editable="false" minWidth="120" text="Parameter Link"/>
+                <TableColumn fx:id="deleteColumn" maxWidth="30" minWidth="30"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <bottom>
+        <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+            <Button minWidth="28" mnemonicParsing="false" onAction="#addFigureOfMerit">
+                <tooltip>
+                    <Tooltip text="Add external model"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                </graphic>
+            </Button>
+        </ToolBar>
+    </bottom>
+</BorderPane>

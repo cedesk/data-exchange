@@ -17,6 +17,7 @@
 package ru.skoltech.cedl.dataexchange.service.impl;
 
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.LoadException;
 import javafx.scene.Node;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
@@ -32,6 +33,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +68,7 @@ public class GuiServiceImpl implements GuiService {
     public <T extends Node> T createControl(URL location, Object... args) {
         try {
             FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(location, args);
+            loader.setResources(ResourceBundle.getBundle("i18n.MessagesBundle", locale));
             T control = loader.load();
             Object controller = loader.getController();
             control.setUserData(controller);
@@ -87,16 +90,15 @@ public class GuiServiceImpl implements GuiService {
     }
 
     @Override
-    public String loadResourceContent(Class resourceClass, String filename) throws Exception {
-        URL fileLocation = resourceClass.getResource(filename);
-        String baseLocation = fileLocation.toExternalForm().replace(filename, "");
-        try (InputStream in = fileLocation.openStream()) {
+    public String loadResourceContent(URL location) throws LoadException {
+        String baseLocation = location.toExternalForm().replace(location.getFile(), "");
+        try (InputStream in = location.openStream()) {
             String content = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
             content = content.replace("src=\"", "src=\"" + baseLocation);
             return content;
         } catch (IOException e) {
             logger.error("Error loading web content from resource", e);
-            throw new Exception("Error loading web content from resource", e);
+            throw new LoadException("Error loading web content from resource", e);
         }
     }
 }

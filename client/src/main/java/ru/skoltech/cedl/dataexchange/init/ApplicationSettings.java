@@ -16,6 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.init;
 
+import java.io.File;
+
 /**
  * Store all properties required by application.
  * They could be of two types: properties which are common for any client
@@ -28,6 +30,13 @@ package ru.skoltech.cedl.dataexchange.init;
  * in current OS.
  * <p>
  * To save all changed user specific properties (by use of <i>.store*()</i> methods) method
+ *
+ * Additionally an application directory {@link File} is provides.
+ * Below are the rules to define directory.
+ * <p>
+ * If <i>cedesk.app.dir</i> property defined as absolute path then use it.
+ * If <i>cedesk.app.dir</i> property defined as relative path, then prepend <i>user.home</i> system property to it.
+ *
  * {@link ApplicationSettings#save()} must be performed thereafter.
  *
  * Created by Nikolay Groshkov on 05-Aug-17.
@@ -610,4 +619,12 @@ public interface ApplicationSettings {
      * This method always must be performed after change of of properties if its actual storage required.
      */
     void save();
+
+    /**
+     * Retrieve a base application directory.
+     *
+     * @return application directory.
+     */
+    File applicationDirectory();
+
 }

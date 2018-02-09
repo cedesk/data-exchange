@@ -97,6 +97,7 @@ public class ExcelExternalModel extends ExternalModel {
                         throw new ExternalModelException("Error parsing coordinates: " + target, e);
                     }
                 }
+                inputStream.close();
                 this.flush(spreadsheetAccessor);
             }
         } catch (IOException e) {
@@ -165,6 +166,7 @@ public class ExcelExternalModel extends ExternalModel {
         try (InputStream inputStream = this.getAttachmentAsInputStream()) {
             try (SpreadsheetCellValueAccessor spreadsheetAccessor = createSpreadsheetCellValueAccessor(inputStream)) {
                 this.setSpreadsheetAccessorValue(spreadsheetAccessor, target, value);
+                inputStream.close();
                 this.flush(spreadsheetAccessor);
             } catch (ParseException e) {
                 logger.error("Error parsing coordinates: " + target);
@@ -182,24 +184,14 @@ public class ExcelExternalModel extends ExternalModel {
     }
 
     private void flush(SpreadsheetCellValueAccessor spreadsheetAccessor) throws ExternalModelException {
-        try (OutputStream outputStream = this.getAttachmentAsOutputStream()) {
-            this.flushSpreadsheetCellValueAccessor(spreadsheetAccessor, outputStream);
-            outputStream.flush();
-        } catch (IOException e) {
-            String where = this.state() == ExternalModelState.NO_CACHE ? "in memory" : "on cache file";
-            logger.error("Error saving changes of spreadsheet to external model " + this.getNodePath() + "(" + where + ")");
-            throw new ExternalModelException("Error saving changes of spreadsheet to external model" + this.getNodePath() + "(" + where + ")");
-        }
-    }
-
-    private void flushSpreadsheetCellValueAccessor(SpreadsheetCellValueAccessor spreadsheetAccessor, OutputStream outputStream) throws ExternalModelException {
-        try {
-            if (spreadsheetAccessor.isModified()) {
+        if (spreadsheetAccessor.isModified()) {
+            try (OutputStream outputStream = this.getAttachmentAsOutputStream()) {
                 spreadsheetAccessor.saveChanges(outputStream);
+            } catch (IOException e) {
+                String where = this.state() == ExternalModelState.NO_CACHE ? "in memory" : "on cache file";
+                logger.error("Error saving changes of spreadsheet to external model " + this.getNodePath() + "(" + where + ")");
+                throw new ExternalModelException("Error saving changes of spreadsheet to external model" + this.getNodePath() + "(" + where + ")");
             }
-        } catch (IOException e) {
-            logger.error("Error saving excel model", e);
-            throw new ExternalModelException(e.getMessage(), e);
         }
     }
 
@@ -213,6 +205,5 @@ public class ExcelExternalModel extends ExternalModel {
         logger.debug("setting " + value + " on cell " + target + " in " + this.getNodePath());
         spreadsheetAccessor.setNumericValue(coordinates, value);
     }
-
 
 }

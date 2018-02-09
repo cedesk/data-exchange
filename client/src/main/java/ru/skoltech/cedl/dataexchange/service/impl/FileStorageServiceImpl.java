@@ -33,6 +33,7 @@ import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
+import ru.skoltech.cedl.dataexchange.service.UserService;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -59,42 +60,20 @@ public class FileStorageServiceImpl implements FileStorageService {
             ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
     private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
 
+    private ApplicationSettings applicationSettings;
+    private UserService userService;
     private ExternalModelService externalModelService;
 
-    private final File applicationDirectory;
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
 
-    /**
-     * Service defines an application directory at the start up.
-     * <p>
-     * If <i>cedesk.app.dir</i> property defined as absolute path then use it.
-     * Id <i>cedesk.app.dir</i> property defined as relative path, then prepend <i>user.home</i> system property to it.
-     * TODO: write a test
-     *
-     * @param applicationSettings application settings to access to <i>cedesk.app.dir</i> property
-     */
-    public FileStorageServiceImpl(ApplicationSettings applicationSettings) {
-        File cedeskAppDir = new File(applicationSettings.getCedeskAppDir());
-        if (cedeskAppDir.isAbsolute()) {
-            this.applicationDirectory = cedeskAppDir;
-        } else {
-            String userHome = System.getProperty("user.home");
-            this.applicationDirectory = new File(userHome, applicationSettings.getCedeskAppDir());
-        }
-        if (!this.applicationDirectory.exists()) {
-            boolean created = this.applicationDirectory.mkdirs();
-            if (!created) {
-                logger.error("unable to create application directory: " + this.applicationDirectory.getAbsolutePath());
-            }
-        }
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     public void setExternalModelService(ExternalModelService externalModelService) {
         this.externalModelService = externalModelService;
-    }
-
-    @Override
-    public File applicationDirectory() {
-        return applicationDirectory;
     }
 
     @Override
@@ -128,7 +107,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public File dataDir(String repositoryUrl, String repositoryScheme, String projectName) {
-        File repoDir = new File(this.applicationDirectory(), repositoryUrl);
+        File repoDir = new File(applicationSettings.applicationDirectory(), repositoryUrl);
         File schemaDir = new File(repoDir, repositoryScheme);
         return new File(schemaDir, projectName);
     }
@@ -522,9 +501,13 @@ public class FileStorageServiceImpl implements FileStorageService {
         userRoleManagement.getUserDisciplines().forEach(userDiscipline -> {
             String disciplineName = userDiscipline.getDiscipline().getName();
             Discipline discipline = disciplines.get(disciplineName);
+            User user = userService.findUser(userDiscipline.getUser().getUserName());
+            userDiscipline.setUser(user);
             userDiscipline.setDiscipline(discipline);
             userDiscipline.setUserRoleManagement(userRoleManagement);
         });
+
+        userRoleManagement.getUserDisciplines().removeIf(userDiscipline -> userDiscipline.getUser() == null);
 
         userRoleManagement.getDisciplineSubSystems().forEach(disciplineSubSystem -> {
             String disciplineName = disciplineSubSystem.getDiscipline().getName();

@@ -26,7 +26,7 @@ public class Identifiers {
 
     private static final Pattern PARAMETER_NAME_RULE = Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9\\(\\)\\.\\-_\\\\ ]{1,}$");
 
-    private static final Pattern USER_NAME_RULE = Pattern.compile("^[a-z]{1,}[\\.\\-_]?[a-z]{1,}$");
+    private static final Pattern USER_NAME_RULE = Pattern.compile("(?=^.{1,255}$)^[a-zA-Z][a-zA-Z0-9._-]*[a-zA-Z0-9]+$");
 
     private static final Pattern PROJECT_NAME_RULE = Pattern.compile("^[a-zA-Z]{2,}[\\-]?[a-zA-Z0-9]{1,}$");
 
@@ -34,7 +34,7 @@ public class Identifiers {
 
     private static final String PARAMETER_NAME_RULE_DESCRIPTION = "Names must be at least of 1 character and contain only alphanumeric characters, minus '-', underscore '_', space ' '!";
 
-    private static final String USER_NAME_RULE_DESCRIPTION = "User names must be at least of 1 character and contain only alphanumeric lowercase characters and minus '-', underscore '_' and dot '.' inside!";
+    private static final String USER_NAME_RULE_DESCRIPTION = "User names must be at least of 1 but not more than 255 characters and contain only alphanumeric lowercase characters and minus '-', underscore '_' and dot '.' inside!";
 
     private static final String PROJECT_NAME_RULE_DESCRIPTION = "Project names must be at least of 4 character and contain only alphanumeric characters and minus '-' inside!";
 

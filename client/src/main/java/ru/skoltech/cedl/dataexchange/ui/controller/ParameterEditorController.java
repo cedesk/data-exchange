@@ -314,6 +314,7 @@ public class ParameterEditorController implements Initializable {
         this.computeDifferences();
         project.markStudyModified();
         editListener.accept(parameterModel);
+        this.displayParameterModel(parameterModel);
     }
 
     private void updateValueReference() {

@@ -85,100 +85,11 @@ public class Project {
 
     private UnitManagement unitManagement;
 
-    private BooleanProperty canNew = new SimpleBooleanProperty(false);
-    private BooleanProperty canLoad = new SimpleBooleanProperty(false);
-    private BooleanProperty canSync = new SimpleBooleanProperty(false);
+    private BooleanProperty isSyncEnabledProperty = new SimpleBooleanProperty(false);
+    private BooleanProperty isStudyInRepositoryProperty = new SimpleBooleanProperty(false);
     private List<Consumer<ExternalModel>> externalModelConsumers = new LinkedList<>();
 
     private Predicate<ModelNode> accessChecker;
-
-    public List<Discipline> getCurrentUserDisciplines() {
-        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
-        return userRoleManagementService.obtainDisciplinesOfUser(userRoleManagement, getUser());
-    }
-
-    public List<Consumer<ExternalModel>> getExternalModelUpdateConsumers() {
-        return externalModelConsumers;
-    }
-
-    public File getProjectHome() {
-        String hostname = applicationSettings.getRepositoryHost();
-        String schema = applicationSettings.getRepositorySchemaName();
-        return fileStorageService.dataDir(hostname, schema, projectName);
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public Study getRepositoryStudy() {
-        return repositoryStudy;
-    }
-
-    private void setRepositoryStudy(Study repositoryStudy) {
-        this.repositoryStudy = repositoryStudy;
-
-        if (repositoryStudy != null) {
-            StudySettings localSettings = this.study != null ? this.study.getStudySettings() : null;
-            StudySettings remoteSettings = repositoryStudy.getStudySettings();
-            if (localSettings == null || !localSettings.equals(remoteSettings)) {
-                logger.debug("updating studySettings");
-                this.setStudySettings(remoteSettings);
-            }
-            UserRoleManagement localURM = this.study != null ? this.study.getUserRoleManagement() : null;
-            UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
-            boolean isAdmin = userRoleManagementService.checkUserAdmin(localURM, this.getUser());
-            if (localURM == null || (!localURM.equals(remoteURM) && !isAdmin)) {
-                logger.debug("updating userRoleManagement");
-                this.setUserRoleManagement(remoteURM);
-            }
-        }
-    }
-
-    public Study getStudy() {
-        return study;
-    }
-
-    public SystemModel getSystemModel() {
-        return study != null ? study.getSystemModel() : null;
-    }
-
-    public UnitManagement getUnitManagement() {
-        if (unitManagement == null) {
-            loadUnitManagement();
-        }
-        return unitManagement;
-    }
-
-    public User getUser() {
-        String userName = applicationSettings.getProjectUserName();
-        User user = userService.findUser(userName);
-        if (user == null) {
-            boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
-            userName = isStudyNew ? UserService.ADMIN_USER_NAME : UserService.OBSERVER_USER_NAME;
-            logger.warn("User not found in user management. Assuming " + userName + "!");
-            user = userService.findUser(userName);
-            Objects.requireNonNull(user);
-        }
-        return user;
-    }
-
-    public UserRoleManagement getUserRoleManagement() {
-        if (study == null)
-            return null;
-        return study.getUserRoleManagement();
-    }
-
-    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
-        this.study.setUserRoleManagement(userRoleManagement);
-        studyService.relinkStudySubSystems(study);
-        // TODO: update user information on ui
-    }
-
-    public boolean isStudyInRepository() {
-        // TODO: it is an imprecise assumption that in case of any import setting, this study is also available in the repository
-        return applicationSettings.getProjectImportName() != null || repositoryStateMachine.wasLoadedOrSaved();
-    }
 
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
@@ -220,11 +131,6 @@ public class Project {
         this.studyService = studyService;
     }
 
-    private void setStudySettings(StudySettings studySettings) {
-        this.study.setStudySettings(studySettings);
-        updatePossibleActions();
-    }
-
     public void setUnitManagementService(UnitManagementService unitManagementService) {
         this.unitManagementService = unitManagementService;
     }
@@ -237,113 +143,9 @@ public class Project {
         this.userRoleManagementService = userRoleManagementService;
     }
 
-    public BooleanProperty canLoadProperty() {
-        return canLoad;
-    }
-
-    public BooleanProperty canNewProperty() {
-        return canNew;
-    }
-
-    public BooleanProperty canSyncProperty() {
-        return canSync;
-    }
-
-    public boolean checkAdminUser() {
-        User user = this.getUser();
-        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
-        return userRoleManagementService.checkUserAdmin(userRoleManagement, user);
-    }
-
-    /**
-     * Check current version of study in the repository.
-     * Has to be performed regularly for user's ability to synchronize remote and local study.
-     */
-    public void checkStudyInRepository() {
-        final boolean autoSyncDisabled = !applicationSettings.isRepositoryWatcherAutosync();
-        final boolean emptyStudy = this.study == null;
-        final boolean studyNotInRepository = !this.isStudyInRepository();
-
-        if (autoSyncDisabled || emptyStudy || studyNotInRepository) {
-            return;
-        }
-        LocalTime startTime = LocalTime.now();
-
-        Pair<Integer, Date> latestRevision = studyService.findLatestRevision(study.getId());
-        long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
-        if (latestRevision == null) {
-            logger.info("Checked repository study (" + checkDuration + "ms), study is not saved.");
-            return;
-        }
-        logger.info("Checked repository study (" + checkDuration + "ms), " +
-                "last revision number: " + latestRevision.getLeft() + ", " +
-                "date : " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(latestRevision.getRight()));
-
-        int newLatestRevisionNumber = latestRevision.getLeft() != null ? latestRevision.getLeft() : 0;
-        if (this.latestRevisionNumber.get() >= newLatestRevisionNumber) {
-            return;
-        }
-        this.loadRepositoryStudy();
-    }
-
-    public boolean checkUser() {
-        String userName = applicationSettings.getProjectUserName();
-        if (userName == null) {
-            boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
-            userName = isStudyNew ? UserService.ADMIN_USER_NAME : UserService.OBSERVER_USER_NAME;
-        }
-        return userService.checkUser(userName);
-    }
-
-    public boolean checkUserAccess(ModelNode modelNode) {
-        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
-        User user = this.getUser();
-        if (modelNode == null) return checkAdminUser();
-        return userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
-    }
-
-    public void createStudy(Study study) {
-        this.study = study;
-        this.initCurrentStudy();
-    }
-
-    public void createStudy(SystemModel systemModel) {
-        this.study = studyService.createStudy(systemModel);
-        this.initCurrentStudy();
-    }
-
-    private void initCurrentStudy() {
-        this.initProject(study.getName());
-        this.setRepositoryStudy(null);
-        this.initializeHandlers();
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
-
-        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
-        userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
-        this.updateValueReferences(study.getSystemModel());
-    }
-
-    public void deleteStudy(String studyName) throws RepositoryException {
-        studyService.deleteStudyByName(studyName);
-    }
-
-    public boolean hasLocalStudyModifications() {
-        return repositoryStateMachine.hasModifications();
-    }
-
-    public void importStudy(Study study) {
-        this.createStudy(study);
-        this.reinitializeUniqueIdentifiers(study.getSystemModel());
-    }
-
-    public void importSystemModel(SystemModel systemModel) {
-        this.createStudy(systemModel);
-        this.reinitializeUniqueIdentifiers(systemModel);
-    }
-
     public void init() {
         this.userService.createDefaultUsers();
-        this.repositoryStateMachine.addObserver((o, arg) -> this.updatePossibleActions());
+        this.loadUnitManagement();
         this.externalModelFileWatcher.addObserver((o, arg) -> {
             ExternalModel externalModel = (ExternalModel) arg;
             actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
@@ -375,6 +177,83 @@ public class Project {
         this.accessChecker = this::checkUserAccess;
     }
 
+    public File getProjectHome() {
+        String hostname = applicationSettings.getRepositoryHost();
+        String schema = applicationSettings.getRepositorySchemaName();
+        return fileStorageService.dataDir(hostname, schema, projectName);
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public BooleanProperty isSyncEnabledProperty() {
+        return isSyncEnabledProperty;
+    }
+
+    public BooleanProperty isStudyInRepositoryProperty() {
+        return isStudyInRepositoryProperty;
+    }
+
+    public List<Consumer<ExternalModel>> getExternalModelUpdateConsumers() {
+        return externalModelConsumers;
+    }
+
+    public Study getStudy() {
+        return study;
+    }
+
+    public Study getRepositoryStudy() {
+        return repositoryStudy;
+    }
+
+    private void setRepositoryStudy(Study repositoryStudy) {
+        this.repositoryStudy = repositoryStudy;
+
+        if (repositoryStudy != null) {
+            StudySettings localSettings = this.study != null ? this.study.getStudySettings() : null;
+            StudySettings remoteSettings = repositoryStudy.getStudySettings();
+            if (localSettings == null || !localSettings.equals(remoteSettings)) {
+                logger.debug("updating studySettings");
+                Platform.runLater(() -> isSyncEnabledProperty.setValue(remoteSettings != null && remoteSettings.getSyncEnabled()));
+            }
+            UserRoleManagement localURM = this.study != null ? this.study.getUserRoleManagement() : null;
+            UserRoleManagement remoteURM = repositoryStudy.getUserRoleManagement();
+            boolean isAdmin = userRoleManagementService.checkUserAdmin(localURM, this.getUser());
+            if (localURM == null || (!localURM.equals(remoteURM) && !isAdmin)) {
+                logger.debug("updating userRoleManagement");
+                this.setUserRoleManagement(remoteURM);
+            }
+        }
+    }
+
+    public void createStudy(SystemModel systemModel) {
+        this.study = studyService.createStudy(systemModel);
+        this.initCurrentStudy();
+    }
+
+    private void createStudy(Study study) {
+        this.study = study;
+        this.initCurrentStudy();
+    }
+
+    private void initCurrentStudy() {
+        this.initProject(study.getName());
+        this.setRepositoryStudy(null);
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+        this.isStudyInRepositoryProperty.set(false);
+        this.initializeHandlers();
+
+        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
+        userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
+        this.updateValueReferences(study.getSystemModel());
+    }
+
+    public void importStudy(Study study) {
+        this.createStudy(study);
+        this.reinitializeUniqueIdentifiers(study.getSystemModel());
+    }
+
     public void loadLocalStudy() {
         this.study = studyService.findStudyByName(projectName);
         if (this.study == null) {
@@ -382,6 +261,7 @@ public class Project {
         }
         this.setupModelNodePosition(study); // revise an order
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        isStudyInRepositoryProperty.set(true);
         this.initializeHandlers();
     }
 
@@ -393,6 +273,30 @@ public class Project {
         this.setupModelNodePosition(study); // revise an order
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         this.initializeHandlers();
+    }
+
+    public void storeStudy() throws RepositoryException {
+        Triple<Study, Integer, Date> revision = studyService.saveStudy(this.study);
+        Study newStudy = revision.getLeft();
+        Integer revisionNumber = revision.getMiddle();
+
+        this.study = newStudy;
+        this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
+        this.latestRevisionNumber.set(revisionNumber);
+
+        SystemModel systemModel = this.getSystemModel();
+
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
+        isStudyInRepositoryProperty.set(true);
+        this.initializeHandlers();
+        parameterLinkRegistry.updateAll(systemModel);
+        this.updateExportReferences(systemModel, accessChecker);
+        if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
+            // store URM separately before study, to prevent links to deleted subsystems have storing study fail
+            storeUserRoleManagement();
+        }
+
+        this.updateValueReferences(systemModel);
     }
 
     public Future<List<ModelDifference>> loadRepositoryStudy() {
@@ -426,51 +330,99 @@ public class Project {
         return feature;
     }
 
-    public boolean loadUnitManagement() {
-        unitManagement = unitManagementService.findUnitManagement();
-        if (unitManagement != null) {
-            return true;
+    /**
+     * Check current version of study in the repository.
+     * Has to be performed regularly for user's ability to synchronize remote and local study.
+     */
+    public void checkStudyInRepository() {
+        final boolean autoSyncDisabled = !applicationSettings.isRepositoryWatcherAutosync();
+        final boolean emptyStudy = this.study == null;
+
+        if (autoSyncDisabled || emptyStudy) {
+            return;
         }
-        logger.error("Error loading unit management. recreating new unit management.");
-        initializeUnitManagement();
-        return false;
+        LocalTime startTime = LocalTime.now();
+
+        Pair<Integer, Date> latestRevision = studyService.findLatestRevision(study.getId());
+        long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
+        if (latestRevision == null) {
+            logger.info("Checked repository study (" + checkDuration + "ms), study is not saved.");
+            return;
+        }
+        logger.info("Checked repository study (" + checkDuration + "ms), " +
+                "last revision number: " + latestRevision.getLeft() + ", " +
+                "date : " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(latestRevision.getRight()));
+
+        int newLatestRevisionNumber = latestRevision.getLeft() != null ? latestRevision.getLeft() : 0;
+        if (this.latestRevisionNumber.get() >= newLatestRevisionNumber) {
+            return;
+        }
+        this.loadRepositoryStudy();
+    }
+
+    public void deleteStudy(String studyName) {
+        studyService.deleteStudyByName(studyName);
+        isStudyInRepositoryProperty.set(false);
     }
 
     public void markStudyModified() {
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
     }
 
-    public void storeStudy() throws RepositoryException {
-        SystemModel systemModel = this.getSystemModel();
-        this.initializeHandlers();
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.SAVE);
-        parameterLinkRegistry.updateAll(systemModel);
-        this.updateExportReferences(systemModel, accessChecker);
-        if (this.study.getUserRoleManagement().getId() != 0) { // do not store if new
-            // store URM separately before study, to prevent links to deleted subsystems have storing study fail
-            storeUserRoleManagement();
-        }
-
-        Triple<Study, Integer, Date> revision = studyService.saveStudy(this.study);
-        Study newStudy = revision.getLeft();
-        Integer revisionNumber = revision.getMiddle();
-
-        this.study = newStudy;
-        this.setRepositoryStudy(newStudy); // FIX: doesn't this cause troubles with later checks for update?
-        this.latestRevisionNumber.set(revisionNumber);
-
-
-        this.updateValueReferences(systemModel);
+    public SystemModel getSystemModel() {
+        return study != null ? study.getSystemModel() : null;
     }
 
-    public boolean storeUnitManagement() {
-        try {
-            unitManagement = unitManagementService.saveUnitManagement(unitManagement);
-            return true;
-        } catch (Exception e) {
-            logger.error("Error storing unit management.", e);
+    public void importSystemModel(SystemModel systemModel) {
+        this.createStudy(systemModel);
+        this.reinitializeUniqueIdentifiers(systemModel);
+    }
+
+    public User getUser() {
+        String userName = applicationSettings.getProjectUserName();
+        User user = userService.findUser(userName);
+        if (user == null) {
+            boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
+            userName = isStudyNew ? UserService.ADMIN_USER_NAME : UserService.OBSERVER_USER_NAME;
+            logger.warn("User not found in user management. Assuming " + userName + "!");
+            user = userService.findUser(userName);
+            Objects.requireNonNull(user);
         }
-        return false;
+        return user;
+    }
+
+    public boolean checkUser() {
+        String userName = applicationSettings.getProjectUserName();
+        if (userName == null) {
+            boolean isStudyNew = !repositoryStateMachine.wasLoadedOrSaved();
+            userName = isStudyNew ? UserService.ADMIN_USER_NAME : UserService.OBSERVER_USER_NAME;
+        }
+        return userService.checkUser(userName);
+    }
+
+    public boolean checkAdminUser() {
+        User user = this.getUser();
+        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
+        return userRoleManagementService.checkUserAdmin(userRoleManagement, user);
+    }
+
+    public boolean checkUserAccess(ModelNode modelNode) {
+        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
+        User user = this.getUser();
+        if (modelNode == null) return checkAdminUser();
+        return userRoleManagementService.checkUserAccessToModelNode(userRoleManagement, user, modelNode);
+    }
+
+    public UserRoleManagement getUserRoleManagement() {
+        if (study == null)
+            return null;
+        return study.getUserRoleManagement();
+    }
+
+    public void setUserRoleManagement(UserRoleManagement userRoleManagement) {
+        this.study.setUserRoleManagement(userRoleManagement);
+        studyService.relinkStudySubSystems(study);
+        // TODO: update user information on ui
     }
 
     private void storeUserRoleManagement() {
@@ -481,6 +433,26 @@ public class Project {
         } catch (Exception e) {
             logger.error("Error storing user role management.", e);
         }
+    }
+
+    public List<Discipline> getCurrentUserDisciplines() {
+        UserRoleManagement userRoleManagement = this.getUserRoleManagement();
+        return userRoleManagementService.obtainDisciplinesOfUser(userRoleManagement, getUser());
+    }
+
+    public UnitManagement getUnitManagement() {
+        return unitManagement;
+    }
+
+    private void loadUnitManagement() {
+        UnitManagement unitManagement = unitManagementService.findUnitManagement();
+        if (unitManagement != null) {
+            this.unitManagement = unitManagement;
+            return;
+        }
+        logger.error("Error loading unit management. recreating new unit management.");
+        unitManagement = unitManagementService.loadDefaultUnitManagement();
+        this.unitManagement = unitManagementService.saveUnitManagement(unitManagement);
     }
 
     @Override
@@ -495,17 +467,12 @@ public class Project {
     private void initializeHandlers() {
         Platform.runLater(() -> differenceHandler.clearModelDifferences());
 
-        SystemModel systemModel = getSystemModel();
+        SystemModel systemModel = this.getSystemModel();
         parameterLinkRegistry.clear();
         parameterLinkRegistry.registerAllParameters(systemModel);
         parameterLinkRegistry.updateAllSinks(systemModel, accessChecker);
         externalModelFileWatcher.clear();
-        externalModelFileWatcher.add(this.getSystemModel(), accessChecker);
-    }
-
-    private void initializeUnitManagement() {
-        unitManagement = unitManagementService.loadDefaultUnitManagement();
-        storeUnitManagement();
+        externalModelFileWatcher.add(systemModel, accessChecker);
     }
 
     private void reinitializeUniqueIdentifiers(ModelNode modelNode) {
@@ -546,20 +513,13 @@ public class Project {
         externalModelsIterator.forEachRemaining(externalModel -> {
             File cacheFile = externalModel.getCacheFile();
             externalModelFileWatcher.maskChangesTo(cacheFile);
-            externalModel.updateExportReferences();
+            try {
+                externalModel.updateExportReferences();
+            } catch (Exception e) {
+                logger.warn("Cannot update export references of " + externalModel.getNodePath() + " external model", e);
+            }
             externalModelFileWatcher.unmaskChangesTo(cacheFile);
         });
-    }
-
-    private void updatePossibleActions() {
-        StudySettings studySettings = this.study.getStudySettings();
-
-        canNew.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.NEW));
-        canLoad.set(repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.LOAD));
-        boolean isAdmin = checkAdminUser();
-        boolean isSyncEnabled = !isAdmin && studySettings == null || studySettings.getSyncEnabled();
-        boolean isSavePossible = repositoryStateMachine.isActionPossible(RepositoryStateMachine.RepositoryActions.SAVE);
-        canSync.setValue(isSyncEnabled && isSavePossible);
     }
 
     private void updateValueReferences(SystemModel systemModel) {

@@ -45,7 +45,8 @@ public class GuideController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            String content = guiService.loadResourceContent(AboutController.class, "guide.html");
+            URL guideLocation = GuideController.class.getResource("guide.html");
+            String content = guiService.loadResourceContent(guideLocation);
             WebEngine webEngine = guideView.getEngine();
             webEngine.loadContent(content);
         } catch (Exception e) {
