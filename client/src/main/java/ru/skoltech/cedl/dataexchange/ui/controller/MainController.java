@@ -696,20 +696,25 @@ public class MainController implements Initializable, Displayable, Closeable {
     private boolean checkUnsavedStructureModifications() {
         long nodeChanges = differenceHandler.modelDifferences().stream()
                 .filter(modelDiff -> modelDiff instanceof NodeDifference).count();
-        if (nodeChanges > 0) {
-            Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
-                    "Modifications to the model structure must to be saved before managing user discipline assignment. " +
-                            "Shall it be saved now?");
-            if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
-                try {
-                    project.storeStudy();
-                    return true;
-                } catch (RepositoryException e) {
-                    statusLogger.error(e.getMessage());
-                    UserNotifications.showNotification(ownerStage, "Failed to save", "Failed to save");
+        if (nodeChanges > 0) { // changes present
+            if (project.isSyncEnabledProperty().get()) { // user able to save
+                Optional<ButtonType> saveYesNo = Dialogues.chooseYesNo("Unsaved modifications",
+                        "Modifications to the model structure must to be saved before managing user discipline assignment. " +
+                                "Shall it be saved now?");
+                if (saveYesNo.isPresent() && saveYesNo.get() == ButtonType.YES) {
+                    try {
+                        project.storeStudy();
+                        return true;
+                    } catch (RepositoryException e) {
+                        statusLogger.error(e.getMessage());
+                        UserNotifications.showNotification(ownerStage, "Failed to save", "Failed to save");
+                        return false;
+                    }
+                } else {
                     return false;
                 }
-            } else {
+            } else { // user unable to save
+                Dialogues.showWarning("Unsaved modifications", "Currently you are not enabled to save the changes.");
                 return false;
             }
         } else {
@@ -745,22 +750,27 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     private boolean confirmCloseRequest() {
         if (repositoryStateMachine.hasModifications()) {
-            Optional<ButtonType> saveYesNoCancel = Dialogues.chooseYesNoCancel("Unsaved modifications",
-                    "Save the modifications before closing?");
-            if (saveYesNoCancel.isPresent() && saveYesNoCancel.get() == ButtonType.YES) {
-                try {
-                    project.storeStudy();
-                    return true;
-                } catch (RepositoryException e) {
-                    statusLogger.error(e.getMessage());
-                    Optional<ButtonType> closeAnyway = Dialogues.chooseYesNo("Failed to save",
-                            "Shall the program close anyway?");
-                    if (closeAnyway.isPresent() && closeAnyway.get() == ButtonType.YES) {
+            if (project.isSyncEnabledProperty().get()) {
+                Optional<ButtonType> saveYesNoCancel = Dialogues.chooseYesNoCancel("Unsaved modifications",
+                        "Save the modifications before closing?");
+                if (saveYesNoCancel.isPresent() && saveYesNoCancel.get() == ButtonType.YES) {
+                    try {
+                        project.storeStudy();
                         return true;
+                    } catch (RepositoryException e) {
+                        statusLogger.error(e.getMessage());
+                        Optional<ButtonType> closeAnyway = Dialogues.chooseYesNo("Failed to save",
+                                "Shall the program close anyway?");
+                        if (closeAnyway.isPresent() && closeAnyway.get() == ButtonType.YES) {
+                            return true;
+                        }
                     }
-                }
-            } else return !saveYesNoCancel.isPresent() || saveYesNoCancel.get() != ButtonType.CANCEL;
-        } else {
+                } else return !saveYesNoCancel.isPresent() || saveYesNoCancel.get() != ButtonType.CANCEL;
+            } else { // not allowed to sync
+                Dialogues.showWarning("Unsaved modifications", "Currently you are not enabled to save the changes.");
+                return true;
+            }
+        } else { // no modifications
             return true;
         }
         return false;
