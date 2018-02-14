@@ -23,7 +23,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.AsyncTaskExecutor;
-import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
@@ -72,7 +71,6 @@ public class Project {
     private UserService userService;
     private UserRoleManagementService userRoleManagementService;
     private UnitManagementService unitManagementService;
-    private SourcePollingChannelAdapter inboundFilesChannel;
     private ActionLogger actionLogger;
     private AsyncTaskExecutor executor;
 
@@ -113,10 +111,6 @@ public class Project {
 
     public void setFileStorageService(FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
-    }
-
-    public void setInboundFilesChannel(SourcePollingChannelAdapter inboundFilesChannel) {
-        this.inboundFilesChannel = inboundFilesChannel;
     }
 
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
@@ -169,11 +163,6 @@ public class Project {
         System.setProperty(PROJECT_HOME_PROPERTY, this.getProjectHome().getAbsolutePath());
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
-//        if (this.inboundFilesChannel.isRunning()) {
-//            this.inboundFilesChannel.stop();
-//        }
-//        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectHome());
-//        this.inboundFilesChannel.start();
         this.accessChecker = this::checkUserAccess;
     }
 
@@ -237,23 +226,6 @@ public class Project {
         this.initCurrentStudy();
     }
 
-    private void initCurrentStudy() {
-        this.initProject(study.getName());
-        this.setRepositoryStudy(null);
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
-        this.isStudyInRepositoryProperty.set(false);
-        this.initializeHandlers();
-
-        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
-        userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
-        this.updateValueReferences(study.getSystemModel());
-    }
-
-    public void importStudy(Study study) {
-        this.createStudy(study);
-        this.reinitializeUniqueIdentifiers(study.getSystemModel());
-    }
-
     public void loadLocalStudy() {
         this.study = studyService.findStudyByName(projectName);
         if (this.study == null) {
@@ -261,8 +233,27 @@ public class Project {
         }
         this.setupModelNodePosition(study); // revise an order
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        isSyncEnabledProperty.set(study.getStudySettings().getSyncEnabled());
         isStudyInRepositoryProperty.set(true);
         this.initializeHandlers();
+    }
+
+    public void importStudy(Study study) {
+        this.createStudy(study);
+        this.reinitializeUniqueIdentifiers(study.getSystemModel());
+    }
+
+    private void initCurrentStudy() {
+        this.initProject(study.getName());
+        this.setRepositoryStudy(null);
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+        this.isStudyInRepositoryProperty.set(false);
+        this.isSyncEnabledProperty.setValue(study.getStudySettings().getSyncEnabled());
+        this.initializeHandlers();
+
+        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
+        userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
+        this.updateValueReferences(study.getSystemModel());
     }
 
     public void loadLocalStudy(Integer revisionNumber) {
