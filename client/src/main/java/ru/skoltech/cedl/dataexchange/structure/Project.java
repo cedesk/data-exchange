@@ -231,11 +231,18 @@ public class Project {
         if (this.study == null) {
             return;
         }
+        this.setupStudySettings(study);
         this.setupModelNodePosition(study); // revise an order
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
         isSyncEnabledProperty.set(study.getStudySettings().getSyncEnabled());
         isStudyInRepositoryProperty.set(true);
         this.initializeHandlers();
+    }
+
+    private void setupStudySettings(Study study) {
+        if (study.getStudySettings() == null) {
+            study.setStudySettings(new StudySettings());
+        }
     }
 
     public void importStudy(Study study) {
