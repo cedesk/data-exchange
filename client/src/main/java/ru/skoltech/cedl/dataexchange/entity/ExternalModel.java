@@ -52,7 +52,7 @@ import static ru.skoltech.cedl.dataexchange.external.ExternalModelState.*;
 @XmlJavaTypeAdapter(ExternalModelAdapter.class)
 @XmlType(propOrder = {"name", "lastModification", "uuid"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public abstract class ExternalModel implements Comparable<ExternalModel>, PersistedEntity {
+public abstract class ExternalModel implements Comparable<ExternalModel>, PersistedEntity, RevisedEntity {
 
     private static Logger logger = Logger.getLogger(ExternalModel.class);
 

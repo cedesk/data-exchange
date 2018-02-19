@@ -33,7 +33,7 @@ import java.util.Date;
 @Entity
 @Table
 @Audited
-public class Component {
+public class Component implements RevisedEntity {
 
     @Id
     @GeneratedValue

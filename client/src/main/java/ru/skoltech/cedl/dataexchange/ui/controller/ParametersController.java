@@ -245,7 +245,7 @@ public class ParametersController implements Initializable {
             modelNode.addParameter(parameterModel);
             statusLogger.info("Parameter added: " + parameterModel.getName());
             actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, parameterModel.getNodePath());
-            project.markStudyModified();
+            project.markStudyModified(modelNode);
             this.parameterModels.add(parameterModel);
             this.parameterTable.getSelectionModel().select(parameterModel);
         }
@@ -335,7 +335,7 @@ public class ParametersController implements Initializable {
             modelNode.addParameter(newParameterModel);
             statusLogger.info("Parameter copied: " + newParameterModel.getName());
             actionLogger.log(ActionLogger.ActionType.PARAMETER_ADD, newParameterModel.getNodePath());
-            project.markStudyModified();
+            project.markStudyModified(modelNode);
             this.parameterModels.add(newParameterModel);
             this.parameterTable.getSelectionModel().select(newParameterModel);
         }
@@ -358,7 +358,7 @@ public class ParametersController implements Initializable {
             statusLogger.info("Parameter deleted: " + parameterModel.getName());
             actionLogger.log(ActionLogger.ActionType.PARAMETER_REMOVE, parameterModel.getNodePath());
             updateParameters(modelNode, editableProperty.get());
-            project.markStudyModified();
+            project.markStudyModified(modelNode);
         }
     }
 

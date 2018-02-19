@@ -312,7 +312,7 @@ public class ParameterEditorController implements Initializable {
         this.updateExportReferences();
         parameterLinkRegistry.updateSinks(parameterModel);
         this.computeDifferences();
-        project.markStudyModified();
+        project.markStudyModified(parameterModel);
         editListener.accept(parameterModel);
         this.displayParameterModel(parameterModel);
     }

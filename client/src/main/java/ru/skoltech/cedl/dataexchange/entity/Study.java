@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.*;
 @XmlRootElement
 @XmlType(propOrder = {"name", "lastModification", "userRoleManagement", "systemModel"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Study implements PersistedEntity, ModificationTimestamped {
+public class Study implements PersistedEntity, ModificationTimestamped, RevisedEntity {
 
     @Id
     @GeneratedValue

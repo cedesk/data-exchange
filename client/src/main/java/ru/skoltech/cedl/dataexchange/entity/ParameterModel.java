@@ -41,7 +41,7 @@ import java.util.UUID;
 @Audited
 @XmlType(propOrder = {"name", "value", "nature", "valueSource", "unit", "isExported", "isReferenceValueOverridden", "lastModification", "uuid", "valueReference", "valueLink", "exportReference", "calculation", "description"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ParameterModel implements Comparable<ParameterModel>, PersistedEntity {
+public class ParameterModel implements Comparable<ParameterModel>, PersistedEntity, RevisedEntity {
 
     private static Logger logger = Logger.getLogger(ParameterModel.class);
 

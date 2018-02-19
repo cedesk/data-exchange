@@ -143,7 +143,7 @@ public class Project {
         this.externalModelFileWatcher.addObserver((o, arg) -> {
             ExternalModel externalModel = (ExternalModel) arg;
             actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
-            this.markStudyModified();
+            this.markStudyModified(externalModel);
             externalModel.updateReferencedParameterModels(parameterModel -> parameterLinkRegistry.updateSinks(parameterModel));
             externalModel.getReferencedParameterModels().forEach(parameterModel -> {
                 ParameterModelUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
@@ -363,7 +363,14 @@ public class Project {
         isStudyInRepositoryProperty.set(false);
     }
 
-    public void markStudyModified() {
+    /**
+     * Mark current stydy as modified locally.
+     * Additionally an array of revised entities can be provided to mark their priorities over remote changes.
+     *
+     * @param revisedEntities an array of revised entities
+     */
+    public void markStudyModified(RevisedEntity... revisedEntities) {
+        Arrays.stream(revisedEntities).forEach(RevisedEntity::prioritizeRevision);
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
     }
 
