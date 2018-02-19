@@ -10,6 +10,7 @@ On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
 ## Release History and Notes
 
+* 2018-02-18 - Version 1.38.1 (bug fixing)
 * 2018-02-10 - Version 1.38   (usability improvements and bug fixing)
 * 2017-12-05 - Version 1.37   (export/import as zip, import of tradespace data in Excel format, introduction of i18n framework)
 * 2017-11-24 - Version 1.36   (component library, bug fixes)
