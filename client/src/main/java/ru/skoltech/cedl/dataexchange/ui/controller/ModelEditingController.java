@@ -104,7 +104,7 @@ public class ModelEditingController implements Initializable {
 
     private BooleanProperty selectedNodeIsRoot = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeCannotHaveChildren = new SimpleBooleanProperty(true);
-    private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(true);
+    private BooleanProperty selectedNodeIsEditable = new SimpleBooleanProperty(false);
     private BooleanProperty selectedNodeParentIsEditable = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeIsFirst = new SimpleBooleanProperty(true);
     private BooleanProperty selectedNodeIsLast = new SimpleBooleanProperty(true);

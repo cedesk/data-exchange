@@ -38,6 +38,7 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -98,6 +99,7 @@ public class TradespaceScatterPlotController implements Initializable {
         tradespaceScatterPlotView.setTradespace(multitemporalTradespace);
 
         List<FigureOfMeritDefinition> figureOfMeritDefinitions = multitemporalTradespace.getDefinitions();
+        figureOfMeritDefinitions.sort(Comparator.naturalOrder());
         xAxisCombo.setItems(FXCollections.observableArrayList(figureOfMeritDefinitions));
         yAxisCombo.setItems(FXCollections.observableArrayList(figureOfMeritDefinitions));
         if (figureOfMeritDefinitions.size() > 0)

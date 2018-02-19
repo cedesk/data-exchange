@@ -43,7 +43,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Controller for tradespace.
+ * Controller for Tradespace Exploration.
  * <p>
  * Created by d.knoll on 23/06/2017.
  */
@@ -129,7 +129,8 @@ public class TradespaceController implements Initializable {
     }
 
     public void editEpochs() {
-        String currentEpochsString = epochListProperty.stream().map(Epoch::asText).collect(Collectors.joining(", "));
+        String currentEpochsString = epochListProperty.stream().sorted()
+                .map(Epoch::asText).collect(Collectors.joining(", "));
         Optional<String> epochStringOptional = Dialogues.inputEpochs(currentEpochsString);
         if (epochStringOptional.isPresent()) {
             List<Epoch> epochList = multitemporalTradespace.getEpochs();

@@ -39,6 +39,7 @@ import ru.skoltech.cedl.dataexchange.ui.control.fom.FigureOfMeritDefinitionUnitC
 import ru.skoltech.cedl.dataexchange.ui.utils.BeanPropertyCellValueFactory;
 
 import java.net.URL;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
@@ -135,6 +136,7 @@ public class FiguresOfMeritEditorController implements Initializable {
         ObservableList<FigureOfMeritDefinition> figureOfMeritDefinitions = FXCollections.observableArrayList();
         if (tradespace != null) {
             figureOfMeritDefinitions.addAll(tradespace.getDefinitions());
+            figureOfMeritDefinitions.sort(Comparator.naturalOrder());
         }
         figureOfMeritTable.setItems(figureOfMeritDefinitions);
     }

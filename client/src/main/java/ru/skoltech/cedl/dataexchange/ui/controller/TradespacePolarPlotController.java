@@ -117,6 +117,8 @@ public class TradespacePolarPlotController implements Initializable {
                     if (designPoints.isEmpty()) {
                         return;
                     }
+                    // TODO: give options on the UI
+                    designPoints = designPoints.stream().limit(6).collect(Collectors.toList());
 
                     String[] labels = figures.stream().map(FigureOfMeritDefinition::getName).toArray(String[]::new);
                     String[] datasets = designPoints.stream()
@@ -139,7 +141,7 @@ public class TradespacePolarPlotController implements Initializable {
                     polarChartWebView.getEngine().executeScript("updateTradespaceRadar()");
                 });
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                logger.error("error obtaining window object", e);
             }
         });
     }

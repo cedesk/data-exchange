@@ -60,13 +60,13 @@
                             <MenuItem onAction="#openProjectSettingsDialog" text="%project_settings.title"/>
                             <MenuItem onAction="#openRepositorySettingsDialog" text="%repository_settings.title"/>
                         </Menu>
-                        <Menu text="%main.menu.view">
+                        <Menu fx:id="viewMenu" text="%main.menu.view">
                             <MenuItem onAction="#openConsistencyView" text="%consistency.title"/>
                             <MenuItem onAction="#openDiffView" text="%model_differences.title"/>
                             <MenuItem onAction="#openDsmView" text="%dependency_structure_matrix.title"/>
                             <MenuItem onAction="#openDependencyView" text="%dependency_analysis.title"/>
                         </Menu>
-                        <Menu text="%main.menu.tools">
+                        <Menu fx:id="toolsMenu" text="%main.menu.tools">
                             <MenuItem onAction="#openTradespaceExplorer" text="%tradespace_explorer.title"/>
                             <MenuItem onAction="#runWorkSessionAnalysis"
                                       text="%main.menu.tools.run_work_session_analysis"/>
@@ -124,7 +124,7 @@
                                 <Glyph fontFamily="FontAwesome" icon="BOOK"/>
                             </graphic>
                         </ToggleButton>
-                        <Button mnemonicParsing="false" onAction="#openDsmView">
+                        <Button fx:id="dsmViewButton" mnemonicParsing="false" onAction="#openDsmView">
                             <tooltip>
                                 <Tooltip text="%main.toolbar.dependency_structure_matrix.tooltip"/>
                             </tooltip>
@@ -132,7 +132,7 @@
                                 <Glyph fontFamily="FontAwesome" icon="TH"/>
                             </graphic>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#openDependencyView">
+                        <Button fx:id="dependencyViewButton" mnemonicParsing="false" onAction="#openDependencyView">
                             <tooltip>
                                 <Tooltip text="%main.toolbar.dependencies.tooltip"/>
                             </tooltip>
@@ -140,7 +140,7 @@
                                 <Glyph fontFamily="FontAwesome" icon="ARROWS"/>
                             </graphic>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#openTradespaceExplorer">
+                        <Button fx:id="tradespaceViewButton" mnemonicParsing="false" onAction="#openTradespaceExplorer">
                             <tooltip>
                                 <Tooltip text="%main.toolbar.tradespace.tooltip"/>
                             </tooltip>
