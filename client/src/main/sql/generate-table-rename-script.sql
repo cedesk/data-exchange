@@ -11,7 +11,7 @@ FROM
 WHERE
   td.table_schema = 'cedesk_dev'
   AND td.table_type = 'BASE TABLE'
-  AND tr.table_schema = 'cedesk_repo'
+  AND tr.table_schema = 'cedesk_prod'
   AND tr.table_type = 'BASE TABLE';
 
 ## --------------------------------------------------------

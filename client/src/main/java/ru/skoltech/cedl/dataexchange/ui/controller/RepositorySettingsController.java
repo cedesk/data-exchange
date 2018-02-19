@@ -236,7 +236,7 @@ public class RepositorySettingsController implements Initializable, Displayable,
 
     private boolean testConnection() {
         String repositoryHost = repositoryHostTextField.getText();
-        String repositorySchemaName = applicationSettings.getRepositorySchemaName();
+        String repositorySchemaName = repositorySchemaNameTextField.getText();
         String repositoryUser = repositoryUserTextField.getText();
         String repositoryPassword = repositoryPasswordTextField.getText();
 
