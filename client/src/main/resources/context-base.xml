@@ -49,7 +49,6 @@
         <property name="defaultProjectLastName" value="${default.project.last.name}"/>
         <property name="defaultProjectUseOsUser" value="${default.project.use.os.user}"/>
         <property name="defaultProjectUserName" value="${default.project.user.name}"/>
-        <property name="defaultProjectImportName" value="${default.project.import.name}"/>
         <property name="defaultStudyModelDepth" value="${study.model.depth}"/>
         <property name="repositoryJdbcUrlPattern" value="${repository.jdbc.url.pattern}"/>
         <property name="repositorySchemaVersion" value="${repository.schema.version}"/>

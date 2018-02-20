@@ -817,26 +817,6 @@ public class MainController implements Initializable, Displayable, Closeable {
         return containRemoteDifferences;
     }
 
-    private void importProject(String projectName) {
-        File importFile = null;
-        if (projectName != null && !projectName.isEmpty()) {
-            importFile = new File(applicationSettings.applicationDirectory(), projectName);
-            if (importFile.exists()) {
-                logger.info("Importing " + importFile.getAbsolutePath());
-            } else {
-                logger.info("Missing project to import " + importFile.getAbsolutePath());
-                importFile = null;
-            }
-        } else {
-            logger.error("Missing setting: project.import.name");
-        }
-        if (importFile == null) {
-            // TODO: warn user about replacing current project
-            importFile = Dialogues.chooseImportFile(applicationSettings.applicationDirectory());
-        }
-        this.importProject(importFile);
-    }
-
     private void importProject(File importFile) {
         try {
             String fileExtension = FilenameUtils.getExtension(importFile.getName());
@@ -877,17 +857,12 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     private void loadLastProject() {
-        String projectImportName = applicationSettings.getProjectImportName();
-        if (projectImportName != null && !projectImportName.isEmpty()) {
-            this.importProject(projectImportName);
-        } else if (applicationSettings.isProjectLastAutoload()) {
+        if (applicationSettings.isProjectLastAutoload()) {
             String projectName = applicationSettings.getProjectLastName();
             if (projectName != null && !projectName.isEmpty()) {
                 project.initProject(projectName);
                 this.reloadProject();
-
                 repositoryNewer.addListener(repositoryNewerListener);
-                //diffButton.disableProperty().bind(repositoryNewer.not());
             } else {
                 Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
                 if (choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {
