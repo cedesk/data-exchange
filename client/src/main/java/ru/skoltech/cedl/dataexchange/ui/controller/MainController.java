@@ -531,6 +531,14 @@ public class MainController implements Initializable, Displayable, Closeable {
         ViewBuilder projectSettingsViewBuilder = guiService.createViewBuilder(resources.getString("project_settings.title"), Views.PROJECT_SETTINGS_VIEW);
         projectSettingsViewBuilder.ownerWindow(ownerStage);
         projectSettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        projectSettingsViewBuilder.showAndWait();
+        updateView();
+    }
+
+    public void openUserSettingsDialog() {
+        ViewBuilder projectSettingsViewBuilder = guiService.createViewBuilder(resources.getString("user_settings.title"), Views.USER_SETTINGS_VIEW);
+        projectSettingsViewBuilder.ownerWindow(ownerStage);
+        projectSettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
         projectSettingsViewBuilder.closeEventHandler(event -> {
             if (!project.checkUser()) {
                 this.displayInvalidUserDialog();

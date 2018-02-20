@@ -206,8 +206,13 @@
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ProjectSettingsController">
         <property name="project" ref="project"/>
         <property name="applicationSettings" ref="applicationSettings"/>
+    </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserSettingsController">
+        <property name="applicationSettings" ref="applicationSettings"/>
         <property name="userService" ref="userService"/>
     </bean>
+
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UnitChooseController" scope="prototype"/>
 

@@ -32,7 +32,6 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
-import ru.skoltech.cedl.dataexchange.service.UserService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
@@ -62,17 +61,12 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
     @FXML
     private CheckBox saveEnabledCheckBox;
     @FXML
-    private CheckBox projectUseOsUserCheckBox;
-    @FXML
-    private TextField projectUserNameText;
-    @FXML
     private CheckBox projectLastAutoloadCheckBox;
     @FXML
     private Button saveButton;
 
     private ApplicationSettings applicationSettings;
     private Project project;
-    private UserService userService;
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
     private Stage ownerStage;
@@ -83,10 +77,6 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public void setUserService(UserService userService) {
-        this.userService = userService;
     }
 
     public void cancel() {
@@ -157,24 +147,15 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
 
         StudySettings studySettings = studySettings();
         boolean saveEnabled = studySettings == null || studySettings.getSyncEnabled();
-        boolean projectUseOsUser = applicationSettings.isProjectUseOsUser();
-        String projectUserName = applicationSettings.getProjectUserName();
         boolean projectLastAutoload = applicationSettings.isProjectLastAutoload();
 
         ChangeListener<Object> changeListener = (observable, oldValue, newValue) ->
-                changed.setValue(parametersChanged(saveEnabled, projectUseOsUser, projectUserName, projectLastAutoload));
+                changed.setValue(parametersChanged(saveEnabled, projectLastAutoload));
 
         teamSettingsPane.setDisable(!project.checkAdminUser());
 
         saveEnabledCheckBox.setSelected(saveEnabled);
         saveEnabledCheckBox.selectedProperty().addListener(changeListener);
-
-        projectUseOsUserCheckBox.setSelected(projectUseOsUser);
-        projectUseOsUserCheckBox.selectedProperty().addListener(changeListener);
-
-        projectUserNameText.disableProperty().bind(projectUseOsUserCheckBox.selectedProperty());
-        projectUserNameText.setText(projectUserName);
-        projectUserNameText.textProperty().addListener(changeListener);
 
         projectLastAutoloadCheckBox.setSelected(projectLastAutoload);
         projectLastAutoloadCheckBox.selectedProperty().addListener(changeListener);
@@ -189,8 +170,6 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
         }
 
         boolean saveEnabled = saveEnabledCheckBox.isSelected();
-        boolean projectUseOsUser = projectUseOsUserCheckBox.isSelected();
-        String projectUserName = projectUserNameText.getText();
         boolean projectLastAutoload = projectLastAutoloadCheckBox.isSelected();
 
         StudySettings studySettings = studySettings();
@@ -199,43 +178,22 @@ public class ProjectSettingsController implements Initializable, Displayable, Cl
             studySettings.setSyncEnabled(saveEnabled);
             if (oldSaveEnabled != saveEnabled) {
                 project.isSyncEnabledProperty().setValue(saveEnabled);
-                project.markStudyModified();
+                project.markStudyModified(); // TODO
             }
             logger.info(studySettings);
         }
 
         applicationSettings.storeProjectLastAutoload(projectLastAutoload);
-        applicationSettings.storeProjectUseOsUser(projectUseOsUser);
-
-        String userName;
-        if (projectUseOsUser) {
-            applicationSettings.storeProjectUserName(null);
-            userName = applicationSettings.getDefaultProjectUserName(); // get default value
-        } else {
-            userName = projectUserName;
-        }
-        boolean validUser = userService.checkUser(userName);
-        logger.info("using user: '" + userName + "', valid: " + validUser);
-        if (validUser) {
-            applicationSettings.storeProjectUserName(userName);
-        } else {
-            Dialogues.showError("Repository authentication failed!", "Please verify the study user name to be used for the projects.");
-        }
         applicationSettings.save();
 
         logger.info("saved");
         this.close();
     }
 
-    private boolean parametersChanged(boolean saveEnabled, boolean projectUseOsUser,
-                                      String projectUserName, boolean projectLastAutoload) {
+    private boolean parametersChanged(boolean saveEnabled, boolean projectLastAutoload) {
         boolean newSaveEnabled = saveEnabledCheckBox.isSelected();
-        boolean newProjectUseOsUser = projectUseOsUserCheckBox.isSelected();
-        String newProjectUserName = projectUserNameText.getText();
         boolean newProjectLastAutoload = projectLastAutoloadCheckBox.isSelected();
         return saveEnabled != newSaveEnabled
-                || projectUseOsUser != newProjectUseOsUser
-                || !projectUserName.equals(newProjectUserName)
                 || projectLastAutoload != newProjectLastAutoload;
     }
 
