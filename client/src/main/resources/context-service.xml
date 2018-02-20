@@ -53,7 +53,7 @@
         <property name="userService" ref="userService"/>
     </bean>
 
-    <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UnitManagementServiceImpl">
+    <bean id="unitService" class="ru.skoltech.cedl.dataexchange.service.impl.UnitServiceImpl">
         <property name="fileStorageService" ref="fileStorageService"/>
     </bean>
 

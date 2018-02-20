@@ -435,7 +435,6 @@ public class MainController implements Initializable, Displayable, Closeable {
             if (builder.adjustsSubsystems()) {
                 builder.subsystemNames(requestSubsystemNames());
             }
-            builder.unitManagement(project.getUnitManagement());
             SystemModel systemModel = builder.build(projectName);
             project.createStudy(systemModel);
             statusLogger.info("Successfully created new study: " + projectName);

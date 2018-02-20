@@ -26,30 +26,33 @@ import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.unit.Prefix;
+import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.DisciplineSubSystem;
 import ru.skoltech.cedl.dataexchange.entity.user.UserDiscipline;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.repository.jpa.PrefixRepository;
+import ru.skoltech.cedl.dataexchange.repository.jpa.QuantityKindRepository;
+import ru.skoltech.cedl.dataexchange.repository.jpa.UnitRepository;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
-import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
+import ru.skoltech.cedl.dataexchange.service.UnitService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 /**
@@ -57,17 +60,25 @@ import static org.junit.Assert.*;
  */
 public class ExportImportTest extends AbstractApplicationContextTest {
 
+    private PrefixRepository prefixRepository;
+    private UnitRepository unitRepository;
+    private QuantityKindRepository quantityKindRepository;
+
     private SystemBuilder systemBuilder;
     private FileStorageService fileStorageService;
     private ExternalModelService externalModelService;
-    private UnitManagementService unitManagementService;
+    private UnitService unitService;
 
     private File excelAttachmentFile, csvAttachmentFile;
     private Study originalStudy;
     private ExternalModel excelExternalModel, csvExternalModel;
 
     @Before
-    public void setup() throws IOException, NoSuchFieldException, IllegalAccessException, URISyntaxException, ExternalModelException {
+    public void setup() throws URISyntaxException, ExternalModelException {
+        prefixRepository = context.getBean(PrefixRepository.class);
+        unitRepository = context.getBean(UnitRepository.class);
+        quantityKindRepository = context.getBean(QuantityKindRepository.class);
+
         excelAttachmentFile = new File(ExportImportTest.class.getResource("/attachment.xls").toURI());
         csvAttachmentFile = new File(ExportImportTest.class.getResource("/attachment.csv").toURI());
 
@@ -75,7 +86,7 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         systemBuilder.modelDepth(1);
         fileStorageService = context.getBean(FileStorageService.class);
         externalModelService = context.getBean(ExternalModelService.class);
-        unitManagementService = context.getBean(UnitManagementService.class);
+        unitService = context.getBean(UnitService.class);
         UserRoleManagementService userRoleManagementService = context.getBean(UserRoleManagementService.class);
 
         systemBuilder.modelDepth(2);
@@ -125,7 +136,7 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testExportImportStudy() throws IOException, ExternalModelException {
+    public void testExportImportStudy() throws IOException {
         File file = new File("target", "dummy-study.xml");
         fileStorageService.exportStudy(originalStudy, file);
         Study importedStudy = fileStorageService.importStudy(file);
@@ -244,18 +255,18 @@ public class ExportImportTest extends AbstractApplicationContextTest {
 
     @Test
     public void testExportImportUnitManagement() throws IOException {
-        UnitManagement unitManagement = unitManagementService.loadDefaultUnitManagement();
-        File unitManagementFile = new File("target", "dummy-unit-management.xml");
-        fileStorageService.exportUnitManagement(unitManagement, unitManagementFile);
-        try (InputStream inputStream = new FileInputStream(unitManagementFile)) {
-            UnitManagement unitManagementImported = fileStorageService.importUnitManagement(inputStream);
-            assertEquals(unitManagement, unitManagementImported);
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail("Thrown exception: " + e.getMessage());
-        } finally {
-            unitManagementFile.deleteOnExit();
-        }
+        unitService.createDefaultUnits();
+        File unitManagementFile = new File("target/test-classes", "dummy-unit-management.xml");
+        fileStorageService.exportUnits(unitManagementFile);
+
+        List<Prefix> importedPrefixes = fileStorageService.importPrefixes("dummy-unit-management.xml");
+        List<Unit> importedUnits = fileStorageService.importUnits("dummy-unit-management.xml");
+        List<QuantityKind> importedQuantityKinds = fileStorageService.importQuantityKinds("dummy-unit-management.xml");
+
+        assertThat(importedPrefixes, containsInAnyOrder(prefixRepository.findAll().toArray()));
+        assertThat(importedUnits, containsInAnyOrder(unitRepository.findAll().toArray()));
+        assertThat(importedQuantityKinds, containsInAnyOrder(quantityKindRepository.findAll().toArray()));
+        unitManagementFile.deleteOnExit();
     }
 
     @Test

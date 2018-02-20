@@ -14,49 +14,34 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.entity.unit;
+package ru.skoltech.cedl.dataexchange.structure.adapters;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import ru.skoltech.cedl.dataexchange.entity.unit.Prefix;
+import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
+import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 
-import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Loosely based on Library for Quantity Kinds and Units
- * <a href="http://www.w3.org/2005/Incubator/ssn/ssnx/qu/qu">http://www.w3.org/2005/Incubator/ssn/ssnx/qu/qu</a>
- * and QUDT - Quantities, Units, Dimensions and Data Types Ontologies
- * <a href="http://qudt.org/">http://qudt.org/</a>
- * <br/>
- * Created by D.Knoll on 28.08.2015.
- */
-@Entity
-@XmlRootElement
+@XmlRootElement(name = "unitManagement")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class UnitManagement {
+public class UnitWrapper {
 
-    @Id
-    @Column(name = "id")
     @XmlTransient
     private long id;
 
-    @OneToMany(targetEntity = Prefix.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "um_id", referencedColumnName = "id")
     @Fetch(FetchMode.SELECT)
     @XmlElement(name = "prefix")
     private List<Prefix> prefixes = new LinkedList<>();
 
-    @OneToMany(targetEntity = Unit.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "um_id", referencedColumnName = "id")
     @Fetch(FetchMode.SELECT)
     @XmlElement(name = "unit")
     private List<Unit> units = new LinkedList<>();
 
-    @OneToMany(targetEntity = QuantityKind.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "um_id", referencedColumnName = "id")
     @Fetch(FetchMode.SELECT)
     @XmlElement(name = "quantityKind")
     private List<QuantityKind> quantityKinds = new LinkedList<>();
@@ -98,7 +83,7 @@ public class UnitManagement {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UnitManagement that = (UnitManagement) o;
+        UnitWrapper that = (UnitWrapper) o;
 
         return Arrays.equals(prefixes.toArray(), that.prefixes.toArray())
                 && Arrays.equals(units.toArray(), that.units.toArray())
@@ -115,7 +100,7 @@ public class UnitManagement {
 
     @Override
     public String toString() {
-        return "UnitManagement{" +
+        return "UnitWrapper{" +
                 "prefixes=" + prefixes +
                 ", units=" + units +
                 ", quantityKinds=" + quantityKinds +

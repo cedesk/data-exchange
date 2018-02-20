@@ -16,27 +16,29 @@
 
 package ru.skoltech.cedl.dataexchange.structure.adapters;
 
-import org.springframework.context.ApplicationContext;
-import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
-import ru.skoltech.cedl.dataexchange.service.UnitService;
+import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
+import ru.skoltech.cedl.dataexchange.repository.jpa.QuantityKindRepository;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Created by D.Knoll on 29.08.2015.
  */
-public class UnitAdapter extends XmlAdapter<String, Unit> {
-    @Override
-    public String marshal(Unit unit) throws Exception {
-        return unit != null ? unit.getName() : "";
+public class QuantityKindAdapter extends XmlAdapter<String, QuantityKind> {
+
+    private QuantityKindRepository quantityKindRepository;
+
+    public QuantityKindAdapter(QuantityKindRepository quantityKindRepository) {
+        this.quantityKindRepository = quantityKindRepository;
     }
 
     @Override
-    public Unit unmarshal(String unitStr) throws Exception {
-        // TODO: rewrite for proper injection
-        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
-        UnitService unitService = context.getBean(UnitService.class);
-        return unitService.findUnitByNameOrSymbol(unitStr);
+    public String marshal(QuantityKind quantityKind) {
+        return quantityKind != null ? quantityKind.getName() : "";
+    }
+
+    @Override
+    public QuantityKind unmarshal(String quantityKindStr) {
+        return quantityKindRepository.findByName(quantityKindStr);
     }
 }

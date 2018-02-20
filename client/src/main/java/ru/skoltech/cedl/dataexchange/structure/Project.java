@@ -30,7 +30,6 @@ import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
@@ -70,7 +69,7 @@ public class Project {
     private StudyService studyService;
     private UserService userService;
     private UserRoleManagementService userRoleManagementService;
-    private UnitManagementService unitManagementService;
+    private UnitService unitService;
     private ActionLogger actionLogger;
     private AsyncTaskExecutor executor;
 
@@ -80,8 +79,6 @@ public class Project {
     private Study repositoryStudy;
 
     private AtomicInteger latestRevisionNumber = new AtomicInteger();
-
-    private UnitManagement unitManagement;
 
     private BooleanProperty isSyncEnabledProperty = new SimpleBooleanProperty(false);
     private BooleanProperty isStudyInRepositoryProperty = new SimpleBooleanProperty(false);
@@ -125,8 +122,8 @@ public class Project {
         this.studyService = studyService;
     }
 
-    public void setUnitManagementService(UnitManagementService unitManagementService) {
-        this.unitManagementService = unitManagementService;
+    public void setUnitService(UnitService unitService) {
+        this.unitService = unitService;
     }
 
     public void setUserService(UserService userService) {
@@ -139,7 +136,7 @@ public class Project {
 
     public void init() {
         this.userService.createDefaultUsers();
-        this.loadUnitManagement();
+        this.unitService.createDefaultUnits();
         this.externalModelFileWatcher.addObserver((o, arg) -> {
             ExternalModel externalModel = (ExternalModel) arg;
             actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
@@ -443,21 +440,6 @@ public class Project {
     public List<Discipline> getCurrentUserDisciplines() {
         UserRoleManagement userRoleManagement = this.getUserRoleManagement();
         return userRoleManagementService.obtainDisciplinesOfUser(userRoleManagement, getUser());
-    }
-
-    public UnitManagement getUnitManagement() {
-        return unitManagement;
-    }
-
-    private void loadUnitManagement() {
-        UnitManagement unitManagement = unitManagementService.findUnitManagement();
-        if (unitManagement != null) {
-            this.unitManagement = unitManagement;
-            return;
-        }
-        logger.error("Error loading unit management. recreating new unit management.");
-        unitManagement = unitManagementService.loadDefaultUnitManagement();
-        this.unitManagement = unitManagementService.saveUnitManagement(unitManagement);
     }
 
     @Override

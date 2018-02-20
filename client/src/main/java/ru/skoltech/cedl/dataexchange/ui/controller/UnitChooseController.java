@@ -32,7 +32,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.service.UnitService;
 
 import java.net.URL;
 import java.util.Comparator;
@@ -54,24 +54,28 @@ public class UnitChooseController implements Initializable, Displayable, Applica
     @FXML
     private Button chooseButton;
 
+    private UnitService unitService;
+
     private Unit currentUnit;
     private List<Unit> units;
     private ListProperty<Unit> unitListProperty = new SimpleListProperty<>(FXCollections.emptyObservableList());
-    private UnitManagement unitManagement;
     private EventHandler<Event> applyEventHandler;
     private Stage ownerStage;
 
     private UnitChooseController() {
     }
 
-    public UnitChooseController(Unit currentUnit, UnitManagement unitManagement) {
+    public UnitChooseController(Unit currentUnit) {
         this.currentUnit = currentUnit;
-        this.unitManagement = unitManagement;
+    }
+
+    public void setUnitService(UnitService unitService) {
+        this.unitService = unitService;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        units = unitManagement.getUnits();
+        units = unitService.findAllUnits();
         units.sort(Comparator.comparing(Unit::asText));
 
         filterTextField.textProperty().addListener((observable, oldValue, newValue) -> {

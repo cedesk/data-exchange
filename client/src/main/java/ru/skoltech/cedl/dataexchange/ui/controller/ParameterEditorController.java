@@ -183,7 +183,7 @@ public class ParameterEditorController implements Initializable {
         unitChooseViewBuilder.resizable(false);
         unitChooseViewBuilder.modality(Modality.APPLICATION_MODAL);
         unitChooseViewBuilder.applyEventHandler(event -> this.unitProperty.setValue((Unit)event.getSource()));
-        unitChooseViewBuilder.showAndWait(this.unitProperty.getValue(), project.getUnitManagement());
+        unitChooseViewBuilder.showAndWait(this.unitProperty.getValue());
     }
 
     public void chooseParameter() {

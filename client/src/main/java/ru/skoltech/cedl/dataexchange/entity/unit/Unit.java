@@ -16,8 +16,11 @@
 
 package ru.skoltech.cedl.dataexchange.entity.unit;
 
+import ru.skoltech.cedl.dataexchange.structure.adapters.QuantityKindAdapter;
+
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Created by D.Knoll on 28.08.2015.
@@ -42,7 +45,8 @@ public class Unit {
     private String description;
 
     @ManyToOne(targetEntity = QuantityKind.class)
-    @XmlTransient
+    @XmlAttribute
+    @XmlJavaTypeAdapter(value = QuantityKindAdapter.class)
     private QuantityKind quantityKind;
 
     @Transient

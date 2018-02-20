@@ -36,9 +36,6 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
     private static int elementCnt = 1;
     private static int instrumentCnt = 1;
 
-    private Unit massUnit = retrieveUnit("kg");
-    private Unit powerUnit = retrieveUnit("W");
-
     @Override
     public boolean adjustsModelDepth() {
         return true;
@@ -117,6 +114,9 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
     }
 
     private SubSystemModel createSubSystem(String name, int level) {
+        Unit massUnit = retrieveUnit("kg");
+        Unit powerUnit = retrieveUnit("W");
+
         SubSystemModel subSystem = new SubSystemModel(name);
         subSystem.addParameter(createMassParameter(massUnit));
         subSystem.addParameter(createPowerParameter(powerUnit));
@@ -128,6 +128,9 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
     }
 
     private SystemModel createSystemModel(int modelDepth) {
+        Unit massUnit = retrieveUnit("kg");
+        Unit powerUnit = retrieveUnit("W");
+
         if (modelDepth < MIN_MODEL_DEPTH || modelDepth > MAX_MODEL_DEPTH)
             throw new IllegalArgumentException("model depth must be >= " + MIN_MODEL_DEPTH
                     + " and <=" + MAX_MODEL_DEPTH);

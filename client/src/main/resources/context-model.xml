@@ -40,7 +40,7 @@
         <property name="studyService" ref="studyService"/>
         <property name="userService" ref="userService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
-        <property name="unitManagementService" ref="unitManagementService"/>
+        <property name="unitService" ref="unitService"/>
         <property name="executor" ref="executor"/>
         <property name="actionLogger" ref="actionLogger"/>
     </bean>
@@ -63,7 +63,7 @@
     </bean>
 
     <bean id="systemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SystemBuilder" abstract="true">
-        <property name="unitManagementService" ref="unitManagementService"/>
+        <property name="unitService" ref="unitService"/>
     </bean>
 
     <bean id="simpleSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SimpleSystemBuilder"
