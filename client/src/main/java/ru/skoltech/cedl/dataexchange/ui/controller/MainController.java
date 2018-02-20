@@ -38,6 +38,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.Glyph;
 import org.springframework.transaction.CannotCreateTransactionException;
@@ -338,7 +339,9 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void importProject() {
         File importFile = Dialogues.chooseImportFile(applicationSettings.applicationDirectory());
-        this.importProject(importFile);
+        if (importFile != null) {
+            this.importProject(importFile);
+        }
     }
 
     public void init() {
@@ -525,6 +528,14 @@ public class MainController implements Initializable, Displayable, Closeable {
 
     public void openProjectSettingsDialog() {
         ViewBuilder projectSettingsViewBuilder = guiService.createViewBuilder(resources.getString("project_settings.title"), Views.PROJECT_SETTINGS_VIEW);
+        projectSettingsViewBuilder.ownerWindow(ownerStage);
+        projectSettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
+        projectSettingsViewBuilder.showAndWait();
+        updateView();
+    }
+
+    public void openUserSettingsDialog() {
+        ViewBuilder projectSettingsViewBuilder = guiService.createViewBuilder(resources.getString("user_settings.title"), Views.USER_SETTINGS_VIEW);
         projectSettingsViewBuilder.ownerWindow(ownerStage);
         projectSettingsViewBuilder.modality(Modality.APPLICATION_MODAL);
         projectSettingsViewBuilder.closeEventHandler(event -> {
@@ -813,78 +824,52 @@ public class MainController implements Initializable, Displayable, Closeable {
         return containRemoteDifferences;
     }
 
-    private void importProject(String projectName) {
-        File importFile = null;
-        if (projectName != null && !projectName.isEmpty()) {
-            importFile = new File(applicationSettings.applicationDirectory(), projectName);
-            if (importFile.exists()) {
-                logger.info("Importing " + importFile.getAbsolutePath());
-            } else {
-                logger.info("Missing project to import " + importFile.getAbsolutePath());
-                importFile = null;
-            }
-        } else {
-            logger.error("Missing setting: project.import.name");
-        }
-        if (importFile == null) {
-            // TODO: warn user about replacing current project
-            importFile = Dialogues.chooseImportFile(applicationSettings.applicationDirectory());
-        }
-        this.importProject(importFile);
-    }
-
     private void importProject(File importFile) {
-        if (importFile != null) {
-            // TODO: double check if it is necessary in combination with Project.isStudyInRepository()
-            try {
-                try {
-                    Study study = fileStorageService.importStudyFromZip(importFile);
-                    List<User> detectedUsers = study.getUserRoleManagement().getUserDisciplines()
-                            .stream().map(UserDiscipline::getUser).collect(Collectors.toList());
-                    List<User> users = userService.findAllUsers();
-                    List<User> newUsers = detectedUsers.stream()
-                            .filter(du -> users.stream().noneMatch(u -> du.getUserName().equals(u.getUserName())))
-                            .collect(Collectors.toList());
+        try {
+            String fileExtension = FilenameUtils.getExtension(importFile.getName());
+            if ("zip".equalsIgnoreCase(fileExtension)) {
+                Study study = fileStorageService.importStudyFromZip(importFile);
+                // find users referenced by the study, but not present in the user management
+                // TODO: allow this only if admin
+                List<User> detectedUsers = study.getUserRoleManagement().getUserDisciplines()
+                        .stream().map(UserDiscipline::getUser).collect(Collectors.toList());
+                List<User> users = userService.findAllUsers();
+                List<User> newUsers = detectedUsers.stream()
+                        .filter(du -> users.stream().noneMatch(u -> du.getUserName().equals(u.getUserName())))
+                        .collect(Collectors.toList());
 
-                    if (!newUsers.isEmpty()) {
-                        Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("New users detected",
-                                "Some of the users in the imported are not registered in the current database.\n" +
-                                        "Do you want to create them?");
-                        if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
-                            newUsers.forEach(user -> userService.createUser(user.getUserName(), user.getFullName()));
-                            String newUsersString = newUsers.stream().map(User::getFullName).collect(Collectors.joining(","));
-                            logger.debug("New users have been added: " + newUsersString);
-                        }
+                if (!newUsers.isEmpty()) {
+                    Optional<ButtonType> chooseYesNo = Dialogues.chooseYesNo("New users detected",
+                            "Some of the users in the imported are not registered in the current database.\n" +
+                                    "Do you want to create them?");
+                    if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
+                        newUsers.forEach(user -> userService.createUser(user.getUserName(), user.getFullName()));
+                        String newUsersString = newUsers.stream().map(User::getFullName).collect(Collectors.joining(","));
+                        logger.debug("New users have been added: " + newUsersString);
                     }
-                    project.importStudy(study);
-                } catch (Exception e) {
-                    SystemModel systemModel = fileStorageService.importSystemModel(importFile);
-                    project.importSystemModel(systemModel);
-                } finally {
-                    updateView();
-                    statusLogger.info("Successfully imported study!");
-                    actionLogger.log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName());
                 }
-            } catch (IOException e) {
-                logger.error("Error importing model from file.", e);
+                project.importStudy(study);
+            } else {
+                SystemModel systemModel = fileStorageService.importSystemModel(importFile);
+                project.importSystemModel(systemModel);
             }
-        } else {
-            logger.info("User aborted import file selection.");
+            statusLogger.info("Successfully imported study!");
+            actionLogger.log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName() + ", successful");
+            updateView();
+        } catch (IOException e) {
+            logger.error("Error importing model from file.", e);
+            statusLogger.error("Error importing study!");
+            actionLogger.log(ActionLogger.ActionType.PROJECT_IMPORT, project.getProjectName() + ", unsuccessful");
         }
     }
 
     private void loadLastProject() {
-        String projectImportName = applicationSettings.getProjectImportName();
-        if (projectImportName != null && !projectImportName.isEmpty()) {
-            this.importProject(projectImportName);
-        } else if (applicationSettings.isProjectLastAutoload()) {
+        if (applicationSettings.isProjectLastAutoload()) {
             String projectName = applicationSettings.getProjectLastName();
             if (projectName != null && !projectName.isEmpty()) {
                 project.initProject(projectName);
                 this.reloadProject();
-
                 repositoryNewer.addListener(repositoryNewerListener);
-                //diffButton.disableProperty().bind(repositoryNewer.not());
             } else {
                 Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
                 if (choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {

@@ -243,6 +243,7 @@ public class Project {
     }
 
     public void importStudy(Study study) {
+        this.setupStudySettings(study);
         this.createStudy(study);
         this.reinitializeUniqueIdentifiers(study.getSystemModel());
     }
@@ -361,7 +362,7 @@ public class Project {
     }
 
     /**
-     * Mark current stydy as modified locally.
+     * Mark current study as modified locally.
      * Additionally an array of revised entities can be provided to mark their priorities over remote changes.
      *
      * @param revisedEntities an array of revised entities

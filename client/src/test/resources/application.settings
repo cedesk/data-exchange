@@ -27,5 +27,4 @@ project.last.autoload=true
 project.last.name=defaultProject
 project.use.os.user=false
 project.user.name=admin
-project.import.name=
 study.model.depth=2

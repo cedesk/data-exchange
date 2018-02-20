@@ -22,6 +22,7 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
@@ -322,16 +323,28 @@ public class ParameterLinkRegistry {
         } else { // if other node, consider all parameters of subnodes
             it = new ParameterTreeIterator(fromVertex);
         }
+        logger.debug("from: " + fromVertex.getName() + ", to: " + toVertex.getName());
         while (it.hasNext()) {
             ParameterModel pm = it.next();
             if (pm.getValueSource() == ParameterValueSource.LINK &&
                     pm.getValueLink() != null && pm.getValueLink().getParent() != null &&
                     pm.getValueLink().getParent().getUuid().equals(toVertex.getUuid())) {
+                logger.debug("\t" + pm.getNodePath() + " -> " + pm.getValueLink().getNodePath());
                 sources.add(pm);
             }
+            if (pm.getValueSource() == ParameterValueSource.CALCULATION && pm.getCalculation() != null) {
+                for (Argument argument : pm.getCalculation().getArguments()) {
+                    if (argument instanceof Argument.Parameter) {
+                        ParameterModel sourcePM = ((Argument.Parameter) argument).getLink();
+                        if (sourcePM != null && sourcePM.getParent() != null &&
+                                sourcePM.getParent().getUuid().equals(toVertex.getUuid())) {
+                            logger.debug("\t" + pm.getNodePath() + " -> " + sourcePM.getNodePath());
+                            sources.add(pm);
+                        }
+                    }
+                }
+            }
         }
-        logger.debug("from: " + fromVertex.getName() + ", to: " + toVertex.getName());
-        sources.forEach(parameterModel -> logger.debug("\t" + parameterModel.getNodePath() + " -> " + parameterModel.getValueLink().getNodePath()));
         return sources;
     }
 

@@ -58,6 +58,7 @@
                             <CheckMenuItem fx:id="libraryViewMenu" text="%component_library.title"/>
                             <SeparatorMenuItem/>
                             <MenuItem onAction="#openProjectSettingsDialog" text="%project_settings.title"/>
+                            <MenuItem onAction="#openUserSettingsDialog" text="%user_settings.title"/>
                             <MenuItem onAction="#openRepositorySettingsDialog" text="%repository_settings.title"/>
                         </Menu>
                         <Menu fx:id="viewMenu" text="%main.menu.view">
