@@ -286,7 +286,7 @@ public class ParameterEditorController implements Initializable {
         ParameterModel valueLinkParameter = valueSource == LINK ? this.valueLinkParameter : null;
         Calculation calculation = valueSource == CALCULATION ? this.calculation : null;
         Double value = valueSource == MANUAL ? Double.valueOf(valueText.getText()) :
-                valueSource == LINK ? this.valueLinkParameter.getEffectiveValue() : parameterModel.getValue();
+                valueSource == LINK && valueLinkParameter != null ? this.valueLinkParameter.getEffectiveValue() : parameterModel.getValue();
         boolean isReferenceValueOverridden = valueSource != MANUAL && isReferenceValueOverriddenCheckbox.isSelected();
         Double overrideValue = isReferenceValueOverridden ? Double.valueOf(valueOverrideText.getText()) : null;
         Boolean isExported = isExportedCheckbox.isSelected()
@@ -369,6 +369,9 @@ public class ParameterEditorController implements Initializable {
                 parameterModel.getParent().getParameterMap().containsKey(nameText.getText())) {
             Dialogues.showError("Duplicate parameter name", "There is already a parameter named like that!");
             return;
+        }
+        if (valueSourceChoiceBox.getValue() == LINK && valueLinkParameter == null) {
+            Dialogues.showWarning("Empty link", "No link has been specified!");
         }
         if (valueSourceChoiceBox.getValue() == REFERENCE && valueReference == null) {
             Dialogues.showWarning("Empty reference", "No reference has been specified!");
