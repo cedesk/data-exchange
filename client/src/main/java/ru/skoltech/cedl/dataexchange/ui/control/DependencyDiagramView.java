@@ -204,7 +204,10 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         if (pm.getIsReferenceValueOverridden()) {
             return ConnectionState.OVERRIDDEN;
         }
-        if (!Precision.equals(pm.getValue(), pm.getValueLink().getEffectiveValue(), 2)) {
+        if (pm.getValueLink() != null && !Precision.equals(pm.getValue(), pm.getValueLink().getEffectiveValue(), 2)) {
+            return ConnectionState.NOT_PROPAGATED;
+        }
+        if (pm.getCalculation() != null && !Precision.equals(pm.getValue(), pm.getCalculation().evaluate(), 2)) {
             return ConnectionState.NOT_PROPAGATED;
         }
         return ConnectionState.CONSISTENT;
