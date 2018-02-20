@@ -188,15 +188,13 @@
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UnitManagementController">
-        <property name="project" ref="project"/>
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UnitController">
         <property name="guiService" ref="guiService"/>
-        <property name="statusLogger" ref="statusLogger"/>
-        <property name="unitManagementService" ref="unitManagementService"/>
+        <property name="unitService" ref="unitService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.AddUnitController" scope="prototype">
-        <property name="project" ref="project"/>
+        <property name="unitService" ref="unitService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.RevisionHistoryController" scope="prototype">

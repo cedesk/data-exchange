@@ -22,7 +22,7 @@
 <?import org.controlsfx.glyphfont.Glyph?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="unitManagementPane" prefHeight="600.0" prefWidth="400.0"
             stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.121"
-            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.UnitControllerController">
+            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.UnitController">
     <TabPane prefHeight="600.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0"
              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <Tab text="Units">
