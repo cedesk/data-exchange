@@ -246,6 +246,7 @@ public class Project {
     }
 
     public void importStudy(Study study) {
+        this.setupStudySettings(study);
         this.createStudy(study);
         this.reinitializeUniqueIdentifiers(study.getSystemModel());
     }
