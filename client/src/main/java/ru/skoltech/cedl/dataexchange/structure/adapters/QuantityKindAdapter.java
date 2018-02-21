@@ -16,21 +16,21 @@
 
 package ru.skoltech.cedl.dataexchange.structure.adapters;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
 import ru.skoltech.cedl.dataexchange.repository.jpa.QuantityKindRepository;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Created by D.Knoll on 29.08.2015.
+ * {@link QuantityKind} adapter for JAXB marshalling and unmarshalling.
+ *
+ * Created by Nikolay Groshkov on 20-Feb-18.
  */
 public class QuantityKindAdapter extends XmlAdapter<String, QuantityKind> {
 
+    @Autowired
     private QuantityKindRepository quantityKindRepository;
-
-    public QuantityKindAdapter(QuantityKindRepository quantityKindRepository) {
-        this.quantityKindRepository = quantityKindRepository;
-    }
 
     @Override
     public String marshal(QuantityKind quantityKind) {

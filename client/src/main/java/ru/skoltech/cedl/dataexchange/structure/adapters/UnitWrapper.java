@@ -27,6 +27,11 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Wrapper of {@link Prefix}es, {@link Unit}s and {@link QuantityKind}s for JAXB marshalling.
+ * <p>
+ * Created by Nikolay Groshkov on 20-Feb-18.
+ */
 @XmlRootElement(name = "unitManagement")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class UnitWrapper {

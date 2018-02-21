@@ -29,7 +29,6 @@ import ru.skoltech.cedl.dataexchange.service.UnitService;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link UnitService}.
@@ -104,19 +103,6 @@ public class UnitServiceImpl implements UnitService {
     @Override
     public Unit findUnitByNameOrSymbol(String nameOrSymbol) {
         return unitRepository.findByNameOrSymbol(nameOrSymbol, nameOrSymbol).stream().findFirst().orElse(null);
-    }
-
-    @Override
-    public Unit findUnitByText(String text) {
-        List<Unit> units = unitRepository.findAll().stream()
-                .filter(u -> text.equals(u.asText()))
-                .collect(Collectors.toList());
-        if (units.isEmpty()) {
-            return null;
-        } else if (units.size() > 1) {
-            logger.warn("unitManagement contains more than one units with same texts: " + text);
-        }
-        return units.get(0);
     }
 
     @Override

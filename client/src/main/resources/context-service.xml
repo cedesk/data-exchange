@@ -44,6 +44,8 @@
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="externalModelService" ref="externalModelService"/>
         <property name="userService" ref="userService"/>
+        <property name="unitAdapter" ref="unitAdapter"/>
+        <property name="quantityKindAdapter" ref="quantityKindAdapter"/>
     </bean>
 
     <bean id="userService" class="ru.skoltech.cedl.dataexchange.service.impl.UserServiceImpl"/>
@@ -78,6 +80,11 @@
     <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.service.impl.JsoupServiceImpl"/>
 
     <bean id="directoryWatchService" class="ru.skoltech.cedl.dataexchange.service.impl.SimpleDirectoryWatchService" />
+
+    <!-- adapters -->
+    <bean id="unitAdapter" class="ru.skoltech.cedl.dataexchange.structure.adapters.UnitAdapter"/>
+
+    <bean id="quantityKindAdapter" class="ru.skoltech.cedl.dataexchange.structure.adapters.QuantityKindAdapter"/>
 
     <!-- persistence -->
     <context:annotation-config/>

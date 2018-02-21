@@ -68,7 +68,6 @@ public class UnitServiceTest extends AbstractApplicationContextTest {
         assertThat(unitService.findAllUnits(), not(hasItem(hasProperty("symbol", is("symbol")))));
         assertNull(unitService.findUnitByNameOrSymbol("unit"));
         assertNull(unitService.findUnitByNameOrSymbol("symbol"));
-        assertNull(unitService.findUnitByText("unit [symbol]"));
 
         Unit newUnit = new Unit();
         newUnit.setName("unit");
@@ -85,15 +84,11 @@ public class UnitServiceTest extends AbstractApplicationContextTest {
         newUnit = unitService.findUnitByNameOrSymbol("symbol");
         assertEquals(unitRepository.findByName("unit"), newUnit);
 
-        newUnit = unitService.findUnitByText("unit [symbol]");
-        assertEquals(unitRepository.findByName("unit"), newUnit);
-
         unitService.deleteUnit(newUnit);
         assertNull(unitRepository.findByName("unit"));
         assertThat(unitService.findAllUnits(), not(hasItem(hasProperty("name", is("unit")))));
         assertNull(unitService.findUnitByNameOrSymbol("unit"));
         assertNull(unitService.findUnitByNameOrSymbol("symbol"));
-        assertNull(unitService.findUnitByText("unit [symbol]"));
     }
 
     @Test

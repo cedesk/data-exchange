@@ -38,6 +38,7 @@ import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.UserService;
 import ru.skoltech.cedl.dataexchange.structure.adapters.QuantityKindAdapter;
+import ru.skoltech.cedl.dataexchange.structure.adapters.UnitAdapter;
 import ru.skoltech.cedl.dataexchange.structure.adapters.UnitWrapper;
 
 import javax.xml.bind.JAXBContext;
@@ -76,6 +77,9 @@ public class FileStorageServiceImpl implements FileStorageService {
     private UserService userService;
     private ExternalModelService externalModelService;
 
+    private UnitAdapter unitAdapter;
+    private QuantityKindAdapter quantityKindAdapter;
+
     @Autowired
     public FileStorageServiceImpl(UnitRepository unitRepository,
                                   QuantityKindRepository quantityKindRepository,
@@ -95,6 +99,14 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     public void setExternalModelService(ExternalModelService externalModelService) {
         this.externalModelService = externalModelService;
+    }
+
+    public void setUnitAdapter(UnitAdapter unitAdapter) {
+        this.unitAdapter = unitAdapter;
+    }
+
+    public void setQuantityKindAdapter(QuantityKindAdapter quantityKindAdapter) {
+        this.quantityKindAdapter = quantityKindAdapter;
     }
 
     @Override
@@ -166,8 +178,9 @@ public class FileStorageServiceImpl implements FileStorageService {
             modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
             JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Unmarshaller u = jc.createUnmarshaller();
-            Study study = (Study) u.unmarshal(inputStream);
+            Unmarshaller unmarshaller = jc.createUnmarshaller();
+            unmarshaller.setAdapter(UnitAdapter.class, unitAdapter);
+            Study study = (Study) unmarshaller.unmarshal(inputStream);
 
             this.postProcessUserRoleManagement(study.getUserRoleManagement());
             this.postProcessStudy(study);
@@ -189,8 +202,9 @@ public class FileStorageServiceImpl implements FileStorageService {
             modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
             JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Unmarshaller u = jc.createUnmarshaller();
-            Study study = (Study) u.unmarshal(inp);
+            Unmarshaller unmarshaller = jc.createUnmarshaller();
+            unmarshaller.setAdapter(UnitAdapter.class, unitAdapter);
+            Study study = (Study) unmarshaller.unmarshal(inp);
 
             File inputFolder = inputFile.getParentFile();
 
@@ -211,8 +225,9 @@ public class FileStorageServiceImpl implements FileStorageService {
             modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
             JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Unmarshaller u = jc.createUnmarshaller();
-            SystemModel systemModel = (SystemModel) u.unmarshal(inp);
+            Unmarshaller unmarshaller = jc.createUnmarshaller();
+            unmarshaller.setAdapter(UnitAdapter.class, unitAdapter);
+            SystemModel systemModel = (SystemModel) unmarshaller.unmarshal(inp);
 
             File inputFolder = inputFile.getParentFile();
 
@@ -251,7 +266,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                         if (elementName.equalsIgnoreCase(localName)) {
                             JAXBContext jc = JAXBContext.newInstance(clazz);
                             Unmarshaller unmarshaller = jc.createUnmarshaller();
-                            unmarshaller.setAdapter(QuantityKindAdapter.class, new QuantityKindAdapter(quantityKindRepository));
+                            unmarshaller.setAdapter(QuantityKindAdapter.class, quantityKindAdapter);
 
                             T entity = unmarshaller.unmarshal(xsr, clazz).getValue();
                             entities.add(entity);
@@ -312,10 +327,11 @@ public class FileStorageServiceImpl implements FileStorageService {
                 modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
                 JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-                Marshaller m = jc.createMarshaller();
-                m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-                m.marshal(study, zos);
+                Marshaller marshaller = jc.createMarshaller();
+                marshaller.setAdapter(UnitAdapter.class, unitAdapter);
+                marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+                marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+                marshaller.marshal(study, zos);
 
                 Iterator<ExternalModel> iterator = study.getSystemModel().externalModelsIterator();
                 Set<String> createdExternalModelPaths = new HashSet<>();
@@ -356,10 +372,11 @@ public class FileStorageServiceImpl implements FileStorageService {
             modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
             JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Marshaller m = jc.createMarshaller();
-            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(study, fos);
+            Marshaller marshaller = jc.createMarshaller();
+            marshaller.setAdapter(UnitAdapter.class, unitAdapter);
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.marshal(study, fos);
         } catch (JAXBException e) {
             throw new IOException("Error writing study to XML file.", e);
         }
@@ -378,10 +395,11 @@ public class FileStorageServiceImpl implements FileStorageService {
             modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
             JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Marshaller m = jc.createMarshaller();
-            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(systemModel, fos);
+            Marshaller marshaller = jc.createMarshaller();
+            marshaller.setAdapter(UnitAdapter.class, unitAdapter);
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.marshal(systemModel, fos);
         } catch (JAXBException e) {
             throw new IOException("Error writing system model to XML file.", e);
         }
@@ -410,10 +428,10 @@ public class FileStorageServiceImpl implements FileStorageService {
 
             JAXBContext jc = JAXBContext.newInstance(UnitWrapper.class, Prefix.class, Unit.class, QuantityKind.class);
 
-            Marshaller m = jc.createMarshaller();
-            m.setAdapter(QuantityKindAdapter.class, new QuantityKindAdapter(quantityKindRepository));
-            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            Marshaller marshaller = jc.createMarshaller();
+            marshaller.setAdapter(QuantityKindAdapter.class, quantityKindAdapter);
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 
             List<Prefix> prefixList = prefixRepository.findAll();
             List<Unit> unitList = unitRepository.findAll();
@@ -423,7 +441,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             unitWrapper.setPrefixes(prefixList);
             unitWrapper.setUnits(unitList);
             unitWrapper.setQuantityKinds(quantityKindList);
-            m.marshal(unitWrapper, fos);
+            marshaller.marshal(unitWrapper, fos);
         } catch (JAXBException e) {
             throw new IOException("Error writing unit management to XML file.", e);
         }

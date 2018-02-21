@@ -17,6 +17,8 @@
 package ru.skoltech.cedl.dataexchange.repository.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
 
 import java.util.List;
@@ -44,5 +46,14 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
      * @return instance of the {@link Unit}
      */
     List<Unit> findByNameOrSymbol(String name, String symbol);
+
+    /**
+     * Retrieve a {@link Unit} which fields in pattern <i>name [symbol]<i/> match passed argument.
+     *
+     * @param text text to test matching
+     * @return instance of the {@link Unit}
+     */
+    @Query("SELECT u FROM Unit u WHERE CONCAT(u.name, ' [', u.symbol, ']') = :text")
+    Unit findByText(@Param("text") String text);
 
 }

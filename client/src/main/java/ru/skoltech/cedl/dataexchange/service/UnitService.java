@@ -55,14 +55,6 @@ public interface UnitService {
     Unit findUnitByNameOrSymbol(String nameOrSymbol);
 
     /**
-     * Retrieve an {@link Unit} with specified text.
-     *
-     * @param text a text of unit to search for
-     * @return instance of {@link Unit} if found, <i>null</i> if opposite
-     */
-    Unit findUnitByText(String text);
-
-    /**
      * Create new unit based on the prototype object.
      *
      * @param unit prototype unit object
