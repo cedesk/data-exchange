@@ -16,6 +16,7 @@
   ~ limitations under the License.
   -->
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
@@ -27,7 +28,7 @@
         <TitledPane fx:id="teamSettingsPane" animated="false" collapsible="false" text="Team-wide settings">
             <GridPane hgap="8.0" vgap="2.0">
                 <columnConstraints>
-                    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" percentWidth="30.0"/>
+                    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" percentWidth="35.0"/>
                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
                 </columnConstraints>
                 <rowConstraints>
@@ -43,20 +44,16 @@
             </GridPane>
         </TitledPane>
         <TitledPane animated="false" collapsible="false" text="Personal settings">
-            <GridPane hgap="8.0" vgap="2.0">
-                <columnConstraints>
-                    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" percentWidth="45.0"/>
-                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
-                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-                </columnConstraints>
-                <rowConstraints>
-                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                </rowConstraints>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Autoload last project on startup"
-                      GridPane.halignment="RIGHT"/>
-                <CheckBox fx:id="projectLastAutoloadCheckBox" graphicTextGap="8.0" mnemonicParsing="false"
-                          GridPane.columnIndex="1"/>
-            </GridPane>
+            <HBox>
+                <children>
+                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Autoload last project on startup">
+                        <HBox.margin>
+                            <Insets right="10.0"/>
+                        </HBox.margin>
+                    </Text>
+                    <CheckBox fx:id="projectLastAutoloadCheckBox" graphicTextGap="8.0" mnemonicParsing="false"/>
+                </children>
+            </HBox>
         </TitledPane>
         <TitledPane animated="false" collapsible="false" text="Project Cache">
             <GridPane hgap="8.0" vgap="2.0">
