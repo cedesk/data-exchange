@@ -186,7 +186,13 @@ public class ParametersController implements Initializable {
                 return new SimpleStringProperty(parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "--");
             }
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                return new SimpleStringProperty(parameterModel.getValueReference() != null ? parameterModel.getValueReference().toString() : "--");
+                if (parameterModel.getImportModel() == null && parameterModel.getImportField() == null) {
+                    return new SimpleStringProperty("--");
+                } else if (parameterModel.getImportModel() == null) {
+                    return new SimpleStringProperty("(empty)");
+                } else {
+                    return new SimpleStringProperty(parameterModel.getImportModel().getName() + ":" + parameterModel.getImportField());
+                }
             }
             return new SimpleStringProperty();
         });

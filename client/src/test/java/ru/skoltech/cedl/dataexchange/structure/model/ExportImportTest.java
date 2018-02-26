@@ -19,7 +19,6 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
@@ -48,7 +47,6 @@ import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -98,17 +96,12 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         originalSystemModel.addExternalModel(excelExternalModel);
         originalSystemModel.addExternalModel(csvExternalModel);
 
-        ExternalModelReference valueModelReference1 = new ExternalModelReference();
-        valueModelReference1.setExternalModel(excelExternalModel);
-        valueModelReference1.setTarget("B3");
-        ExternalModelReference exportModelReference = new ExternalModelReference();
-        exportModelReference.setExternalModel(excelExternalModel);
-        exportModelReference.setTarget("D4");
-
         ParameterModel parameterModel1 = originalSystemModel.getParameters().get(0);
-        parameterModel1.setValueReference(valueModelReference1);
+        parameterModel1.setImportModel(excelExternalModel);
+        parameterModel1.setImportField("B3");
         ParameterModel parameterModel2 = originalSystemModel.getParameters().get(1);
-        parameterModel2.setExportReference(exportModelReference);
+        parameterModel2.setExportModel(excelExternalModel);
+        parameterModel2.setExportField("D4");
 
         String studyName = "studyName";
         originalStudy = new Study();
@@ -203,17 +196,12 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         originalSystemModel.addExternalModel(excelExternalModel);
         originalSystemModel.addExternalModel(csvExternalModel);
 
-        ExternalModelReference valueModelReference1 = new ExternalModelReference();
-        valueModelReference1.setExternalModel(excelExternalModel);
-        valueModelReference1.setTarget("B3");
-        ExternalModelReference exportModelReference = new ExternalModelReference();
-        exportModelReference.setExternalModel(excelExternalModel);
-        exportModelReference.setTarget("D4");
-
         ParameterModel parameterModel1 = originalSystemModel.getParameters().get(0);
-        parameterModel1.setValueReference(valueModelReference1);
+        parameterModel1.setImportModel(excelExternalModel);
+        parameterModel1.setImportField("B3");
         ParameterModel parameterModel2 = originalSystemModel.getParameters().get(1);
-        parameterModel2.setExportReference(exportModelReference);
+        parameterModel2.setExportModel(excelExternalModel);
+        parameterModel2.setExportField("D4");
 
         File file = new File("target", "dummy-system-model.xml");
         fileStorageService.exportSystemModel(originalSystemModel, file);
@@ -229,10 +217,8 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testImportOldSystemModel() throws IOException, URISyntaxException {
-        File file = new File(ExportImportTest.class.getResource("/model-old.xml").toURI());
+    public void testImportOldSystemModel() throws IOException {
         File modelFile = new File("target", "model-old.xml");
-        Files.copy(file.toPath(), modelFile.toPath());
 
         SystemModel systemModel = fileStorageService.importSystemModel(modelFile);
 
@@ -243,7 +229,6 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         assertNotNull(externalModel);
         assertTrue(externalModel instanceof ExcelExternalModel);
         assertTrue(externalModel.state().isInitialized());
-        modelFile.deleteOnExit();
     }
 
     @Test
@@ -270,7 +255,7 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testExportImportUserRoleManagement() throws IOException {
+    public void testExportImportUserRoleManagement() {
 //        UserManagement userManagement = userService.findUserManagement();
 //
 //        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement(userManagement);

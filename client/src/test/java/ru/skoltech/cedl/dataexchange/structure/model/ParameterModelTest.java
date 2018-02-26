@@ -20,7 +20,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
@@ -101,24 +100,19 @@ public class ParameterModelTest {
         assertFalse(parameterModel.isValidValueReference());
 
         parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-        assertEquals(ParameterReferenceValidity.INVALID_EMPTY_REFERENCE, parameterModel.validateValueReference());
-        assertFalse(parameterModel.isValidValueReference());
-
-        ExternalModelReference externalModelReference = new ExternalModelReference();
-        parameterModel.setValueReference(externalModelReference);
         assertEquals(ParameterReferenceValidity.INVALID_EMPTY_REFERENCE_EXTERNAL_MODEL, parameterModel.validateValueReference());
         assertFalse(parameterModel.isValidValueReference());
 
         ExternalModel externalModel = mock(ExternalModel.class);
-        externalModelReference.setExternalModel(externalModel);
+        parameterModel.setImportModel(externalModel);
         assertEquals(ParameterReferenceValidity.INVALID_EMPTY_REFERENCE_TARGET, parameterModel.validateValueReference());
         assertFalse(parameterModel.isValidValueReference());
 
-        externalModelReference.setTarget("");
+        parameterModel.setImportField("");
         assertEquals(ParameterReferenceValidity.INVALID_EMPTY_REFERENCE_TARGET, parameterModel.validateValueReference());
         assertFalse(parameterModel.isValidValueReference());
 
-        externalModelReference.setTarget("target");
+        parameterModel.setImportField("target");
         assertEquals(ParameterReferenceValidity.VALID, parameterModel.validateValueReference());
         assertTrue(parameterModel.isValidValueReference());
     }
@@ -130,24 +124,19 @@ public class ParameterModelTest {
         assertFalse(parameterModel.isValidExportReference());
 
         parameterModel.setIsExported(true);
-        assertEquals(ParameterReferenceValidity.INVALID_EMPTY_REFERENCE, parameterModel.validateExportReference());
-        assertFalse(parameterModel.isValidExportReference());
-
-        ExternalModelReference externalModelReference = new ExternalModelReference();
-        parameterModel.setExportReference(externalModelReference);
         assertEquals(ParameterReferenceValidity.INVALID_EMPTY_REFERENCE_EXTERNAL_MODEL, parameterModel.validateExportReference());
         assertFalse(parameterModel.isValidExportReference());
 
         ExternalModel externalModel = mock(ExternalModel.class);
-        externalModelReference.setExternalModel(externalModel);
+        parameterModel.setExportModel(externalModel);
         assertEquals(ParameterReferenceValidity.INVALID_EMPTY_REFERENCE_TARGET, parameterModel.validateExportReference());
         assertFalse(parameterModel.isValidExportReference());
 
-        externalModelReference.setTarget("");
+        parameterModel.setExportField("");
         assertEquals(ParameterReferenceValidity.INVALID_EMPTY_REFERENCE_TARGET, parameterModel.validateExportReference());
         assertFalse(parameterModel.isValidExportReference());
 
-        externalModelReference.setTarget("target");
+        parameterModel.setExportField("target");
         assertEquals(ParameterReferenceValidity.VALID, parameterModel.validateExportReference());
         assertTrue(parameterModel.isValidExportReference());
     }
@@ -162,11 +151,9 @@ public class ParameterModelTest {
         String target = "target";
         ExternalModel externalModel = mock(ExternalModel.class);
 
-        ExternalModelReference valueReference = new ExternalModelReference();
-        valueReference.setExternalModel(externalModel);
-        valueReference.setTarget(target);
         parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-        parameterModel.setValueReference(valueReference);
+        parameterModel.setImportModel(externalModel);
+        parameterModel.setImportField(target);
 
         doThrow(ExternalModelException.class).when(externalModel).getValue(target);
         update = parameterModel.updateValueReference();
@@ -203,7 +190,7 @@ public class ParameterModelTest {
     }
 
     @Test
-    public void testEquals1() throws Exception {
+    public void testEquals1() {
         ParameterModel pa = new ParameterModel("power consumption", 40.10);
         ParameterModel pb = new ParameterModel("power consumption", 40.10);
         assertNotEquals("same name and value, but must be different in UUIDs", pa, pb);
@@ -222,7 +209,7 @@ public class ParameterModelTest {
     }
 
     @Test
-    public void testEquals2() throws Exception {
+    public void testEquals2() {
 
         ParameterModel p5 = new ParameterModel("power CONSUMPTION", 40.10, ParameterValueSource.MANUAL, true, "desc");
         ParameterModel p6 = new ParameterModel("power CONSUMPTION", 40.10, ParameterValueSource.REFERENCE, true, "desc");

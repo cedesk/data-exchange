@@ -20,7 +20,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.*;
@@ -66,7 +69,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     private static final Class[] MODEL_CLASSES = new Class[]{
             SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class,
-            ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
+            ParameterModel.class, ExternalModel.class, Calculation.class, Argument.class};
     private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
 
     private final UnitRepository unitRepository;
@@ -534,22 +537,26 @@ public class FileStorageServiceImpl implements FileStorageService {
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             parameterModel.setParent(modelNode);
 
-            if (parameterModel.getValueReference() != null && parameterModel.getValueReference().getExternalModel() != null) {
-                String externalModelName = parameterModel.getValueReference().getExternalModel().getName();
-                parameterModel.getValueReference().setExternalModel(modelNode.getExternalModelMap().get(externalModelName));
+            if (parameterModel.getImportModel() != null) {
+                String externalModelName = parameterModel.getImportModel().getName();
+                parameterModel.setImportModel(modelNode.getExternalModelMap().get(externalModelName));
             }
-            if (parameterModel.getExportReference() != null && parameterModel.getExportReference().getExternalModel() != null) {
-                String externalModelName = parameterModel.getExportReference().getExternalModel().getName();
-                parameterModel.getExportReference().setExternalModel(modelNode.getExternalModelMap().get(externalModelName));
+            if (parameterModel.getExportModel() != null) {
+                String externalModelName = parameterModel.getExportModel().getName();
+                parameterModel.setExportModel(modelNode.getExternalModelMap().get(externalModelName));
             }
             if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
                 logger.info(parameterModel.getNodePath() + " <L- " + (parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "null"));
             }
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                logger.info(parameterModel.getNodePath() + " <R= " + parameterModel.getValueReference());
+                String valueReference = parameterModel.getImportModel() != null
+                        ? parameterModel.getImportModel().getName() + ":" + parameterModel.getImportField() : "(empty)";
+                logger.info(parameterModel.getNodePath() + " <R= " + valueReference);
             }
             if (parameterModel.getIsExported()) {
-                logger.info(parameterModel.getNodePath() + " =E> " + parameterModel.getExportReference());
+                String exportReference = parameterModel.getExportModel() != null
+                        ? parameterModel.getExportModel().getName() + ":" + parameterModel.getExportField() : "(empty)";
+                logger.info(parameterModel.getNodePath() + " =E> " + exportReference);
             }
             if (parameterModel.getUnit() == null) {
                 logger.warn("parameter " + parameterModel.getNodePath() + " is missing a unit!");

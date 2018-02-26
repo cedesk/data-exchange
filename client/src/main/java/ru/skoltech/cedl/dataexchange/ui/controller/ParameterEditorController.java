@@ -31,12 +31,16 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.Identifiers;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
@@ -127,9 +131,9 @@ public class ParameterEditorController implements Initializable {
     private StatusLogger statusLogger;
 
     private ParameterModel parameterModel;
-    private ExternalModelReference valueReference;
+    private ObjectProperty<Pair<ExternalModel, String>> valueReferenceProperty = new SimpleObjectProperty<>();
     private ObjectProperty<Unit> unitProperty = new SimpleObjectProperty<>();
-    private ExternalModelReference exportReference;
+    private ObjectProperty<Pair<ExternalModel, String>> exportReferenceProperty = new SimpleObjectProperty<>();
     private ParameterModel valueLinkParameter;
     private Calculation calculation;
     private Consumer<ParameterModel> editListener;
@@ -140,14 +144,16 @@ public class ParameterEditorController implements Initializable {
     private BooleanProperty nameChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty natureChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty valueSourceChangedProperty = new SimpleBooleanProperty();
-    private BooleanProperty valueReferenceChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty importModelChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty importFieldChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty parameterLinkChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty valueChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty unitChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty isReferenceValueOverriddenChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty valueOverrideChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty isExportedChangedProperty = new SimpleBooleanProperty();
-    private BooleanProperty exportReferenceChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty exportModelChangedProperty = new SimpleBooleanProperty();
+    private BooleanProperty exportFieldChangedProperty = new SimpleBooleanProperty();
     private BooleanProperty descriptionChangedProperty = new SimpleBooleanProperty();
 
     public void setProject(Project project) {
@@ -176,6 +182,89 @@ public class ParameterEditorController implements Initializable {
 
     public void setStatusLogger(StatusLogger statusLogger) {
         this.statusLogger = statusLogger;
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        parameterModelProperty.addListener((observable, oldValue, newValue) -> this.updateView());
+
+        unitTextField.textProperty().bind(Bindings.createStringBinding(() -> unitProperty.getValue() != null ? unitProperty.getValue().asText() : null, unitProperty));
+
+        nameChangedProperty.bind(this.createDifferencesPropertyBinding("name"));
+        natureChangedProperty.bind(this.createDifferencesPropertyBinding("nature"));
+        valueSourceChangedProperty.bind(this.createDifferencesPropertyBinding("valueSource"));
+        importModelChangedProperty.bind(this.createDifferencesPropertyBinding("importModel"));
+        importFieldChangedProperty.bind(this.createDifferencesPropertyBinding("importField"));
+        parameterLinkChangedProperty.bind(this.createDifferencesPropertyBinding("valueLink"));
+        valueChangedProperty.bind(this.createDifferencesPropertyBinding("value"));
+        unitChangedProperty.bind(this.createDifferencesPropertyBinding("unit"));
+        isReferenceValueOverriddenChangedProperty.bind(this.createDifferencesPropertyBinding("isReferenceValueOverridden"));
+        valueOverrideChangedProperty.bind(this.createDifferencesPropertyBinding("overrideValue"));
+        isExportedChangedProperty.bind(this.createDifferencesPropertyBinding("isExported"));
+        exportModelChangedProperty.bind(this.createDifferencesPropertyBinding("exportModel"));
+        exportFieldChangedProperty.bind(this.createDifferencesPropertyBinding("exportField"));
+        descriptionChangedProperty.bind(this.createDifferencesPropertyBinding("description"));
+
+        nameText.styleProperty().bind(Bindings.when(nameChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
+        natureChoiceBox.styleProperty().bind(Bindings.when(natureChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        natureChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != ParameterNature.INPUT) {
+                valueSourceChoiceBox.getItems().remove(LINK);
+            } else if (!valueSourceChoiceBox.getItems().contains(LINK)) {
+                valueSourceChoiceBox.getItems().add(LINK);
+            }
+        });
+        dependentsText.visibleProperty().bind(natureChoiceBox.valueProperty().isEqualTo(ParameterNature.OUTPUT));
+        valueSourceChoiceBox.styleProperty().bind(Bindings.when(valueSourceChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
+        valueSourceChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == REFERENCE) {
+                valueLinkParameter = null;
+            } else {
+                parameterModel.setImportModel(null);
+                parameterModel.setImportField(null);
+            }
+        });
+        referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(REFERENCE));
+        valueReferenceText.styleProperty().bind(Bindings.when(importModelChangedProperty.or(importFieldChangedProperty)).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        parameterLinkText.styleProperty().bind(Bindings.when(parameterLinkChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        linkSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(LINK));
+        calculationGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(CALCULATION));
+        valueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
+        valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(MANUAL));
+        valueText.styleProperty().bind(Bindings.when(valueChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        unitTextField.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(LINK));
+        unitChooseButton.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(LINK));
+        unitTextField.styleProperty().bind(Bindings.when(unitChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(MANUAL));
+        isReferenceValueOverriddenCheckbox.styleProperty().bind(Bindings.when(isReferenceValueOverriddenChangedProperty).then("-fx-outer-border: #FF6A00;").otherwise((String) null));
+        valueOverrideText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
+        valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.disableProperty().or(isReferenceValueOverriddenCheckbox.selectedProperty().not()));
+        valueOverrideText.styleProperty().bind(Bindings.when(valueOverrideChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        exportSelectorGroup.disableProperty().bind(isExportedCheckbox.selectedProperty().not());
+        isExportedCheckbox.styleProperty().bind(Bindings.when(isExportedChangedProperty).then("-fx-outer-border: #FF6A00;").otherwise((String) null));
+        exportReferenceText.styleProperty().bind(Bindings.when(exportModelChangedProperty.or(exportFieldChangedProperty)).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+        descriptionText.styleProperty().bind(Bindings.when(descriptionChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
+
+//        TODO: bind updateIcon
+//        this.updateIcon.iconProperty().bind(Bindings.when(parameterModelUpdateStateProperty.isNotNull())
+//                .then(Bindings.when(parameterModelUpdateStateProperty.isEqualTo(SUCCESS)
+//                        .or(parameterModelUpdateStateProperty.isEqualTo(SUCCESS_WITHOUT_UPDATE)))
+//                        .then("CHECK")
+//                        .otherwise("WARNING")).otherwise((String) null));
+//        this.updateIcon.styleProperty().bind(Bindings.when(parameterModelUpdateStateProperty.isNotNull())
+//                .then(Bindings.when(parameterModelUpdateStateProperty.isEqualTo(SUCCESS)
+//                        .or(parameterModelUpdateStateProperty.isEqualTo(SUCCESS_WITHOUT_UPDATE)))
+//                        .then("-fx-fill: green;")
+//                        .otherwise("-fx-fill: red;")).otherwise((String) null));
+//        this.updateIcon.tooltipProperty().bind(Bindings.when(parameterModelUpdateStateProperty.isNotNull())
+//                .then(new Tooltip(parameterModelUpdateStateProperty.get().description)).otherwise((Tooltip) null));
+
+    }
+
+    public void ownerStage(Stage stage) {
+        this.ownerStage = stage;
     }
 
     public void chooseUnit() {
@@ -216,10 +305,6 @@ public class ParameterEditorController implements Initializable {
 
     private BooleanBinding createDifferencesPropertyBinding(String field) {
         return Bindings.createBooleanBinding(() -> differencesProperty.contains(field), differencesProperty);
-    }
-
-    public void ownerStage(Stage stage) {
-        this.ownerStage = stage;
     }
 
     public void displayParameterModel(ParameterModel parameterModel) {
@@ -282,7 +367,9 @@ public class ParameterEditorController implements Initializable {
         this.validateFields();
 
         ParameterValueSource valueSource = valueSourceChoiceBox.getValue();
-        ExternalModelReference valueReference = valueSource == REFERENCE ? this.valueReference : null;
+        ExternalModel importModel = valueSource == REFERENCE ? this.valueReferenceProperty.getValue().getLeft() : null;
+        String importField = valueSource == REFERENCE ? this.valueReferenceProperty.getValue().getRight() : null;
+
         ParameterModel valueLinkParameter = valueSource == LINK ? this.valueLinkParameter : null;
         Calculation calculation = valueSource == CALCULATION ? this.calculation : null;
         Double value = valueSource == MANUAL ? Double.valueOf(valueText.getText()) :
@@ -290,14 +377,15 @@ public class ParameterEditorController implements Initializable {
         boolean isReferenceValueOverridden = valueSource != MANUAL && isReferenceValueOverriddenCheckbox.isSelected();
         Double overrideValue = isReferenceValueOverridden ? Double.valueOf(valueOverrideText.getText()) : null;
         Boolean isExported = isExportedCheckbox.isSelected()
-                && (this.exportReference == null || !this.exportReference.equals(this.valueReference));
-        ExternalModelReference exportReference = isExportedCheckbox.isSelected() ? this.exportReference : null;
-
+                && (this.exportReferenceProperty.isNull().get() || this.exportReferenceProperty.isNotEqualTo(this.valueReferenceProperty).get());
+        ExternalModel exportModel = isExportedCheckbox.isSelected() ? this.exportReferenceProperty.getValue().getLeft() : null;
+        String exportField = isExportedCheckbox.isSelected() ? this.exportReferenceProperty.getValue().getRight() : null;
 
         parameterModel.setName(nameText.getText());
         parameterModel.setNature(natureChoiceBox.getValue());
         parameterModel.setValueSource(valueSource);
-        parameterModel.setValueReference(valueReference);
+        parameterModel.setImportModel(importModel);
+        parameterModel.setImportField(importField);
         parameterModel.setValueLink(valueLinkParameter);
         parameterModel.setCalculation(calculation);
         parameterModel.setValue(value);
@@ -305,7 +393,8 @@ public class ParameterEditorController implements Initializable {
         parameterModel.setIsReferenceValueOverridden(isReferenceValueOverridden);
         parameterModel.setOverrideValue(overrideValue);
         parameterModel.setIsExported(isExported);
-        parameterModel.setExportReference(exportReference);
+        parameterModel.setExportModel(exportModel);
+        parameterModel.setExportField(exportField);
         parameterModel.setDescription(descriptionText.getText());
 
         this.updateValueReference();
@@ -334,7 +423,7 @@ public class ParameterEditorController implements Initializable {
     private void updateExportReferences() {
         if (parameterModel.getIsExported()) {
             if (parameterModel.isValidExportReference()) {
-                ExternalModel externalModel = this.exportReference.getExternalModel();
+                ExternalModel externalModel = this.parameterModel.getExportModel();
                 externalModelFileWatcher.maskChangesTo(externalModel.getCacheFile());
                 boolean updated = externalModel.updateExportReferences();
                 if (!updated) {
@@ -373,13 +462,17 @@ public class ParameterEditorController implements Initializable {
         if (valueSourceChoiceBox.getValue() == LINK && valueLinkParameter == null) {
             Dialogues.showWarning("Empty link", "No link has been specified!");
         }
-        if (valueSourceChoiceBox.getValue() == REFERENCE && valueReference == null) {
+        if (valueSourceChoiceBox.getValue() == REFERENCE &&
+                parameterModel.getImportModel() == null && parameterModel.getImportField() == null) {
             Dialogues.showWarning("Empty reference", "No reference has been specified!");
         }
         if (isExportedCheckbox.isSelected()) {
-            if (exportReference != null && exportReference.equals(valueReference)) {
+            if (parameterModel.getExportModel() != null && parameterModel.getExportField() != null &&
+                    parameterModel.getExportModel().equals(parameterModel.getImportModel()) &&
+                    parameterModel.getExportField().equals(parameterModel.getImportField())) {
                 Dialogues.showWarning("Inconsistency", "Value source and export reference must not be equal. Ignoring export reference.");
-                exportReference = null;
+                parameterModel.setExportModel(null);
+                parameterModel.setExportField(null);
             }
         }
     }
@@ -414,98 +507,31 @@ public class ParameterEditorController implements Initializable {
         }
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        parameterModelProperty.addListener((observable, oldValue, newValue) -> this.updateView());
-        unitTextField.textProperty().bind(Bindings.createStringBinding(() -> unitProperty.getValue() != null ? unitProperty.getValue().asText() : null, unitProperty));
-
-        nameChangedProperty.bind(this.createDifferencesPropertyBinding("name"));
-        natureChangedProperty.bind(this.createDifferencesPropertyBinding("nature"));
-        valueSourceChangedProperty.bind(this.createDifferencesPropertyBinding("valueSource"));
-        valueReferenceChangedProperty.bind(this.createDifferencesPropertyBinding("valueReference"));
-        parameterLinkChangedProperty.bind(this.createDifferencesPropertyBinding("valueLink"));
-        valueChangedProperty.bind(this.createDifferencesPropertyBinding("value"));
-        unitChangedProperty.bind(this.createDifferencesPropertyBinding("unit"));
-        isReferenceValueOverriddenChangedProperty.bind(this.createDifferencesPropertyBinding("isReferenceValueOverridden"));
-        valueOverrideChangedProperty.bind(this.createDifferencesPropertyBinding("overrideValue"));
-        isExportedChangedProperty.bind(this.createDifferencesPropertyBinding("isExported"));
-        exportReferenceChangedProperty.bind(this.createDifferencesPropertyBinding("exportReference"));
-        descriptionChangedProperty.bind(this.createDifferencesPropertyBinding("description"));
-
-        nameText.styleProperty().bind(Bindings.when(nameChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        natureChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterNature.class)));
-        natureChoiceBox.styleProperty().bind(Bindings.when(natureChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        natureChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != ParameterNature.INPUT) {
-                valueSourceChoiceBox.getItems().remove(LINK);
-            } else if (!valueSourceChoiceBox.getItems().contains(LINK)) {
-                valueSourceChoiceBox.getItems().add(LINK);
-            }
-        });
-        dependentsText.visibleProperty().bind(natureChoiceBox.valueProperty().isEqualTo(ParameterNature.OUTPUT));
-        valueSourceChoiceBox.styleProperty().bind(Bindings.when(valueSourceChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        valueSourceChoiceBox.setItems(FXCollections.observableArrayList(EnumSet.allOf(ParameterValueSource.class)));
-        valueSourceChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue == REFERENCE) {
-                valueLinkParameter = null;
-            } else {
-                valueReference = null;
-            }
-        });
-        referenceSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(REFERENCE));
-        valueReferenceText.styleProperty().bind(Bindings.when(valueReferenceChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        parameterLinkText.styleProperty().bind(Bindings.when(parameterLinkChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        linkSelectorGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(LINK));
-        calculationGroup.visibleProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(CALCULATION));
-        valueText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
-        valueText.editableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(MANUAL));
-        valueText.styleProperty().bind(Bindings.when(valueChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        unitTextField.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(LINK));
-        unitChooseButton.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(LINK));
-        unitTextField.styleProperty().bind(Bindings.when(unitChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        isReferenceValueOverriddenCheckbox.disableProperty().bind(valueSourceChoiceBox.valueProperty().isEqualTo(MANUAL));
-        isReferenceValueOverriddenCheckbox.styleProperty().bind(Bindings.when(isReferenceValueOverriddenChangedProperty).then("-fx-outer-border: #FF6A00;").otherwise((String) null));
-        valueOverrideText.addEventFilter(KeyEvent.KEY_TYPED, new NumericTextFieldValidator(10));
-        valueOverrideText.disableProperty().bind(isReferenceValueOverriddenCheckbox.disableProperty().or(isReferenceValueOverriddenCheckbox.selectedProperty().not()));
-        valueOverrideText.styleProperty().bind(Bindings.when(valueOverrideChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        exportSelectorGroup.disableProperty().bind(isExportedCheckbox.selectedProperty().not());
-        isExportedCheckbox.styleProperty().bind(Bindings.when(isExportedChangedProperty).then("-fx-outer-border: #FF6A00;").otherwise((String) null));
-        exportReferenceText.styleProperty().bind(Bindings.when(exportReferenceChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-        descriptionText.styleProperty().bind(Bindings.when(descriptionChangedProperty).then("-fx-border-color: #FF6A00;").otherwise((String) null));
-
-//        TODO: bind updateIcon
-//        this.updateIcon.iconProperty().bind(Bindings.when(parameterModelUpdateStateProperty.isNotNull())
-//                .then(Bindings.when(parameterModelUpdateStateProperty.isEqualTo(SUCCESS)
-//                        .or(parameterModelUpdateStateProperty.isEqualTo(SUCCESS_WITHOUT_UPDATE)))
-//                        .then("CHECK")
-//                        .otherwise("WARNING")).otherwise((String) null));
-//        this.updateIcon.styleProperty().bind(Bindings.when(parameterModelUpdateStateProperty.isNotNull())
-//                .then(Bindings.when(parameterModelUpdateStateProperty.isEqualTo(SUCCESS)
-//                        .or(parameterModelUpdateStateProperty.isEqualTo(SUCCESS_WITHOUT_UPDATE)))
-//                        .then("-fx-fill: green;")
-//                        .otherwise("-fx-fill: red;")).otherwise((String) null));
-//        this.updateIcon.tooltipProperty().bind(Bindings.when(parameterModelUpdateStateProperty.isNotNull())
-//                .then(new Tooltip(parameterModelUpdateStateProperty.get().description)).otherwise((Tooltip) null));
-
-    }
-
     public void chooseSource() {
-        valueReference = displayReferenceSelectorView(valueReference, valueReferenceText);
+        ExternalModel externalModel = parameterModel.getImportModel();
+        String target = parameterModel.getImportField();
+        Pair<ExternalModel, String> valueReference = displayReferenceSelectorView(externalModel, target, valueReferenceText);
+        valueReferenceProperty.setValue(valueReference);
+        this.updateValueReference();
     }
 
     public void chooseTarget() {
-        exportReference = displayReferenceSelectorView(exportReference, exportReferenceText);
+        ExternalModel externalModel = parameterModel.getExportModel();
+        String target = parameterModel.getExportField();
+        Pair<ExternalModel, String> exportReference = displayReferenceSelectorView(externalModel, target, exportReferenceText);
+        exportReferenceProperty.setValue(exportReference);
+        this.updateExportReferences();
     }
 
-    private ExternalModelReference displayReferenceSelectorView(ExternalModelReference externalModelReference, TextField externalModelReferenceTextField) {
+    private Pair<ExternalModel, String> displayReferenceSelectorView(ExternalModel externalModel, String target, TextField externalModelReferenceTextField) {
         List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
-        ExternalModelReferenceEventHandler applyEventHandler = new ExternalModelReferenceEventHandler(externalModelReference, externalModelReferenceTextField);
+        ExternalModelReferenceEventHandler applyEventHandler = new ExternalModelReferenceEventHandler(externalModel, target, externalModelReferenceTextField);
 
         ViewBuilder referenceSelectorViewBuilder = guiService.createViewBuilder("Reference Selector", Views.REFERENCE_SELECTOR_VIEW);
         referenceSelectorViewBuilder.ownerWindow(ownerStage);
         referenceSelectorViewBuilder.applyEventHandler(applyEventHandler);
-        referenceSelectorViewBuilder.showAndWait(externalModelReference, externalModels);
-        return applyEventHandler.externalModelReference;
+        referenceSelectorViewBuilder.showAndWait(externalModel, target, externalModels);
+        return Pair.of(applyEventHandler.externalModel, applyEventHandler.target);
     }
 
     public void editCalculation() {
@@ -543,16 +569,18 @@ public class ParameterEditorController implements Initializable {
         isExportedCheckbox.setSelected(parameterModel.getIsExported());
         descriptionText.setText(parameterModel.getDescription());
 
-        valueReference = parameterModel.getValueReference();
-        exportReference = parameterModel.getExportReference();
+        String valueReference = parameterModel.getImportModel() != null && parameterModel.getImportField() != null ?
+                parameterModel.getImportModel().getName() + ":" + parameterModel.getImportField() : "(empty)";
+        String exportReference = parameterModel.getExportModel() != null && parameterModel.getExportField() != null ?
+                parameterModel.getExportModel().getName() + ":" + parameterModel.getExportField() : "(empty)";
         valueLinkParameter = parameterModel.getValueLink();
         calculation = parameterModel.getCalculation();
         natureChoiceBox.valueProperty().setValue(parameterModel.getNature());
         valueSourceChoiceBox.valueProperty().setValue(parameterModel.getValueSource());
-        valueReferenceText.setText(parameterModel.getValueReference() != null ? parameterModel.getValueReference().toString() : "");
+        valueReferenceText.setText(valueReference);
         parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : "");
         calculationText.setText(calculation != null ? calculation.asText() : "");
-        exportReferenceText.setText(exportReference != null ? exportReference.toString() : "");
+        exportReferenceText.setText(exportReference);
         if (parameterModel.getNature() == ParameterNature.OUTPUT) {
             List<ParameterModel> dependentParameters = parameterLinkRegistry.getDependentParameters(parameterModel);
             String dependentParamNames = "<not linked>";
@@ -572,22 +600,32 @@ public class ParameterEditorController implements Initializable {
 
     private class ExternalModelReferenceEventHandler implements EventHandler<Event> {
 
-        private ExternalModelReference externalModelReference;
+        private ExternalModel externalModel;
+        private String target;
         private TextField externalModelReferenceTextField;
 
-        ExternalModelReferenceEventHandler(ExternalModelReference externalModelReference, TextField externalModelReferenceTextField) {
-            this.externalModelReference = externalModelReference;
+        ExternalModelReferenceEventHandler(ExternalModel externalModel, String target, TextField externalModelReferenceTextField) {
+            this.externalModel = externalModel;
+            this.target = target;
             this.externalModelReferenceTextField = externalModelReferenceTextField;
         }
 
         @Override
         public void handle(Event event) {
-            ExternalModelReference newExternalModelReference = (ExternalModelReference) event.getSource();
+            @SuppressWarnings("unchecked")
+            Pair<ExternalModel, String> newExternalModelReference = (Pair) event.getSource();
             if (newExternalModelReference != null) {
-                externalModelReference = newExternalModelReference;
-                externalModelReferenceTextField.setText(externalModelReference.toString());
+                this.externalModel = newExternalModelReference.getLeft();
+                this.target = newExternalModelReference.getRight();
+                externalModelReferenceTextField.setText(this.externalModel != null ? this.externalModel.getName() + ":" + this.target : "(empty)");
             } else {
-                externalModelReferenceTextField.setText(externalModelReference != null ? externalModelReference.toString() : null);
+                if (this.externalModel == null && this.target == null) {
+                    externalModelReferenceTextField.setText(null);
+                } else if (this.externalModel == null) {
+                    externalModelReferenceTextField.setText("(empty)");
+                } else {
+                    externalModelReferenceTextField.setText(this.externalModel.getName() + ":" + this.target);
+                }
             }
         }
     }

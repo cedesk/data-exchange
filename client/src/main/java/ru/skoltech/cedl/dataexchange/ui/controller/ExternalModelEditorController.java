@@ -203,8 +203,8 @@ public class ExternalModelEditorController implements Initializable {
         StringBuilder referencingParameters = new StringBuilder();
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE
-                    && parameterModel.getValueReference() != null
-                    && parameterModel.getValueReference().getExternalModel() == externalModel) {
+                    && parameterModel.getImportModel() != null
+                    && parameterModel.getImportModel() == externalModel) {
                 if (referencingParameters.length() > 0) {
                     referencingParameters.append(", ");
                 }

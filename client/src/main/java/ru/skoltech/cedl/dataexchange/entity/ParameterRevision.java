@@ -81,8 +81,11 @@ public class ParameterRevision {
     }
 
     public String getSourceDetails() {
-        if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE && parameterModel.getValueReference() != null) {
-            return parameterModel.getValueReference().toString();
+        if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE
+                && parameterModel.getImportModel() != null
+                && parameterModel.getImportField() != null) {
+            return parameterModel.getImportModel() != null ?
+                    parameterModel.getImportModel().getName() + ":" + parameterModel.getImportField() : "(empty)";
         } else if (parameterModel.getValueSource() == ParameterValueSource.LINK && parameterModel.getValueLink() != null) {
             return parameterModel.getValueLink().getNodePath();
         } else if (parameterModel.getValueSource() == ParameterValueSource.CALCULATION && parameterModel.getCalculation() != null) {

@@ -16,32 +16,29 @@
 
 package ru.skoltech.cedl.dataexchange.structure.adapters;
 
-import org.apache.commons.lang3.tuple.Pair;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ext.CsvExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import java.util.List;
 import java.util.Objects;
 
 /**
+ * {@link ExternalModel} adapter for JAXB marshalling and unmarshalling.
+ *
  * Created by Nikolay Groshkov on 04-Oct-17.
  */
-public class ExternalModelAdapter extends XmlAdapter<ExternalModelAdapter.AdaptedExternalModel, ExternalModel> {
+public class ExternalModelAdapter extends XmlAdapter<AdaptedExternalModel, ExternalModel> {
 
     private static final String EXCEL_TYPE = "EXCEL";
     private static final String CSV_TYPE = "CSV";
-    private static final String DEFAULT_TYPE = EXCEL_TYPE;
 
     @Override
-    public AdaptedExternalModel marshal(ExternalModel externalModel) throws Exception {
+    public AdaptedExternalModel marshal(ExternalModel externalModel) {
         Objects.requireNonNull(externalModel);
 
-        String type = DEFAULT_TYPE;
+        String type = AdaptedExternalModel.DEFAULT_TYPE;
         if (externalModel instanceof ExcelExternalModel) {
             type = EXCEL_TYPE;
         } else if (externalModel instanceof CsvExternalModel) {
@@ -55,7 +52,7 @@ public class ExternalModelAdapter extends XmlAdapter<ExternalModelAdapter.Adapte
     }
 
     @Override
-    public ExternalModel unmarshal(AdaptedExternalModel adaptedExternalModel) throws Exception {
+    public ExternalModel unmarshal(AdaptedExternalModel adaptedExternalModel) {
         Objects.requireNonNull(adaptedExternalModel);
 
         ExternalModel externalModel;
@@ -71,40 +68,6 @@ public class ExternalModelAdapter extends XmlAdapter<ExternalModelAdapter.Adapte
         Utils.copyBean(adaptedExternalModel, externalModel);
         externalModel.init();
         return externalModel;
-    }
-
-    public static class AdaptedExternalModel extends ExternalModel {
-
-        @XmlAttribute
-        private String type = DEFAULT_TYPE;
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        @Override
-        public Double getValue(String target) throws ExternalModelException {
-            return null;
-        }
-
-        @Override
-        public List<Double> getValues(List<String> targets) throws ExternalModelException {
-            return null;
-        }
-
-        @Override
-        public void setValue(String target, Double value) throws ExternalModelException {
-
-        }
-
-        @Override
-        public void setValues(List<Pair<String, Double>> values) throws ExternalModelException {
-
-        }
     }
 
 }

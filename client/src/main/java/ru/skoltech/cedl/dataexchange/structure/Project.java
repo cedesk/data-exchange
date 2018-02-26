@@ -148,7 +148,7 @@ public class Project {
                     actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
                 } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
                     actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
-                            + "#" + parameterModel.getValueReference().getTarget());
+                            + "#" + parameterModel.getImportField());
                 }
             });
             Platform.runLater(() -> this.getExternalModelUpdateConsumers().forEach(consumer -> consumer.accept(externalModel)));

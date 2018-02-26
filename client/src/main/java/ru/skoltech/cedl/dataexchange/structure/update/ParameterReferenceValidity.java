@@ -24,11 +24,6 @@ package ru.skoltech.cedl.dataexchange.structure.update;
 public enum ParameterReferenceValidity {
 
     /**
-     * Reference is empty
-     */
-    INVALID_EMPTY_REFERENCE("Empty reference"),
-
-    /**
      * Empty external model of reference
      */
     INVALID_EMPTY_REFERENCE_EXTERNAL_MODEL("Empty external model of reference"),

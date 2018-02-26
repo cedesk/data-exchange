@@ -16,7 +16,6 @@
 
 package ru.skoltech.cedl.dataexchange.structure;
 
-import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
@@ -87,10 +86,8 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
         }
         if (Math.random() > .5) {
             parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-            ExternalModelReference valueReference = new ExternalModelReference();
-            valueReference.setExternalModel(null);
-            valueReference.setTarget("A1");
-            parameterModel.setValueReference(valueReference);
+            parameterModel.setImportModel(null);
+            parameterModel.setImportField("A1");
             if (Math.random() > .5) {
                 parameterModel.setIsReferenceValueOverridden(true);
                 parameterModel.setOverrideValue(randomDouble());
@@ -103,10 +100,8 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
         //parameterModel.setUnit(getNoUnit());
         if (Math.random() > .5) {
             parameterModel.setIsExported(true);
-            ExternalModelReference modelReference = new ExternalModelReference();
-            modelReference.setExternalModel(null);
-            modelReference.setTarget("Z9");
-            parameterModel.setExportReference(modelReference);
+            parameterModel.setExportModel(null);
+            parameterModel.setExportField("Z9");
         } else {
             parameterModel.setIsExported(false);
         }
