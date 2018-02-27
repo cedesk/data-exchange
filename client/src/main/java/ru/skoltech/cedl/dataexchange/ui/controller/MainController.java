@@ -282,7 +282,7 @@ public class MainController implements Initializable, Displayable, Closeable {
                     if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
                         repositoryNewer.removeListener(repositoryNewerListener);
                         project.deleteStudy(studyName);
-                        if (project.getStudy().getName().equals(studyName)) {
+                        if (project.getStudy() != null && project.getStudy().getName().equals(studyName)) {
                             project.markStudyModified();
                         }
                         statusLogger.info("Successfully deleted study!");
