@@ -19,12 +19,10 @@ package ru.skoltech.cedl.dataexchange;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
+import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.repository.revision.UserManagementRepository;
 import ru.skoltech.cedl.dataexchange.repository.revision.UserRoleManagementRepository;
-import ru.skoltech.cedl.dataexchange.service.UserManagementService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
 
 /**
@@ -32,25 +30,18 @@ import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
  */
 public class UserRoleManagementStorageTest extends AbstractApplicationContextTest {
 
-    private UserManagementService userManagementService;
     private UserRoleManagementService userRoleManagementService;
-    private UserManagementRepository userManagementRepository;
     private UserRoleManagementRepository userRoleManagementRepository;
 
     @Before
     public void prepare() {
-        userManagementService = context.getBean(UserManagementService.class);
         userRoleManagementService = context.getBean(UserRoleManagementService.class);
-        userManagementRepository = context.getBean(UserManagementRepository.class);
         userRoleManagementRepository = context.getBean(UserRoleManagementRepository.class);
     }
 
     @Test
     public void testStoreAndRetrieveUserManagement() {
-        UserManagement userManagement = userManagementService.createDefaultUserManagement();
-        UserManagement userManagement1 = userManagementRepository.saveAndFlush(userManagement);
-
-        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement(userManagement1);
+        UserRoleManagement userRoleManagement = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(new SystemModel());
         userRoleManagementRepository.saveAndFlush(userRoleManagement);
         long id = userRoleManagement.getId();
 

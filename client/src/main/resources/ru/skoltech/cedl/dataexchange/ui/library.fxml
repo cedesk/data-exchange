@@ -25,23 +25,25 @@
             xmlns="http://javafx.com/javafx/8.0.121"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.LibraryController">
     <top>
-        <GridPane prefHeight="80" BorderPane.alignment="TOP_LEFT" hgap="8.0" vgap="2.0">
-            <padding>
-                <Insets bottom="10" left="10" right="10" top="10"/>
-            </padding>
-            <columnConstraints>
-                <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="60.0"/>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
-                <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
-            </rowConstraints>
-            <Text text="Search:" GridPane.rowIndex="0"/>
-            <TextField fx:id="searchTextField" promptText="keyword" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-            <Text text="Category:" GridPane.rowIndex="1"/>
-            <ChoiceBox fx:id="categoryChoice" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-        </GridPane>
+        <TitledPane collapsible="false" text="Component Library">
+            <GridPane prefHeight="80" BorderPane.alignment="TOP_LEFT" hgap="8.0" vgap="2.0">
+                <padding>
+                    <Insets bottom="10" left="10" right="10" top="10"/>
+                </padding>
+                <columnConstraints>
+                    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="60.0"/>
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+                </rowConstraints>
+                <Text text="Search:" GridPane.rowIndex="0"/>
+                <TextField fx:id="searchTextField" promptText="keyword" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                <Text text="Category:" GridPane.rowIndex="1"/>
+                <ChoiceBox fx:id="categoryChoice" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            </GridPane>
+        </TitledPane>
     </top>
     <center>
         <ListView fx:id="componentListView" prefHeight="636.0" prefWidth="298.0"/>

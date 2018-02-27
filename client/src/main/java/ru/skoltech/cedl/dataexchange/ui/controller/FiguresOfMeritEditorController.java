@@ -16,28 +16,33 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
-import javafx.event.ActionEvent;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Tooltip;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.control.TableView;
+import javafx.util.Callback;
 import org.apache.log4j.Logger;
-import org.controlsfx.glyphfont.FontAwesome;
-import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.Optimality;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.ui.Views;
+import ru.skoltech.cedl.dataexchange.ui.control.fom.FigureOfMeritDefinitionDeleteCell;
+import ru.skoltech.cedl.dataexchange.ui.control.fom.FigureOfMeritDefinitionOptimalityCell;
+import ru.skoltech.cedl.dataexchange.ui.control.fom.FigureOfMeritDefinitionParameterLinkCell;
+import ru.skoltech.cedl.dataexchange.ui.control.fom.FigureOfMeritDefinitionUnitCell;
+import ru.skoltech.cedl.dataexchange.ui.utils.BeanPropertyCellValueFactory;
 
 import java.net.URL;
-import java.util.List;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 /**
  * Controller for figures of merit editor.
@@ -49,25 +54,66 @@ public class FiguresOfMeritEditorController implements Initializable {
     private static final Logger logger = Logger.getLogger(FiguresOfMeritEditorController.class);
 
     @FXML
-    private VBox figuresOfMeritsViewContainer;
+    private TableView<FigureOfMeritDefinition> figureOfMeritTable;
+    @FXML
+    private TableColumn<FigureOfMeritDefinition, String> nameColumn;
+    @FXML
+    private TableColumn<FigureOfMeritDefinition, FigureOfMeritDefinition> unitColumn;
+    @FXML
+    private TableColumn<FigureOfMeritDefinition, FigureOfMeritDefinition> optimalityColumn;
+    @FXML
+    private TableColumn<FigureOfMeritDefinition, FigureOfMeritDefinition> parameterLinkColumn;
+    @FXML
+    private TableColumn<FigureOfMeritDefinition, FigureOfMeritDefinition> deleteColumn;
 
     private GuiService guiService;
+    private TradespaceToStudyBridge tradespaceToStudyBridge;
     private MultitemporalTradespace tradespace;
 
-    public FiguresOfMeritEditorController() {
-    }
-
-    public MultitemporalTradespace getTradespace() {
-        return tradespace;
-    }
-
-    public void setTradespace(MultitemporalTradespace tradespace) {
-        this.tradespace = tradespace;
-        updateView();
+    private FiguresOfMeritEditorController() {
     }
 
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
+    }
+
+    public void setTradespaceToStudyBridge(TradespaceToStudyBridge tradespaceToStudyBridge) {
+        this.tradespaceToStudyBridge = tradespaceToStudyBridge;
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        figureOfMeritTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        Callback<CellDataFeatures<FigureOfMeritDefinition, FigureOfMeritDefinition>, ObservableValue<FigureOfMeritDefinition>> figureOfMeritCallback = param -> {
+            if (param == null || param.getValue() == null) {
+                return new SimpleObjectProperty<>();
+            }
+            FigureOfMeritDefinition fom = param.getValue();
+            return new SimpleObjectProperty<>(fom);
+        };
+        Consumer<Void> updateFigureOfMeritTableConsumer = (v) -> figureOfMeritTable.refresh();
+
+        nameColumn.setCellValueFactory(BeanPropertyCellValueFactory.createBeanPropertyCellValueFactory("name"));
+        nameColumn.setStyle("-fx-alignment: BASELINE_LEFT;");
+
+        unitColumn.setCellValueFactory(figureOfMeritCallback);
+        unitColumn.setCellFactory(p -> new FigureOfMeritDefinitionUnitCell(tradespaceToStudyBridge, updateFigureOfMeritTableConsumer));
+
+        optimalityColumn.setCellValueFactory(figureOfMeritCallback);
+        optimalityColumn.setCellFactory(p -> new FigureOfMeritDefinitionOptimalityCell(updateFigureOfMeritTableConsumer));
+
+        parameterLinkColumn.setCellValueFactory(figureOfMeritCallback);
+        parameterLinkColumn.setCellFactory(p -> new FigureOfMeritDefinitionParameterLinkCell(guiService, tradespaceToStudyBridge, updateFigureOfMeritTableConsumer));
+
+        deleteColumn.setCellValueFactory(figureOfMeritCallback);
+        Consumer<FigureOfMeritDefinition> deleteConsumer = (fom) -> {
+            tradespace.getDefinitions().remove(fom);
+            figureOfMeritTable.getItems().remove(fom);
+            // TODO: remove also data from design points?
+            figureOfMeritTable.refresh();
+        };
+        deleteColumn.setCellFactory(p -> new FigureOfMeritDefinitionDeleteCell(deleteConsumer));
     }
 
     public void addFigureOfMerit() {
@@ -80,50 +126,19 @@ public class FiguresOfMeritEditorController implements Initializable {
             } else {
                 FigureOfMeritDefinition fom = new FigureOfMeritDefinition(figureOfMeritName, "none", Optimality.MAXIMAL); // TODO add unit
                 tradespace.getDefinitions().add(fom);
-                renderFigureOfMerit(fom);
+                figureOfMeritTable.getItems().add(fom);
             }
         }
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-    }
-
-    public void reloadValues() {
-        // update FOMvalues from Model
-    }
-
-    private void deleteFigureOfMerit(ActionEvent actionEvent) {
-        Button deleteButton = (Button) actionEvent.getSource();
-        HBox argumentRow = (HBox) deleteButton.getUserData();
-        FigureOfMeritController viewer = (FigureOfMeritController) argumentRow.getChildren().get(0).getUserData();
-        FigureOfMeritDefinition fomDef = viewer.getFigureOfMeritDefinition();
-        Optional<ButtonType> yesNo = Dialogues.chooseYesNo("Delete Figure of Merit", "Are you sure you want to delete the figure of merit '" + fomDef.getName() + "'?");
-        if (yesNo.isPresent() && yesNo.get() == ButtonType.YES) {
-            tradespace.getDefinitions().remove(fomDef); // TODO: remove also data from design points?
-            figuresOfMeritsViewContainer.getChildren().remove(argumentRow);
-        }
-    }
-
-    private void renderFigureOfMerit(FigureOfMeritDefinition figureOfMeritDefinition) {
-        Node figuresOfMeritsNode = guiService.createControl(Views.FIGURE_OF_MERIT_VIEW, figureOfMeritDefinition);
-        Button removeButton = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
-        removeButton.setTooltip(new Tooltip("Remove figure of merit"));
-        removeButton.setOnAction(FiguresOfMeritEditorController.this::deleteFigureOfMerit);
-        removeButton.setMinWidth(28);
-        HBox extModRow = new HBox(6, figuresOfMeritsNode, removeButton);
-        removeButton.setUserData(extModRow);
-        figuresOfMeritsViewContainer.getChildren().add(extModRow);
-    }
-
-    private void updateView() {
+    public void setTradespace(MultitemporalTradespace tradespace) {
+        this.tradespace = tradespace;
+        ObservableList<FigureOfMeritDefinition> figureOfMeritDefinitions = FXCollections.observableArrayList();
         if (tradespace != null) {
-            figuresOfMeritsViewContainer.getChildren().clear();
-            List<FigureOfMeritDefinition> figureOfMeritDefinitions = tradespace.getDefinitions();
-            for (FigureOfMeritDefinition figureOfMeritDefinition : figureOfMeritDefinitions) {
-                renderFigureOfMerit(figureOfMeritDefinition);
-            }
+            figureOfMeritDefinitions.addAll(tradespace.getDefinitions());
+            figureOfMeritDefinitions.sort(Comparator.naturalOrder());
         }
+        figureOfMeritTable.setItems(figureOfMeritDefinitions);
     }
 }
 

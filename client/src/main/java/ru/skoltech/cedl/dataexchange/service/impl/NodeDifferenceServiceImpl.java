@@ -124,7 +124,7 @@ public class NodeDifferenceServiceImpl implements NodeDifferenceService {
         if (!StringUtils.equals(localNode.getEmbodiment(), remoteNode.getEmbodiment())) {
             String value1 = localNode.getEmbodiment();
             String value2 = remoteNode.getEmbodiment();
-            modelDifferences.add(createNodeAttributesModified(localNode, remoteNode, "description", value1, value2));
+            modelDifferences.add(createNodeAttributesModified(localNode, remoteNode, "embodiment", value1, value2));
         }
         if (localNode.isCompletion() != remoteNode.isCompletion()) {
             String value1 = Boolean.toString(localNode.isCompletion());

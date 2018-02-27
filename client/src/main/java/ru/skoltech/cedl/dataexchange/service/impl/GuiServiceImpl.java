@@ -17,9 +17,11 @@
 package ru.skoltech.cedl.dataexchange.service.impl;
 
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.LoadException;
 import javafx.scene.Node;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
@@ -31,6 +33,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**
@@ -43,9 +47,14 @@ public class GuiServiceImpl implements GuiService {
     private static final Logger logger = Logger.getLogger(GuiServiceImpl.class);
 
     private FXMLLoaderFactory fxmlLoaderFactory;
+    private Locale locale;
 
     public void setFxmlLoaderFactory(FXMLLoaderFactory fxmlLoaderFactory) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
+    }
+
+    public void setLocale(Locale locale) {
+        this.locale = locale;
     }
 
     @Override
@@ -60,6 +69,7 @@ public class GuiServiceImpl implements GuiService {
     public <T extends Node> T createControl(URL location, Object... args) {
         try {
             FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(location, args);
+            loader.setResources(ResourceBundle.getBundle("i18n.MessagesBundle", locale));
             T control = loader.load();
             Object controller = loader.getController();
             control.setUserData(controller);
@@ -77,20 +87,20 @@ public class GuiServiceImpl implements GuiService {
 
     @Override
     public ViewBuilder createViewBuilder(String title, URL location) {
-        return new ViewBuilder(fxmlLoaderFactory, title, location);
+        return new ViewBuilder(fxmlLoaderFactory, locale, title, location);
     }
 
     @Override
-    public String loadResourceContent(Class resourceClass, String filename) throws Exception {
-        URL fileLocation = resourceClass.getResource(filename);
-        String baseLocation = fileLocation.toExternalForm().replace(filename, "");
-        try (InputStream in = fileLocation.openStream()) {
+    public String loadResourceContent(URL location) throws LoadException {
+        String fileName = FilenameUtils.getName(location.getPath());
+        String baseLocation = location.toExternalForm().replace(fileName, "");
+        try (InputStream in = location.openStream()) {
             String content = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
             content = content.replace("src=\"", "src=\"" + baseLocation);
             return content;
         } catch (IOException e) {
             logger.error("Error loading web content from resource", e);
-            throw new Exception("Error loading web content from resource", e);
+            throw new LoadException("Error loading web content from resource", e);
         }
     }
 }

@@ -19,6 +19,7 @@ package ru.skoltech.cedl.dataexchange.ui.controller;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.fxml.LoadException;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.log4j.Logger;
@@ -55,7 +56,8 @@ public class AboutController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            String content = guiService.loadResourceContent(AboutController.class, "about.html");
+            URL aboutLocation = AboutController.class.getResource("about.html");
+            String content = guiService.loadResourceContent(aboutLocation);
             WebEngine webEngine = contentView.getEngine();
             webEngine.loadContent(content);
             webEngine.getLoadWorker().exceptionProperty().addListener((observableValue, oldThrowable, newThrowable) ->
@@ -78,7 +80,7 @@ public class AboutController implements Initializable {
                     }, false);
                 }
             });
-        } catch (Exception e) {
+        } catch (LoadException e) {
             logger.error("Cannot load 'about' page: " + e.getMessage(), e);
         }
     }

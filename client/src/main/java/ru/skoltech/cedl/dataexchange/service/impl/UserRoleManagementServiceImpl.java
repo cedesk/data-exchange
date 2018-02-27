@@ -23,8 +23,8 @@ import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.*;
 import ru.skoltech.cedl.dataexchange.repository.revision.UserRoleManagementRepository;
-import ru.skoltech.cedl.dataexchange.service.UserManagementService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.service.UserService;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -42,15 +42,15 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
 
     private static final Logger logger = Logger.getLogger(UserRoleManagementServiceImpl.class);
     private final UserRoleManagementRepository userRoleManagementRepository;
-    private UserManagementServiceImpl userManagementService;
+    private UserService userService;
 
     @Autowired
     public UserRoleManagementServiceImpl(UserRoleManagementRepository userRoleManagementRepository) {
         this.userRoleManagementRepository = userRoleManagementRepository;
     }
 
-    public void setUserManagementService(UserManagementServiceImpl userManagementService) {
-        this.userManagementService = userManagementService;
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     private static ModelNode findOwningSubSystem(ModelNode modelNode) {
@@ -74,12 +74,11 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
     @Override
     public boolean addDisciplineSubsystem(UserRoleManagement userRoleManagement, Discipline discipline, SubSystemModel subSystem) {
         DisciplineSubSystem disciplineSubSystem = new DisciplineSubSystem(userRoleManagement, discipline, subSystem);
-        boolean found = !this.obtainSubSystemsOfDiscipline(userRoleManagement, discipline).isEmpty();
-        if (!found) {
-            disciplineSubSystem.setUserRoleManagement(userRoleManagement);
+        boolean empty = this.obtainSubSystemsOfDiscipline(userRoleManagement, discipline).isEmpty();
+        if (empty) {
             userRoleManagement.getDisciplineSubSystems().add(disciplineSubSystem);
         }
-        return found;
+        return empty;
     }
 
     @Override
@@ -90,14 +89,17 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
             userDiscipline.setUserRoleManagement(userRoleManagement);
             userRoleManagement.getUserDisciplines().add(userDiscipline);
         }
-        return found;
+        return !found;
     }
 
     @Override
-    public void addUserWithAdminRole(UserRoleManagement userRoleManagement, UserManagement userManagement, String userName) {
+    public void addUserWithAdminRole(UserRoleManagement userRoleManagement, String userName) {
         User admin = new User(userName, userName + " (made admin)", "ad-hoc permissions for current user");
-        userManagement.getUsers().add(admin);
-        this.addAdminDiscipline(userRoleManagement, admin);
+        admin = userService.saveUser(admin);
+        boolean added = this.addAdminDiscipline(userRoleManagement, admin);
+        if (!added) {
+            logger.debug("Admin discipline has not been added.");
+        }
     }
 
     @Override
@@ -119,44 +121,13 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
 
     @Override
     public boolean checkUserAdmin(UserRoleManagement userRoleManagement, User user) {
+        if (userRoleManagement == null || user == null) {
+            return false;
+        }
         for (Discipline discipline : this.obtainDisciplinesOfUser(userRoleManagement, user)) {
             if (discipline.isBuiltIn()) return true;
         }
         return false;
-    }
-
-    @Override
-    public UserRoleManagement createDefaultUserRoleManagement(UserManagement userManagement) {
-        UserRoleManagement urm = this.createUserRoleManagement();
-
-        // create Disciplines
-        Discipline orbitDiscipline = new Discipline("Orbit", urm);
-        Discipline payloadDiscipline = new Discipline("Payload", urm);
-        Discipline aocsDiscipline = new Discipline("AOCS", urm);
-        Discipline powerDiscipline = new Discipline("Power", urm);
-        Discipline thermalDiscipline = new Discipline("Thermal", urm);
-        Discipline communicationDiscipline = new Discipline("Communications", urm);
-        Discipline propulsionDiscipline = new Discipline("Propulsion", urm);
-        Discipline missionDiscipline = new Discipline("Mission", urm);
-
-        // add disciplines
-        urm.getDisciplines().add(aocsDiscipline);
-        urm.getDisciplines().add(orbitDiscipline);
-        urm.getDisciplines().add(payloadDiscipline);
-        urm.getDisciplines().add(powerDiscipline);
-        urm.getDisciplines().add(thermalDiscipline);
-        urm.getDisciplines().add(communicationDiscipline);
-        urm.getDisciplines().add(propulsionDiscipline);
-        urm.getDisciplines().add(missionDiscipline);
-
-        // add user disciplines
-        if (userManagement != null) {
-            User admin = userManagementService.obtainUser(userManagement, UserManagementService.ADMIN_USER_NAME);
-            if (admin != null) {
-                this.addAdminDiscipline(urm, admin);
-            }
-        }
-        return urm;
     }
 
     @Override
@@ -169,7 +140,7 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
     }
 
     @Override
-    public UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel, UserManagement userManagement) {
+    public UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel) {
         UserRoleManagement urm = this.createUserRoleManagement();
 
         // add a discipline for each subsystem
@@ -178,11 +149,9 @@ public class UserRoleManagementServiceImpl implements UserRoleManagementService 
             urm.getDisciplines().add(discipline);
         }
         // add user disciplines
-        if (userManagement != null) {
-            User admin = userManagementService.obtainUser(userManagement, UserManagementService.ADMIN_USER_NAME);
-            if (admin != null) {
-                this.addAdminDiscipline(urm, admin);
-            }
+        User admin = userService.findUser(UserService.ADMIN_USER_NAME);
+        if (admin != null) {
+            this.addAdminDiscipline(urm, admin);
         }
         return urm;
     }

@@ -19,13 +19,9 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:task="http://www.springframework.org/schema/task"
-       xmlns:int="http://www.springframework.org/schema/integration"
-       xmlns:int-file="http://www.springframework.org/schema/integration/file"
        xsi:schemaLocation="http://www.springframework.org/schema/beans              http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/util               http://www.springframework.org/schema/util/spring-util.xsd
-                           http://www.springframework.org/schema/task               http://www.springframework.org/schema/task/spring-task.xsd
-                           http://www.springframework.org/schema/integration        http://www.springframework.org/schema/integration/spring-integration.xsd
-                           http://www.springframework.org/schema/integration/file   http://www.springframework.org/schema/integration/file/spring-integration-file.xsd">
+                           http://www.springframework.org/schema/task               http://www.springframework.org/schema/task/spring-task.xsd">
 
     <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine"/>
 
@@ -42,10 +38,9 @@
         <property name="externalModelFileWatcher" ref="externalModelFileWatcher"/>
         <property name="fileStorageService" ref="fileStorageService"/>
         <property name="studyService" ref="studyService"/>
-        <property name="userManagementService" ref="userManagementService"/>
+        <property name="userService" ref="userService"/>
         <property name="userRoleManagementService" ref="userRoleManagementService"/>
-        <property name="unitManagementService" ref="unitManagementService"/>
-        <property name="inboundFilesChannel" ref="inboundFilesChannel"/>
+        <property name="unitService" ref="unitService"/>
         <property name="executor" ref="executor"/>
         <property name="actionLogger" ref="actionLogger"/>
     </bean>
@@ -68,7 +63,7 @@
     </bean>
 
     <bean id="systemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SystemBuilder" abstract="true">
-        <property name="unitManagementService" ref="unitManagementService"/>
+        <property name="unitService" ref="unitService"/>
     </bean>
 
     <bean id="simpleSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SimpleSystemBuilder"
@@ -95,17 +90,6 @@
           scope="prototype">
         <constructor-arg ref="project"/>
     </bean>
-
-    <!-- integration -->
-    <int-file:inbound-channel-adapter id="inboundFilesChannel" channel="outboundFilesChannel"
-                                      directory="file:${cedesk.app.dir}"
-                                      filename-regex="^.*\.(xls|xlsx|xlsm)$"
-                                      auto-create-directory="false" auto-startup="false"
-                                      use-watch-service="true" watch-events="MODIFY,DELETE">
-        <int:poller id="poller" fixed-rate="100" task-executor="executor"/>
-    </int-file:inbound-channel-adapter>
-
-    <int:outbound-channel-adapter id="outboundFilesChannel"  method="onFileModify" ref="externalModelFileWatcher" />
 
     <!-- Schedule a task for regular checking new version of remote study -->
     <task:scheduler id="scheduler"/>

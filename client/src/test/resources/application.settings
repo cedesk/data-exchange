@@ -16,6 +16,7 @@
 
 #CEDESK application settings
 #Wed Aug 02 12:39:23 MSK 2017
+application.language=en
 repository.host=srv-cedl-01.skoltech.ru
 repository.schema.create=true
 repository.schema.name=cedesk_repo
@@ -26,5 +27,4 @@ project.last.autoload=true
 project.last.name=defaultProject
 project.use.os.user=false
 project.user.name=admin
-project.import.name=
 study.model.depth=2

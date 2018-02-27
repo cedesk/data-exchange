@@ -28,7 +28,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.service.UnitService;
 
 import java.net.URL;
 import java.util.List;
@@ -52,45 +52,12 @@ public class AddUnitController implements Initializable, Displayable, Applicable
     @FXML
     private Button addUnitButton;
 
-    private Project project;
+    private UnitService unitService;
     private Stage ownerStage;
     private EventHandler<Event> applyEventHandler;
 
-    @Override
-    public void setOnApply(EventHandler<Event> applyEventHandler) {
-        this.applyEventHandler = applyEventHandler;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public void addUnit() {
-        String name = nameText.getText();
-        String symbol = symbolText.getText();
-        String description = descriptionText.getText();
-        QuantityKind quantityKind = quantityKindComboBox.getSelectionModel().getSelectedItem();
-
-        Unit unit = new Unit();
-        unit.setName(name);
-        unit.setSymbol(symbol);
-        unit.setDescription(description);
-        unit.setQuantityKind(quantityKind);
-
-        if (applyEventHandler != null) {
-            Event event = new Event(unit, null, null);
-            applyEventHandler.handle(event);
-        }
-        this.close();
-    }
-
-    public void close() {
-        ownerStage.close();
-    }
-
-    @Override
-    public void display(Stage stage, WindowEvent windowEvent) {
-        this.ownerStage = stage;
+    public void setUnitService(UnitService unitService) {
+        this.unitService = unitService;
     }
 
     @Override
@@ -119,12 +86,43 @@ public class AddUnitController implements Initializable, Displayable, Applicable
         });
 
         addUnitButton.disableProperty().bind(Bindings.or(nameText.textProperty().isEmpty(), symbolText.textProperty().isEmpty()));
-        this.updateView();
+
+        List<QuantityKind> quantityKindList = unitService.findAllQuantityKinds();
+        quantityKindComboBox.setItems(FXCollections.observableArrayList(quantityKindList));
     }
 
-    private void updateView() {
-        List<QuantityKind> quantityKindList = project.getUnitManagement().getQuantityKinds();
-        quantityKindComboBox.setItems(FXCollections.observableArrayList(quantityKindList));
+    @Override
+    public void display(Stage stage, WindowEvent windowEvent) {
+        this.ownerStage = stage;
+    }
+
+    public void close() {
+        ownerStage.close();
+    }
+
+    @Override
+    public void setOnApply(EventHandler<Event> applyEventHandler) {
+        this.applyEventHandler = applyEventHandler;
+    }
+
+    @FXML
+    public void addUnit() {
+        String name = nameText.getText();
+        String symbol = symbolText.getText();
+        String description = descriptionText.getText();
+        QuantityKind quantityKind = quantityKindComboBox.getSelectionModel().getSelectedItem();
+
+        Unit unit = new Unit();
+        unit.setName(name);
+        unit.setSymbol(symbol);
+        unit.setDescription(description);
+        unit.setQuantityKind(quantityKind);
+
+        if (applyEventHandler != null) {
+            Event event = new Event(unit, null, null);
+            applyEventHandler.handle(event);
+        }
+        this.close();
     }
 
 }

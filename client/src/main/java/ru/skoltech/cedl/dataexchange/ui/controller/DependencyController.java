@@ -16,22 +16,19 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.WritableImage;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
+import javafx.stage.*;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
@@ -113,15 +110,24 @@ public class DependencyController implements Initializable, Displayable {
                 refreshView();
             }
         });
-        Platform.runLater(() -> {
-            refreshView();
-            registerListeners();
-        });
-
     }
     @Override
     public void display(Stage stage, WindowEvent windowEvent) {
         this.ownerStage = stage;
+        refreshView();
+        ChangeListener<Boolean> listener = (observable, oldValue, newValue) -> {
+            if (sourceGroup.getSelectedToggle() == sourceRepositoryRadio) {
+                refreshView();
+            }
+        };
+        repositoryNewer = Bindings.isNotEmpty(differenceHandler.modelDifferences());
+        repositoryNewer.addListener(listener);
+
+        dependencyDiagramView.getScene().getWindow().setOnCloseRequest(event -> repositoryNewer.removeListener(listener));
+
+        Rectangle2D primScreenBounds = Screen.getPrimary().getVisualBounds();
+        stage.setX((primScreenBounds.getWidth() - this.ownerStage.getWidth()) / 2);
+        stage.setY(40 + (primScreenBounds.getHeight() - 40 - this.ownerStage.getHeight()) / 2);
     }
 
     public void refreshView() {
@@ -137,12 +143,23 @@ public class DependencyController implements Initializable, Displayable {
             dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
         }
 
+        Rectangle2D primScreenBounds = Screen.getPrimary().getVisualBounds();
         long elementCount = dependencyModel.elementStream().count();
-        ownerStage.setMinWidth(DependencyDiagramView.ELEMENT_WIDTH * elementCount +
-                DependencyDiagramView.ELEMENT_PADDING*(elementCount+1));
+
+        ownerStage.setMinWidth(600);
         ownerStage.setMinHeight(DependencyDiagramView.LEGEND_HEIGHT + dependencyToolbar.getHeight() + 24 +
+                DependencyDiagramView.ELEMENT_HEIGHT * 3 +
+                DependencyDiagramView.ELEMENT_PADDING * (3 + 2));
+
+        double width = DependencyDiagramView.ELEMENT_WIDTH * (elementCount + 1) +
+                DependencyDiagramView.ELEMENT_PADDING * (elementCount + 2);
+        width = width > primScreenBounds.getWidth() ? primScreenBounds.getWidth() : width;
+        double height = DependencyDiagramView.LEGEND_HEIGHT + dependencyToolbar.getHeight() + 24 +
                 DependencyDiagramView.ELEMENT_HEIGHT * elementCount +
-                DependencyDiagramView.ELEMENT_PADDING*(elementCount+2));
+                DependencyDiagramView.ELEMENT_PADDING * (elementCount + 2);
+        height = height > primScreenBounds.getHeight() - 40 ? primScreenBounds.getHeight() - 40 : height;
+        ownerStage.setWidth(width);
+        ownerStage.setHeight(height);
 
         if (sortOrderGroup.getSelectedToggle() == sortDefaultRadio) {
             HashMap<String, Integer> originalPositions = new HashMap<>();
@@ -190,17 +207,5 @@ public class DependencyController implements Initializable, Displayable {
                 logger.error("Error saving diagram to file", e);
             }
         }
-    }
-
-    private void registerListeners() {
-        ChangeListener<Boolean> listener = (observable, oldValue, newValue) -> {
-            if (sourceGroup.getSelectedToggle() == sourceRepositoryRadio) {
-                refreshView();
-            }
-        };
-        repositoryNewer = Bindings.isNotEmpty(differenceHandler.modelDifferences());
-        repositoryNewer.addListener(listener);
-
-        dependencyDiagramView.getScene().getWindow().setOnCloseRequest(event -> repositoryNewer.removeListener(listener));
     }
 }

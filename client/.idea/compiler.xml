@@ -21,7 +21,6 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="client" target="1.8" />
-      <module name="dataexchange-client" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

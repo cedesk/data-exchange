@@ -25,7 +25,6 @@ import ru.skoltech.cedl.dataexchange.analysis.WorkSessionAnalysis;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.entity.log.LogEntry;
 import ru.skoltech.cedl.dataexchange.repository.jpa.LogEntryRepository;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.io.File;
@@ -51,9 +50,8 @@ public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
      * data ony for demoSAT study, July 2016
      */
     private List<LogEntry> getLogEntries() throws RepositoryException {
-        FileStorageService storageService = context.getBean(FileStorageService.class);
 
-        File objFile = new File(storageService.applicationDirectory(), "log-entries.obj");
+        File objFile = new File(applicationSettings.applicationDirectory(), "log-entries.obj");
         List<LogEntry> logEntries = null;
         if (objFile.canRead()) {
             logEntries = (List<LogEntry>) Utils.readFromFile(objFile);
@@ -83,8 +81,7 @@ public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
     }
 
     private void performAnalysis() {
-        FileStorageService storageService = context.getBean(FileStorageService.class);
-        File appDir = storageService.applicationDirectory();
+        File appDir = applicationSettings.applicationDirectory();
         try {
             List<LogEntry> logEntries = getLogEntries();
 

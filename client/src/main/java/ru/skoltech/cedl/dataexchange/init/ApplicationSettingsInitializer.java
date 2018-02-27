@@ -37,6 +37,7 @@ public class ApplicationSettingsInitializer {
     private static final String CEDESK_APP_FILE = "cedesk.app.file";
     private static final String CEDESK_APP_FILE_COMMENT = "cedesk.app.file.comment";
 
+    private static final String APPLICATION_LANGUAGE = "application.language";
     private static final String REPOSITORY_HOST = "repository.host";
     private static final String REPOSITORY_SCHEMA_NAME = "repository.schema.name";
     private static final String REPOSITORY_SCHEMA_CREATE = "repository.schema.create";
@@ -47,7 +48,6 @@ public class ApplicationSettingsInitializer {
     private static final String PROJECT_LAST_NAME = "project.last.name";
     private static final String PROJECT_USE_OS_USER = "project.use.os.user";
     private static final String PROJECT_USER_NAME = "project.user.name";
-    private static final String PROJECT_IMPORT_NAME = "project.import.name";
     private static final String STUDY_MODEL_DEPTH = "study.model.depth";
 
     public static void initialize() {
@@ -62,6 +62,7 @@ public class ApplicationSettingsInitializer {
 
         Properties applicationSettings = applicationSettings(applicationSettingsFile);
 
+        applicationSettings.putIfAbsent(APPLICATION_LANGUAGE, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + APPLICATION_LANGUAGE));
         applicationSettings.putIfAbsent(REPOSITORY_HOST, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_HOST));
         applicationSettings.putIfAbsent(REPOSITORY_SCHEMA_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_SCHEMA_NAME));
         applicationSettings.putIfAbsent(REPOSITORY_SCHEMA_CREATE, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_SCHEMA_CREATE));
@@ -72,7 +73,6 @@ public class ApplicationSettingsInitializer {
         applicationSettings.putIfAbsent(PROJECT_LAST_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + PROJECT_LAST_NAME));
         applicationSettings.putIfAbsent(PROJECT_USE_OS_USER, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + PROJECT_USE_OS_USER));
         applicationSettings.putIfAbsent(PROJECT_USER_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + PROJECT_USER_NAME));
-        applicationSettings.putIfAbsent(PROJECT_IMPORT_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + PROJECT_IMPORT_NAME));
         applicationSettings.putIfAbsent(STUDY_MODEL_DEPTH, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + STUDY_MODEL_DEPTH));
 
         saveApplicationSettings(applicationSettingsFile, applicationSettings, cedeskProperties.getProperty(CEDESK_APP_FILE_COMMENT));

@@ -48,12 +48,14 @@ public class UserRoleManagement {
 
     @OneToMany(targetEntity = UserDiscipline.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Fetch(FetchMode.SELECT)
-    @XmlTransient
+    @XmlElementWrapper(name = "userDisciplines")
+    @XmlElement(name = "userDiscipline")
     private List<UserDiscipline> userDisciplines = new LinkedList<>();
 
     @OneToMany(targetEntity = DisciplineSubSystem.class, mappedBy = "userRoleManagement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Fetch(FetchMode.SELECT)
-    @XmlTransient
+    @XmlElementWrapper(name = "disciplineSubSystems")
+    @XmlElement(name = "disciplineSubSystem")
     private List<DisciplineSubSystem> disciplineSubSystems = new LinkedList<>();
 
     public UserRoleManagement() {

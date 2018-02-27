@@ -20,12 +20,14 @@
         <externalModel name="attachment.xls" lastModification="1509387311745" uuid="11e95dd3-7de3-4bf6-a941-353f99c06012"/>
     </externalModels>
     <parameters>
-        <parameter name="mass" value="21.0" nature="OUTPUT" valueSource="MANUAL" unit="" isExported="false" isReferenceValueOverridden="false" uuid="11073bdf-314a-4413-ae73-ce1ec2ec2f39">
-            <valueReference externalModel="attachment.xls" target="B3"/>
+        <parameter name="mass" value="21.0" nature="OUTPUT" valueSource="MANUAL" unit="" isExported="false"
+                   isReferenceValueOverridden="false" uuid="11073bdf-314a-4413-ae73-ce1ec2ec2f39"
+                   importModel="attachment.xls" importField="B3">
             <description></description>
         </parameter>
-        <parameter name="power" value="51.0" nature="OUTPUT" valueSource="MANUAL" unit="" isExported="false" isReferenceValueOverridden="false" uuid="9aa38d61-3db3-49e2-8644-b0d43114ce33">
-            <exportReference externalModel="attachment.xls" target="D4"/>
+        <parameter name="power" value="51.0" nature="OUTPUT" valueSource="MANUAL" unit="" isExported="false"
+                   isReferenceValueOverridden="false" uuid="9aa38d61-3db3-49e2-8644-b0d43114ce33"
+                   exportModel="attachment.xls" exportField="D4">
             <description></description>
         </parameter>
     </parameters>

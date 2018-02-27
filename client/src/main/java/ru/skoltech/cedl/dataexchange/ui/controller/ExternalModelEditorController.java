@@ -26,20 +26,20 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.StatusLogger;
-import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
-import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
@@ -51,7 +51,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static ru.skoltech.cedl.dataexchange.logging.ActionLogger.ActionType.*;
 
@@ -67,31 +67,25 @@ public class ExternalModelEditorController implements Initializable {
     @FXML
     private VBox externalModelViewContainer;
 
+    private ApplicationSettings applicationSettings;
     private Project project;
     private GuiService guiService;
-    private FileStorageService fileStorageService;
     private ExternalModelService externalModelService;
     private ActionLogger actionLogger;
     private StatusLogger statusLogger;
 
     private ModelNode modelNode;
 
-    private Consumer<ExternalModel> externalModelReloadConsumer;
-
     public void setActionLogger(ActionLogger actionLogger) {
         this.actionLogger = actionLogger;
     }
 
-    public void setExternalModelReloadConsumer(Consumer<ExternalModel> externalModelReloadConsumer) {
-        this.externalModelReloadConsumer = externalModelReloadConsumer;
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
     }
 
     public void setExternalModelService(ExternalModelService externalModelService) {
         this.externalModelService = externalModelService;
-    }
-
-    public void setFileStorageService(FileStorageService fileStorageService) {
-        this.fileStorageService = fileStorageService;
     }
 
     public void setGuiService(GuiService guiService) {
@@ -116,14 +110,15 @@ public class ExternalModelEditorController implements Initializable {
     }
 
     public void addExternalModel() {
-        if (!project.isStudyInRepository()) {
+        if (!project.isStudyInRepositoryProperty().get()) {
             Dialogues.showError("Save Project",
                     "Unable to attach an external model, as long as the project has not been saved yet!");
             return;
         }
         List<String> extensions = externalModelService.supportedExtensions();
-        List<FileChooser.ExtensionFilter> extensionFilters = Collections.singletonList(new FileChooser.ExtensionFilter("External Model", extensions));
-        File externalModelFile = chooseExternalModelFile(fileStorageService.applicationDirectory(), extensionFilters);
+        String filterName = String.format("External Models (%s)", extensions.stream().collect(Collectors.joining(",")));
+        List<FileChooser.ExtensionFilter> extensionFilters = Collections.singletonList(new FileChooser.ExtensionFilter(filterName, extensions));
+        File externalModelFile = chooseExternalModelFile(applicationSettings.applicationDirectory(), extensionFilters);
         if (externalModelFile != null) {
             String fileName = externalModelFile.getName();
             if (externalModelFile.isFile()) {
@@ -143,7 +138,7 @@ public class ExternalModelEditorController implements Initializable {
                                         + "in the system model!");
                         statusLogger.info("Added external model: " + externalModel.getName());
                         actionLogger.log(EXTERNAL_MODEL_ADD, externalModel.getNodePath());
-                        project.markStudyModified();
+                        project.markStudyModified(modelNode);
                     } catch (ExternalModelException e) {
                         logger.error("Unable to recognize external model type from the file: " + fileName, e);
                         Dialogues.showError("Invalid file selected.", "Unable to recognize external model type from the file: " + fileName);
@@ -182,11 +177,14 @@ public class ExternalModelEditorController implements Initializable {
     }
 
     public void reloadExternalModels() {
-        if (externalModelReloadConsumer == null) {
+        if (project.getExternalModelUpdateConsumers().isEmpty()) {
             return;
         }
 
-        modelNode.getExternalModels().forEach(externalModel -> externalModelReloadConsumer.accept(externalModel));
+        modelNode.getExternalModels().forEach(
+                externalModel -> project.getExternalModelUpdateConsumers().forEach(
+                        externalModelConsumer -> externalModelConsumer.accept(externalModel))
+        );
     }
 
     private File chooseExternalModelFile(File applicationDirectory, List<FileChooser.ExtensionFilter> extensionFilters) {
@@ -205,8 +203,8 @@ public class ExternalModelEditorController implements Initializable {
         StringBuilder referencingParameters = new StringBuilder();
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE
-                    && parameterModel.getValueReference() != null
-                    && parameterModel.getValueReference().getExternalModel() == externalModel) {
+                    && parameterModel.getImportModel() != null
+                    && parameterModel.getImportModel() == externalModel) {
                 if (referencingParameters.length() > 0) {
                     referencingParameters.append(", ");
                 }
@@ -219,7 +217,7 @@ public class ExternalModelEditorController implements Initializable {
         } else {
             modelNode.getExternalModels().remove(externalModel);
             externalModelViewContainer.getChildren().remove(extModRow);
-            project.markStudyModified();
+            project.markStudyModified(modelNode);
             statusLogger.info("removed external model: " + externalModel.getName());
             actionLogger.log(EXTERNAL_MODEL_REMOVE, externalModel.getNodePath());
         }
@@ -245,16 +243,16 @@ public class ExternalModelEditorController implements Initializable {
     }
 
     private void replaceExternalModel(ActionEvent actionEvent) {
-        if (!project.isStudyInRepository()) {
+        if (!project.isStudyInRepositoryProperty().get()) {
             Dialogues.showError("Save Project", "Unable to attach an external model, "
                     + "as long as the project has not been saved yet!");
             return;
         }
         Button exchangeButton = (Button) actionEvent.getSource();
         ExternalModel externalModel = (ExternalModel) exchangeButton.getUserData();
-        String fileExtension = Utils.getExtension(externalModel.getName());
+        String fileExtension = FilenameUtils.getExtension(externalModel.getName());
 
-        Pair<String, List<String>> fileDescriptionAndExtensions = externalModelService.fileDescriptionAndExtensions(fileExtension);
+        Pair<String, List<String>> fileDescriptionAndExtensions = externalModelService.fileDescriptionAndExtensions("." + fileExtension);
         if (fileDescriptionAndExtensions == null) {
             Dialogues.showWarning("Undefined external model type.",
                     "Cannot define type of current external model, " +
@@ -265,7 +263,7 @@ public class ExternalModelEditorController implements Initializable {
         FileChooser.ExtensionFilter extensionFilter
                 = new FileChooser.ExtensionFilter(fileDescriptionAndExtensions.getLeft(), fileDescriptionAndExtensions.getRight());
 
-        File externalModelFile = chooseExternalModelFile(fileStorageService.applicationDirectory(), Collections.singletonList(extensionFilter));
+        File externalModelFile = chooseExternalModelFile(applicationSettings.applicationDirectory(), Collections.singletonList(extensionFilter));
         String oldFileName = externalModel.getName();
         String oldNodePath = externalModel.getNodePath();
         if (externalModelFile != null) {
@@ -280,7 +278,7 @@ public class ExternalModelEditorController implements Initializable {
                                     + "in the system model!");
                     statusLogger.info("replaced external model: " + oldFileName + " > " + fileName);
                     actionLogger.log(EXTERNAL_MODEL_MODIFY, oldNodePath + " > " + fileName);
-                    project.markStudyModified();
+                    project.markStudyModified(externalModel);
                 } catch (ExternalModelException e) {
                     logger.error("Unable to recognize external model type from the file: " + fileName, e);
                     Dialogues.showError("Invalid file selected.", "Unable to recognize external model type from the file: " + fileName);

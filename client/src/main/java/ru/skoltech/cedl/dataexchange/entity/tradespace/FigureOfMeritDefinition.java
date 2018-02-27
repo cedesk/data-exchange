@@ -30,7 +30,7 @@ import java.util.List;
  * Created by d.knoll on 6/23/2017.
  */
 @Entity
-public class FigureOfMeritDefinition {
+public class FigureOfMeritDefinition implements Comparable<FigureOfMeritDefinition> {
 
     @Id
     @Column(name = "id")
@@ -149,5 +149,10 @@ public class FigureOfMeritDefinition {
                 ", optimality=" + optimality +
                 ", parameterModelLink='" + parameterModelLink + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(FigureOfMeritDefinition o) {
+        return this.name.compareTo(o.name);
     }
 }

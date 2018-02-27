@@ -27,6 +27,11 @@
     </bean>
 
     <!-- persistence -->
+    <bean id="databaseViewInitializer" class="ru.skoltech.cedl.dataexchange.InitializeDatabaseViews" init-method="init">
+        <property name="applicationSettings" ref="applicationSettings"/>
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    </bean>
+
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="url" value="${datasource.driver.url}"/>
         <property name="username" value="${datasource.driver.username}"/>

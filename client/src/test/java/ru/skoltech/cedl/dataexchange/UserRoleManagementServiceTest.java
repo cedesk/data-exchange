@@ -24,11 +24,10 @@ import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
-import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
-import ru.skoltech.cedl.dataexchange.service.UserManagementService;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.service.UserService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
@@ -38,13 +37,13 @@ import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 public class UserRoleManagementServiceTest extends AbstractApplicationContextTest {
 
     private UserRoleManagementService userRoleManagementService;
-    private UserManagementService userManagementService;
+    private UserService userService;
     private SystemBuilder systemBuilder;
 
     @Before
     public void prepare() {
         userRoleManagementService = context.getBean(UserRoleManagementService.class);
-        userManagementService = context.getBean(UserManagementService.class);
+        userService = context.getBean(UserService.class);
         systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
 
         systemBuilder.modelDepth(3);
@@ -52,17 +51,15 @@ public class UserRoleManagementServiceTest extends AbstractApplicationContextTes
 
     @Test
     public void testCheckAccessAdminTest() {
-        UserManagement userManagement = userManagementService.createDefaultUserManagement();
-        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement(userManagement);
+        SystemModel systemModel = systemBuilder.build("testModel");
 
-        User admin = userManagement.getUsers().get(0);
+        UserRoleManagement userRoleManagement = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel);
+
+        User admin = userService.findAdminUser();
         Assert.assertTrue(userRoleManagementService.checkUserAdmin(userRoleManagement, admin));
 
         String testUserName = "test user";
-        userRoleManagementService.addUserWithAdminRole(userRoleManagement, userManagement, testUserName);
-
-
-        SystemModel systemModel = systemBuilder.build("testModel");
+        userRoleManagementService.addUserWithAdminRole(userRoleManagement, testUserName);
 
         SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
@@ -75,19 +72,19 @@ public class UserRoleManagementServiceTest extends AbstractApplicationContextTes
 
     @Test
     public void testCheckAccessExpertTest() {
-        UserManagement userManagement = userManagementService.createDefaultUserManagement();
-        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement(userManagement);
+        SystemModel systemModel = systemBuilder.build("testModel");
+
+        UserRoleManagement userRoleManagement = userRoleManagementService.createUserRoleManagementWithSubsystemDisciplines(systemModel);
 
         String testUserName = "testUSER";
         User testUser = new User(testUserName, "", "");
-        userManagement.getUsers().add(testUser);
+        testUser = userService.saveUser(testUser);
 
-        SystemModel systemModel = systemBuilder.build("testModel");
         SubSystemModel firstSubsystemNode = systemModel.getSubNodes().get(0);
 
         Discipline secondDiscipline = userRoleManagement.getDisciplines().get(1);
-        userRoleManagementService.addUserDiscipline(userRoleManagement, testUser, secondDiscipline);
-        Assert.assertFalse(userRoleManagementService.addDisciplineSubsystem(userRoleManagement, secondDiscipline, firstSubsystemNode));
+        Assert.assertTrue(userRoleManagementService.addUserDiscipline(userRoleManagement, testUser, secondDiscipline));
+        Assert.assertTrue(userRoleManagementService.addDisciplineSubsystem(userRoleManagement, secondDiscipline, firstSubsystemNode));
 
         ElementModel firstElementSubsystemNode = firstSubsystemNode.getSubNodes().get(0);
 

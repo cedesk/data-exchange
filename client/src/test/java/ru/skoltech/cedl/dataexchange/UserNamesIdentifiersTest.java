@@ -51,7 +51,7 @@ public class UserNamesIdentifiersTest {
         params.add(new Object[]{"z.", false});
         params.add(new Object[]{"v.f ", false});
         params.add(new Object[]{" v.f", false});
-        params.add(new Object[]{"v..f", false});
+        params.add(new Object[]{"v..f", true});
         params.add(new Object[]{"v.f.", false});
         params.add(new Object[]{"v.f", true});
         params.add(new Object[]{"v-f", true});

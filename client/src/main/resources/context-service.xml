@@ -40,14 +40,27 @@
 
     <bean id="parameterModelService" class="ru.skoltech.cedl.dataexchange.service.impl.ParameterModelServiceImpl"/>
 
-    <bean id="userManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UserManagementServiceImpl"/>
+    <bean id="fileStorageService" class="ru.skoltech.cedl.dataexchange.service.impl.FileStorageServiceImpl">
+        <property name="applicationSettings" ref="applicationSettings"/>
+        <property name="externalModelService" ref="externalModelService"/>
+        <property name="userService" ref="userService"/>
+        <property name="unitAdapter">
+            <bean class="ru.skoltech.cedl.dataexchange.structure.adapters.UnitAdapter"/>
+        </property>
+        <property name="quantityKindAdapter">
+            <bean class="ru.skoltech.cedl.dataexchange.structure.adapters.QuantityKindAdapter"/>
+        </property>
+
+    </bean>
+
+    <bean id="userService" class="ru.skoltech.cedl.dataexchange.service.impl.UserServiceImpl"/>
 
     <bean id="userRoleManagementService"
           class="ru.skoltech.cedl.dataexchange.service.impl.UserRoleManagementServiceImpl">
-        <property name="userManagementService" ref="userManagementService"/>
+        <property name="userService" ref="userService"/>
     </bean>
 
-    <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UnitManagementServiceImpl">
+    <bean id="unitService" class="ru.skoltech.cedl.dataexchange.service.impl.UnitServiceImpl">
         <property name="fileStorageService" ref="fileStorageService"/>
     </bean>
 
@@ -71,11 +84,6 @@
 
     <bean id="jsoupService" class="ru.skoltech.cedl.dataexchange.service.impl.JsoupServiceImpl"/>
 
-    <bean class="ru.skoltech.cedl.dataexchange.service.impl.SpreadsheetInputOutputExtractorServiceImpl"
-          id="spreadsheetInputOutputExtractorService">
-        <property name="unitManagementService" ref="unitManagementService"/>
-    </bean>
-
     <bean id="directoryWatchService" class="ru.skoltech.cedl.dataexchange.service.impl.SimpleDirectoryWatchService" />
 
     <!-- persistence -->
@@ -86,6 +94,15 @@
                       factory-class="org.springframework.data.envers.repository.support.EnversRevisionRepositoryFactoryBean"/>
     <jpa:repositories base-package="ru.skoltech.cedl.dataexchange.repository.revision"
                       factory-class="ru.skoltech.cedl.dataexchange.repository.custom.JpaRevisionRepositoryFactoryBean"/>
+
+    <bean id="databaseViewInitializer" class="ru.skoltech.cedl.dataexchange.InitializeDatabaseViews" init-method="init">
+        <property name="applicationSettings" ref="applicationSettings"/>
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
 
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"/>
 

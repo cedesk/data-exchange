@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static ru.skoltech.cedl.dataexchange.init.ApplicationSettings.*;
@@ -42,6 +43,7 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
 
     private static final String CEDESK_APP_FILE_COMMENT = "cedesk.app.file.comment";
 
+    private static final String DEFAULT_APPLICATION_LANGUAGE = "default.application.language";
     private static final String DEFAULT_REPOSITORY_HOST = "default.repository.host";
     private static final String DEFAULT_REPOSITORY_SCHEMA_CREATE = "default.repository.schema.create";
     private static final String DEFAULT_REPOSITORY_SCHEMA_NAME = "default.repository.schema.name";
@@ -52,7 +54,6 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
     private static final String DEFAULT_PROJECT_LAST_NAME = "default.project.last.name";
     private static final String DEFAULT_PROJECT_USE_OS_USER = "default.project.use.os.user";
     private static final String DEFAULT_PROJECT_USER_NAME = "default.project.user.name";
-    private static final String DEFAULT_PROJECT_IMPORT_NAME = "default.project.import.name";
     private static final String DEFAULT_STUDY_MODEL_DEPTH = "default.study.model.depth";
 
     private static final String REPOSITORY_JDBC_URL_PATTERN = "repository.jdbc.url.pattern";
@@ -87,6 +88,7 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
         assertThat(applicationSettings.getApplicationDistributionServerUrl(), is(cedeskProps.getProperty(APPLICATION_DISTRIBUTION_SERVER_URL)));
         assertThat(applicationSettings.getApplicationVersion(), is(cedeskProps.getProperty(APPLICATION_VERSION)));
         assertThat(applicationSettings.getCedeskAppFileComment(), is(cedeskProps.getProperty(CEDESK_APP_FILE_COMMENT)));
+        assertThat(applicationSettings.getDefaultApplicationLanguage(), is(cedeskProps.getProperty(DEFAULT_APPLICATION_LANGUAGE)));
         assertThat(applicationSettings.getDefaultRepositoryHost(), is(cedeskProps.getProperty(DEFAULT_REPOSITORY_HOST)));
         assertThat(applicationSettings.isDefaultRepositorySchemaCreate(), is(Boolean.valueOf(cedeskProps.getProperty(DEFAULT_REPOSITORY_SCHEMA_CREATE))));
         assertThat(applicationSettings.getDefaultRepositorySchemaName(), is(cedeskProps.getProperty(DEFAULT_REPOSITORY_SCHEMA_NAME)));
@@ -97,7 +99,6 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
         assertThat(applicationSettings.getDefaultProjectLastName(), is(cedeskProps.getProperty(DEFAULT_PROJECT_LAST_NAME)));
         assertThat(applicationSettings.isDefaultProjectUseOsUser(), is(Boolean.valueOf(cedeskProps.getProperty(DEFAULT_PROJECT_USE_OS_USER))));
         assertThat(applicationSettings.getDefaultProjectUserName(), is(cedeskProps.getProperty(DEFAULT_PROJECT_USER_NAME)));
-        assertThat(applicationSettings.getDefaultProjectImportName(), is(cedeskProps.getProperty(DEFAULT_PROJECT_IMPORT_NAME)));
         assertThat(applicationSettings.getDefaultStudyModelDepth(), is(cedeskProps.getProperty(DEFAULT_STUDY_MODEL_DEPTH)));
         assertThat(applicationSettings.getRepositoryJdbcUrlPattern(), is(cedeskProps.getProperty(REPOSITORY_JDBC_URL_PATTERN)));
         assertThat(applicationSettings.getRepositorySchemaVersion(), is(cedeskProps.getProperty(REPOSITORY_SCHEMA_VERSION)));
@@ -146,7 +147,20 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
         assertThat(applicationSettings.getProjectUserName(), is(projectUserName));
     }
 
+    @Test
+    public void testApplicationDirectory() {
+        assertThat(applicationSettings.applicationDirectory(), is(cedeskAppFile.getParentFile()));
+
+        String newCedeskAppDir = ".cedesk-new";
+        ApplicationSettingsImpl applicationSettings = new ApplicationSettingsImpl(newCedeskAppDir, this.applicationSettings.getCedeskAppFile());
+
+        assertThat(applicationSettings.applicationDirectory(), is(new File("target/" + newCedeskAppDir).getAbsoluteFile()));
+        assertTrue(applicationSettings.applicationDirectory().exists());
+        applicationSettings.applicationDirectory().deleteOnExit();
+    }
+
     private void testGetApplicationSettings(Properties appSettingsProps) {
+        assertThat(applicationSettings.getApplicationLanguage(), is(appSettingsProps.getProperty(APPLICATION_LANGUAGE)));
         assertThat(applicationSettings.getRepositoryHost(), is(appSettingsProps.getProperty(REPOSITORY_HOST)));
         assertThat(applicationSettings.isRepositorySchemaCreate(), is(Boolean.valueOf(appSettingsProps.getProperty(REPOSITORY_SCHEMA_CREATE))));
         assertThat(applicationSettings.getRepositorySchemaName(), is(appSettingsProps.getProperty(REPOSITORY_SCHEMA_NAME)));
@@ -157,7 +171,6 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
         assertThat(applicationSettings.getProjectLastName(), is(appSettingsProps.getProperty(PROJECT_LAST_NAME)));
         assertThat(applicationSettings.isProjectUseOsUser(), is(Boolean.valueOf(appSettingsProps.getProperty(PROJECT_USE_OS_USER))));
         assertThat(applicationSettings.getProjectUserName(), is(appSettingsProps.getProperty(PROJECT_USER_NAME)));
-        assertThat(applicationSettings.getProjectImportName(), is(appSettingsProps.getProperty(PROJECT_IMPORT_NAME)));
         assertThat(applicationSettings.getStudyModelDepth(), is(appSettingsProps.getProperty(STUDY_MODEL_DEPTH)));
     }
 }

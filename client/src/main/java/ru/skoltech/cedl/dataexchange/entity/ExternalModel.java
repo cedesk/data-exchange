@@ -21,12 +21,12 @@ import org.apache.log4j.Logger;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
-import ru.skoltech.cedl.dataexchange.ExternalModelAdapter;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.external.ExternalModelState;
 import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.structure.adapters.ExternalModelAdapter;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
@@ -52,7 +52,7 @@ import static ru.skoltech.cedl.dataexchange.external.ExternalModelState.*;
 @XmlJavaTypeAdapter(ExternalModelAdapter.class)
 @XmlType(propOrder = {"name", "lastModification", "uuid"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public abstract class ExternalModel implements Comparable<ExternalModel>, PersistedEntity {
+public abstract class ExternalModel implements Comparable<ExternalModel>, PersistedEntity, RevisedEntity {
 
     private static Logger logger = Logger.getLogger(ExternalModel.class);
 
@@ -180,7 +180,7 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         }
         return this.getParent().getParameters().stream()
                 .filter(parameterModel -> parameterModel.isValidExportReference() &&
-                        parameterModel.getExportReference().getExternalModel().getUuid().equals(uuid))
+                        parameterModel.getExportModel().getUuid().equals(uuid))
                 .collect(Collectors.toList());
     }
 
@@ -235,7 +235,7 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         }
         return this.parent.getParameters().stream()
                 .filter(parameterModel -> parameterModel.isValidValueReference() &&
-                        parameterModel.getValueReference().getExternalModel().getUuid().equals(uuid))
+                        parameterModel.getImportModel().getUuid().equals(uuid))
                 .collect(Collectors.toList());
     }
 
@@ -470,7 +470,7 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         try {
             List<ParameterModel> exportedParameterModels = this.getExportedParameterModels();
             List<Pair<String, Double>> values = exportedParameterModels.stream()
-                    .map(pm -> Pair.of(pm.getExportReference().getTarget(), pm.getEffectiveValue()))
+                    .map(pm -> Pair.of(pm.getExportField(), pm.getEffectiveValue()))
                     .collect(Collectors.toList());
             if (!values.isEmpty()) {
                 this.setValues(values);
@@ -577,7 +577,7 @@ public abstract class ExternalModel implements Comparable<ExternalModel>, Persis
         }
 
         @Override
-        public void flush() throws IOException {
+        public void close() {
             ExternalModel.this.setAttachment(this.toByteArray());
         }
     }

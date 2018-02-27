@@ -36,6 +36,7 @@ import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.*;
 import ru.skoltech.cedl.dataexchange.service.UserRoleManagementService;
+import ru.skoltech.cedl.dataexchange.service.UserService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.net.URL;
@@ -93,11 +94,16 @@ public class UserRoleManagementController implements Initializable, Closeable {
 
 
     private Project project;
+    private UserService userService;
     private UserRoleManagementService userRoleManagementService;
     private StatusLogger statusLogger;
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     public void setUserRoleManagementService(UserRoleManagementService userRoleManagementService) {
@@ -193,12 +199,9 @@ public class UserRoleManagementController implements Initializable, Closeable {
     }
 
     private void loadUsers() {
-        if (project.getUserManagement() != null) {
-            // all Users
-            this.users.clear();
-            this.users.addAll(project.getUserManagement().getUsers());
-            this.users.sort(Comparator.naturalOrder());
-        }
+        this.users.clear();
+        this.users.addAll(userService.findAllUsers());
+        this.users.sort(Comparator.naturalOrder());
     }
 
     public void addDiscipline() {
@@ -237,7 +240,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
         Objects.requireNonNull(user, "user must not be null");
         Objects.requireNonNull(user, "discipline must not be null");
         boolean duplicate = userRoleManagementService.addUserDiscipline(project.getUserRoleManagement(), user, discipline);
-        if (duplicate) {
+        if (!duplicate) {
             statusLogger.info("user '" + user.getUserName() + "' can not be added twice to a discipline '" + discipline.getName() + "'");
         }
         updateUserDisciplines(discipline);

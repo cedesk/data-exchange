@@ -12,7 +12,7 @@ CREATE PROCEDURE populate_audit(IN entityname CHAR(100), IN entity CHAR(100))
 
     SET clmns = (SELECT group_concat(column_name ORDER BY ordinal_position)
                  FROM information_schema.columns
-                 WHERE table_schema = 'cedesk_repo' AND table_name = entityname AND
+                 WHERE table_schema = 'cedesk_prod' AND table_name = entityname AND
                        column_name NOT IN ('id', 'version', 'um_id'));
 
     IF clmns != ''

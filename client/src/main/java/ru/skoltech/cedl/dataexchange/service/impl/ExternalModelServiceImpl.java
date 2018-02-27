@@ -16,8 +16,8 @@
 
 package ru.skoltech.cedl.dataexchange.service.impl;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ext.CsvExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
@@ -26,9 +26,6 @@ import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -96,8 +93,9 @@ public class ExternalModelServiceImpl implements ExternalModelService {
         ExternalModel newExternalModel = createExternalModel(externalModel.getName());
         newExternalModel.setName(externalModel.getName());
         newExternalModel.setAttachment(externalModel.getAttachment());
-        newExternalModel.init();
+        newExternalModel.setLastModification(externalModel.getLastModification());
         newExternalModel.setParent(parent);
+        newExternalModel.init();
         return newExternalModel;
     }
 
@@ -113,8 +111,8 @@ public class ExternalModelServiceImpl implements ExternalModelService {
     }
 
     private ExternalModel createExternalModel(String fileName) {
-        String fileExtension = Utils.getExtension(fileName);
-        ExternalModelType type = extension2type.get(fileExtension);
+        String fileExtension = FilenameUtils.getExtension(fileName);
+        ExternalModelType type = extension2type.get("." + fileExtension);
         if (type == null) {
             throw new IllegalArgumentException("Cannot defile external model for " + fileExtension + " type.");
         }
@@ -137,6 +135,10 @@ public class ExternalModelServiceImpl implements ExternalModelService {
 
     @Override
     public String makeExternalModelPath(ExternalModel externalModel) {
+        Objects.requireNonNull(externalModel);
+        Objects.requireNonNull(externalModel.getParent());
+        Objects.requireNonNull(externalModel.getParent().getNodePath());
+
         String path = externalModel.getParent().getNodePath();
         path = path.replace(' ', '_');
         path = path.replace(ModelNode.NODE_SEPARATOR, File.separator);
@@ -144,11 +146,16 @@ public class ExternalModelServiceImpl implements ExternalModelService {
     }
 
     @Override
-    public void storeExternalModel(ExternalModel externalModel, File folder) throws IOException {
+    public String makeExternalModelZipPath(ExternalModel externalModel) {
         Objects.requireNonNull(externalModel);
-        Objects.requireNonNull(folder);
-        File file = new File(folder, externalModel.getName());
-        Files.write(file.toPath(), externalModel.getAttachment(), StandardOpenOption.CREATE);
+        Objects.requireNonNull(externalModel.getParent());
+        Objects.requireNonNull(externalModel.getParent().getNodePath());
+
+        String externalModelPath = this.makeExternalModelPath(externalModel);
+        if (externalModelPath.startsWith("/") || externalModelPath.startsWith("\\")) {
+            externalModelPath = externalModelPath.substring(1);
+        }
+        return externalModelPath + "/";
     }
 
 }

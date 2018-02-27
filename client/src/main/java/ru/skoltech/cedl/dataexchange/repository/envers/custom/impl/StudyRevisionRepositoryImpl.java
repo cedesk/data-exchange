@@ -44,8 +44,7 @@ public class StudyRevisionRepositoryImpl implements StudyRevisionRepositoryCusto
                 .add(AuditEntity.id().eq(id))
                 .getSingleResult();
 
-        // TODO: intentionally traverse joined entities, not doing so produce an exception
-        // must be fixed somehow
+        // intentionally traverse joined entities, not doing so produce an exception
         study.getSystemModel().externalModelsIterator().forEachRemaining(externalModel -> externalModel.getParent().getNodePath());
         study.getSystemModel().parametersTreeIterator().forEachRemaining(parameterModel -> {
             parameterModel.getValueSource();

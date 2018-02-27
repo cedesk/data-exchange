@@ -24,7 +24,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.*;
 
 /**
  * Created by dknoll on 23/05/15.
@@ -32,10 +32,14 @@ import javax.xml.bind.annotation.XmlTransient;
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(name = "uniqueStudyName", columnNames = {"name"})})
 @Audited
-public class Study implements PersistedEntity, ModificationTimestamped {
+@XmlRootElement
+@XmlType(propOrder = {"name", "lastModification", "userRoleManagement", "systemModel"})
+@XmlAccessorType(XmlAccessType.FIELD)
+public class Study implements PersistedEntity, ModificationTimestamped, RevisedEntity {
 
     @Id
     @GeneratedValue
+    @XmlTransient
     private long id;
 
     @Revision
@@ -43,6 +47,7 @@ public class Study implements PersistedEntity, ModificationTimestamped {
     @XmlTransient
     private int revision;
 
+    @XmlAttribute
     private String name;
 
     @OneToOne(targetEntity = SystemModel.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -56,6 +61,7 @@ public class Study implements PersistedEntity, ModificationTimestamped {
     @XmlTransient
     private StudySettings studySettings;
 
+    @XmlAttribute
     private Long lastModification;
 
     @Version

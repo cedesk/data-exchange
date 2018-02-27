@@ -16,7 +16,6 @@
 
 package ru.skoltech.cedl.dataexchange.structure;
 
-import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
@@ -35,9 +34,6 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
     private static int parameterCnt = 1;
     private static int elementCnt = 1;
     private static int instrumentCnt = 1;
-
-    private Unit massUnit = retrieveUnit("kg");
-    private Unit powerUnit = retrieveUnit("W");
 
     @Override
     public boolean adjustsModelDepth() {
@@ -90,10 +86,8 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
         }
         if (Math.random() > .5) {
             parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-            ExternalModelReference valueReference = new ExternalModelReference();
-            valueReference.setExternalModel(null);
-            valueReference.setTarget("A1");
-            parameterModel.setValueReference(valueReference);
+            parameterModel.setImportModel(null);
+            parameterModel.setImportField("A1");
             if (Math.random() > .5) {
                 parameterModel.setIsReferenceValueOverridden(true);
                 parameterModel.setOverrideValue(randomDouble());
@@ -106,10 +100,8 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
         //parameterModel.setUnit(getNoUnit());
         if (Math.random() > .5) {
             parameterModel.setIsExported(true);
-            ExternalModelReference modelReference = new ExternalModelReference();
-            modelReference.setExternalModel(null);
-            modelReference.setTarget("Z9");
-            parameterModel.setExportReference(modelReference);
+            parameterModel.setExportModel(null);
+            parameterModel.setExportField("Z9");
         } else {
             parameterModel.setIsExported(false);
         }
@@ -117,6 +109,9 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
     }
 
     private SubSystemModel createSubSystem(String name, int level) {
+        Unit massUnit = retrieveUnit("kg");
+        Unit powerUnit = retrieveUnit("W");
+
         SubSystemModel subSystem = new SubSystemModel(name);
         subSystem.addParameter(createMassParameter(massUnit));
         subSystem.addParameter(createPowerParameter(powerUnit));
@@ -128,6 +123,9 @@ public class BasicSpaceSystemBuilder extends SystemBuilder {
     }
 
     private SystemModel createSystemModel(int modelDepth) {
+        Unit massUnit = retrieveUnit("kg");
+        Unit powerUnit = retrieveUnit("W");
+
         if (modelDepth < MIN_MODEL_DEPTH || modelDepth > MAX_MODEL_DEPTH)
             throw new IllegalArgumentException("model depth must be >= " + MIN_MODEL_DEPTH
                     + " and <=" + MAX_MODEL_DEPTH);

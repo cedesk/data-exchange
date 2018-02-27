@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.service;
 
+import javafx.fxml.LoadException;
 import javafx.scene.Node;
 
 import java.net.URL;
@@ -65,9 +66,8 @@ public interface GuiService {
     /**
      * Load content of external resource file.
      *
-     * @param resourceClass class, in relation to which required resource must be searched for
-     * @param filename      a name of file
+     * @param location location of the file.
      * @return content of resource
      */
-    String loadResourceContent(Class resourceClass, String filename) throws Exception;
+    String loadResourceContent(URL location) throws LoadException;
 }

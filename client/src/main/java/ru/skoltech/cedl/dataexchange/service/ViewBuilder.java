@@ -33,6 +33,8 @@ import ru.skoltech.cedl.dataexchange.ui.controller.FXMLLoaderFactory;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * A special builder class instances of which allow to construct JavaFX views.
@@ -48,6 +50,7 @@ public class ViewBuilder<T> {
     private static final Logger logger = Logger.getLogger(ViewBuilder.class);
 
     private FXMLLoaderFactory fxmlLoaderFactory;
+    private Locale locale;
     private String title;
     private URL location;
     private Stage primaryStage;
@@ -70,8 +73,9 @@ public class ViewBuilder<T> {
      * @param title             title of feature view
      * @param location          location of <i>*.fxml</i> file of feature view
      */
-    public ViewBuilder(FXMLLoaderFactory fxmlLoaderFactory, String title, URL location) {
+    public ViewBuilder(FXMLLoaderFactory fxmlLoaderFactory, Locale locale, String title, URL location) {
         this.fxmlLoaderFactory = fxmlLoaderFactory;
+        this.locale = locale;
         this.title = title;
         this.location = location;
     }
@@ -211,6 +215,8 @@ public class ViewBuilder<T> {
     public Stage createStage(Object... args) {
         try {
             FXMLLoader loader = fxmlLoaderFactory.createFXMLLoader(location, args);
+            loader.setResources(ResourceBundle.getBundle("i18n.MessagesBundle", locale));
+
             Parent root = loader.load();
             controller = loader.getController();
             if (displayEventHandler == null) {

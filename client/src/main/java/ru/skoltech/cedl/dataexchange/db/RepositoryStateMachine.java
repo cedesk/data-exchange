@@ -16,72 +16,60 @@
 
 package ru.skoltech.cedl.dataexchange.db;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 import java.util.EnumSet;
-import java.util.Observable;
 
 /**
  * Created by D.Knoll on 04.05.2015.
  */
-public class RepositoryStateMachine extends Observable {
+public class RepositoryStateMachine {
 
-    private RepositoryState state;
-
-    private boolean wasLoadedOrSaved = false;
-
-    public RepositoryStateMachine() {
-        state = RepositoryState.INITIAL;
-    }
-
-    public RepositoryState getState() {
-        return state;
-    }
-
-    private void setState(RepositoryState state) {
-        switch (state) {
-            case INITIAL:
-                wasLoadedOrSaved = false;
-                break;
-            case SAVED:
-                wasLoadedOrSaved = true;
-                break;
-        }
-        if (this.state != state) {
-            this.state = state;
-            setChanged();
-            notifyObservers(state);
-        }
-    }
+    private ObjectProperty<RepositoryState> stateProperty = new SimpleObjectProperty<>(RepositoryState.INITIAL);
 
     public boolean hasModifications() {
-        return state == RepositoryState.DIRTY;
+        return stateProperty.get() == RepositoryState.DIRTY;
     }
 
-    public boolean isActionPossible(RepositoryActions action) {
-        return state.possibleActions().contains(action);
-    }
-
-    public void performAction(RepositoryActions action) {
-        RepositoryState newState = state.performAction(action);
-        setState(newState);
-    }
-
-    public EnumSet<RepositoryActions> possibleActions() {
-        return state.possibleActions();
+    public boolean wasLoadedOrSaved() {
+        return stateProperty.get() == RepositoryState.SAVED;
     }
 
     public void reset() {
-        this.setState(RepositoryState.INITIAL);
+        stateProperty.set(RepositoryState.INITIAL);
+    }
+
+    public void performAction(RepositoryActions action) {
+        stateProperty.set(stateProperty.get().performAction(action));
+    }
+
+    public BooleanBinding canNewProperty() {
+        return Bindings.createBooleanBinding(() ->
+                stateProperty.get().possibleActions().contains(RepositoryActions.NEW), stateProperty);
+    }
+
+    public BooleanBinding canLoadProperty() {
+        return Bindings.createBooleanBinding(() ->
+                stateProperty.get().possibleActions().contains(RepositoryActions.LOAD), stateProperty);
+    }
+
+    public BooleanBinding canSaveProperty() {
+        return Bindings.createBooleanBinding(() ->
+                stateProperty.get().possibleActions().contains(RepositoryActions.SAVE), stateProperty);
+    }
+
+    public BooleanBinding canDiffProperty() {
+        return stateProperty.isNotEqualTo(RepositoryState.INITIAL);
     }
 
     @Override
     public String toString() {
         return "RepositoryStateMachine{" +
-                "state=" + state +
+                "state=" + stateProperty.get() +
                 '}';
-    }
-
-    public boolean wasLoadedOrSaved() {
-        return wasLoadedOrSaved;
     }
 
     public enum RepositoryState {

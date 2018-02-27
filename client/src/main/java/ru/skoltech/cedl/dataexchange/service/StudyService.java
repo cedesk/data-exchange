@@ -22,7 +22,6 @@ import org.hibernate.envers.RevisionType;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
-import ru.skoltech.cedl.dataexchange.entity.user.UserManagement;
 
 import java.util.Date;
 import java.util.List;
@@ -35,13 +34,12 @@ import java.util.List;
 public interface StudyService {
 
     /**
-     * Create {@link Study} based on {@link SystemModel} and {@link UserManagement}.
+     * Create {@link Study} based on {@link SystemModel}.
      *
      * @param systemModel    system model to base on
-     * @param userManagement user management to base on
      * @return new instance of {@link Study}
      */
-    Study createStudy(SystemModel systemModel, UserManagement userManagement);
+    Study createStudy(SystemModel systemModel);
 
     /**
      * Retrieve names of all studies.

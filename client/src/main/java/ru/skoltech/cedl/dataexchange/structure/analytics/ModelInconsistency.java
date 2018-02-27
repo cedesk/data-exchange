@@ -134,7 +134,7 @@ public class ModelInconsistency {
             if (pm.getOverrideValue() != null) {
                 modelInconsistencies.add(new ModelInconsistency("Manual parameter must not have override value", Severity.WARNING, pm.getNodePath(), pm));
             }
-            if (pm.getImportModel() != null || pm.getImportField() != null || pm.getValueReference() != null) {
+            if (pm.getImportModel() != null || pm.getImportField() != null) {
                 modelInconsistencies.add(new ModelInconsistency("Manual parameter must not have import reference", Severity.WARNING, pm.getNodePath(), pm));
             }
             if (pm.getCalculation() != null) {
@@ -157,19 +157,19 @@ public class ModelInconsistency {
             if (pm.getIsReferenceValueOverridden() && pm.getOverrideValue() == null) {
                 modelInconsistencies.add(new ModelInconsistency("Linked parameter with override, must have an override value", Severity.ERROR, pm.getNodePath(), pm));
             }
-            if (pm.getImportModel() != null || pm.getImportField() != null || pm.getValueReference() != null) {
+            if (pm.getImportModel() != null || pm.getImportField() != null) {
                 modelInconsistencies.add(new ModelInconsistency("Linked parameter must not have import reference", Severity.WARNING, pm.getNodePath(), pm));
             }
             if (pm.getCalculation() != null) {
                 modelInconsistencies.add(new ModelInconsistency("Linked parameter must not have a calculation", Severity.WARNING, pm.getNodePath(), pm));
             }
         } else if (pm.getValueSource() == ParameterValueSource.REFERENCE) {
-            if (pm.getValueReference() == null) {
+            if (pm.getImportModel() == null && pm.getExportField() == null) {
                 modelInconsistencies.add(new ModelInconsistency("Reference parameter must a have import reference", Severity.ERROR, pm.getNodePath(), pm));
             } else {
                 List<ExternalModel> externalModels = pm.getParent().getExternalModels();
                 Map<String, ExternalModel> externalModelDictionary = externalModels.stream().collect(Collectors.toMap(ExternalModel::getUuid, Function.identity()));
-                ExternalModel actualExternalModel = pm.getValueReference().getExternalModel();
+                ExternalModel actualExternalModel = pm.getImportModel();
                 String uuid = actualExternalModel.getUuid();
                 ExternalModel modelFromDictionary = externalModelDictionary.get(uuid);
                 if (modelFromDictionary == null) {
@@ -205,7 +205,7 @@ public class ModelInconsistency {
             if (pm.getIsReferenceValueOverridden() && pm.getOverrideValue() == null) {
                 modelInconsistencies.add(new ModelInconsistency("Calculated parameter with override, must have an override value", Severity.ERROR, pm.getNodePath(), pm));
             }
-            if (pm.getImportModel() != null || pm.getImportField() != null || pm.getValueReference() != null) {
+            if (pm.getImportModel() != null || pm.getImportField() != null) {
                 modelInconsistencies.add(new ModelInconsistency("Calculated parameter must not have import reference", Severity.WARNING, pm.getNodePath(), pm));
             }
         }
