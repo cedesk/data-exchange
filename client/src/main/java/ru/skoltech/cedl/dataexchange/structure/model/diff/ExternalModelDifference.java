@@ -19,11 +19,9 @@ package ru.skoltech.cedl.dataexchange.structure.model.diff;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
@@ -142,7 +140,7 @@ public class ExternalModelDifference extends ModelDifference {
             }
             default: {
                 logger.error("MERGE IMPOSSIBLE:\n" + toString());
-                throw new NotImplementedException();
+                throw new UnsupportedOperationException();
             }
         }
     }
@@ -185,7 +183,7 @@ public class ExternalModelDifference extends ModelDifference {
             }
             default: {
                 logger.error("MERGE IMPOSSIBLE:\n" + toString());
-                throw new NotImplementedException();
+                throw new UnsupportedOperationException();
             }
         }
     }

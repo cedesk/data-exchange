@@ -21,7 +21,6 @@ import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Created by D.Knoll on 12.05.2016.
@@ -92,7 +91,7 @@ public class StudyDifference extends ModelDifference {
 
     @Override
     public void revertDifference() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
