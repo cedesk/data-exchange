@@ -62,9 +62,10 @@ public class DsmView extends ScrollPane implements Initializable {
     public void setHighlightedElements(List<String> elementNames) {
         elementNames.forEach(elementName -> {
             Pair<DiagramElement, DiagramElement> diagramElements = elements.get(elementName);
-            if (diagramElements != null)
+            if (diagramElements != null) {
                 diagramElements.getLeft().setHighlighted(true);
-            diagramElements.getRight().setHighlighted(true);
+                diagramElements.getRight().setHighlighted(true);
+            }
         });
     }
 
