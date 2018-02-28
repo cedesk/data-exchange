@@ -47,6 +47,8 @@ import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -120,15 +122,6 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testExportImportStudyZip() throws IOException {
-        File file = new File("target", "dummy-study.zip");
-        fileStorageService.exportStudyToZip(originalStudy, file);
-        Study importedStudy = fileStorageService.importStudyFromZip(file);
-        this.checkImportedStudy(importedStudy);
-        file.deleteOnExit();
-    }
-
-    @Test
     public void testExportImportStudy() throws IOException {
         File file = new File("target", "dummy-study.xml");
         fileStorageService.exportStudy(originalStudy, file);
@@ -137,54 +130,13 @@ public class ExportImportTest extends AbstractApplicationContextTest {
         file.deleteOnExit();
     }
 
-    private void checkImportedStudy(Study importedStudy) {
-        //        assertEquals(originalStudy, importedStudy);
-        assertEquals(originalStudy.getName(), importedStudy.getName());
-        assertThat(importedStudy.getSystemModel().getExternalModels(), hasItem(excelExternalModel));
-        assertThat(importedStudy.getSystemModel().getExternalModels(), hasItem(csvExternalModel));
-        importedStudy.getSystemModel().getExternalModels()
-                .forEach(externalModel -> assertTrue(externalModel.state().isInitialized()));
-
-        Discipline[] userDisciplines = importedStudy.getUserRoleManagement().getUserDisciplines()
-                .stream().map(UserDiscipline::getDiscipline).toArray(Discipline[]::new);
-        Discipline[] subsystemDisciplines = importedStudy.getUserRoleManagement().getDisciplineSubSystems()
-                .stream().map(DisciplineSubSystem::getDiscipline).toArray(Discipline[]::new);
-        SubSystemModel[] disciplineSubSystemModels = importedStudy.getUserRoleManagement().getDisciplineSubSystems()
-                .stream().map(DisciplineSubSystem::getSubSystem).toArray(SubSystemModel[]::new);
-
-        assertThat(importedStudy.getUserRoleManagement().getDisciplines(), hasItems(userDisciplines));
-        assertThat(importedStudy.getUserRoleManagement().getDisciplines(), hasItems(subsystemDisciplines));
-        assertThat(importedStudy.getSystemModel().getSubNodes(), hasItems(disciplineSubSystemModels));
-
-        importedStudy.getUserRoleManagement().getDisciplines()
-                .forEach(discipline -> assertEquals(importedStudy.getUserRoleManagement(), discipline.getUserRoleManagement()));
-        importedStudy.getUserRoleManagement().getUserDisciplines()
-                .forEach(userDiscipline -> assertEquals(importedStudy.getUserRoleManagement(), userDiscipline.getUserRoleManagement()));
-        importedStudy.getUserRoleManagement().getDisciplineSubSystems()
-                .forEach(disciplineSubSystem -> assertEquals(importedStudy.getUserRoleManagement(), disciplineSubSystem.getUserRoleManagement()));
-    }
-
     @Test
-    public void testImportSystemModel() throws IOException, URISyntaxException {
-        File file1 = new File(ExportImportTest.class.getResource("/model1.xml").toURI());
-        SystemModel systemModel1 = fileStorageService.importSystemModel(file1);
-
-        File otherFile1 = new File(ExportImportTest.class.getResource("/model1.xml").toURI());
-        SystemModel otherSystemModel1 = fileStorageService.importSystemModel(otherFile1);
-
-        File file2 = new File(ExportImportTest.class.getResource("/model2.xml").toURI());
-        SystemModel systemModel2 = fileStorageService.importSystemModel(file2);
-
-        assertEquals(systemModel1, otherSystemModel1);
-        assertNotEquals(systemModel1, systemModel2);
-
-        ModelNode missionNode1 = systemModel1.getSubNodesMap().get("Communication");
-        ModelNode missionNode2 = systemModel2.getSubNodesMap().get("Communication2");
-
-        systemModel1.removeSubNode(missionNode1);
-        systemModel2.removeSubNode(missionNode2);
-
-        assertEquals(systemModel1, systemModel2);
+    public void testExportImportStudyZip() throws IOException {
+        File file = new File("target", "dummy-study.zip");
+        fileStorageService.exportStudyToZip(originalStudy, file);
+        Study importedStudy = fileStorageService.importStudyFromZip(file);
+        this.checkImportedStudy(importedStudy);
+        file.deleteOnExit();
     }
 
     @Test
@@ -217,28 +169,6 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testImportOldSystemModel() throws IOException {
-        File modelFile = new File("target", "model-old.xml");
-
-        SystemModel systemModel = fileStorageService.importSystemModel(modelFile);
-
-        assertNotNull(systemModel);
-        assertFalse(systemModel.getExternalModels().isEmpty());
-        assertEquals(1, systemModel.getExternalModels().size());
-        ExternalModel externalModel = systemModel.getExternalModels().get(0);
-        assertNotNull(externalModel);
-        assertTrue(externalModel instanceof ExcelExternalModel);
-        assertTrue(externalModel.state().isInitialized());
-    }
-
-    @Test
-    public void testExportImportCalculation() {
-//        Calculation calculation = new Calculation();
-//        calculation.setArguments();
-        //TODO
-    }
-
-    @Test
     public void testExportImportUnitManagement() throws IOException {
         unitService.createDefaultUnits();
         File unitManagementFile = new File("target/test-classes", "dummy-unit-management.xml");
@@ -255,13 +185,71 @@ public class ExportImportTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testExportImportUserRoleManagement() {
-//        UserManagement userManagement = userService.findUserManagement();
-//
-//        UserRoleManagement userRoleManagement = userRoleManagementService.createDefaultUserRoleManagement(userManagement);
-//        File userRoleManagementFile = new File("target", "dummy-user-role-management.xml");
-//        fileStorageService.exportUserRoleManagement(userRoleManagement, userRoleManagementFile);
-//        UserRoleManagement userRoleManagementImported = fileStorageService.importUserRoleManagement(userRoleManagementFile);
-//        assertEquals(userRoleManagement, userRoleManagementImported);
+    public void testImportOldSystemModel() throws IOException, URISyntaxException {
+        File file = new File(ExportImportTest.class.getResource("/model-old.xml").toURI());
+        File modelFile = new File("target", "model-old.xml");
+        Files.copy(file.toPath(), modelFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        SystemModel systemModel = fileStorageService.importSystemModel(modelFile);
+
+        assertNotNull(systemModel);
+        assertFalse(systemModel.getExternalModels().isEmpty());
+        assertEquals(1, systemModel.getExternalModels().size());
+        ExternalModel externalModel = systemModel.getExternalModels().get(0);
+        assertNotNull(externalModel);
+        assertTrue(externalModel instanceof ExcelExternalModel);
+        assertTrue(externalModel.state().isInitialized());
+        modelFile.deleteOnExit();
     }
+
+    @Test
+    public void testImportSystemModel() throws IOException, URISyntaxException {
+        File file1 = new File(ExportImportTest.class.getResource("/model1.xml").toURI());
+        SystemModel systemModel1 = fileStorageService.importSystemModel(file1);
+
+        File otherFile1 = new File(ExportImportTest.class.getResource("/model1.xml").toURI());
+        SystemModel otherSystemModel1 = fileStorageService.importSystemModel(otherFile1);
+
+        File file2 = new File(ExportImportTest.class.getResource("/model2.xml").toURI());
+        SystemModel systemModel2 = fileStorageService.importSystemModel(file2);
+
+        assertEquals(systemModel1, otherSystemModel1);
+        assertNotEquals(systemModel1, systemModel2);
+
+        ModelNode missionNode1 = systemModel1.getSubNodesMap().get("Communication");
+        ModelNode missionNode2 = systemModel2.getSubNodesMap().get("Communication2");
+
+        systemModel1.removeSubNode(missionNode1);
+        systemModel2.removeSubNode(missionNode2);
+
+        assertEquals(systemModel1, systemModel2);
+    }
+
+    private void checkImportedStudy(Study importedStudy) {
+        //        assertEquals(originalStudy, importedStudy);
+        assertEquals(originalStudy.getName(), importedStudy.getName());
+        assertThat(importedStudy.getSystemModel().getExternalModels(), hasItem(excelExternalModel));
+        assertThat(importedStudy.getSystemModel().getExternalModels(), hasItem(csvExternalModel));
+        importedStudy.getSystemModel().getExternalModels()
+                .forEach(externalModel -> assertTrue(externalModel.state().isInitialized()));
+
+        Discipline[] userDisciplines = importedStudy.getUserRoleManagement().getUserDisciplines()
+                .stream().map(UserDiscipline::getDiscipline).toArray(Discipline[]::new);
+        Discipline[] subsystemDisciplines = importedStudy.getUserRoleManagement().getDisciplineSubSystems()
+                .stream().map(DisciplineSubSystem::getDiscipline).toArray(Discipline[]::new);
+        SubSystemModel[] disciplineSubSystemModels = importedStudy.getUserRoleManagement().getDisciplineSubSystems()
+                .stream().map(DisciplineSubSystem::getSubSystem).toArray(SubSystemModel[]::new);
+
+        assertThat(importedStudy.getUserRoleManagement().getDisciplines(), hasItems(userDisciplines));
+        assertThat(importedStudy.getUserRoleManagement().getDisciplines(), hasItems(subsystemDisciplines));
+        assertThat(importedStudy.getSystemModel().getSubNodes(), hasItems(disciplineSubSystemModels));
+
+        importedStudy.getUserRoleManagement().getDisciplines()
+                .forEach(discipline -> assertEquals(importedStudy.getUserRoleManagement(), discipline.getUserRoleManagement()));
+        importedStudy.getUserRoleManagement().getUserDisciplines()
+                .forEach(userDiscipline -> assertEquals(importedStudy.getUserRoleManagement(), userDiscipline.getUserRoleManagement()));
+        importedStudy.getUserRoleManagement().getDisciplineSubSystems()
+                .forEach(disciplineSubSystem -> assertEquals(importedStudy.getUserRoleManagement(), disciplineSubSystem.getUserRoleManagement()));
+    }
+
 }

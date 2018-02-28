@@ -19,7 +19,6 @@ package ru.skoltech.cedl.dataexchange.entity.model;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.envers.Audited;
-import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 
@@ -76,25 +75,6 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
     public Iterator<ExternalModel> externalModelsIterator() {
         return super.externalModelsIterator();
     }
-
-    /**
-     * @return the most recent modification time of any of the sub-nodes, external models or any of their parameters.
-     */
-    @Deprecated
-    public Long findLatestModification() {
-        Long latest = Utils.INVALID_TIME;
-        Iterator<ModelNode> iterator = treeIterator();
-        while (iterator.hasNext()) {
-            ModelNode modelNode = iterator.next();
-
-            Long modelNodeLastModification = modelNode.findLatestModificationCurrentNode();
-            if (modelNodeLastModification != null && modelNodeLastModification > latest) {
-                latest = modelNodeLastModification;
-            }
-        }
-        return latest;
-    }
-    //----------------
 
     /**
      * @return a map for looking up any parameter in the system model (tree) by it's UUID.
