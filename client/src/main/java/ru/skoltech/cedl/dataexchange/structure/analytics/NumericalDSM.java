@@ -25,6 +25,7 @@ import java.util.Locale;
 /**
  * Created by D.Knoll on 03.12.2016.
  */
+@Deprecated
 public class NumericalDSM {
     private List<String> elementNamesList = new LinkedList<>();
     private List<Triple<Integer, Integer, Float>> linkList = new LinkedList<>();

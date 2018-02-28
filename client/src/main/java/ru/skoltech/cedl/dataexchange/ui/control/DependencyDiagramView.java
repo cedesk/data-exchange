@@ -193,11 +193,22 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         overriddenLabel.setLayoutY(0);
         overriddenLabel.toBack();
 
+        // explanation
+        Label explanation = new Label("Arrows show direction of information flow!");
+        explanation.setLabelFor(rect);
+        explanation.setMinWidth(ELEMENT_WIDTH);
+        explanation.setAlignment(Pos.CENTER);
+        explanation.setMinWidth(LEGEND_LABEL_HEIGHT);
+        explanation.setLayoutX(overriddenLabel.getLayoutX() + overriddenLabel.getMinWidth() + ELEMENT_PADDING);
+        explanation.setLayoutY(0);
+        explanation.toBack();
+
         this.getChildren().add(rect);
         this.getChildren().add(caption);
         this.getChildren().addAll(consistentLine, consistentLabel);
         this.getChildren().addAll(notPropLine, notPropLabel);
         this.getChildren().addAll(overriddenLine, arrow, overriddenLabel);
+        this.getChildren().add(explanation);
     }
 
     private ConnectionState getParameterLinkState(ParameterModel pm) {
