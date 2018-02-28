@@ -89,6 +89,8 @@
     <bean id="tradespaceModelBridge" class="ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge"
           scope="prototype">
         <constructor-arg ref="project"/>
+        <property name="studyService" ref="studyService"/>
+        <property name="repositoryStateMachine" ref="repositoryStateMachine"/>
     </bean>
 
     <!-- Schedule a task for regular checking new version of remote study -->

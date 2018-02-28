@@ -137,8 +137,6 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TradespaceController">
-        <property name="project" ref="project"/>
-        <property name="applicationSettings" ref="applicationSettings"/>
         <property name="tradespaceModelBridge" ref="tradespaceModelBridge"/>
         <property name="guiService" ref="guiService"/>
     </bean>

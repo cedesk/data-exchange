@@ -16,10 +16,12 @@
 
 package ru.skoltech.cedl.dataexchange.entity.tradespace;
 
+import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterTreeIterator;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.service.impl.StudyServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.Collection;
@@ -35,9 +37,15 @@ public class TradespaceToStudyBridge {
     private final Project project;
     private SystemModel systemModel;
     private Map<String, ParameterModel> parameterDictionary;
+    private StudyServiceImpl studyService;
+    private RepositoryStateMachine repositoryStateMachine;
 
     public TradespaceToStudyBridge(Project project) {
         this.project = project;
+    }
+
+    public String getCurrentRevisionName() {
+        return studyService.findCurrentStudyRevisionTag(project.getStudy());
     }
 
     public Collection<ParameterModel> getModelOutputParameters() {
@@ -55,11 +63,27 @@ public class TradespaceToStudyBridge {
         return parameterDictionary;
     }
 
+    public Long getStudyId() {
+        return project.getStudy().getId();
+    }
+
     private SystemModel getSystemModel() {
         if (systemModel == null) {
             systemModel = project.getSystemModel();
         }
         return systemModel;
+    }
+
+    public String getStudyName() {
+        return project.getProjectName();
+    }
+
+    public boolean isSaved() {
+        return repositoryStateMachine.hasModifications();
+    }
+
+    public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
+        this.repositoryStateMachine = repositoryStateMachine;
     }
 
     public String getParameterName(String parameterUuid) {
@@ -93,5 +117,9 @@ public class TradespaceToStudyBridge {
             return parameterModel.getEffectiveValue();
         }
         return null;
+    }
+
+    public void setStudyService(StudyServiceImpl studyService) {
+        this.studyService = studyService;
     }
 }

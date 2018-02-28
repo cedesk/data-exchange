@@ -30,15 +30,14 @@ import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.util.Callback;
+import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
-import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.jpa.TradespaceRepository;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
-import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.Views;
 import ru.skoltech.cedl.dataexchange.ui.control.tradespace.*;
 import ru.skoltech.cedl.dataexchange.ui.utils.BeanPropertyCellValueFactory;
@@ -51,7 +50,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Controller for tradespace.
+ * Controller for Tradespace.
  * <p>
  * Created by d.knoll on 23/06/2017.
  */
@@ -87,16 +86,17 @@ public class TradespaceController implements Initializable {
     @FXML
     private Button addEpochButton;
     @FXML
+    private Button addDesignPointButton;
+    @FXML
+    private ChoiceBox<Epoch> epochSelectorChoice;
+    @FXML
     private Tab tradespaceScatterPlotParent;
     @FXML
     private Tab tradespacePolarPlotParent;
 
-    private Project project;
-    private ApplicationSettings applicationSettings;
     private GuiService guiService;
     private TradespaceToStudyBridge tradespaceToStudyBridge;
 
-    private long studyId;
     private ObjectProperty<MultitemporalTradespace> tradespaceProperty = new SimpleObjectProperty<>();
     private ListProperty<FigureOfMeritDefinition> figureOfMeritsProperty = new SimpleListProperty<>();
     private ListProperty<Epoch> epochsProperty = new SimpleListProperty<>();
@@ -108,24 +108,95 @@ public class TradespaceController implements Initializable {
         this.tradespaceRepository = tradespaceRepository;
     }
 
-    public void setApplicationSettings(ApplicationSettings applicationSettings) {
-        this.applicationSettings = applicationSettings;
-    }
-
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    private void setMultitemporalTradespace(MultitemporalTradespace multitemporalTradespace) {
+        tradespaceProperty.set(multitemporalTradespace);
+
+        if (multitemporalTradespace != null) {
+            figureOfMeritsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getDefinitions()));
+            epochsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
+            epochsSelectedProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
+            designPointsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getDesignPoints()));
+        } else {
+            figureOfMeritsProperty.setValue(FXCollections.emptyObservableList());
+            epochsProperty.setValue(FXCollections.emptyObservableList());
+            epochsSelectedProperty.setValue(FXCollections.emptyObservableList());
+            designPointsProperty.setValue(FXCollections.emptyObservableList());
+        }
     }
 
     public void setTradespaceModelBridge(TradespaceToStudyBridge tradespaceModelBridge) {
         this.tradespaceToStudyBridge = tradespaceModelBridge;
     }
 
+    public void addDesignPointToTradespace() {
+        // TODO: if project is dirty ask user to save and tag first
+        tradespaceToStudyBridge.isSaved();
+        Epoch epoch = epochSelectorChoice.getSelectionModel().getSelectedItem();
+        DesignPoint dp = new DesignPoint();
+        dp.setEpoch(epoch);
+        List<FigureOfMeritValue> fomValues = figureOfMeritsProperty.stream()
+                .map(fom -> {
+                    Double parameterValue = tradespaceToStudyBridge.getParameterValue(fom.getParameterModelLink());
+                    return new FigureOfMeritValue(fom, parameterValue);
+                })
+                .collect(Collectors.toList());
+        dp.setValues(fomValues);
+        String currentRevisionName = tradespaceToStudyBridge.getCurrentRevisionName();
+        dp.setDescription(currentRevisionName); // TODO: if null ask user to save and tag first
+        designPointsProperty.add(dp);
+    }
+
+    public void addEpoch() {
+        Optional<String> epochStringOptional = Dialogues.inputEpoch();
+        if (epochStringOptional.isPresent()) {
+            String epochString = epochStringOptional.get().trim();
+            // TODO: add input validation
+            if (epochString.isEmpty()) {
+                return;
+            }
+
+            int year = Integer.valueOf(epochString.trim());
+            Epoch epoch = new Epoch(year);
+            if (!epochsProperty.contains(epoch)) {
+                epochsProperty.add(epoch);
+                epochsProperty.sorted();
+                epochsSelectedProperty.add(epoch);
+            }
+        }
+    }
+
+    public void addFigureOfMerit() {
+        Optional<String> figureOfMeritChoice = Dialogues.inputParameterName("figure of merit");
+        if (figureOfMeritChoice.isPresent()) {
+            String figureOfMeritName = figureOfMeritChoice.get();
+            boolean hasSameName = figureOfMeritsProperty.stream().anyMatch(fom -> figureOfMeritName.equals(fom.getName()));
+            if (hasSameName) {
+                Dialogues.showWarning("Duplicate figure of merit name", "Such a figure of merit was already defined!");
+            } else {
+                FigureOfMeritDefinition fom = new FigureOfMeritDefinition(figureOfMeritName, "none", Optimality.MAXIMAL); // TODO add unit
+                figureOfMeritsProperty.add(fom);
+            }
+        }
+    }
+
+    public void importTadespaceFromCSV() {
+        ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from CSV File", Views.IMPORT_TRADESPACE_FROM_CSV_VIEW);
+        this.importTadespace(viewBuilder);
+    }
+
+    public void importTadespaceFromExcel() {
+        ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from Excel File", Views.IMPORT_TRADESPACE_FROM_EXCEL_VIEW);
+        this.importTadespace(viewBuilder);
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        studyNameLabel.setText(tradespaceToStudyBridge.getStudyName());
+
         Node tradespaceScatterPlotNode = guiService.createControl(Views.TRADESPACE_SCATTER_PLOT_VIEW);
         tradespaceScatterPlotParent.setContent(tradespaceScatterPlotNode);
         TradespaceScatterPlotController tradespaceScatterPlotController = (TradespaceScatterPlotController) tradespaceScatterPlotNode.getUserData();
@@ -169,8 +240,6 @@ public class TradespaceController implements Initializable {
             figureOfMeritTable.refresh();
         };
         figureOfMeritDeleteColumn.setCellFactory(p -> new FigureOfMeritDefinitionDeleteCell(deleteFigureOfMeritConsumer));
-
-        studyId = project.getStudy().getId();
 
         epochTable.itemsProperty().bind(epochsProperty);
         epochTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -220,92 +289,31 @@ public class TradespaceController implements Initializable {
         );
 
         addEpochButton.disableProperty().bind(epochsProperty.isNull());
-
-        if (applicationSettings.isProjectLastAutoload()) {
-            loadTradespace();
-        }
-    }
-
-    private void setMultitemporalTradespace(MultitemporalTradespace multitemporalTradespace) {
-        tradespaceProperty.set(multitemporalTradespace);
-
-        if (multitemporalTradespace != null) {
-            figureOfMeritsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getDefinitions()));
-            epochsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
-            epochsSelectedProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
-            designPointsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getDesignPoints()));
-        } else {
-            figureOfMeritsProperty.setValue(FXCollections.emptyObservableList());
-            epochsProperty.setValue(FXCollections.emptyObservableList());
-            epochsSelectedProperty.setValue(FXCollections.emptyObservableList());
-            designPointsProperty.setValue(FXCollections.emptyObservableList());
-        }
-        studyNameLabel.setText(project.getStudy().getName());
-    }
-
-    public void addFigureOfMerit() {
-        Optional<String> figureOfMeritChoice = Dialogues.inputParameterName("figure of merit");
-        if (figureOfMeritChoice.isPresent()) {
-            String figureOfMeritName = figureOfMeritChoice.get();
-            boolean hasSameName = figureOfMeritsProperty.stream().anyMatch(fom -> figureOfMeritName.equals(fom.getName()));
-            if (hasSameName) {
-                Dialogues.showWarning("Duplicate figure of merit name", "Such a figure of merit was already defined!");
-            } else {
-                FigureOfMeritDefinition fom = new FigureOfMeritDefinition(figureOfMeritName, "none", Optimality.MAXIMAL); // TODO add unit
-                figureOfMeritsProperty.add(fom);
-            }
-        }
-    }
-
-    public void addEpoch() {
-        Optional<String> epochStringOptional = Dialogues.inputEpoch();
-        if (epochStringOptional.isPresent()) {
-            String epochString = epochStringOptional.get().trim();
-            // TODO: add input validation
-            if (epochString.isEmpty()) {
-                return;
+        epochSelectorChoice.setConverter(new StringConverter<Epoch>() {
+            @Override
+            public Epoch fromString(String string) {
+                return null;
             }
 
-            int year = Integer.valueOf(epochString.trim());
-            Epoch epoch = new Epoch(year);
-            if (epochsProperty.contains(epoch)) {
-                return;
+            @Override
+            public String toString(Epoch epoch) {
+                return epoch.asText();
             }
-            epochsProperty.add(epoch);
-            epochsSelectedProperty.add(epoch);
+        });
+        epochSelectorChoice.itemsProperty().bind(epochsProperty);
+        addDesignPointButton.disableProperty().bind(epochSelectorChoice.getSelectionModel().selectedItemProperty().isNull());
 
-            DesignPoint dp = new DesignPoint();
-            dp.setEpoch(epoch);
-            List<FigureOfMeritValue> fomValues = figureOfMeritsProperty.stream()
-                    .map(fom -> {
-                        Double parameterValue = tradespaceToStudyBridge.getParameterValue(fom.getParameterModelLink());
-                        return new FigureOfMeritValue(fom, parameterValue);
-                    })
-                    .collect(Collectors.toList());
-            dp.setValues(fomValues);
-            dp.setDescription("from study model"); // TODO: add revision ... tradespaceRepository.getCurrentRevisionNumber()
-            designPointsProperty.add(dp);
-        }
+        loadTradespace();
     }
 
-    public void importTadespaceFromCSV() {
-        ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from CSV File", Views.IMPORT_TRADESPACE_FROM_CSV_VIEW);
-        this.importTadespace(viewBuilder);
-    }
-
-    public void importTadespaceFromExcel() {
-        ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from Excel File", Views.IMPORT_TRADESPACE_FROM_EXCEL_VIEW);
-        this.importTadespace(viewBuilder);
+    public void loadTradespace() {
+        MultitemporalTradespace tradespace = tradespaceRepository.findOne(tradespaceToStudyBridge.getStudyId());
+        this.newTradespace(tradespace);
+        logger.info("Tradespace loaded successfully");
     }
 
     public void newTradespace() {
         this.newTradespace(null);
-    }
-
-    public void loadTradespace() {
-        MultitemporalTradespace tradespace = tradespaceRepository.findOne(studyId);
-        this.newTradespace(tradespace);
-        logger.info("Tradespace loaded successfully");
     }
 
     public void saveTradespace() {
@@ -320,6 +328,13 @@ public class TradespaceController implements Initializable {
         newTradespace = tradespaceRepository.saveAndFlush(newTradespace);
         tradespaceProperty.set(newTradespace);
         logger.info("Tradespace saved successfully");
+    }
+
+    private void importTadespace(ViewBuilder viewBuilder) {
+        viewBuilder.resizable(false);
+        viewBuilder.modality(Modality.APPLICATION_MODAL);
+        viewBuilder.applyEventHandler(event -> this.newTradespace((MultitemporalTradespace) event.getSource()));
+        viewBuilder.showAndWait();
     }
 
     private void newTradespace(MultitemporalTradespace tradespace) {
@@ -337,16 +352,9 @@ public class TradespaceController implements Initializable {
         }
 
         MultitemporalTradespace newTradespace = tradespace != null ? tradespace : new MultitemporalTradespace();
-        newTradespace.setId(studyId);
+        newTradespace.setId(tradespaceToStudyBridge.getStudyId());
         this.setMultitemporalTradespace(tradespace);
         logger.info("New tradespace initialized");
-    }
-
-    private void importTadespace(ViewBuilder viewBuilder) {
-        viewBuilder.resizable(false);
-        viewBuilder.modality(Modality.APPLICATION_MODAL);
-        viewBuilder.applyEventHandler(event -> this.newTradespace((MultitemporalTradespace) event.getSource()));
-        viewBuilder.showAndWait();
     }
 
     private class EpochCell extends TableCell<Epoch, Epoch> {
