@@ -16,96 +16,136 @@
   ~ limitations under the License.
   -->
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<AnchorPane prefHeight="600.0" prefWidth="1100.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.121"
+<BorderPane prefHeight="600.0" prefWidth="1100.0" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.121"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.TradespaceController">
-    <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                AnchorPane.topAnchor="0.0">
-        <top>
-            <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-                <Button mnemonicParsing="false" onAction="#loadTradespace" text="Load"/>
-                <Button mnemonicParsing="false" onAction="#saveTradespace" text="Save"/>
-                <Separator orientation="VERTICAL"/>
-                <Button mnemonicParsing="false" onAction="#importTadespaceFromCSV" text="Import CSV"/>
-                <Button mnemonicParsing="false" onAction="#importTadespaceFromExcel" text="Import Excel"/>
-                <Separator orientation="VERTICAL"/>
-                <Label fx:id="studyNameLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
-                    <HBox.margin>
-                        <Insets right="4.0"/>
-                    </HBox.margin>
-                    <tooltip>
-                        <Tooltip text="Project"/>
-                    </tooltip>
-                    <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="CUBE"/>
-                    </graphic>
-                </Label>
-            </ToolBar>
-        </top>
-        <center>
-            <SplitPane dividerPositions="0.55" prefHeight="600.0" prefWidth="900.0">
-                <AnchorPane SplitPane.resizableWithParent="true">
-                    <TabPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                             AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                        <Tab fx:id="tradespaceScatterPlotParent" closable="false" text="Scatter Chart"/>
-                        <Tab fx:id="tradespacePolarPlotParent" closable="false" text="Polar Chart"/>
-                    </TabPane>
-                </AnchorPane>
-                <BorderPane>
-                    <center>
-                        <TitledPane fx:id="figuresOfMeritEditorPane" collapsible="false"
-                                    text="Figures of Merit Definitions"/>
-                    </center>
-                    <bottom>
+    <top>
+        <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <Button mnemonicParsing="false" onAction="#newTradespace" text="New"/>
+            <Button mnemonicParsing="false" onAction="#loadTradespace" text="Load"/>
+            <Button mnemonicParsing="false" fx:id="saveTradespaceButton" onAction="#saveTradespace" text="Save"/>
+            <Separator orientation="VERTICAL"/>
+            <Button mnemonicParsing="false" onAction="#importTadespaceFromCSV" text="Import CSV"/>
+            <Button mnemonicParsing="false" onAction="#importTadespaceFromExcel" text="Import Excel"/>
+            <Separator orientation="VERTICAL"/>
+            <Label fx:id="studyNameLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
+                <HBox.margin>
+                    <Insets right="4.0"/>
+                </HBox.margin>
+                <tooltip>
+                    <Tooltip text="Project"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="CUBE"/>
+                </graphic>
+            </Label>
+        </ToolBar>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.55" prefHeight="600.0" prefWidth="900.0">
+            <AnchorPane SplitPane.resizableWithParent="true">
+                <TabPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                         AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <Tab fx:id="tradespaceScatterPlotParent" closable="false" text="Scatter Chart"/>
+                    <Tab fx:id="tradespacePolarPlotParent" closable="false" text="Polar Chart"/>
+                </TabPane>
+            </AnchorPane>
+            <BorderPane>
+                <center>
+                    <TitledPane collapsible="false" text="Figures of Merit Definitions">
                         <BorderPane>
+                            <padding>
+                                <Insets/>
+                            </padding>
                             <center>
-                                <TitledPane collapsible="false" text="Epochs">
-                                    <HBox>
-                                        <TextField fx:id="epochText" editable="false" prefWidth="300"/>
-                                        <Button minWidth="28" mnemonicParsing="false" onAction="#editEpochs">
-                                            <tooltip>
-                                                <Tooltip text="Edit the epochs"/>
-                                            </tooltip>
-                                            <graphic>
-                                                <Glyph fontFamily="FontAwesome" icon="EDIT"/>
-                                            </graphic>
-                                        </Button>
-                                    </HBox>
-                                </TitledPane>
+                                <TableView fx:id="figureOfMeritTable">
+                                    <columns>
+                                        <TableColumn fx:id="figureOfMeritNameColumn" editable="false" text="Name"/>
+                                        <TableColumn fx:id="figureOfMeritUnitColumn" editable="false" text="Unit"/>
+                                        <TableColumn fx:id="figureOfMeritOptimalityColumn" editable="false"
+                                                     maxWidth="75"
+                                                     minWidth="75" text="Optimality"/>
+                                        <TableColumn fx:id="figureOfMeritParameterLinkColumn" editable="false"
+                                                     minWidth="120"
+                                                     text="Parameter Link"/>
+                                        <TableColumn fx:id="figureOfMeritDeleteColumn" maxWidth="30" minWidth="30"/>
+                                    </columns>
+                                </TableView>
                             </center>
                             <bottom>
-                                <TitledPane collapsible="false" text="Current Design Point">
-                                    <VBox>
-                                        <HBox>
-                                            <TextArea fx:id="figureOfMeritValuesText" editable="false"
-                                                      prefHeight="60.0"/>
-                                            <Button minWidth="28" mnemonicParsing="false"
-                                                    onAction="#updateFigureOfMeritValues">
-                                                <tooltip>
-                                                    <Tooltip text="Reload Values"/>
-                                                </tooltip>
-                                                <graphic>
-                                                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                                                </graphic>
-                                            </Button>
-                                        </HBox>
-                                        <HBox>
-                                            <ChoiceBox fx:id="epochChoice" prefWidth="80.0"/>
-                                            <Button fx:id="addDesignPointButton" mnemonicParsing="false"
-                                                    onAction="#addDesignPoint"
-                                                    text="Add to Tradespace"/>
-                                        </HBox>
-                                    </VBox>
-                                </TitledPane>
+                                <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+                                    <Button minWidth="28" mnemonicParsing="false" onAction="#addFigureOfMerit">
+                                        <tooltip>
+                                            <Tooltip text="Add external model"/>
+                                        </tooltip>
+                                        <graphic>
+                                            <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                                        </graphic>
+                                    </Button>
+                                </ToolBar>
                             </bottom>
                         </BorderPane>
-                    </bottom>
-                </BorderPane>
-            </SplitPane>
-        </center>
-    </BorderPane>
-</AnchorPane>
+                    </TitledPane>
+                </center>
+                <bottom>
+                    <BorderPane>
+                        <center>
+                            <TitledPane collapsible="false" text="Current Design Point">
+                                <BorderPane>
+                                    <padding>
+                                        <Insets/>
+                                    </padding>
+                                    <center>
+                                        <BorderPane>
+                                            <padding>
+                                                <Insets top="5" bottom="5" left="5"/>
+                                            </padding>
+                                            <center>
+                                                <TextArea fx:id="figureOfMeritValuesText" editable="false"
+                                                          prefHeight="120.0">
+                                                </TextArea>
+                                            </center>
+                                        </BorderPane>
+                                    </center>
+                                    <right>
+                                        <BorderPane>
+                                            <padding>
+                                                <Insets top="5" right="5" bottom="5" left="5"/>
+                                            </padding>
+                                            <top>
+                                                <Text text="Epochs:"/>
+                                            </top>
+                                            <center>
+                                                <BorderPane>
+                                                    <center>
+                                                        <TableView fx:id="epochTable" prefWidth="100" prefHeight="150">
+                                                            <columns>
+                                                                <TableColumn fx:id="epochNameColumn" editable="false"
+                                                                             text="Name"/>
+                                                                <TableColumn fx:id="epochDeleteColumn" maxWidth="30"
+                                                                             minWidth="30"/>
+                                                            </columns>
+                                                        </TableView>
+                                                    </center>
+                                                </BorderPane>
+                                            </center>
+                                            <bottom>
+                                                <Button fx:id="addEpochButton"
+                                                        onAction="#addEpoch" text="Add to Tradespace"/>
+                                            </bottom>
+                                        </BorderPane>
+                                    </right>
+                                </BorderPane>
+                            </TitledPane>
+                        </center>
+                    </BorderPane>
+                </bottom>
+            </BorderPane>
+        </SplitPane>
+    </center>
+</BorderPane>

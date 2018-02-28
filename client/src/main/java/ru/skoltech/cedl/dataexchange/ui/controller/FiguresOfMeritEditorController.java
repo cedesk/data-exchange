@@ -32,10 +32,10 @@ import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.Optimality;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
-import ru.skoltech.cedl.dataexchange.ui.control.fom.FigureOfMeritDefinitionDeleteCell;
-import ru.skoltech.cedl.dataexchange.ui.control.fom.FigureOfMeritDefinitionOptimalityCell;
-import ru.skoltech.cedl.dataexchange.ui.control.fom.FigureOfMeritDefinitionParameterLinkCell;
-import ru.skoltech.cedl.dataexchange.ui.control.fom.FigureOfMeritDefinitionUnitCell;
+import ru.skoltech.cedl.dataexchange.ui.control.tradespace.FigureOfMeritDefinitionDeleteCell;
+import ru.skoltech.cedl.dataexchange.ui.control.tradespace.FigureOfMeritDefinitionOptimalityCell;
+import ru.skoltech.cedl.dataexchange.ui.control.tradespace.FigureOfMeritDefinitionParameterLinkCell;
+import ru.skoltech.cedl.dataexchange.ui.control.tradespace.FigureOfMeritDefinitionUnitCell;
 import ru.skoltech.cedl.dataexchange.ui.utils.BeanPropertyCellValueFactory;
 
 import java.net.URL;

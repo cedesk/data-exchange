@@ -90,7 +90,12 @@
                 </columnResizePolicy>
                 <columns>
                     <TableColumn fx:id="columnNameColumn" editable="false" text="Column"/>
-                    <TableColumn fx:id="importEntityColumn" text="Import Entity"/>
+                    <TableColumn fx:id="descriptionColumn" minWidth="100" maxWidth="100" editable="false"
+                                 text="Description"/>
+                    <TableColumn fx:id="fomColumn" minWidth="100" maxWidth="100" editable="false"
+                                 text="Figure Of Merit"/>
+                    <TableColumn fx:id="epochColumn" minWidth="100" maxWidth="100" editable="false" text="Epoch"/>
+
                 </columns>
             </TableView>
         </VBox>

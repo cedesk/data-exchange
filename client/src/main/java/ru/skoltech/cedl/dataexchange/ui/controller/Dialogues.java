@@ -98,11 +98,11 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
-    public static Optional<String> inputEpochs(String epochs) {
-        TextInputDialog dialog = new TextInputDialog(epochs);
-        dialog.setTitle("Epochs");
-        dialog.setHeaderText("Please insert the years of all Epochs.");
-        dialog.setContentText("Years separated by comma");
+    public static Optional<String> inputEpoch() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("New Epoch");
+        dialog.setHeaderText("Please insert the year of Epoch.");
+        dialog.setContentText("Epoch Year");
         return dialog.showAndWait();
     }
 
