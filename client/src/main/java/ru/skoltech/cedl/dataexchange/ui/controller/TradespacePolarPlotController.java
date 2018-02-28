@@ -17,22 +17,33 @@
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.AsyncTaskExecutor;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.DesignPoint;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.Epoch;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
-import ru.skoltech.cedl.dataexchange.entity.tradespace.MultitemporalTradespace;
+import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritValue;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -50,11 +61,20 @@ public class TradespacePolarPlotController implements Initializable {
     private static final boolean ENABLE_FIREBUG = false;
 
     @FXML
+    private BorderPane polarPlotPane;
+    @FXML
     private CheckBox revisionCheckBox;
     @FXML
     private WebView polarChartWebView;
 
     private GuiService guiService;
+
+    private ListProperty<FigureOfMeritDefinition> figureOfMeritsProperty = new SimpleListProperty<>();
+    private ListProperty<Epoch> epochsProperty = new SimpleListProperty<>();
+    private ListProperty<DesignPoint> designPointsProperty = new SimpleListProperty<>();
+
+    private ObjectProperty<Triple<String[], String[], List<double[]>>> membersProperty = new SimpleObjectProperty<>();
+
     private AsyncTaskExecutor executor;
 
     private FutureTask<JSObject> windowObjectFuture = new FutureTask<>(() -> {
@@ -91,6 +111,49 @@ public class TradespacePolarPlotController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        polarPlotPane.visibleProperty().bind(designPointsProperty.emptyProperty().not());
+
+        membersProperty.bind(Bindings.createObjectBinding(() -> {
+            String[] labels = figureOfMeritsProperty.stream()
+                    .map(FigureOfMeritDefinition::getName)
+                    .toArray(String[]::new);
+            String[] datasets = designPointsProperty.stream()
+                    .filter(designPoint -> !revisionCheckBox.isSelected() || designPoint.getModelStateLink() != null)
+                    .map(DesignPoint::getDescription)
+                    .toArray(String[]::new);
+            List<double[]> data = designPointsProperty.stream()
+                    .filter(designPoint -> !revisionCheckBox.isSelected() || designPoint.getModelStateLink() != null)
+                    .filter(Objects::nonNull)
+                    .map(designPoint -> figureOfMeritsProperty.stream()
+                            .filter(figure -> Objects.nonNull(designPoint.getValue(figure)))
+                            .map(designPoint::getValue)
+                            .filter(value -> Objects.nonNull(value.getValue()))
+                            .mapToDouble(FigureOfMeritValue::getValue)
+                            .toArray()
+                    ).collect(Collectors.toList());
+            return Triple.of(labels, datasets, data);
+        }, figureOfMeritsProperty, designPointsProperty, revisionCheckBox.selectedProperty()));
+
+        membersProperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue == null) {
+                return;
+            }
+
+            executor.submit(() -> {
+                try {
+                    JSObject windowObject = windowObjectFuture.get();
+                    Platform.runLater(() -> {
+                        windowObject.setMember("labels", newValue.getLeft());
+                        windowObject.setMember("datasets", newValue.getMiddle());
+                        windowObject.setMember("data", newValue.getRight());
+                        polarChartWebView.getEngine().executeScript("updateTradespaceRadar()");
+                    });
+                } catch (InterruptedException | ExecutionException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            });
+        });
+
         WebEngine webEngine = polarChartWebView.getEngine();
         webEngine.setJavaScriptEnabled(true);
         webEngine.setOnAlert((eventArgs) -> logger.info(eventArgs.getData()));
@@ -107,41 +170,19 @@ public class TradespacePolarPlotController implements Initializable {
         webEngine.loadContent("<canvas id='canvas'/>");
     }
 
-    public void setTradespace(MultitemporalTradespace multitemporalTradespace) {
-        executor.submit(() -> {
-            try {
-                JSObject windowObject = windowObjectFuture.get();
-                Platform.runLater(() -> {
-                    List<FigureOfMeritDefinition> figures = multitemporalTradespace.getDefinitions();
-                    List<DesignPoint> designPoints = multitemporalTradespace.getDesignPoints();
-                    if (designPoints.isEmpty()) {
-                        return;
-                    }
-
-                    String[] labels = figures.stream().map(FigureOfMeritDefinition::getName).toArray(String[]::new);
-                    String[] datasets = designPoints.stream()
-                            .filter(designPoint -> !revisionCheckBox.isSelected() || designPoint.getModelStateLink() != null)
-                            .map(DesignPoint::getDescription).toArray(String[]::new);
-
-                    List<double[]> data = designPoints.stream()
-                            .filter(designPoint -> !revisionCheckBox.isSelected() || designPoint.getModelStateLink() != null)
-                            .map(designPoint ->
-                                    figures.stream().mapToDouble(figure -> designPoint.getValue(figure).getValue()).toArray()
-                            ).collect(Collectors.toList());
-
-                    if ("undefined".equals(windowObject.getMember("tradespaceRadar"))) {
-                        return;
-                    }
-
-                    windowObject.setMember("labels", labels);
-                    windowObject.setMember("datasets", datasets);
-                    windowObject.setMember("data", data);
-                    polarChartWebView.getEngine().executeScript("updateTradespaceRadar()");
-                });
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        });
+    /**
+     * Bind tradespace data with current properties.
+     *
+     * @param figureOfMeritDefinitions value of FOM definitions
+     * @param epochs                   value of epochs
+     * @param designPoints             value of design points
+     */
+    public void bind(ObservableValue<ObservableList<FigureOfMeritDefinition>> figureOfMeritDefinitions,
+                     ObservableValue<ObservableList<Epoch>> epochs,
+                     ObservableValue<ObservableList<DesignPoint>> designPoints) {
+        this.figureOfMeritsProperty.bind(figureOfMeritDefinitions);
+        this.epochsProperty.bind(epochs);
+        this.designPointsProperty.bind(designPoints);
     }
 
 }

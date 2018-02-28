@@ -23,7 +23,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.web.WebView?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+<BorderPane fx:id="polarPlotPane"
+            xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.TradespacePolarPlotController">
     <padding>
         <Insets/>

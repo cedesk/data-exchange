@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.ui.control.fom;
+package ru.skoltech.cedl.dataexchange.ui.control.tradespace;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
