@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.structure.analytics;
 
+import edu.carleton.tim.jdsm.RealNumberDSM;
 import edu.carleton.tim.jdsm.dependency.Dependency;
 import edu.carleton.tim.jdsm.dependency.DependencyDSM;
 import org.apache.commons.math3.util.Precision;
@@ -23,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
+import org.jscience.mathematics.number.Real;
 import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
@@ -157,6 +159,7 @@ public class ParameterLinkRegistry {
         return dependencyModel;
     }
 
+    /*
     public NumericalDSM makeNumericalDSM(SystemModel systemModel) {
         final List<ModelNode> modelNodeList = getModelNodes(systemModel);
 
@@ -176,21 +179,22 @@ public class ParameterLinkRegistry {
             }
         }
         return dsm;
-    }
+    }*/
 
     public DependencyDSM makeBinaryDSM(SystemModel systemModel) {
         final List<ModelNode> modelNodeList = getModelNodes(systemModel);
         final int matrixSize = modelNodeList.size();
-        Map<String, Integer> clusterEndPositionMappings = new HashMap<>();
         Map<String, Integer> clusterStartPositionMappings = new HashMap<>();
-        Map<String, Integer> namePositionMappings = new HashMap<>();
-        Map<Integer, String> positionNameMappings = new HashMap<>();
+        Map<String, Integer> clusterEndPositionMappings = new HashMap<>();
+        Map<String, Integer> namePositionMappings = new TreeMap<>();
+        Map<Integer, String> positionNameMappings = new TreeMap<>();
         Dependency[][] map = new Dependency[matrixSize][matrixSize];
         for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
             ModelNode toVertex = modelNodeList.get(rowIndex);
             namePositionMappings.put(toVertex.getName(), rowIndex);
             positionNameMappings.put(rowIndex, toVertex.getName());
-
+            // DSM matrix is in form IC/FBD
+            // column index means the dependency source
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
                 if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
@@ -205,7 +209,7 @@ public class ParameterLinkRegistry {
                 namePositionMappings, positionNameMappings, map);
     }
 
-    /*public RealNumberDSM makeRealDSM(SystemModel systemModel) {
+    public RealNumberDSM makeRealDSM(SystemModel systemModel) {
         final List<ModelNode> modelNodeList = getModelNodes(systemModel);
         final int matrixSize = modelNodeList.size();
         Map<String, Integer> clusterEndPositionMappings = new HashMap<>();
@@ -215,10 +219,9 @@ public class ParameterLinkRegistry {
         Real[][] map = new Real[matrixSize][matrixSize];
         for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
             ModelNode toVertex = modelNodeList.get(rowIndex);
-            String toVertexName = toVertex.getName();
 
-            namePositionMappings.put(toVertexName, rowIndex);
-            positionNameMappings.put(rowIndex, toVertexName);
+            namePositionMappings.put(toVertex.getName(), rowIndex);
+            positionNameMappings.put(rowIndex, toVertex.getName());
 
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
@@ -233,7 +236,7 @@ public class ParameterLinkRegistry {
         }
         return new RealNumberDSM(clusterEndPositionMappings, clusterStartPositionMappings,
                 namePositionMappings, positionNameMappings, map);
-    }*/
+    }
 
     public void registerAllParameters(SystemModel systemModel) {
         clear();
