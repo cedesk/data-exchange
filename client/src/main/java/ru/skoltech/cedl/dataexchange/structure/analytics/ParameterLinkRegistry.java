@@ -159,28 +159,6 @@ public class ParameterLinkRegistry {
         return dependencyModel;
     }
 
-    /*
-    public NumericalDSM makeNumericalDSM(SystemModel systemModel) {
-        final List<ModelNode> modelNodeList = getModelNodes(systemModel);
-
-        final int matrixSize = modelNodeList.size();
-        NumericalDSM dsm = new NumericalDSM();
-
-        for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
-            ModelNode toVertex = modelNodeList.get(rowIndex);
-            dsm.addElementName(toVertex.getName());
-            for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
-                ModelNode fromVertex = modelNodeList.get(columnIndex);
-                if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
-                        dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0) {
-                    int linkCount = getLinkingParams(toVertex, fromVertex).size();
-                    dsm.addLink(rowIndex + 1, columnIndex + 1, linkCount);
-                }
-            }
-        }
-        return dsm;
-    }*/
-
     public DependencyDSM makeBinaryDSM(SystemModel systemModel) {
         final List<ModelNode> modelNodeList = getModelNodes(systemModel);
         final int matrixSize = modelNodeList.size();
