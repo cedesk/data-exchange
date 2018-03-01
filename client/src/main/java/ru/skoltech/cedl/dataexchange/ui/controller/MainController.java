@@ -590,6 +590,7 @@ public class MainController implements Initializable, Displayable, Closeable {
         }
 
         ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder(resources.getString("tradespace_explorer.title"), Views.TRADESPACE_VIEW);
+        tradespaceViewBuilder.modality(Modality.APPLICATION_MODAL);
         tradespaceViewBuilder.ownerWindow(ownerStage);
         tradespaceViewBuilder.show();
     }

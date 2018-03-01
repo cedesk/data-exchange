@@ -43,6 +43,7 @@ import ru.skoltech.cedl.dataexchange.ui.control.tradespace.*;
 import ru.skoltech.cedl.dataexchange.ui.utils.BeanPropertyCellValueFactory;
 
 import java.net.URL;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -60,11 +61,17 @@ public class TradespaceController implements Initializable {
     private final TradespaceRepository tradespaceRepository;
 
     @FXML
+    private SplitPane tradespacePane;
+    @FXML
     private Button saveTradespaceButton;
     @FXML
     private Label studyNameLabel;
     @FXML
     private Label tagLabel;
+    @FXML
+    private ToggleButton definitionsButton;
+    @FXML
+    private SplitPane definitionsPane;
     @FXML
     private TableView<FigureOfMeritDefinition> figureOfMeritTable;
     @FXML
@@ -122,6 +129,16 @@ public class TradespaceController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         studyNameLabel.setText(tradespaceToStudyBridge.getStudyName());
         tagLabel.setText(tradespaceToStudyBridge.getCurrentRevisionName());
+
+        definitionsPane.visibleProperty().bind(definitionsButton.selectedProperty());
+        tradespacePane.getItems().remove(definitionsPane);
+        definitionsPane.visibleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                tradespacePane.getItems().add(definitionsPane);
+            } else {
+                tradespacePane.getItems().remove(definitionsPane);
+            }
+        });
 
         Node tradespaceScatterPlotNode = guiService.createControl(Views.TRADESPACE_SCATTER_PLOT_VIEW);
         tradespaceScatterPlotParent.setContent(tradespaceScatterPlotNode);
@@ -250,7 +267,6 @@ public class TradespaceController implements Initializable {
 
     public void addDesignPointToTradespace() {
         // TODO: if project is dirty ask user to save and tag first
-        tradespaceToStudyBridge.isSaved();
         Epoch epoch = epochSelectorChoice.getSelectionModel().getSelectedItem();
         DesignPoint dp = new DesignPoint();
         dp.setEpoch(epoch);
@@ -279,8 +295,9 @@ public class TradespaceController implements Initializable {
             Epoch epoch = new Epoch(year);
             if (!epochsProperty.contains(epoch)) {
                 epochsProperty.add(epoch);
-                epochsProperty.sorted();
                 epochsSelectedProperty.add(epoch);
+                epochsProperty.sort(Comparator.comparingInt(Epoch::getYear));
+                epochTable.refresh();
             }
         }
     }
