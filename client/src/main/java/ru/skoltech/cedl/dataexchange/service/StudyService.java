@@ -74,7 +74,7 @@ public interface StudyService {
     Study saveStudy(Study study, String tag);
 
     /**
-     * Retrieve a tag of current study revision.
+     * Retrieve the tag of current study revision.
      *
      * @param study study to find a tag
      * @return tag  of current study revision
@@ -153,9 +153,10 @@ public interface StudyService {
     Pair<Integer, Date> findLatestRevision(Long studyId);
 
     /**
-     * TODO add javadoc
+     * Ensure consistency between the study and the user role management.
+     * Connect the disciplines to the study's subsystems.
      *
-     * @param study study
+     * @param study the study
      */
     void relinkStudySubSystems(Study study);
 }
