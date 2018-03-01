@@ -45,6 +45,7 @@ public class DsmView extends ScrollPane implements Initializable {
     private static final Color ELEMENT_FILL_COLOR = Color.LIGHTGREY;
     private static final Color DEFAULT_CONNECTION_COLOR = Color.DARKGREY;
     private static final Color HIGHLIGHTED_ELEMENT_COLOR = Color.BLACK;
+    private static final Color CLUSTER_COLOR = Color.STEELBLUE;
     private static final Double[] DASHED_STROKE = new Double[]{10d, 7d};
     private static int ELEMENT_PADDING = 10;
     private static int ELEMENT_HEIGHT = 30;
@@ -55,6 +56,7 @@ public class DsmView extends ScrollPane implements Initializable {
     private static int LINE_WIDTH = 2;
     private HashMap<String, Pair<DiagramElement, DiagramElement>> elements = new HashMap<>();
     private MultiValuedMap<String, DiagramConnection> connections = new ArrayListValuedHashMap<>();
+    private List<Cluster> clusters = new ArrayList<>();
 
     public DsmView() {
     }
@@ -89,11 +91,20 @@ public class DsmView extends ScrollPane implements Initializable {
         });
     }
 
+    public void addCluster(String from, String to) {
+        DiagramElement fromColEl = elements.get(from).getLeft();
+        DiagramElement fromRowCol = elements.get(from).getRight();
+        DiagramElement toColEl = elements.get(to).getLeft();
+        DiagramElement toRowEl = elements.get(to).getRight();
+
+        Cluster cluster = new Cluster(fromColEl, fromRowCol, toColEl, toRowEl);
+        getChildren().add(cluster);
+    }
+
     public void addConnection(String from, String to, String description, int strength, EnumSet<ConnectionState> connectionState) {
         DiagramElement fromDiagEl = elements.get(from).getLeft();
         String fromName = fromDiagEl.getName();
         DiagramElement toDiagEl = elements.get(to).getRight();
-        String toName = toDiagEl.getName();
 
         DiagramConnection connection = new DiagramConnection(fromDiagEl, toDiagEl, description, strength, connectionState);
         connections.put(fromName, connection);
@@ -104,7 +115,6 @@ public class DsmView extends ScrollPane implements Initializable {
         DiagramElement fromDiagEl = elements.get(from).getLeft();
         String fromName = fromDiagEl.getName();
         DiagramElement toDiagEl = elements.get(to).getRight();
-        String toName = toDiagEl.getName();
 
         DiagramConnection connection = new DiagramConnection(fromDiagEl, toDiagEl, description, strength);
         connections.put(fromName, connection);
@@ -131,6 +141,7 @@ public class DsmView extends ScrollPane implements Initializable {
         getChildren().clear();
         elements.clear();
         connections.clear();
+        clusters.clear();
     }
 
     private ConnectionState getParameterLinkState(ParameterModel pm) {
@@ -255,18 +266,19 @@ public class DsmView extends ScrollPane implements Initializable {
 
     private class DiagramConnection extends Group {
 
-        Comparator<DiagramConnection> TO_COMPARATOR = (o1, o2) -> Integer.compare(o2.toEl.getPosition(), o1.toEl.getPosition());
-        Comparator<DiagramConnection> FROM_COMPARATOR = (o1, o2) -> Integer.compare(o2.fromEl.getPosition(), o1.fromEl.getPosition());
-
         private DiagramElement fromEl;
+        Comparator<DiagramConnection> FROM_COMPARATOR = (o1, o2) -> Integer.compare(o2.fromEl.getPosition(), o1.fromEl.getPosition());
         private DiagramElement toEl;
-
+        Comparator<DiagramConnection> TO_COMPARATOR = (o1, o2) -> Integer.compare(o2.toEl.getPosition(), o1.toEl.getPosition());
         private String description;
         private int strength;
         private boolean isSelected = false;
 
         private Rectangle rectangle;
         private EnumSet<ConnectionState> connectionStates;
+
+        private DiagramConnection() {
+        }
 
         public DiagramConnection(DiagramElement fromEl, DiagramElement toEl, String description, int strength, EnumSet<ConnectionState> states) {
             this(fromEl, toEl, description, strength);
@@ -347,6 +359,29 @@ public class DsmView extends ScrollPane implements Initializable {
 
         private void toggleSelection() {
             setSelected(!isSelected);
+        }
+
+    }
+
+    private class Cluster extends Group {
+        private final int PADDING = ELEMENT_PADDING / 3;
+        private Rectangle rectangle;
+
+        private Cluster() {
+        }
+
+        public Cluster(DiagramElement fromColEl, DiagramElement fromRowEl, DiagramElement toColEl, DiagramElement toRowEl) {
+            double width = toColEl.getLayoutX() - fromColEl.getLayoutX() + ELEMENT_HEIGHT + 2 * PADDING;
+            double height = toRowEl.getLayoutY() - fromRowEl.getLayoutY() + ELEMENT_HEIGHT + 2 * PADDING;
+            rectangle = new Rectangle(width, height);
+            rectangle.setFill(Color.TRANSPARENT);
+            rectangle.setStrokeWidth(LINE_WIDTH);
+            rectangle.setStroke(CLUSTER_COLOR);
+
+            setLayoutX(fromColEl.getLayoutX() - ELEMENT_HEIGHT - PADDING);
+            setLayoutY(fromRowEl.getLayoutY() - PADDING);
+
+            getChildren().addAll(rectangle);
         }
 
     }

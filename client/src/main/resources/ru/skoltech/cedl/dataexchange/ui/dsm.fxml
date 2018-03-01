@@ -42,24 +42,29 @@
                     </tooltip>
                 </Label>
                 <Pane HBox.hgrow="ALWAYS"/>
-                <Button minWidth="28" mnemonicParsing="false" onAction="#runDsmSequencing">
+                <ChoiceBox fx:id="weightingChoice">
+                    <tooltip>
+                        <Tooltip text="choose how the weighting factors of DSM are determined"/>
+                    </tooltip>
+                </ChoiceBox>
+                <Button fx:id="runSequencingButton" minWidth="28" mnemonicParsing="false" onAction="#runDsmSequencing">
                     <tooltip>
                         <Tooltip text="Run Sequencing"/>
                     </tooltip>
                     <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="QRCODE"/>
+                        <Glyph fontFamily="FontAwesome" icon="PAPER_PLANE"/>
                     </graphic>
                 </Button>
+                <TextField fx:id="sequencingOutputText" prefWidth="200" editable="false">
+                </TextField>
                 <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode">
                     <tooltip>
                         <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
                     </tooltip>
                     <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="CODEPEN"/>
+                        <Glyph fontFamily="FontAwesome" icon="FILE_CODE_ALT"/>
                     </graphic>
                 </Button>
-                <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                          text="Generate weighted DSM" GridPane.columnIndex="1"/>
             </ToolBar>
         </top>
         <center>
