@@ -45,7 +45,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Controller for display Dependency Structure Matrix.
+ * Controller for visualizing subsystem dependencies as Dependency Structure Matrix.
  * <p>
  * Created by D.Knoll on 02.11.2015.
  */

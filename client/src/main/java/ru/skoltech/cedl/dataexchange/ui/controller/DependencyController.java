@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
- * Controller for dependency checks.
+ * Controller for visualization of subsystem dependencies as N-Square chart.
  * <p>
  * Created by D.Knoll on 02.11.2015.
  */
@@ -111,6 +111,7 @@ public class DependencyController implements Initializable, Displayable {
             }
         });
     }
+
     @Override
     public void display(Stage stage, WindowEvent windowEvent) {
         this.ownerStage = stage;

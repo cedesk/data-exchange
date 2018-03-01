@@ -73,7 +73,7 @@
         </ToolBar>
     </top>
     <center>
-        <ScrollPane BorderPane.alignment="TOP_RIGHT">
+        <ScrollPane minHeight="400">
             <DependencyDiagramView fx:id="dependencyDiagramView"/>
         </ScrollPane>
     </center>

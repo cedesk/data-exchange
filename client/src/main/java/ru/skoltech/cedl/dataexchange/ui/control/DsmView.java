@@ -20,8 +20,8 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Rotate;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 /**
  * Created by D.Knoll on 11.10.2017.
  */
-public class DsmView extends ScrollPane implements Initializable {
+public class DsmView extends AnchorPane implements Initializable {
 
     private static final Color ELEMENT_FILL_COLOR = Color.LIGHTGREY;
     private static final Color DEFAULT_CONNECTION_COLOR = Color.DARKGREY;
