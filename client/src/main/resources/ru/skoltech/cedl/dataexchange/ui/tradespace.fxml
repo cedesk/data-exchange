@@ -16,7 +16,7 @@
   ~ limitations under the License.
   -->
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
@@ -51,94 +51,21 @@
                     <Glyph fontFamily="FontAwesome" icon="TAG"/>
                 </graphic>
             </Label>
-
+            <Pane HBox.hgrow="ALWAYS"/>
+            <ToggleButton fx:id="definitionsButton" text="Definitions"/>
         </ToolBar>
     </top>
     <center>
-        <SplitPane dividerPositions="0.7" orientation="HORIZONTAL">
-            <AnchorPane SplitPane.resizableWithParent="true">
-                <TabPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                         AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                    <Tab fx:id="tradespaceScatterPlotParent" closable="false" text="Scatter Chart"/>
-                    <Tab fx:id="tradespacePolarPlotParent" closable="false" text="Polar Chart"/>
-                    <Tab closable="false" text="Tradespace Definition">
-                        <SplitPane dividerPositions="0.5" orientation="VERTICAL">
-                            <TitledPane collapsible="false" text="Figures of Merit Definitions">
-                                <BorderPane>
-                                    <padding>
-                                        <Insets top="5" right="5" bottom="5" left="5"/>
-                                    </padding>
-                                    <center>
-                                        <TableView fx:id="figureOfMeritTable">
-                                            <columns>
-                                                <TableColumn fx:id="figureOfMeritNameColumn" editable="false"
-                                                             text="Name"/>
-                                                <TableColumn fx:id="figureOfMeritUnitColumn" editable="false"
-                                                             text="Unit"/>
-                                                <TableColumn fx:id="figureOfMeritOptimalityColumn" editable="false"
-                                                             maxWidth="75"
-                                                             minWidth="75" text="Optimality"/>
-                                                <TableColumn fx:id="figureOfMeritParameterLinkColumn"
-                                                             editable="false"
-                                                             minWidth="120"
-                                                             text="Parameter Link"/>
-                                                <TableColumn fx:id="figureOfMeritDeleteColumn" maxWidth="30"
-                                                             minWidth="30"/>
-                                            </columns>
-                                        </TableView>
-                                    </center>
-                                    <bottom>
-                                        <ToolBar nodeOrientation="RIGHT_TO_LEFT">
-                                            <Button minWidth="28" mnemonicParsing="false"
-                                                    onAction="#addFigureOfMerit">
-                                                <tooltip>
-                                                    <Tooltip text="Add figure of merit"/>
-                                                </tooltip>
-                                                <graphic>
-                                                    <Glyph fontFamily="FontAwesome" icon="PLUS"/>
-                                                </graphic>
-                                            </Button>
-                                        </ToolBar>
-                                    </bottom>
-                                </BorderPane>
-                            </TitledPane>
-                            <TitledPane collapsible="false" text="Epochs">
-                                <BorderPane>
-                                    <padding>
-                                        <Insets top="5" right="5" bottom="5" left="5"/>
-                                    </padding>
-                                    <center>
-                                        <TableView fx:id="epochTable" prefWidth="100" prefHeight="150">
-                                            <columns>
-                                                <TableColumn fx:id="epochNameColumn" editable="false"
-                                                             text="Name"/>
-                                                <TableColumn fx:id="epochDeleteColumn" maxWidth="30"
-                                                             minWidth="30"/>
-                                            </columns>
-                                        </TableView>
-                                    </center>
-                                    <bottom>
-                                        <ToolBar nodeOrientation="RIGHT_TO_LEFT">
-                                            <Button fx:id="addEpochButton" minWidth="28" mnemonicParsing="false"
-                                                    onAction="#addEpoch">
-                                                <tooltip>
-                                                    <Tooltip text="Add epoch"/>
-                                                </tooltip>
-                                                <graphic>
-                                                    <Glyph fontFamily="FontAwesome" icon="PLUS"/>
-                                                </graphic>
-                                            </Button>
-                                        </ToolBar>
-                                    </bottom>
-                                </BorderPane>
-                            </TitledPane>
-                        </SplitPane>
-                    </Tab>
-                </TabPane>
-            </AnchorPane>
+        <SplitPane fx:id="tradespacePane" dividerPositions="0.7">
             <BorderPane>
-                <top>
-                    <TitledPane collapsible="false" text="Current Design Point">
+                <center>
+                    <TabPane>
+                        <Tab fx:id="tradespaceScatterPlotParent" closable="false" text="Scatter Chart"/>
+                        <Tab fx:id="tradespacePolarPlotParent" closable="false" text="Polar Chart"/>
+                    </TabPane>
+                </center>
+                <bottom>
+                    <TitledPane text="Current Design Point">
                         <BorderPane>
                             <padding>
                                 <Insets top="5" bottom="5" left="5"/>
@@ -148,17 +75,102 @@
                                           prefHeight="120.0">
                                 </TextArea>
                             </center>
-                            <bottom>
-                                <ToolBar>
+                            <right>
+                                <ToolBar orientation="VERTICAL">
                                     <ChoiceBox fx:id="epochSelectorChoice"/>
                                     <Button fx:id="addDesignPointButton" onAction="#addDesignPointToTradespace"
                                             text="Add to Tradespace"/>
                                 </ToolBar>
-                            </bottom>
+                            </right>
                         </BorderPane>
                     </TitledPane>
-                </top>
+                </bottom>
             </BorderPane>
+            <SplitPane fx:id="definitionsPane" dividerPositions="0.5" orientation="VERTICAL">
+                <TitledPane collapsible="false" text="Figures of Merit Definitions">
+                    <BorderPane>
+                        <padding>
+                            <Insets/>
+                        </padding>
+                        <center>
+                            <BorderPane>
+                                <padding>
+                                    <Insets top="5" right="5" bottom="5" left="5"/>
+                                </padding>
+                                <center>
+                                    <TableView fx:id="figureOfMeritTable">
+                                        <columns>
+                                            <TableColumn fx:id="figureOfMeritNameColumn" editable="false"
+                                                         text="Name"/>
+                                            <TableColumn fx:id="figureOfMeritUnitColumn" editable="false"
+                                                         text="Unit"/>
+                                            <TableColumn fx:id="figureOfMeritOptimalityColumn" editable="false"
+                                                         maxWidth="75"
+                                                         minWidth="75" text="Optimality"/>
+                                            <TableColumn fx:id="figureOfMeritParameterLinkColumn"
+                                                         editable="false"
+                                                         minWidth="120"
+                                                         text="Parameter Link"/>
+                                            <TableColumn fx:id="figureOfMeritDeleteColumn" maxWidth="30"
+                                                         minWidth="30"/>
+                                        </columns>
+                                    </TableView>
+                                </center>
+                            </BorderPane>
+                        </center>
+                        <bottom>
+                            <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+                                <Button minWidth="28" mnemonicParsing="false"
+                                        onAction="#addFigureOfMerit">
+                                    <tooltip>
+                                        <Tooltip text="Add figure of merit"/>
+                                    </tooltip>
+                                    <graphic>
+                                        <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                                    </graphic>
+                                </Button>
+                            </ToolBar>
+                        </bottom>
+                    </BorderPane>
+                </TitledPane>
+                <TitledPane collapsible="false" text="Epochs">
+                    <BorderPane>
+                        <padding>
+                            <Insets/>
+                        </padding>
+                        <center>
+                            <BorderPane>
+                                <padding>
+                                    <Insets top="5" right="5" bottom="5" left="5"/>
+                                </padding>
+                                <center>
+                                    <TableView fx:id="epochTable" prefWidth="100" prefHeight="150">
+                                        <columns>
+                                            <TableColumn fx:id="epochNameColumn" editable="false"
+                                                         text="Name"/>
+                                            <TableColumn fx:id="epochDeleteColumn" maxWidth="30"
+                                                         minWidth="30"/>
+                                        </columns>
+                                    </TableView>
+                                </center>
+                            </BorderPane>
+                        </center>
+                        <bottom>
+                            <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+                                <Button fx:id="addEpochButton" minWidth="28" mnemonicParsing="false"
+                                        onAction="#addEpoch">
+                                    <tooltip>
+                                        <Tooltip text="Add epoch"/>
+                                    </tooltip>
+                                    <graphic>
+                                        <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                                    </graphic>
+                                </Button>
+                            </ToolBar>
+                        </bottom>
+                    </BorderPane>
+                </TitledPane>
+            </SplitPane>
         </SplitPane>
     </center>
 </BorderPane>
