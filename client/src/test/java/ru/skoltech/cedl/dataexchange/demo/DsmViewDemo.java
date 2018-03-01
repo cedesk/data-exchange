@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,9 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ru.skoltech.cedl.dataexchange.ui.control.DsmView;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class DsmViewDemo extends Application {
 
@@ -56,6 +59,10 @@ public class DsmViewDemo extends Application {
         dsmView.addElement("Traction");
         dsmView.addConnection("Car Design", "Traction", "maximum mass,\nmaximum speed", 2);
         dsmView.addConnection("Traction", "Chassis", "engine Volume", 1);
+
+        dsmView.setHighlightedElements(new ArrayList<String>(Collections.singleton("Navigation")));
+
+        dsmView.addCluster("Chassis", "Traction");
 
     }
 
