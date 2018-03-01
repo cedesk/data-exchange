@@ -22,6 +22,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import org.controlsfx.control.CheckComboBox?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <?import ru.skoltech.cedl.dataexchange.ui.control.TradespaceLineChart?>
 <BorderPane fx:id="scatterPlotPane"
@@ -36,6 +37,7 @@
             <ComboBox prefWidth="150.0" fx:id="xAxisCombo"/>
             <Label text="Y-Axis"/>
             <ComboBox fx:id="yAxisCombo" prefWidth="150.0"/>
+            <CheckComboBox prefWidth="150.0" fx:id="epochComboBox"/>
             <Pane HBox.hgrow="ALWAYS"/>
             <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram">
                 <tooltip>

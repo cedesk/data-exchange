@@ -158,11 +158,6 @@
         <property name="executor" ref="executor"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController" scope="prototype">
-        <property name="guiService" ref="guiService"/>
-        <property name="tradespaceToStudyBridge" ref="tradespaceModelBridge"/>
-    </bean>
-
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.StudyRevisionsController" scope="prototype">
         <property name="studyService" ref="studyService"/>
     </bean>

@@ -17,10 +17,7 @@
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -89,7 +86,7 @@ public class TradespaceController implements Initializable {
     @FXML
     private TableView<Epoch> epochTable;
     @FXML
-    private TableColumn<Epoch, Epoch> epochNameColumn;
+    private TableColumn<Epoch, String> epochNameColumn;
     @FXML
     private TableColumn<Epoch, Epoch> epochDeleteColumn;
     @FXML
@@ -109,7 +106,6 @@ public class TradespaceController implements Initializable {
     private ObjectProperty<MultitemporalTradespace> tradespaceProperty = new SimpleObjectProperty<>();
     private ListProperty<FigureOfMeritDefinition> figureOfMeritsProperty = new SimpleListProperty<>();
     private ListProperty<Epoch> epochsProperty = new SimpleListProperty<>();
-    private ListProperty<Epoch> epochsSelectedProperty = new SimpleListProperty<>();
     private ListProperty<DesignPoint> designPointsProperty = new SimpleListProperty<>();
 
     @Autowired
@@ -143,12 +139,12 @@ public class TradespaceController implements Initializable {
         Node tradespaceScatterPlotNode = guiService.createControl(Views.TRADESPACE_SCATTER_PLOT_VIEW);
         tradespaceScatterPlotParent.setContent(tradespaceScatterPlotNode);
         TradespaceScatterPlotController tradespaceScatterPlotController = (TradespaceScatterPlotController) tradespaceScatterPlotNode.getUserData();
-        tradespaceScatterPlotController.bind(figureOfMeritsProperty, epochsSelectedProperty, designPointsProperty);
+        tradespaceScatterPlotController.bind(figureOfMeritsProperty, epochsProperty, designPointsProperty);
 
         Node tradespacePolarPlotNode = guiService.createControl(Views.TRADESPACE_POLAR_PLOT_VIEW);
         tradespacePolarPlotParent.setContent(tradespacePolarPlotNode);
         TradespacePolarPlotController tradespacePolarPlotController = (TradespacePolarPlotController) tradespacePolarPlotNode.getUserData();
-        tradespacePolarPlotController.bind(figureOfMeritsProperty, epochsSelectedProperty, designPointsProperty);
+        tradespacePolarPlotController.bind(figureOfMeritsProperty, epochsProperty, designPointsProperty);
 
         saveTradespaceButton.disableProperty().bind(tradespaceProperty.isNull());
 
@@ -168,7 +164,7 @@ public class TradespaceController implements Initializable {
         figureOfMeritNameColumn.setStyle("-fx-alignment: BASELINE_LEFT;");
 
         figureOfMeritUnitColumn.setCellValueFactory(figureOfMeritCallback);
-        figureOfMeritUnitColumn.setCellFactory(p -> new FigureOfMeritDefinitionUnitCell(tradespaceToStudyBridge, updateFigureOfMeritTableConsumer));
+        figureOfMeritUnitColumn.setCellFactory(p -> new FigureOfMeritDefinitionUnitCell(tradespaceToStudyBridge));
 
         figureOfMeritOptimalityColumn.setCellValueFactory(figureOfMeritCallback);
         figureOfMeritOptimalityColumn.setCellFactory(p -> new FigureOfMeritDefinitionOptimalityCell(updateFigureOfMeritTableConsumer));
@@ -197,24 +193,26 @@ public class TradespaceController implements Initializable {
             }
         });
 
-        Callback<TableColumn.CellDataFeatures<Epoch, Epoch>, ObservableValue<Epoch>> callback = param -> {
+        epochNameColumn.setCellValueFactory(param -> {
+            if (param == null || param.getValue() == null) {
+                return new SimpleStringProperty();
+            }
+            Epoch epoch = param.getValue();
+            return new SimpleStringProperty(epoch.asText());
+        });
+        epochNameColumn.setStyle("-fx-alignment: BASELINE_LEFT;");
+        Consumer<Epoch> deleteEpochConsumer = (epoch) -> {
+            epochsProperty.remove(epoch);
+            designPointsProperty.removeIf(dp -> dp.getEpoch().equals(epoch));
+            epochTable.refresh();
+        };
+        epochDeleteColumn.setCellValueFactory(param -> {
             if (param == null || param.getValue() == null) {
                 return new SimpleObjectProperty<>();
             }
             Epoch epoch = param.getValue();
             return new SimpleObjectProperty<>(epoch);
-        };
-
-        epochNameColumn.setCellValueFactory(callback);
-        epochNameColumn.setStyle("-fx-alignment: BASELINE_LEFT;");
-        epochNameColumn.setCellFactory(item -> new EpochCell());
-        Consumer<Epoch> deleteEpochConsumer = (epoch) -> {
-            epochsProperty.remove(epoch);
-            epochsSelectedProperty.remove(epoch);
-            designPointsProperty.removeIf(dp -> dp.getEpoch().equals(epoch));
-            epochTable.refresh();
-        };
-        epochDeleteColumn.setCellValueFactory(callback);
+        });
         epochDeleteColumn.setCellFactory(p -> new EpochDeleteCell(deleteEpochConsumer));
 
         figureOfMeritValuesText.textProperty().bind(Bindings.createStringBinding(() -> {
@@ -255,12 +253,10 @@ public class TradespaceController implements Initializable {
         if (multitemporalTradespace != null) {
             figureOfMeritsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getDefinitions()));
             epochsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
-            epochsSelectedProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
             designPointsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getDesignPoints()));
         } else {
             figureOfMeritsProperty.setValue(FXCollections.emptyObservableList());
             epochsProperty.setValue(FXCollections.emptyObservableList());
-            epochsSelectedProperty.setValue(FXCollections.emptyObservableList());
             designPointsProperty.setValue(FXCollections.emptyObservableList());
         }
     }
@@ -295,7 +291,6 @@ public class TradespaceController implements Initializable {
             Epoch epoch = new Epoch(year);
             if (!epochsProperty.contains(epoch)) {
                 epochsProperty.add(epoch);
-                epochsSelectedProperty.add(epoch);
                 epochsProperty.sort(Comparator.comparingInt(Epoch::getYear));
                 epochTable.refresh();
             }
@@ -375,25 +370,6 @@ public class TradespaceController implements Initializable {
         newTradespace.setId(tradespaceToStudyBridge.getStudyId());
         this.setMultitemporalTradespace(tradespace);
         logger.info("New tradespace initialized");
-    }
-
-    private class EpochCell extends TableCell<Epoch, Epoch> {
-        @Override
-        protected void updateItem(Epoch item, boolean empty) {
-            super.updateItem(item, empty);
-            if (!empty) {
-                CheckBox epochCheckBox = new CheckBox(item.asText());
-                epochCheckBox.setSelected(epochsSelectedProperty.contains(item));
-                epochCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-                    if (newValue) {
-                        epochsSelectedProperty.add(item);
-                    } else {
-                        epochsSelectedProperty.remove(item);
-                    }
-                });
-                this.setGraphic(epochCheckBox);
-            }
-        }
     }
 
 }

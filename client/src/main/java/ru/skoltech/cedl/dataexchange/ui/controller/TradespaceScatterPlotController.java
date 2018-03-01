@@ -23,6 +23,7 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
@@ -43,6 +44,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
+import org.controlsfx.control.CheckComboBox;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.*;
 import ru.skoltech.cedl.dataexchange.structure.Project;
@@ -70,6 +72,8 @@ public class TradespaceScatterPlotController implements Initializable {
     @FXML
     private BorderPane scatterPlotPane;
     @FXML
+    private CheckComboBox<Epoch> epochComboBox;
+    @FXML
     private ComboBox<FigureOfMeritDefinition> xAxisCombo;
     @FXML
     private ComboBox<FigureOfMeritDefinition> yAxisCombo;
@@ -85,6 +89,7 @@ public class TradespaceScatterPlotController implements Initializable {
 
     private ListProperty<FigureOfMeritDefinition> figureOfMeritsProperty = new SimpleListProperty<>();
     private ListProperty<Epoch> epochsProperty = new SimpleListProperty<>();
+    private ListProperty<Epoch> checkedEpochsProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     private ListProperty<DesignPoint> designPointsProperty = new SimpleListProperty<>();
 
     private ObjectProperty<Bounds> boundsProperty = new SimpleObjectProperty<>();
@@ -99,6 +104,8 @@ public class TradespaceScatterPlotController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         this.loadRevisionListener = revision -> project.loadLocalStudy(revision);
+        scatterPlotPane.visibleProperty().bind(designPointsProperty.emptyProperty().not());
+
         StringConverter<FigureOfMeritDefinition> stringConverter = new StringConverter<FigureOfMeritDefinition>() {
             @Override
             public FigureOfMeritDefinition fromString(String unitStr) {
@@ -114,7 +121,29 @@ public class TradespaceScatterPlotController implements Initializable {
             }
         };
 
-        scatterPlotPane.visibleProperty().bind(designPointsSeriesProperty.emptyProperty().not());
+        epochsProperty.addListener((observable, oldValue, newValue) -> {
+            epochComboBox.getItems().clear();
+            epochComboBox.getItems().addAll(newValue);
+            epochComboBox.getCheckModel().checkAll();
+        });
+        epochComboBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<Epoch>) c -> {
+            checkedEpochsProperty.clear();
+            checkedEpochsProperty.addAll(c.getList());
+        });
+
+        epochComboBox.setConverter(new StringConverter<Epoch>() {
+            @Override
+            public String toString(Epoch object) {
+                return object.asText();
+            }
+
+            @Override
+            public Epoch fromString(String string) {
+                return epochsProperty.stream().filter(e -> e.asText().equals(string)).findFirst().orElse(null);
+            }
+        });
+
+
 
         xAxisCombo.setConverter(stringConverter);
         xAxisCombo.itemsProperty().bind(figureOfMeritsProperty);
@@ -188,7 +217,7 @@ public class TradespaceScatterPlotController implements Initializable {
             }
 
             List<XYChart.Series<Number, Number>> designPointsSeriesList = new LinkedList<>();
-            epochsProperty.forEach(epoch -> {
+            checkedEpochsProperty.forEach(epoch -> {
                 ObservableList<XYChart.Data<Number, Number>> points = extractPoints(designPointsProperty, epoch, xFom, yFom);
                 XYChart.Series<Number, Number> series = new XYChart.Series<>();
                 series.setName(epoch.asText());
@@ -201,7 +230,7 @@ public class TradespaceScatterPlotController implements Initializable {
                 designPointsSeriesList.add(series);
             });
             return FXCollections.observableArrayList(designPointsSeriesList);
-        }, xAxisCombo.valueProperty(), yAxisCombo.valueProperty(), epochsProperty, designPointsProperty));
+        }, xAxisCombo.valueProperty(), yAxisCombo.valueProperty(), checkedEpochsProperty, designPointsProperty));
 
         paretoSeriesProperty.bind(Bindings.createObjectBinding(() -> {
             FigureOfMeritDefinition xFom = xAxisCombo.valueProperty().getValue();

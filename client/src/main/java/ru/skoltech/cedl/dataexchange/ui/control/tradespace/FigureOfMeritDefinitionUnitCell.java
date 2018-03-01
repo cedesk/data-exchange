@@ -22,8 +22,6 @@ import javafx.scene.control.TextField;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.FigureOfMeritDefinition;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.TradespaceToStudyBridge;
 
-import java.util.function.Consumer;
-
 /**
  * {@link javafx.scene.control.TableView} cell to display {@link FigureOfMeritDefinition} unit.
  */
@@ -33,12 +31,11 @@ public class FigureOfMeritDefinitionUnitCell extends TableCell<FigureOfMeritDefi
     private FigureOfMeritDefinition fom;
     private final TextField unitTextField = new TextField();
 
-    public FigureOfMeritDefinitionUnitCell(TradespaceToStudyBridge tradespaceToStudyBridge, Consumer<Void> unitSupplier) {
+    public FigureOfMeritDefinitionUnitCell(TradespaceToStudyBridge tradespaceToStudyBridge) {
         this.tradespaceToStudyBridge = tradespaceToStudyBridge;
         this.unitTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (fom != null) {
                 fom.setUnitOfMeasure(newValue);
-                unitSupplier.accept(null);
             }
         });
     }
