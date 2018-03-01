@@ -16,27 +16,53 @@
 
 package ru.skoltech.cedl.dataexchange.structure;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
+ * Factory to obtain system builders.
+ *
  * Created by d.knoll on 27/06/2017.
  */
-public class SystemBuilderFactory {
+public class SystemBuilderFactory implements ApplicationContextAware {
 
-    private Map<String, SystemBuilder> builderRegistry = new HashMap<>();
+    private ApplicationContext applicationContext;
 
-    public SystemBuilderFactory(Map<String, SystemBuilder> builderRegistry) {
-        this.builderRegistry = builderRegistry;
+    private Map<String, Class<? extends SystemBuilder>> builderRegistry;
+
+    public SystemBuilderFactory() {
+        this.builderRegistry = new HashMap<>();
+        this.builderRegistry.put("Simple System (from subsystem names)", SimpleSystemBuilder.class);
+        this.builderRegistry.put("Basic Space System", BasicSpaceSystemBuilder.class);
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    /**
+     * Get the names of available builders.
+     *
+     * @return name of available builder.
+     */
     public List<String> getBuilderNames() {
         return new ArrayList<>(builderRegistry.keySet());
     }
 
+    /**
+     * Get a builder instance by its name.
+     *
+     * @return a builder instance.
+     */
     public SystemBuilder getBuilder(String builderName) {
-        return builderRegistry.get(builderName);
+        Class<? extends SystemBuilder> builderClass = builderRegistry.get(builderName);
+        return applicationContext.getBean(builderClass);
     }
 }

@@ -43,11 +43,6 @@ public class SimpleSystemBuilder extends SystemBuilder {
     }
 
     @Override
-    public String asName() {
-        return "Simple System (from subsystem names)";
-    }
-
-    @Override
     public SystemModel build(String systemName) throws IllegalArgumentException {
         if (systemName == null || systemName.isEmpty()) {
             throw new IllegalArgumentException("systemName must not be null or empty: " + systemName);

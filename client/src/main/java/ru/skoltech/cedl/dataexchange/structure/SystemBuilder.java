@@ -66,13 +66,6 @@ public abstract class SystemBuilder {
     }
 
     /**
-     * A name of the builder.
-     *
-     * @return name of builder.
-     */
-    public abstract String asName();
-
-    /**
      * Builds an instance of new {@link SystemModel} based of adjusted parameters.
      * Must throw an IllegalArgumentException if passed system name is <i>null</i> or empty.
      *

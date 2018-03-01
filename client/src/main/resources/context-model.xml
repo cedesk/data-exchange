@@ -17,10 +17,9 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:util="http://www.springframework.org/schema/util"
        xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans              http://www.springframework.org/schema/beans/spring-beans.xsd
-                           http://www.springframework.org/schema/util               http://www.springframework.org/schema/util/spring-util.xsd
+
                            http://www.springframework.org/schema/task               http://www.springframework.org/schema/task/spring-task.xsd">
 
     <bean id="repositoryStateMachine" class="ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine"/>
@@ -45,32 +44,17 @@
         <property name="actionLogger" ref="actionLogger"/>
     </bean>
 
-    <util:map id="builderRegistry" map-class="java.util.HashMap">
-        <entry value-ref="simpleSystemBuilder">
-            <key>
-                <bean factory-bean="simpleSystemBuilder" factory-method="asName"/>
-            </key>
-        </entry>
-        <entry value-ref="basicSpaceSystemBuilder">
-            <key>
-                <bean factory-bean="basicSpaceSystemBuilder" factory-method="asName"/>
-            </key>
-        </entry>
-    </util:map>
-
-    <bean id="systemBuilderFactory" class="ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory">
-        <constructor-arg name="builderRegistry" ref="builderRegistry"/>
-    </bean>
+    <bean id="systemBuilderFactory" class="ru.skoltech.cedl.dataexchange.structure.SystemBuilderFactory"/>
 
     <bean id="systemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SystemBuilder" abstract="true">
         <property name="unitService" ref="unitService"/>
     </bean>
 
     <bean id="simpleSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.SimpleSystemBuilder"
-          parent="systemBuilder"/>
+          parent="systemBuilder" scope="prototype"/>
 
     <bean id="basicSpaceSystemBuilder" class="ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder"
-          parent="systemBuilder"/>
+          parent="systemBuilder" scope="prototype"/>
 
     <bean id="differenceHandler" class="ru.skoltech.cedl.dataexchange.structure.DifferenceHandler">
         <property name="studyService" ref="studyService"/>
