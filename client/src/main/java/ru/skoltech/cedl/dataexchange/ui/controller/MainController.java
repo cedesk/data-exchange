@@ -572,6 +572,23 @@ public class MainController implements Initializable, Displayable, Closeable {
     }
 
     public void openTradespaceExplorer() {
+        if (repositoryStateMachine.hasModifications()) {
+            Dialogues.close("Unsaved modifications",
+                    "Modifications to the model structure must to be saved before proceeding to Tradespace Explorer. " +
+                            "Shall it be saved now?");
+            return;
+        }
+
+        if (tagProperty.isEmpty().get()) {
+            Study study = project.getStudy();
+            String notification = "Tag currently saved version of study\nbefore proceeding to Tradespace Explorer:";
+            ViewBuilder tagDialogViewBuilder = guiService.createViewBuilder("Tag current study revision", Views.TAG_VIEW);
+            tagDialogViewBuilder.modality(Modality.APPLICATION_MODAL);
+            tagDialogViewBuilder.ownerWindow(ownerStage);
+            tagDialogViewBuilder.resizable(false);
+            tagDialogViewBuilder.showAndWait(study, notification);
+        }
+
         ViewBuilder tradespaceViewBuilder = guiService.createViewBuilder(resources.getString("tradespace_explorer.title"), Views.TRADESPACE_VIEW);
         tradespaceViewBuilder.ownerWindow(ownerStage);
         tradespaceViewBuilder.show();

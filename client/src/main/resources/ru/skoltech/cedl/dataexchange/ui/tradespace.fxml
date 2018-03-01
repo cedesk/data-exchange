@@ -43,6 +43,15 @@
                     <Glyph fontFamily="FontAwesome" icon="CUBE"/>
                 </graphic>
             </Label>
+            <Label fx:id="tagLabel" styleClass="projectDetailsLabels" graphicTextGap="6" text="--">
+                <tooltip>
+                    <Tooltip text="%main.toolbar.tag.tooltip"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="TAG"/>
+                </graphic>
+            </Label>
+
         </ToolBar>
     </top>
     <center>

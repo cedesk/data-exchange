@@ -25,6 +25,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.lang3.tuple.Pair;
@@ -49,6 +50,8 @@ import static ru.skoltech.cedl.dataexchange.Utils.TIME_AND_DATE_FOR_USER_INTERFA
 public class TagController implements Initializable, Displayable {
 
     @FXML
+    private Text notificationText;
+    @FXML
     private TextField tagTextField;
     @FXML
     private TableColumn<Pair<Date, String>, String> dateColumn;
@@ -61,6 +64,7 @@ public class TagController implements Initializable, Displayable {
 
     private StudyService studyService;
     private Study study;
+    private String notification;
     private Stage ownerStage;
 
     private TagController() {
@@ -68,6 +72,11 @@ public class TagController implements Initializable, Displayable {
 
     public TagController(Study study) {
         this.study = study;
+    }
+
+    public TagController(Study study, String notification) {
+        this(study);
+        this.notification = notification;
     }
 
     public void setStudyService(StudyService studyService) {
@@ -85,6 +94,9 @@ public class TagController implements Initializable, Displayable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        notificationText.visibleProperty().bind(notificationText.textProperty().isNotEmpty());
+        notificationText.setText(notification);
+
         tagButton.disableProperty().bind(Bindings.isEmpty(tagTextField.textProperty()));
 
         List<Pair<CustomRevisionEntity, RevisionType>> studyTags = studyService.findAllStudyRevisionEntityWithTags(study);

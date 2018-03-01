@@ -123,6 +123,14 @@ public class Dialogues {
         return yesNoDialog.showAndWait();
     }
 
+    public static void close(String title, String text) {
+        Alert cancelDialog = new Alert(Alert.AlertType.WARNING);
+        cancelDialog.setHeaderText(title);
+        cancelDialog.setContentText(text);
+        cancelDialog.getButtonTypes().setAll(ButtonType.CLOSE);
+        cancelDialog.showAndWait();
+    }
+
     public static Optional<ButtonType> chooseYesNoCancel(String title, String text) {
         Alert yesNoCancelDialog = new Alert(Alert.AlertType.CONFIRMATION);
         yesNoCancelDialog.setHeaderText(title);

@@ -64,6 +64,8 @@ public class TradespaceController implements Initializable {
     @FXML
     private Label studyNameLabel;
     @FXML
+    private Label tagLabel;
+    @FXML
     private TableView<FigureOfMeritDefinition> figureOfMeritTable;
     @FXML
     private TableColumn<FigureOfMeritDefinition, String> figureOfMeritNameColumn;
@@ -112,90 +114,14 @@ public class TradespaceController implements Initializable {
         this.guiService = guiService;
     }
 
-    private void setMultitemporalTradespace(MultitemporalTradespace multitemporalTradespace) {
-        tradespaceProperty.set(multitemporalTradespace);
-
-        if (multitemporalTradespace != null) {
-            figureOfMeritsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getDefinitions()));
-            epochsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
-            epochsSelectedProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
-            designPointsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getDesignPoints()));
-        } else {
-            figureOfMeritsProperty.setValue(FXCollections.emptyObservableList());
-            epochsProperty.setValue(FXCollections.emptyObservableList());
-            epochsSelectedProperty.setValue(FXCollections.emptyObservableList());
-            designPointsProperty.setValue(FXCollections.emptyObservableList());
-        }
-    }
-
     public void setTradespaceModelBridge(TradespaceToStudyBridge tradespaceModelBridge) {
         this.tradespaceToStudyBridge = tradespaceModelBridge;
-    }
-
-    public void addDesignPointToTradespace() {
-        // TODO: if project is dirty ask user to save and tag first
-        tradespaceToStudyBridge.isSaved();
-        Epoch epoch = epochSelectorChoice.getSelectionModel().getSelectedItem();
-        DesignPoint dp = new DesignPoint();
-        dp.setEpoch(epoch);
-        List<FigureOfMeritValue> fomValues = figureOfMeritsProperty.stream()
-                .map(fom -> {
-                    Double parameterValue = tradespaceToStudyBridge.getParameterValue(fom.getParameterModelLink());
-                    return new FigureOfMeritValue(fom, parameterValue);
-                })
-                .collect(Collectors.toList());
-        dp.setValues(fomValues);
-        String currentRevisionName = tradespaceToStudyBridge.getCurrentRevisionName();
-        dp.setDescription(currentRevisionName); // TODO: if null ask user to save and tag first
-        designPointsProperty.add(dp);
-    }
-
-    public void addEpoch() {
-        Optional<String> epochStringOptional = Dialogues.inputEpoch();
-        if (epochStringOptional.isPresent()) {
-            String epochString = epochStringOptional.get().trim();
-            // TODO: add input validation
-            if (epochString.isEmpty()) {
-                return;
-            }
-
-            int year = Integer.valueOf(epochString.trim());
-            Epoch epoch = new Epoch(year);
-            if (!epochsProperty.contains(epoch)) {
-                epochsProperty.add(epoch);
-                epochsProperty.sorted();
-                epochsSelectedProperty.add(epoch);
-            }
-        }
-    }
-
-    public void addFigureOfMerit() {
-        Optional<String> figureOfMeritChoice = Dialogues.inputParameterName("figure of merit");
-        if (figureOfMeritChoice.isPresent()) {
-            String figureOfMeritName = figureOfMeritChoice.get();
-            boolean hasSameName = figureOfMeritsProperty.stream().anyMatch(fom -> figureOfMeritName.equals(fom.getName()));
-            if (hasSameName) {
-                Dialogues.showWarning("Duplicate figure of merit name", "Such a figure of merit was already defined!");
-            } else {
-                FigureOfMeritDefinition fom = new FigureOfMeritDefinition(figureOfMeritName, "none", Optimality.MAXIMAL); // TODO add unit
-                figureOfMeritsProperty.add(fom);
-            }
-        }
-    }
-
-    public void importTadespaceFromCSV() {
-        ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from CSV File", Views.IMPORT_TRADESPACE_FROM_CSV_VIEW);
-        this.importTadespace(viewBuilder);
-    }
-
-    public void importTadespaceFromExcel() {
-        ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from Excel File", Views.IMPORT_TRADESPACE_FROM_EXCEL_VIEW);
-        this.importTadespace(viewBuilder);
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         studyNameLabel.setText(tradespaceToStudyBridge.getStudyName());
+        tagLabel.setText(tradespaceToStudyBridge.getCurrentRevisionName());
 
         Node tradespaceScatterPlotNode = guiService.createControl(Views.TRADESPACE_SCATTER_PLOT_VIEW);
         tradespaceScatterPlotParent.setContent(tradespaceScatterPlotNode);
@@ -304,6 +230,83 @@ public class TradespaceController implements Initializable {
         addDesignPointButton.disableProperty().bind(epochSelectorChoice.getSelectionModel().selectedItemProperty().isNull());
 
         loadTradespace();
+    }
+
+    private void setMultitemporalTradespace(MultitemporalTradespace multitemporalTradespace) {
+        tradespaceProperty.set(multitemporalTradespace);
+
+        if (multitemporalTradespace != null) {
+            figureOfMeritsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getDefinitions()));
+            epochsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
+            epochsSelectedProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getEpochs()));
+            designPointsProperty.setValue(FXCollections.observableArrayList(multitemporalTradespace.getDesignPoints()));
+        } else {
+            figureOfMeritsProperty.setValue(FXCollections.emptyObservableList());
+            epochsProperty.setValue(FXCollections.emptyObservableList());
+            epochsSelectedProperty.setValue(FXCollections.emptyObservableList());
+            designPointsProperty.setValue(FXCollections.emptyObservableList());
+        }
+    }
+
+    public void addDesignPointToTradespace() {
+        // TODO: if project is dirty ask user to save and tag first
+        tradespaceToStudyBridge.isSaved();
+        Epoch epoch = epochSelectorChoice.getSelectionModel().getSelectedItem();
+        DesignPoint dp = new DesignPoint();
+        dp.setEpoch(epoch);
+        List<FigureOfMeritValue> fomValues = figureOfMeritsProperty.stream()
+                .map(fom -> {
+                    Double parameterValue = tradespaceToStudyBridge.getParameterValue(fom.getParameterModelLink());
+                    return new FigureOfMeritValue(fom, parameterValue);
+                })
+                .collect(Collectors.toList());
+        dp.setValues(fomValues);
+        String currentRevisionName = tradespaceToStudyBridge.getCurrentRevisionName();
+        dp.setDescription(currentRevisionName); // TODO: if null ask user to save and tag first
+        designPointsProperty.add(dp);
+    }
+
+    public void addEpoch() {
+        Optional<String> epochStringOptional = Dialogues.inputEpoch();
+        if (epochStringOptional.isPresent()) {
+            String epochString = epochStringOptional.get().trim();
+            // TODO: add input validation
+            if (epochString.isEmpty()) {
+                return;
+            }
+
+            int year = Integer.valueOf(epochString.trim());
+            Epoch epoch = new Epoch(year);
+            if (!epochsProperty.contains(epoch)) {
+                epochsProperty.add(epoch);
+                epochsProperty.sorted();
+                epochsSelectedProperty.add(epoch);
+            }
+        }
+    }
+
+    public void addFigureOfMerit() {
+        Optional<String> figureOfMeritChoice = Dialogues.inputParameterName("figure of merit");
+        if (figureOfMeritChoice.isPresent()) {
+            String figureOfMeritName = figureOfMeritChoice.get();
+            boolean hasSameName = figureOfMeritsProperty.stream().anyMatch(fom -> figureOfMeritName.equals(fom.getName()));
+            if (hasSameName) {
+                Dialogues.showWarning("Duplicate figure of merit name", "Such a figure of merit was already defined!");
+            } else {
+                FigureOfMeritDefinition fom = new FigureOfMeritDefinition(figureOfMeritName, "none", Optimality.MAXIMAL); // TODO add unit
+                figureOfMeritsProperty.add(fom);
+            }
+        }
+    }
+
+    public void importTadespaceFromCSV() {
+        ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from CSV File", Views.IMPORT_TRADESPACE_FROM_CSV_VIEW);
+        this.importTadespace(viewBuilder);
+    }
+
+    public void importTadespaceFromExcel() {
+        ViewBuilder viewBuilder = guiService.createViewBuilder("Import Tradespace from Excel File", Views.IMPORT_TRADESPACE_FROM_EXCEL_VIEW);
+        this.importTadespace(viewBuilder);
     }
 
     public void loadTradespace() {
