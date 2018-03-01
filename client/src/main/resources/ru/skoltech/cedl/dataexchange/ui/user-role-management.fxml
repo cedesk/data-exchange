@@ -20,8 +20,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.*?>
-<?import org.controlsfx.glyphfont.Glyph?>
 <?import javafx.scene.text.Text?>
+<?import org.controlsfx.glyphfont.Glyph?>
 <SplitPane xmlns:fx="http://javafx.com/fxml/1" dividerPositions="0.33" prefHeight="600.0" prefWidth="800.0"
            stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8"
            fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.UserRoleManagementController">
@@ -33,6 +33,14 @@
                 </tooltip>
                 <graphic>
                     <Glyph fontFamily="FontAwesome" icon="PLUS"/>
+                </graphic>
+            </Button>
+            <Button fx:id="renameDisciplineButton" minWidth="28" mnemonicParsing="false" onAction="#renameDiscipline">
+                <tooltip>
+                    <Tooltip text="Rename discipline"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="PENCIL_SQUARE_ALT"/>
                 </graphic>
             </Button>
             <Button fx:id="deleteDisciplineButton" mnemonicParsing="false" onAction="#deleteDiscipline" minWidth="28">
