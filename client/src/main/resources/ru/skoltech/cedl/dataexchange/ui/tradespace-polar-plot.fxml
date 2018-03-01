@@ -23,6 +23,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.web.WebView?>
+<?import org.controlsfx.control.CheckComboBox?>
 <BorderPane fx:id="polarPlotPane"
             xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.TradespacePolarPlotController">
@@ -31,6 +32,7 @@
     </padding>
     <top>
         <ToolBar BorderPane.alignment="CENTER">
+            <CheckComboBox prefWidth="150.0" fx:id="figureOfMeritsComboBox"/>
             <CheckBox fx:id="revisionCheckBox" text="Only show points related to the design"/>
             <Pane HBox.hgrow="ALWAYS"/>
         </ToolBar>

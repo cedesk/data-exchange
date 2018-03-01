@@ -23,6 +23,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
@@ -31,9 +33,11 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.util.StringConverter;
 import netscape.javascript.JSObject;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
+import org.controlsfx.control.CheckComboBox;
 import org.springframework.core.task.AsyncTaskExecutor;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.DesignPoint;
 import ru.skoltech.cedl.dataexchange.entity.tradespace.Epoch;
@@ -61,6 +65,8 @@ public class TradespacePolarPlotController implements Initializable {
     private static final boolean ENABLE_FIREBUG = false;
 
     @FXML
+    private CheckComboBox<FigureOfMeritDefinition> figureOfMeritsComboBox;
+    @FXML
     private BorderPane polarPlotPane;
     @FXML
     private CheckBox revisionCheckBox;
@@ -70,6 +76,7 @@ public class TradespacePolarPlotController implements Initializable {
     private GuiService guiService;
 
     private ListProperty<FigureOfMeritDefinition> figureOfMeritsProperty = new SimpleListProperty<>();
+    private ListProperty<FigureOfMeritDefinition> checkedFigureOfMeritsProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     private ListProperty<Epoch> epochsProperty = new SimpleListProperty<>();
     private ListProperty<DesignPoint> designPointsProperty = new SimpleListProperty<>();
 
@@ -113,8 +120,30 @@ public class TradespacePolarPlotController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         polarPlotPane.visibleProperty().bind(designPointsProperty.emptyProperty().not());
 
+        figureOfMeritsProperty.addListener((observable, oldValue, newValue) -> {
+            figureOfMeritsComboBox.getItems().clear();
+            figureOfMeritsComboBox.getItems().addAll(newValue);
+            figureOfMeritsComboBox.getCheckModel().checkAll();
+        });
+        figureOfMeritsComboBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<FigureOfMeritDefinition>) c -> {
+            checkedFigureOfMeritsProperty.clear();
+            checkedFigureOfMeritsProperty.addAll(c.getList());
+        });
+
+        figureOfMeritsComboBox.setConverter(new StringConverter<FigureOfMeritDefinition>() {
+            @Override
+            public String toString(FigureOfMeritDefinition object) {
+                return object.getName();
+            }
+
+            @Override
+            public FigureOfMeritDefinition fromString(String string) {
+                return figureOfMeritsProperty.stream().filter(fom -> fom.getName().equals(string)).findFirst().orElse(null);
+            }
+        });
+
         membersProperty.bind(Bindings.createObjectBinding(() -> {
-            String[] labels = figureOfMeritsProperty.stream()
+            String[] labels = checkedFigureOfMeritsProperty.stream()
                     .map(FigureOfMeritDefinition::getName)
                     .toArray(String[]::new);
             String[] datasets = designPointsProperty.stream()
@@ -132,7 +161,7 @@ public class TradespacePolarPlotController implements Initializable {
                             .toArray()
                     ).collect(Collectors.toList());
             return Triple.of(labels, datasets, data);
-        }, figureOfMeritsProperty, designPointsProperty, revisionCheckBox.selectedProperty()));
+        }, checkedFigureOfMeritsProperty, designPointsProperty, revisionCheckBox.selectedProperty()));
 
         membersProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue == null) {
