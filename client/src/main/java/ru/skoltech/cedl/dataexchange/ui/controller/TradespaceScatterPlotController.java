@@ -42,7 +42,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
-import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
 import org.controlsfx.control.CheckComboBox;
 import ru.skoltech.cedl.dataexchange.Utils;
@@ -106,24 +105,9 @@ public class TradespaceScatterPlotController implements Initializable {
         this.loadRevisionListener = revision -> project.loadLocalStudy(revision);
         scatterPlotPane.visibleProperty().bind(designPointsProperty.emptyProperty().not());
 
-        StringConverter<FigureOfMeritDefinition> stringConverter = new StringConverter<FigureOfMeritDefinition>() {
-            @Override
-            public FigureOfMeritDefinition fromString(String unitStr) {
-                return null;
-            }
-
-            @Override
-            public String toString(FigureOfMeritDefinition figureOfMeritDefinition) {
-                if (figureOfMeritDefinition == null) {
-                    return null;
-                }
-                return figureOfMeritDefinition.getName();
-            }
-        };
-
         epochsProperty.addListener((observable, oldValue, newValue) -> {
             epochComboBox.getItems().clear();
-            epochComboBox.getItems().addAll(newValue);
+            epochComboBox.getItems().addAll(newValue.sorted());
             epochComboBox.getCheckModel().checkAll();
         });
         epochComboBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<Epoch>) c -> {
@@ -131,21 +115,9 @@ public class TradespaceScatterPlotController implements Initializable {
             checkedEpochsProperty.addAll(c.getList());
         });
 
-        epochComboBox.setConverter(new StringConverter<Epoch>() {
-            @Override
-            public String toString(Epoch object) {
-                return object.asText();
-            }
+        epochComboBox.setConverter(new TradespaceController.EpochStringConverter());
 
-            @Override
-            public Epoch fromString(String string) {
-                return epochsProperty.stream().filter(e -> e.asText().equals(string)).findFirst().orElse(null);
-            }
-        });
-
-
-
-        xAxisCombo.setConverter(stringConverter);
+        xAxisCombo.setConverter(new TradespaceController.FigureOfMeritDefinitionStringConverter());
         xAxisCombo.itemsProperty().bind(figureOfMeritsProperty);
         xAxisCombo.itemsProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.size() > 0) {
@@ -153,7 +125,7 @@ public class TradespaceScatterPlotController implements Initializable {
             }
         });
 
-        yAxisCombo.setConverter(stringConverter);
+        yAxisCombo.setConverter(new TradespaceController.FigureOfMeritDefinitionStringConverter());
         yAxisCombo.itemsProperty().bind(figureOfMeritsProperty);
         yAxisCombo.itemsProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.size() > 1) {

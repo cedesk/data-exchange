@@ -16,6 +16,7 @@
 
 package ru.skoltech.cedl.dataexchange.entity.tradespace;
 
+import org.apache.commons.lang3.tuple.Pair;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
@@ -24,10 +25,7 @@ import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.service.impl.StudyServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by d.knoll on 6/28/2017.
@@ -44,7 +42,12 @@ public class TradespaceToStudyBridge {
         this.project = project;
     }
 
-    public String getCurrentRevisionName() {
+    public ModelStateLink getCurrentModelStateLink() {
+        Pair<Integer, Date> latestRevision = studyService.findLatestRevision(project.getStudy().getId());
+        return latestRevision != null ? new ModelStateLink(latestRevision.getLeft()) : null;
+    }
+
+    public String getCurrentTagName() {
         return studyService.findCurrentStudyRevisionTag(project.getStudy());
     }
 
@@ -67,15 +70,15 @@ public class TradespaceToStudyBridge {
         return project.getStudy().getId();
     }
 
+    public String getStudyName() {
+        return project.getProjectName();
+    }
+
     private SystemModel getSystemModel() {
         if (systemModel == null) {
             systemModel = project.getSystemModel();
         }
         return systemModel;
-    }
-
-    public String getStudyName() {
-        return project.getProjectName();
     }
 
     public boolean isSaved() {
@@ -84,6 +87,10 @@ public class TradespaceToStudyBridge {
 
     public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
         this.repositoryStateMachine = repositoryStateMachine;
+    }
+
+    public void setStudyService(StudyServiceImpl studyService) {
+        this.studyService = studyService;
     }
 
     public String getParameterName(String parameterUuid) {
@@ -117,9 +124,5 @@ public class TradespaceToStudyBridge {
             return parameterModel.getEffectiveValue();
         }
         return null;
-    }
-
-    public void setStudyService(StudyServiceImpl studyService) {
-        this.studyService = studyService;
     }
 }

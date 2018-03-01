@@ -87,7 +87,7 @@ public class FigureOfMeritValue {
     @Override
     public String toString() {
         return "FigureOfMeritValue{" +
-                "definition=" + definition +
+                "definition=" + (definition != null ? definition.getName() : null) +
                 ", value=" + value +
                 '}';
     }

@@ -37,6 +37,7 @@
             <ComboBox prefWidth="150.0" fx:id="xAxisCombo"/>
             <Label text="Y-Axis"/>
             <ComboBox fx:id="yAxisCombo" prefWidth="150.0"/>
+            <Label text="Epochs"/>
             <CheckComboBox prefWidth="150.0" fx:id="epochComboBox"/>
             <Pane HBox.hgrow="ALWAYS"/>
             <Button minWidth="28" mnemonicParsing="false" onAction="#saveDiagram">

@@ -124,7 +124,7 @@ public class TradespaceController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         studyNameLabel.setText(tradespaceToStudyBridge.getStudyName());
-        tagLabel.setText(tradespaceToStudyBridge.getCurrentRevisionName());
+        tagLabel.setText(tradespaceToStudyBridge.getCurrentTagName());
 
         definitionsPane.visibleProperty().bind(definitionsButton.selectedProperty());
         tradespacePane.getItems().remove(definitionsPane);
@@ -175,7 +175,7 @@ public class TradespaceController implements Initializable {
         figureOfMeritDeleteColumn.setCellValueFactory(figureOfMeritCallback);
         Consumer<FigureOfMeritDefinition> deleteFigureOfMeritConsumer = (fom) -> {
             figureOfMeritsProperty.remove(fom);
-            // TODO: remove also data from design points?
+            designPointsProperty.forEach(dp -> dp.getValues().removeIf(fomValue -> fom.equals(fomValue.getDefinition())));
             figureOfMeritTable.refresh();
         };
         figureOfMeritDeleteColumn.setCellFactory(p -> new FigureOfMeritDefinitionDeleteCell(deleteFigureOfMeritConsumer));
@@ -230,17 +230,7 @@ public class TradespaceController implements Initializable {
         );
 
         addEpochButton.disableProperty().bind(epochsProperty.isNull());
-        epochSelectorChoice.setConverter(new StringConverter<Epoch>() {
-            @Override
-            public Epoch fromString(String string) {
-                return null;
-            }
-
-            @Override
-            public String toString(Epoch epoch) {
-                return epoch.asText();
-            }
-        });
+        epochSelectorChoice.setConverter(new EpochStringConverter());
         epochSelectorChoice.itemsProperty().bind(epochsProperty);
         addDesignPointButton.disableProperty().bind(epochSelectorChoice.getSelectionModel().selectedItemProperty().isNull());
 
@@ -262,7 +252,6 @@ public class TradespaceController implements Initializable {
     }
 
     public void addDesignPointToTradespace() {
-        // TODO: if project is dirty ask user to save and tag first
         Epoch epoch = epochSelectorChoice.getSelectionModel().getSelectedItem();
         DesignPoint dp = new DesignPoint();
         dp.setEpoch(epoch);
@@ -273,9 +262,12 @@ public class TradespaceController implements Initializable {
                 })
                 .collect(Collectors.toList());
         dp.setValues(fomValues);
-        String currentRevisionName = tradespaceToStudyBridge.getCurrentRevisionName();
-        dp.setDescription(currentRevisionName); // TODO: if null ask user to save and tag first
+        String currentRevisionName = tradespaceToStudyBridge.getCurrentTagName();
+        dp.setDescription(currentRevisionName);
+        ModelStateLink modelStateLink = tradespaceToStudyBridge.getCurrentModelStateLink();
+        dp.setModelStateLink(modelStateLink);
         designPointsProperty.add(dp);
+        logger.info("added design point: " + dp.toString());
     }
 
     public void addEpoch() {
@@ -370,6 +362,30 @@ public class TradespaceController implements Initializable {
         newTradespace.setId(tradespaceToStudyBridge.getStudyId());
         this.setMultitemporalTradespace(tradespace);
         logger.info("New tradespace initialized");
+    }
+
+    static class FigureOfMeritDefinitionStringConverter extends StringConverter<FigureOfMeritDefinition> {
+        @Override
+        public FigureOfMeritDefinition fromString(String unitStr) {
+            return null;
+        }
+
+        @Override
+        public String toString(FigureOfMeritDefinition figureOfMeritDefinition) {
+            return figureOfMeritDefinition != null ? figureOfMeritDefinition.getName() : null;
+        }
+    }
+
+    static class EpochStringConverter extends StringConverter<Epoch> {
+        @Override
+        public Epoch fromString(String string) {
+            return null;
+        }
+
+        @Override
+        public String toString(Epoch epoch) {
+            return epoch != null ? epoch.asText() : null;
+        }
     }
 
 }
