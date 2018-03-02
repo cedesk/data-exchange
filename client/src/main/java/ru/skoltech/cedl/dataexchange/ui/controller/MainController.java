@@ -23,7 +23,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -168,9 +167,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     private Stage dependencyStage;
 
     private StringProperty tagProperty = new SimpleStringProperty("");
-    private BooleanBinding repositoryNewer;
     private BooleanProperty isUserObserver = new SimpleBooleanProperty(true);
-    private ChangeListener<Boolean> repositoryNewerListener;
 
     // TODO to remove
     private boolean isSaveEnabled() {
@@ -280,7 +277,6 @@ public class MainController implements Initializable, Displayable, Closeable {
                                         "WARNING: This is not reversible!");
                     }
                     if (chooseYesNo.isPresent() && chooseYesNo.get() == ButtonType.YES) {
-                        repositoryNewer.removeListener(repositoryNewerListener);
                         project.deleteStudy(studyName);
                         if (project.getStudy() != null && project.getStudy().getName().equals(studyName)) {
                             project.markStudyModified();
@@ -381,23 +377,26 @@ public class MainController implements Initializable, Displayable, Closeable {
         libraryViewMenu.selectedProperty().bindBidirectional(modelEditingController.libraryDisplayProperty());
         libraryViewButton.selectedProperty().bindBidirectional(modelEditingController.libraryDisplayProperty());
 
-        repositoryNewer = Bindings.createBooleanBinding(() -> differenceHandler.modelDifferences().stream()
-                .anyMatch(md -> md.getChangeLocation() == ChangeLocation.ARG2), differenceHandler.modelDifferences());
-
-        repositoryNewerListener = (observable, oldValue, newValue) -> {
-            if (newValue != null) {
+        differenceHandler.setRepositoryNewerConsumer(aVoid -> {
+            if (project.getStudy() == null) {
+                return;
+            }
+            modelEditingController.updateView();
+            statusLogger.info("Remote model loaded for comparison.");
+            UserNotifications.showActionableNotification(ownerStage, "Updates on study",
+                    "New version of study in repository!", "View Differences",
+                    actionEvent -> this.openDiffView(), true);
+        });
+        differenceHandler.repositoryNewer().addListener((observable, oldValue, newValue) -> {
+            if (project.getStudy() == null) {
+                return;
+            }
+            if (newValue != null && newValue != oldValue) {
                 Glyph glyph = (Glyph) diffButton.getGraphic();
                 glyph.setIcon(newValue ? "BOLT" : "INBOX");
                 glyph.setColor(newValue ? Color.web("FF6A00") : Color.BLACK);
-                if (newValue) {
-                    modelEditingController.updateView();
-                    statusLogger.info("Remote model loaded for comparison.");
-                    UserNotifications.showActionableNotification(ownerStage, "Updates on study",
-                            "New version of study in repository!", "View Differences",
-                            actionEvent -> this.openDiffView(), true);
-                }
             }
-        };
+        });
         actionLogger.log(ActionLogger.ActionType.APPLICATION_START, applicationSettings.getApplicationVersion());
 
         this.checkUserAndLoadProject();
@@ -887,7 +886,6 @@ public class MainController implements Initializable, Displayable, Closeable {
             if (projectName != null && !projectName.isEmpty()) {
                 project.initProject(projectName);
                 this.reloadProject();
-                repositoryNewer.addListener(repositoryNewerListener);
             } else {
                 Optional<ButtonType> choice = Dialogues.chooseNewOrLoadStudy();
                 if (choice.isPresent() && choice.get() == Dialogues.LOAD_STUDY_BUTTON) {

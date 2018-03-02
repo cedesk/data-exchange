@@ -16,6 +16,11 @@
 
 package ru.skoltech.cedl.dataexchange.structure;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.log4j.Logger;
@@ -35,6 +40,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -50,11 +56,29 @@ public class DifferenceHandler {
     private NodeDifferenceService nodeDifferenceService;
     private final RevisionEntityRepository revisionEntityRepository;
 
-    private ObservableList<ModelDifference> modelDifferences = FXCollections.observableArrayList();
+    private ListProperty<ModelDifference> modelDifferences = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private BooleanProperty repositoryNewer = new SimpleBooleanProperty();
+    private Consumer<Void> repositoryNewerConsumer;
+
 
     @Autowired
     public DifferenceHandler(RevisionEntityRepository revisionEntityRepository) {
         this.revisionEntityRepository = revisionEntityRepository;
+        this.repositoryNewer.bind(Bindings.createBooleanBinding(() ->
+                        modelDifferences.stream().anyMatch(md -> md.getChangeLocation() == ModelDifference.ChangeLocation.ARG2)
+                , modelDifferences));
+        this.modelDifferences.addListener((observable, oldValue, newValue) -> {
+            if (repositoryNewerConsumer == null) {
+                return;
+            }
+            for (ModelDifference modelDifference : newValue) {
+                if (!oldValue.contains(modelDifference)
+                        && modelDifference.getChangeLocation() == ModelDifference.ChangeLocation.ARG2) {
+                    repositoryNewerConsumer.accept(null);
+                    return;
+                }
+            }
+        });
     }
 
     public void setStudyService(StudyService studyService) {
@@ -69,9 +93,17 @@ public class DifferenceHandler {
         return this.modelDifferences;
     }
 
+    public BooleanProperty repositoryNewer() {
+        return this.repositoryNewer;
+    }
+
+
+    public void setRepositoryNewerConsumer(Consumer<Void> repositoryNewerConsumer) {
+        this.repositoryNewerConsumer = repositoryNewerConsumer;
+    }
+
     public void updateModelDifferences(List<ModelDifference> modelDifferences) {
-        this.clearModelDifferences();
-        this.modelDifferences.addAll(modelDifferences);
+        this.modelDifferences.setValue(FXCollections.observableList(modelDifferences));
     }
 
     public void clearModelDifferences() {

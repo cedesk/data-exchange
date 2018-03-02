@@ -131,9 +131,11 @@ public class ParameterEditorController implements Initializable {
     private StatusLogger statusLogger;
 
     private ParameterModel parameterModel;
-    private ObjectProperty<Pair<ExternalModel, String>> valueReferenceProperty = new SimpleObjectProperty<>();
+    private ObjectProperty<ExternalModel> importModelProperty = new SimpleObjectProperty<>();
+    private ObjectProperty<String> importFieldProperty = new SimpleObjectProperty<>();
     private ObjectProperty<Unit> unitProperty = new SimpleObjectProperty<>();
-    private ObjectProperty<Pair<ExternalModel, String>> exportReferenceProperty = new SimpleObjectProperty<>();
+    private ObjectProperty<ExternalModel> exportModelProperty = new SimpleObjectProperty<>();
+    private ObjectProperty<String> exportFieldProperty = new SimpleObjectProperty<>();
     private ParameterModel valueLinkParameter;
     private Calculation calculation;
     private Consumer<ParameterModel> editListener;
@@ -188,7 +190,16 @@ public class ParameterEditorController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         parameterModelProperty.addListener((observable, oldValue, newValue) -> this.updateView());
 
-        unitTextField.textProperty().bind(Bindings.createStringBinding(() -> unitProperty.getValue() != null ? unitProperty.getValue().asText() : null, unitProperty));
+        valueReferenceText.textProperty().bind(Bindings.createStringBinding(() ->
+                        importModelProperty.isNotNull().get() && importFieldProperty.isNotNull().get() ?
+                                importModelProperty.get().getName() + ":" + importFieldProperty.get() : "(empty)"
+                , importModelProperty, importFieldProperty));
+        unitTextField.textProperty().bind(Bindings.createStringBinding(() ->
+                unitProperty.getValue() != null ? unitProperty.getValue().asText() : null, unitProperty));
+        exportReferenceText.textProperty().bind(Bindings.createStringBinding(() ->
+                        exportModelProperty.isNotNull().get() && exportFieldProperty.isNotNull().get() ?
+                                exportModelProperty.get().getName() + ":" + exportFieldProperty.get() : "(empty)"
+                , exportModelProperty, exportFieldProperty));
 
         nameChangedProperty.bind(this.createDifferencesPropertyBinding("name"));
         natureChangedProperty.bind(this.createDifferencesPropertyBinding("nature"));
@@ -310,7 +321,13 @@ public class ParameterEditorController implements Initializable {
     public void displayParameterModel(ParameterModel parameterModel) {
         this.parameterModel = parameterModel;
         this.parameterModelProperty.set(parameterModel);
+
+        this.importModelProperty.set(parameterModel.getImportModel());
+        this.importFieldProperty.set(parameterModel.getImportField());
         this.unitProperty.setValue(parameterModel.getUnit());
+        this.exportModelProperty.set(parameterModel.getExportModel());
+        this.exportFieldProperty.set(parameterModel.getExportField());
+
         this.updateView();
         ParameterDifference parameterDifference = differenceHandler.modelDifferences().stream()
                 .filter(modelDifference -> modelDifference instanceof ParameterDifference)
@@ -367,19 +384,18 @@ public class ParameterEditorController implements Initializable {
         this.validateFields();
 
         ParameterValueSource valueSource = valueSourceChoiceBox.getValue();
-        ExternalModel importModel = valueSource == REFERENCE ? this.valueReferenceProperty.getValue().getLeft() : null;
-        String importField = valueSource == REFERENCE ? this.valueReferenceProperty.getValue().getRight() : null;
+        ExternalModel importModel = valueSource == REFERENCE ? this.importModelProperty.getValue() : null;
+        String importField = valueSource == REFERENCE ? this.importFieldProperty.getValue() : null;
 
         ParameterModel valueLinkParameter = valueSource == LINK ? this.valueLinkParameter : null;
         Calculation calculation = valueSource == CALCULATION ? this.calculation : null;
-        Double value = valueSource == MANUAL ? Double.valueOf(valueText.getText()) :
-                valueSource == LINK && valueLinkParameter != null ? this.valueLinkParameter.getEffectiveValue() : parameterModel.getValue();
+        Double valueLinkParameterValue = valueSource == LINK && valueLinkParameter != null ? this.valueLinkParameter.getEffectiveValue() : parameterModel.getValue();
+        Double value = valueSource == MANUAL ? Double.valueOf(valueText.getText()) : valueLinkParameterValue;
         boolean isReferenceValueOverridden = valueSource != MANUAL && isReferenceValueOverriddenCheckbox.isSelected();
         Double overrideValue = isReferenceValueOverridden ? Double.valueOf(valueOverrideText.getText()) : null;
-        Boolean isExported = isExportedCheckbox.isSelected()
-                && (this.exportReferenceProperty.isNull().get() || this.exportReferenceProperty.isNotEqualTo(this.valueReferenceProperty).get());
-        ExternalModel exportModel = isExportedCheckbox.isSelected() ? this.exportReferenceProperty.getValue().getLeft() : null;
-        String exportField = isExportedCheckbox.isSelected() ? this.exportReferenceProperty.getValue().getRight() : null;
+        Boolean isExported = isExportedCheckbox.isSelected() && (this.exportModelProperty.isNull().get() || this.exportModelProperty.isNotEqualTo(this.importModelProperty).get());
+        ExternalModel exportModel = isExported ? this.exportModelProperty.getValue() : null;
+        String exportField = isExportedCheckbox.isSelected() ? this.exportFieldProperty.getValue() : null;
 
         parameterModel.setName(nameText.getText());
         parameterModel.setNature(natureChoiceBox.getValue());
@@ -508,24 +524,26 @@ public class ParameterEditorController implements Initializable {
     }
 
     public void chooseSource() {
-        ExternalModel externalModel = parameterModel.getImportModel();
-        String target = parameterModel.getImportField();
-        Pair<ExternalModel, String> valueReference = displayReferenceSelectorView(externalModel, target, valueReferenceText);
-        valueReferenceProperty.setValue(valueReference);
+        ExternalModel externalModel = importModelProperty.get();
+        String target = importFieldProperty.get();
+        Pair<ExternalModel, String> valueReference = displayReferenceSelectorView(externalModel, target);
+        importModelProperty.set(valueReference.getLeft());
+        importFieldProperty.set(valueReference.getRight());
         this.updateValueReference();
     }
 
     public void chooseTarget() {
-        ExternalModel externalModel = parameterModel.getExportModel();
-        String target = parameterModel.getExportField();
-        Pair<ExternalModel, String> exportReference = displayReferenceSelectorView(externalModel, target, exportReferenceText);
-        exportReferenceProperty.setValue(exportReference);
+        ExternalModel externalModel = exportModelProperty.get();
+        String target = exportFieldProperty.get();
+        Pair<ExternalModel, String> exportReference = displayReferenceSelectorView(externalModel, target);
+        exportModelProperty.set(exportReference.getLeft());
+        exportFieldProperty.set(exportReference.getRight());
         this.updateExportReferences();
     }
 
-    private Pair<ExternalModel, String> displayReferenceSelectorView(ExternalModel externalModel, String target, TextField externalModelReferenceTextField) {
+    private Pair<ExternalModel, String> displayReferenceSelectorView(ExternalModel externalModel, String target) {
         List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
-        ExternalModelReferenceEventHandler applyEventHandler = new ExternalModelReferenceEventHandler(externalModel, target, externalModelReferenceTextField);
+        ExternalModelReferenceEventHandler applyEventHandler = new ExternalModelReferenceEventHandler();
 
         ViewBuilder referenceSelectorViewBuilder = guiService.createViewBuilder("Reference Selector", Views.REFERENCE_SELECTOR_VIEW);
         referenceSelectorViewBuilder.ownerWindow(ownerStage);
@@ -569,18 +587,12 @@ public class ParameterEditorController implements Initializable {
         isExportedCheckbox.setSelected(parameterModel.getIsExported());
         descriptionText.setText(parameterModel.getDescription());
 
-        String valueReference = parameterModel.getImportModel() != null && parameterModel.getImportField() != null ?
-                parameterModel.getImportModel().getName() + ":" + parameterModel.getImportField() : "(empty)";
-        String exportReference = parameterModel.getExportModel() != null && parameterModel.getExportField() != null ?
-                parameterModel.getExportModel().getName() + ":" + parameterModel.getExportField() : "(empty)";
         valueLinkParameter = parameterModel.getValueLink();
         calculation = parameterModel.getCalculation();
         natureChoiceBox.valueProperty().setValue(parameterModel.getNature());
         valueSourceChoiceBox.valueProperty().setValue(parameterModel.getValueSource());
-        valueReferenceText.setText(valueReference);
         parameterLinkText.setText(valueLinkParameter != null ? valueLinkParameter.getNodePath() : "");
         calculationText.setText(calculation != null ? calculation.asText() : "");
-        exportReferenceText.setText(exportReference);
         if (parameterModel.getNature() == ParameterNature.OUTPUT) {
             List<ParameterModel> dependentParameters = parameterLinkRegistry.getDependentParameters(parameterModel);
             String dependentParamNames = "<not linked>";
@@ -602,31 +614,13 @@ public class ParameterEditorController implements Initializable {
 
         private ExternalModel externalModel;
         private String target;
-        private TextField externalModelReferenceTextField;
-
-        ExternalModelReferenceEventHandler(ExternalModel externalModel, String target, TextField externalModelReferenceTextField) {
-            this.externalModel = externalModel;
-            this.target = target;
-            this.externalModelReferenceTextField = externalModelReferenceTextField;
-        }
 
         @Override
         public void handle(Event event) {
             @SuppressWarnings("unchecked")
             Pair<ExternalModel, String> newExternalModelReference = (Pair) event.getSource();
-            if (newExternalModelReference != null) {
-                this.externalModel = newExternalModelReference.getLeft();
-                this.target = newExternalModelReference.getRight();
-                externalModelReferenceTextField.setText(this.externalModel != null ? this.externalModel.getName() + ":" + this.target : "(empty)");
-            } else {
-                if (this.externalModel == null && this.target == null) {
-                    externalModelReferenceTextField.setText(null);
-                } else if (this.externalModel == null) {
-                    externalModelReferenceTextField.setText("(empty)");
-                } else {
-                    externalModelReferenceTextField.setText(this.externalModel.getName() + ":" + this.target);
-                }
-            }
+            this.externalModel = newExternalModelReference != null ? newExternalModelReference.getLeft() : null;
+            this.target = newExternalModelReference != null ? newExternalModelReference.getRight() : null;
         }
     }
 

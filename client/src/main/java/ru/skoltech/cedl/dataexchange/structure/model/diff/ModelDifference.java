@@ -84,6 +84,32 @@ public abstract class ModelDifference {
                 "}\n ";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ModelDifference)) return false;
+
+        ModelDifference that = (ModelDifference) o;
+
+        if (!attribute.equals(that.attribute)) return false;
+        if (changeType != that.changeType) return false;
+        if (changeLocation != that.changeLocation) return false;
+        if (!value1.equals(that.value1)) return false;
+        if (!value2.equals(that.value2)) return false;
+        return author.equals(that.author);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = attribute.hashCode();
+        result = 31 * result + changeType.hashCode();
+        result = 31 * result + changeLocation.hashCode();
+        result = 31 * result + value1.hashCode();
+        result = 31 * result + value2.hashCode();
+        result = 31 * result + author.hashCode();
+        return result;
+    }
+
     public enum ChangeType {
         ADD,
         REMOVE,
