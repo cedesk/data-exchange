@@ -33,7 +33,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.util.StringConverter;
 import netscape.javascript.JSObject;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
@@ -130,17 +129,7 @@ public class TradespacePolarPlotController implements Initializable {
             checkedFigureOfMeritsProperty.addAll(c.getList());
         });
 
-        figureOfMeritsComboBox.setConverter(new StringConverter<FigureOfMeritDefinition>() {
-            @Override
-            public String toString(FigureOfMeritDefinition object) {
-                return object.getName();
-            }
-
-            @Override
-            public FigureOfMeritDefinition fromString(String string) {
-                return figureOfMeritsProperty.stream().filter(fom -> fom.getName().equals(string)).findFirst().orElse(null);
-            }
-        });
+        figureOfMeritsComboBox.setConverter(new TradespaceController.FigureOfMeritDefinitionStringConverter());
 
         membersProperty.bind(Bindings.createObjectBinding(() -> {
             String[] labels = checkedFigureOfMeritsProperty.stream()
