@@ -19,9 +19,9 @@ package ru.skoltech.cedl.dataexchange.structure.model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
@@ -62,14 +62,12 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
         systemBuilder.modelDepth(4);
 
         SystemModel localSystem = systemBuilder.build("testSystem");
-        SystemModel localSystemBBBB = localSystem;
         localSystem = systemModelRepository.saveAndFlush(localSystem);
-        int currentRevisionNumber = localSystem.getRevision();
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
 
         Assert.assertTrue(localSystem.getId() == remoteSystem.getId());
         List<ModelDifference> modelDifferences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         Assert.assertEquals(0, modelDifferences.size());
     }
 
@@ -79,7 +77,6 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
         SubSystemModel su1 = new SubSystemModel("subnode");
         localSystem.addSubNode(su1);
         localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
-        int currentRevisionNumber = localSystem.getRevision();
 
         ParameterModel p3 = new ParameterModel("new-param", 0.24);
         localSystem.addParameter(p3);
@@ -92,7 +89,7 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
         remoteSystem = systemModelRepository.saveAndFlush(remoteSystem);
 
         List<ModelDifference> modelDifferences =
-                nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(3, modelDifferences.size());
@@ -104,14 +101,13 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
     @Test
     public void twoNodeDiffersOnlyInName() {
         SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
-        int currentRevisionNumber = localSystem.getRevision();
 
         localSystem.setName("NewSM");
 
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
 
         List<ModelDifference> modelDifferences =
-                nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
 
         Assert.assertEquals(1, modelDifferences.size());
     }
@@ -119,7 +115,6 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
     @Test
     public void twoNodeDiffersOnlyInNameAndOneParameter() {
         SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
-        int currentRevisionNumber = localSystem.getRevision();
 
         localSystem.setName("NewSM");
 
@@ -130,7 +125,7 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
         remoteSystem = systemModelRepository.saveAndFlush(remoteSystem);
 
         List<ModelDifference> modelDifferences =
-                nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(2, modelDifferences.size());
@@ -144,7 +139,6 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
         u1.addParameter(p1);
         localSystem.addSubNode(u1);
         localSystem = systemModelRepository.saveAndFlush(localSystem);
-        int currentRevisionNumber = localSystem.getRevision();
 
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
 
@@ -154,7 +148,7 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
         p1.setValue(0.5);
 
         List<ModelDifference> modelDifferences =
-                nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(2, modelDifferences.size());
@@ -168,7 +162,6 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
         SubSystemModel u1 = new SubSystemModel("u1");
         localSystem.addSubNode(u1);
         localSystem = systemModelRepository.saveAndFlush(localSystem);
-        int currentRevisionNumber = localSystem.getRevision();
 
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
 
@@ -178,7 +171,7 @@ public class ModelDifferencesTest extends AbstractApplicationContextTest {
         u1.addParameter(p1);
 
         List<ModelDifference> modelDifferences =
-                nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         System.out.println(modelDifferences);
 
         Assert.assertEquals(2, modelDifferences.size());

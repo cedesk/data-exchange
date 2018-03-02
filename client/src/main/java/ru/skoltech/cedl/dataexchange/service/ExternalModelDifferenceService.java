@@ -36,6 +36,6 @@ public interface ExternalModelDifferenceService {
 
     ExternalModelDifference createExternalModelModified(ExternalModel externalModel1, ExternalModel externalModel2, String name, String value1, String value2);
 
-    List<ModelDifference> computeExternalModelDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber);
+    List<ModelDifference> computeExternalModelDifferences(ModelNode localNode, ModelNode remoteNode);
 
 }

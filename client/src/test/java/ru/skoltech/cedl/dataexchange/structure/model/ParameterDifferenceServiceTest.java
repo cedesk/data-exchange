@@ -56,7 +56,6 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
     public void localParameterAdd() throws Exception {
         SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
-        int currentRevisionNumber = localSystem.getRevision();
 
         ParameterModel newLocalParam = new ParameterModel("param1", 0.4, ParameterNature.INPUT, ParameterValueSource.MANUAL);
         localSystem.addParameter(newLocalParam);
@@ -64,7 +63,7 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         Assert.assertEquals(1, localSystem.getParameters().size());
 
         List<ParameterDifference> differences =
-                parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
@@ -76,7 +75,7 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
 
         Assert.assertEquals(0, localSystem.getParameters().size());
 
-        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(0, differences.size());
     }
 
@@ -89,13 +88,12 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         localSystem = systemModelRepository.saveAndFlush(localSystem);
 
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
-        int currentRevisionNumber = localSystem.getRevision();
 
         parameterModel = localSystem.getParameters().get(0);
         parameterModel.setValue(parameterModel.getValue() * 2);
 
         List<ParameterDifference> differences =
-                parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
@@ -109,7 +107,7 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
         Assert.assertTrue(localSystem.getParameters().get(0).getParent() == localSystem);
 
-        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(0, differences.size());
     }
 
@@ -130,7 +128,6 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         ParameterModel paramL2 = localSystem.getParameters().get(1);
 
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
-        int currentRevisionNumber = localSystem.getRevision();
 
         ParameterModel paramR1 = remoteSystem.getParameters().get(0);
         ParameterModel paramR2 = remoteSystem.getParameters().get(1);
@@ -142,7 +139,7 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
 
 
         List<ParameterDifference> differences
-                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         System.out.println(pd);
@@ -161,7 +158,7 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         Assert.assertEquals(paramL2, localSystem.getParameters().get(1));
         Assert.assertEquals(paramR2, localSystem.getParameters().get(0).getValueLink());
 
-        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(0, differences.size());
     }
 
@@ -174,12 +171,11 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         localSystem = systemModelRepository.saveAndFlush(localSystem);
 
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
-        int currentRevisionNumber = localSystem.getRevision();
 
         localSystem.getParameters().clear();
 
         List<ParameterDifference> differences
-                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG1, pd.getChangeLocation());
@@ -192,7 +188,7 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         Assert.assertEquals(1, localSystem.getParameters().size());
         Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
 
-        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(0, differences.size());
     }
 
@@ -210,7 +206,7 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         Assert.assertTrue(currentRevisionNumber < lastRevisionNumber);
 
         List<ParameterDifference> differences
-                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, pd.getChangeLocation());
@@ -222,7 +218,7 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         Assert.assertEquals(1, localSystem.getParameters().size());
         Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
 
-        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(0, differences.size());
     }
 
@@ -234,15 +230,13 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         localSystem.addParameter(param);
         localSystem = systemModelRepository.saveAndFlush(localSystem);
 
-        int currentRevisionNumber = localSystem.getRevision();
-
         SystemModel remoteSystem = systemModelRepository.saveAndFlush(localSystem);
         param = remoteSystem.getParameters().get(0);
         param.setValue(param.getValue() * 2);
         remoteSystem = systemModelRepository.saveAndFlush(remoteSystem);
 
         List<ParameterDifference> differences
-                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, pd.getChangeLocation());
@@ -254,7 +248,7 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         Assert.assertEquals(1, localSystem.getParameters().size());
         Assert.assertTrue(localSystem.getParameters().get(0).equals(remoteSystem.getParameters().get(0)));
 
-        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(0, differences.size());
     }
 
@@ -266,15 +260,13 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
         localSystem.addParameter(existingLocalParam);
         localSystem = systemModelRepository.saveAndFlush(localSystem);
 
-        int currentRevisionNumber = localSystem.getRevision();
-
         SystemModel remoteSystem = systemModelRepository.saveAndFlush(localSystem);
         remoteSystem.getParameters().clear();
 
         remoteSystem = systemModelRepository.saveAndFlush(remoteSystem);
 
         List<ParameterDifference> differences
-                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(1, differences.size());
         ParameterDifference pd = differences.get(0);
         Assert.assertEquals(ModelDifference.ChangeLocation.ARG2, pd.getChangeLocation());
@@ -285,7 +277,7 @@ public class ParameterDifferenceServiceTest extends AbstractApplicationContextTe
 
         Assert.assertEquals(0, localSystem.getParameters().size());
 
-        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = parameterDifferenceService.computeParameterDifferences(localSystem, remoteSystem);
         Assert.assertEquals(0, differences.size());
     }
 

@@ -64,7 +64,7 @@ public class NodeDifferenceServiceImpl implements NodeDifferenceService {
     }
 
     @Override
-    public List<ModelDifference> differencesOnSubNodes(CompositeModelNode<ModelNode> localNode, CompositeModelNode<ModelNode> remoteNode, int currentRevisionNumber) {
+    public List<ModelDifference> differencesOnSubNodes(CompositeModelNode<ModelNode> localNode, CompositeModelNode<ModelNode> remoteNode) {
         LinkedList<ModelDifference> subNodesDifferences = new LinkedList<>();
         Map<String, Object> m1SubNodesMap = localNode.getSubNodes().stream()
                 .collect(Collectors.toMap(ModelNode::getUuid, Function.identity()));
@@ -88,21 +88,21 @@ public class NodeDifferenceServiceImpl implements NodeDifferenceService {
                 }
             } else if (localSubNode == null && remoteSubNode != null) {
                 assert remoteSubNode.getRevision() != 0; //persisted ModelNode always should have the revision number set;
-                if (remoteSubNode.getRevision() > currentRevisionNumber) { // node 2 was added
+                if (remoteNode.getRevision() > localNode.getRevision()) { // node 2 was added
                     subNodesDifferences.add(createAddedNode(localNode, remoteSubNode, remoteSubNode.getName(), ModelDifference.ChangeLocation.ARG2));
                 } else { // node 2 was deleted
                     subNodesDifferences.add(createRemovedNode(localNode, remoteSubNode, remoteSubNode.getName(), ModelDifference.ChangeLocation.ARG1));
                 }
             } else {
                 // depth search
-                subNodesDifferences.addAll(this.computeNodeDifferences(localSubNode, remoteSubNode, currentRevisionNumber));
+                subNodesDifferences.addAll(this.computeNodeDifferences(localSubNode, remoteSubNode));
             }
         }
         return subNodesDifferences;
     }
 
     @Override
-    public List<ModelDifference> computeNodeDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber) {
+    public List<ModelDifference> computeNodeDifferences(ModelNode localNode, ModelNode remoteNode) {
         Objects.requireNonNull(localNode);
         Objects.requireNonNull(remoteNode);
         LinkedList<ModelDifference> modelDifferences = new LinkedList<>();
@@ -132,10 +132,10 @@ public class NodeDifferenceServiceImpl implements NodeDifferenceService {
             modelDifferences.add(createNodeAttributesModified(localNode, remoteNode, "completion", value1, value2));
         }
 
-        modelDifferences.addAll(parameterDifferenceService.computeParameterDifferences(localNode, remoteNode, currentRevisionNumber));
-        modelDifferences.addAll(externalModelDifferenceService.computeExternalModelDifferences(localNode, remoteNode, currentRevisionNumber));
+        modelDifferences.addAll(parameterDifferenceService.computeParameterDifferences(localNode, remoteNode));
+        modelDifferences.addAll(externalModelDifferenceService.computeExternalModelDifferences(localNode, remoteNode));
         if (localNode instanceof CompositeModelNode && remoteNode instanceof CompositeModelNode) {
-            modelDifferences.addAll(differencesOnSubNodes((CompositeModelNode) localNode, (CompositeModelNode) remoteNode, currentRevisionNumber));
+            modelDifferences.addAll(differencesOnSubNodes((CompositeModelNode) localNode, (CompositeModelNode) remoteNode));
         }
         return modelDifferences;
     }

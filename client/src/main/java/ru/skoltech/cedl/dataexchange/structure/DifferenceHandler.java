@@ -137,9 +137,8 @@ public class DifferenceHandler {
         // system model
         SystemModel firstSystemModel = firstStudy.getSystemModel();
         SystemModel secondSystemModel = secondStudy.getSystemModel();
-        int revision = firstStudy.getRevision();
         if (firstSystemModel != null && secondSystemModel != null) {
-            modelDifferences.addAll(nodeDifferenceService.computeNodeDifferences(firstSystemModel, secondSystemModel, revision));
+            modelDifferences.addAll(nodeDifferenceService.computeNodeDifferences(firstSystemModel, secondSystemModel));
         }
 
         return modelDifferences.stream()

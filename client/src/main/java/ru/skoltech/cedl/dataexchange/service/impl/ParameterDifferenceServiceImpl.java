@@ -144,7 +144,7 @@ public class ParameterDifferenceServiceImpl implements ParameterDifferenceServic
     }
 
     @Override
-    public List<ParameterDifference> computeParameterDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber) {
+    public List<ParameterDifference> computeParameterDifferences(ModelNode localNode, ModelNode remoteNode) {
         LinkedList<ParameterDifference> parameterDifferences = new LinkedList<>();
         Map<String, ParameterModel> localParameterModels = localNode.getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getUuid, Function.identity())
@@ -168,7 +168,7 @@ public class ParameterDifferenceServiceImpl implements ParameterDifferenceServic
                 }
             } else if (localParameterModel == null && remoteParameterModel != null) {
                 assert remoteParameterModel.getRevision() != 0; //persisted parameters always should have the ID set
-                if (remoteParameterModel.getRevision() > currentRevisionNumber) { // node 2 was added
+                if (remoteNode.getRevision() > localNode.getRevision()) { // node 2 was added
                     parameterDifferences.add(createAddedParameter(localNode, remoteParameterModel, remoteParameterModel.getName(), ModelDifference.ChangeLocation.ARG2));
                 } else { // parameter 1 was deleted
                     parameterDifferences.add(createRemovedParameter(localNode, remoteParameterModel, remoteParameterModel.getName(), ModelDifference.ChangeLocation.ARG1));

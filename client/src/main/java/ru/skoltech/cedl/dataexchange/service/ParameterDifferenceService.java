@@ -37,6 +37,6 @@ public interface ParameterDifferenceService {
 
     List<AttributeDifference> parameterDifferences(ParameterModel localParameterModel, ParameterModel remoteParameterModel);
 
-    List<ParameterDifference> computeParameterDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber);
+    List<ParameterDifference> computeParameterDifferences(ModelNode localNode, ModelNode remoteNode);
 
 }
