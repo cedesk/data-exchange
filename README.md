@@ -10,6 +10,7 @@ On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
 ## Release History and Notes
 
+* 2018-03-05 - Version 1.39   (DSM sequencing algorithm, bug fixing)
 * 2018-02-22 - Version 1.38.2 (stability and usability improvements)
 * 2018-02-18 - Version 1.38.1 (bug fixing)
 * 2018-02-10 - Version 1.38   (usability improvements and bug fixing)
