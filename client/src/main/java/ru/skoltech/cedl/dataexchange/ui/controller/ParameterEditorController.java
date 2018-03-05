@@ -479,16 +479,14 @@ public class ParameterEditorController implements Initializable {
             Dialogues.showWarning("Empty link", "No link has been specified!");
         }
         if (valueSourceChoiceBox.getValue() == REFERENCE &&
-                parameterModel.getImportModel() == null && parameterModel.getImportField() == null) {
+                importModelProperty.isNull().get() && importFieldProperty.isNull().get()) {
             Dialogues.showWarning("Empty reference", "No reference has been specified!");
         }
         if (isExportedCheckbox.isSelected()) {
-            if (parameterModel.getExportModel() != null && parameterModel.getExportField() != null &&
-                    parameterModel.getExportModel().equals(parameterModel.getImportModel()) &&
-                    parameterModel.getExportField().equals(parameterModel.getImportField())) {
+            if (exportModelProperty.isNull().get() && exportFieldProperty.isNull().get() &&
+                    exportModelProperty.isEqualTo(importModelProperty).get() &&
+                    exportFieldProperty.isEqualTo(importFieldProperty).get()) {
                 Dialogues.showWarning("Inconsistency", "Value source and export reference must not be equal. Ignoring export reference.");
-                parameterModel.setExportModel(null);
-                parameterModel.setExportField(null);
             }
         }
     }

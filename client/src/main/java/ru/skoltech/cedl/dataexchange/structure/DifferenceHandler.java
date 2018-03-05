@@ -25,18 +25,19 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.StudySettings;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.revision.CustomRevisionEntity;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
-import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 import ru.skoltech.cedl.dataexchange.repository.jpa.RevisionEntityRepository;
 import ru.skoltech.cedl.dataexchange.service.NodeDifferenceService;
 import ru.skoltech.cedl.dataexchange.service.StudyService;
-import ru.skoltech.cedl.dataexchange.structure.model.diff.*;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.AttributeDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.MergeException;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
+import ru.skoltech.cedl.dataexchange.structure.model.diff.StudyDifference;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -232,7 +233,7 @@ public class DifferenceHandler {
         logger.debug("merging " + modelDifference.getElementPath());
         modelDifference.mergeDifference();
         this.removeModelDifference(modelDifference);
-        return this.updateCacheAndParameters(modelDifference);
+        return true;
     }
 
     /**
@@ -267,26 +268,6 @@ public class DifferenceHandler {
         logger.debug("reverting " + modelDifference.getElementPath());
         modelDifference.revertDifference();
         this.removeModelDifference(modelDifference);
-        return this.updateCacheAndParameters(modelDifference);
-    }
-
-    private boolean updateCacheAndParameters(ModelDifference modelDifference) throws MergeException {
-        if (modelDifference instanceof ParameterDifference) {
-//            ParameterDifference parameterDifference = (ParameterDifference) modelDifference;
-            return true;
-        }
-        if (modelDifference instanceof ExternalModelDifference) {
-            ExternalModelDifference emd = (ExternalModelDifference) modelDifference;
-            ExternalModel externalModel = emd.getExternalModel1();
-            try {
-                // update cached file
-                externalModel.updateCacheFromAttachment();
-                return true;
-            } catch (ExternalModelException e) {
-                logger.error("Failed to update cached external model: " + externalModel.getNodePath(), e);
-                throw new MergeException("Failed to updated cached external model: " + externalModel.getName());
-            }
-        }
         return true;
     }
 
