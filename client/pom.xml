@@ -166,8 +166,8 @@
             <version>1.10.2</version>
         </dependency>
         <dependency>
-            <groupId>jdsm</groupId>
-            <artifactId>jdsm</artifactId>
+            <groupId>jDSM</groupId>
+            <artifactId>jDSM</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
