@@ -166,7 +166,11 @@ public class Project {
     public File getProjectHome() {
         String hostname = applicationSettings.getRepositoryHost();
         String schema = applicationSettings.getRepositorySchemaName();
-        return fileStorageService.dataDir(hostname, schema, projectName);
+        File dir = fileStorageService.dataDir(hostname, schema, projectName);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir;
     }
 
     public String getProjectName() {
