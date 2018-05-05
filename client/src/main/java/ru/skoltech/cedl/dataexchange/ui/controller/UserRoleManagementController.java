@@ -55,37 +55,39 @@ public class UserRoleManagementController implements Initializable, Closeable {
     private static final Logger logger = Logger.getLogger(UserRoleManagementController.class);
 
     @FXML
-    public TableView<Discipline> disciplinesTable;
+    private TableView<Discipline> disciplinesTable;
     @FXML
-    public TableView<User> userTable;
+    private TableView<User> userTable;
     @FXML
     public Button addDisciplineButton;
     @FXML
-    public Button deleteDisciplineButton;
+    private Button renameDisciplineButton;
     @FXML
-    public ListView<DisciplineSubSystem> subsystemsAssignedList;
+    private Button deleteDisciplineButton;
     @FXML
-    public ListView<SubSystemModel> subsystemsAvailableList;
+    private ListView<DisciplineSubSystem> subsystemsAssignedList;
     @FXML
-    public Button addSubsystemButton;
+    private ListView<SubSystemModel> subsystemsAvailableList;
     @FXML
-    public Button deleteSubsystemButton;
+    private Button addSubsystemButton;
     @FXML
-    public TableColumn<Discipline, Object> disciplineNameColumn;
+    private Button deleteSubsystemButton;
     @FXML
-    public TableColumn<Object, String> disciplineDescriptionColumn;
+    private TableColumn<Discipline, Object> disciplineNameColumn;
     @FXML
-    public TableColumn<Object, String> subsystemCountColumn;
+    private TableColumn<Object, String> disciplineDescriptionColumn;
     @FXML
-    public Pane subsystemsPane;
+    private TableColumn<Object, String> subsystemCountColumn;
     @FXML
-    public ListView<UserDiscipline> userRolesAssignedList;
+    private Pane subsystemsPane;
     @FXML
-    public Button addUserRoleButton;
+    private ListView<UserDiscipline> userRolesAssignedList;
     @FXML
-    public Button deleteUserRoleButton;
+    private Button addUserRoleButton;
     @FXML
-    public TextField filterTextField;
+    private Button deleteUserRoleButton;
+    @FXML
+    private TextField filterTextField;
 
     private BooleanProperty changed = new SimpleBooleanProperty(false);
 
@@ -140,6 +142,7 @@ public class UserRoleManagementController implements Initializable, Closeable {
         });
         BooleanBinding noSelectionOnDisciplinesTable = disciplinesTable.getSelectionModel().selectedItemProperty().isNull();
         deleteDisciplineButton.disableProperty().bind(noSelectionOnDisciplinesTable);
+        renameDisciplineButton.disableProperty().bind(noSelectionOnDisciplinesTable);
 
         // SUB-SYSTEMS
         subsystemsPane.disableProperty().bind(noSelectionOnDisciplinesTable);
@@ -224,6 +227,29 @@ public class UserRoleManagementController implements Initializable, Closeable {
             }
         }
         updateDisciplineTable();
+    }
+
+    public void renameDiscipline() {
+        Discipline selectedDiscipline = disciplinesTable.getSelectionModel().getSelectedItem();
+        Objects.requireNonNull(selectedDiscipline, "No item selected in Discipline table");
+
+        String oldDisciplineName = selectedDiscipline.getName();
+        Optional<String> nodeNameChoice = Dialogues.inputDisciplineName(oldDisciplineName);
+        if (nodeNameChoice.isPresent()) {
+            String newDisciplineName = nodeNameChoice.get();
+            if (!Identifiers.validateNodeName(newDisciplineName)) {
+                Dialogues.showError("Invalid name", Identifiers.getNodeNameValidationDescription());
+                return;
+            }
+
+            if (newDisciplineName.equals(oldDisciplineName)) return;
+            if (disciplinesTable.getItems().stream().anyMatch(d -> newDisciplineName.equals(d.getName()))) {
+                Dialogues.showError("Duplicate node name", "There is already a discipline named like that!");
+                return;
+            }
+            selectedDiscipline.setName(newDisciplineName);
+            disciplinesTable.refresh();
+        }
     }
 
     public void addDisciplineSubsystem() {

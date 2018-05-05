@@ -19,6 +19,8 @@ package ru.skoltech.cedl.dataexchange.structure.model.diff;
 import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 
+import java.util.Objects;
+
 /**
  * Created by D.Knoll on 20.07.2015.
  */
@@ -82,6 +84,24 @@ public abstract class ModelDifference {
                 ", value2='" + value2 + '\'' +
                 ", author='" + author + '\'' +
                 "}\n ";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ModelDifference)) return false;
+        ModelDifference that = (ModelDifference) o;
+        return Objects.equals(attribute, that.attribute) &&
+                changeType == that.changeType &&
+                changeLocation == that.changeLocation &&
+                Objects.equals(value1, that.value1) &&
+                Objects.equals(value2, that.value2) &&
+                Objects.equals(author, that.author);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(attribute, changeType, changeLocation, value1, value2, author);
     }
 
     public enum ChangeType {

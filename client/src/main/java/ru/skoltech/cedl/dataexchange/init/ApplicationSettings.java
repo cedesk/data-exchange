@@ -99,11 +99,6 @@ public interface ApplicationSettings {
     String PROJECT_USER_NAME = "project.user.name";
 
     /**
-     * Property name for project name for import on startup setting.
-     */
-    String PROJECT_IMPORT_NAME = "project.import.name";
-
-    /**
      * Property name for study model depth setting.
      */
     String STUDY_MODEL_DEPTH = "study.model.depth";

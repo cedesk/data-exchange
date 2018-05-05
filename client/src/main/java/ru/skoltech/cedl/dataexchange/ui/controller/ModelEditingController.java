@@ -279,7 +279,7 @@ public class ModelEditingController implements Initializable {
                 CompositeModelNode parentNode = (CompositeModelNode) parent.getValue();
                 UserRoleManagement userRoleManagement = project.getUserRoleManagement();
                 modelNodeService.deleteModelNodeFromParent(parentNode, deleteNode, userRoleManagement);
-                project.markStudyModified();
+                project.markStudyModified(parentNode);
                 statusLogger.info("Node deleted: " + deleteNode.getNodePath());
                 actionLogger.log(ActionLogger.ActionType.NODE_REMOVE, deleteNode.getNodePath());
                 parent.getChildren().remove(selectedItem);
@@ -408,7 +408,7 @@ public class ModelEditingController implements Initializable {
 
         currentModelNode.setPosition(currentModelNode.getPosition() + 1);
         nextModelNode.setPosition(nextModelNode.getPosition() - 1);
-        project.markStudyModified();
+        project.markStudyModified(currentModelNode, nextModelNode);
         int selectedIndex = structureTree.getSelectionModel().getSelectedIndex();
         this.clearView();
         this.updateView();
@@ -428,7 +428,7 @@ public class ModelEditingController implements Initializable {
 
         currentModelNode.setPosition(currentModelNode.getPosition() - 1);
         previousModelNode.setPosition(previousModelNode.getPosition() + 1);
-        project.markStudyModified();
+        project.markStudyModified(currentModelNode, previousModelNode);
         int selectedIndex = structureTree.getSelectionModel().getSelectedIndex();
         this.clearView();
         this.updateView();
@@ -478,7 +478,7 @@ public class ModelEditingController implements Initializable {
             modelNode.setName(newNodeName);
             // view
             selectedItem.valueProperty().setValue(modelNode);
-            project.markStudyModified();
+            project.markStudyModified(modelNode);
             this.updateView();
         }
     }
@@ -538,7 +538,7 @@ public class ModelEditingController implements Initializable {
             }
 
             ModelNode newModelNode = modelNodeService.cloneModelNode(parent, nodeName, modelNode);
-            project.markStudyModified();
+            project.markStudyModified(newModelNode);
             statusLogger.info("Node copied: " + newModelNode.getNodePath());
             actionLogger.log(ActionLogger.ActionType.NODE_ADD, newModelNode.getNodePath());
 

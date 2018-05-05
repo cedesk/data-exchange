@@ -16,31 +16,29 @@
 
 package ru.skoltech.cedl.dataexchange.structure.adapters;
 
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
-import ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer;
-import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
-import ru.skoltech.cedl.dataexchange.structure.Project;
+import ru.skoltech.cedl.dataexchange.repository.jpa.UnitRepository;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
+ * {@link Unit} adapter for JAXB marshalling and unmarshalling.
+ *
  * Created by D.Knoll on 29.08.2015.
  */
 public class UnitAdapter extends XmlAdapter<String, Unit> {
+
+    @Autowired
+    private UnitRepository unitRepository;
+
     @Override
-    public String marshal(Unit unit) throws Exception {
+    public String marshal(Unit unit) {
         return unit != null ? unit.asText() : "";
     }
 
     @Override
-    public Unit unmarshal(String unitStr) throws Exception {
-        // TODO: rewrite for proper injection
-        ApplicationContext context = ApplicationContextInitializer.getInstance().getContext();
-        Project project = context.getBean(Project.class);
-        UnitManagementService unitManagementService = context.getBean(UnitManagementService.class);
-        UnitManagement unitManagement = project.getUnitManagement();
-        return unitManagementService.obtainUnitByText(unitManagement, unitStr);
+    public Unit unmarshal(String unitStr) {
+        return unitRepository.findByText(unitStr);
     }
 }

@@ -25,6 +25,8 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.ElementModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextTest;
+import ru.skoltech.cedl.dataexchange.service.UnitService;
 
 import java.util.List;
 
@@ -35,7 +37,7 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
 import static org.junit.Assert.*;
 
-public class BasicSpaceSystemBuilderTest {
+public class BasicSpaceSystemBuilderTest extends AbstractApplicationContextTest {
 
     private BasicSpaceSystemBuilder basicSpaceSystemBuilder;
     private Matcher<ParameterModel> basicMassParameterModelMatcher;
@@ -43,14 +45,16 @@ public class BasicSpaceSystemBuilderTest {
 
     @Before
     public void prepare() {
+        UnitService unitService = context.getBean(UnitService.class);
         basicSpaceSystemBuilder = new BasicSpaceSystemBuilder();
+        basicSpaceSystemBuilder.setUnitService(unitService);
 
         basicMassParameterModelMatcher = allOf(
                 hasProperty("name", is("mass")),
                 hasProperty("nature", is(ParameterNature.OUTPUT)),
                 hasProperty("valueSource", is(ParameterValueSource.MANUAL)),
                 hasProperty("value", any(Double.class)),
-                hasProperty("unit", nullValue()),
+                hasProperty("unit", hasProperty("symbol", is("kg"))),
                 hasProperty("calculation", nullValue())
         );
         basicPowerParameterModelMatcher = allOf(
@@ -58,7 +62,7 @@ public class BasicSpaceSystemBuilderTest {
                 hasProperty("nature", is(ParameterNature.OUTPUT)),
                 hasProperty("valueSource", is(ParameterValueSource.MANUAL)),
                 hasProperty("value", any(Double.class)),
-                hasProperty("unit", nullValue()),
+                hasProperty("unit", hasProperty("symbol", is("W"))),
                 hasProperty("calculation", nullValue())
         );
     }

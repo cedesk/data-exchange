@@ -23,7 +23,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.AsyncTaskExecutor;
-import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
@@ -31,7 +30,6 @@ import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
@@ -71,8 +69,7 @@ public class Project {
     private StudyService studyService;
     private UserService userService;
     private UserRoleManagementService userRoleManagementService;
-    private UnitManagementService unitManagementService;
-    private SourcePollingChannelAdapter inboundFilesChannel;
+    private UnitService unitService;
     private ActionLogger actionLogger;
     private AsyncTaskExecutor executor;
 
@@ -82,8 +79,6 @@ public class Project {
     private Study repositoryStudy;
 
     private AtomicInteger latestRevisionNumber = new AtomicInteger();
-
-    private UnitManagement unitManagement;
 
     private BooleanProperty isSyncEnabledProperty = new SimpleBooleanProperty(false);
     private BooleanProperty isStudyInRepositoryProperty = new SimpleBooleanProperty(false);
@@ -115,10 +110,6 @@ public class Project {
         this.fileStorageService = fileStorageService;
     }
 
-    public void setInboundFilesChannel(SourcePollingChannelAdapter inboundFilesChannel) {
-        this.inboundFilesChannel = inboundFilesChannel;
-    }
-
     public void setParameterLinkRegistry(ParameterLinkRegistry parameterLinkRegistry) {
         this.parameterLinkRegistry = parameterLinkRegistry;
     }
@@ -131,8 +122,8 @@ public class Project {
         this.studyService = studyService;
     }
 
-    public void setUnitManagementService(UnitManagementService unitManagementService) {
-        this.unitManagementService = unitManagementService;
+    public void setUnitService(UnitService unitService) {
+        this.unitService = unitService;
     }
 
     public void setUserService(UserService userService) {
@@ -145,11 +136,11 @@ public class Project {
 
     public void init() {
         this.userService.createDefaultUsers();
-        this.loadUnitManagement();
+        this.unitService.createDefaultUnits();
         this.externalModelFileWatcher.addObserver((o, arg) -> {
             ExternalModel externalModel = (ExternalModel) arg;
             actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_MODIFY, externalModel.getNodePath());
-            this.markStudyModified();
+            this.markStudyModified(externalModel);
             externalModel.updateReferencedParameterModels(parameterModel -> parameterLinkRegistry.updateSinks(parameterModel));
             externalModel.getReferencedParameterModels().forEach(parameterModel -> {
                 ParameterModelUpdateState updateState = parameterModel.getLastValueReferenceUpdateState();
@@ -157,7 +148,7 @@ public class Project {
                     actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_REFERENCE, parameterModel.getNodePath());
                 } else if (updateState == ParameterModelUpdateState.FAIL_EVALUATION) {
                     actionLogger.log(ActionLogger.ActionType.EXTERNAL_MODEL_ERROR, parameterModel.getNodePath()
-                            + "#" + parameterModel.getValueReference().getTarget());
+                            + "#" + parameterModel.getImportField());
                 }
             });
             Platform.runLater(() -> this.getExternalModelUpdateConsumers().forEach(consumer -> consumer.accept(externalModel)));
@@ -169,11 +160,6 @@ public class Project {
         System.setProperty(PROJECT_HOME_PROPERTY, this.getProjectHome().getAbsolutePath());
         this.repositoryStateMachine.reset();
         this.repositoryStudy = null;
-//        if (this.inboundFilesChannel.isRunning()) {
-//            this.inboundFilesChannel.stop();
-//        }
-//        ((FileReadingMessageSource)inboundFilesChannel.getMessageSource()).setDirectory(this.getProjectHome());
-//        this.inboundFilesChannel.start();
         this.accessChecker = this::checkUserAccess;
     }
 
@@ -237,32 +223,42 @@ public class Project {
         this.initCurrentStudy();
     }
 
-    private void initCurrentStudy() {
-        this.initProject(study.getName());
-        this.setRepositoryStudy(null);
-        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
-        this.isStudyInRepositoryProperty.set(false);
-        this.initializeHandlers();
-
-        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
-        userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
-        this.updateValueReferences(study.getSystemModel());
-    }
-
-    public void importStudy(Study study) {
-        this.createStudy(study);
-        this.reinitializeUniqueIdentifiers(study.getSystemModel());
-    }
-
     public void loadLocalStudy() {
         this.study = studyService.findStudyByName(projectName);
         if (this.study == null) {
             return;
         }
+        this.setupStudySettings(study);
         this.setupModelNodePosition(study); // revise an order
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.LOAD);
+        isSyncEnabledProperty.set(study.getStudySettings().getSyncEnabled());
         isStudyInRepositoryProperty.set(true);
         this.initializeHandlers();
+    }
+
+    private void setupStudySettings(Study study) {
+        if (study.getStudySettings() == null) {
+            study.setStudySettings(new StudySettings());
+        }
+    }
+
+    public void importStudy(Study study) {
+        this.setupStudySettings(study);
+        this.createStudy(study);
+        this.reinitializeUniqueIdentifiers(study.getSystemModel());
+    }
+
+    private void initCurrentStudy() {
+        this.initProject(study.getName());
+        this.setRepositoryStudy(null);
+        repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.NEW);
+        this.isStudyInRepositoryProperty.set(false);
+        this.isSyncEnabledProperty.setValue(study.getStudySettings().getSyncEnabled());
+        this.initializeHandlers();
+
+        UserRoleManagement userRoleManagement = study.getUserRoleManagement();
+        userRoleManagementService.addAdminDiscipline(userRoleManagement, getUser());
+        this.updateValueReferences(study.getSystemModel());
     }
 
     public void loadLocalStudy(Integer revisionNumber) {
@@ -365,7 +361,14 @@ public class Project {
         isStudyInRepositoryProperty.set(false);
     }
 
-    public void markStudyModified() {
+    /**
+     * Mark current study as modified locally.
+     * Additionally an array of revised entities can be provided to mark their priorities over remote changes.
+     *
+     * @param revisedEntities an array of revised entities
+     */
+    public void markStudyModified(RevisedEntity... revisedEntities) {
+        Arrays.stream(revisedEntities).forEach(RevisedEntity::prioritizeRevision);
         repositoryStateMachine.performAction(RepositoryStateMachine.RepositoryActions.MODIFY);
     }
 
@@ -438,21 +441,6 @@ public class Project {
     public List<Discipline> getCurrentUserDisciplines() {
         UserRoleManagement userRoleManagement = this.getUserRoleManagement();
         return userRoleManagementService.obtainDisciplinesOfUser(userRoleManagement, getUser());
-    }
-
-    public UnitManagement getUnitManagement() {
-        return unitManagement;
-    }
-
-    private void loadUnitManagement() {
-        UnitManagement unitManagement = unitManagementService.findUnitManagement();
-        if (unitManagement != null) {
-            this.unitManagement = unitManagement;
-            return;
-        }
-        logger.error("Error loading unit management. recreating new unit management.");
-        unitManagement = unitManagementService.loadDefaultUnitManagement();
-        this.unitManagement = unitManagementService.saveUnitManagement(unitManagement);
     }
 
     @Override

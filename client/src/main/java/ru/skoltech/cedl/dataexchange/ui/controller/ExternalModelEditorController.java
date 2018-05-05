@@ -138,7 +138,7 @@ public class ExternalModelEditorController implements Initializable {
                                         + "in the system model!");
                         statusLogger.info("Added external model: " + externalModel.getName());
                         actionLogger.log(EXTERNAL_MODEL_ADD, externalModel.getNodePath());
-                        project.markStudyModified();
+                        project.markStudyModified(modelNode);
                     } catch (ExternalModelException e) {
                         logger.error("Unable to recognize external model type from the file: " + fileName, e);
                         Dialogues.showError("Invalid file selected.", "Unable to recognize external model type from the file: " + fileName);
@@ -203,8 +203,8 @@ public class ExternalModelEditorController implements Initializable {
         StringBuilder referencingParameters = new StringBuilder();
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE
-                    && parameterModel.getValueReference() != null
-                    && parameterModel.getValueReference().getExternalModel() == externalModel) {
+                    && parameterModel.getImportModel() != null
+                    && parameterModel.getImportModel() == externalModel) {
                 if (referencingParameters.length() > 0) {
                     referencingParameters.append(", ");
                 }
@@ -217,7 +217,7 @@ public class ExternalModelEditorController implements Initializable {
         } else {
             modelNode.getExternalModels().remove(externalModel);
             externalModelViewContainer.getChildren().remove(extModRow);
-            project.markStudyModified();
+            project.markStudyModified(modelNode);
             statusLogger.info("removed external model: " + externalModel.getName());
             actionLogger.log(EXTERNAL_MODEL_REMOVE, externalModel.getNodePath());
         }
@@ -278,7 +278,7 @@ public class ExternalModelEditorController implements Initializable {
                                     + "in the system model!");
                     statusLogger.info("replaced external model: " + oldFileName + " > " + fileName);
                     actionLogger.log(EXTERNAL_MODEL_MODIFY, oldNodePath + " > " + fileName);
-                    project.markStudyModified();
+                    project.markStudyModified(externalModel);
                 } catch (ExternalModelException e) {
                     logger.error("Unable to recognize external model type from the file: " + fileName, e);
                     Dialogues.showError("Invalid file selected.", "Unable to recognize external model type from the file: " + fileName);

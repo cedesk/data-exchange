@@ -20,7 +20,6 @@ import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.model.CompositeModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -117,7 +116,7 @@ public class NodeDifference extends ModelDifference {
             }
             default: {
                 logger.error("MERGE IMPOSSIBLE:\n" + toString());
-                throw new NotImplementedException();
+                throw new UnsupportedOperationException();
             }
         }
     }
@@ -141,6 +140,26 @@ public class NodeDifference extends ModelDifference {
                 break;
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NodeDifference{");
+        if (parent != null) {
+            sb.append("parent='").append(parent.getName()).append('\'');
+        }
+        sb.append("node1='").append(node1.getName()).append('\'');
+        if (node2 != null) {
+            sb.append(", node2='").append(node2.getName()).append('\'');
+        }
+        sb.append(", attribute='").append(attribute).append('\'');
+        sb.append(", changeType=").append(changeType);
+        sb.append(", changeLocation=").append(changeLocation);
+        sb.append(", value1='").append(value1).append('\'');
+        sb.append(", value2='").append(value2).append('\'');
+        sb.append(", author='").append(author).append('\'');
+        sb.append("}\n ");
+        return sb.toString();
     }
 
     private void addNodeToParent(ModelNode parent, ModelNode node) {
@@ -176,25 +195,5 @@ public class NodeDifference extends ModelDifference {
             // this avoids Hibernate to check list changes with persisted bags and try to replicate deletes in DB which are no longer there
             ((CompositeModelNode) parent).setSubNodes(new LinkedList<>(siblingNodes));
         }
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NodeDifference{");
-        if (parent != null) {
-            sb.append("parent='").append(parent.getName()).append('\'');
-        }
-        sb.append("node1='").append(node1.getName()).append('\'');
-        if (node2 != null) {
-            sb.append(", node2='").append(node2.getName()).append('\'');
-        }
-        sb.append(", attribute='").append(attribute).append('\'');
-        sb.append(", changeType=").append(changeType);
-        sb.append(", changeLocation=").append(changeLocation);
-        sb.append(", value1='").append(value1).append('\'');
-        sb.append(", value2='").append(value2).append('\'');
-        sb.append(", author='").append(author).append('\'');
-        sb.append("}\n ");
-        return sb.toString();
     }
 }

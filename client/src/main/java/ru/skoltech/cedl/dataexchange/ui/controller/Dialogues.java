@@ -98,11 +98,11 @@ public class Dialogues {
         return dialog.showAndWait();
     }
 
-    public static Optional<String> inputEpochs(String epochs) {
-        TextInputDialog dialog = new TextInputDialog(epochs);
-        dialog.setTitle("Epochs");
-        dialog.setHeaderText("Please insert the years of all Epochs.");
-        dialog.setContentText("Years separated by comma");
+    public static Optional<String> inputEpoch() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("New Epoch");
+        dialog.setHeaderText("Please insert the year of Epoch.");
+        dialog.setContentText("Epoch Year");
         return dialog.showAndWait();
     }
 
@@ -121,6 +121,14 @@ public class Dialogues {
         yesNoDialog.setContentText(text);
         yesNoDialog.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
         return yesNoDialog.showAndWait();
+    }
+
+    public static void close(String title, String text) {
+        Alert cancelDialog = new Alert(Alert.AlertType.WARNING);
+        cancelDialog.setHeaderText(title);
+        cancelDialog.setContentText(text);
+        cancelDialog.getButtonTypes().setAll(ButtonType.CLOSE);
+        cancelDialog.showAndWait();
     }
 
     public static Optional<ButtonType> chooseYesNoCancel(String title, String text) {

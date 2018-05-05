@@ -16,18 +16,21 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
-import javafx.beans.property.*;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Callback;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 
 /**
@@ -37,12 +40,19 @@ import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
  */
 public abstract class AbstractImportTradespaceController implements Initializable, Applicable, Displayable {
 
+    private final ToggleGroup descriptionGroup = new ToggleGroup();
+    private final ToggleGroup epochGroup = new ToggleGroup();
+
     @FXML
     protected TableView<String> columnsTableView;
     @FXML
     protected TableColumn<String, String> columnNameColumn;
     @FXML
-    protected TableColumn<String, ColumnImportType> importEntityColumn;
+    protected TableColumn<String, String> descriptionColumn;
+    @FXML
+    protected TableColumn<String, String> fomColumn;
+    @FXML
+    protected TableColumn<String, String> epochColumn;
     @FXML
     private Button importButton;
 
@@ -77,50 +87,39 @@ public abstract class AbstractImportTradespaceController implements Initializabl
     protected void initializeColumnsTableView() {
         columnsTableView.itemsProperty().bind(columnsProperty);
 
-        columnNameColumn.setCellValueFactory(param -> {
+        Callback<TableColumn.CellDataFeatures<String, String>, ObservableValue<String>> callback = param -> {
             if (param == null || param.getValue() == null) {
                 return new SimpleStringProperty();
             }
             String columnName = param.getValue();
             return new SimpleStringProperty(columnName);
-        });
-        importEntityColumn.setCellFactory(ComboBoxTableCell.forTableColumn(new ColumnImportType.ColumnImportTypeStringConverter(), ColumnImportType.values()));
-        importEntityColumn.setCellValueFactory(cellData -> {
-            if (cellData == null || cellData.getValue() == null) {
-                return new SimpleObjectProperty<>();
-            }
-            if (cellData.getValue().equals(descriptionProperty.get())) {
-                return new SimpleObjectProperty<>(ColumnImportType.DESCRIPTION);
-            }
-            if (figuresOfMeritProperty.contains(cellData.getValue())) {
-                return new SimpleObjectProperty<>(ColumnImportType.FIGURE_OF_MERIT);
-            }
-            if (cellData.getValue().equals(epochProperty.get())) {
-                return new SimpleObjectProperty<>(ColumnImportType.EPOCH);
-            }
-            return new SimpleObjectProperty<>();
-        });
-        importEntityColumn.setOnEditCommit(event -> {
-            ColumnImportType importType = event.getNewValue();
-            String columnName = event.getRowValue();
-            if (importType == ColumnImportType.EMPTY) {
-                if (descriptionProperty.isEqualTo(columnName).get()) {
-                    descriptionProperty.set(null);
-                } else if (figuresOfMeritProperty.contains(columnName)) {
-                    figuresOfMeritProperty.remove(columnName);
-                } else if (epochProperty.isEqualTo(columnName).get()) {
-                    epochProperty.set(null);
-                }
-            } else if (importType == ColumnImportType.DESCRIPTION) {
-                descriptionProperty.setValue(columnName);
-            } else if (importType == ColumnImportType.FIGURE_OF_MERIT) {
-                figuresOfMeritProperty.add(columnName);
-            } else if (importType == ColumnImportType.EPOCH) {
-                epochProperty.setValue(columnName);
-            }
-            columnsTableView.refresh();
-        });
+        };
 
+        columnNameColumn.setCellValueFactory(callback);
+
+        descriptionColumn.setCellValueFactory(callback);
+        descriptionColumn.setCellFactory(param -> new RadioButtonCell(descriptionGroup, descriptionProperty));
+        descriptionColumn.setStyle("-fx-alignment: BASELINE_CENTER;");
+        fomColumn.setCellValueFactory(callback);
+        fomColumn.setCellFactory(param -> new FigureOfMeritCell());
+        fomColumn.setStyle("-fx-alignment: BASELINE_CENTER;");
+        epochColumn.setCellValueFactory(callback);
+        epochColumn.setCellFactory(param -> new RadioButtonCell(epochGroup, epochProperty));
+        epochColumn.setStyle("-fx-alignment: BASELINE_CENTER;");
+
+        descriptionProperty.bind(Bindings.createStringBinding(() -> {
+            if (descriptionGroup.getSelectedToggle() == null) {
+                return null;
+            }
+            return (String) descriptionGroup.getSelectedToggle().getUserData();
+        }, descriptionGroup.selectedToggleProperty()));
+
+        epochProperty.bind(Bindings.createStringBinding(() -> {
+            if (epochGroup.getSelectedToggle() == null) {
+                return null;
+            }
+            return (String) epochGroup.getSelectedToggle().getUserData();
+        }, epochGroup.selectedToggleProperty()));
 
         importButton.disableProperty().bind(epochProperty.isNull()
                 .or(figuresOfMeritProperty.emptyProperty())
@@ -129,4 +128,47 @@ public abstract class AbstractImportTradespaceController implements Initializabl
     }
 
     protected abstract void importTradespace();
+
+    private class RadioButtonCell extends TableCell<String, String> {
+
+        private ToggleGroup toggleGroup;
+        private StringProperty property;
+
+        RadioButtonCell(ToggleGroup toggleGroup, StringProperty property) {
+            this.toggleGroup = toggleGroup;
+            this.property = property;
+        }
+
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty);
+            if (!empty) {
+                RadioButton descriptionRadioButton = new RadioButton();
+                descriptionRadioButton.setToggleGroup(toggleGroup);
+                descriptionRadioButton.setUserData(item);
+                descriptionRadioButton.setSelected(property.isEqualTo(item).get());
+                this.setGraphic(descriptionRadioButton);
+            }
+        }
+    }
+
+    private class FigureOfMeritCell extends TableCell<String, String> {
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty);
+            if (!empty) {
+                CheckBox fomCheckBox = new CheckBox();
+                fomCheckBox.setSelected(figuresOfMeritProperty.contains(item));
+                fomCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                    if (newValue) {
+                        figuresOfMeritProperty.add(item);
+                    } else {
+                        figuresOfMeritProperty.remove(item);
+                    }
+                });
+                this.setGraphic(fomCheckBox);
+            }
+        }
+    }
+
 }

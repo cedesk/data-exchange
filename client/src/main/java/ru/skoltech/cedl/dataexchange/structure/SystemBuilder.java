@@ -21,8 +21,7 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
-import ru.skoltech.cedl.dataexchange.service.UnitManagementService;
+import ru.skoltech.cedl.dataexchange.service.UnitService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,13 +39,12 @@ public abstract class SystemBuilder {
     public static final int DEFAULT_MODEL_DEPTH = 2;
 
     protected List<String> subsystemNames = new ArrayList<>();
-    protected UnitManagement unitManagement;
     protected int modelDepth = DEFAULT_MODEL_DEPTH;
 
-    private UnitManagementService unitManagementService;
+    private UnitService unitService;
 
-    public void setUnitManagementService(UnitManagementService unitManagementService) {
-        this.unitManagementService = unitManagementService;
+    public void setUnitService(UnitService unitService) {
+        this.unitService = unitService;
     }
 
     /**
@@ -66,13 +64,6 @@ public abstract class SystemBuilder {
     public boolean adjustsSubsystems() {
         return false;
     }
-
-    /**
-     * A name of the builder.
-     *
-     * @return name of builder.
-     */
-    public abstract String asName();
 
     /**
      * Builds an instance of new {@link SystemModel} based of adjusted parameters.
@@ -108,15 +99,6 @@ public abstract class SystemBuilder {
         this.subsystemNames.addAll(Arrays.asList(subsystemNames));
     }
 
-    /**
-     * Defines {@link UnitManagement} instance for having access to particular units.
-     *
-     * @param unitManagement unit management
-     */
-    public void unitManagement(UnitManagement unitManagement) {
-        this.unitManagement = unitManagement;
-    }
-
     protected ParameterModel createMassParameter(Unit unit) {
         ParameterModel parameterModel = new ParameterModel("mass", randomDouble());
         parameterModel.setDescription("");
@@ -140,9 +122,6 @@ public abstract class SystemBuilder {
     }
 
     protected Unit retrieveUnit(String name) {
-        if (unitManagement != null) {
-            return unitManagementService.obtainUnitBySymbolOrName(unitManagement, name);
-        }
-        return null;
+        return unitService.findUnitByNameOrSymbol(name);
     }
 }

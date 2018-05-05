@@ -17,18 +17,21 @@
 package ru.skoltech.cedl.dataexchange.repository.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
+import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
 
 /**
- * Data Access Operations with {@link UnitManagementRepository} entity.
+ * Data Access Operations with {@link QuantityKind} entity.
  * <p>
  * Created by Nikolay Groshkov on 07-Aug-17.
  */
-public interface UnitManagementRepository extends JpaRepository<UnitManagement, Long> {
+public interface QuantityKindRepository extends JpaRepository<QuantityKind, Long> {
 
     /**
-     * Default {@link UnitManagement} id in the database
+     * Retrieve a {@link QuantityKind} by name.
+     *
+     * @param name name of the {@link QuantityKind}
+     * @return instance of the {@link QuantityKind}
      */
-    long IDENTIFIER = 1L;
+    QuantityKind findByName(String name);
 
 }

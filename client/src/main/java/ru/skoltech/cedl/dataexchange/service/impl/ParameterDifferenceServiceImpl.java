@@ -101,10 +101,15 @@ public class ParameterDifferenceServiceImpl implements ParameterDifferenceServic
                 || (localParameterModel.getValueSource() != null && !localParameterModel.getValueSource().equals(remoteParameterModel.getValueSource()))) {
             differences.add(new AttributeDifference("valueSource", localParameterModel.getValueSource(), remoteParameterModel.getValueSource()));
         }
-        if ((localParameterModel.getValueReference() == null && remoteParameterModel.getValueReference() != null)
-                || (localParameterModel.getValueReference() != null && remoteParameterModel.getValueReference() == null)
-                || (localParameterModel.getValueReference() != null && !localParameterModel.getValueReference().equals(remoteParameterModel.getValueReference()))) {
-            differences.add(new AttributeDifference("valueReference", localParameterModel.getValueReference(), remoteParameterModel.getValueReference()));
+        if ((localParameterModel.getImportModel() == null && remoteParameterModel.getImportModel() != null)
+                || (localParameterModel.getImportModel() != null && remoteParameterModel.getImportModel() == null)
+                || (localParameterModel.getImportModel() != null && !localParameterModel.getImportModel().equals(remoteParameterModel.getImportModel()))) {
+            differences.add(new AttributeDifference("importModel", localParameterModel.getImportModel(), remoteParameterModel.getImportModel()));
+        }
+        if ((localParameterModel.getImportField() == null && remoteParameterModel.getImportField() != null)
+                || (localParameterModel.getImportField() != null && remoteParameterModel.getImportField() == null)
+                || (localParameterModel.getImportField() != null && !localParameterModel.getImportField().equals(remoteParameterModel.getImportField()))) {
+            differences.add(new AttributeDifference("importField", localParameterModel.getImportField(), remoteParameterModel.getImportField()));
         }
         ParameterModel vl1 = localParameterModel.getValueLink();
         ParameterModel vl2 = remoteParameterModel.getValueLink();
@@ -112,18 +117,23 @@ public class ParameterDifferenceServiceImpl implements ParameterDifferenceServic
             if (!vl1.getUuid().equals(vl2.getUuid())) { // different reference
                 differences.add(new AttributeDifference("valueLink", vl1.getNodePath(), vl2.getNodePath()));
             }
-        } else if (vl1 != null && vl2 == null) {
+        } else if (vl1 != null) {
             differences.add(new AttributeDifference("valueLink", vl1.getNodePath(), ""));
-        } else if (vl1 == null && vl2 != null) {
+        } else if (vl2 != null) {
             differences.add(new AttributeDifference("valueLink", "", vl2.getNodePath()));
         }
         if (!localParameterModel.getIsExported() == remoteParameterModel.getIsExported()) {
             differences.add(new AttributeDifference("isExported", localParameterModel.getIsExported(), remoteParameterModel.getIsExported()));
         }
-        if ((localParameterModel.getExportReference() == null && remoteParameterModel.getExportReference() != null)
-                || (localParameterModel.getExportReference() != null && remoteParameterModel.getExportReference() == null)
-                || (localParameterModel.getExportReference() != null && !localParameterModel.getExportReference().equals(remoteParameterModel.getExportReference()))) {
-            differences.add(new AttributeDifference("exportReference", localParameterModel.getExportReference(), remoteParameterModel.getExportReference()));
+        if ((localParameterModel.getExportModel() == null && remoteParameterModel.getExportModel() != null)
+                || (localParameterModel.getExportModel() != null && remoteParameterModel.getExportModel() == null)
+                || (localParameterModel.getExportModel() != null && !localParameterModel.getExportModel().equals(remoteParameterModel.getExportModel()))) {
+            differences.add(new AttributeDifference("exportModel", localParameterModel.getExportModel(), remoteParameterModel.getExportModel()));
+        }
+        if ((localParameterModel.getExportField() == null && remoteParameterModel.getExportField() != null)
+                || (localParameterModel.getExportField() != null && remoteParameterModel.getExportField() == null)
+                || (localParameterModel.getExportField() != null && !localParameterModel.getExportField().equals(remoteParameterModel.getExportField()))) {
+            differences.add(new AttributeDifference("exportField", localParameterModel.getExportField(), remoteParameterModel.getExportField()));
         }
         if ((localParameterModel.getDescription() == null && remoteParameterModel.getDescription() != null)
                 || (localParameterModel.getDescription() != null && remoteParameterModel.getDescription() == null)
@@ -134,7 +144,7 @@ public class ParameterDifferenceServiceImpl implements ParameterDifferenceServic
     }
 
     @Override
-    public List<ParameterDifference> computeParameterDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber) {
+    public List<ParameterDifference> computeParameterDifferences(ModelNode localNode, ModelNode remoteNode) {
         LinkedList<ParameterDifference> parameterDifferences = new LinkedList<>();
         Map<String, ParameterModel> localParameterModels = localNode.getParameters().stream().collect(
                 Collectors.toMap(ParameterModel::getUuid, Function.identity())
@@ -158,12 +168,12 @@ public class ParameterDifferenceServiceImpl implements ParameterDifferenceServic
                 }
             } else if (localParameterModel == null && remoteParameterModel != null) {
                 assert remoteParameterModel.getRevision() != 0; //persisted parameters always should have the ID set
-                if (remoteParameterModel.getRevision() > currentRevisionNumber) { // node 2 was added
+                if (remoteNode.getRevision() > localNode.getRevision()) { // node 2 was added
                     parameterDifferences.add(createAddedParameter(localNode, remoteParameterModel, remoteParameterModel.getName(), ModelDifference.ChangeLocation.ARG2));
                 } else { // parameter 1 was deleted
                     parameterDifferences.add(createRemovedParameter(localNode, remoteParameterModel, remoteParameterModel.getName(), ModelDifference.ChangeLocation.ARG1));
                 }
-            } else if (localParameterModel != null && remoteParameterModel != null) {
+            } else if (localParameterModel != null) {
                 List<AttributeDifference> differences = parameterDifferences(localParameterModel, remoteParameterModel);
                 if (!differences.isEmpty()) {
                     ParameterDifference modelDifference = createParameterAttributesModified(localParameterModel, remoteParameterModel, differences);

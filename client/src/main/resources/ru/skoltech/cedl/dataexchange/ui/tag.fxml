@@ -23,7 +23,7 @@
 <?import javafx.scene.text.Text?>
 <VBox xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css"
       xmlns="http://javafx.com/javafx/8.0.112"
-      prefWidth="250"
+      prefWidth="280"
       fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.TagController">
     <GridPane>
         <padding>
@@ -35,11 +35,13 @@
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
             </columnConstraints>
             <rowConstraints>
+                <RowConstraints minHeight="30.0" vgrow="SOMETIMES"/>
                 <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
             </rowConstraints>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Tag:" GridPane.rowIndex="0"/>
+            <Text fx:id="notificationText" GridPane.rowIndex="0" GridPane.columnSpan="2"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Tag:" GridPane.rowIndex="1"/>
             <TextField fx:id="tagTextField" promptText="tag" GridPane.columnIndex="1"
-                       GridPane.rowIndex="0"/>
+                       GridPane.rowIndex="1"/>
         </GridPane>
     </GridPane>
     <BorderPane>

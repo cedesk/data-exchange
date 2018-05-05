@@ -17,46 +17,59 @@
   -->
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import org.controlsfx.glyphfont.Glyph?>
 <?import ru.skoltech.cedl.dataexchange.ui.control.DsmView?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="600.0" prefWidth="700.0" stylesheets="@styling.css"
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css"
             xmlns="http://javafx.com/javafx/8.0.112"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.DsmController">
-    <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                AnchorPane.topAnchor="0.0">
-        <top>
-            <ToolBar>
-                <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView">
-                    <tooltip>
-                        <Tooltip text="Refresh"/>
-                    </tooltip>
-                    <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
-                    </graphic>
-                </Button>
-                <Label maxWidth="300" text="IC/FBD convention">
-                    <tooltip>
-                        <Tooltip
-                                text="inputs shown in columns, outputs in rows; feedback marks appear below the diagonal"/>
-                    </tooltip>
-                </Label>
-                <Pane HBox.hgrow="ALWAYS"/>
-                <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode">
-                    <tooltip>
-                        <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
-                    </tooltip>
-                    <graphic>
-                        <Glyph fontFamily="FontAwesome" icon="CODEPEN"/>
-                    </graphic>
-                </Button>
-                <CheckBox fx:id="weightedDsmCheckbox" graphicTextGap="8.0" mnemonicParsing="false"
-                          text="Generate weighted DSM" GridPane.columnIndex="1"/>
-            </ToolBar>
-        </top>
-        <center>
-            <DsmView fx:id="dsmView" prefHeight="400" prefWidth="500.0"
-                     BorderPane.alignment="CENTER"/>
-        </center>
-    </BorderPane>
-</AnchorPane>
+    <top>
+        <ToolBar>
+            <Button minWidth="28" mnemonicParsing="false" onAction="#refreshView">
+                <tooltip>
+                    <Tooltip text="Refresh"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
+                </graphic>
+            </Button>
+            <Label maxWidth="300" text="IC/FBD convention">
+                <tooltip>
+                    <Tooltip
+                            text="inputs shown in columns, outputs in rows; feedback marks appear below the diagonal"/>
+                </tooltip>
+            </Label>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <ChoiceBox fx:id="weightingChoice">
+                <tooltip>
+                    <Tooltip text="choose how the weighting factors of DSM are determined"/>
+                </tooltip>
+            </ChoiceBox>
+            <Button fx:id="runSequencingButton" minWidth="28" mnemonicParsing="false" onAction="#runDsmSequencing">
+                <tooltip>
+                    <Tooltip text="Run Sequencing"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="PAPER_PLANE"/>
+                </graphic>
+            </Button>
+            <TextField fx:id="sequencingOutputText" prefWidth="200" editable="false">
+            </TextField>
+            <Button minWidth="28" mnemonicParsing="false" onAction="#generateCode">
+                <tooltip>
+                    <Tooltip text="Generate MATLAB code and put it into the system clipboard"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="FILE_CODE_ALT"/>
+                </graphic>
+            </Button>
+        </ToolBar>
+    </top>
+    <center>
+        <ScrollPane minHeight="400">
+            <DsmView fx:id="dsmView"/>
+        </ScrollPane>
+    </center>
+</BorderPane>

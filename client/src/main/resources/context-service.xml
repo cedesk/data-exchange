@@ -44,6 +44,13 @@
         <property name="applicationSettings" ref="applicationSettings"/>
         <property name="externalModelService" ref="externalModelService"/>
         <property name="userService" ref="userService"/>
+        <property name="unitAdapter">
+            <bean class="ru.skoltech.cedl.dataexchange.structure.adapters.UnitAdapter"/>
+        </property>
+        <property name="quantityKindAdapter">
+            <bean class="ru.skoltech.cedl.dataexchange.structure.adapters.QuantityKindAdapter"/>
+        </property>
+
     </bean>
 
     <bean id="userService" class="ru.skoltech.cedl.dataexchange.service.impl.UserServiceImpl"/>
@@ -53,7 +60,7 @@
         <property name="userService" ref="userService"/>
     </bean>
 
-    <bean id="unitManagementService" class="ru.skoltech.cedl.dataexchange.service.impl.UnitManagementServiceImpl">
+    <bean id="unitService" class="ru.skoltech.cedl.dataexchange.service.impl.UnitServiceImpl">
         <property name="fileStorageService" ref="fileStorageService"/>
     </bean>
 

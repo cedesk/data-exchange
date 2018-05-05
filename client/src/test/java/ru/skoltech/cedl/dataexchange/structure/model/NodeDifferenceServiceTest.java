@@ -55,7 +55,6 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
     public void localNodeAdd() throws Exception {
         SystemModel localSystem = systemModelRepository.saveAndFlush(baseSystemModel);
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
-        int currentRevisionNumber = localSystem.getRevision();
 
         SubSystemModel newLocalSub = new SubSystemModel("subsys");
         localSystem.addSubNode(newLocalSub);
@@ -63,7 +62,7 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         assertEquals(1, localSystem.getSubNodes().size());
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
@@ -76,7 +75,7 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
 
         assertEquals(0, localSystem.getSubNodes().size());
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(0, differences.size());
     }
 
@@ -89,7 +88,6 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         localSystem = systemModelRepository.saveAndFlush(localSystem);
 
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
-        int currentRevisionNumber = localSystem.getRevision();
 
         subSystem = localSystem.getSubNodes().get(0);
         subSystem.setName(subSystem.getName() + "-v2");
@@ -98,7 +96,7 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         subSystem.setCompletion(true);
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(4, differences.size());
         differences.forEach(modelDifference -> {
             assertEquals(ChangeLocation.ARG1, modelDifference.getChangeLocation());
@@ -115,7 +113,7 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         assertEquals(1, localSystem.getSubNodes().size());
         assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(0, differences.size());
     }
 
@@ -128,12 +126,11 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         localSystem = systemModelRepository.saveAndFlush(localSystem);
 
         SystemModel remoteSystem = systemModelRepository.findOne(localSystem.getId());
-        int currentRevisionNumber = localSystem.getRevision();
 
         localSystem.getSubNodes().clear();
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         assertEquals(ChangeLocation.ARG1, md.getChangeLocation());
@@ -146,7 +143,7 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         assertEquals(1, localSystem.getSubNodes().size());
         assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(0, differences.size());
     }
 
@@ -164,7 +161,7 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         assertTrue(currentRevisionNumber < lastRevisionNumber);
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
@@ -176,7 +173,7 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         assertEquals(1, localSystem.getSubNodes().size());
         assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(0, differences.size());
     }
 
@@ -188,15 +185,13 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         localSystem.addSubNode(subSystem);
         localSystem = systemModelRepository.saveAndFlush(localSystem);
 
-        int currentRevisionNumber = localSystem.getRevision();
-
         SystemModel remoteSystem = systemModelRepository.saveAndFlush(localSystem);
         subSystem = remoteSystem.getSubNodes().get(0);
         subSystem.setName(subSystem.getName() + "_v3");
         remoteSystem = systemModelRepository.saveAndFlush(remoteSystem);
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
@@ -208,7 +203,7 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         assertEquals(1, localSystem.getSubNodes().size());
         assertTrue(localSystem.getSubNodes().get(0).equals(remoteSystem.getSubNodes().get(0)));
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(0, differences.size());
     }
 
@@ -220,15 +215,13 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
         localSystem.addSubNode(subSystem);
         localSystem = systemModelRepository.saveAndFlush(localSystem);
 
-        int currentRevisionNumber = localSystem.getRevision();
-
         SystemModel remoteSystem = systemModelRepository.saveAndFlush(localSystem);
         remoteSystem.getSubNodes().clear();
 
         remoteSystem = systemModelRepository.saveAndFlush(remoteSystem);
 
         List<ModelDifference> differences
-                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+                = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(1, differences.size());
         ModelDifference md = differences.get(0);
         assertEquals(ChangeLocation.ARG2, md.getChangeLocation());
@@ -239,7 +232,7 @@ public class NodeDifferenceServiceTest extends AbstractApplicationContextTest {
 
         assertEquals(0, localSystem.getSubNodes().size());
 
-        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem, currentRevisionNumber);
+        differences = nodeDifferenceService.computeNodeDifferences(localSystem, remoteSystem);
         assertEquals(0, differences.size());
     }
 

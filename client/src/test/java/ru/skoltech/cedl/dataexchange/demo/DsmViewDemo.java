@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,6 +25,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ru.skoltech.cedl.dataexchange.ui.control.DsmView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
 public class DsmViewDemo extends Application {
@@ -37,7 +38,7 @@ public class DsmViewDemo extends Application {
     public void start(Stage stage) {
 
         DsmView dsmView = new DsmView();
-        dsmView.setMinWidth(600);
+        dsmView.setMinWidth(400);
         dsmView.setMinHeight(400);
 
         Scene scene = new Scene(dsmView);
@@ -46,18 +47,22 @@ public class DsmViewDemo extends Application {
         stage.show();
 
         dsmView.initialize(null, null);
-        dsmView.addElement("Element 1");
-        dsmView.addElement("Element 2");
-        dsmView.addConnection("Element 1", "Element 2", "param. A,\nparam. Z", 2);
 
-        dsmView.addElement("Element 3");
-        dsmView.addConnection("Element 1", "Element 3", "parameter B", 1);
-        dsmView.addConnection("Element 3", "Element 2", "parameter C", 1);
+        dsmView.addElement("Car Design");
+        dsmView.addElement("Chassis");
+        dsmView.addConnection("Car Design", "Chassis", "maximum speeed", 1);
 
-        dsmView.addElement("Element 4");
-        dsmView.addConnection("Element 3", "Element 4", "param. Y", 1);
-        dsmView.addConnection("Element 4", "Element 2", "param. X", 1);
-        dsmView.setHighlightedElements(Collections.singletonList("Element 3"));
+        dsmView.addElement("Accomodation");
+        dsmView.addElement("Navigation");
+        dsmView.addConnection("Accomodation", "Navigation", "passengers", 1);
+
+        dsmView.addElement("Traction");
+        dsmView.addConnection("Car Design", "Traction", "maximum mass,\nmaximum speed", 2);
+        dsmView.addConnection("Traction", "Chassis", "engine Volume", 1);
+
+        dsmView.setHighlightedElements(new ArrayList<String>(Collections.singleton("Navigation")));
+
+        dsmView.addCluster("Chassis", "Traction");
 
     }
 

@@ -16,28 +16,36 @@
 
 package ru.skoltech.cedl.dataexchange.ui.controller;
 
+import edu.carleton.tim.jdsm.DesignStructureMatrix;
+import edu.carleton.tim.jdsm.RealNumberDSM;
+import edu.carleton.tim.jdsm.dependency.Dependency;
+import edu.carleton.tim.jdsm.dependency.DependencyDSM;
+import edu.carleton.tim.jdsm.dependency.analysis.ClusteredCost;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.TextField;
+import javafx.util.Pair;
+import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
-import ru.skoltech.cedl.dataexchange.structure.analytics.NumericalDSM;
+import ru.skoltech.cedl.dataexchange.structure.analytics.MatlabCodeGenerator;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.ui.control.DsmView;
 
 import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
- * Controller for display Dependency Structure Matrix.
+ * Controller for visualizing subsystem dependencies as Dependency Structure Matrix.
  * <p>
  * Created by D.Knoll on 02.11.2015.
  */
@@ -47,9 +55,12 @@ public class DsmController implements Initializable {
 
     @FXML
     private DsmView dsmView;
-
     @FXML
-    private CheckBox weightedDsmCheckbox;
+    private ChoiceBox<Weighting> weightingChoice;
+    @FXML
+    private Button runSequencingButton;
+    @FXML
+    private TextField sequencingOutputText;
 
     private Project project;
     private GuiService guiService;
@@ -68,16 +79,30 @@ public class DsmController implements Initializable {
     }
 
     public void generateCode() {
+        boolean weighted = weightingChoice.getValue() == Weighting.PARAMETER_COUNT;
         final SystemModel systemModel = project.getSystemModel();
-
-        NumericalDSM dsm = parameterLinkRegistry.makeNumericalDSM(systemModel);
-        boolean weighted = weightedDsmCheckbox.isSelected();
-        String code = dsm.getMatlabCode(weighted);
+        RealNumberDSM dsm = parameterLinkRegistry.makeRealDSM(systemModel);
+        String code = MatlabCodeGenerator.transformDSM(dsm, weighted);
         guiService.copyTextToClipboard(code);
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        weightingChoice.setConverter(new StringConverter<Weighting>() {
+            @Override
+            public Weighting fromString(String string) {
+                return null;
+            }
+
+            @Override
+            public String toString(Weighting weighting) {
+                return weighting.getDescription();
+            }
+        });
+        weightingChoice.setItems(FXCollections.observableList(FXCollections.observableArrayList(EnumSet.allOf(Weighting.class))));
+        weightingChoice.setValue(Weighting.BINARY);
+        runSequencingButton.disableProperty().bind(weightingChoice.valueProperty().isNotEqualTo(Weighting.BINARY));
+
         Platform.runLater(this::refreshView);
     }
 
@@ -86,11 +111,86 @@ public class DsmController implements Initializable {
         DependencyModel dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
 
         dsmView.setModel(dependencyModel);
-        Iterable<ModelNode> nodeIterable = () -> systemModel.treeIterator();
-        List<String> ownerElements = StreamSupport.stream(nodeIterable.spliterator(), false)
+        highlightOwnedElements(systemModel);
+    }
+
+    public void runDsmSequencing() {
+        final SystemModel systemModel = project.getSystemModel();
+        DependencyDSM dsm = parameterLinkRegistry.makeBinaryDSM(systemModel);
+        Map<String, Integer> originalOrder = dsm.getNamePositionMappings();
+        logger.info("Original positions");
+        // logging order
+        originalOrder.forEach((name1, position1) -> logger.info(name1 + ": " + position1));
+
+        //Compute clustered cost
+        ClusteredCost.ClusteredCostResult clusteredCostResult =
+                ClusteredCost.computeClusteredCost(dsm, 0.5d);
+        DesignStructureMatrix<Dependency> optimizedDsm = clusteredCostResult.getDsm();
+        String buses = clusteredCostResult.getVerticalBusses().stream().collect(Collectors.joining(","));
+        sequencingOutputText.setText("cost: " + clusteredCostResult.getClusteredCost() + "; buses: " + buses);
+
+        // updated ordering of nodes
+        Map<String, Integer> optimizedOrder = optimizedDsm.getNamePositionMappings();
+        logger.info("Optimized positions");
+        // logging order
+        optimizedOrder.forEach((name, position) -> logger.info(name + ": " + position));
+
+        Comparator<ModelNode> assignedPositionComparator = Comparator.comparingInt(modelNode -> optimizedOrder.get(modelNode.getName()));
+        systemModel.getSubNodes().sort(assignedPositionComparator);
+
+        DependencyModel dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
+        dsmView.setModel(dependencyModel);
+        highlightOwnedElements(systemModel);
+
+        logger.info("Optimized clusters");
+        // logging clusters
+        List<Pair<Integer, Integer>> clusters = extractClusters(optimizedDsm);
+        String clustersPositionsAsText = clusters.stream().map(cl -> String.format("%d-%d", cl.getKey(), cl.getValue())).collect(Collectors.joining(", "));
+        logger.info("clusters (" + clusters.size() + ") " + clustersPositionsAsText);
+        clusters.forEach(cl -> {
+            String fromElementName = optimizedDsm.getPositionNameMappings().get(cl.getKey());
+            String toElementName = optimizedDsm.getPositionNameMappings().get(cl.getValue());
+            logger.info("cluster: <" + fromElementName + "," + toElementName + ">");
+            dsmView.addCluster(fromElementName, toElementName);
+        });
+    }
+
+    private List<Pair<Integer, Integer>> extractClusters(DesignStructureMatrix<Dependency> dsm) {
+        Map<String, Integer> clusterStartPositions = dsm.getClusterStartPositionMappings();
+        Map<String, Integer> clusterEndPositions = dsm.getClusterEndPositionMappings();
+        Set<String> clusterNames = clusterStartPositions.keySet();
+
+        List<Pair<Integer, Integer>> clusters = new ArrayList<>();
+        clusterNames.stream().sorted().forEach(clusterName -> {
+            int startPos = clusterStartPositions.get(clusterName);
+            int endPos = clusterEndPositions.get(clusterName);
+            clusters.add(new Pair<>(startPos, endPos));
+        });
+        return clusters;
+    }
+
+    private void highlightOwnedElements(SystemModel systemModel) {
+        List<ModelNode> modelNodes = new LinkedList<>();
+        modelNodes.add(systemModel);
+        modelNodes.addAll(systemModel.getSubNodes());
+        List<String> ownerElements = modelNodes.stream()
                 .filter(node -> project.checkUserAccess(node))
                 .map(ModelNode::getName).collect(Collectors.toList());
         dsmView.setHighlightedElements(ownerElements);
     }
 
+    private enum Weighting {
+        BINARY("binary"),
+        PARAMETER_COUNT("parameter count");
+
+        private final String description;
+
+        Weighting(String description) {
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+    }
 }

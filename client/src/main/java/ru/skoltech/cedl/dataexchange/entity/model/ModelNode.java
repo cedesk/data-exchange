@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @Audited
 @XmlType(propOrder = {"name", "lastModification", "uuid", "externalModels", "parameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntity {
+public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntity, RevisedEntity {
 
     public static final String NODE_SEPARATOR = "\\";
 

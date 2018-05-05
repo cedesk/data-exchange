@@ -137,8 +137,6 @@
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TradespaceController">
-        <property name="project" ref="project"/>
-        <property name="applicationSettings" ref="applicationSettings"/>
         <property name="tradespaceModelBridge" ref="tradespaceModelBridge"/>
         <property name="guiService" ref="guiService"/>
     </bean>
@@ -158,11 +156,6 @@
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.TradespacePolarPlotController" scope="prototype">
         <property name="guiService" ref="guiService"/>
         <property name="executor" ref="executor"/>
-    </bean>
-
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.FiguresOfMeritEditorController" scope="prototype">
-        <property name="guiService" ref="guiService"/>
-        <property name="tradespaceToStudyBridge" ref="tradespaceModelBridge"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.StudyRevisionsController" scope="prototype">
@@ -188,15 +181,13 @@
         <property name="statusLogger" ref="statusLogger"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UnitManagementController">
-        <property name="project" ref="project"/>
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UnitController">
         <property name="guiService" ref="guiService"/>
-        <property name="statusLogger" ref="statusLogger"/>
-        <property name="unitManagementService" ref="unitManagementService"/>
+        <property name="unitService" ref="unitService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.AddUnitController" scope="prototype">
-        <property name="project" ref="project"/>
+        <property name="unitService" ref="unitService"/>
     </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.RevisionHistoryController" scope="prototype">
@@ -206,10 +197,16 @@
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ProjectSettingsController">
         <property name="project" ref="project"/>
         <property name="applicationSettings" ref="applicationSettings"/>
+    </bean>
+
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UserSettingsController">
+        <property name="applicationSettings" ref="applicationSettings"/>
         <property name="userService" ref="userService"/>
     </bean>
 
-    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UnitChooseController" scope="prototype"/>
+    <bean class="ru.skoltech.cedl.dataexchange.ui.controller.UnitChooseController" scope="prototype">
+        <property name="unitService" ref="unitService"/>
+    </bean>
 
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ReferenceSelectorController" scope="prototype"/>
 

@@ -20,7 +20,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
-import ru.skoltech.cedl.dataexchange.entity.ExternalModelReference;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterRevision;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
@@ -33,7 +32,6 @@ import ru.skoltech.cedl.dataexchange.service.ParameterModelService;
 import ru.skoltech.cedl.dataexchange.structure.BasicSpaceSystemBuilder;
 import ru.skoltech.cedl.dataexchange.structure.SystemBuilder;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -54,13 +52,13 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
     private static final String ADMIN = "admin";
     private SystemModel systemModel;
     private ParameterModel parameterModel;
-    private ExternalModelReference valueReference, exportReference;
     private ExternalModel importExternalModel, exportExternalModel;
+    private String importField = "importTarget", exportField = "exportTarget";
     private Operation operation;
     private Argument argument1, argument2;
 
     @Before
-    public void prepare() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void prepare() {
         systemBuilder = context.getBean(BasicSpaceSystemBuilder.class);
         systemBuilder.modelDepth(1);
 
@@ -79,14 +77,6 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
         systemModel.addExternalModel(importExternalModel);
         systemModel.addExternalModel(exportExternalModel);
 
-        valueReference = new ExternalModelReference();
-        valueReference.setTarget("importTarget");
-        valueReference.setExternalModel(importExternalModel);
-
-        exportReference = new ExternalModelReference();
-        exportReference.setTarget("exportTarget");
-        exportReference.setExternalModel(exportExternalModel);
-
         operation = mock(Operation.class);
         argument1 = mock(Argument.class);
         argument2 = mock(Argument.class);
@@ -95,10 +85,10 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
         calculation.setArguments(Arrays.asList(argument1, argument2));
 
         parameterModel = systemModel.getParameters().get(0);
-        parameterModel.setValueReference(valueReference);
-        parameterModel.setExportReference(exportReference);
         parameterModel.setImportModel(importExternalModel);
+        parameterModel.setImportField(importField);
         parameterModel.setExportModel(exportExternalModel);
+        parameterModel.setExportField(exportField);
         parameterModel.setCalculation(calculation);
     }
 
@@ -163,20 +153,23 @@ public class ParameterModelServiceTest extends AbstractApplicationContextTest {
         assertEquals(parameterModel.getUnit(), clonedParameterModel.getUnit());
         assertEquals(parameterModel.getNature(), clonedParameterModel.getNature());
         assertEquals(parameterModel.getValueSource(), clonedParameterModel.getValueSource());
-        assertFalse(parameterModel.getValueReference() == clonedParameterModel.getValueReference());
-        assertEquals(valueReference, clonedParameterModel.getValueReference());
-        assertEquals(parameterModel.getValueReference().getTarget(), clonedParameterModel.getValueReference().getTarget());
-        assertEquals(importExternalModel, clonedParameterModel.getValueReference().getExternalModel());
+        assertEquals(parameterModel.getImportModel(), clonedParameterModel.getImportModel());
+        assertEquals(parameterModel.getImportField(), clonedParameterModel.getImportField());
+        assertEquals(importExternalModel, clonedParameterModel.getImportModel());
+        assertEquals(importField, clonedParameterModel.getImportField());
+        assertEquals(parameterModel.getImportField(), clonedParameterModel.getImportField());
+        assertEquals(importExternalModel, clonedParameterModel.getImportModel());
         assertEquals(parameterModel.getValueLink(), clonedParameterModel.getValueLink());
         assertEquals(parameterModel.getCalculation(), clonedParameterModel.getCalculation());
         assertEquals(importExternalModel, clonedParameterModel.getImportModel());
         assertEquals(parameterModel.getImportField(), clonedParameterModel.getImportField());
         assertEquals(parameterModel.getIsReferenceValueOverridden(), clonedParameterModel.getIsReferenceValueOverridden());
         assertEquals(parameterModel.getIsExported(), clonedParameterModel.getIsExported());
-        assertFalse(parameterModel.getExportReference() == clonedParameterModel.getExportReference());
-        assertEquals(exportReference, clonedParameterModel.getExportReference());
-        assertEquals(parameterModel.getExportReference().getTarget(), clonedParameterModel.getExportReference().getTarget());
-        assertEquals(exportExternalModel, clonedParameterModel.getExportReference().getExternalModel());
+        assertEquals(parameterModel.getExportModel(), clonedParameterModel.getExportModel());
+        assertEquals(parameterModel.getExportField(), clonedParameterModel.getExportField());
+        assertEquals(exportExternalModel, clonedParameterModel.getExportModel());
+        assertEquals(exportField, clonedParameterModel.getExportField());
+        assertEquals(parameterModel.getExportField(), clonedParameterModel.getExportField());
         assertEquals(exportExternalModel, clonedParameterModel.getExportModel());
         assertEquals(parameterModel.getExportField(), clonedParameterModel.getExportField());
         assertEquals(parameterModel.getDescription(), clonedParameterModel.getDescription());

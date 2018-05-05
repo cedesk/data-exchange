@@ -19,26 +19,38 @@ package ru.skoltech.cedl.dataexchange.service.impl;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.entity.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.*;
 import ru.skoltech.cedl.dataexchange.entity.unit.Prefix;
 import ru.skoltech.cedl.dataexchange.entity.unit.QuantityKind;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.entity.unit.UnitManagement;
 import ru.skoltech.cedl.dataexchange.entity.user.Discipline;
 import ru.skoltech.cedl.dataexchange.entity.user.User;
 import ru.skoltech.cedl.dataexchange.entity.user.UserRoleManagement;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.repository.jpa.PrefixRepository;
+import ru.skoltech.cedl.dataexchange.repository.jpa.QuantityKindRepository;
+import ru.skoltech.cedl.dataexchange.repository.jpa.UnitRepository;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
 import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.UserService;
+import ru.skoltech.cedl.dataexchange.structure.adapters.QuantityKindAdapter;
+import ru.skoltech.cedl.dataexchange.structure.adapters.UnitAdapter;
+import ru.skoltech.cedl.dataexchange.structure.adapters.UnitWrapper;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -57,12 +69,28 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     private static final Class[] MODEL_CLASSES = new Class[]{
             SystemModel.class, SubSystemModel.class, ElementModel.class, InstrumentModel.class,
-            ParameterModel.class, ExternalModel.class, ExternalModelReference.class, Calculation.class, Argument.class};
+            ParameterModel.class, ExternalModel.class, Calculation.class, Argument.class};
     private static Logger logger = Logger.getLogger(FileStorageServiceImpl.class);
+
+    private final UnitRepository unitRepository;
+    private final QuantityKindRepository quantityKindRepository;
+    private final PrefixRepository prefixRepository;
 
     private ApplicationSettings applicationSettings;
     private UserService userService;
     private ExternalModelService externalModelService;
+
+    private UnitAdapter unitAdapter;
+    private QuantityKindAdapter quantityKindAdapter;
+
+    @Autowired
+    public FileStorageServiceImpl(UnitRepository unitRepository,
+                                  QuantityKindRepository quantityKindRepository,
+                                  PrefixRepository prefixRepository) {
+        this.unitRepository = unitRepository;
+        this.quantityKindRepository = quantityKindRepository;
+        this.prefixRepository = prefixRepository;
+    }
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
@@ -74,6 +102,14 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     public void setExternalModelService(ExternalModelService externalModelService) {
         this.externalModelService = externalModelService;
+    }
+
+    public void setUnitAdapter(UnitAdapter unitAdapter) {
+        this.unitAdapter = unitAdapter;
+    }
+
+    public void setQuantityKindAdapter(QuantityKindAdapter quantityKindAdapter) {
+        this.quantityKindAdapter = quantityKindAdapter;
     }
 
     @Override
@@ -145,8 +181,9 @@ public class FileStorageServiceImpl implements FileStorageService {
             modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
             JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Unmarshaller u = jc.createUnmarshaller();
-            Study study = (Study) u.unmarshal(inputStream);
+            Unmarshaller unmarshaller = jc.createUnmarshaller();
+            unmarshaller.setAdapter(UnitAdapter.class, unitAdapter);
+            Study study = (Study) unmarshaller.unmarshal(inputStream);
 
             this.postProcessUserRoleManagement(study.getUserRoleManagement());
             this.postProcessStudy(study);
@@ -168,8 +205,9 @@ public class FileStorageServiceImpl implements FileStorageService {
             modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
             JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Unmarshaller u = jc.createUnmarshaller();
-            Study study = (Study) u.unmarshal(inp);
+            Unmarshaller unmarshaller = jc.createUnmarshaller();
+            unmarshaller.setAdapter(UnitAdapter.class, unitAdapter);
+            Study study = (Study) unmarshaller.unmarshal(inp);
 
             File inputFolder = inputFile.getParentFile();
 
@@ -190,8 +228,9 @@ public class FileStorageServiceImpl implements FileStorageService {
             modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
             JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Unmarshaller u = jc.createUnmarshaller();
-            SystemModel systemModel = (SystemModel) u.unmarshal(inp);
+            Unmarshaller unmarshaller = jc.createUnmarshaller();
+            unmarshaller.setAdapter(UnitAdapter.class, unitAdapter);
+            SystemModel systemModel = (SystemModel) unmarshaller.unmarshal(inp);
 
             File inputFolder = inputFile.getParentFile();
 
@@ -203,15 +242,45 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public UnitManagement importUnitManagement(InputStream inputStream) throws IOException {
-        try (BufferedInputStream inp = new BufferedInputStream(inputStream)) {
-            JAXBContext ct = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
+    public List<Prefix> importPrefixes(String resource) throws IOException {
+        return importUnitsEntities(resource, "prefix", Prefix.class);
+    }
 
-            Unmarshaller u = ct.createUnmarshaller();
-            UnitManagement unitManagement = (UnitManagement) u.unmarshal(inp);
-            postProcessUnitManagement(unitManagement);
-            return unitManagement;
-        } catch (JAXBException e) {
+    @Override
+    public List<Unit> importUnits(String resource) throws IOException {
+        return importUnitsEntities(resource, "unit", Unit.class);
+    }
+
+    @Override
+    public List<QuantityKind> importQuantityKinds(String resource) throws IOException {
+        return importUnitsEntities(resource, "quantityKind", QuantityKind.class);
+    }
+
+    private <T> List<T> importUnitsEntities(String resource, String elementName, Class<T> clazz) throws IOException {
+        try (InputStream inp = FileStorageServiceImpl.class.getClassLoader().getResourceAsStream(resource)) {
+            XMLInputFactory xif = XMLInputFactory.newFactory();
+            XMLStreamReader xsr = xif.createXMLStreamReader(inp);
+            List<T> entities = new LinkedList<>();
+            while (xsr.hasNext()) {
+                int eventType = xsr.next();
+                switch (eventType) {
+                    case XMLStreamReader.START_ELEMENT:
+                        String localName = xsr.getLocalName();
+                        if (elementName.equalsIgnoreCase(localName)) {
+                            JAXBContext jc = JAXBContext.newInstance(clazz);
+                            Unmarshaller unmarshaller = jc.createUnmarshaller();
+                            unmarshaller.setAdapter(QuantityKindAdapter.class, quantityKindAdapter);
+
+                            T entity = unmarshaller.unmarshal(xsr, clazz).getValue();
+                            entities.add(entity);
+                        }
+                    case XMLStreamReader.END_DOCUMENT:
+                        break;
+                }
+            }
+            xsr.close();
+            return entities;
+        } catch (JAXBException | XMLStreamException e) {
             throw new IOException("Error reading unit management from XML file.", e);
         }
     }
@@ -261,10 +330,11 @@ public class FileStorageServiceImpl implements FileStorageService {
                 modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
                 JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-                Marshaller m = jc.createMarshaller();
-                m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-                m.marshal(study, zos);
+                Marshaller marshaller = jc.createMarshaller();
+                marshaller.setAdapter(UnitAdapter.class, unitAdapter);
+                marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+                marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+                marshaller.marshal(study, zos);
 
                 Iterator<ExternalModel> iterator = study.getSystemModel().externalModelsIterator();
                 Set<String> createdExternalModelPaths = new HashSet<>();
@@ -305,10 +375,11 @@ public class FileStorageServiceImpl implements FileStorageService {
             modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
             JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Marshaller m = jc.createMarshaller();
-            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(study, fos);
+            Marshaller marshaller = jc.createMarshaller();
+            marshaller.setAdapter(UnitAdapter.class, unitAdapter);
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.marshal(study, fos);
         } catch (JAXBException e) {
             throw new IOException("Error writing study to XML file.", e);
         }
@@ -327,10 +398,11 @@ public class FileStorageServiceImpl implements FileStorageService {
             modelClasses.addAll(Arrays.asList(Calculation.getEntityClasses()));
             JAXBContext jc = JAXBContext.newInstance(modelClasses.toArray(new Class[]{}));
 
-            Marshaller m = jc.createMarshaller();
-            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(systemModel, fos);
+            Marshaller marshaller = jc.createMarshaller();
+            marshaller.setAdapter(UnitAdapter.class, unitAdapter);
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.marshal(systemModel, fos);
         } catch (JAXBException e) {
             throw new IOException("Error writing system model to XML file.", e);
         }
@@ -352,20 +424,31 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public void exportUnitManagement(UnitManagement unitManagement, File outputFile) throws IOException {
+    public void exportUnits(File outputFile) throws IOException {
         this.createDirectory(outputFile.getParentFile());
 
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 
-            JAXBContext jc = JAXBContext.newInstance(UnitManagement.class, Prefix.class, Unit.class, QuantityKind.class);
+            JAXBContext jc = JAXBContext.newInstance(UnitWrapper.class, Prefix.class, Unit.class, QuantityKind.class);
 
-            Marshaller m = jc.createMarshaller();
-            m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            m.marshal(unitManagement, fos);
+            Marshaller marshaller = jc.createMarshaller();
+            marshaller.setAdapter(QuantityKindAdapter.class, quantityKindAdapter);
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "");
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+            List<Prefix> prefixList = prefixRepository.findAll();
+            List<Unit> unitList = unitRepository.findAll();
+            List<QuantityKind> quantityKindList = quantityKindRepository.findAll();
+
+            UnitWrapper unitWrapper = new UnitWrapper();
+            unitWrapper.setPrefixes(prefixList);
+            unitWrapper.setUnits(unitList);
+            unitWrapper.setQuantityKinds(quantityKindList);
+            marshaller.marshal(unitWrapper, fos);
         } catch (JAXBException e) {
             throw new IOException("Error writing unit management to XML file.", e);
         }
+
     }
 
     @Override
@@ -454,22 +537,26 @@ public class FileStorageServiceImpl implements FileStorageService {
         for (ParameterModel parameterModel : modelNode.getParameters()) {
             parameterModel.setParent(modelNode);
 
-            if (parameterModel.getValueReference() != null && parameterModel.getValueReference().getExternalModel() != null) {
-                String externalModelName = parameterModel.getValueReference().getExternalModel().getName();
-                parameterModel.getValueReference().setExternalModel(modelNode.getExternalModelMap().get(externalModelName));
+            if (parameterModel.getImportModel() != null) {
+                String externalModelName = parameterModel.getImportModel().getName();
+                parameterModel.setImportModel(modelNode.getExternalModelMap().get(externalModelName));
             }
-            if (parameterModel.getExportReference() != null && parameterModel.getExportReference().getExternalModel() != null) {
-                String externalModelName = parameterModel.getExportReference().getExternalModel().getName();
-                parameterModel.getExportReference().setExternalModel(modelNode.getExternalModelMap().get(externalModelName));
+            if (parameterModel.getExportModel() != null) {
+                String externalModelName = parameterModel.getExportModel().getName();
+                parameterModel.setExportModel(modelNode.getExternalModelMap().get(externalModelName));
             }
             if (parameterModel.getValueSource() == ParameterValueSource.LINK) {
                 logger.info(parameterModel.getNodePath() + " <L- " + (parameterModel.getValueLink() != null ? parameterModel.getValueLink().getNodePath() : "null"));
             }
             if (parameterModel.getValueSource() == ParameterValueSource.REFERENCE) {
-                logger.info(parameterModel.getNodePath() + " <R= " + parameterModel.getValueReference());
+                String valueReference = parameterModel.getImportModel() != null
+                        ? parameterModel.getImportModel().getName() + ":" + parameterModel.getImportField() : "(empty)";
+                logger.info(parameterModel.getNodePath() + " <R= " + valueReference);
             }
             if (parameterModel.getIsExported()) {
-                logger.info(parameterModel.getNodePath() + " =E> " + parameterModel.getExportReference());
+                String exportReference = parameterModel.getExportModel() != null
+                        ? parameterModel.getExportModel().getName() + ":" + parameterModel.getExportField() : "(empty)";
+                logger.info(parameterModel.getNodePath() + " =E> " + exportReference);
             }
             if (parameterModel.getUnit() == null) {
                 logger.warn("parameter " + parameterModel.getNodePath() + " is missing a unit!");
@@ -515,17 +602,6 @@ public class FileStorageServiceImpl implements FileStorageService {
             disciplineSubSystem.setDiscipline(discipline);
             disciplineSubSystem.setUserRoleManagement(userRoleManagement);
         });
-    }
-
-    private void postProcessUnitManagement(UnitManagement unitManagement) {
-        for (Unit unit : unitManagement.getUnits()) {
-            String quantityKindStr = unit.getQuantityKindStr();
-            if (quantityKindStr != null) {
-                Integer qtki = Integer.valueOf(quantityKindStr);
-                QuantityKind quantityKind = unitManagement.getQuantityKinds().get(qtki);
-                unit.setQuantityKind(quantityKind);
-            }
-        }
     }
 
 }

@@ -18,8 +18,12 @@ package ru.skoltech.cedl.dataexchange.demo;
 
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
-import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
 import ru.skoltech.cedl.dataexchange.service.ExternalModelService;
@@ -54,16 +58,19 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
             parameterModel.updateValueReference();
             System.out.println(parameterModel);
 
-            ExternalModelReference valueReference = parameterModel.getValueReference();
+            ExternalModel importModel = parameterModel.getImportModel();
+            String importField = parameterModel.getImportField();
             List<ExternalModel> externalModels = parameterModel.getParent().getExternalModels();
 
             ViewBuilder referenceSelectorViewBuilder = guiService.createViewBuilder("Reference Selector", Views.REFERENCE_SELECTOR_VIEW);
             referenceSelectorViewBuilder.ownerWindow(primaryStage);
             referenceSelectorViewBuilder.applyEventHandler(event -> {
-                ExternalModelReference externalModelReference = (ExternalModelReference) event.getSource();
-                System.out.println(externalModelReference);
+                @SuppressWarnings("unchecked")
+                Pair<ExternalModel, String> externalModelReference = (Pair<ExternalModel, String>) event.getSource();
+                System.out.println(externalModelReference != null ?
+                        externalModelReference.getLeft().getName() + ":" + externalModelReference.getRight() : "(empty)");
             });
-            referenceSelectorViewBuilder.showAndWait(valueReference, externalModels);
+            referenceSelectorViewBuilder.showAndWait(importModel, importField, externalModels);
         } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         } finally {
@@ -92,7 +99,8 @@ public class ReferenceSelectorDemo extends AbstractApplicationContextDemo {
             File file = new File(ReferenceSelectorDemo.class.getResource("/simple-model.xls").toURI());
             ExternalModel externalModel = externalModelService.createExternalModelFromFile(file, testSat);
             systemModel.addExternalModel(externalModel);
-            parameterModel.setValueReference(new ExternalModelReference(externalModel, "G4"));
+            parameterModel.setImportModel(externalModel);
+            parameterModel.setImportField("G4");
 
             file = new File(ReferenceSelectorDemo.class.getResource("/attachment.xls").toURI());
             externalModel = externalModelService.createExternalModelFromFile(file, testSat);

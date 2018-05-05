@@ -19,11 +19,10 @@ package ru.skoltech.cedl.dataexchange.structure.model.diff;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.entity.ext.ExcelExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
 import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import ru.skoltech.cedl.dataexchange.external.ExternalModelException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
@@ -117,6 +116,7 @@ public class ExternalModelDifference extends ModelDifference {
                     throw new IllegalStateException("Cannot clone external model: " + externalModel1.getNodePath(), e);
                 }
                 parent.addExternalModel(newExternalModel);
+                this.setupCache(newExternalModel);
                 break;
             }
             case REMOVE: { // remove node from local parent
@@ -142,7 +142,7 @@ public class ExternalModelDifference extends ModelDifference {
             }
             default: {
                 logger.error("MERGE IMPOSSIBLE:\n" + toString());
-                throw new NotImplementedException();
+                throw new UnsupportedOperationException();
             }
         }
     }
@@ -173,6 +173,7 @@ public class ExternalModelDifference extends ModelDifference {
                     logger.error("unable to re-add parameter, because another external model of same name is already there");
                 } else {
                     parent.addExternalModel(externalModel1);
+                    this.setupCache(externalModel1);
                 }
                 break;
             }
@@ -185,8 +186,19 @@ public class ExternalModelDifference extends ModelDifference {
             }
             default: {
                 logger.error("MERGE IMPOSSIBLE:\n" + toString());
-                throw new NotImplementedException();
+                throw new UnsupportedOperationException();
             }
+        }
+    }
+
+    private void setupCache(ExternalModel externalModel) {
+        try {
+            Objects.requireNonNull(externalModel);
+            externalModel.init();
+            externalModel.updateCacheFromAttachment();
+        } catch (ExternalModelException e) {
+            logger.error("Failed to update cached external model: " + externalModel1.getNodePath(), e);
+            throw new IllegalStateException("Failed to updated cached external model: " + externalModel1.getName());
         }
     }
 

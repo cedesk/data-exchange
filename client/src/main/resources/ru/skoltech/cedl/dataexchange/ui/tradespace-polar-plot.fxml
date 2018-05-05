@@ -18,19 +18,29 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.web.WebView?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+<?import org.controlsfx.control.CheckComboBox?>
+<BorderPane fx:id="polarPlotPane"
+            xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.TradespacePolarPlotController">
     <padding>
         <Insets/>
     </padding>
     <top>
         <ToolBar BorderPane.alignment="CENTER">
-            <CheckBox fx:id="revisionCheckBox" text="Only show points related to the design"/>
+            <CheckComboBox prefWidth="150.0" fx:id="figureOfMeritsComboBox"/>
+            <Label text="Figures of Merit"/>
+            <CheckBox fx:id="revisionCheckBox" text="Exclude imported design points">
+                <tooltip>
+                    <Tooltip text="Only show designs which were added from the parametric system model."/>
+                </tooltip>
+            </CheckBox>
             <Pane HBox.hgrow="ALWAYS"/>
         </ToolBar>
     </top>

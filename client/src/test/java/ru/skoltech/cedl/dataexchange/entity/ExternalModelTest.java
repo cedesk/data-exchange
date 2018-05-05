@@ -102,18 +102,6 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         testExternalModel.setParent(testModel);
         testExternalModel.init();
 
-        ExternalModelReference externalModelReference = mock(ExternalModelReference.class);
-        when(externalModelReference.getTarget()).thenReturn(target);
-        when(externalModelReference.getExternalModel()).thenReturn(externalModel);
-
-        ExternalModelReference wrongExternalModelReference = mock(ExternalModelReference.class);
-        when(wrongExternalModelReference.getTarget()).thenReturn(wrongTarget);
-        when(wrongExternalModelReference.getExternalModel()).thenReturn(externalModel);
-
-        ExternalModelReference testExternalModelReference = mock(ExternalModelReference.class);
-        when(testExternalModelReference.getTarget()).thenReturn(target);
-        when(testExternalModelReference.getExternalModel()).thenReturn(testExternalModel);
-
         notValidValueReferenceParameterModel = mock(ParameterModel.class, CALLS_REAL_METHODS);
         when(notValidValueReferenceParameterModel.isValidValueReference()).thenReturn(false);
         when(notValidValueReferenceParameterModel.isValidExportReference()).thenReturn(false);
@@ -123,22 +111,27 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         when(otherValueReferenceParameterModel.isValidExportReference()).thenReturn(true);
         when(otherValueReferenceParameterModel.getValueSource()).thenReturn(ParameterValueSource.REFERENCE);
 //        when(otherValueReferenceParameterModel.getIsExported()).thenReturn(true);
-        when(otherValueReferenceParameterModel.getValueReference()).thenReturn(testExternalModelReference);
-        when(otherValueReferenceParameterModel.getExportReference()).thenReturn(testExternalModelReference);
+        when(otherValueReferenceParameterModel.getImportModel()).thenReturn(testExternalModel);
+        when(otherValueReferenceParameterModel.getImportField()).thenReturn(target);
+        when(otherValueReferenceParameterModel.getExportModel()).thenReturn(testExternalModel);
+        when(otherValueReferenceParameterModel.getExportField()).thenReturn(target);
 
         notCorrectValueReferenceParameterModel = mock(ParameterModel.class, CALLS_REAL_METHODS);
         when(notCorrectValueReferenceParameterModel.isValidValueReference()).thenReturn(true);
         when(notCorrectValueReferenceParameterModel.getValueSource()).thenReturn(ParameterValueSource.REFERENCE);
         when(notCorrectValueReferenceParameterModel.getIsExported()).thenReturn(true);
-        when(notCorrectValueReferenceParameterModel.getValueReference()).thenReturn(wrongExternalModelReference);
+        when(notCorrectValueReferenceParameterModel.getImportModel()).thenReturn(externalModel);
+        when(notCorrectValueReferenceParameterModel.getImportField()).thenReturn(wrongTarget);
 
         correctValueReferenceParameterModel = mock(ParameterModel.class, CALLS_REAL_METHODS);
         when(correctValueReferenceParameterModel.isValidValueReference()).thenReturn(true);
         when(correctValueReferenceParameterModel.isValidExportReference()).thenReturn(true);
         when(correctValueReferenceParameterModel.getValueSource()).thenReturn(ParameterValueSource.REFERENCE);
         when(correctValueReferenceParameterModel.getIsExported()).thenReturn(true);
-        when(correctValueReferenceParameterModel.getValueReference()).thenReturn(externalModelReference);
-        when(correctValueReferenceParameterModel.getExportReference()).thenReturn(externalModelReference);
+        when(correctValueReferenceParameterModel.getImportModel()).thenReturn(externalModel);
+        when(correctValueReferenceParameterModel.getImportField()).thenReturn(target);
+        when(correctValueReferenceParameterModel.getExportModel()).thenReturn(externalModel);
+        when(correctValueReferenceParameterModel.getExportField()).thenReturn(target);
         when(correctValueReferenceParameterModel.getEffectiveValue()).thenReturn(value);
 
         when(parent.getParameters()).thenReturn(Arrays.asList(notValidValueReferenceParameterModel,
@@ -212,7 +205,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testInitByFile() throws URISyntaxException, ExternalModelException {
+    public void testInitByFile() throws ExternalModelException {
         String projectDir = new File("target/project").getAbsolutePath();
         System.setProperty(Project.PROJECT_HOME_PROPERTY, projectDir);
 
@@ -287,7 +280,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testState() throws URISyntaxException, IOException {
+    public void testState() throws IOException {
         String projectDir = new File("target/project").getAbsolutePath();
         System.setProperty(Project.PROJECT_HOME_PROPERTY, projectDir);
 
@@ -483,7 +476,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     }
 
     @Test(expected = ExternalModelException.class)
-    public void testUpdateCacheFromAttachmentFail1() throws ExternalModelException, IOException {
+    public void testUpdateCacheFromAttachmentFail1() throws ExternalModelException {
         ExternalModel newExternalModel = mock(ExternalModel.class, CALLS_REAL_METHODS);
         newExternalModel.updateCacheFromAttachment();
     }
@@ -526,7 +519,7 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void storeAndRetrieveAttachment() throws URISyntaxException, IOException {
+    public void storeAndRetrieveAttachment() {
         assertEquals(0, testExternalModel.getId());
         assertEquals(0, testExternalModel.getRevision());
         assertEquals(testModel.getNodePath() + "#" + attachmentFile1.getName(), testExternalModel.getNodePath());
@@ -548,55 +541,52 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void testExternalModelReferences() throws URISyntaxException, IOException {
+    public void testExternalModelReferences() throws IOException {
         SystemModel testModel = new SystemModel("testModel");
         systemModelRepository.saveAndFlush(testModel);
 
-        ExternalModelReference externalModelReference = new ExternalModelReference();
-        externalModelReference.setExternalModel(testExternalModel);
-        externalModelReference.setTarget("AA11");
-
         ParameterModel parameterModel = new ParameterModel("testPar", 592.65);
         parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-        parameterModel.setValueReference(externalModelReference);
+        parameterModel.setImportModel(testExternalModel);
+        parameterModel.setImportField("AA11");
 
         testModel.addParameter(parameterModel);
         SystemModel systemModel = systemModelRepository.saveAndFlush(testModel);
 
-        ExternalModelReference valueReference = systemModel.getParameters().get(0).getValueReference();
-        assertEquals(externalModelReference, valueReference);
+        parameterModel = systemModel.getParameters().get(0);
+        assertEquals(testExternalModel, parameterModel.getImportModel());
+        assertEquals("AA11", parameterModel.getImportField());
 
         ExternalModel newExternalModel = new TestExternalModel();
         newExternalModel.setName(attachmentFile1.getName());
         newExternalModel.setLastModification(attachmentFile1.lastModified());
         newExternalModel.setAttachment(Files.readAllBytes(Paths.get(attachmentFile1.getAbsolutePath())));
-        newExternalModel.setParent(parent);
+        newExternalModel.setParent(testModel);
         newExternalModel.init();
-        valueReference.setExternalModel(newExternalModel);
+
+        parameterModel.setImportModel(newExternalModel);
 
         systemModelRepository.saveAndFlush(systemModel);
 
         SystemModel savedSystemModel = systemModelRepository.findOne(testModel.getId());
 
-        ExternalModelReference savedValueReference = savedSystemModel.getParameters().get(0).getValueReference();
-        assertEquals(valueReference, savedValueReference);
-        ExternalModelReference savedExportReference = savedSystemModel.getParameters().get(0).getExportReference();
-        assertNotEquals(savedValueReference, savedExportReference);
+        ParameterModel savedParameterModel = savedSystemModel.getParameters().get(0);
+        assertEquals(parameterModel.getImportModel(), savedParameterModel.getImportModel());
+        assertEquals(parameterModel.getImportField(), savedParameterModel.getImportField());
+        assertNotEquals(savedParameterModel.getImportModel(), savedParameterModel.getExportModel());
+        assertNotEquals(savedParameterModel.getImportField(), savedParameterModel.getExportField());
     }
 
     @Test
-    public void testExternalModelReferencesChange() throws URISyntaxException, IOException {
+    public void testExternalModelReferencesChange() {
         SystemModel testModel = new SystemModel("testSat");
         systemModelRepository.saveAndFlush(testModel);
-
-        ExternalModelReference externalModelReference = new ExternalModelReference();
-        externalModelReference.setExternalModel(testExternalModel);
-        externalModelReference.setTarget("AA11");
 
         Double value = 592.65;
         ParameterModel parameterModel = new ParameterModel("testPar", value);
         parameterModel.setValueSource(ParameterValueSource.REFERENCE);
-        parameterModel.setValueReference(externalModelReference);
+        parameterModel.setImportModel(testExternalModel);
+        parameterModel.setImportField("AA11");
 
         testModel.addParameter(parameterModel);
         SystemModel systemModel = systemModelRepository.saveAndFlush(testModel);
@@ -607,8 +597,9 @@ public class ExternalModelTest extends AbstractApplicationContextTest {
         assertEquals(ParameterValueSource.REFERENCE, parameterModel.getValueSource());
         assertEquals(value, Double.valueOf(parameterModel.getEffectiveValue()));
 
-        ExternalModelReference valueReference = systemModel.getParameters().get(0).getValueReference();
-        assertEquals(externalModelReference, valueReference);
+        parameterModel = systemModel.getParameters().get(0);
+        assertEquals(testExternalModel, parameterModel.getImportModel());
+        assertEquals("AA11", parameterModel.getImportField());
         System.out.println(parameterModel.getEffectiveValue());
     }
 

@@ -56,7 +56,7 @@ public class ExternalModelDifferenceServiceImpl implements ExternalModelDifferen
     }
 
     @Override
-    public List<ModelDifference> computeExternalModelDifferences(ModelNode localNode, ModelNode remoteNode, int currentRevisionNumber) {
+    public List<ModelDifference> computeExternalModelDifferences(ModelNode localNode, ModelNode remoteNode) {
         LinkedList<ModelDifference> extModelDifferences = new LinkedList<>();
         Map<String, ExternalModel> localExternalModels = localNode.getExternalModels().stream().collect(
                 Collectors.toMap(ExternalModel::getUuid, Function.identity())
@@ -80,12 +80,12 @@ public class ExternalModelDifferenceServiceImpl implements ExternalModelDifferen
                 }
             } else if (localExternalModel == null && remoteExternalModel != null) {
                 assert remoteExternalModel.getRevision() != 0; //persisted external models always should have the revision set
-                if (remoteExternalModel.getRevision() > currentRevisionNumber) { // node 2 was added
+                if (remoteNode.getRevision() > localNode.getRevision()) { // node 2 was added
                     extModelDifferences.add(createAddExternalModel(localNode, remoteExternalModel, remoteExternalModel.getName(), ModelDifference.ChangeLocation.ARG2));
                 } else { // model 1 was deleted
                     extModelDifferences.add(createRemoveExternalModel(localNode, remoteExternalModel, remoteExternalModel.getName(), ModelDifference.ChangeLocation.ARG1));
                 }
-            } else if (localExternalModel != null && remoteExternalModel != null) {
+            } else if (localExternalModel != null) {
                 if (!localExternalModel.getName().equals(remoteExternalModel.getName())) {
                     String value1 = localExternalModel.getName();
                     String value2 = remoteExternalModel.getName();

@@ -16,16 +16,16 @@
 
 package ru.skoltech.cedl.dataexchange.entity.tradespace;
 
+import org.apache.commons.lang3.tuple.Pair;
+import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterTreeIterator;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
+import ru.skoltech.cedl.dataexchange.service.impl.StudyServiceImpl;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by d.knoll on 6/28/2017.
@@ -35,9 +35,20 @@ public class TradespaceToStudyBridge {
     private final Project project;
     private SystemModel systemModel;
     private Map<String, ParameterModel> parameterDictionary;
+    private StudyServiceImpl studyService;
+    private RepositoryStateMachine repositoryStateMachine;
 
     public TradespaceToStudyBridge(Project project) {
         this.project = project;
+    }
+
+    public ModelStateLink getCurrentModelStateLink() {
+        Pair<Integer, Date> latestRevision = studyService.findLatestRevision(project.getStudy().getId());
+        return latestRevision != null ? new ModelStateLink(latestRevision.getLeft()) : null;
+    }
+
+    public String getCurrentTagName() {
+        return studyService.findCurrentStudyRevisionTag(project.getStudy());
     }
 
     public Collection<ParameterModel> getModelOutputParameters() {
@@ -55,11 +66,31 @@ public class TradespaceToStudyBridge {
         return parameterDictionary;
     }
 
+    public Long getStudyId() {
+        return project.getStudy().getId();
+    }
+
+    public String getStudyName() {
+        return project.getProjectName();
+    }
+
     private SystemModel getSystemModel() {
         if (systemModel == null) {
             systemModel = project.getSystemModel();
         }
         return systemModel;
+    }
+
+    public boolean isSaved() {
+        return repositoryStateMachine.hasModifications();
+    }
+
+    public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
+        this.repositoryStateMachine = repositoryStateMachine;
+    }
+
+    public void setStudyService(StudyServiceImpl studyService) {
+        this.studyService = studyService;
     }
 
     public String getParameterName(String parameterUuid) {

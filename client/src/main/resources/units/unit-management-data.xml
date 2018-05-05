@@ -36,143 +36,144 @@
     <prefix name="atto" symbol="a" factor="1.0E-18"/>
     <prefix name="zepto" symbol="z" factor="1.0E-21"/>
     <prefix name="yocto" symbol="y" factor="1.0E-24"/>
-    <unit xsi:type="SimpleUnit" name="No Unit" symbol="U" description="noUnitUnit" quantityKind="0"/>
-    <unit xsi:type="SimpleUnit" name="Meter" symbol="m" description="meterUnit" quantityKind="1"/>
-    <unit xsi:type="SimpleUnit" name="Gram" symbol="g" description="gramUnit" quantityKind="2"/>
-    <unit xsi:type="SimpleUnit" name="Second" symbol="s" description="secondUnit" quantityKind="3"/>
-    <unit xsi:type="SimpleUnit" name="Ampere" symbol="A" description="ampereUnit" quantityKind="6"/>
-    <unit xsi:type="SimpleUnit" name="Kelvin" symbol="K" description="kelvinUnit" quantityKind="4"/>
-    <unit xsi:type="SimpleUnit" name="Mole" symbol="mol" description="moleUnit" quantityKind="5"/>
-    <unit xsi:type="SimpleUnit" name="Candela" symbol="cd" description="candelaUnit" quantityKind="7"/>
-    <unit xsi:type="PrefixedUnit" name="Kilometer" symbol="km" description="kilometerUnit" quantityKind="1"
+    <unit xsi:type="SimpleUnit" name="No Unit" symbol="U" description="noUnitUnit" quantityKind="Dimensionless"/>
+    <unit xsi:type="SimpleUnit" name="Meter" symbol="m" description="meterUnit" quantityKind="Length"/>
+    <unit xsi:type="SimpleUnit" name="Gram" symbol="g" description="gramUnit" quantityKind="Mass"/>
+    <unit xsi:type="SimpleUnit" name="Second" symbol="s" description="secondUnit" quantityKind="Time"/>
+    <unit xsi:type="SimpleUnit" name="Ampere" symbol="A" description="ampereUnit" quantityKind="Electric current"/>
+    <unit xsi:type="SimpleUnit" name="Kelvin" symbol="K" description="kelvinUnit" quantityKind="Temperature"/>
+    <unit xsi:type="SimpleUnit" name="Mole" symbol="mol" description="moleUnit" quantityKind="Amount of substance"/>
+    <unit xsi:type="SimpleUnit" name="Candela" symbol="cd" description="candelaUnit" quantityKind="Luminous intensity"/>
+    <unit xsi:type="PrefixedUnit" name="Kilometer" symbol="km" description="kilometerUnit" quantityKind="Length"
           isInvertible="true" referenceUnit="1" prefix="7"/>
-    <unit xsi:type="PrefixedUnit" name="Millimeter" symbol="mm" description="millimeterUnit" quantityKind="1"
+    <unit xsi:type="PrefixedUnit" name="Millimeter" symbol="mm" description="millimeterUnit" quantityKind="Length"
           isInvertible="true" referenceUnit="1" prefix="12"/>
-    <unit xsi:type="PrefixedUnit" name="Centimeter" symbol="cm" description="centimeterUnit" quantityKind="1"
+    <unit xsi:type="PrefixedUnit" name="Centimeter" symbol="cm" description="centimeterUnit" quantityKind="Length"
           isInvertible="true" referenceUnit="1" prefix="11"/>
-    <unit xsi:type="PrefixedUnit" name="Kilogram" symbol="kg" description="kilogramUnit" quantityKind="2"
+    <unit xsi:type="PrefixedUnit" name="Kilogram" symbol="kg" description="kilogramUnit" quantityKind="Mass"
           isInvertible="true" referenceUnit="2" prefix="7"/>
-    <unit xsi:type="AffineConversionUnit" name="Minute" symbol="min" description="minuteUnit" quantityKind="3"
+    <unit xsi:type="AffineConversionUnit" name="Minute" symbol="min" description="minuteUnit" quantityKind="Time"
           isInvertible="true" referenceUnit="3" factor="60.0"/>
-    <unit xsi:type="AffineConversionUnit" name="Hour" symbol="h" description="hourUnit" quantityKind="3"
+    <unit xsi:type="AffineConversionUnit" name="Hour" symbol="h" description="hourUnit" quantityKind="Time"
           isInvertible="true" referenceUnit="12" factor="60.0"/>
-    <unit xsi:type="AffineConversionUnit" name="Year" symbol="y" description="yearUnit" quantityKind="3"
+    <unit xsi:type="AffineConversionUnit" name="Year" symbol="y" description="yearUnit" quantityKind="Time"
           isInvertible="true" referenceUnit="3" factor="3.1556926E7"/>
     <unit xsi:type="AffineConversionUnit" name="Degree Celsius" symbol="°C" description="degreeCelsiusUnit"
-          quantityKind="4" isInvertible="true" referenceUnit="5" factor="1.0" offset="273.15"/>
+          quantityKind="Temperature" isInvertible="true" referenceUnit="5" factor="1.0" offset="273.15"/>
     <unit xsi:type="AffineConversionUnit" name="Degree Fahrenheit" symbol="°F" description="degreeFahrenheitUnit"
-          quantityKind="4" isInvertible="true" referenceUnit="15" factor="0.5555555555555556"
+          quantityKind="Temperature" isInvertible="true" referenceUnit="15" factor="0.5555555555555556"
           offset="-17.77777777777778"/>
     <unit xsi:type="DerivedUnit" name="Meter Per Second" symbol="m¹ s⁻¹" description="meterPerSecondUnit"
-          quantityKind="24">
+          quantityKind="Velocity">
         <factor exponent="-1.0" unit="3"/>
         <factor exponent="1.0" unit="1"/>
     </unit>
     <unit xsi:type="DerivedUnit" name="Kilometer Per Hour" symbol="km¹ h⁻¹" description="kilometerPerHourUnit"
-          quantityKind="24">
+          quantityKind="Velocity">
         <factor exponent="-1.0" unit="13"/>
         <factor exponent="1.0" unit="8"/>
     </unit>
     <unit xsi:type="DerivedUnit" name="Square Kilometer" symbol="km²" description="squareKilometerUnit"
-          quantityKind="8">
+          quantityKind="Area">
         <factor exponent="2.0" unit="8"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Square Meter" symbol="m²" description="squareMeterUnit" quantityKind="8">
+    <unit xsi:type="DerivedUnit" name="Square Meter" symbol="m²" description="squareMeterUnit" quantityKind="Area">
         <factor exponent="2.0" unit="1"/>
     </unit>
     <unit xsi:type="DerivedUnit" name="Square Millimeter" symbol="mm²" description="squareMillimeterUnit"
-          quantityKind="8">
+          quantityKind="Area">
         <factor exponent="2.0" unit="9"/>
     </unit>
     <unit xsi:type="DerivedUnit" name="Square Centimeter" symbol="cm²" description="squareCentiMeterUnit"
-          quantityKind="8">
+          quantityKind="Area">
         <factor exponent="2.0" unit="10"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Cubic Meter" symbol="m³" description="cubicMeterUnit" quantityKind="42">
+    <unit xsi:type="DerivedUnit" name="Cubic Meter" symbol="m³" description="cubicMeterUnit" quantityKind="Volume">
         <factor exponent="3.0" unit="1"/>
     </unit>
     <unit xsi:type="DerivedUnit" name="Cubic Centimeter" symbol="cm³" description="cubicCentimeterUnit"
-          quantityKind="42">
+          quantityKind="Volume">
         <factor exponent="3.0" unit="10"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Newton" symbol="N" description="newtonUnit" quantityKind="9">
+    <unit xsi:type="DerivedUnit" name="Newton" symbol="N" description="newtonUnit" quantityKind="Force">
         <factor exponent="-2.0" unit="3"/>
         <factor exponent="1.0" unit="1"/>
         <factor exponent="1.0" unit="11"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Joule" symbol="J" description="jouleUnit" quantityKind="10">
+    <unit xsi:type="DerivedUnit" name="Joule" symbol="J" description="jouleUnit" quantityKind="Energy and Work">
         <factor exponent="-2.0" unit="3"/>
         <factor exponent="2.0" unit="1"/>
         <factor exponent="1.0" unit="11"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Newtonmeter" symbol="Nm" description="newtonMeterUnit" quantityKind="41">
+    <unit xsi:type="DerivedUnit" name="Newtonmeter" symbol="Nm" description="newtonMeterUnit" quantityKind="Torque">
         <factor exponent="-2.0" unit="3"/>
         <factor exponent="2.0" unit="1"/>
         <factor exponent="1.0" unit="11"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Hertz" symbol="Hz" description="hertzUnit" quantityKind="13">
+    <unit xsi:type="DerivedUnit" name="Hertz" symbol="Hz" description="hertzUnit" quantityKind="Frequency">
         <factor exponent="-1.0" unit="3"/>
     </unit>
     <unit xsi:type="DerivedUnit" name="Meter Per Second Squared" symbol="m s⁻²" description="meterPerSecondSquaredUnit"
-          quantityKind="19">
+          quantityKind="Acceleration">
         <factor exponent="-2.0" unit="3"/>
         <factor exponent="1.0" unit="1"/>
     </unit>
     <unit xsi:type="DerivedUnit" name="Kilogram Per Cubic Meter" symbol="kg m⁻³" description="kilogramPerCubicMeterUnit"
-          quantityKind="11">
+          quantityKind="Density">
         <factor exponent="-3.0" unit="1"/>
         <factor exponent="1.0" unit="11"/>
     </unit>
     <unit xsi:type="DerivedUnit" name="Kilogram Per Meter Squared" symbol="kg m⁻²"
-          description="kilogramPerMeterSquaredUnit" quantityKind="34">
+          description="kilogramPerMeterSquaredUnit" quantityKind="Mass per Unit Area">
         <factor exponent="-2.0" unit="1"/>
         <factor exponent="1.0" unit="11"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Watt" symbol="W" description="wattUnit" quantityKind="32">
+    <unit xsi:type="DerivedUnit" name="Watt" symbol="W" description="wattUnit" quantityKind="Power">
         <factor exponent="-3.0" unit="3"/>
         <factor exponent="2.0" unit="1"/>
         <factor exponent="1.0" unit="11"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Pascal" symbol="Pa" description="pascalUnit" quantityKind="35">
+    <unit xsi:type="DerivedUnit" name="Pascal" symbol="Pa" description="pascalUnit" quantityKind="PressureOrStress">
         <factor exponent="-2.0" unit="3"/>
         <factor exponent="-1.0" unit="1"/>
         <factor exponent="1.0" unit="11"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Radian" symbol="rad" description="radianUnit" quantityKind="20">
+    <unit xsi:type="DerivedUnit" name="Radian" symbol="rad" description="radianUnit" quantityKind="Angle">
         <factor exponent="1.0" unit="0"/>
     </unit>
     <unit xsi:type="DerivedUnit" name="RadianPerSecond" symbol="rad s⁻¹" description="radianPerSecondUnit"
-          quantityKind="21">
+          quantityKind="Angular Velocity">
         <factor exponent="-1.0" unit="3"/>
         <factor exponent="1.0" unit="34"/>
     </unit>
-    <unit xsi:type="AffineConversionUnit" name="Degree" symbol="°" description="degreeUnit" quantityKind="20"
+    <unit xsi:type="AffineConversionUnit" name="Degree" symbol="°" description="degreeUnit" quantityKind="Angle"
           isInvertible="true" referenceUnit="34" factor="0.017453292519943295"/>
     <unit xsi:type="DerivedUnit" name="DegreePerSecond" symbol="° s⁻¹" description="degreePerSecondUnit"
-          quantityKind="21">
+          quantityKind="Angular Velocity">
         <factor exponent="-1.0" unit="3"/>
         <factor exponent="1.0" unit="36"/>
     </unit>
-    <unit xsi:type="PrefixedUnit" name="Percent" symbol="%" description="percentUnit" quantityKind="0"
+    <unit xsi:type="PrefixedUnit" name="Percent" symbol="%" description="percentUnit" quantityKind="Dimensionless"
           isInvertible="true" referenceUnit="0" prefix="11"/>
     <unit xsi:type="DerivedUnit" name="Kilogram Meter Squared" symbol="kg m²" description="kilogramMeterSquaredUnit"
-          quantityKind="22">
+          quantityKind="Moment Of Inertia">
         <factor exponent="2.0" unit="1"/>
         <factor exponent="1.0" unit="11"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Bit" symbol="bit" description="bitUnit" quantityKind="0">
+    <unit xsi:type="DerivedUnit" name="Bit" symbol="bit" description="bitUnit" quantityKind="Dimensionless">
         <factor exponent="1.0" unit="0"/>
     </unit>
-    <unit xsi:type="LinearConversionUnit" name="Byte" symbol="byte" description="byteUnit" quantityKind="0"
+    <unit xsi:type="LinearConversionUnit" name="Byte" symbol="byte" description="byteUnit" quantityKind="Dimensionless"
           isInvertible="true" referenceUnit="40" factor="8.0"/>
-    <unit xsi:type="PrefixedUnit" name="Megabyte" symbol="MB" description="megaByteUnit" quantityKind="0"
+    <unit xsi:type="PrefixedUnit" name="Megabyte" symbol="MB" description="megaByteUnit" quantityKind="Dimensionless"
           isInvertible="true" referenceUnit="41" prefix="6"/>
     <unit xsi:type="DerivedUnit" name="Megabyte Per Second" symbol="MB s⁻¹" description="megabyterPerSecondUnit"
-          quantityKind="14">
+          quantityKind="Data rate">
         <factor exponent="1.0" unit="41"/>
         <factor exponent="-1.0" unit="3"/>
     </unit>
-    <unit xsi:type="DerivedUnit" name="Ampere hours" symbol="Ah" description="ampereHoursUnit" quantityKind="12">
+    <unit xsi:type="DerivedUnit" name="Ampere hours" symbol="Ah" description="ampereHoursUnit"
+          quantityKind="Electric Charge">
         <factor exponent="1.0" unit="13"/>
         <factor exponent="1.0" unit="4"/>
     </unit>

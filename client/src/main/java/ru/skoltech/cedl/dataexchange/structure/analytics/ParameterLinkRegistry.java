@@ -16,12 +16,17 @@
 
 package ru.skoltech.cedl.dataexchange.structure.analytics;
 
+import edu.carleton.tim.jdsm.RealNumberDSM;
+import edu.carleton.tim.jdsm.dependency.Dependency;
+import edu.carleton.tim.jdsm.dependency.DependencyDSM;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
+import org.jscience.mathematics.number.Real;
 import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
@@ -154,25 +159,61 @@ public class ParameterLinkRegistry {
         return dependencyModel;
     }
 
-    public NumericalDSM makeNumericalDSM(SystemModel systemModel) {
+    public DependencyDSM makeBinaryDSM(SystemModel systemModel) {
         final List<ModelNode> modelNodeList = getModelNodes(systemModel);
-
         final int matrixSize = modelNodeList.size();
-        NumericalDSM dsm = new NumericalDSM();
-
+        Map<String, Integer> clusterStartPositionMappings = new HashMap<>();
+        Map<String, Integer> clusterEndPositionMappings = new HashMap<>();
+        Map<String, Integer> namePositionMappings = new TreeMap<>();
+        Map<Integer, String> positionNameMappings = new TreeMap<>();
+        Dependency[][] map = new Dependency[matrixSize][matrixSize];
         for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
             ModelNode toVertex = modelNodeList.get(rowIndex);
-            dsm.addElementName(toVertex.getName());
+            namePositionMappings.put(toVertex.getName(), rowIndex);
+            positionNameMappings.put(rowIndex, toVertex.getName());
+            // DSM matrix is in form IC/FBD
+            // column index means the dependency source
+            for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
+                ModelNode fromVertex = modelNodeList.get(columnIndex);
+                if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
+                        dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0) {
+                    map[rowIndex][columnIndex] = Dependency.YES;
+                } else {
+                    map[rowIndex][columnIndex] = Dependency.NO;
+                }
+            }
+        }
+        return new DependencyDSM(clusterEndPositionMappings, clusterStartPositionMappings,
+                namePositionMappings, positionNameMappings, map);
+    }
+
+    public RealNumberDSM makeRealDSM(SystemModel systemModel) {
+        final List<ModelNode> modelNodeList = getModelNodes(systemModel);
+        final int matrixSize = modelNodeList.size();
+        Map<String, Integer> clusterEndPositionMappings = new HashMap<>();
+        Map<String, Integer> clusterStartPositionMappings = new HashMap<>();
+        Map<String, Integer> namePositionMappings = new HashMap<>();
+        Map<Integer, String> positionNameMappings = new HashMap<>();
+        Real[][] map = new Real[matrixSize][matrixSize];
+        for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
+            ModelNode toVertex = modelNodeList.get(rowIndex);
+
+            namePositionMappings.put(toVertex.getName(), rowIndex);
+            positionNameMappings.put(rowIndex, toVertex.getName());
+
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
                 if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
                         dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0) {
                     int linkCount = getLinkingParams(toVertex, fromVertex).size();
-                    dsm.addLink(rowIndex + 1, columnIndex + 1, linkCount);
+                    map[rowIndex][columnIndex] = Real.valueOf(linkCount);
+                } else {
+                    map[rowIndex][columnIndex] = Real.ZERO;
                 }
             }
         }
-        return dsm;
+        return new RealNumberDSM(clusterEndPositionMappings, clusterStartPositionMappings,
+                namePositionMappings, positionNameMappings, map);
     }
 
     public void registerAllParameters(SystemModel systemModel) {
@@ -322,16 +363,28 @@ public class ParameterLinkRegistry {
         } else { // if other node, consider all parameters of subnodes
             it = new ParameterTreeIterator(fromVertex);
         }
+        logger.debug("from: " + fromVertex.getName() + ", to: " + toVertex.getName());
         while (it.hasNext()) {
             ParameterModel pm = it.next();
             if (pm.getValueSource() == ParameterValueSource.LINK &&
                     pm.getValueLink() != null && pm.getValueLink().getParent() != null &&
                     pm.getValueLink().getParent().getUuid().equals(toVertex.getUuid())) {
+                logger.debug("\t" + pm.getNodePath() + " -> " + pm.getValueLink().getNodePath());
                 sources.add(pm);
             }
+            if (pm.getValueSource() == ParameterValueSource.CALCULATION && pm.getCalculation() != null) {
+                for (Argument argument : pm.getCalculation().getArguments()) {
+                    if (argument instanceof Argument.Parameter) {
+                        ParameterModel sourcePM = ((Argument.Parameter) argument).getLink();
+                        if (sourcePM != null && sourcePM.getParent() != null &&
+                                sourcePM.getParent().getUuid().equals(toVertex.getUuid())) {
+                            logger.debug("\t" + pm.getNodePath() + " -> " + sourcePM.getNodePath());
+                            sources.add(pm);
+                        }
+                    }
+                }
+            }
         }
-        logger.debug("from: " + fromVertex.getName() + ", to: " + toVertex.getName());
-        sources.forEach(parameterModel -> logger.debug("\t" + parameterModel.getNodePath() + " -> " + parameterModel.getValueLink().getNodePath()));
         return sources;
     }
 

@@ -39,7 +39,6 @@ public class Views {
     public static final URL DEPENDENCY_VIEW = Views.class.getResource("dependency.fxml");
     public static final URL CHANGE_HISTORY_ANALYSIS_VIEW = Views.class.getResource("analysis.fxml");
     public static final URL TRADESPACE_VIEW = Views.class.getResource("tradespace.fxml");
-    public static final URL FIGURES_OF_MERIT_EDITOR_VIEW = Views.class.getResource("figures-of-merit-editor.fxml");
     public static final URL IMPORT_TRADESPACE_FROM_CSV_VIEW = Views.class.getResource("import-tradespace-from-csv.fxml");
     public static final URL IMPORT_TRADESPACE_FROM_EXCEL_VIEW = Views.class.getResource("import-tradespace-from-excel.fxml");
     public static final URL TRADESPACE_SCATTER_PLOT_VIEW = Views.class.getResource("tradespace-scatter-plot.fxml");
@@ -50,8 +49,10 @@ public class Views {
     public static final URL USER_ROLE_MANAGEMENT_VIEW = Views.class.getResource("user-role-management.fxml");
     public static final URL UNIT_MANAGEMENT_VIEW = Views.class.getResource("unit-management.fxml");
     public static final URL UNIT_ADD_VIEW = Views.class.getResource("add-unit.fxml");
+    public static final URL QUANTITY_KIND_ADD_VIEW = Views.class.getResource("add-quantity-kind.fxml");
     public static final URL REVISION_HISTORY_VIEW = Views.class.getResource("revision-history.fxml");
     public static final URL PROJECT_SETTINGS_VIEW = Views.class.getResource("project-settings.fxml");
+    public static final URL USER_SETTINGS_VIEW = Views.class.getResource("user-settings.fxml");
     public static final URL REPOSITORY_SETTINGS_VIEW = Views.class.getResource("repository-settings.fxml");
     public static final URL UNIT_CHOOSE_VIEW = Views.class.getResource("unit-choose.fxml");
     public static final URL PARAMETER_SELECTOR_VIEW = Views.class.getResource("parameter-selector.fxml");

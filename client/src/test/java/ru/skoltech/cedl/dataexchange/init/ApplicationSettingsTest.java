@@ -54,7 +54,6 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
     private static final String DEFAULT_PROJECT_LAST_NAME = "default.project.last.name";
     private static final String DEFAULT_PROJECT_USE_OS_USER = "default.project.use.os.user";
     private static final String DEFAULT_PROJECT_USER_NAME = "default.project.user.name";
-    private static final String DEFAULT_PROJECT_IMPORT_NAME = "default.project.import.name";
     private static final String DEFAULT_STUDY_MODEL_DEPTH = "default.study.model.depth";
 
     private static final String REPOSITORY_JDBC_URL_PATTERN = "repository.jdbc.url.pattern";
@@ -100,7 +99,6 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
         assertThat(applicationSettings.getDefaultProjectLastName(), is(cedeskProps.getProperty(DEFAULT_PROJECT_LAST_NAME)));
         assertThat(applicationSettings.isDefaultProjectUseOsUser(), is(Boolean.valueOf(cedeskProps.getProperty(DEFAULT_PROJECT_USE_OS_USER))));
         assertThat(applicationSettings.getDefaultProjectUserName(), is(cedeskProps.getProperty(DEFAULT_PROJECT_USER_NAME)));
-        assertThat(applicationSettings.getDefaultProjectImportName(), is(cedeskProps.getProperty(DEFAULT_PROJECT_IMPORT_NAME)));
         assertThat(applicationSettings.getDefaultStudyModelDepth(), is(cedeskProps.getProperty(DEFAULT_STUDY_MODEL_DEPTH)));
         assertThat(applicationSettings.getRepositoryJdbcUrlPattern(), is(cedeskProps.getProperty(REPOSITORY_JDBC_URL_PATTERN)));
         assertThat(applicationSettings.getRepositorySchemaVersion(), is(cedeskProps.getProperty(REPOSITORY_SCHEMA_VERSION)));
@@ -173,7 +171,6 @@ public class ApplicationSettingsTest extends AbstractApplicationContextTest {
         assertThat(applicationSettings.getProjectLastName(), is(appSettingsProps.getProperty(PROJECT_LAST_NAME)));
         assertThat(applicationSettings.isProjectUseOsUser(), is(Boolean.valueOf(appSettingsProps.getProperty(PROJECT_USE_OS_USER))));
         assertThat(applicationSettings.getProjectUserName(), is(appSettingsProps.getProperty(PROJECT_USER_NAME)));
-        assertThat(applicationSettings.getProjectImportName(), is(appSettingsProps.getProperty(PROJECT_IMPORT_NAME)));
         assertThat(applicationSettings.getStudyModelDepth(), is(appSettingsProps.getProperty(STUDY_MODEL_DEPTH)));
     }
 }

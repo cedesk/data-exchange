@@ -552,7 +552,6 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
             applicationSettings.setProperty(PROJECT_LAST_NAME, projectLastName);
             applicationSettings.setProperty(PROJECT_USE_OS_USER, String.valueOf(projectUseOsUser));
             applicationSettings.setProperty(PROJECT_USER_NAME, projectUserName);
-            applicationSettings.setProperty(PROJECT_IMPORT_NAME, projectImportName);
             applicationSettings.setProperty(STUDY_MODEL_DEPTH, studyModelDepth);
 
             applicationSettings.store(fileWriter, cedeskAppFileComment);

@@ -18,7 +18,10 @@ package ru.skoltech.cedl.dataexchange.structure.model.diff;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
-import ru.skoltech.cedl.dataexchange.entity.*;
+import ru.skoltech.cedl.dataexchange.entity.ExternalModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
+import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
+import ru.skoltech.cedl.dataexchange.entity.PersistedEntity;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
@@ -139,15 +142,17 @@ public class ParameterDifference extends ModelDifference {
                 logger.error("relinking failed for value link of parameter:" + sink.getNodePath());
                 throw new MergeException("relinking value link of parameter failed for: " + sink.getNodePath());
             }
-        } else if (sink.getValueSource() == ParameterValueSource.REFERENCE && sink.getValueReference() != null) {
+        } else if (sink.getValueSource() == ParameterValueSource.REFERENCE &&
+                (sink.getImportModel() != null || sink.getImportField() != null)) {
             Map<String, ExternalModel> externalModelDictionary = sink.getParent().getExternalModels().stream()
                     .collect(Collectors.toMap(ExternalModel::getUuid, Function.identity()));
-            ExternalModelReference valueReference = sink.getValueReference();
-            String uuid = valueReference.getExternalModel().getUuid();
+            ExternalModel importModel = sink.getImportModel();
+            String importField = sink.getImportField();
+            String uuid = importModel.getUuid();
             if (externalModelDictionary.containsKey(uuid)) {
                 ExternalModel externalModel = externalModelDictionary.get(uuid);
-                valueReference.setExternalModel(externalModel);
-                sink.setValueReference(valueReference);
+                sink.setImportModel(externalModel);
+                sink.setImportField(importField);
             } else {
                 logger.error("relinking failed for import reference of parameter:" + sink.getNodePath());
                 throw new MergeException("relinking import reference of parameter failed for: " + sink.getNodePath());
@@ -170,15 +175,16 @@ public class ParameterDifference extends ModelDifference {
                 }
             }
         }
-        if (sink.getIsExported() && sink.getExportReference() != null) {
+        if (sink.getIsExported() && (sink.getExportModel() != null || sink.getExportField() != null)) {
             Map<String, ExternalModel> externalModelDictionary = sink.getParent().getExternalModels().stream()
                     .collect(Collectors.toMap(ExternalModel::getUuid, Function.identity()));
-            ExternalModelReference exportReference = sink.getExportReference();
-            String uuid = exportReference.getExternalModel().getUuid();
+            ExternalModel exportModel = sink.getExportModel();
+            String exportField = sink.getExportField();
+            String uuid = exportModel.getUuid();
             if (externalModelDictionary.containsKey(uuid)) {
                 ExternalModel externalModel = externalModelDictionary.get(uuid);
-                exportReference.setExternalModel(externalModel);
-                sink.setExportReference(exportReference);
+                sink.setExportModel(externalModel);
+                sink.setExportField(exportField);
             } else {
                 logger.error("relinking failed for export reference of parameter:" + sink.getNodePath());
                 throw new IllegalStateException("relinking export reference of parameter failed for: " + sink.getNodePath());
