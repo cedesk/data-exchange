@@ -31,7 +31,7 @@ import java.util.Properties;
  */
 public class ApplicationSettingsInitializer {
 
-    static final String DEFAULT_PROPERTY_PERIX = "default.";
+    static final String DEFAULT_PROPERTY_PREFIX = "default.";
 
     private static final String CEDESK_APP_DIR = "cedesk.app.dir";
     private static final String CEDESK_APP_FILE = "cedesk.app.file";
@@ -62,18 +62,18 @@ public class ApplicationSettingsInitializer {
 
         Properties applicationSettings = applicationSettings(applicationSettingsFile);
 
-        applicationSettings.putIfAbsent(APPLICATION_LANGUAGE, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + APPLICATION_LANGUAGE));
-        applicationSettings.putIfAbsent(REPOSITORY_HOST, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_HOST));
-        applicationSettings.putIfAbsent(REPOSITORY_SCHEMA_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_SCHEMA_NAME));
-        applicationSettings.putIfAbsent(REPOSITORY_SCHEMA_CREATE, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_SCHEMA_CREATE));
-        applicationSettings.putIfAbsent(REPOSITORY_USER, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_USER));
-        applicationSettings.putIfAbsent(REPOSITORY_PASSWORD, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_PASSWORD));
-        applicationSettings.putIfAbsent(REPOSITORY_WATCHER_AUTO_SYNC, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + REPOSITORY_WATCHER_AUTO_SYNC));
-        applicationSettings.putIfAbsent(PROJECT_LAST_AUTOLOAD, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + PROJECT_LAST_AUTOLOAD));
-        applicationSettings.putIfAbsent(PROJECT_LAST_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + PROJECT_LAST_NAME));
-        applicationSettings.putIfAbsent(PROJECT_USE_OS_USER, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + PROJECT_USE_OS_USER));
-        applicationSettings.putIfAbsent(PROJECT_USER_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + PROJECT_USER_NAME));
-        applicationSettings.putIfAbsent(STUDY_MODEL_DEPTH, cedeskProperties.getProperty(DEFAULT_PROPERTY_PERIX + STUDY_MODEL_DEPTH));
+        applicationSettings.putIfAbsent(APPLICATION_LANGUAGE, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + APPLICATION_LANGUAGE));
+        applicationSettings.putIfAbsent(REPOSITORY_HOST, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + REPOSITORY_HOST));
+        applicationSettings.putIfAbsent(REPOSITORY_SCHEMA_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + REPOSITORY_SCHEMA_NAME));
+        applicationSettings.putIfAbsent(REPOSITORY_SCHEMA_CREATE, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + REPOSITORY_SCHEMA_CREATE));
+        applicationSettings.putIfAbsent(REPOSITORY_USER, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + REPOSITORY_USER));
+        applicationSettings.putIfAbsent(REPOSITORY_PASSWORD, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + REPOSITORY_PASSWORD));
+        applicationSettings.putIfAbsent(REPOSITORY_WATCHER_AUTO_SYNC, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + REPOSITORY_WATCHER_AUTO_SYNC));
+        applicationSettings.putIfAbsent(PROJECT_LAST_AUTOLOAD, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + PROJECT_LAST_AUTOLOAD));
+        applicationSettings.putIfAbsent(PROJECT_LAST_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + PROJECT_LAST_NAME));
+        applicationSettings.putIfAbsent(PROJECT_USE_OS_USER, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + PROJECT_USE_OS_USER));
+        applicationSettings.putIfAbsent(PROJECT_USER_NAME, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + PROJECT_USER_NAME));
+        applicationSettings.putIfAbsent(STUDY_MODEL_DEPTH, cedeskProperties.getProperty(DEFAULT_PROPERTY_PREFIX + STUDY_MODEL_DEPTH));
 
         saveApplicationSettings(applicationSettingsFile, applicationSettings, cedeskProperties.getProperty(CEDESK_APP_FILE_COMMENT));
     }
