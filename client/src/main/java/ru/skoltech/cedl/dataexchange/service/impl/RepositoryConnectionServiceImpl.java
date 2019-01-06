@@ -18,10 +18,13 @@ package ru.skoltech.cedl.dataexchange.service.impl;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.repository.ConnectionVerifier;
 import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Nikolay Groshkov on 04-Aug-17.
@@ -38,7 +41,23 @@ public class RepositoryConnectionServiceImpl implements RepositoryConnectionServ
 
     @Override
     public boolean checkRepositoryConnection(String hostName, String schema, String userName, String password) {
+
+        boolean serverReachable = ConnectionVerifier.isServerReachable(hostName, 500);
+        if (serverReachable) {
+            logger.info("check server reachable (" + hostName + ") ... succeeded!");
+        } else {
+            logger.warn("check server reachable (" + hostName + ") ... failed!");
+            return false;
+        }
         String url = this.createRepositoryUrl(hostName, schema);
+        int port = getPort(url);
+        boolean serverListening = ConnectionVerifier.isServerListening(hostName, port, 500);
+        if (serverListening) {
+            logger.info("check server port listening (" + port + ") ... succeeded!");
+        } else {
+            logger.warn("check server port listening (" + port + ") ... failed!");
+            return false;
+        }
 
         logger.debug("repository url: " + url + ", user: " + userName);
         try {
@@ -49,7 +68,20 @@ public class RepositoryConnectionServiceImpl implements RepositoryConnectionServ
             logger.warn("check of database connection failed!");
             return false;
         }
+    }
 
+    private int getPort(String jdbcUrl) {
+        try {
+            String regex = ".*://(\\w*):(\\d++)/.*";
+            Pattern p = Pattern.compile(regex);
+            Matcher matcher = p.matcher(jdbcUrl);
+            if (matcher.find()) {
+                return Integer.valueOf(matcher.group(2));
+            }
+        } catch (Exception e) {
+            logger.warn("server URL is malformed", e);
+        }
+        return -1;
     }
 
     @Override
