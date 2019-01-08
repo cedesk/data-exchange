@@ -27,18 +27,26 @@ import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.Glyph;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.repository.ConnectionVerifier;
 import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
 
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
+
+import static org.controlsfx.glyphfont.FontAwesome.Glyph.CHECK_CIRCLE;
+import static org.controlsfx.glyphfont.FontAwesome.Glyph.MINUS_SQUARE;
 
 /**
  * Controller for repository settings view.
@@ -50,7 +58,9 @@ public class RepositorySettingsController implements Initializable, Displayable,
 
     private static Logger logger = Logger.getLogger(RepositorySettingsController.class);
     @FXML
-    public Text connectionTestText;
+    private Text connectionTestText;
+    @FXML
+    private Label hostStatus;
     @FXML
     private TextField repositoryHostTextField;
     @FXML
@@ -124,6 +134,7 @@ public class RepositorySettingsController implements Initializable, Displayable,
 
         repositoryHostTextField.setText(repositoryHost);
         repositoryHostTextField.textProperty().addListener(changeListener);
+        repositoryHostTextField.textProperty().addListener((observable, oldValue, newValue) -> updateHostStatus());
 
         repositoryUserTextField.setText(repositoryUser);
         repositoryUserTextField.textProperty().addListener(changeListener);
@@ -140,6 +151,7 @@ public class RepositorySettingsController implements Initializable, Displayable,
 
         saveButton.disableProperty().bind(Bindings.not(changed));
 
+        this.updateHostStatus();
         this.test();
         logger.info("initialized");
     }
@@ -182,6 +194,26 @@ public class RepositorySettingsController implements Initializable, Displayable,
         } else if (result.get() == noButton) {
             this.close();
         }
+    }
+
+    private void updateHostStatus() {
+        String newRepositoryHost = repositoryHostTextField.getText();
+        boolean isReachable = ConnectionVerifier.isServerReachable(newRepositoryHost, 500);
+        boolean isListening = ConnectionVerifier.isServerListening(newRepositoryHost, 3306, 500);
+        Glyph reachableIcon = isReachable ? getIcon(CHECK_CIRCLE, Color.GREEN, "Host is reachable") :
+                getIcon(MINUS_SQUARE, Color.RED, "Host is NOT reachable");
+        Glyph listeningIcon = isListening ? getIcon(CHECK_CIRCLE, Color.GREEN, "Host is listening") :
+                getIcon(MINUS_SQUARE, Color.RED, "Host is NOT listening");
+        HBox hBox = new HBox(reachableIcon, listeningIcon);
+        hBox.setSpacing(8);
+        hostStatus.setGraphic(hBox);
+    }
+
+    private Glyph getIcon(FontAwesome.Glyph symbol, Color color, String tooltipText) {
+        Glyph glyph = new Glyph("FontAwesome", symbol);
+        glyph.setColor(color);
+        glyph.setTooltip(new Tooltip(tooltipText));
+        return glyph;
     }
 
     public void test() {
