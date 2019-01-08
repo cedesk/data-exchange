@@ -6,35 +6,31 @@ CREATE OR REPLACE VIEW `modelnode` AS
     `name` AS node_name,
     id     AS sys_id,
     `name` AS sys_name
-  FROM
-    systemmodel
+  FROM SystemModel
   UNION SELECT
           su.id,
           su.`name` AS node_name,
           sy.id     AS sys_id,
           sy.`name` AS sys_name
-        FROM
-          (subsystemmodel su
-            JOIN systemmodel sy ON su.parent_id = sy.id)
+        FROM (SubSystemModel su
+               JOIN SystemModel sy ON su.parent_id = sy.id)
   UNION SELECT
           e1.id,
           e1.`name` AS node_name,
           sy.id     AS sys_id,
           sy.`name` AS sys_name
-        FROM
-          (elementmodel e1
-            JOIN systemmodel su1 ON e1.parent_id = su1.id
-            JOIN systemmodel sy ON su1.parent_id = sy.id)
+        FROM (ElementModel e1
+               JOIN SystemModel su1 ON e1.parent_id = su1.id
+               JOIN SystemModel sy ON su1.parent_id = sy.id)
   UNION SELECT
           i.id,
           i.`name`  AS node_name,
           sy.id     AS sys_id,
           sy.`name` AS sys_name
-        FROM
-          (instrumentmodel i
-            JOIN elementmodel e2 ON i.parent_id = e2.id
-            JOIN systemmodel su2 ON e2.parent_id = su2.id
-            JOIN systemmodel sy ON su2.parent_id = sy.id);
+        FROM (InstrumentModel i
+               JOIN ElementModel e2 ON i.parent_id = e2.id
+               JOIN SystemModel su2 ON e2.parent_id = su2.id
+               JOIN SystemModel sy ON su2.parent_id = sy.id);
 
 /* this ignores parameters which were associated to nodes that were deleted*/
 CREATE OR REPLACE VIEW `parameter_changes` AS
@@ -80,12 +76,11 @@ CREATE OR REPLACE VIEW `parameter_changes` AS
     mn.node_name,
     mn.sys_id,
     mn.sys_name
-  FROM
-    revchanges rc
+  FROM REVCHANGES rc
     JOIN
-    revinfo ri ON ri.id = rc.REV
+       REVINFO ri ON ri.id = rc.REV
     JOIN
-    parametermodel_aud pa ON ri.id = pa.REV
+       ParameterModel_AUD pa ON ri.id = pa.REV
     JOIN
     modelnode mn ON pa.parent_id = mn.id
   WHERE
@@ -110,5 +105,5 @@ CREATE OR REPLACE VIEW `overall_study_statistics` AS
   FROM
     parameter_changes
     JOIN
-    study ON study.systemModel_id = parameter_changes.sys_id
+    Study study ON study.systemModel_id = parameter_changes.sys_id
   GROUP BY sys_id, sys_name, study_id, study_name;
