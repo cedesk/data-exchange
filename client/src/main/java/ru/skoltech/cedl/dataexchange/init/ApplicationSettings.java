@@ -254,12 +254,20 @@ public interface ApplicationSettings {
     String getDefaultStudyModelDepth();
 
     /**
-     * Retrieve repository JDBC url pattern (with according places host and schema name replacements).
+     * Retrieve repository JDBC url pattern (with according places host, port and schema name replacements).
      * It is base (stored in <i>cedesk.properties</i>) property.
      *
      * @return pattern of repository JDBC url
      */
     String getRepositoryJdbcUrlPattern();
+
+    /**
+     * Retrieve repository server port.
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return server port number
+     */
+    Integer getRepositoryServerPort();
 
     /**
      * Retrieve current repository schema version.

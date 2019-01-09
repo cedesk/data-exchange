@@ -56,6 +56,7 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
     private String defaultProjectImportName;
     private String defaultStudyModelDepth;
     private String repositoryJdbcUrlPattern;
+    private Integer repositoryServerPort;
     private String repositorySchemaVersion;
 
     private String applicationLanguage;
@@ -267,6 +268,15 @@ public class ApplicationSettingsImpl implements ApplicationSettings {
 
     public void setRepositoryJdbcUrlPattern(String repositoryJdbcUrlPattern) {
         this.repositoryJdbcUrlPattern = repositoryJdbcUrlPattern;
+    }
+
+    @Override
+    public Integer getRepositoryServerPort() {
+        return repositoryServerPort;
+    }
+
+    public void setRepositoryServerPort(Integer repositoryServerPort) {
+        this.repositoryServerPort = repositoryServerPort;
     }
 
     @Override
