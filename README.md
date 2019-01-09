@@ -10,6 +10,7 @@ On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
 ## Release History and Notes
 
+* 2019-01-09 - Version 1.40.1 (fixed repository check)
 * 2019-01-09 - Version 1.40   (Added MySQL 8 compatibility, improved repository settings,)
 * 2018-03-05 - Version 1.39   (DSM sequencing algorithm, bug fixing)
 * 2018-02-22 - Version 1.38.2 (stability and usability improvements)
