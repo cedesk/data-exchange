@@ -199,7 +199,8 @@ public class RepositorySettingsController implements Initializable, Displayable,
     private void updateHostStatus() {
         String newRepositoryHost = repositoryHostTextField.getText();
         boolean isReachable = ConnectionVerifier.isServerReachable(newRepositoryHost, 500);
-        boolean isListening = ConnectionVerifier.isServerListening(newRepositoryHost, 3306, 500);
+        boolean isListening = ConnectionVerifier.isServerListening(newRepositoryHost,
+                applicationSettings.getRepositoryServerPort(), 500);
         Glyph reachableIcon = isReachable ? getIcon(CHECK_CIRCLE, Color.GREEN, "Host is reachable") :
                 getIcon(MINUS_SQUARE, Color.RED, "Host is NOT reachable");
         Glyph listeningIcon = isListening ? getIcon(CHECK_CIRCLE, Color.GREEN, "Host is listening") :

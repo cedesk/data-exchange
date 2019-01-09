@@ -51,6 +51,7 @@
         <property name="defaultProjectUserName" value="${default.project.user.name}"/>
         <property name="defaultStudyModelDepth" value="${study.model.depth}"/>
         <property name="repositoryJdbcUrlPattern" value="${repository.jdbc.url.pattern}"/>
+        <property name="repositoryServerPort" value="${repository.server.port}"/>
         <property name="repositorySchemaVersion" value="${repository.schema.version}"/>
 
         <property name="applicationLanguage" value="${application.language}"/>

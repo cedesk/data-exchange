@@ -23,8 +23,6 @@ import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by Nikolay Groshkov on 04-Aug-17.
@@ -50,12 +48,12 @@ public class RepositoryConnectionServiceImpl implements RepositoryConnectionServ
             return false;
         }
         String url = this.createRepositoryUrl(hostName, schema);
-        int port = getPort(url);
-        boolean serverListening = ConnectionVerifier.isServerListening(hostName, port, 500);
+        int serverPort = applicationSettings.getRepositoryServerPort();
+        boolean serverListening = ConnectionVerifier.isServerListening(hostName, serverPort, 500);
         if (serverListening) {
-            logger.info("check server port listening (" + port + ") ... succeeded!");
+            logger.info("check server port listening (" + serverPort + ") ... succeeded!");
         } else {
-            logger.warn("check server port listening (" + port + ") ... failed!");
+            logger.warn("check server port listening (" + serverPort + ") ... failed!");
             return false;
         }
 
@@ -70,24 +68,11 @@ public class RepositoryConnectionServiceImpl implements RepositoryConnectionServ
         }
     }
 
-    private int getPort(String jdbcUrl) {
-        try {
-            String regex = ".*://(\\w*):(\\d++)/.*";
-            Pattern p = Pattern.compile(regex);
-            Matcher matcher = p.matcher(jdbcUrl);
-            if (matcher.find()) {
-                return Integer.valueOf(matcher.group(2));
-            }
-        } catch (Exception e) {
-            logger.warn("server URL is malformed", e);
-        }
-        return -1;
-    }
-
     @Override
     public String createRepositoryUrl(String repositoryHost, String repositorySchemaName) {
         String defaultJdbcUrlPattern = applicationSettings.getRepositoryJdbcUrlPattern();
-        return String.format(defaultJdbcUrlPattern, repositoryHost, repositorySchemaName);
+        Integer serverPort = applicationSettings.getRepositoryServerPort();
+        return String.format(defaultJdbcUrlPattern, repositoryHost, serverPort, repositorySchemaName);
     }
 
     @Override
