@@ -178,8 +178,8 @@ public class ParameterLinkRegistry {
             // column index means the dependency source
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
-                if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
-                        dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0) {
+                Set<ModelDependency> edges = dependencyGraph.getAllEdges(fromVertex, toVertex);
+                if (edges != null && edges.size() > 0) {
                     map[rowIndex][columnIndex] = Dependency.YES;
                 } else {
                     map[rowIndex][columnIndex] = Dependency.NO;
@@ -209,9 +209,9 @@ public class ParameterLinkRegistry {
             // column index means the dependency source
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
-                if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
-                        dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0) {
-                    int linkCount = getLinkingParams(toVertex, fromVertex).size();
+                Set<ModelDependency> edges = dependencyGraph.getAllEdges(fromVertex, toVertex);
+                if (edges != null && edges.size() > 0) {
+                    int linkCount = getLinkingParams(fromVertex, toVertex).size();
                     map[rowIndex][columnIndex] = Real.valueOf(linkCount);
                 } else {
                     map[rowIndex][columnIndex] = Real.ZERO;
