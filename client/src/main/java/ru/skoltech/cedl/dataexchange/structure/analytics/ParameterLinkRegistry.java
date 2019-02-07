@@ -160,10 +160,13 @@ public class ParameterLinkRegistry {
     }
 
     public DependencyDSM makeBinaryDSM(SystemModel systemModel) {
+        return makeBinaryDSM(systemModel, Comparator.comparingInt(ModelNode::getPosition));
+    }
+
+    public DependencyDSM makeBinaryDSM(SystemModel systemModel, Comparator<ModelNode> comparator) {
         final List<ModelNode> modelNodeList = getModelNodes(systemModel);
+        modelNodeList.sort(comparator);
         final int matrixSize = modelNodeList.size();
-        Map<String, Integer> clusterStartPositionMappings = new HashMap<>();
-        Map<String, Integer> clusterEndPositionMappings = new HashMap<>();
         Map<String, Integer> namePositionMappings = new TreeMap<>();
         Map<Integer, String> positionNameMappings = new TreeMap<>();
         Dependency[][] map = new Dependency[matrixSize][matrixSize];
@@ -183,24 +186,27 @@ public class ParameterLinkRegistry {
                 }
             }
         }
-        return new DependencyDSM(clusterEndPositionMappings, clusterStartPositionMappings,
+        return new DependencyDSM(new HashMap<>(), new HashMap<>(),
                 namePositionMappings, positionNameMappings, map);
     }
 
     public RealNumberDSM makeRealDSM(SystemModel systemModel) {
+        return makeRealDSM(systemModel, Comparator.comparingInt(ModelNode::getPosition));
+    }
+
+    public RealNumberDSM makeRealDSM(SystemModel systemModel, Comparator<ModelNode> comparator) {
         final List<ModelNode> modelNodeList = getModelNodes(systemModel);
+        modelNodeList.sort(comparator);
         final int matrixSize = modelNodeList.size();
-        Map<String, Integer> clusterEndPositionMappings = new HashMap<>();
-        Map<String, Integer> clusterStartPositionMappings = new HashMap<>();
         Map<String, Integer> namePositionMappings = new HashMap<>();
         Map<Integer, String> positionNameMappings = new HashMap<>();
         Real[][] map = new Real[matrixSize][matrixSize];
         for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
             ModelNode toVertex = modelNodeList.get(rowIndex);
-
             namePositionMappings.put(toVertex.getName(), rowIndex);
             positionNameMappings.put(rowIndex, toVertex.getName());
-
+            // DSM matrix is in form IC/FBD
+            // column index means the dependency source
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
                 if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
@@ -212,7 +218,7 @@ public class ParameterLinkRegistry {
                 }
             }
         }
-        return new RealNumberDSM(clusterEndPositionMappings, clusterStartPositionMappings,
+        return new RealNumberDSM(new HashMap<>(), new HashMap<>(),
                 namePositionMappings, positionNameMappings, map);
     }
 

@@ -65,6 +65,14 @@
                     <Glyph fontFamily="FontAwesome" icon="FILE_CODE_ALT"/>
                 </graphic>
             </Button>
+            <Button minWidth="28" mnemonicParsing="false" onAction="#generateMatrix">
+                <tooltip>
+                    <Tooltip text="Copy the numerical DSM into the system clipboard"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="TABLE"/>
+                </graphic>
+            </Button>
         </ToolBar>
     </top>
     <center>

@@ -75,9 +75,7 @@ public class DsmView extends AnchorPane implements Initializable {
         reset();
         dependencyModel.elementStream()
                 .sorted(DependencyModel.Element.POSITION_COMPARATOR)
-                .forEach(element -> {
-                    addElement(element.getName());
-                });
+                .forEach(element -> addElement(element.getName()));
 
         dependencyModel.connectionStream().forEach(conn -> {
             EnumSet<ConnectionState> states = getStates(conn.getLinkingParameters());

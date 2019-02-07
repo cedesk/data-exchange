@@ -38,6 +38,7 @@ import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.structure.analytics.DependencyModel;
 import ru.skoltech.cedl.dataexchange.structure.analytics.MatlabCodeGenerator;
 import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
+import ru.skoltech.cedl.dataexchange.structure.analytics.TableGenerator;
 import ru.skoltech.cedl.dataexchange.ui.control.DsmView;
 
 import java.net.URL;
@@ -86,6 +87,14 @@ public class DsmController implements Initializable {
         guiService.copyTextToClipboard(code);
     }
 
+    public void generateMatrix() {
+        boolean weighted = weightingChoice.getValue() == Weighting.PARAMETER_COUNT;
+        final SystemModel systemModel = project.getSystemModel();
+        RealNumberDSM dsm = parameterLinkRegistry.makeRealDSM(systemModel);
+        String code = TableGenerator.transformDSM(dsm, weighted);
+        guiService.copyTextToClipboard(code);
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         weightingChoice.setConverter(new StringConverter<Weighting>() {
@@ -126,7 +135,7 @@ public class DsmController implements Initializable {
         ClusteredCost.ClusteredCostResult clusteredCostResult =
                 ClusteredCost.computeClusteredCost(dsm, 0.5d);
         DesignStructureMatrix<Dependency> optimizedDsm = clusteredCostResult.getDsm();
-        String buses = clusteredCostResult.getVerticalBusses().stream().collect(Collectors.joining(","));
+        String buses = String.join(",", clusteredCostResult.getVerticalBusses());
         sequencingOutputText.setText("cost: " + clusteredCostResult.getClusteredCost() + "; buses: " + buses);
 
         // updated ordering of nodes
