@@ -20,7 +20,10 @@ import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,14 +45,6 @@ public class DependencyModel {
     public Stream<Element> elementStream() {
         return elements.entrySet().stream()
                 .map(Map.Entry::getValue);
-    }
-
-    public Connection getConnection(Element fromEl, Element toEl) {
-        Collection<Connection> froms = new ArrayList<>(fromConnections.get(fromEl));
-        Collection<Connection> tos = toConnections.get(toEl);
-        froms.retainAll(tos);
-        Connection[] connection = froms.toArray(new Connection[1]);
-        return connection.length == 1 ? connection[0] : null;
     }
 
     public int getOutgoingConnections(Element element) {
