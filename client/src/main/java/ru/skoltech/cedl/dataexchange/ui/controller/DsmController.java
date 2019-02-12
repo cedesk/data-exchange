@@ -91,8 +91,8 @@ public class DsmController implements Initializable {
         boolean weighted = weightingChoice.getValue() == Weighting.PARAMETER_COUNT;
         final SystemModel systemModel = project.getSystemModel();
         RealNumberDSM dsm = parameterLinkRegistry.makeRealDSM(systemModel);
-        String code = TableGenerator.transformDSM(dsm, weighted);
-        guiService.copyTextToClipboard(code);
+        String table = TableGenerator.transformDSM(dsm, weighted);
+        guiService.copyTextToClipboard(table);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class DsmController implements Initializable {
         Map<String, Integer> originalOrder = dsm.getNamePositionMappings();
         logger.info("Original positions");
         // logging order
-        originalOrder.forEach((name1, position1) -> logger.info(name1 + ": " + position1));
+        originalOrder.keySet().stream().sorted().forEach(name -> logger.info(name + ": " + originalOrder.get(name)));
 
         long bestClusteredCost = Long.MAX_VALUE;
         DesignStructureMatrix<Dependency> optimalDsm = null;
@@ -151,7 +151,7 @@ public class DsmController implements Initializable {
         Map<String, Integer> optimizedOrder = optimalDsm.getNamePositionMappings();
         logger.info("Optimized positions");
         // logging order
-        optimizedOrder.forEach((name, position) -> logger.info(name + ": " + position));
+        optimizedOrder.keySet().stream().sorted().forEach(name -> logger.info(name + ": " + optimizedOrder.get(name)));
 
         Comparator<ModelNode> assignedPositionComparator =
                 Comparator.comparingInt(modelNode -> optimizedOrder.get(modelNode.getName()));

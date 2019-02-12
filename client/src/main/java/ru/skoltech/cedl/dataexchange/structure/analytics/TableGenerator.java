@@ -37,7 +37,7 @@ public class TableGenerator {
         int matrixSize = dsm.getPositionNameMappings().size();
         StringBuilder sb = new StringBuilder();
         Map<Integer, String> positionNameMapping = dsm.getPositionNameMappings();
-        sb.append('\t'); // empty cell
+        sb.append('\t'); // empty corner cell
         for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
             sb.append(positionNameMapping.get(rowIndex));
             sb.append('\t');
