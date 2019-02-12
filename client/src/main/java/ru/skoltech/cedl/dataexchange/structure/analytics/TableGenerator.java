@@ -52,8 +52,8 @@ public class TableGenerator {
                 if (intValue > 0) {
                     int weight = weighted ? intValue : 1;
                     sb.append(weight);
-                    sb.append('\t');
                 }
+                sb.append('\t');
             }
             sb.append('\n');
         }
