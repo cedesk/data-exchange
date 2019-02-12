@@ -276,6 +276,13 @@ public class Project {
     }
 
     public void storeStudy() throws RepositoryException {
+        Pair<Integer, Date> latestRevision = studyService.findLatestRevision(this.study.getId());
+        if(latestRevision != null) {
+            Date saveDate = latestRevision.getRight();
+            LocalTime startTime = LocalTime.now();
+            warnIfPastTimeIsNegative(saveDate, startTime);
+        }
+
         Triple<Study, Integer, Date> revision = studyService.saveStudy(this.study);
         Study newStudy = revision.getLeft();
         Integer revisionNumber = revision.getMiddle();
@@ -297,6 +304,16 @@ public class Project {
         }
 
         this.updateValueReferences(systemModel);
+    }
+
+    private void warnIfPastTimeIsNegative(Date saveDate, LocalTime startTime) {
+        long millisSinceSave = saveDate.toInstant().until(startTime, ChronoUnit.MILLIS);
+        if(millisSinceSave < 0) {
+            logger.error("CLIENT CLOCKS OUT OF SYNC: the last save in the repository (" +
+                    Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(saveDate) + ") is " + (-millisSinceSave)
+                    + "ms ahead of local time (" +
+                    Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(startTime) + ").");
+        }
     }
 
     public Future<List<ModelDifference>> loadRepositoryStudy() {
@@ -349,15 +366,17 @@ public class Project {
             logger.info("Checked repository study (" + checkDuration + "ms), study is not saved.");
             return;
         }
+        Date saveDate = latestRevision.getRight();
         logger.info("Checked repository study (" + checkDuration + "ms), " +
                 "last revision number: " + latestRevision.getLeft() + ", " +
-                "date : " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(latestRevision.getRight()));
+                "date : " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(saveDate));
+
+        warnIfPastTimeIsNegative(saveDate, startTime);
 
         int newLatestRevisionNumber = latestRevision.getLeft() != null ? latestRevision.getLeft() : 0;
-        if (this.latestRevisionNumber.get() >= newLatestRevisionNumber) {
-            return;
+        if (newLatestRevisionNumber > this.latestRevisionNumber.get()) {
+            this.loadRepositoryStudy();
         }
-        this.loadRepositoryStudy();
     }
 
     public void deleteStudy(String studyName) {
