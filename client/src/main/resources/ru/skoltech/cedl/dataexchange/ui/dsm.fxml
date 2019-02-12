@@ -76,7 +76,7 @@
         </ToolBar>
     </top>
     <center>
-        <ScrollPane minHeight="400">
+        <ScrollPane prefHeight="600" prefWidth="600">
             <DsmView fx:id="dsmView"/>
         </ScrollPane>
     </center>

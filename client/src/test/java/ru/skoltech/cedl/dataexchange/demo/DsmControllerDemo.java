@@ -21,20 +21,27 @@ package ru.skoltech.cedl.dataexchange.demo;
  */
 
 import javafx.application.Application;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.commons.io.FilenameUtils;
 import ru.skoltech.cedl.dataexchange.StaticSystemBuilder;
+import ru.skoltech.cedl.dataexchange.entity.Study;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.init.AbstractApplicationContextDemo;
+import ru.skoltech.cedl.dataexchange.service.FileStorageService;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
 import ru.skoltech.cedl.dataexchange.service.ViewBuilder;
 import ru.skoltech.cedl.dataexchange.structure.Project;
-import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.ui.Views;
+
+import java.io.File;
+import java.io.IOException;
 
 public class DsmControllerDemo extends AbstractApplicationContextDemo {
 
+    private static String[] launchArguments;
+
     public static void main(String[] args) {
+        launchArguments = args;
         Application.launch(args);
     }
 
@@ -42,9 +49,24 @@ public class DsmControllerDemo extends AbstractApplicationContextDemo {
     public void demo(Stage stage) {
 
         Project project = context.getBean(Project.class);
+        FileStorageService fileStorageService = context.getBean(FileStorageService.class);
 
-        SystemModel systemModel = StaticSystemBuilder.makeCarWith4Subsystems();
-        project.importSystemModel(systemModel);
+        SystemModel systemModel = null;
+        if (launchArguments.length == 1) {
+            File importFile = new File(launchArguments[0]);
+            String fileExtension = FilenameUtils.getExtension(importFile.getName());
+            Study study = null;
+            try {
+                study = fileStorageService.importStudyFromZip(importFile);
+                project.importStudy(study);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+        } else {
+            systemModel = StaticSystemBuilder.makeCarWith4Subsystems();
+            project.importSystemModel(systemModel);
+        }
 
         GuiService guiService = context.getBean(GuiService.class);
         ViewBuilder viewBuilder = guiService.createViewBuilder("DSM Demo", Views.DSM_VIEW);

@@ -88,10 +88,10 @@ public class DsmController implements Initializable {
     }
 
     public void generateMatrix() {
-        boolean weighted = weightingChoice.getValue() == Weighting.PARAMETER_COUNT;
+        //boolean weighted = weightingChoice.getValue() == Weighting.PARAMETER_COUNT;
         final SystemModel systemModel = project.getSystemModel();
         RealNumberDSM dsm = parameterLinkRegistry.makeRealDSM(systemModel);
-        String table = TableGenerator.transformDSM(dsm, weighted);
+        String table = TableGenerator.transformDSM(dsm, true);
         guiService.copyTextToClipboard(table);
     }
 
