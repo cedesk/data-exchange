@@ -47,15 +47,10 @@ public class ParameterLinkRegistry {
     private Logger logger = Logger.getLogger(ParameterLinkRegistry.class);
 
     private Project project;
-    private ActionLogger actionLogger;
 
     private Map<String, Set<String>> valueLinks = new HashMap<>();
 
     private DependencyGraph dependencyGraph = new DependencyGraph();
-
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
-    }
 
     public void setProject(Project project) {
         this.project = project;
@@ -318,8 +313,6 @@ public class ParameterLinkRegistry {
                             sink.setValue(sourceEffectiveValue);
                             logger.info("updated sink '" + sink.getNodePath() + "' from source '" + source.getNodePath()
                                     + "' [value: " + sinkValue + " -> " + sourceEffectiveValue + "]");
-                            actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_LINK, sink.getNodePath()
-                                    + " [value: " + sinkValue + " -> " + sourceEffectiveValue + "]");
                         }
                         // propagate only if actual change to unit
                         Unit sinkUnit = sink.getUnit();
@@ -330,8 +323,6 @@ public class ParameterLinkRegistry {
                             String sourceUnitText = sourceUnit != null ? sourceUnit.asText() : null;
                             logger.info("updated sink '" + sink.getNodePath() + "' from source '" + source.getNodePath()
                                     + "' [unit: " + sinkUnitText + " -> " + sourceUnitText + "]");
-                            actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_LINK, sink.getNodePath()
-                                    + " [unit: " + sinkUnitText + " -> " + sourceUnitText + "]");
                         }
                         // TODO: notify UI ?]
                     } else {

@@ -63,7 +63,6 @@
 
     <bean id="parameterLinkRegistry" class="ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry">
         <property name="project" ref="project"/>
-        <property name="actionLogger" ref="actionLogger"/>
     </bean>
 
     <bean id="externalModelFileWatcher" class="ru.skoltech.cedl.dataexchange.external.ExternalModelFileWatcher">
