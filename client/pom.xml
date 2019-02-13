@@ -20,7 +20,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.skoltech.cedl</groupId>
     <artifactId>dataexchange-client</artifactId>
-    <version>1.40-snapshot</version>
+    <version>1.42-snapshot</version>
     <properties>
         <jar.final.name>cedesk-client</jar.final.name>
         <main.class>ru.skoltech.cedl.dataexchange.ClientApplication</main.class>
@@ -29,6 +29,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm'GMT'</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <db.schema.version>1.36</db.schema.version>
+        <jdsm.version>1.2</jdsm.version>
     </properties>
     <dependencies>
         <dependency>
@@ -168,7 +169,7 @@
         <dependency>
             <groupId>jDSM</groupId>
             <artifactId>jDSM</artifactId>
-            <version>1.1</version>
+            <version>${jdsm.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jscience</groupId>
@@ -211,11 +212,11 @@
                         <id>install-external</id>
                         <phase>clean</phase>
                         <configuration>
-                            <file>${project.basedir}/lib/jDSM-1.1.jar</file>
+                            <file>${project.basedir}/lib/jDSM-${jdsm.version}.jar</file>
                             <repositoryLayout>default</repositoryLayout>
                             <groupId>jDSM</groupId>
                             <artifactId>jDSM</artifactId>
-                            <version>1.1</version>
+                            <version>${jdsm.version}</version>
                             <packaging>jar</packaging>
                             <generatePom>true</generatePom>
                         </configuration>

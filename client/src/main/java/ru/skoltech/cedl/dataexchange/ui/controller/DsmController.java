@@ -67,6 +67,8 @@ public class DsmController implements Initializable {
     private GuiService guiService;
     private ParameterLinkRegistry parameterLinkRegistry;
 
+    private Comparator<ModelNode> currentNodeOrdering;
+
     public void setGuiService(GuiService guiService) {
         this.guiService = guiService;
     }
@@ -82,16 +84,16 @@ public class DsmController implements Initializable {
     public void generateCode() {
         boolean weighted = weightingChoice.getValue() == Weighting.PARAMETER_COUNT;
         final SystemModel systemModel = project.getSystemModel();
-        RealNumberDSM dsm = parameterLinkRegistry.makeRealDSM(systemModel);
+        RealNumberDSM dsm = parameterLinkRegistry.makeRealDSM(systemModel, currentNodeOrdering);
         String code = MatlabCodeGenerator.transformDSM(dsm, weighted);
         guiService.copyTextToClipboard(code);
     }
 
     public void generateMatrix() {
-        //boolean weighted = weightingChoice.getValue() == Weighting.PARAMETER_COUNT;
+        boolean weighted = weightingChoice.getValue() == Weighting.PARAMETER_COUNT;
         final SystemModel systemModel = project.getSystemModel();
-        RealNumberDSM dsm = parameterLinkRegistry.makeRealDSM(systemModel);
-        String table = TableGenerator.transformDSM(dsm, true);
+        RealNumberDSM dsm = parameterLinkRegistry.makeRealDSM(systemModel, currentNodeOrdering);
+        String table = TableGenerator.transformDSM(dsm, weighted);
         guiService.copyTextToClipboard(table);
     }
 
@@ -116,63 +118,72 @@ public class DsmController implements Initializable {
     }
 
     public void refreshView() {
-        SystemModel systemModel = project.getSystemModel();
-        DependencyModel dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
-
-        dsmView.setModel(dependencyModel);
-        highlightOwnedElements(systemModel);
+        currentNodeOrdering = Comparator.comparingInt(ModelNode::getPosition);
+        updateDsmView(null);
     }
 
     public void runDsmSequencing() {
         final SystemModel systemModel = project.getSystemModel();
-        DependencyDSM dsm = parameterLinkRegistry.makeBinaryDSM(systemModel);
+        DependencyDSM dsm = parameterLinkRegistry.makeBinaryDSM(systemModel, Comparator.comparingInt(ModelNode::getPosition));
+        String busName = systemModel.getName();
+        {
+            // change matrix to comply with clustering algorithm
+            dsm = (DependencyDSM) dsm.transpose();
+            // move the bus (system model) to the end
+            int size = dsm.getNamePositionMappings().size();
+            dsm.swap(0, size - 1);
+        }
         Map<String, Integer> originalOrder = dsm.getNamePositionMappings();
-        logger.info("Original positions");
-        // logging order
-        originalOrder.keySet().stream().sorted().forEach(name -> logger.info(name + ": " + originalOrder.get(name)));
+        logPositions("Original positions", originalOrder);
 
+        // repeat clustering 10 times to avoid local minimum, due to stochastic nature of algorithm
         long bestClusteredCost = Long.MAX_VALUE;
         DesignStructureMatrix<Dependency> optimalDsm = null;
-        String buses = "";
         for (int i = 0; i < 10; i++) {
             //Compute clustered cost
-            ClusteredCost.ClusteredCostResult clusteredCostResult =
-                    ClusteredCost.computeClusteredCost(dsm, 0.5d);
+            ClusteredCost.ClusteredCostResult clusteredCostResult = ClusteredCost.computeClusteredCost(dsm, busName);
             DesignStructureMatrix<Dependency> optimizedDsm = clusteredCostResult.getDsm();
             if (bestClusteredCost > clusteredCostResult.getClusteredCost()) {
                 bestClusteredCost = clusteredCostResult.getClusteredCost();
                 optimalDsm = optimizedDsm;
-                buses = String.join(",", clusteredCostResult.getVerticalBusses());
             }
         }
-        sequencingOutputText.setText("cost: " + bestClusteredCost + "; buses: " + buses);
+        sequencingOutputText.setText("cost: " + bestClusteredCost + "; bus: " + busName);
 
         // updated ordering of nodes
-        Map<String, Integer> optimizedOrder = optimalDsm.getNamePositionMappings();
-        logger.info("Optimized positions");
-        // logging order
-        optimizedOrder.keySet().stream().sorted().forEach(name -> logger.info(name + ": " + optimizedOrder.get(name)));
+        Map<String, Integer> optimizedPositions = optimalDsm.getNamePositionMappings();
+        logPositions("Optimized positions", optimizedPositions);
 
-        Comparator<ModelNode> assignedPositionComparator =
-                Comparator.comparingInt(modelNode -> optimizedOrder.get(modelNode.getName()));
-        systemModel.getSubNodes().sort(assignedPositionComparator);
+        currentNodeOrdering = Comparator.comparingInt(modelNode -> optimizedPositions.get(modelNode.getName()));
+        updateDsmView(optimalDsm);
 
-        DependencyModel dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
+    }
+
+    private void updateDsmView(DesignStructureMatrix<Dependency> optimalDsm) {
+        SystemModel systemModel = project.getSystemModel();
+        DependencyModel dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel, currentNodeOrdering);
         dsmView.setModel(dependencyModel);
         highlightOwnedElements(systemModel);
 
-        logger.info("Optimized clusters");
-        // logging clusters
-        List<Pair<Integer, Integer>> clusters = extractClusters(optimalDsm);
-        String clustersPositionsAsText = clusters.stream().map(cl ->
-                String.format("%d-%d", cl.getKey(), cl.getValue())).collect(Collectors.joining(", "));
-        logger.info("clusters (" + clusters.size() + ") " + clustersPositionsAsText);
-        for (Pair<Integer, Integer> cl : clusters) {
-            String fromElementName = optimalDsm.getPositionNameMappings().get(cl.getKey());
-            String toElementName = optimalDsm.getPositionNameMappings().get(cl.getValue());
-            logger.info("cluster: <" + fromElementName + "," + toElementName + ">");
-            dsmView.addCluster(fromElementName, toElementName);
+        // displaying clusters
+        if (optimalDsm != null) {
+            List<Pair<Integer, Integer>> clusters = extractClusters(optimalDsm);
+            String clustersPositionsAsText = clusters.stream().map(cl ->
+                    String.format("%d-%d", cl.getKey(), cl.getValue())).collect(Collectors.joining(", "));
+            logger.info("clusters (" + clusters.size() + ") " + clustersPositionsAsText);
+            for (Pair<Integer, Integer> cl : clusters) {
+                String fromElementName = optimalDsm.getPositionNameMappings().get(cl.getKey());
+                String toElementName = optimalDsm.getPositionNameMappings().get(cl.getValue());
+                logger.info("cluster: <" + fromElementName + "," + toElementName + ">");
+                dsmView.addCluster(fromElementName, toElementName);
+            }
         }
+    }
+
+    private void logPositions(String s, Map<String, Integer> namePositionMap) {
+        logger.info(s);
+        namePositionMap.keySet().stream().sorted().forEach(
+                name -> logger.info("\t" + name + ": " + namePositionMap.get(name)));
     }
 
     private List<Pair<Integer, Integer>> extractClusters(DesignStructureMatrix<Dependency> dsm) {

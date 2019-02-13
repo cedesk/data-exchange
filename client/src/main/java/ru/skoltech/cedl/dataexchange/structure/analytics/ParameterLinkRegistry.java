@@ -29,10 +29,8 @@ import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.*;
@@ -54,14 +52,6 @@ public class ParameterLinkRegistry {
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    private static List<ModelNode> getModelNodes(SystemModel systemModel) {
-        final List<SubSystemModel> subNodes = systemModel.getSubNodes();
-        final List<ModelNode> modelNodeList = new ArrayList<>(subNodes.size() + 1);
-        modelNodeList.add(systemModel);
-        modelNodeList.addAll(subNodes);
-        return modelNodeList;
     }
 
     public void addLink(ParameterModel source, ParameterModel sink) {
@@ -135,9 +125,9 @@ public class ParameterLinkRegistry {
         return "";
     }
 
-    public DependencyModel makeDependencyModel(SystemModel rootNode) {
+    public DependencyModel makeDependencyModel(SystemModel systemModel, Comparator<ModelNode> comparator) {
+        final List<ModelNode> modelNodeList = systemModel.getRootAndSubsystems(comparator);
         DependencyModel dependencyModel = new DependencyModel();
-        List<ModelNode> modelNodeList = getModelNodes(rootNode);
         modelNodeList.forEach(modelNode -> dependencyModel.addElement(modelNode.getName()));
 
         for (ModelNode fromVertex : modelNodeList) {
@@ -154,13 +144,8 @@ public class ParameterLinkRegistry {
         return dependencyModel;
     }
 
-    public DependencyDSM makeBinaryDSM(SystemModel systemModel) {
-        return makeBinaryDSM(systemModel, Comparator.comparingInt(ModelNode::getPosition));
-    }
-
     public DependencyDSM makeBinaryDSM(SystemModel systemModel, Comparator<ModelNode> comparator) {
-        final List<ModelNode> modelNodeList = getModelNodes(systemModel);
-        modelNodeList.sort(comparator);
+        final List<ModelNode> modelNodeList = systemModel.getRootAndSubsystems(comparator);
         final int matrixSize = modelNodeList.size();
         Map<String, Integer> namePositionMappings = new TreeMap<>();
         Map<Integer, String> positionNameMappings = new TreeMap<>();
@@ -185,13 +170,8 @@ public class ParameterLinkRegistry {
                 namePositionMappings, positionNameMappings, map);
     }
 
-    public RealNumberDSM makeRealDSM(SystemModel systemModel) {
-        return makeRealDSM(systemModel, Comparator.comparingInt(ModelNode::getPosition));
-    }
-
     public RealNumberDSM makeRealDSM(SystemModel systemModel, Comparator<ModelNode> comparator) {
-        final List<ModelNode> modelNodeList = getModelNodes(systemModel);
-        modelNodeList.sort(comparator);
+        final List<ModelNode> modelNodeList = systemModel.getRootAndSubsystems(comparator);
         final int matrixSize = modelNodeList.size();
         Map<String, Integer> namePositionMappings = new HashMap<>();
         Map<Integer, String> positionNameMappings = new HashMap<>();
