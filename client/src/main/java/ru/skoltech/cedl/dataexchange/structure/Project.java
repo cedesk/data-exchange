@@ -42,7 +42,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
 import java.io.File;
-import java.time.LocalTime;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -279,7 +279,7 @@ public class Project {
         Pair<Integer, Date> latestRevision = studyService.findLatestRevision(this.study.getId());
         if(latestRevision != null) {
             Date saveDate = latestRevision.getRight();
-            LocalTime startTime = LocalTime.now();
+            Instant startTime = Instant.now();
             warnIfPastTimeIsNegative(saveDate, startTime);
         }
 
@@ -306,7 +306,7 @@ public class Project {
         this.updateValueReferences(systemModel);
     }
 
-    private void warnIfPastTimeIsNegative(Date saveDate, LocalTime startTime) {
+    private void warnIfPastTimeIsNegative(Date saveDate, Instant startTime) {
         long millisSinceSave = saveDate.toInstant().until(startTime, ChronoUnit.MILLIS);
         if(millisSinceSave < 0) {
             logger.error("CLIENT CLOCKS OUT OF SYNC: the last save in the repository (" +
@@ -358,10 +358,10 @@ public class Project {
         if (autoSyncDisabled || emptyStudy) {
             return;
         }
-        LocalTime startTime = LocalTime.now();
+        Instant startTime = Instant.now();
 
         Pair<Integer, Date> latestRevision = studyService.findLatestRevision(study.getId());
-        long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
+        long checkDuration = startTime.until(Instant.now(), ChronoUnit.MILLIS);
         if (latestRevision == null) {
             logger.info("Checked repository study (" + checkDuration + "ms), study is not saved.");
             return;
