@@ -52,7 +52,7 @@ public class MatlabCodeGenerator {
                 double floatValue = dependencyMatrix[rowIndex][columnIndex].doubleValue();
                 if (floatValue > 0) {
                     Double weight = weighted ? floatValue : 1f;
-                    sb.append(String.format(Locale.ENGLISH, "DSM(%d,%d) = %f;", rowIndex, columnIndex, weight));
+                    sb.append(String.format(Locale.ENGLISH, "DSM(%d,%d) = %f;", rowIndex + 1, columnIndex + 1, weight));
                     sb.append("\n");
                 }
             }
