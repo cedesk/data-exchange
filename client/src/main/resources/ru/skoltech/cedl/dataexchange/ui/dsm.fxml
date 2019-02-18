@@ -35,10 +35,9 @@
                     <Glyph fontFamily="FontAwesome" icon="REFRESH"/>
                 </graphic>
             </Button>
-            <Label maxWidth="300" text="IC/FBD convention">
+            <Label maxWidth="300" text="IR/FAD convention">
                 <tooltip>
-                    <Tooltip
-                            text="inputs shown in columns, outputs in rows; feedback marks appear below the diagonal"/>
+                    <Tooltip text="inputs shown in rows, outputs in columns; feedback marks appear above the diagonal"/>
                 </tooltip>
             </Label>
             <Pane HBox.hgrow="ALWAYS"/>

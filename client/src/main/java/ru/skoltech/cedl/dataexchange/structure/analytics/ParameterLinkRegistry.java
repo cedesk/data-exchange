@@ -154,7 +154,7 @@ public class ParameterLinkRegistry {
             ModelNode toVertex = modelNodeList.get(rowIndex);
             namePositionMappings.put(toVertex.getName(), rowIndex);
             positionNameMappings.put(rowIndex, toVertex.getName());
-            // DSM matrix is in form IC/FBD
+            // DSM matrix is in form IR/FAD
             // column index means the dependency source
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
@@ -180,7 +180,7 @@ public class ParameterLinkRegistry {
             ModelNode toVertex = modelNodeList.get(rowIndex);
             namePositionMappings.put(toVertex.getName(), rowIndex);
             positionNameMappings.put(rowIndex, toVertex.getName());
-            // DSM matrix is in form IC/FBD
+            // DSM matrix is in form IR/FAD
             // column index means the dependency source
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
