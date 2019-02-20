@@ -18,12 +18,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>About CEDESK</title>
+    <title>CD Process Guide</title>
     <style>
         body {
             font-family: sans-serif;
-            font-size: 10pt;
-            /*width: 280px;*/
+            font-size: 11pt;
         }
 
         h1 {
@@ -47,24 +46,105 @@
 
         img {
             /*float:right;*/
-            width: 250px;
+            width: 280px;
+        }
+
+        .tab {
+            overflow: hidden;
+            /*border: 1px solid #ccc;*/
+            background-color: #f1f1f1;
+            padding: 4px;
+        }
+
+        .tab button {
+            width: 100px;
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 4px 12px;
+            transition: 0.3s;
+            clip-path: polygon(90% 0%, 100% 50%, 90% 100%, 0% 100%, 10% 50%, 0% 0%);
+            -webkit-clip-path: polygon(90% 0%, 100% 50%, 90% 100%, 0% 100%, 10% 50%, 0% 0%);
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+
+        .tab button:hover {
+            opacity: 0.5;
+        }
+
+        .tab button.active {
+            font-weight: bold;
+            opacity: 1;
+        }
+
+        .tab button.step1 {
+            background-color: #ed7d31;
+        }
+
+        .tab button.step2 {
+            background-color: #a5a5a5;
+        }
+
+        .tab button.step3 {
+            background-color: #ffc000;
+        }
+
+        .tab button.step4 {
+            background-color: #4472c4;
+        }
+
+        .tab button.step5 {
+            background-color: #70ad47;
+        }
+
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
         }
     </style>
     <script language="JavaScript">
-        function toggle_visibility(id) {
-            var e = document.getElementById(id);
-            if (e.style.display == 'none')
-                e.style.display = 'block';
-            else
-                e.style.display = 'none';
+        function openTab(evt, tabId) {
+            // Declare all variables
+            var i, tabcontent, tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(tabId).style.display = "block";
+            if (evt) {
+                evt.currentTarget.className += " active";
+            }
         }
     </script>
 </head>
 <body>
 <h1>CD Process Guide</h1>
 
-<h2>Global Perspective <a href="#1" onclick="toggle_visibility('global_perspective');">&gt;&gt;</a></h2>
-<div id="global_perspective" style="display: none;">
+<!-- Tab links -->
+<div class="tab">
+    <button class="tablinks step1 active" onclick="openTab(event, 'global')">Global Perspective</button>
+    <button class="tablinks step2" onclick="openTab(event, 'iteration')">Iteration Perspective</button>
+    <button class="tablinks step3" onclick="openTab(event, 'discipline')">Discipline Perspective</button>
+</div>
+
+<!-- Tab content -->
+<div id="global" class="tabcontent" style="display: block">
+    <h2>Global Perspective</h2>
     <img src="design-study.png" alt="Global Perspective"/>
 
     <h3>Preparation</h3>
@@ -113,8 +193,8 @@
     </div>
 </div>
 
-<h2>Iteration Perspective <a href="#2" onclick="toggle_visibility('iteration_perspective');">&gt;&gt;</a></h2>
-<div id="iteration_perspective" style="display: block;">
+<div id="iteration" class="tabcontent">
+    <h2>Iteration Perspective</h2>
     <img src="design-iteration.png" alt="Iteration Perspective"/>
     <div>From the dependencies among elements in system model a design structure matrix (DSM) can be derived.
         Based on this DSM a clustering algorithms determines an optimal sequence for updating one subsystem after the
@@ -130,8 +210,8 @@
     </div>
 </div>
 
-<h2>Discipline Perspective <a href="#3" onclick="toggle_visibility('discipline_perspective');">&gt;&gt;</a></h2>
-<div id="discipline_perspective" style="display: none;">
+<div id="discipline" class="tabcontent">
+    <h2>Discipline Perspective</h2>
     <img src="update-discipline-model.png" alt="Discipline Perspective"/>
     <div>A discipline expert updating a subsystem model performs a simple sequence of activities. First the input values
         which are connected to other subsystems need to be updated. Depending on the kind of model, the designer either
