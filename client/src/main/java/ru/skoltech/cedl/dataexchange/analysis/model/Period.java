@@ -30,6 +30,7 @@ import static java.time.temporal.ChronoField.*;
  */
 public class Period {
 
+    public static final int MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
     private static DateTimeFormatter TIME_FORMATTER = new DateTimeFormatterBuilder()
             .appendValue(HOUR_OF_DAY, 2).appendLiteral(':')
             .appendValue(MINUTE_OF_HOUR, 2).optionalStart().appendLiteral(':')
@@ -91,8 +92,15 @@ public class Period {
     }
 
     public static String formatDurationMillis(long duration) {
-        LocalTime diffTime = LocalTime.ofSecondOfDay(duration / 1000);
-        return TIME_FORMATTER.format(diffTime);
+        if (duration < MILLISECONDS_PER_DAY) {
+            LocalTime diffTime = LocalTime.ofSecondOfDay(duration / 1000);
+            return TIME_FORMATTER.format(diffTime);
+        } else {
+            long days = duration / MILLISECONDS_PER_DAY;
+            duration = duration % MILLISECONDS_PER_DAY;
+            LocalTime diffTime = LocalTime.ofSecondOfDay(duration / 1000);
+            return days + "d " + TIME_FORMATTER.format(diffTime);
+        }
     }
 
     public void enlarge(Period other) {
