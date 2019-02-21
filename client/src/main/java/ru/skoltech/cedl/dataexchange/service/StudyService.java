@@ -36,7 +36,7 @@ public interface StudyService {
     /**
      * Create {@link Study} based on {@link SystemModel}.
      *
-     * @param systemModel    system model to base on
+     * @param systemModel system model to base on
      * @return new instance of {@link Study}
      */
     Study createStudy(SystemModel systemModel);

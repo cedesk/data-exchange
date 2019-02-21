@@ -26,7 +26,6 @@ import java.util.Locale;
 import java.util.Properties;
 
 /**
- *
  * Created by D.Knoll on 18.03.2015.
  */
 public class ApplicationSettingsImpl implements ApplicationSettings {

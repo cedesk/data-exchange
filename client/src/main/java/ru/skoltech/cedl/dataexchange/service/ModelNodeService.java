@@ -56,8 +56,9 @@ public interface ModelNodeService {
      * Create an exact clone of the {@link ModelNode} instance along with all sub {@link ModelNode}s,
      * {@link ExternalModel}s and {@link ParameterModel}s.
      * <p/>
-     * @param name       name of new {@link ModelNode} instance
-     * @param modelNode  model node to clone from
+     *
+     * @param name      name of new {@link ModelNode} instance
+     * @param modelNode model node to clone from
      * @return a new instance of copied {@link ModelNode}
      */
     ModelNode cloneModelNode(String name, ModelNode modelNode);
@@ -95,6 +96,7 @@ public interface ModelNodeService {
      *                           of removed {@link ModelNode} in case of their existence
      */
     void deleteModelNodeFromParent(CompositeModelNode parentNode, ModelNode deleteNode, UserRoleManagement userRoleManagement);
+
     /**
      * Save an instance of the model node in the database.
      * <p/>

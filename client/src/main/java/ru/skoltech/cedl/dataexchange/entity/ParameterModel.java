@@ -333,6 +333,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
      * Get a result of most resent value reference update from external model.
      * Returns null if value reference is in invalid state.
      * <p/>
+     *
      * @return state of most recent value reference update of null if value reference is in invalid state
      */
     public ParameterModelUpdateState getLastValueReferenceUpdateState() {
@@ -345,6 +346,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     /**
      * Validate the consistency of current value reference.
      * <p/>
+     *
      * @return a validity state object of current value reference
      * (<i>null<i/> if current value source is not of type of reference)
      */
@@ -366,6 +368,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     /**
      * Validate the consistency of current export reference.
      * <p/>
+     *
      * @return a validity state object of current export reference
      * (<i>null<i/> if parameter model is not exported or current value source is not of type of reference)
      */
@@ -387,6 +390,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     /**
      * Check a validity of current value reference.
      * <p/>
+     *
      * @return <i>true</i> current value reference is valid, <i>false<i/> if opposite
      */
     public boolean isValidValueReference() {
@@ -396,6 +400,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
     /**
      * Check a validity of current export reference.
      * <p/>
+     *
      * @return <i>true</i> current export reference is valid, <i>false<i/> if opposite
      */
     public boolean isValidExportReference() {
@@ -406,6 +411,7 @@ public class ParameterModel implements Comparable<ParameterModel>, PersistedEnti
      * Update parameter model value with data taken from value reference external model.
      * Status of this update is saved and can be retrieved by calling {@link ParameterModel#getLastValueReferenceUpdateState()} method.
      * <p/>
+     *
      * @return <i>true</i> if parameter model has received a new correct value
      * from the data of value reference external model, <i>false<i/> if opposite
      */

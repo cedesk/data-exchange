@@ -47,7 +47,7 @@ public interface UserService {
     /**
      * Retrieve an {@link User} with specified name.
      *
-     * @param userName       to search for
+     * @param userName to search for
      * @return instance of {@link User} if found, <i>null</i> if opposite
      */
     User findUser(String userName);
@@ -62,7 +62,7 @@ public interface UserService {
     /**
      * Check if {@link User} with specified name exists.
      *
-     * @param userName       checked user name
+     * @param userName checked user name
      * @return <i>true</i> if {@link User} exists, <i>false</i> if opposite
      */
     boolean checkUser(String userName);

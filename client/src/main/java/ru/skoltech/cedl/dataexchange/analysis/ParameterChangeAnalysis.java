@@ -56,11 +56,11 @@ public class ParameterChangeAnalysis {
     }
 
     /*
-    * assumed sorting of parameterChangeList:
-    *   timestamp (earlier before later changes),
-    *   node (changes grouped by node),
-    *   nature (input before output)
-    */
+     * assumed sorting of parameterChangeList:
+     *   timestamp (earlier before later changes),
+     *   node (changes grouped by node),
+     *   nature (input before output)
+     */
     private void analyse() {
         Deque<ParameterChange> backlog = new LinkedList<>();
         int linkCauses = 0, nodeModelCauses = 0, unknownSource = 0, internalParameters = 0;

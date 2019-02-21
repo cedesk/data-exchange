@@ -239,6 +239,7 @@ public abstract class ModelNode implements Comparable<ModelNode>, PersistedEntit
      * Order according to position fields.
      * For the nodes with the same position natural order by the name field is applied.
      * <p/>
+     *
      * @param other instance to compare with
      * @return position in relation to the comparable instance
      */

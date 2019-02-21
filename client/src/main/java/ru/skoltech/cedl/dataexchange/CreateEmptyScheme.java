@@ -25,7 +25,7 @@ import static ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer.S
 
 /**
  * Create an empty scheme.
- *
+ * <p>
  * Created by Nikolay Groshkov on 17-Oct-17.
  */
 public class CreateEmptyScheme {

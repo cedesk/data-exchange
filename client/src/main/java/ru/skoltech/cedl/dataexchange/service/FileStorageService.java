@@ -136,7 +136,7 @@ public interface FileStorageService {
      * Export {@link Calculation} to the file.
      *
      * @param calculation {@link Calculation} to export
-     * @param outputFile output file to export
+     * @param outputFile  output file to export
      * @throws IOException if export is impossible
      */
     void exportCalculation(Calculation calculation, File outputFile) throws IOException;
@@ -180,7 +180,7 @@ public interface FileStorageService {
      * Export {@link UserRoleManagement} in the file.
      *
      * @param userRoleManagement {@link UserRoleManagement} to export
-     * @param outputFile output file to export
+     * @param outputFile         output file to export
      * @throws IOException if export is impossible
      */
     void exportUserRoleManagement(UserRoleManagement userRoleManagement, File outputFile) throws IOException;

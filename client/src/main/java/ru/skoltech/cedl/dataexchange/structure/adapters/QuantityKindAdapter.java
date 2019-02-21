@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * {@link QuantityKind} adapter for JAXB marshalling and unmarshalling.
- *
+ * <p>
  * Created by Nikolay Groshkov on 20-Feb-18.
  */
 public class QuantityKindAdapter extends XmlAdapter<String, QuantityKind> {

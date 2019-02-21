@@ -277,7 +277,7 @@ public class Project {
 
     public void storeStudy() throws RepositoryException {
         Pair<Integer, Date> latestRevision = studyService.findLatestRevision(this.study.getId());
-        if(latestRevision != null) {
+        if (latestRevision != null) {
             Date saveDate = latestRevision.getRight();
             Instant startTime = Instant.now();
             warnIfPastTimeIsNegative(saveDate, startTime);
@@ -308,7 +308,7 @@ public class Project {
 
     private void warnIfPastTimeIsNegative(Date saveDate, Instant startTime) {
         long millisSinceSave = saveDate.toInstant().until(startTime, ChronoUnit.MILLIS);
-        if(millisSinceSave < 0) {
+        if (millisSinceSave < 0) {
             logger.error("CLIENT CLOCKS OUT OF SYNC: the last save in the repository (" +
                     Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(saveDate) + ") is " + (-millisSinceSave)
                     + "ms ahead of local time (" +
@@ -369,7 +369,7 @@ public class Project {
         Date saveDate = latestRevision.getRight();
         logger.info("Checked repository study (" + checkDuration + "ms), " +
                 "last revision number: " + latestRevision.getLeft() + ", " +
-                "date : " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(saveDate));
+                "date: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(saveDate));
 
         warnIfPastTimeIsNegative(saveDate, startTime);
 
