@@ -45,7 +45,7 @@
         }
 
         img {
-            /*float:right;*/
+            float: left;
             width: 280px;
         }
 
@@ -58,17 +58,19 @@
 
         .tab button {
             width: 100px;
+            height: 44px;
             background-color: inherit;
             float: left;
             border: none;
             outline: none;
             cursor: pointer;
-            padding: 4px 12px;
+            padding: 0 16px;
             transition: 0.3s;
             clip-path: polygon(90% 0%, 100% 50%, 90% 100%, 0% 100%, 10% 50%, 0% 0%);
             -webkit-clip-path: polygon(90% 0%, 100% 50%, 90% 100%, 0% 100%, 10% 50%, 0% 0%);
             text-decoration: underline;
             opacity: 0.8;
+            margin-bottom: 4px;
         }
 
         .tab button:hover {
@@ -137,41 +139,55 @@
 
 <!-- Tab links -->
 <div class="tab">
-    <button class="tablinks step1 active" onclick="openTab(event, 'global')">Global Perspective</button>
-    <button class="tablinks step2" onclick="openTab(event, 'iteration')">Iteration Perspective</button>
-    <button class="tablinks step3" onclick="openTab(event, 'discipline')">Discipline Perspective</button>
+    <button class="tablinks step1 active" onclick="openTab(event, 'design-study')">Conceptual Design Study</button>
+    <button class="tablinks step2" style="width: 150px" onclick="openTab(event, 'build-model')">Build Integrated
+        System Model
+    </button>
+    <button class="tablinks step3" onclick="openTab(event, 'design-iteration')">Design Iteration</button>
+    <button class="tablinks step4" onclick="openTab(event, 'update-discipline-model')">Update Discipline Model</button>
 </div>
 
 <!-- Tab content -->
-<div id="global" class="tabcontent" style="display: block">
-    <h2>Global Perspective</h2>
-    <img src="design-study.png" alt="Global Perspective"/>
+<div id="design-study" class="tabcontent" style="display: block">
+    <h2>Conceptual Design Study</h2>
+    <img src="design-study.png" alt="Conceptual design study"/>
 
     <h3>Preparation</h3>
-    <div>Once a customer has expressed his need to perform a concurrent design study, the preparation start with 1)
+    <div>Once a customer has expressed his need to perform a concurrent design study, the preparation starts with 1)
         collecting and documenting mission requirements, 2) identifying study constraints (budget, technology,
-        confidentiality), 3) allocation of resources (people and facility time). The decision on which experts to
-        involve is related to an approximate decomposition of the system and allocation of system functions to
-        subsystems. At the end of the preparation (or start of the design study) a first joint meeting of the full
-        design team is held together with representatives of the customer. The purpose of the meeting is to clarify the
-        mission requirements and the role of each study participant.
+        confidentiality), 3) availability of people and the concurrent design facility. The team is composed of experts
+        to involve derives from preliminary analysis of the required high-level functions. At the end of the preparation
+        (or start of the design study) a first joint meeting of the full design team is held together with
+        representatives of the customer. The purpose of the meeting is to clarify the mission requirements and the role
+        of each study participant.
     </div>
 
-    <h3>Systems Decomposition</h3>
-    <div>Based on the high-level functions the system has to fulfill, subsystems are identified and assigned to
-        discipline
-        experts present in the team. The structure of the system is encoded and stored in a system model.
+    <h3>Define Figures of Merit</h3>
+    <div>Figures of merit are attributes of the system characterizing its performance, cost, value or other -ilities.
+        These are used to compare different design concepts.<br/>
+        Most common figures of merit in feasibility studies of spacecraft are:
+        <ul>
+            <li>spacecraft mass – this determines the requirements on the launcher</li>
+            <li>power consumption – this is important to design the system such to balance generation and consumption of
+                power during operations
+            </li>
+            <li>data generated for telemetry, command and customers – this allows to determine the requirements for
+                storage
+                and communication
+            </li>
+            <li>cost of development – this together with the value provided to the customer allows to evaluate a
+                mission’s
+                economic viability
+            </li>
+        </ul>
     </div>
 
-    <h3>Connecting Subsystem Models</h3>
-    <div>After each subsystem has defined it's input and output parameters, the discipline expert together with the team
-        lead identify the source for each input. When starting with new models from scratch, this is a non-trivial task.
-        It happens that for certain parameters, no other subsystem is yet providing that parameter as an output, and it
-        must be decided which discipline shall produce and own it. For some inputs no other source can be identified,
-        and the value can be determined freely by the discipline expert. It also happens that more than one subsystem
-        claims to produce a certain output, and it must be decided which discipline shall produce and own it and the
-        other disciplines take it as an input. In this step the subsystem model interfaces are refined in order to be
-        able to interconnect them.
+    <h3>Build Integrated System Model</h3>
+    <div>In order to collaborate on a conceptual design, a model is built that includes all the necessary discipline
+        perspectives. Some of the disciplines are responsible for the conceptual design of a physical subsystem (e.g.
+        propulsion, communications), while other disciplines are concerned with non-physical, or transversal issues (ed.
+        cost, schedule).<br/>
+        This activity is composed of sub-activities, explained in detail further down.
     </div>
 
     <h3>Design Iterations</h3>
@@ -180,45 +196,87 @@
         or to the output values produced by other subsystems. Since dependency relationships of subsystems are
         transitive and can form cycles, the design of subsystems potentially needs to re-iterated. The process of a
         single design iteration is described in the next section. Throughout the design study an arbitrary number of
-        design iterations can occur, and they operate on a storage which keeps the state of the system model.
+        design iterations can occur, and they operate on a storage which keeps the state of the system model.<br/>
+        The design iteration is itself composed of other sub-activities, described below.
+    </div>
+
+    <h3>Memorize Design Variant</h3>
+    <div>Once a design iteration is complete, meaning that parametric model is consistent, a snapshot of the integrated
+        system model is taken for future consultation. In its simplest form a snapshot consists of all the values of
+        design parameters and the figures of merit are recorded. In a more advanced form, the configuration of all
+        involved analytic models shall be stored.
     </div>
 
     <h3>Compile Study Report</h3>
-    <div>In conclusion of a Phase A design study one or more resulting system designs, which were evaluated to satisfy
-        the
-        mission requirements need to be documented and characterized according to common or mission specific performance
-        measures (e.g. mass, cost, risk, schedule). For the continuation of the project, in case of approval of the
-        results of the design study, the system requirements contained in the documentation will serve as starting point
-        for the Phase B.
+    <div>In conclusion of a conceptual design study one or more resulting system designs, which were evaluated to
+        satisfy the mission requirements need to be documented and characterized according to common or mission specific
+        performance measures (e.g. mass, cost, risk, schedule). For the continuation of the project, in case of approval
+        of the results of the design study, the system requirements contained in the documentation will serve as
+        starting point for the detailed design phase.
     </div>
 </div>
 
-<div id="iteration" class="tabcontent">
-    <h2>Iteration Perspective</h2>
-    <img src="design-iteration.png" alt="Iteration Perspective"/>
-    <div>From the dependencies among elements in system model a design structure matrix (DSM) can be derived.
-        Based on this DSM a clustering algorithms determines an optimal sequence for updating one subsystem after the
-        other.
-        Using this schedule one discipline is taken at a time and the responsible expert is asked to update his
-        subsystem model. The internals of this action are described in a separate procedure in the next section. After
-        that, depending on whether the subsystem's output parameter values have changed, the schedule is updated or not.
-        More precisely, if the outputs did change, then the disciplines which depend on them are put on the schedule
-        again. In case the update of a discipline model led to changes of subsystem interfaces and thereby also
-        dependencies, the schedule needs to be recalculated. Once there are no more disciplines on the schedule, it
-        means the integrated system models has converged and represents a feasible point design and the iteration is
-        finished.
+
+<div id="build-model" class="tabcontent">
+    <h2>Build Integrated System Model</h2>
+    <img src="build-model.png" alt="Build Integrated System Model"/>
+    <h3>Systems Decomposition</h3>
+    <div>
+        Analysing the mission requirements high-level functions of the system are derived. Subsystems are defined which
+        incorporate these functions and are assigned to discipline experts present in the team. The structure of the
+        system is encoded and stored in a system model.
+    </div>
+
+    <h3>Define Subsystem Interfaces</h3>
+    <div>
+        For each discipline or subsystem experts define which are the essential design parameters (input) and resulting
+        attributes (outputs).
+    </div>
+
+    <h3>Build Subsystem Models</h3>
+    <div>
+        In this step, discipline experts shall come up with models for their respective subsystem. Parametric models map
+        design parameters to estimates of the essential characteristics of the subsystem. These characteristics either
+        contribute to the figures of merit of the overall system (e.g. mass) or influence the design of other
+        subsystems. These models can either be based on first-principles of physics or based on heuristics. Simplified
+        analytical models for preliminary sizing exist for many subsystems with a design heritage.
     </div>
 </div>
 
-<div id="discipline" class="tabcontent">
-    <h2>Discipline Perspective</h2>
-    <img src="update-discipline-model.png" alt="Discipline Perspective"/>
+<div id="design-iteration" class="tabcontent">
+    <h2>Design Iteration</h2>
+    <img src="design-iteration.png" alt="Design Iteration"/>
+    <div>From the dependencies among elements in system model a design structure matrix (DSM) can be derived. Applying a
+        clustering algorithms to the DSM allows to determine which are more closely dependent subsystems and can propose
+        a sequence in which to best synchronize the subsystem models with the integrated system model.<br/>
+        Based on this proposed sequence the team leader moderating the design study calls one discipline at a time to
+        provide updates with respect to his subsystem model.<br/>
+        The procedure of preparing and performing this update is described in a separate procedure in the next section.
+        After that, depending on whether the subsystem's output parameter values have changed significantly, the
+        schedule is updated or not. A significant change is one that exceeds the applied margin for uncertainty. This
+        may depend on organizational policies, but a typical value for the margin is 10%. If the outputs did change more
+        than that, then the disciplines which depend on them will require to update their subsystem model. In case the
+        update of a discipline model led to changes of subsystem interfaces and thereby also dependencies, the schedule
+        needs to be recalculated. Moreover, it can happen that a discipline, instead of updating its outputs, it may
+        reject the previous modifications. This evokes a negotiation between the respective disciplines and under the
+        guidance of the team leader agreement on changed parameter values shall be reached.<br/>
+        Once there are no more disciplines on the schedule, it means the integrated system models has converged and
+        represents a feasible conceptual design and the iteration is finished.
+    </div>
+</div>
+
+<div id="update-discipline-model" class="tabcontent">
+    <h2>Update Discipline Model</h2>
+    <img src="update-discipline-model.png" alt="Update Discipline Model"/>
     <div>A discipline expert updating a subsystem model performs a simple sequence of activities. First the input values
         which are connected to other subsystems need to be updated. Depending on the kind of model, the designer either
-        executes a calculation, runs a simulation, performs decisions based on prior knowledge or a combination of them.
-        After that all the subsystem's output parameters are updated. In parallel the expert checks the model for
-        integrity, and in case additional input or output parameters are needed the interface is modified accordingly.
-        Changes to the parameters are reflected in the stored system model.
+        executes a calculation, runs a simulation, performs decisions based on prior knowledge or a combination of them.<br/>
+        After that the design expert checks the results for feasibility. If the feasibility is not given, then the
+        changes the discipline was provided with, shall be rejected. Only if everything is okay, the subsystem's output
+        parameters are updated.<br/>
+        In parallel the expert checks the model for integrity, and in case additional input or output parameters are
+        needed the interface is modified accordingly. Changes to the parameters are reflected in the stored system
+        model.
     </div>
 </div>
 
