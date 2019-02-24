@@ -45,7 +45,6 @@ public class RepositoryConnectionServiceImpl implements RepositoryConnectionServ
             logger.info("check server reachable (" + hostName + ") ... succeeded!");
         } else {
             logger.warn("check server reachable (" + hostName + ") ... failed!");
-            return false;
         }
         String url = this.createRepositoryUrl(hostName, schema);
         int serverPort = applicationSettings.getRepositoryServerPort();
@@ -54,7 +53,6 @@ public class RepositoryConnectionServiceImpl implements RepositoryConnectionServ
             logger.info("check server port listening (" + serverPort + ") ... succeeded!");
         } else {
             logger.warn("check server port listening (" + serverPort + ") ... failed!");
-            return false;
         }
 
         logger.debug("repository url: " + url + ", user: " + userName);
