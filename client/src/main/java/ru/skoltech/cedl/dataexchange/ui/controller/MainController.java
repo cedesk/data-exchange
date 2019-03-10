@@ -347,6 +347,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
+        this.project.setStatusLogger(this.statusLogger);
 
         // EDITING PANE
         Node modelEditingPane = guiService.createControl(Views.MODEL_EDITING_VIEW);

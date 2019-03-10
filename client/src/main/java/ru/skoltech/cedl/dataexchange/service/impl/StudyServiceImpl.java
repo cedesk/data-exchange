@@ -112,6 +112,16 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
+    public String findCurrentStudyRevisionAuthor(Study study) {
+        long studyId = study.getId();
+        if (studyId == 0) {
+            return null;
+        }
+        CustomRevisionEntity revisionEntity = revisionEntityRepository.lastRevisionEntity(studyId, Study.class);
+        return revisionEntity.getUsername();
+    }
+
+    @Override
     public List<Pair<CustomRevisionEntity, RevisionType>> findAllStudyRevisionEntityWithTags(Study study) {
         return revisionEntityRepository.findTaggedRevisions(study.getId(), Study.class);
     }

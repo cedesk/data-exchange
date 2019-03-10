@@ -82,6 +82,14 @@ public interface StudyService {
     String findCurrentStudyRevisionTag(Study study);
 
     /**
+     * Retrieve the username of the current study revision.
+     *
+     * @param study to find author
+     * @return username storing the last revision.
+     */
+    String findCurrentStudyRevisionAuthor(Study study);
+
+    /**
      * Retrieve all revision entities which was tagged and saved along with a specified study.
      *
      * @param study study which tagged revision entities to search

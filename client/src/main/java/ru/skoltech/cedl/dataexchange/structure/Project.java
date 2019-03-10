@@ -23,6 +23,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.AsyncTaskExecutor;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
@@ -71,6 +72,7 @@ public class Project {
     private UserRoleManagementService userRoleManagementService;
     private UnitService unitService;
     private ActionLogger actionLogger;
+    private StatusLogger statusLogger;
     private AsyncTaskExecutor executor;
 
     private String projectName;
@@ -116,6 +118,10 @@ public class Project {
 
     public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
         this.repositoryStateMachine = repositoryStateMachine;
+    }
+
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
     }
 
     public void setStudyService(StudyService studyService) {
@@ -240,6 +246,16 @@ public class Project {
         this.initializeHandlers();
     }
 
+    private void logToUserInterface(String message, boolean error) {
+        if (statusLogger != null) {
+            if (error) {
+                statusLogger.error(message);
+            } else {
+                statusLogger.info(message);
+            }
+        }
+    }
+
     private void setupStudySettings(Study study) {
         if (study.getStudySettings() == null) {
             study.setStudySettings(new StudySettings());
@@ -277,10 +293,10 @@ public class Project {
 
     public void storeStudy() throws RepositoryException {
         Pair<Integer, Date> latestRevision = studyService.findLatestRevision(this.study.getId());
-        if (latestRevision != null) {
-            Date saveDate = latestRevision.getRight();
-            Instant startTime = Instant.now();
-            warnIfPastTimeIsNegative(saveDate, startTime);
+
+        Optional<String> revisionIsInThePast = checkRevisionIsInThePast(latestRevision, Instant.now());
+        if (revisionIsInThePast.isPresent()) {
+            logToUserInterface(revisionIsInThePast.get(), true);
         }
 
         Triple<Study, Integer, Date> revision = studyService.saveStudy(this.study);
@@ -306,18 +322,30 @@ public class Project {
         this.updateValueReferences(systemModel);
     }
 
-    private void warnIfPastTimeIsNegative(Date saveDate, Instant startTime) {
-        long millisSinceSave = saveDate.toInstant().until(startTime, ChronoUnit.MILLIS);
-        if (millisSinceSave < 0) {
-            logger.error("CLIENT CLOCKS OUT OF SYNC: the last save in the repository (" +
-                    Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(saveDate) + ") is " + (-millisSinceSave)
-                    + "ms ahead of local time (" +
-                    Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(startTime) + ").");
+    private Optional<String> checkRevisionIsInThePast(Pair<Integer, Date> latestRevision, Instant startTime) {
+        if (latestRevision != null) {
+            try {
+                Date saveDate = latestRevision.getRight();
+                long millisSinceSave = saveDate.toInstant().until(startTime, ChronoUnit.MILLIS);
+                if (millisSinceSave < 0) {
+                    String revisionAuthor = studyService.findCurrentStudyRevisionAuthor(getStudy());
+                    Date startDate = Date.from(startTime);
+
+                    String message = "CLIENT CLOCKS OUT OF SYNC: last revision stored by " + revisionAuthor + " at " +
+                            Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(saveDate) + ". This is " + (-millisSinceSave)
+                            + "ms ahead of local time (" +
+                            Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(startDate) + ")";
+                    return Optional.of(message);
+                }
+            } catch (Exception e) {
+                logger.error("Error checking revision", e);
+            }
         }
+        return Optional.empty();
     }
 
     public Future<List<ModelDifference>> loadRepositoryStudy() {
-        Future<List<ModelDifference>> feature = executor.submit(() -> {
+        Future<List<ModelDifference>> future = executor.submit(() -> {
             Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
             if (revision == null) {
                 return null;
@@ -335,7 +363,7 @@ public class Project {
         });
         Platform.runLater(() -> {
             try {
-                List<ModelDifference> differences = feature.get();
+                List<ModelDifference> differences = future.get();
                 if (differences == null) {
                     return;
                 }
@@ -344,7 +372,7 @@ public class Project {
                 logger.error("Cannot perform loading repository study: " + e.getMessage(), e);
             }
         });
-        return feature;
+        return future;
     }
 
     /**
@@ -371,7 +399,11 @@ public class Project {
                 "last revision number: " + latestRevision.getLeft() + ", " +
                 "date: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(saveDate));
 
-        warnIfPastTimeIsNegative(saveDate, startTime);
+        Optional<String> revisionIsInThePast = checkRevisionIsInThePast(latestRevision, startTime);
+        if (revisionIsInThePast.isPresent()) {
+            logToUserInterface(revisionIsInThePast.get(), true);
+            return;
+        }
 
         int newLatestRevisionNumber = latestRevision.getLeft() != null ? latestRevision.getLeft() : 0;
         if (newLatestRevisionNumber > this.latestRevisionNumber.get()) {
