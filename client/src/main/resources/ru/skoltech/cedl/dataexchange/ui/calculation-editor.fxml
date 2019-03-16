@@ -20,32 +20,33 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.121"
-            prefHeight="300" prefWidth="700"
+<BorderPane prefHeight="340" prefWidth="580" stylesheets="@styling.css" xmlns="http://javafx.com/javafx/8.0.172-ea"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.CalculationController">
     <top>
-        <Label text="Compose a calculation">
+        <HBox spacing="4.0" GridPane.columnIndex="1">
             <padding>
                 <Insets bottom="10" left="10" right="10" top="10"/>
             </padding>
-        </Label>
+            <Label prefWidth="120.0" text="Operation" GridPane.halignment="RIGHT" GridPane.valignment="TOP"/>
+            <ChoiceBox fx:id="operationChoiceBox" prefWidth="150.0"/>
+            <TextArea fx:id="operationDescriptionText" editable="false" prefHeight="40.0" prefWidth="400.0"
+                      text="Operation description" wrapText="true"/>
+        </HBox>
     </top>
     <center>
-        <VBox spacing="10">
+        <ScrollPane>
             <padding>
                 <Insets bottom="10" left="10" right="10" top="10"/>
             </padding>
-            <HBox spacing="4.0" GridPane.columnIndex="1">
-                <Label prefWidth="120.0" text="Operation" GridPane.halignment="RIGHT" GridPane.valignment="TOP"/>
-                <ChoiceBox fx:id="operationChoiceBox" prefWidth="150.0"/>
-                <TextArea fx:id="operationDescriptionText" editable="false" prefHeight="40.0" prefWidth="400.0"
-                          text="Operation description" wrapText="true"/>
-            </HBox>
-            <VBox fx:id="argumentsContainer" spacing="4.0" GridPane.columnSpan="2" GridPane.halignment="RIGHT"
-                  GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+            <VBox fx:id="argumentsContainer" spacing="4.0">
                 <children>
                 </children>
             </VBox>
+        </ScrollPane>
+    </center>
+    <bottom>
+        <ToolBar>
             <Button fx:id="addButton" minWidth="28" mnemonicParsing="false" onAction="#addNewArgument"
                     GridPane.rowIndex="2">
                 <tooltip>
@@ -55,10 +56,7 @@
                     <Glyph fontFamily="FontAwesome" icon="PLUS"/>
                 </graphic>
             </Button>
-        </VBox>
-    </center>
-    <bottom>
-        <ToolBar nodeOrientation="RIGHT_TO_LEFT">
+            <Pane HBox.hgrow="ALWAYS"/>
             <Button cancelButton="true" mnemonicParsing="false" onAction="#close" text="Close"/>
         </ToolBar>
     </bottom>

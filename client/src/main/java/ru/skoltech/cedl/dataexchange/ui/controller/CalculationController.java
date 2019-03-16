@@ -115,6 +115,17 @@ public class CalculationController implements Initializable, Applicable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        addButton.disableProperty().bind(argumentCount.greaterThanOrEqualTo(maxArguments));
+        operationChoiceBox.valueProperty().addListener((observable, oldValue, operation1) -> {
+            if (operation1 != null) {
+                operationDescriptionText.setText(operation1.description());
+                minArguments.setValue(operation1.minArguments());
+                maxArguments.setValue(operation1.maxArguments());
+                updateArgumentsView(operation1);
+            } else {
+                operationDescriptionText.setText(null);
+            }
+        });
         // OPERATION CHOICE
         operationChoiceBox.setConverter(new StringConverter<Operation>() {
             @Override
@@ -130,7 +141,6 @@ public class CalculationController implements Initializable, Applicable {
         operationChoiceBox.setItems(FXCollections.observableArrayList(OperationRegistry.getAll()));
         Operation operation = calculation.getOperation();
         if (operation != null) {
-            operationChoiceBox.getSelectionModel().select(operation);
             if (calculation.getArguments() != null && calculation.getArguments().size() > 0) {
                 List<Argument> arguments = calculation.getArguments();
                 for (int idx = 0, argumentsSize = arguments.size(); idx < argumentsSize; idx++) {
@@ -140,18 +150,9 @@ public class CalculationController implements Initializable, Applicable {
                 }
                 argumentCount.setValue(arguments.size());
             }
+            operationChoiceBox.getSelectionModel().select(operation);
         }
-        addButton.disableProperty().bind(argumentCount.greaterThanOrEqualTo(maxArguments));
-        operationChoiceBox.valueProperty().addListener((observable, oldValue, operation1) -> {
-            if (operation1 != null) {
-                operationDescriptionText.setText(operation1.description());
-                minArguments.setValue(operation1.minArguments());
-                maxArguments.setValue(operation1.maxArguments());
-                updateArgumentsView(operation1);
-            } else {
-                operationDescriptionText.setText(null);
-            }
-        });
+
     }
 
     private void deleteArgument(ActionEvent actionEvent) {

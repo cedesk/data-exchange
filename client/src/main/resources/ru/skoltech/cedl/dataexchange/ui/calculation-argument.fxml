@@ -20,9 +20,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<GridPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/null"
-          styleClass="calculationArgument" stylesheets="@styling.css"
-          hgap="8.0" maxWidth="-Infinity" minWidth="600.0" vgap="2.0"
+<GridPane hgap="8.0" maxWidth="-Infinity" minWidth="500.0" prefHeight="66.0" styleClass="calculationArgument"
+          stylesheets="@styling.css" vgap="2.0" xmlns="http://javafx.com/javafx/8.0.172-ea"
+          xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="ru.skoltech.cedl.dataexchange.ui.controller.CalculationArgumentController">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
@@ -43,14 +43,14 @@
     <!--
             <Label fx:id="argDescriptionText" alignment="TOP_LEFT" prefHeight="50.0" prefWidth="150.0" text="Argument description" wrapText="true" GridPane.rowIndex="1" />
     -->
-    <HBox spacing="4.0" GridPane.columnIndex="2" alignment="CENTER_LEFT">
+    <HBox alignment="CENTER_LEFT" spacing="4.0" GridPane.columnIndex="2">
         <TextField fx:id="argNumericValueText" prefWidth="150"/>
         <Label text="Unit"/>
-        <TextField fx:id="argValueUnitText" prefWidth="150" disable="true"/>
+        <TextField fx:id="argValueUnitText" disable="true" prefWidth="150"/>
     </HBox>
     <HBox GridPane.columnIndex="2" GridPane.rowIndex="1">
-        <TextField fx:id="argParameterValueLinkText" minWidth="300" editable="false"/>
-        <Button fx:id="argLinkButton" onAction="#chooseParameter" mnemonicParsing="false" minWidth="28">
+        <TextField fx:id="argParameterValueLinkText" editable="false" minWidth="300"/>
+        <Button fx:id="argLinkButton" minWidth="28" mnemonicParsing="false" onAction="#chooseParameter">
             <tooltip>
                 <Tooltip text="Choose parameter to link to"/>
             </tooltip>
@@ -59,8 +59,8 @@
             </graphic>
         </Button>
     </HBox>
-    <RadioButton fx:id="literalRadio" mnemonicParsing="false" text="Value"
-                 GridPane.columnIndex="1" GridPane.valignment="TOP">
+    <RadioButton fx:id="literalRadio" mnemonicParsing="false" text="Value" GridPane.columnIndex="1"
+                 GridPane.valignment="TOP">
         <GridPane.margin>
             <Insets top="4.0"/>
         </GridPane.margin>
@@ -68,8 +68,8 @@
             <ToggleGroup fx:id="type"/>
         </toggleGroup>
     </RadioButton>
-    <RadioButton fx:id="linkRadio" mnemonicParsing="false" text="Link" toggleGroup="$type"
-                 GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.valignment="TOP">
+    <RadioButton fx:id="linkRadio" mnemonicParsing="false" text="Link" toggleGroup="$type" GridPane.columnIndex="1"
+                 GridPane.rowIndex="1" GridPane.valignment="TOP">
         <GridPane.margin>
             <Insets top="4.0"/>
         </GridPane.margin>
