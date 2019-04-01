@@ -1,39 +1,39 @@
 /* --------------------------------------------------------*/
 
 CREATE OR REPLACE VIEW `modelnode` AS
-  SELECT `systemmodel`.`id`   AS `id`,
-         `systemmodel`.`name` AS `node_name`,
-         `systemmodel`.`id`   AS `sys_id`,
-         `systemmodel`.`name` AS `sys_name`,
+  SELECT `SystemModel`.`id`   AS `id`,
+         `SystemModel`.`name` AS `node_name`,
+         `SystemModel`.`id`   AS `sys_id`,
+         `SystemModel`.`name` AS `sys_name`,
          1                    AS `lvl`
-  FROM `systemmodel`
+  FROM `SystemModel`
   UNION
   SELECT `su`.`id`   AS `id`,
          `su`.`name` AS `node_name`,
          `sy`.`id`   AS `sys_id`,
          `sy`.`name` AS `sys_name`,
          2           AS `lvl`
-  FROM (`subsystemmodel` `su`
-         JOIN `systemmodel` `sy` ON ((`su`.`parent_id` = `sy`.`id`)))
+  FROM (`SubSystemModel` `su`
+         JOIN `SystemModel` `sy` ON ((`su`.`parent_id` = `sy`.`id`)))
   UNION
   SELECT `e1`.`id`   AS `id`,
          `e1`.`name` AS `node_name`,
          `sy`.`id`   AS `sys_id`,
          `sy`.`name` AS `sys_name`,
          3           AS `lvl`
-  FROM ((`elementmodel` `e1`
-    JOIN `systemmodel` `su1` ON ((`e1`.`parent_id` = `su1`.`id`)))
-         JOIN `systemmodel` `sy` ON ((`su1`.`parent_id` = `sy`.`id`)))
+  FROM ((`ElementModel` `e1`
+    JOIN `SystemModel` `su1` ON ((`e1`.`parent_id` = `su1`.`id`)))
+         JOIN `SystemModel` `sy` ON ((`su1`.`parent_id` = `sy`.`id`)))
   UNION
   SELECT `i`.`id`    AS `id`,
          `i`.`name`  AS `node_name`,
          `sy`.`id`   AS `sys_id`,
          `sy`.`name` AS `sys_name`,
          4           AS `lvl`
-  FROM (((`instrumentmodel` `i`
-    JOIN `elementmodel` `e2` ON ((`i`.`parent_id` = `e2`.`id`)))
-    JOIN `systemmodel` `su2` ON ((`e2`.`parent_id` = `su2`.`id`)))
-         JOIN `systemmodel` `sy` ON ((`su2`.`parent_id` = `sy`.`id`)))
+  FROM (((`InstrumentModel` `i`
+    JOIN `ElementModel` `e2` ON ((`i`.`parent_id` = `e2`.`id`)))
+    JOIN `SystemModel` `su2` ON ((`e2`.`parent_id` = `su2`.`id`)))
+         JOIN `SystemModel` `sy` ON ((`su2`.`parent_id` = `sy`.`id`)))
 ;
 
 /* this ignores parameters which were associated to nodes that were deleted*/
@@ -73,11 +73,11 @@ SELECT pa.`id`                                     AS param_id,
        mn.sys_id,
        mn.sys_name,
        mn.lvl
-FROM revchanges rc
+FROM REVCHANGES rc
        JOIN
-     revinfo ri ON ri.id = rc.REV
+     REVINFO ri ON ri.id = rc.REV
        JOIN
-     parametermodel_aud pa ON ri.id = pa.REV
+     ParameterModel_AUD pa ON ri.id = pa.REV
        JOIN
      modelnode mn ON pa.parent_id = mn.id
 WHERE rc.ENTITYNAME = 'ru.skoltech.cedl.dataexchange.entity.ParameterModel'
