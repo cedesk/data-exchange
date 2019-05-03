@@ -26,13 +26,11 @@ import javafx.scene.shape.*;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Rotate;
 import org.apache.commons.collections4.MapIterator;
+import org.apache.commons.lang3.tuple.Pair;
 import ru.skoltech.cedl.dataexchange.analysis.ParameterChangeAnalysis;
 
 import java.net.URL;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Created by D.Knoll on 28.12.2016.
@@ -43,41 +41,40 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
     private static final Color SELECTED_ELEMENT_COLOR = Color.DARKRED;
     private static final Color SELECTED_CONNECTION_COLOR = Color.BLUE;
 
-    private static final int elementSize = 6; //5;
-    private static final int elementXPadding = 20;//10;
-    private static final int leftMargin = elementXPadding * 4;//10;
-    private static final int elementYPadding = 50;//20;
-    private static final int topMargin = 2 * elementYPadding;
+    private static final int elementSize = 5;
+    private static final int elementXPadding = 15;
+    private static final int leftMargin = elementXPadding * 8;
+    private static final int elementYPadding = 60;
+    private static final int topMargin = elementYPadding;
 
-    private static final int arrowSize = 6;//3;
+    private static final int arrowSize = 6;
     private static final int lineWidth = 1;
 
-    private static double CAPTION_SCALE = .75;
+    private static final double CAPTION_SCALE = .75;
 
-    public HashMap<Long, Integer> nodeVerticalIndex = new HashMap<>();
-    public Deque<Label> nodeLabels = new LinkedList<>();
-    public HashMap<Long, Integer> nodeHorizontalIndex = new HashMap<>();
+    private HashMap<Long, Integer> nodeVerticalIndex = new HashMap<>();
+    private Deque<Label> nodeLabels = new LinkedList<>();
+    private HashMap<Long, Integer> nodeHorizontalIndex = new HashMap<>();
     private HashMap<Long, DiagramElement> elements = new HashMap<>();
-    //private MultiValuedMap<String, DiagramConnection> fromConnections = new ArrayListValuedHashMap<>();
-    //private MultiValuedMap<String, DiagramConnection> toConnections = new ArrayListValuedHashMap<>();
+    private HashSet<Pair<Long, Long>> events = new HashSet<>();
 
     public ChangeAnalysisView() {
     }
 
     public void setAnalysis(ParameterChangeAnalysis analysis) {
         getChildren().clear();
-        analysis.getParameterChangeList().forEach(parameterChange -> {
-            Long revisionId = parameterChange.revisionId;
-            Long nodeId = parameterChange.nodeId;
-            String nodeName = parameterChange.nodeName;
-            addElement(revisionId, nodeId, nodeName);
-        });
+        analysis.getParameterChangeList().forEach(
+                parameterChange -> addElement(parameterChange.revisionId, parameterChange.nodeId, parameterChange.nodeName)
+        );
         MapIterator<Long, Long> connectionsIterator = analysis.getCausalConnections().mapIterator();
         while (connectionsIterator.hasNext()) {
             connectionsIterator.next();
             Long srcRevId = connectionsIterator.getKey();
             Long tgtRevId = connectionsIterator.getValue();
-            addConnection(srcRevId, tgtRevId, "");
+            //Collection<Long> allTgtIds = analysis.getCausalConnections().get(srcRevId);
+            if (!srcRevId.equals(tgtRevId)) {
+                addConnection(srcRevId, tgtRevId, "");
+            }
         }
 
     }
@@ -93,18 +90,20 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
         }
 
         DiagramConnection connection = new DiagramConnection(fromEl, toEl, description);
-        //fromConnections.put(fromEl.get(), connection);
-        //toConnections.put(toEl.getName(), connection);
+        setPrefWidth(connection.getLayoutX() + elementXPadding);
         getChildren().add(connection);
     }
 
     public void addElement(Long revisionId, Long nodeId, String nodeName) {
-        makeNodeLabel(nodeId, nodeName);
-        DiagramElement diagramElement = new DiagramElement(nodeId, revisionId);
-        elements.put(revisionId, diagramElement);
-        getChildren().add(diagramElement);
-        setMinWidth(diagramElement.getLayoutX() + elementXPadding);
-        setMinHeight(diagramElement.getLayoutY() + elementYPadding);
+        Pair<Long, Long> evtId = Pair.of(nodeId, revisionId);
+        if (!events.contains(evtId)) {
+            makeNodeLabel(nodeId, nodeName);
+            events.add(evtId);
+            DiagramElement diagramElement = new DiagramElement(nodeId, revisionId);
+            elements.put(revisionId, diagramElement);
+            getChildren().add(diagramElement);
+            setPrefHeight(diagramElement.getLayoutY() + elementYPadding);
+        }
     }
 
     @Override
@@ -140,8 +139,8 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
             line.setStroke(Color.WHITE);
             caption.setTextAlignment(TextAlignment.RIGHT);
             caption.setAlignment(Pos.CENTER_RIGHT);
-            caption.setMinWidth(leftMargin - elementSize);
-            caption.setMaxWidth(leftMargin - elementSize);
+            caption.setMinWidth(leftMargin - 2 * elementSize);
+            caption.setMaxWidth(leftMargin - 2 * elementSize);
             caption.setLayoutX(0);
             caption.setLayoutY(y - 2 * elementSize);
             getChildren().addAll(line, caption);
@@ -171,9 +170,7 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
             setLayoutX(leftMargin + horizontalIndex * (elementSize + elementXPadding));
             int verticalIndex = getVerticalIndex(nodeId);
             setLayoutY(topMargin + verticalIndex * (elementSize + elementYPadding));
-            setOnMouseClicked(event -> {
-                toggleSelection();
-            });
+            setOnMouseClicked(event -> toggleSelection());
         }
 
         public long getNodeId() {
@@ -240,9 +237,7 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
             caption.setScaleX(CAPTION_SCALE);
             caption.setScaleY(CAPTION_SCALE);
             getChildren().addAll(line, arrow, caption);
-            setOnMouseClicked(event -> {
-                toggleSelection();
-            });
+            setOnMouseClicked(event -> toggleSelection());
         }
 
         boolean isLower() {

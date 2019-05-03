@@ -58,6 +58,10 @@ public class ParameterChange implements Serializable {
         this.nodeName = String.valueOf(nodeName);
     }
 
+    public String asText() {
+        return String.format("[%d]%s::%s", parameterId, nodeName, parameterName);
+    }
+
     private static Long convert(Object o) {
         if (o instanceof Integer) {
             return ((Integer) o).longValue();

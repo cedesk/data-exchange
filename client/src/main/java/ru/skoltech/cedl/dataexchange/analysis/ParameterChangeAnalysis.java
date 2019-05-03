@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.analysis;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.analysis.model.NodeChangeList;
 import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
@@ -32,6 +33,8 @@ import java.util.List;
  * Created by D.Knoll on 27.12.2016.
  */
 public class ParameterChangeAnalysis {
+
+    private static final Logger logger = Logger.getLogger(ParameterChangeAnalysis.class);
 
     private List<ParameterChange> parameterChangeList;
     private HashMap<Long, ParameterChange> lastChangeOfParameter = new HashMap<>();
@@ -105,7 +108,7 @@ public class ParameterChangeAnalysis {
                 }
                 nodeModelCauses++;
             } else {
-                System.err.println("internal:" + pc);
+                logger.warn("internal:" + pc);
                 internalParameters++;
             }
 
@@ -115,20 +118,24 @@ public class ParameterChangeAnalysis {
             lastRevision = currentRevision;
 
         }
-        System.out.println("Link causes: " + linkCauses + ", Model causes: " + nodeModelCauses + ", Unknown Source: " + unknownSource + ", Internal: " + internalParameters);
+        while (backlog.peekFirst() != null) {
+            ParameterChange blpc = backlog.pollFirst();
+            ParameterChange sourceChange = lastChangeOfParameter.get(blpc.valueLinkId);
+            if (sourceChange != null) {
+                graphAddEdge(sourceChange, blpc, ChangeCausality.STRICT);
+                linkCauses++;
+                unknownSource--;
+            }
+        }
+        logger.info("Link causes: " + linkCauses + ", Model causes: " + nodeModelCauses + ", Unknown Source: " + unknownSource + ", Internal: " + internalParameters);
     }
 
-    private String format(ParameterChange change) {
-        return String.format("[%d]%s::%s", change.parameterId, change.nodeName, change.parameterName);
-    }
-
-    private void graphAddEdge(
-            ParameterChange sourceChange, ParameterChange targetChange,
-            ChangeCausality changeCausality) {
-        String srcPar = format(sourceChange); //sourceChange.parameterId.toString();
-        String tgtPar = format(targetChange); //targetChange.parameterId.toString();
-        System.out.printf("Rev:%d,Par:%s  <<" + changeCausality.asText() + ">>  Rev:%d,Par:%s\n",
-                sourceChange.revisionId, srcPar, targetChange.revisionId, tgtPar);
+    private void graphAddEdge(ParameterChange sourceChange, ParameterChange targetChange, ChangeCausality changeCausality) {
+        String srcPar = sourceChange.asText();
+        String tgtPar = targetChange.asText();
+        String causality = changeCausality.asText();
+        logger.info(String.format("Rev:%d,Par:%s  <<%s>>  Rev:%d,Par:%s",
+                sourceChange.revisionId, srcPar, causality, targetChange.revisionId, tgtPar));
         causalConnections.put(sourceChange.revisionId, targetChange.revisionId);
     }
 
