@@ -31,6 +31,7 @@ import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
+import ru.skoltech.cedl.dataexchange.repository.jpa.CalculationRepository;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.*;
@@ -45,6 +46,7 @@ public class ParameterLinkRegistry {
     private Logger logger = Logger.getLogger(ParameterLinkRegistry.class);
 
     private Project project;
+    private CalculationRepository calculationRepository;
 
     private Map<String, Set<String>> valueLinks = new HashMap<>();
 
@@ -52,6 +54,10 @@ public class ParameterLinkRegistry {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void setCalculationRepository(CalculationRepository calculationRepository) {
+        this.calculationRepository = calculationRepository;
     }
 
     public void addLink(ParameterModel source, ParameterModel sink) {
@@ -206,7 +212,10 @@ public class ParameterLinkRegistry {
         });
         pmi = getCalculatedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
-            Calculation calculation = sink.getCalculation();
+            Calculation calculation = calculationRepository.findOne(sink.getCalculation().getId());
+            if (calculation == null) {
+                return;
+            }
             addLinks(calculation.getLinkedParameters(), sink);
         });
     }
