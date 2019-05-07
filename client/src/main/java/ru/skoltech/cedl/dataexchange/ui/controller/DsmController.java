@@ -23,14 +23,20 @@ import edu.carleton.tim.jdsm.dependency.DependencyDSM;
 import edu.carleton.tim.jdsm.dependency.analysis.ClusteredCost;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
+import javafx.scene.image.WritableImage;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import javafx.util.Pair;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.service.GuiService;
@@ -41,6 +47,9 @@ import ru.skoltech.cedl.dataexchange.structure.analytics.ParameterLinkRegistry;
 import ru.skoltech.cedl.dataexchange.structure.analytics.TableGenerator;
 import ru.skoltech.cedl.dataexchange.ui.control.DsmView;
 
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -120,6 +129,25 @@ public class DsmController implements Initializable {
     public void refreshView() {
         currentNodeOrdering = Comparator.comparingInt(ModelNode::getPosition);
         updateDsmView(null);
+    }
+
+    public void saveDiagram() {
+        FileChooser fc = new FileChooser();
+        fc.setInitialDirectory(project.getProjectHome());
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
+        fc.setInitialFileName(project.getProjectName() + "_DSM_" + Utils.getFormattedDateAndTime());
+        fc.setTitle("Save Diagram");
+        Window window = dsmView.getScene().getWindow();
+        File file = fc.showSaveDialog(window);
+        if (file != null) {
+            SnapshotParameters snapshotParameters = new SnapshotParameters();
+            WritableImage snapshot = dsmView.snapshot(snapshotParameters, null);
+            try {
+                ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null), "png", file);
+            } catch (IOException e) {
+                logger.error("Error saving diagram to file", e);
+            }
+        }
     }
 
     public void runDsmSequencing() {
