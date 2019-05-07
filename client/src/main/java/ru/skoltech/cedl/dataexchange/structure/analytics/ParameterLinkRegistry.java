@@ -359,13 +359,16 @@ public class ParameterLinkRegistry {
                 sources.add(pm);
             }
             if (pm.getValueSource() == ParameterValueSource.CALCULATION && pm.getCalculation() != null) {
-                for (Argument argument : pm.getCalculation().getArguments()) {
-                    if (argument instanceof Argument.Parameter) {
-                        ParameterModel sourcePM = ((Argument.Parameter) argument).getLink();
-                        if (sourcePM != null && sourcePM.getParent() != null &&
-                                sourcePM.getParent().getUuid().equals(toVertex.getUuid())) {
-                            logger.debug("\t" + pm.getNodePath() + " -> " + sourcePM.getNodePath());
-                            sources.add(pm);
+                Calculation calculation = calculationRepository.findOne(pm.getCalculation().getId());
+                if (calculation != null) {
+                    for (Argument argument : pm.getCalculation().getArguments()) {
+                        if (argument instanceof Argument.Parameter) {
+                            ParameterModel sourcePM = ((Argument.Parameter) argument).getLink();
+                            if (sourcePM != null && sourcePM.getParent() != null &&
+                                    sourcePM.getParent().getUuid().equals(toVertex.getUuid())) {
+                                logger.debug("\t" + pm.getNodePath() + " -> " + sourcePM.getNodePath());
+                                sources.add(pm);
+                            }
                         }
                     }
                 }
