@@ -67,15 +67,15 @@ public class ParameterLinkRegistry {
 
         ModelNode sourceModel = source.getParent();
         ModelNode sinkModel = sink.getParent();
-        if (sourceModel != sinkModel) { // do not record self-references to keep the graph acyclic
-            dependencyGraph.addVertex(sinkModel);
-            dependencyGraph.addVertex(sourceModel);
-            // dependency goes from SOURCE to SINK
-            dependencyGraph.addEdge(sourceModel, sinkModel);
-        } else {
+        if (sourceModel.getUuid().equals(sinkModel.getUuid())) { // do not record self-references to keep the graph acyclic
             // TODO: FIX: not recording this blocks evaluation of calculations within a node
             logger.warn("skipping same-node reference: " + sink.getNodePath() + " -> " + source.getNodePath());
+            return;
         }
+        dependencyGraph.addVertex(sinkModel);
+        dependencyGraph.addVertex(sourceModel);
+        // dependency goes from SOURCE to SINK
+        dependencyGraph.addEdge(sourceModel, sinkModel);
     }
 
     public void addLinks(List<ParameterModel> sources, ParameterModel sink) {
@@ -128,19 +128,19 @@ public class ParameterLinkRegistry {
     public DependencyModel makeDependencyModel(SystemModel systemModel, Comparator<ModelNode> comparator) {
         final List<ModelNode> modelNodeList = systemModel.getRootAndSubsystems(comparator);
         DependencyModel dependencyModel = new DependencyModel();
-        modelNodeList.forEach(modelNode -> dependencyModel.addElement(modelNode.getName()));
 
-        for (ModelNode fromVertex : modelNodeList) {
-            String fromVertexName = fromVertex.getName();
-            for (ModelNode toVertex : modelNodeList) {
-                if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
-                        dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
-                    Collection<ParameterModel> linkingParams = getLinkingParams(fromVertex, toVertex);
-                    String toVertexName = toVertex.getName();
-                    dependencyModel.addConnection(fromVertexName, toVertexName, linkingParams);
-                }
-            }
-        }
+        modelNodeList.forEach(modelNode -> dependencyModel.addElement(modelNode.getName()));
+        modelNodeList.stream()
+                .map(m -> dependencyGraph.vertexSet().stream().filter(v -> v.getUuid().equals(m.getUuid())).findFirst().orElse(null))
+                .filter(Objects::nonNull)
+                .forEach(fromVertex -> {
+                    Set<ModelDependency> toVertexes = dependencyGraph.edgesOf(fromVertex);
+                    toVertexes.forEach(md -> {
+                        Collection<ParameterModel> linkingParams = getLinkingParams(fromVertex, md.getTarget());
+                        String toVertexName = md.getTarget().getName();
+                        dependencyModel.addConnection(fromVertex.getName(), toVertexName, linkingParams);
+                    });
+                });
         return dependencyModel;
     }
 
