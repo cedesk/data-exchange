@@ -75,7 +75,9 @@ public class DependencyDiagramView extends AnchorPane implements Initializable {
         dependencyModel.elementStream()
                 .sorted(DependencyModel.Element.POSITION_COMPARATOR)
                 .forEach(element -> this.addElement(element.getName()));
-        dependencyModel.connectionStream().forEach(conn -> {
+        dependencyModel.connectionStream()
+                .filter(connection -> !connection.getFromName().equals(connection.getToName()))
+                .forEach(conn -> {
             EnumSet<ConnectionState> states = getStates(conn.getLinkingParameters());
             String statefulDescription = conn.getLinkingParameters().stream()
                     .map(pm -> {
