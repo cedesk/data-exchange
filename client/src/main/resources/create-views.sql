@@ -57,12 +57,17 @@ SELECT pa.`id`                                     AS param_id,
        pa.`parent_id`,
        pa.`unit_id`,
        pa.`valueLink_id`,
+       (CASE `pa`.`REVTYPE`
+            WHEN 0 THEN 'create'
+            WHEN 1 THEN 'update'
+            WHEN 2 THEN 'delete'
+           END)                                    AS `change_type`,
        CASE pa.valueSource
-         WHEN 0 THEN 'manual'
-         WHEN 1 THEN 'link'
-         WHEN 2 THEN 'calc'
-         WHEN 3 THEN 'import'
-         END                                       AS value_source,
+           WHEN 0 THEN 'manual'
+           WHEN 1 THEN 'link'
+           WHEN 2 THEN 'calc'
+           WHEN 3 THEN 'import'
+           END                                     AS value_source,
        FROM_UNIXTIME(pa.`lastModification` / 1000) AS `lastModification_h`,
        ri.id                                       AS rev_id,
        ri.`timestamp`,
@@ -74,11 +79,11 @@ SELECT pa.`id`                                     AS param_id,
        mn.sys_name,
        mn.lvl
 FROM REVCHANGES rc
-       JOIN
+         JOIN
      REVINFO ri ON ri.id = rc.REV
-       JOIN
+         JOIN
      ParameterModel_AUD pa ON ri.id = pa.REV
-       JOIN
+         JOIN
      modelnode mn ON pa.parent_id = mn.id
 WHERE rc.ENTITYNAME = 'ru.skoltech.cedl.dataexchange.entity.ParameterModel'
 ORDER BY sys_id, node_id, param_id, `timestamp`;
