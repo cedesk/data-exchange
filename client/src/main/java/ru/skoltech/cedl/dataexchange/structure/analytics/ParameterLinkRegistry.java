@@ -21,7 +21,6 @@ import edu.carleton.tim.jdsm.dependency.Dependency;
 import edu.carleton.tim.jdsm.dependency.DependencyDSM;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jscience.mathematics.number.Real;
@@ -375,19 +374,6 @@ public class ParameterLinkRegistry {
             }
         }
         return sources;
-    }
-
-    private void printDependencies(DirectedGraph<ModelNode, ModelDependency> modelDependencies) {
-        System.out.println("DEPENDENCIES");
-        modelDependencies.vertexSet().stream()
-                .filter(sourceNode -> modelDependencies.inDegreeOf(sourceNode) > 0)
-                .forEach(sinkNode -> {
-                    String sinkName = sinkNode.getName();
-                    String sourceNames = modelDependencies.incomingEdgesOf(sinkNode).stream().map(
-                            dependency -> dependency.getSource().getName()
-                    ).collect(Collectors.joining(", "));
-                    System.out.println(sinkName + " depends on " + sourceNames);
-                });
     }
 
     private void recalculate(ParameterModel sink) {
