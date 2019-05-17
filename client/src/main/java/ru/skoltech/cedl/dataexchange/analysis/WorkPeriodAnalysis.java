@@ -93,7 +93,7 @@ public class WorkPeriodAnalysis {
             Long logEntryTimestamp = logEntry.getLogTimestamp();
 
             ActionLogger.ActionType actionType = EnumUtil.lookupEnum(ActionLogger.ActionType.class, logEntry.getAction());
-            String user = logEntry.getUser();
+            String user = logEntry.getUser().toLowerCase();
 
             if (actionType == ActionLogger.ActionType.PROJECT_LOAD) {
                 WorkPeriod workPeriod = new WorkPeriod(user, logEntryTimestamp);
@@ -106,7 +106,7 @@ public class WorkPeriodAnalysis {
                     if (!closeIncompletePeriods && logEntry.getDescription().contains("concurrent")) {
                         logger.warn("work period of " + workPeriod.getUsernname() + ", " +
                                 workPeriod.getStartTimestampFormatted() + " finished unsuccessfully: " +
-                                logEntry.getLogTimestampFormatted() + ": " + logEntry.getUser() + ", " +
+                                logEntry.getLogTimestampFormatted() + ": " + user + ", " +
                                 logEntry.getAction() + ", " + logEntry.getDescription());
                     } else {
                         if (sameDay(logEntryTimestamp, workPeriod.getLastTimestamp())) {
@@ -118,7 +118,7 @@ public class WorkPeriodAnalysis {
                                 logger.info("user " + user + " saved again at: " + workPeriod.getStopTimestampFormatted());
                             }
                         } else {
-                            logger.warn("ignore save");
+                            logger.warn("ignore belated save");
                         }
                     }
                 } else {
@@ -146,7 +146,7 @@ public class WorkPeriodAnalysis {
                     logger.warn("modification without load: " + logEntry.getId());
                 }
             } else {
-                logger.warn("other action: " + logEntry.getLogTimestampFormatted() + ": " + logEntry.getUser() + ", " + logEntry.getAction() + ", " + logEntry.getDescription());
+                logger.warn("other action: " + logEntry.getLogTimestampFormatted() + ": " + user + ", " + logEntry.getAction() + ", " + logEntry.getDescription());
             }
         }
         return workPeriods;
