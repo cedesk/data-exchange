@@ -49,6 +49,10 @@ public class WorkPeriod extends Period {
         return logEntries;
     }
 
+    private LogEntry getLastLogEntry() {
+        return logEntries.size() > 0 ? logEntries.get(logEntries.size() - 1) : null;
+    }
+
     public Long getParameterModifications() {
         return parameterModifications;
     }
@@ -78,11 +82,21 @@ public class WorkPeriod extends Period {
                 " [" + getStartTimestampFormatted() + " - " + getStopTimestampFormatted() + "] " + getDurationFormatted() + " :: " + getAllActionCount();
     }
 
+    public void close() {
+        LogEntry lastLogEntry = getLastLogEntry();
+        stopTimestamp = lastLogEntry != null ? lastLogEntry.getLogTimestamp() : startTimestamp;
+    }
+
     public Integer getActionCount(ActionLogger.ActionType actionType) {
         if (logEntriesByActionType.containsKey(actionType)) {
             return logEntriesByActionType.get(actionType).size();
         }
         return 0;
+    }
+
+    public Long getLastTimestamp() {
+        LogEntry lastLogEntry = getLastLogEntry();
+        return lastLogEntry != null ? lastLogEntry.getLogTimestamp() : getStartTimestamp();
     }
 
     @Override
