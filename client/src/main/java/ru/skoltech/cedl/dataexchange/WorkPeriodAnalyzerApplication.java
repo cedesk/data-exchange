@@ -43,7 +43,7 @@ import java.util.function.Predicate;
 public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
 
     private static final boolean TREAT_INCOMPLETE_PERIOD_AS_CLOSED = false;
-    private static final boolean EXCLUDE_ACTIONLESS_WORK_PERIODS = false;
+    private static final boolean EXCLUDE_ACTIONLESS_WORK_PERIODS = true;
     private static Logger logger = Logger.getLogger(WorkPeriodAnalyzerApplication.class);
 
     /**
@@ -51,15 +51,20 @@ public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
      */
     private List<LogEntry> getLogEntries() throws RepositoryException {
 
-        File objFile = new File(applicationSettings.applicationDirectory(), "log-entries.obj");
+        String projectName = applicationSettings.getProjectLastName();
+        File objFile = new File(applicationSettings.applicationDirectory(), projectName + "_log-entries.obj");
         List<LogEntry> logEntries = null;
+        long startMillis = System.currentTimeMillis();
         if (objFile.canRead()) {
             logEntries = (List<LogEntry>) Utils.readFromFile(objFile);
+            logger.info("reading file took " + (System.currentTimeMillis() - startMillis) + "ms");
         } else {
+            startMillis = System.currentTimeMillis();
             Project project = context.getBean(Project.class);
             long studyId = project.getStudy().getId();
             LogEntryRepository logEntryRepository = context.getBean(LogEntryRepository.class);
             logEntries = logEntryRepository.getLogEntries(studyId);
+            logger.info("reading DB took " + (System.currentTimeMillis() - startMillis) + "ms");
             Utils.writeToFile((Serializable) logEntries, objFile);
         }
         return logEntries;
@@ -88,10 +93,12 @@ public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
             WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries, TREAT_INCOMPLETE_PERIOD_AS_CLOSED);
             //workPeriodAnalysis.setFilter(new DateFilter(2017, 8, 22));
             File periodsCsvFile = new File(appDir, "work-periods.csv");
+            logger.info("Writing file: " + periodsCsvFile.getAbsolutePath());
             workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
 
             WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis, EXCLUDE_ACTIONLESS_WORK_PERIODS);
             File sessionsCsvFile = new File(appDir, "work-sessions.csv");
+            logger.info("Writing file: " + sessionsCsvFile.getAbsolutePath());
             workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
             workSessionAnalysis.printWorkSessions();
 
