@@ -26,6 +26,8 @@ import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -33,6 +35,8 @@ import java.util.function.Predicate;
  * Created by D.Knoll on 25.07.2017.
  */
 public class WorkPeriodAnalysis {
+
+    public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     private static final Logger logger = Logger.getLogger(WorkPeriodAnalysis.class);
     private final static EnumSet<ActionLogger.ActionType> ACTIONS_TO_ANALYZE = EnumSet.of(
@@ -86,12 +90,13 @@ public class WorkPeriodAnalysis {
         // sort
         logEntries.sort(Comparator.comparing(LogEntry::getUser).thenComparingLong(LogEntry::getLogTimestamp));
         for (LogEntry logEntry : logEntries) {
+            Long logEntryTimestamp = logEntry.getLogTimestamp();
 
             ActionLogger.ActionType actionType = EnumUtil.lookupEnum(ActionLogger.ActionType.class, logEntry.getAction());
             String user = logEntry.getUser();
 
             if (actionType == ActionLogger.ActionType.PROJECT_LOAD) {
-                WorkPeriod workPeriod = new WorkPeriod(user, logEntry.getLogTimestamp());
+                WorkPeriod workPeriod = new WorkPeriod(user, logEntryTimestamp);
                 logger.info("user " + user + " loaded at: " + workPeriod.getStartTimestampFormatted());
                 workPeriods.add(workPeriod);
                 lastPeriodOfUser.put(user, workPeriod);
@@ -104,16 +109,20 @@ public class WorkPeriodAnalysis {
                                 logEntry.getLogTimestampFormatted() + ": " + logEntry.getUser() + ", " +
                                 logEntry.getAction() + ", " + logEntry.getDescription());
                     } else {
-                        Long stopTimestamp = workPeriod.getStopTimestamp();
-                        workPeriod.setStopTimestamp(logEntry.getLogTimestamp());
-                        if (stopTimestamp == null) {
-                            logger.info("user " + user + " first saved at: " + workPeriod.getStopTimestampFormatted());
+                        if (sameDay(logEntryTimestamp, workPeriod.getLastTimestamp())) {
+                            Long stopTimestamp = workPeriod.getStopTimestamp();
+                            workPeriod.setStopTimestamp(logEntryTimestamp);
+                            if (stopTimestamp == null) {
+                                logger.info("user " + user + " first saved at: " + workPeriod.getStopTimestampFormatted());
+                            } else {
+                                logger.info("user " + user + " saved again at: " + workPeriod.getStopTimestampFormatted());
+                            }
                         } else {
-                            logger.info("user " + user + " saved again at: " + workPeriod.getStopTimestampFormatted());
+                            logger.warn("ignore save");
                         }
                     }
                 } else {
-                    logger.warn("save without load: " + logEntry.getId());
+                    logger.warn("save without load: " + logEntry.getId() + ": " + logEntry.getUser());
                 }
             } else if (actionType == ActionLogger.ActionType.APPLICATION_START
                     || actionType == ActionLogger.ActionType.USER_VALIDATE
@@ -123,7 +132,16 @@ public class WorkPeriodAnalysis {
             } else if (ACTIONS_TO_ANALYZE.contains(actionType)) {
                 if (lastPeriodOfUser.containsKey(user)) {
                     WorkPeriod workPeriod = lastPeriodOfUser.get(user);
-                    workPeriod.add(actionType, logEntry);
+                    if (sameDay(logEntryTimestamp, workPeriod.getLastTimestamp())) {
+                        workPeriod.add(actionType, logEntry);
+                    } else {
+                        workPeriod.close();
+                        workPeriod = new WorkPeriod(user, logEntryTimestamp);
+                        workPeriod.add(actionType, logEntry);
+                        logger.info("user " + user + " started with action: " + workPeriod.getStartTimestampFormatted());
+                        workPeriods.add(workPeriod);
+                        lastPeriodOfUser.put(user, workPeriod);
+                    }
                 } else {
                     logger.warn("modification without load: " + logEntry.getId());
                 }
@@ -134,12 +152,18 @@ public class WorkPeriodAnalysis {
         return workPeriods;
     }
 
+    private boolean sameDay(Long timestamp1, Long timestamp2) {
+        String ts1 = DATE_FORMAT.format(new Date(timestamp1));
+        String ts2 = DATE_FORMAT.format(new Date(timestamp2));
+        return ts2.equals(ts1);
+    }
+
     public void printWorkPeriods() {
         System.out.println("--- WORK PERIODS START ---");
         for (WorkPeriod workPeriod : getWorkPeriods()) {
             System.out.println(workPeriod.asText());
         }
-        System.out.println("--- WORK PERIODS END---");
+        System.out.println("--- WORK PERIODS END ---");
     }
 
     public void saveWorkPeriodsToFile(File csvFile) {
@@ -151,8 +175,6 @@ public class WorkPeriodAnalysis {
             printer.println();
 
             printer.print("username");
-            printer.print("load timestamp");
-            printer.print("store timestamp");
             printer.print("time of load");
             printer.print("time of store");
             printer.print("work duration");
@@ -166,8 +188,6 @@ public class WorkPeriodAnalysis {
 
             for (WorkPeriod workPeriod : getWorkPeriods()) {
                 printer.print(workPeriod.getUsernname());
-                printer.print(workPeriod.getStartTimestamp());
-                printer.print(workPeriod.getStopTimestamp());
                 printer.print(workPeriod.getStartTimestampFormatted());
                 printer.print(workPeriod.getStopTimestampFormatted());
                 printer.print(workPeriod.getDurationFormatted());
