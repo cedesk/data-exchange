@@ -234,6 +234,7 @@ public class Project {
     }
 
     public void loadLocalStudy() {
+        logger.info("loading study: " + projectName);
         this.study = studyService.findStudyByName(projectName);
         if (this.study == null) {
             return;
