@@ -94,12 +94,10 @@ public class WorkPeriodAnalyzerApplication extends ContextAwareApplication {
             WorkPeriodAnalysis workPeriodAnalysis = new WorkPeriodAnalysis(logEntries, TREAT_INCOMPLETE_PERIOD_AS_CLOSED);
             //workPeriodAnalysis.setFilter(new DateFilter(2017, 8, 22));
             File periodsCsvFile = new File(appDir, projectName + "_work-periods.csv");
-            logger.info("Writing file: " + periodsCsvFile.getAbsolutePath());
             workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
 
             WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis, EXCLUDE_ACTIONLESS_WORK_PERIODS);
             File sessionsCsvFile = new File(appDir, projectName + "_work-sessions.csv");
-            logger.info("Writing file: " + sessionsCsvFile.getAbsolutePath());
             workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
             workSessionAnalysis.printWorkSessions();
 

@@ -114,6 +114,7 @@ public class WorkSessionAnalysis {
         if (firstWorkPeriod == null) return workSessions;
 
         WorkSession workSession = WorkSession.makeSessionFromWorkPeriod(firstWorkPeriod);
+        workSessions.add(workSession);
         while (workPeriodIterator.hasNext()) {
             WorkPeriod workPeriod = workPeriodIterator.next();
             if (workPeriod.isOpen()) continue;
@@ -121,16 +122,13 @@ public class WorkSessionAnalysis {
             if (workSession.hasOverlap(workPeriod)) {
                 workSession.enlarge(workPeriod);
             } else {
-                workSessions.add(workSession);
                 if (workPeriod.isOpen()) {
                     workPeriod = getNextClosedWorkPeriod(workPeriodIterator);
                     if (workPeriod == null) break;
                 }
                 workSession = WorkSession.makeSessionFromWorkPeriod(workPeriod);
+                workSessions.add(workSession);
             }
-        }
-        if (!workSessions.contains(workSession)) {
-            workSessions.add(workSession);
         }
         return workSessions;
     }
