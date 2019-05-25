@@ -82,7 +82,7 @@ FROM (((`revchanges` `rc`
     JOIN `revinfo` `ri` ON ((`ri`.`id` = `rc`.`REV`)))
     JOIN `parametermodel_aud` `pa` ON ((`ri`.`id` = `pa`.`REV`)))
          JOIN `modelnode` `mn` ON ((`pa`.`parent_id` = `mn`.`id`)))
-WHERE (`rc`.`ENTITYNAME` = 'ru.skoltech.cedl.dataexchange.structure.model.ParameterModel')
+WHERE (`rc`.`ENTITYNAME` = 'ru.skoltech.cedl.dataexchange.entity.ParameterModel')
 ORDER BY `mn`.`sys_id`, `mn`.`id`, `pa`.`id`, `ri`.`timestamp`;
 
 
