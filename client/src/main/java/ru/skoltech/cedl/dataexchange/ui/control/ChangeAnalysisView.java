@@ -28,6 +28,7 @@ import javafx.scene.transform.Rotate;
 import org.apache.commons.collections4.MapIterator;
 import org.apache.commons.lang3.tuple.Pair;
 import ru.skoltech.cedl.dataexchange.analysis.ParameterChangeAnalysis;
+import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
 
 import java.net.URL;
 import java.util.*;
@@ -61,22 +62,39 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
     public ChangeAnalysisView() {
     }
 
-    public void setAnalysis(ParameterChangeAnalysis analysis) {
-        getChildren().clear();
-        analysis.getParameterChangeList().forEach(
+    public void setAnalysis(ParameterChangeAnalysis analysis, boolean ignoreUnconnectedRevisions) {
+        resetView();
+
+        List<ParameterChange> parameterChangeList = analysis.getParameterChangeList();
+        if (ignoreUnconnectedRevisions) { // filtering
+            Set<Long> linkedRevisions = new HashSet<>();
+            linkedRevisions.addAll(analysis.getCausalConnections().keySet());
+            linkedRevisions.addAll(analysis.getCausalConnections().values());
+            parameterChangeList.removeIf(parameterChange -> !linkedRevisions.contains(parameterChange.revisionId));
+        }
+
+        parameterChangeList.forEach( // add changes
                 parameterChange -> addElement(parameterChange.revisionId, parameterChange.nodeId, parameterChange.nodeName)
         );
         MapIterator<Long, Long> connectionsIterator = analysis.getCausalConnections().mapIterator();
-        while (connectionsIterator.hasNext()) {
+        while (connectionsIterator.hasNext()) { // add connections
             connectionsIterator.next();
             Long srcRevId = connectionsIterator.getKey();
             Long tgtRevId = connectionsIterator.getValue();
-            //Collection<Long> allTgtIds = analysis.getCausalConnections().get(srcRevId);
             if (!srcRevId.equals(tgtRevId)) {
                 addConnection(srcRevId, tgtRevId, "");
             }
         }
 
+    }
+
+    private void resetView() {
+        nodeVerticalIndex.clear();
+        nodeHorizontalIndex.clear();
+        elements.clear();
+        events.clear();
+        nodeLabels.clear();
+        getChildren().clear();
     }
 
     public void addConnection(Long from, Long to, String description) {

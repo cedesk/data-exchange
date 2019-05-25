@@ -37,7 +37,7 @@ public class Views {
     public static final URL TAG_VIEW = Views.class.getResource("tag.fxml");
     public static final URL DSM_VIEW = Views.class.getResource("dsm.fxml");
     public static final URL DEPENDENCY_VIEW = Views.class.getResource("dependency.fxml");
-    public static final URL CHANGE_HISTORY_ANALYSIS_VIEW = Views.class.getResource("analysis.fxml");
+    public static final URL CHANGE_HISTORY_ANALYSIS_VIEW = Views.class.getResource("change-history-analysis.fxml");
     public static final URL TRADESPACE_VIEW = Views.class.getResource("tradespace.fxml");
     public static final URL IMPORT_TRADESPACE_FROM_CSV_VIEW = Views.class.getResource("import-tradespace-from-csv.fxml");
     public static final URL IMPORT_TRADESPACE_FROM_EXCEL_VIEW = Views.class.getResource("import-tradespace-from-excel.fxml");

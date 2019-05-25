@@ -21,6 +21,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.control.CheckBox;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
@@ -50,6 +51,8 @@ public class ChangeAnalysisController implements Initializable {
     private Project project;
     private ParameterModelRevisionRepository parameterModelRepository;
     @FXML
+    private CheckBox filterConnected;
+    @FXML
     private ChangeAnalysisView changeAnalysisView;
 
     public void setParameterModelRepository(ParameterModelRevisionRepository parameterModelRepository) {
@@ -72,7 +75,7 @@ public class ChangeAnalysisController implements Initializable {
             long systemId = project.getSystemModel().getId();
             List<ParameterChange> changes = parameterModelRepository.findAllParameterChangesOfSystem(systemId);
             ParameterChangeAnalysis parameterChangeAnalysis = new ParameterChangeAnalysis(changes);
-            changeAnalysisView.setAnalysis(parameterChangeAnalysis);
+            changeAnalysisView.setAnalysis(parameterChangeAnalysis, filterConnected.isSelected());
 
         } catch (RepositoryException e) {
             logger.error("error loading parameter changes", e);
