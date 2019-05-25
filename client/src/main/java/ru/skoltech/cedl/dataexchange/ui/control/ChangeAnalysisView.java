@@ -65,13 +65,8 @@ public class ChangeAnalysisView extends AnchorPane implements Initializable {
     public void setAnalysis(ParameterChangeAnalysis analysis, boolean ignoreUnconnectedRevisions) {
         resetView();
 
-        List<ParameterChange> parameterChangeList = analysis.getParameterChangeList();
-        if (ignoreUnconnectedRevisions) { // filtering
-            Set<Long> linkedRevisions = new HashSet<>();
-            linkedRevisions.addAll(analysis.getCausalConnections().keySet());
-            linkedRevisions.addAll(analysis.getCausalConnections().values());
-            parameterChangeList.removeIf(parameterChange -> !linkedRevisions.contains(parameterChange.revisionId));
-        }
+        // eventual pre-filter
+        List<ParameterChange> parameterChangeList = analysis.getParameterChangeList(ignoreUnconnectedRevisions);
 
         parameterChangeList.forEach( // add changes
                 parameterChange -> addElement(parameterChange.revisionId, parameterChange.nodeId, parameterChange.nodeName)

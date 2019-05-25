@@ -30,6 +30,7 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.analysis.ParameterChangeAnalysis;
 import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
+import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
 import ru.skoltech.cedl.dataexchange.repository.envers.ParameterModelRevisionRepository;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 import ru.skoltech.cedl.dataexchange.ui.control.ChangeAnalysisView;
@@ -55,6 +56,12 @@ public class ChangeAnalysisController implements Initializable {
     @FXML
     private ChangeAnalysisView changeAnalysisView;
 
+    private ApplicationSettings applicationSettings;
+
+    public void setApplicationSettings(ApplicationSettings applicationSettings) {
+        this.applicationSettings = applicationSettings;
+    }
+
     public void setParameterModelRepository(ParameterModelRevisionRepository parameterModelRepository) {
         this.parameterModelRepository = parameterModelRepository;
     }
@@ -65,17 +72,20 @@ public class ChangeAnalysisController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        Platform.runLater(() -> {
-            refreshView();
-        });
+        Platform.runLater(this::refreshView);
     }
 
     public void refreshView() {
+        File appDir = applicationSettings.applicationDirectory();
+        String projectName = applicationSettings.getProjectLastName();
         try {
             long systemId = project.getSystemModel().getId();
             List<ParameterChange> changes = parameterModelRepository.findAllParameterChangesOfSystem(systemId);
             ParameterChangeAnalysis parameterChangeAnalysis = new ParameterChangeAnalysis(changes);
             changeAnalysisView.setAnalysis(parameterChangeAnalysis, filterConnected.isSelected());
+
+            File sequenceTxtFile = new File(appDir, projectName + "_sequence.txt");
+            parameterChangeAnalysis.saveNodeSequenceToFile(filterConnected.isSelected(), sequenceTxtFile);
 
         } catch (RepositoryException e) {
             logger.error("error loading parameter changes", e);

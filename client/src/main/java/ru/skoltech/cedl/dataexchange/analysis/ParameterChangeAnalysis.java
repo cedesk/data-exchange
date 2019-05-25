@@ -24,10 +24,11 @@ import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 27.12.2016.
@@ -56,6 +57,32 @@ public class ParameterChangeAnalysis {
 
     public List<ParameterChange> getParameterChangeList() {
         return parameterChangeList;
+    }
+
+    public List<ParameterChange> getParameterChangeList(boolean ignoreUnconnectedRevisions) {
+        if (ignoreUnconnectedRevisions) { // filtering
+            Set<Long> linkedRevisions = new HashSet<>();
+            linkedRevisions.addAll(causalConnections.keySet());
+            linkedRevisions.addAll(causalConnections.values());
+            return parameterChangeList.stream().
+                    filter(parameterChange -> linkedRevisions.contains(parameterChange.revisionId))
+                    .collect(Collectors.toList());
+        } else {
+            return parameterChangeList;
+        }
+    }
+
+    public void saveNodeSequenceToFile(boolean ignoreUnconnectedRevisions, File txtFile) {
+        logger.info("writing to file: " + txtFile.getAbsolutePath());
+        try (PrintWriter printer = new PrintWriter(new FileWriter(txtFile))) {
+            printer.println("Node Sequence");
+            for (String nodeName : getSequenceOfNodes(ignoreUnconnectedRevisions)) {
+                printer.println(nodeName);
+            }
+        } catch (
+                Exception e) {
+            logger.error("error writing work sessions to CSV file");
+        }
     }
 
     /*
@@ -128,6 +155,21 @@ public class ParameterChangeAnalysis {
             }
         }
         logger.info("Link causes: " + linkCauses + ", Model causes: " + nodeModelCauses + ", Unknown Source: " + unknownSource + ", Internal: " + internalParameters);
+    }
+
+    public Collection<String> getSequenceOfNodes(boolean ignoreUnconnectedRevisions) {
+        Collection<String> result = new LinkedList<>();
+        String previousNodeName[] = new String[1];
+
+        getParameterChangeList(ignoreUnconnectedRevisions).stream()
+                .map(parameterChange -> parameterChange.nodeName)
+                .forEach(nodeName -> {
+                    if (!nodeName.equals(previousNodeName[0])) {
+                        result.add(nodeName);
+                        previousNodeName[0] = nodeName;
+                    }
+                });
+        return result;
     }
 
     private void graphAddEdge(ParameterChange sourceChange, ParameterChange targetChange, ChangeCausality changeCausality) {

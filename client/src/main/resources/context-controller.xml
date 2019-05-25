@@ -48,6 +48,7 @@
     <bean class="ru.skoltech.cedl.dataexchange.ui.controller.ChangeAnalysisController">
         <property name="project" ref="project"/>
         <property name="parameterModelRepository" ref="parameterModelRevisionRepository"/>
+        <property name="applicationSettings" ref="applicationSettings"/>
     </bean>
 
     <bean id="modelEditingController" class="ru.skoltech.cedl.dataexchange.ui.controller.ModelEditingController">
