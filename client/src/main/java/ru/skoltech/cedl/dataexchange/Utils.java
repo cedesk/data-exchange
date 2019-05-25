@@ -40,19 +40,6 @@ public class Utils {
     public static final DecimalFormat NUMBER_FORMAT = new DecimalFormat("###0.0##");
     private static final Logger logger = Logger.getLogger(Utils.class);
 
-    public static String getDomain() {
-        try {
-            String hostname = InetAddress.getLocalHost().getHostName().toLowerCase();
-            String canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
-            String tmp = canonicalHostName.replace(hostname, "");
-            if (tmp.length() > 0)
-                return tmp.substring(1);
-        } catch (UnknownHostException e) {
-            // ignore
-        }
-        return "localdomain";
-    }
-
     public static String getFormattedDateAndTime() {
         Date now = new Date();
         return TIME_AND_DATE_FOR_FILENAMES.format(now);

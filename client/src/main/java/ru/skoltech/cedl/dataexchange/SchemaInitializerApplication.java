@@ -28,7 +28,7 @@ import static ru.skoltech.cedl.dataexchange.init.ApplicationContextInitializer.S
  * <p>
  * Created by Nikolay Groshkov on 17-Oct-17.
  */
-public class CreateEmptyScheme {
+public class SchemaInitializerApplication {
 
     public static void main(String[] args) {
         ApplicationSettingsInitializer.initialize();
