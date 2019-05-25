@@ -18,7 +18,9 @@ package ru.skoltech.cedl.dataexchange.analysis;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.analysis.model.NodeChangeList;
 import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
@@ -76,8 +78,15 @@ public class ParameterChangeAnalysis {
         logger.info("writing to file: " + txtFile.getAbsolutePath());
         try (PrintWriter printer = new PrintWriter(new FileWriter(txtFile))) {
             printer.println("Node Sequence");
-            for (String nodeName : getSequenceOfNodes(ignoreUnconnectedRevisions)) {
-                printer.println(nodeName);
+            for (Pair<String, Long> seq : getSequenceOfNodes(ignoreUnconnectedRevisions)) {
+                String nodeName = seq.getLeft();
+                String formattedTimestamp = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(seq.getRight()));
+
+                printer.print(formattedTimestamp);
+                printer.print('\t');
+                printer.print(nodeName);
+
+                printer.println();
             }
         } catch (
                 Exception e) {
@@ -157,18 +166,18 @@ public class ParameterChangeAnalysis {
         logger.info("Link causes: " + linkCauses + ", Model causes: " + nodeModelCauses + ", Unknown Source: " + unknownSource + ", Internal: " + internalParameters);
     }
 
-    public Collection<String> getSequenceOfNodes(boolean ignoreUnconnectedRevisions) {
-        Collection<String> result = new LinkedList<>();
+    public Collection<Pair<String, Long>> getSequenceOfNodes(boolean ignoreUnconnectedRevisions) {
+        Collection<Pair<String, Long>> result = new LinkedList<>();
         String previousNodeName[] = new String[1];
 
-        getParameterChangeList(ignoreUnconnectedRevisions).stream()
-                .map(parameterChange -> parameterChange.nodeName)
-                .forEach(nodeName -> {
-                    if (!nodeName.equals(previousNodeName[0])) {
-                        result.add(nodeName);
-                        previousNodeName[0] = nodeName;
-                    }
-                });
+        getParameterChangeList(ignoreUnconnectedRevisions).forEach(parameterChange -> {
+            String nodeName = parameterChange.nodeName;
+            Long timestamp = parameterChange.timestamp;
+            if (!nodeName.equals(previousNodeName[0])) {
+                result.add(Pair.of(nodeName, timestamp));
+                previousNodeName[0] = nodeName;
+            }
+        });
         return result;
     }
 
