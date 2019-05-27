@@ -87,6 +87,9 @@ public class ChangeAnalysisController implements Initializable {
             File sequenceTxtFile = new File(appDir, projectName + "_sequence.txt");
             parameterChangeAnalysis.saveNodeSequenceToFile(filterConnected.isSelected(), sequenceTxtFile);
 
+            File propagatedChangesCsvFile = new File(appDir, projectName + "_prop-changes.csv");
+            parameterChangeAnalysis.savePropagatedChangesToFile(propagatedChangesCsvFile);
+
         } catch (RepositoryException e) {
             logger.error("error loading parameter changes", e);
         }

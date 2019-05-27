@@ -18,6 +18,8 @@ package ru.skoltech.cedl.dataexchange.analysis;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.Utils;
@@ -43,6 +45,8 @@ public class ParameterChangeAnalysis {
     private HashMap<Long, ParameterChange> lastChangeOfParameter = new HashMap<>();
     private MultiValuedMap<Long, Long> causalConnections = new ArrayListValuedHashMap<>();
     private NodeChangeList nodeChanges = new NodeChangeList();
+
+    private List<Pair<ParameterChange, ParameterChange>> propagatedChanges = new ArrayList<>();
 
     public ParameterChangeAnalysis(List<ParameterChange> parameterChangeList) {
         this.parameterChangeList = parameterChangeList;
@@ -74,6 +78,10 @@ public class ParameterChangeAnalysis {
         }
     }
 
+    public List<Pair<ParameterChange, ParameterChange>> getPropagatedChanges() {
+        return propagatedChanges;
+    }
+
     public void saveNodeSequenceToFile(boolean ignoreUnconnectedRevisions, File txtFile) {
         logger.info("writing to file: " + txtFile.getAbsolutePath());
         try (PrintWriter printer = new PrintWriter(new FileWriter(txtFile))) {
@@ -87,6 +95,51 @@ public class ParameterChangeAnalysis {
                 printer.print(nodeName);
 
                 printer.println();
+            }
+        } catch (
+                Exception e) {
+            logger.error("error writing work sessions to CSV file");
+        }
+    }
+
+    public void savePropagatedChangesToFile(File csvFile) {
+        logger.info("writing to file: " + csvFile.getAbsolutePath());
+        try (CSVPrinter printer = new CSVPrinter(new FileWriter(csvFile), CSVFormat.RFC4180);) {
+            printer.print("sep=,");
+            printer.println();
+
+            printer.print("Source change timestamp");
+            printer.print("Source node");
+            printer.print("Target change timestamp");
+            printer.print("Target node");
+            printer.println();
+
+            long prevSrcRevId = -1, prevTgtRevId = -1;
+            String prevSrcNodeName = "", prevTgtNodeName = "";
+            for (Pair<ParameterChange, ParameterChange> propagatedChanges : getPropagatedChanges()) {
+                ParameterChange sourceChange = propagatedChanges.getKey();
+                long srcRevId = sourceChange.revisionId;
+                String srcNodeName = sourceChange.nodeName;
+                ParameterChange targetChange = propagatedChanges.getValue();
+                long tgtRevId = targetChange.revisionId;
+                String tgtNodeName = targetChange.nodeName;
+
+                if ((prevSrcRevId != srcRevId && !prevSrcNodeName.equals(srcNodeName))
+                        || (prevTgtRevId != tgtRevId && !prevTgtNodeName.equals(tgtNodeName))) {
+                    String timestamp1 = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(sourceChange.timestamp));
+                    String timestamp2 = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(targetChange.timestamp));
+
+                    printer.print(timestamp1);
+                    printer.print(srcNodeName);
+                    printer.print(timestamp2);
+                    printer.print(tgtNodeName);
+                    printer.println();
+
+                    prevSrcRevId = srcRevId;
+                    prevSrcNodeName = srcNodeName;
+                    prevTgtRevId = tgtRevId;
+                    prevTgtNodeName = tgtNodeName;
+                }
             }
         } catch (
                 Exception e) {
@@ -188,6 +241,10 @@ public class ParameterChangeAnalysis {
         logger.info(String.format("Rev:%d,Par:%s  <<%s>>  Rev:%d,Par:%s",
                 sourceChange.revisionId, srcPar, causality, targetChange.revisionId, tgtPar));
         causalConnections.put(sourceChange.revisionId, targetChange.revisionId);
+
+        if (changeCausality == ChangeCausality.STRICT) {
+            propagatedChanges.add(Pair.of(sourceChange, targetChange));
+        }
     }
 
 }
