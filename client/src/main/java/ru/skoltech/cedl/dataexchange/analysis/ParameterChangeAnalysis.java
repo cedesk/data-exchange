@@ -104,6 +104,41 @@ public class ParameterChangeAnalysis {
 
     public void savePropagatedChangesToFile(File csvFile) {
         logger.info("writing to file: " + csvFile.getAbsolutePath());
+
+
+        long prevSrcRevId = -1, prevTgtRevId = -1;
+        String prevSrcNodeName = "", prevTgtNodeName = "";
+        Object[] lastRow = new Object[5];
+        List<Object[]> resultList = new LinkedList<>();
+        for (Pair<ParameterChange, ParameterChange> propagatedChanges : getPropagatedChanges()) {
+            ParameterChange sourceChange = propagatedChanges.getKey();
+            long srcRevId = sourceChange.revisionId;
+            String srcNodeName = sourceChange.nodeName;
+            ParameterChange targetChange = propagatedChanges.getValue();
+            long tgtRevId = targetChange.revisionId;
+            String tgtNodeName = targetChange.nodeName;
+
+            if ((prevSrcRevId != srcRevId && !prevSrcNodeName.equals(srcNodeName))
+                    || (prevTgtRevId != tgtRevId && !prevTgtNodeName.equals(tgtNodeName))) {
+                String timestamp1 = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(sourceChange.timestamp));
+                String timestamp2 = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(targetChange.timestamp));
+
+                lastRow = new Object[5];
+                lastRow[0] = timestamp1;
+                lastRow[1] = srcNodeName;
+                lastRow[2] = timestamp2;
+                lastRow[3] = tgtNodeName;
+                lastRow[4] = Long.valueOf(1);
+                resultList.add(lastRow);
+
+                prevSrcRevId = srcRevId;
+                prevSrcNodeName = srcNodeName;
+                prevTgtRevId = tgtRevId;
+                prevTgtNodeName = tgtNodeName;
+            } else {
+                lastRow[4] = (Long) lastRow[4] + 1;
+            }
+        }
         try (CSVPrinter printer = new CSVPrinter(new FileWriter(csvFile), CSVFormat.RFC4180);) {
             printer.print("sep=,");
             printer.println();
@@ -112,34 +147,15 @@ public class ParameterChangeAnalysis {
             printer.print("Source node");
             printer.print("Target change timestamp");
             printer.print("Target node");
+            printer.print("#parameters changed");
             printer.println();
-
-            long prevSrcRevId = -1, prevTgtRevId = -1;
-            String prevSrcNodeName = "", prevTgtNodeName = "";
-            for (Pair<ParameterChange, ParameterChange> propagatedChanges : getPropagatedChanges()) {
-                ParameterChange sourceChange = propagatedChanges.getKey();
-                long srcRevId = sourceChange.revisionId;
-                String srcNodeName = sourceChange.nodeName;
-                ParameterChange targetChange = propagatedChanges.getValue();
-                long tgtRevId = targetChange.revisionId;
-                String tgtNodeName = targetChange.nodeName;
-
-                if ((prevSrcRevId != srcRevId && !prevSrcNodeName.equals(srcNodeName))
-                        || (prevTgtRevId != tgtRevId && !prevTgtNodeName.equals(tgtNodeName))) {
-                    String timestamp1 = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(sourceChange.timestamp));
-                    String timestamp2 = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(targetChange.timestamp));
-
-                    printer.print(timestamp1);
-                    printer.print(srcNodeName);
-                    printer.print(timestamp2);
-                    printer.print(tgtNodeName);
-                    printer.println();
-
-                    prevSrcRevId = srcRevId;
-                    prevSrcNodeName = srcNodeName;
-                    prevTgtRevId = tgtRevId;
-                    prevTgtNodeName = tgtNodeName;
-                }
+            for (Object[] row : resultList) {
+                printer.print(row[0]);
+                printer.print(row[1]);
+                printer.print(row[2]);
+                printer.print(row[3]);
+                printer.print(row[4]);
+                printer.println();
             }
         } catch (
                 Exception e) {
