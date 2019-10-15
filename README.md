@@ -10,6 +10,7 @@ On [github.com/cedesk/data-exchange](https://github.com/cedesk/data-exchange)
 
 ## Release History and Notes
 
+* 2019-10-15 - Version 1.44   (corrected work session analysis)
 * 2019-03-10 - Version 1.43   (added error handling for out-of sync client clocks)
 * 2019-02-24 - Version 1.42   (restyled process guide, improved DSM visualization)
 * 2019-01-09 - Version 1.40.1 (fixed repository check)
