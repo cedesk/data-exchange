@@ -4,4 +4,4 @@ CREATE SCHEMA `cedesk_prod`
 
 CREATE USER 'cedesk'@'%'
   IDENTIFIED BY 'cedesk';
-GRANT ALL PRIVILEGES ON `cedesk_prod`.* TO 'cedesk'@'%';
+GRANT ALL PRIVILEGES ON cedesk_prod.* TO 'cedesk'@'%';

@@ -35,7 +35,7 @@ public interface ComponentService {
      * <p/>
      *
      * @param category  category of the component
-     * @param author  the creator of the component
+     * @param author    the creator of the component
      * @param modelNode model node to link to
      * @return an new saved instance of {@link Component}
      */

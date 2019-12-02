@@ -181,7 +181,7 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
                 SpreadsheetCoordinates coordinates = SpreadsheetCoordinates.valueOf(sheetChooser.getValue(), focusedCell);
                 target = coordinates.toString();
             } else if (currentExternalModel instanceof CsvExternalModel) {
-                String row = Integer.toString(focusedCell.getRow() + 1) ;
+                String row = Integer.toString(focusedCell.getRow() + 1);
                 String column = focusedCell.getTableColumn().getText();
                 target = row + ":" + column;
             } else {
@@ -202,9 +202,9 @@ public class ReferenceSelectorController implements Initializable, Displayable, 
         try {
             Grid grid;
             if (currentExternalModel instanceof ExcelExternalModel) {
-                grid = ((ExcelExternalModel)currentExternalModel).getGrid(this.sheetName);
+                grid = ((ExcelExternalModel) currentExternalModel).getGrid(this.sheetName);
             } else if (currentExternalModel instanceof CsvExternalModel) {
-                grid = ((CsvExternalModel)currentExternalModel).getGrid();
+                grid = ((CsvExternalModel) currentExternalModel).getGrid();
             } else {
                 return;
             }

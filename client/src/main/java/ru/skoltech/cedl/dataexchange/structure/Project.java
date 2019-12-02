@@ -23,6 +23,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.AsyncTaskExecutor;
+import ru.skoltech.cedl.dataexchange.StatusLogger;
 import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.db.RepositoryException;
 import ru.skoltech.cedl.dataexchange.db.RepositoryStateMachine;
@@ -42,7 +43,7 @@ import ru.skoltech.cedl.dataexchange.structure.model.diff.ModelDifference;
 import ru.skoltech.cedl.dataexchange.structure.update.ParameterModelUpdateState;
 
 import java.io.File;
-import java.time.LocalTime;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -71,6 +72,7 @@ public class Project {
     private UserRoleManagementService userRoleManagementService;
     private UnitService unitService;
     private ActionLogger actionLogger;
+    private StatusLogger statusLogger;
     private AsyncTaskExecutor executor;
 
     private String projectName;
@@ -116,6 +118,10 @@ public class Project {
 
     public void setRepositoryStateMachine(RepositoryStateMachine repositoryStateMachine) {
         this.repositoryStateMachine = repositoryStateMachine;
+    }
+
+    public void setStatusLogger(StatusLogger statusLogger) {
+        this.statusLogger = statusLogger;
     }
 
     public void setStudyService(StudyService studyService) {
@@ -166,7 +172,11 @@ public class Project {
     public File getProjectHome() {
         String hostname = applicationSettings.getRepositoryHost();
         String schema = applicationSettings.getRepositorySchemaName();
-        return fileStorageService.dataDir(hostname, schema, projectName);
+        File dir = fileStorageService.dataDir(hostname, schema, projectName);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir;
     }
 
     public String getProjectName() {
@@ -224,6 +234,7 @@ public class Project {
     }
 
     public void loadLocalStudy() {
+        logger.info("loading study: " + projectName);
         this.study = studyService.findStudyByName(projectName);
         if (this.study == null) {
             return;
@@ -234,6 +245,16 @@ public class Project {
         isSyncEnabledProperty.set(study.getStudySettings().getSyncEnabled());
         isStudyInRepositoryProperty.set(true);
         this.initializeHandlers();
+    }
+
+    private void logToUserInterface(String message, boolean error) {
+        if (statusLogger != null) {
+            if (error) {
+                statusLogger.error(message);
+            } else {
+                statusLogger.info(message);
+            }
+        }
     }
 
     private void setupStudySettings(Study study) {
@@ -272,6 +293,13 @@ public class Project {
     }
 
     public void storeStudy() throws RepositoryException {
+        Pair<Integer, Date> latestRevision = studyService.findLatestRevision(this.study.getId());
+
+        Optional<String> revisionIsInThePast = checkRevisionIsInThePast(latestRevision, Instant.now());
+        if (revisionIsInThePast.isPresent()) {
+            logToUserInterface(revisionIsInThePast.get(), true);
+        }
+
         Triple<Study, Integer, Date> revision = studyService.saveStudy(this.study);
         Study newStudy = revision.getLeft();
         Integer revisionNumber = revision.getMiddle();
@@ -295,8 +323,30 @@ public class Project {
         this.updateValueReferences(systemModel);
     }
 
+    private Optional<String> checkRevisionIsInThePast(Pair<Integer, Date> latestRevision, Instant startTime) {
+        if (latestRevision != null) {
+            try {
+                Date saveDate = latestRevision.getRight();
+                long millisSinceSave = saveDate.toInstant().until(startTime, ChronoUnit.MILLIS);
+                if (millisSinceSave < 0) {
+                    String revisionAuthor = studyService.findCurrentStudyRevisionAuthor(getStudy());
+                    Date startDate = Date.from(startTime);
+
+                    String message = "CLIENT CLOCKS OUT OF SYNC: last revision stored by " + revisionAuthor + " at " +
+                            Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(saveDate) + ". This is " + (-millisSinceSave)
+                            + "ms ahead of local time (" +
+                            Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(startDate) + ")";
+                    return Optional.of(message);
+                }
+            } catch (Exception e) {
+                logger.error("Error checking revision", e);
+            }
+        }
+        return Optional.empty();
+    }
+
     public Future<List<ModelDifference>> loadRepositoryStudy() {
-        Future<List<ModelDifference>> feature = executor.submit(() -> {
+        Future<List<ModelDifference>> future = executor.submit(() -> {
             Triple<Study, Integer, Date> revision = studyService.findLatestRevisionByName(projectName);
             if (revision == null) {
                 return null;
@@ -314,7 +364,7 @@ public class Project {
         });
         Platform.runLater(() -> {
             try {
-                List<ModelDifference> differences = feature.get();
+                List<ModelDifference> differences = future.get();
                 if (differences == null) {
                     return;
                 }
@@ -323,7 +373,7 @@ public class Project {
                 logger.error("Cannot perform loading repository study: " + e.getMessage(), e);
             }
         });
-        return feature;
+        return future;
     }
 
     /**
@@ -337,23 +387,29 @@ public class Project {
         if (autoSyncDisabled || emptyStudy) {
             return;
         }
-        LocalTime startTime = LocalTime.now();
+        Instant startTime = Instant.now();
 
         Pair<Integer, Date> latestRevision = studyService.findLatestRevision(study.getId());
-        long checkDuration = startTime.until(LocalTime.now(), ChronoUnit.MILLIS);
+        long checkDuration = startTime.until(Instant.now(), ChronoUnit.MILLIS);
         if (latestRevision == null) {
             logger.info("Checked repository study (" + checkDuration + "ms), study is not saved.");
             return;
         }
+        Date saveDate = latestRevision.getRight();
         logger.info("Checked repository study (" + checkDuration + "ms), " +
                 "last revision number: " + latestRevision.getLeft() + ", " +
-                "date : " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(latestRevision.getRight()));
+                "date: " + Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(saveDate));
 
-        int newLatestRevisionNumber = latestRevision.getLeft() != null ? latestRevision.getLeft() : 0;
-        if (this.latestRevisionNumber.get() >= newLatestRevisionNumber) {
+        Optional<String> revisionIsInThePast = checkRevisionIsInThePast(latestRevision, startTime);
+        if (revisionIsInThePast.isPresent()) {
+            logToUserInterface(revisionIsInThePast.get(), true);
             return;
         }
-        this.loadRepositoryStudy();
+
+        int newLatestRevisionNumber = latestRevision.getLeft() != null ? latestRevision.getLeft() : 0;
+        if (newLatestRevisionNumber > this.latestRevisionNumber.get()) {
+            this.loadRepositoryStudy();
+        }
     }
 
     public void deleteStudy(String studyName) {

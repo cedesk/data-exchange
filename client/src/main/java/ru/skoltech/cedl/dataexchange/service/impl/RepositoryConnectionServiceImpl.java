@@ -18,6 +18,7 @@ package ru.skoltech.cedl.dataexchange.service.impl;
 
 import org.apache.log4j.Logger;
 import ru.skoltech.cedl.dataexchange.init.ApplicationSettings;
+import ru.skoltech.cedl.dataexchange.repository.ConnectionVerifier;
 import ru.skoltech.cedl.dataexchange.service.RepositoryConnectionService;
 
 import java.sql.DriverManager;
@@ -38,7 +39,21 @@ public class RepositoryConnectionServiceImpl implements RepositoryConnectionServ
 
     @Override
     public boolean checkRepositoryConnection(String hostName, String schema, String userName, String password) {
+
+        boolean serverReachable = ConnectionVerifier.isServerReachable(hostName, 500);
+        if (serverReachable) {
+            logger.info("check server reachable (" + hostName + ") ... succeeded!");
+        } else {
+            logger.warn("check server reachable (" + hostName + ") ... failed!");
+        }
         String url = this.createRepositoryUrl(hostName, schema);
+        int serverPort = applicationSettings.getRepositoryServerPort();
+        boolean serverListening = ConnectionVerifier.isServerListening(hostName, serverPort, 500);
+        if (serverListening) {
+            logger.info("check server port listening (" + serverPort + ") ... succeeded!");
+        } else {
+            logger.warn("check server port listening (" + serverPort + ") ... failed!");
+        }
 
         logger.debug("repository url: " + url + ", user: " + userName);
         try {
@@ -49,13 +64,13 @@ public class RepositoryConnectionServiceImpl implements RepositoryConnectionServ
             logger.warn("check of database connection failed!");
             return false;
         }
-
     }
 
     @Override
     public String createRepositoryUrl(String repositoryHost, String repositorySchemaName) {
         String defaultJdbcUrlPattern = applicationSettings.getRepositoryJdbcUrlPattern();
-        return String.format(defaultJdbcUrlPattern, repositoryHost, repositorySchemaName);
+        Integer serverPort = applicationSettings.getRepositoryServerPort();
+        return String.format(defaultJdbcUrlPattern, repositoryHost, serverPort, repositorySchemaName);
     }
 
     @Override

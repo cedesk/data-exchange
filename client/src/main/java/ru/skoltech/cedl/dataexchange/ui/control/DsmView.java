@@ -75,20 +75,20 @@ public class DsmView extends AnchorPane implements Initializable {
         reset();
         dependencyModel.elementStream()
                 .sorted(DependencyModel.Element.POSITION_COMPARATOR)
-                .forEach(element -> {
-                    addElement(element.getName());
-                });
+                .forEach(element -> addElement(element.getName()));
 
-        dependencyModel.connectionStream().forEach(conn -> {
-            EnumSet<ConnectionState> states = getStates(conn.getLinkingParameters());
-            String statefulDescription = conn.getLinkingParameters().stream()
-                    .map(pm -> {
-                        String stateAbbr = getParameterLinkState(pm).getAbbreviation();
-                        return stateAbbr.equals("") ? pm.getName() : "[" + stateAbbr + "] " + pm.getName();
-                    })
-                    .collect(Collectors.joining(",\n"));
-            addConnection(conn.getFromName(), conn.getToName(), statefulDescription, conn.getStrength(), states);
-        });
+        dependencyModel.connectionStream()
+                .filter(connection -> !connection.getFromName().equals(connection.getToName()))
+                .forEach(conn -> {
+                    EnumSet<ConnectionState> states = getStates(conn.getLinkingParameters());
+                    String statefulDescription = conn.getLinkingParameters().stream()
+                            .map(pm -> {
+                                String stateAbbr = getParameterLinkState(pm).getAbbreviation();
+                                return stateAbbr.equals("") ? pm.getName() : "[" + stateAbbr + "] " + pm.getName();
+                            })
+                            .collect(Collectors.joining(",\n"));
+                    addConnection(conn.getFromName(), conn.getToName(), statefulDescription, conn.getStrength(), states);
+                });
     }
 
     public void addCluster(String from, String to) {

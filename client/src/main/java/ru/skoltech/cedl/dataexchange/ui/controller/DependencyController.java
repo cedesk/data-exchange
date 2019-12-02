@@ -136,12 +136,12 @@ public class DependencyController implements Initializable, Displayable {
         SystemModel systemModel;
         if (sourceGroup.getSelectedToggle() == sourceLocalRadio) {
             systemModel = project.getSystemModel();
-            dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
+            dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel, Comparator.comparingInt(ModelNode::getPosition));
         } else { // if (sourceGroup.getSelectedToggle() == sourceRepositoryRadio) {
             systemModel = project.getRepositoryStudy().getSystemModel();
-            ParameterLinkRegistry parameterLinkRegistry = new ParameterLinkRegistry();
-            parameterLinkRegistry.registerAllParameters(systemModel);
-            dependencyModel = parameterLinkRegistry.makeDependencyModel(systemModel);
+            ParameterLinkRegistry tmpParameterLinkRegistry = new ParameterLinkRegistry();
+            tmpParameterLinkRegistry.registerAllParameters(systemModel);
+            dependencyModel = tmpParameterLinkRegistry.makeDependencyModel(systemModel, Comparator.comparingInt(ModelNode::getPosition));
         }
 
         Rectangle2D primScreenBounds = Screen.getPrimary().getVisualBounds();

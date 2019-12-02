@@ -36,7 +36,7 @@ public interface StudyService {
     /**
      * Create {@link Study} based on {@link SystemModel}.
      *
-     * @param systemModel    system model to base on
+     * @param systemModel system model to base on
      * @return new instance of {@link Study}
      */
     Study createStudy(SystemModel systemModel);
@@ -80,6 +80,14 @@ public interface StudyService {
      * @return tag  of current study revision
      */
     String findCurrentStudyRevisionTag(Study study);
+
+    /**
+     * Retrieve the username of the current study revision.
+     *
+     * @param study to find author
+     * @return username storing the last revision.
+     */
+    String findCurrentStudyRevisionAuthor(Study study);
 
     /**
      * Retrieve all revision entities which was tagged and saved along with a specified study.

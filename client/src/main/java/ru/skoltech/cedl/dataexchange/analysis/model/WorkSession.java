@@ -21,6 +21,7 @@ import ru.skoltech.cedl.dataexchange.Utils;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -79,6 +80,11 @@ public class WorkSession extends Period {
     public void enlarge(WorkPeriod workPeriod) {
         super.enlarge(workPeriod);
         addWorkPeriod(workPeriod);
+    }
+
+    public Map<String, List<WorkPeriod>> getUserPeriods() {
+        return workPeriods.stream()
+                .collect(Collectors.groupingBy(WorkPeriod::getUsernname));
     }
 
     @Override

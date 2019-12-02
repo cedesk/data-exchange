@@ -18,25 +18,35 @@ package ru.skoltech.cedl.dataexchange.analysis;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+import ru.skoltech.cedl.dataexchange.Utils;
 import ru.skoltech.cedl.dataexchange.analysis.model.NodeChangeList;
 import ru.skoltech.cedl.dataexchange.analysis.model.ParameterChange;
 import ru.skoltech.cedl.dataexchange.entity.ParameterNature;
 import ru.skoltech.cedl.dataexchange.entity.ParameterValueSource;
 
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 27.12.2016.
  */
 public class ParameterChangeAnalysis {
 
+    private static final Logger logger = Logger.getLogger(ParameterChangeAnalysis.class);
+
     private List<ParameterChange> parameterChangeList;
     private HashMap<Long, ParameterChange> lastChangeOfParameter = new HashMap<>();
     private MultiValuedMap<Long, Long> causalConnections = new ArrayListValuedHashMap<>();
     private NodeChangeList nodeChanges = new NodeChangeList();
+
+    private List<Pair<ParameterChange, ParameterChange>> propagatedChanges = new ArrayList<>();
 
     public ParameterChangeAnalysis(List<ParameterChange> parameterChangeList) {
         this.parameterChangeList = parameterChangeList;
@@ -55,12 +65,110 @@ public class ParameterChangeAnalysis {
         return parameterChangeList;
     }
 
+    public List<ParameterChange> getParameterChangeList(boolean ignoreUnconnectedRevisions) {
+        if (ignoreUnconnectedRevisions) { // filtering
+            Set<Long> linkedRevisions = new HashSet<>();
+            linkedRevisions.addAll(causalConnections.keySet());
+            linkedRevisions.addAll(causalConnections.values());
+            return parameterChangeList.stream().
+                    filter(parameterChange -> linkedRevisions.contains(parameterChange.revisionId))
+                    .collect(Collectors.toList());
+        } else {
+            return parameterChangeList;
+        }
+    }
+
+    public List<Pair<ParameterChange, ParameterChange>> getPropagatedChanges() {
+        return propagatedChanges;
+    }
+
+    public void saveNodeSequenceToFile(boolean ignoreUnconnectedRevisions, File txtFile) {
+        logger.info("writing to file: " + txtFile.getAbsolutePath());
+        try (PrintWriter printer = new PrintWriter(new FileWriter(txtFile))) {
+            printer.println("Node Sequence");
+            for (Pair<String, Long> seq : getSequenceOfNodes(ignoreUnconnectedRevisions)) {
+                String nodeName = seq.getLeft();
+                String formattedTimestamp = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(seq.getRight()));
+
+                printer.print(formattedTimestamp);
+                printer.print('\t');
+                printer.print(nodeName);
+
+                printer.println();
+            }
+        } catch (
+                Exception e) {
+            logger.error("error writing work sessions to CSV file");
+        }
+    }
+
+    public void savePropagatedChangesToFile(File csvFile) {
+        logger.info("writing to file: " + csvFile.getAbsolutePath());
+
+
+        long prevSrcRevId = -1, prevTgtRevId = -1;
+        String prevSrcNodeName = "", prevTgtNodeName = "";
+        Object[] lastRow = new Object[5];
+        List<Object[]> resultList = new LinkedList<>();
+        for (Pair<ParameterChange, ParameterChange> propagatedChanges : getPropagatedChanges()) {
+            ParameterChange sourceChange = propagatedChanges.getKey();
+            long srcRevId = sourceChange.revisionId;
+            String srcNodeName = sourceChange.nodeName;
+            ParameterChange targetChange = propagatedChanges.getValue();
+            long tgtRevId = targetChange.revisionId;
+            String tgtNodeName = targetChange.nodeName;
+
+            if ((prevSrcRevId != srcRevId && !prevSrcNodeName.equals(srcNodeName))
+                    || (prevTgtRevId != tgtRevId && !prevTgtNodeName.equals(tgtNodeName))) {
+                String timestamp1 = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(sourceChange.timestamp));
+                String timestamp2 = Utils.TIME_AND_DATE_FOR_USER_INTERFACE.format(new Date(targetChange.timestamp));
+
+                lastRow = new Object[5];
+                lastRow[0] = timestamp1;
+                lastRow[1] = srcNodeName;
+                lastRow[2] = timestamp2;
+                lastRow[3] = tgtNodeName;
+                lastRow[4] = Long.valueOf(1);
+                resultList.add(lastRow);
+
+                prevSrcRevId = srcRevId;
+                prevSrcNodeName = srcNodeName;
+                prevTgtRevId = tgtRevId;
+                prevTgtNodeName = tgtNodeName;
+            } else {
+                lastRow[4] = (Long) lastRow[4] + 1;
+            }
+        }
+        try (CSVPrinter printer = new CSVPrinter(new FileWriter(csvFile), CSVFormat.RFC4180);) {
+            printer.print("sep=,");
+            printer.println();
+
+            printer.print("Source change timestamp");
+            printer.print("Source node");
+            printer.print("Target change timestamp");
+            printer.print("Target node");
+            printer.print("#parameters changed");
+            printer.println();
+            for (Object[] row : resultList) {
+                printer.print(row[0]);
+                printer.print(row[1]);
+                printer.print(row[2]);
+                printer.print(row[3]);
+                printer.print(row[4]);
+                printer.println();
+            }
+        } catch (
+                Exception e) {
+            logger.error("error writing work sessions to CSV file");
+        }
+    }
+
     /*
-    * assumed sorting of parameterChangeList:
-    *   timestamp (earlier before later changes),
-    *   node (changes grouped by node),
-    *   nature (input before output)
-    */
+     * assumed sorting of parameterChangeList:
+     *   timestamp (earlier before later changes),
+     *   node (changes grouped by node),
+     *   nature (input before output)
+     */
     private void analyse() {
         Deque<ParameterChange> backlog = new LinkedList<>();
         int linkCauses = 0, nodeModelCauses = 0, unknownSource = 0, internalParameters = 0;
@@ -105,7 +213,7 @@ public class ParameterChangeAnalysis {
                 }
                 nodeModelCauses++;
             } else {
-                System.err.println("internal:" + pc);
+                logger.warn("internal:" + pc);
                 internalParameters++;
             }
 
@@ -115,21 +223,44 @@ public class ParameterChangeAnalysis {
             lastRevision = currentRevision;
 
         }
-        System.out.println("Link causes: " + linkCauses + ", Model causes: " + nodeModelCauses + ", Unknown Source: " + unknownSource + ", Internal: " + internalParameters);
+        while (backlog.peekFirst() != null) {
+            ParameterChange blpc = backlog.pollFirst();
+            ParameterChange sourceChange = lastChangeOfParameter.get(blpc.valueLinkId);
+            if (sourceChange != null) {
+                graphAddEdge(sourceChange, blpc, ChangeCausality.STRICT);
+                linkCauses++;
+                unknownSource--;
+            }
+        }
+        logger.info("Link causes: " + linkCauses + ", Model causes: " + nodeModelCauses + ", Unknown Source: " + unknownSource + ", Internal: " + internalParameters);
     }
 
-    private String format(ParameterChange change) {
-        return String.format("[%d]%s::%s", change.parameterId, change.nodeName, change.parameterName);
+    public Collection<Pair<String, Long>> getSequenceOfNodes(boolean ignoreUnconnectedRevisions) {
+        Collection<Pair<String, Long>> result = new LinkedList<>();
+        String previousNodeName[] = new String[1];
+
+        getParameterChangeList(ignoreUnconnectedRevisions).forEach(parameterChange -> {
+            String nodeName = parameterChange.nodeName;
+            Long timestamp = parameterChange.timestamp;
+            if (!nodeName.equals(previousNodeName[0])) {
+                result.add(Pair.of(nodeName, timestamp));
+                previousNodeName[0] = nodeName;
+            }
+        });
+        return result;
     }
 
-    private void graphAddEdge(
-            ParameterChange sourceChange, ParameterChange targetChange,
-            ChangeCausality changeCausality) {
-        String srcPar = format(sourceChange); //sourceChange.parameterId.toString();
-        String tgtPar = format(targetChange); //targetChange.parameterId.toString();
-        System.out.printf("Rev:%d,Par:%s  <<" + changeCausality.asText() + ">>  Rev:%d,Par:%s\n",
-                sourceChange.revisionId, srcPar, targetChange.revisionId, tgtPar);
+    private void graphAddEdge(ParameterChange sourceChange, ParameterChange targetChange, ChangeCausality changeCausality) {
+        String srcPar = sourceChange.asText();
+        String tgtPar = targetChange.asText();
+        String causality = changeCausality.asText();
+        logger.info(String.format("Rev:%d,Par:%s  <<%s>>  Rev:%d,Par:%s",
+                sourceChange.revisionId, srcPar, causality, targetChange.revisionId, tgtPar));
         causalConnections.put(sourceChange.revisionId, targetChange.revisionId);
+
+        if (changeCausality == ChangeCausality.STRICT) {
+            propagatedChanges.add(Pair.of(sourceChange, targetChange));
+        }
     }
 
 }

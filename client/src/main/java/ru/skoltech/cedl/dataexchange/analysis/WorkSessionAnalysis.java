@@ -26,10 +26,8 @@ import ru.skoltech.cedl.dataexchange.analysis.model.WorkSession;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by D.Knoll on 27.07.2017.
@@ -75,6 +73,7 @@ public class WorkSessionAnalysis {
             printer.print("overlap");
             printer.print("ratio");
             printer.print("#users");
+            printer.print("#periods");
             printer.print("users + #actions");
             printer.println();
 
@@ -84,13 +83,24 @@ public class WorkSessionAnalysis {
                 printer.print(workSession.getDurationFormatted());
                 printer.print(workSession.getOverlapFormatted());
                 printer.print(Utils.NUMBER_FORMAT.format(workSession.getConcurrencyRatio()));
-                printer.print(workSession.getWorkPeriods().size());
-                printer.print(workSession.getUsers());
+                Map<String, List<WorkPeriod>> userPeriodMap = workSession.getUserPeriods();
+                int users = userPeriodMap.size();
+                printer.print(users);
+                int periods = workSession.getWorkPeriods().size();
+                printer.print(periods);
+                String userActions = userPeriodMap.keySet().stream().sorted().map(username -> {
+                    List<WorkPeriod> userPeriods = userPeriodMap.get(username);
+                    int actions = userPeriods.stream().mapToInt(WorkPeriod::getAllActionCount).sum();
+                    return String.format("%s(%d)", username, actions);
+                }).collect(Collectors.joining(";"));
+                printer.print(userActions);
                 printer.println();
             }
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             logger.error("error writing work sessions to CSV file");
         }
+
     }
 
     private List<WorkSession> extractWorkSessions() {
@@ -104,6 +114,7 @@ public class WorkSessionAnalysis {
         if (firstWorkPeriod == null) return workSessions;
 
         WorkSession workSession = WorkSession.makeSessionFromWorkPeriod(firstWorkPeriod);
+        workSessions.add(workSession);
         while (workPeriodIterator.hasNext()) {
             WorkPeriod workPeriod = workPeriodIterator.next();
             if (workPeriod.isOpen()) continue;
@@ -111,16 +122,13 @@ public class WorkSessionAnalysis {
             if (workSession.hasOverlap(workPeriod)) {
                 workSession.enlarge(workPeriod);
             } else {
-                workSessions.add(workSession);
                 if (workPeriod.isOpen()) {
                     workPeriod = getNextClosedWorkPeriod(workPeriodIterator);
                     if (workPeriod == null) break;
                 }
                 workSession = WorkSession.makeSessionFromWorkPeriod(workPeriod);
+                workSessions.add(workSession);
             }
-        }
-        if (!workSessions.contains(workSession)) {
-            workSessions.add(workSession);
         }
         return workSessions;
     }

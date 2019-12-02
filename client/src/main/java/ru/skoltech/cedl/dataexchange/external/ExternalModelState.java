@@ -70,7 +70,7 @@ public enum ExternalModelState {
      *
      * @return <i>true</i> if external model was initialized and <i>false</i> if opposite.
      */
-    public boolean isInitialized(){
+    public boolean isInitialized() {
         return this != EMPTY && this != INCORRECT && this != UNINITIALIZED;
     }
 
@@ -79,7 +79,7 @@ public enum ExternalModelState {
      *
      * @return <i>true</i> if cache file is exist and <i>false</i> if opposite.
      */
-    public boolean isCached(){
+    public boolean isCached() {
         return this == CACHE || this == CACHE_CONFLICT || this == CACHE_MODIFIED || this == CACHE_OUTDATED;
     }
 

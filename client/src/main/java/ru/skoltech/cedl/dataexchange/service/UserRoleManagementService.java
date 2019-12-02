@@ -103,7 +103,7 @@ public interface UserRoleManagementService {
     /**
      * Create {@link UserRoleManagement} based on {@link SystemModel} subsystems.
      *
-     * @param systemModel    {@link SystemModel} to base on
+     * @param systemModel {@link SystemModel} to base on
      * @return created instance of {@link UserRoleManagement}
      */
     UserRoleManagement createUserRoleManagementWithSubsystemDisciplines(SystemModel systemModel);

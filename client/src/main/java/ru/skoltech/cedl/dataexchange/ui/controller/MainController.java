@@ -28,10 +28,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
@@ -347,6 +347,7 @@ public class MainController implements Initializable, Displayable, Closeable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         this.resources = resources;
+        this.project.setStatusLogger(this.statusLogger);
 
         // EDITING PANE
         Node modelEditingPane = guiService.createControl(Views.MODEL_EDITING_VIEW);
@@ -654,7 +655,7 @@ public class MainController implements Initializable, Displayable, Closeable {
             File periodsCsvFile = new File(projectDataDir, "work-periods_" + dateAndTime + ".csv");
             workPeriodAnalysis.saveWorkPeriodsToFile(periodsCsvFile);
 
-            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis, false);
+            WorkSessionAnalysis workSessionAnalysis = new WorkSessionAnalysis(workPeriodAnalysis, true);
             File sessionsCsvFile = new File(projectDataDir, "work-sessions_" + dateAndTime + ".csv");
             workSessionAnalysis.saveWorkSessionToFile(sessionsCsvFile);
             workSessionAnalysis.printWorkSessions();

@@ -26,7 +26,7 @@ import java.util.Objects;
 
 /**
  * {@link ExternalModel} adapter for JAXB marshalling and unmarshalling.
- *
+ * <p>
  * Created by Nikolay Groshkov on 04-Oct-17.
  */
 public class ExternalModelAdapter extends XmlAdapter<AdaptedExternalModel, ExternalModel> {

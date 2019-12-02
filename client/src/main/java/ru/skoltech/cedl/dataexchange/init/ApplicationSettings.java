@@ -30,15 +30,15 @@ import java.io.File;
  * in current OS.
  * <p>
  * To save all changed user specific properties (by use of <i>.store*()</i> methods) method
- *
+ * <p>
  * Additionally an application directory {@link File} is provides.
  * Below are the rules to define directory.
  * <p>
  * If <i>cedesk.app.dir</i> property defined as absolute path then use it.
  * If <i>cedesk.app.dir</i> property defined as relative path, then prepend <i>user.home</i> system property to it.
- *
+ * <p>
  * {@link ApplicationSettings#save()} must be performed thereafter.
- *
+ * <p>
  * Created by Nikolay Groshkov on 05-Aug-17.
  */
 public interface ApplicationSettings {
@@ -254,12 +254,20 @@ public interface ApplicationSettings {
     String getDefaultStudyModelDepth();
 
     /**
-     * Retrieve repository JDBC url pattern (with according places host and schema name replacements).
+     * Retrieve repository JDBC url pattern (with according places host, port and schema name replacements).
      * It is base (stored in <i>cedesk.properties</i>) property.
      *
      * @return pattern of repository JDBC url
      */
     String getRepositoryJdbcUrlPattern();
+
+    /**
+     * Retrieve repository server port.
+     * It is base (stored in <i>cedesk.properties</i>) property.
+     *
+     * @return server port number
+     */
+    Integer getRepositoryServerPort();
 
     /**
      * Retrieve current repository schema version.

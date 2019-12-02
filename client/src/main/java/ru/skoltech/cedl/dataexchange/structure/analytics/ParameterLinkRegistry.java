@@ -21,7 +21,6 @@ import edu.carleton.tim.jdsm.dependency.Dependency;
 import edu.carleton.tim.jdsm.dependency.DependencyDSM;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jscience.mathematics.number.Real;
@@ -29,10 +28,9 @@ import ru.skoltech.cedl.dataexchange.entity.*;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Argument;
 import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 import ru.skoltech.cedl.dataexchange.entity.model.ModelNode;
-import ru.skoltech.cedl.dataexchange.entity.model.SubSystemModel;
 import ru.skoltech.cedl.dataexchange.entity.model.SystemModel;
 import ru.skoltech.cedl.dataexchange.entity.unit.Unit;
-import ru.skoltech.cedl.dataexchange.logging.ActionLogger;
+import ru.skoltech.cedl.dataexchange.repository.jpa.CalculationRepository;
 import ru.skoltech.cedl.dataexchange.structure.Project;
 
 import java.util.*;
@@ -47,26 +45,18 @@ public class ParameterLinkRegistry {
     private Logger logger = Logger.getLogger(ParameterLinkRegistry.class);
 
     private Project project;
-    private ActionLogger actionLogger;
+    private CalculationRepository calculationRepository;
 
     private Map<String, Set<String>> valueLinks = new HashMap<>();
 
     private DependencyGraph dependencyGraph = new DependencyGraph();
 
-    public void setActionLogger(ActionLogger actionLogger) {
-        this.actionLogger = actionLogger;
-    }
-
     public void setProject(Project project) {
         this.project = project;
     }
 
-    private static List<ModelNode> getModelNodes(SystemModel systemModel) {
-        final List<SubSystemModel> subNodes = systemModel.getSubNodes();
-        final List<ModelNode> modelNodeList = new ArrayList<>(subNodes.size() + 1);
-        modelNodeList.add(systemModel);
-        modelNodeList.addAll(subNodes);
-        return modelNodeList;
+    public void setCalculationRepository(CalculationRepository calculationRepository) {
+        this.calculationRepository = calculationRepository;
     }
 
     public void addLink(ParameterModel source, ParameterModel sink) {
@@ -82,15 +72,15 @@ public class ParameterLinkRegistry {
 
         ModelNode sourceModel = source.getParent();
         ModelNode sinkModel = sink.getParent();
-        if (sourceModel != sinkModel) { // do not record self-references to keep the graph acyclic
-            dependencyGraph.addVertex(sinkModel);
-            dependencyGraph.addVertex(sourceModel);
-            // dependency goes from SOURCE to SINK
-            dependencyGraph.addEdge(sourceModel, sinkModel);
-        } else {
+        if (sourceModel.getUuid().equals(sinkModel.getUuid())) { // do not record self-references to keep the graph acyclic
             // TODO: FIX: not recording this blocks evaluation of calculations within a node
             logger.warn("skipping same-node reference: " + sink.getNodePath() + " -> " + source.getNodePath());
+            return;
         }
+        dependencyGraph.addVertex(sinkModel);
+        dependencyGraph.addVertex(sourceModel);
+        // dependency goes from SOURCE to SINK
+        dependencyGraph.addEdge(sourceModel, sinkModel);
     }
 
     public void addLinks(List<ParameterModel> sources, ParameterModel sink) {
@@ -140,30 +130,28 @@ public class ParameterLinkRegistry {
         return "";
     }
 
-    public DependencyModel makeDependencyModel(SystemModel rootNode) {
+    public DependencyModel makeDependencyModel(SystemModel systemModel, Comparator<ModelNode> comparator) {
+        final List<ModelNode> modelNodeList = systemModel.getRootAndSubsystems(comparator);
         DependencyModel dependencyModel = new DependencyModel();
-        List<ModelNode> modelNodeList = getModelNodes(rootNode);
-        modelNodeList.forEach(modelNode -> dependencyModel.addElement(modelNode.getName()));
 
-        for (ModelNode fromVertex : modelNodeList) {
-            String fromVertexName = fromVertex.getName();
-            for (ModelNode toVertex : modelNodeList) {
-                if (dependencyGraph.getAllEdges(fromVertex, toVertex) != null &&
-                        dependencyGraph.getAllEdges(fromVertex, toVertex).size() > 0) {
-                    Collection<ParameterModel> linkingParams = getLinkingParams(fromVertex, toVertex);
-                    String toVertexName = toVertex.getName();
-                    dependencyModel.addConnection(fromVertexName, toVertexName, linkingParams);
-                }
-            }
-        }
+        modelNodeList.forEach(modelNode -> dependencyModel.addElement(modelNode.getName()));
+        modelNodeList.stream()
+                .map(m -> dependencyGraph.vertexSet().stream().filter(v -> v.getUuid().equals(m.getUuid())).findFirst().orElse(null))
+                .filter(Objects::nonNull)
+                .forEach(fromVertex -> {
+                    Set<ModelDependency> toVertexes = dependencyGraph.edgesOf(fromVertex);
+                    toVertexes.forEach(md -> {
+                        Collection<ParameterModel> linkingParams = getLinkingParams(fromVertex, md.getTarget());
+                        String toVertexName = md.getTarget().getName();
+                        dependencyModel.addConnection(fromVertex.getName(), toVertexName, linkingParams);
+                    });
+                });
         return dependencyModel;
     }
 
-    public DependencyDSM makeBinaryDSM(SystemModel systemModel) {
-        final List<ModelNode> modelNodeList = getModelNodes(systemModel);
+    public DependencyDSM makeBinaryDSM(SystemModel systemModel, Comparator<ModelNode> comparator) {
+        final List<ModelNode> modelNodeList = systemModel.getRootAndSubsystems(comparator);
         final int matrixSize = modelNodeList.size();
-        Map<String, Integer> clusterStartPositionMappings = new HashMap<>();
-        Map<String, Integer> clusterEndPositionMappings = new HashMap<>();
         Map<String, Integer> namePositionMappings = new TreeMap<>();
         Map<Integer, String> positionNameMappings = new TreeMap<>();
         Dependency[][] map = new Dependency[matrixSize][matrixSize];
@@ -171,48 +159,46 @@ public class ParameterLinkRegistry {
             ModelNode toVertex = modelNodeList.get(rowIndex);
             namePositionMappings.put(toVertex.getName(), rowIndex);
             positionNameMappings.put(rowIndex, toVertex.getName());
-            // DSM matrix is in form IC/FBD
+            // DSM matrix is in form IR/FAD
             // column index means the dependency source
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
-                if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
-                        dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0) {
+                Set<ModelDependency> edges = dependencyGraph.getAllEdges(fromVertex, toVertex);
+                if (edges != null && edges.size() > 0) {
                     map[rowIndex][columnIndex] = Dependency.YES;
                 } else {
                     map[rowIndex][columnIndex] = Dependency.NO;
                 }
             }
         }
-        return new DependencyDSM(clusterEndPositionMappings, clusterStartPositionMappings,
+        return new DependencyDSM(new HashMap<>(), new HashMap<>(),
                 namePositionMappings, positionNameMappings, map);
     }
 
-    public RealNumberDSM makeRealDSM(SystemModel systemModel) {
-        final List<ModelNode> modelNodeList = getModelNodes(systemModel);
+    public RealNumberDSM makeRealDSM(SystemModel systemModel, Comparator<ModelNode> comparator) {
+        final List<ModelNode> modelNodeList = systemModel.getRootAndSubsystems(comparator);
         final int matrixSize = modelNodeList.size();
-        Map<String, Integer> clusterEndPositionMappings = new HashMap<>();
-        Map<String, Integer> clusterStartPositionMappings = new HashMap<>();
         Map<String, Integer> namePositionMappings = new HashMap<>();
         Map<Integer, String> positionNameMappings = new HashMap<>();
         Real[][] map = new Real[matrixSize][matrixSize];
         for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
             ModelNode toVertex = modelNodeList.get(rowIndex);
-
             namePositionMappings.put(toVertex.getName(), rowIndex);
             positionNameMappings.put(rowIndex, toVertex.getName());
-
+            // DSM matrix is in form IR/FAD
+            // column index means the dependency source
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
                 ModelNode fromVertex = modelNodeList.get(columnIndex);
-                if (dependencyGraph.getAllEdges(toVertex, fromVertex) != null &&
-                        dependencyGraph.getAllEdges(toVertex, fromVertex).size() > 0) {
-                    int linkCount = getLinkingParams(toVertex, fromVertex).size();
+                Set<ModelDependency> edges = dependencyGraph.getAllEdges(fromVertex, toVertex);
+                if (edges != null && edges.size() > 0) {
+                    int linkCount = getLinkingParams(fromVertex, toVertex).size();
                     map[rowIndex][columnIndex] = Real.valueOf(linkCount);
                 } else {
                     map[rowIndex][columnIndex] = Real.ZERO;
                 }
             }
         }
-        return new RealNumberDSM(clusterEndPositionMappings, clusterStartPositionMappings,
+        return new RealNumberDSM(new HashMap<>(), new HashMap<>(),
                 namePositionMappings, positionNameMappings, map);
     }
 
@@ -225,7 +211,10 @@ public class ParameterLinkRegistry {
         });
         pmi = getCalculatedParameters(systemModel);
         pmi.forEachRemaining(sink -> {
-            Calculation calculation = sink.getCalculation();
+            Calculation calculation = calculationRepository.findOne(sink.getCalculation().getId());
+            if (calculation == null) {
+                return;
+            }
             addLinks(calculation.getLinkedParameters(), sink);
         });
     }
@@ -312,8 +301,6 @@ public class ParameterLinkRegistry {
                             sink.setValue(sourceEffectiveValue);
                             logger.info("updated sink '" + sink.getNodePath() + "' from source '" + source.getNodePath()
                                     + "' [value: " + sinkValue + " -> " + sourceEffectiveValue + "]");
-                            actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_LINK, sink.getNodePath()
-                                    + " [value: " + sinkValue + " -> " + sourceEffectiveValue + "]");
                         }
                         // propagate only if actual change to unit
                         Unit sinkUnit = sink.getUnit();
@@ -324,8 +311,6 @@ public class ParameterLinkRegistry {
                             String sourceUnitText = sourceUnit != null ? sourceUnit.asText() : null;
                             logger.info("updated sink '" + sink.getNodePath() + "' from source '" + source.getNodePath()
                                     + "' [unit: " + sinkUnitText + " -> " + sourceUnitText + "]");
-                            actionLogger.log(ActionLogger.ActionType.PARAMETER_MODIFY_LINK, sink.getNodePath()
-                                    + " [unit: " + sinkUnitText + " -> " + sourceUnitText + "]");
                         }
                         // TODO: notify UI ?]
                     } else {
@@ -373,32 +358,22 @@ public class ParameterLinkRegistry {
                 sources.add(pm);
             }
             if (pm.getValueSource() == ParameterValueSource.CALCULATION && pm.getCalculation() != null) {
-                for (Argument argument : pm.getCalculation().getArguments()) {
-                    if (argument instanceof Argument.Parameter) {
-                        ParameterModel sourcePM = ((Argument.Parameter) argument).getLink();
-                        if (sourcePM != null && sourcePM.getParent() != null &&
-                                sourcePM.getParent().getUuid().equals(toVertex.getUuid())) {
-                            logger.debug("\t" + pm.getNodePath() + " -> " + sourcePM.getNodePath());
-                            sources.add(pm);
+                Calculation calculation = calculationRepository.findOne(pm.getCalculation().getId());
+                if (calculation != null) {
+                    for (Argument argument : pm.getCalculation().getArguments()) {
+                        if (argument instanceof Argument.Parameter) {
+                            ParameterModel sourcePM = ((Argument.Parameter) argument).getLink();
+                            if (sourcePM != null && sourcePM.getParent() != null &&
+                                    sourcePM.getParent().getUuid().equals(toVertex.getUuid())) {
+                                logger.debug("\t" + pm.getNodePath() + " -> " + sourcePM.getNodePath());
+                                sources.add(pm);
+                            }
                         }
                     }
                 }
             }
         }
         return sources;
-    }
-
-    private void printDependencies(DirectedGraph<ModelNode, ModelDependency> modelDependencies) {
-        System.out.println("DEPENDENCIES");
-        modelDependencies.vertexSet().stream()
-                .filter(sourceNode -> modelDependencies.inDegreeOf(sourceNode) > 0)
-                .forEach(sinkNode -> {
-                    String sinkName = sinkNode.getName();
-                    String sourceNames = modelDependencies.incomingEdgesOf(sinkNode).stream().map(
-                            dependency -> dependency.getSource().getName()
-                    ).collect(Collectors.joining(", "));
-                    System.out.println(sinkName + " depends on " + sourceNames);
-                });
     }
 
     private void recalculate(ParameterModel sink) {

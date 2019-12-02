@@ -122,7 +122,7 @@ public class CsvExternalModel extends ExternalModel {
                     try (Writer writer = new OutputStreamWriter(outputStream)) {
                         CSVPrinter printer = new CSVPrinter(writer, CSV_FORMAT);
                         for (CSVRecord record : records) {
-                            Iterable<?> printRecord = this.createRecord(record, coordinates, value) ;
+                            Iterable<?> printRecord = this.createRecord(record, coordinates, value);
                             printer.printRecord(printRecord);
                         }
                         printer.flush();
@@ -150,7 +150,7 @@ public class CsvExternalModel extends ExternalModel {
                     try (Writer writer = new OutputStreamWriter(outputStream)) {
                         CSVPrinter printer = new CSVPrinter(writer, CSV_FORMAT);
                         for (CSVRecord record : records) {
-                            Iterable<?> printRecord = this.createRecord(record, valuesList) ;
+                            Iterable<?> printRecord = this.createRecord(record, valuesList);
                             printer.printRecord(printRecord);
                         }
                         printer.flush();

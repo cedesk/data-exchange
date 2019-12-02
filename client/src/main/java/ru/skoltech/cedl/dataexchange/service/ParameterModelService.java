@@ -36,7 +36,8 @@ public interface ParameterModelService {
      * This method registers a parent for new instance of {@link ParameterModel} but it is still required
      * to add this instance to the list of supported {@link ParameterModel}s of this parent {@link ModelNode}.
      * <p/>
-     * @param name name of new {@link ParameterModel} instance
+     *
+     * @param name           name of new {@link ParameterModel} instance
      * @param parameterModel instance of {@link ParameterModel} to clone from
      * @return a new instance of copied {@link ParameterModel}
      */
@@ -59,6 +60,7 @@ public interface ParameterModelService {
     /**
      * Retrieve a list of parameter revisions for specified {@link ParameterModel}.
      * <p/>
+     *
      * @param parameterModel parameter model
      * @return list of parameter revisions
      */

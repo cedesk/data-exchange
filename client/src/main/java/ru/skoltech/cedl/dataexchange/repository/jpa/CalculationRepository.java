@@ -14,26 +14,15 @@
  * limitations under the License.
  */
 
-package ru.skoltech.cedl.dataexchange.ui.controller;
+package ru.skoltech.cedl.dataexchange.repository.jpa;
 
-
-import javafx.stage.Stage;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
+import org.springframework.data.jpa.repository.JpaRepository;
+import ru.skoltech.cedl.dataexchange.entity.calculation.Calculation;
 
 /**
- * Mark a JavaFX Controller which can react on startup event of parent {@link Window},
- * then it is ready.
+ * Data Access Operations with {@link Calculation} entity.
  * <p>
- * Created by Nikolay Groshkov on 13-Aug-17.
+ * Created by Nikolay Groshkov on 07-May-2019.
  */
-public interface Displayable {
-
-    /**
-     * Reaction on parent {@link Window} startup.
-     *
-     * @param stage       {@link Stage} where current view is displayed
-     * @param windowEvent startup window event
-     */
-    void display(Stage stage, WindowEvent windowEvent);
+public interface CalculationRepository extends JpaRepository<Calculation, Long> {
 }

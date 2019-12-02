@@ -112,7 +112,7 @@ public class UnitChooseController implements Initializable, Displayable, Applica
     public void display(Stage stage, WindowEvent windowEvent) {
         this.ownerStage = stage;
         stage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            if(event.getCode() == KeyCode.ENTER){
+            if (event.getCode() == KeyCode.ENTER) {
                 this.choose();
             }
         });

@@ -19,43 +19,43 @@ package ru.skoltech.cedl.dataexchange.structure.analytics;
 import edu.carleton.tim.jdsm.RealNumberDSM;
 import org.jscience.mathematics.number.Real;
 
-import java.util.Locale;
 import java.util.Map;
 
 /**
- * This class encapsulates the generation of code usable with a Matlab library for DSM optimization. <br>
- * The library was written by Ronnie E. Thebeau, available at http://www.dsmweb.org/?id=121
+ * This class encapsulates the generation of a table representing the DSM
  * <p>
- * Created by D.Knoll on 01.03.2018.
+ * Created by D.Knoll on 06.02.2019.
  */
-public class MatlabCodeGenerator {
+public class TableGenerator {
 
     /**
-     * Generates code for a Matlab script to process DSM data.
+     * Generates a table in TAB format of the DSM.
      *
-     * @return the Matlab code.
+     * @return the table.
      */
     public static String transformDSM(RealNumberDSM dsm, boolean weighted) {
         int matrixSize = dsm.getPositionNameMappings().size();
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("DSM_size = %d;\n", matrixSize));
-        sb.append("DSMLABEL = cell(DSM_size,1);\n\n");
         Map<Integer, String> positionNameMapping = dsm.getPositionNameMappings();
+        sb.append('\t'); // empty corner cell
         for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
-            sb.append(String.format("DSMLABEL{%d,1} = '%s';", rowIndex + 1, positionNameMapping.get(rowIndex)));
-            sb.append("\n");
+            sb.append(positionNameMapping.get(rowIndex));
+            sb.append('\t');
         }
-        sb.append("\nDSM = zeros(DSM_size);\n\n");
+        sb.append('\n');
         Real[][] dependencyMatrix = dsm.getMap();
         for (int rowIndex = 0; rowIndex < matrixSize; rowIndex++) {
+            sb.append(positionNameMapping.get(rowIndex));
+            sb.append('\t');
             for (int columnIndex = 0; columnIndex < matrixSize; columnIndex++) {
-                double floatValue = dependencyMatrix[rowIndex][columnIndex].doubleValue();
-                if (floatValue > 0) {
-                    Double weight = weighted ? floatValue : 1f;
-                    sb.append(String.format(Locale.ENGLISH, "DSM(%d,%d) = %f;", rowIndex + 1, columnIndex + 1, weight));
-                    sb.append("\n");
+                int intValue = dependencyMatrix[rowIndex][columnIndex].intValue();
+                if (intValue > 0) {
+                    int weight = weighted ? intValue : 1;
+                    sb.append(weight);
                 }
+                sb.append('\t');
             }
+            sb.append('\n');
         }
         return sb.toString();
     }

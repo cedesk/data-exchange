@@ -25,14 +25,6 @@ import org.junit.Test;
 public class UtilsTest {
 
     @Test
-    public void hostAndDomainNameTest() {
-        String hostname = Utils.getHostname();
-        System.out.println(hostname);
-        String domain = Utils.getDomain();
-        System.out.println(domain);
-    }
-
-    @Test
     public void hostnameTest() {
         String computername = System.getenv("COMPUTERNAME"); // only works on WINDOWS
         if (computername != null) {

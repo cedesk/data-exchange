@@ -56,9 +56,10 @@ public enum ParameterModelUpdateState {
      * Return <i>true<i/> if evaluation is in successful (either {@link ParameterModelUpdateState#SUCCESS}
      * or {@link ParameterModelUpdateState#SUCCESS_WITHOUT_UPDATE}) state and <i>false<i/> if it was failed.
      * <p/>
+     *
      * @return <i>true<i/> if evaluation is in successful, <i>false<i/> if opposite
      */
-    public boolean isSuccessful(){
+    public boolean isSuccessful() {
         return this == SUCCESS || this == SUCCESS_WITHOUT_UPDATE;
     }
 }

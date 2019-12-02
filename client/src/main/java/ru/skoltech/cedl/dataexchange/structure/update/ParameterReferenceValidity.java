@@ -50,9 +50,10 @@ public enum ParameterReferenceValidity {
     /**
      * Return <i>true<i/> if parameter model reference is valid ({@link ParameterReferenceValidity#VALID} state)
      * <p/>
+     *
      * @return <i>true<i/> if parameter model reference is valid, <i>false<i/> if opposite
      */
-    public boolean isValid(){
+    public boolean isValid() {
         return this == VALID;
     }
 }

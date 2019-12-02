@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * {@link Unit} adapter for JAXB marshalling and unmarshalling.
- *
+ * <p>
  * Created by D.Knoll on 29.08.2015.
  */
 public class UnitAdapter extends XmlAdapter<String, Unit> {

@@ -165,8 +165,11 @@ public class SpreadsheetCellValueAccessor implements Closeable {
      */
     private void setNumericValue(Cell cell, Double value) throws IOException {
         Objects.requireNonNull(cell);
-        Double previousValue = getNumericValue(cell);
-        boolean change = !Precision.equals(previousValue, value, 2) || cell.getCellTypeEnum() != CellType.NUMERIC;
+        Double previousValue = Double.NaN;
+        if (cell.getCellTypeEnum() == CellType.NUMERIC) {
+            previousValue = getNumericValue(cell);
+        }
+        boolean change = !Precision.equals(previousValue, value, 2);
         if (change) {
             cell.setCellType(CellType.NUMERIC);
             cell.setCellValue(value);

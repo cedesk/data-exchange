@@ -24,10 +24,7 @@ import ru.skoltech.cedl.dataexchange.entity.ParameterModel;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by D.Knoll on 11.03.2015.
@@ -84,5 +81,17 @@ public class SystemModel extends CompositeModelNode<SubSystemModel> {
         Iterator<ParameterModel> pmi = parametersTreeIterator();
         pmi.forEachRemaining(parameterModel -> dictionary.put(parameterModel.getUuid(), parameterModel));
         return dictionary;
+    }
+
+    /**
+     * @return a list of nodes: first the system model itself and then the subnodes sorted according to the comparator.
+     */
+    public List<ModelNode> getRootAndSubsystems(Comparator<ModelNode> comparator) {
+        final List<SubSystemModel> subNodes = this.getSubNodes();
+        final ArrayList<ModelNode> modelNodeList = new ArrayList<>(subNodes.size() + 1);
+        modelNodeList.add(this);
+        modelNodeList.addAll(subNodes);
+        modelNodeList.sort(comparator);
+        return modelNodeList;
     }
 }

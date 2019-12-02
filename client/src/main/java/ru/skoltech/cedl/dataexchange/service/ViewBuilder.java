@@ -246,7 +246,7 @@ public class ViewBuilder<T> {
             if (ownerWindow != null) {
                 stage.initOwner(ownerWindow);
                 stage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-                    if(event.getCode() == KeyCode.ESCAPE){
+                    if (event.getCode() == KeyCode.ESCAPE) {
                         stage.close();
                     }
                 });

@@ -50,6 +50,7 @@ public class InitializeDatabaseViews {
     public void init() throws SQLException {
         if (applicationSettings.isRepositorySchemaCreate()) {
             try {
+                logger.info("Recreating views in DB.");
                 Connection connection = jdbcTemplate.getDataSource().getConnection();
                 Resource createViewsScript = new ClassPathResource("create-views.sql");
                 ScriptUtils.executeSqlScript(connection, createViewsScript);
